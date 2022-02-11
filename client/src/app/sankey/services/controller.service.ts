@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
@@ -27,7 +27,8 @@ import {
   SankeyLink,
   SankeyId,
   SankeyTrace,
-  SankeyNode
+  SankeyNode,
+  NodeAlign
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
@@ -68,6 +69,7 @@ export function patchReducer(patch, callback) {
 @Injectable()
 // @ts-ignore
 export class ControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
+
   constructor(
     readonly warningController: WarningControllerService
   ) {
@@ -209,13 +211,24 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
     switchMap(({sources, targets, traces}) => this.data$.pipe(
-      map(({links, nodes, graph: {node_sets}}) => ({
-        links,
-        nodes,
-        traces,
-        sources: node_sets[sources],
-        targets: node_sets[targets]
-      }))
+      map(({links, nodes, graph: {node_sets}}) => {
+        // const linkIdxs = flatMap(traces, trace => trace.edges);
+        // const _links = linkIdxs.map(idx => links[idx]);
+        // const nodeIds = flatMap(_links, link => [link.source, link.target]);
+        // const nodeById = this.getNodeById(nodes);
+        // const _nodes = nodeIds.map(id => nodeById.get(id));
+        return ({
+          // linkIds: flatMap(traces, trace => trace.edges),
+          // nodeIds: flatMap(traces, trace => trace.nodes),
+          // links: _links,
+          // nodes: _nodes,
+          links,
+          nodes,
+          traces,
+          sources: node_sets[sources],
+          targets: node_sets[targets]
+        });
+      })
     )),
     shareReplay(1)
   );
@@ -337,10 +350,12 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
 
   fileUpdated$ = new Subject<GraphFile>();
+  nodeAlign$: Observable<NodeAlign>;
 
   onInit() {
     super.onInit();
 
+    this.nodeAlign$ = this.stateAccessor('nodeAlign');
     this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
     this.baseView$ = this.state$.pipe(

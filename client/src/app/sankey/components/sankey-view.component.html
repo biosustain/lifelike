@@ -9,7 +9,7 @@
         </app-module-error>
     </ng-container>
     <app-module-header [object]="object"
-                       *ngIf="(allData$ | async) as data"
+                       *ngIf="(data$ | async) as data"
                        (dragStarted)="dragStarted($event)">
         <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                          [object]="object" [showDelete]="false"
@@ -153,8 +153,8 @@
                 <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
             </label>
             <div class="btn-group btn-group-toggle">
-                    <app-sankey-search-control>
-                    </app-sankey-search-control>
+                <app-sankey-search-control>
+                </app-sankey-search-control>
             </div>
         </div>
     </app-module-header>
@@ -166,36 +166,36 @@
             <as-split-area [order]="0">
                 <ng-template appSankey></ng-template>
             </as-split-area>
-            <as-split-area [order]="0.1" size="340">
-                    <h5>Common:</h5>
-                <app-object-explorer *ngIf="{
-                  default$: sankeyController.default$ | async,
-                  delta$: sankeyController.delta$ | async,
-                  state$: sankeyController.state$ | async,
-                  options$: sankeyController.options$ | async,
-                  data$: sankeyController.data$ | async,
-                  viewsUpdate$: sankeyController.viewsUpdate$ | async,
-                  views$: sankeyController.views$ | async,
-                  view$: sankeyController.view$ | async,
-                  partialNetworkTraceData: sankeyController.partialNetworkTraceData$ | async
-                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
-                <ng-container *ngIf="baseView$ | async as b">
-                    <h5>Base view:</h5>
-                    <app-object-explorer *ngIf="{
-                  default$: b.default$ | async,
-                  delta$: b.delta$ | async,
-                  state$: b.state$ | async,
-                  options$: b.options$ | async,
-                  networkTraceData$: b.networkTraceData$ | async
-                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
-                </ng-container>
-                <ng-container *ngIf="layout$ | async as b">
-                    <h5>Layout:</h5>
-                    <app-object-explorer *ngIf="{
-                  dataToRender$: b.dataToRender$ | async
-                } as dataSource" [dataSource]="dataSource"></app-object-explorer>
-                </ng-container>
-            </as-split-area>
+            <!--            <as-split-area [order]="0.1" size="340">-->
+            <!--                    <h5>Common:</h5>-->
+            <!--                <app-object-explorer *ngIf="{-->
+            <!--                  default$: sankeyController.default$ | async,-->
+            <!--                  delta$: sankeyController.delta$ | async,-->
+            <!--                  state$: sankeyController.state$ | async,-->
+            <!--                  options$: sankeyController.options$ | async,-->
+            <!--                  data$: sankeyController.data$ | async,-->
+            <!--                  viewsUpdate$: sankeyController.viewsUpdate$ | async,-->
+            <!--                  views$: sankeyController.views$ | async,-->
+            <!--                  view$: sankeyController.view$ | async,-->
+            <!--                  partialNetworkTraceData: sankeyController.partialNetworkTraceData$ | async-->
+            <!--                } as dataSource" [dataSource]="dataSource"></app-object-explorer>-->
+            <!--                <ng-container *ngIf="baseView$ | async as b">-->
+            <!--                    <h5>Base view:</h5>-->
+            <!--                    <app-object-explorer *ngIf="{-->
+            <!--                  default$: b.default$ | async,-->
+            <!--                  delta$: b.delta$ | async,-->
+            <!--                  state$: b.state$ | async,-->
+            <!--                  options$: b.options$ | async,-->
+            <!--                  networkTraceData$: b.networkTraceData$ | async-->
+            <!--                } as dataSource" [dataSource]="dataSource"></app-object-explorer>-->
+            <!--                </ng-container>-->
+            <!--                <ng-container *ngIf="layout$ | async as b">-->
+            <!--                    <h5>Layout:</h5>-->
+            <!--                    <app-object-explorer *ngIf="{-->
+            <!--                  dataToRender$: b.dataToRender$ | async-->
+            <!--                } as dataSource" [dataSource]="dataSource"></app-object-explorer>-->
+            <!--                </ng-container>-->
+            <!--            </as-split-area>-->
             <as-split-area [class]="[
                                 'as-split-area',
                                 detailsPanel ? 'border' : 'as-hidden'
@@ -237,7 +237,7 @@
                         </button>
                     </div>
                     <div class="flex-grow-1 pb-3">
-                            <app-sankey-search-panel>
+                        <app-sankey-search-panel>
                         </app-sankey-search-panel>
                     </div>
                 </div>

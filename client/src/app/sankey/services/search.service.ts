@@ -1,15 +1,14 @@
 import { Injectable, OnDestroy, NgZone } from '@angular/core';
 
-import { BehaviorSubject, Observable } from 'rxjs';
-import { isNil } from 'lodash-es';
-import { auditTime, map, switchMap, tap } from 'rxjs/operators';
+import { ReplaySubject, iif, of, Subject } from 'rxjs';
+import { auditTime, map, switchMap, tap, first, finalize, scan, startWith, shareReplay } from 'rxjs/operators';
+import { size } from 'lodash';
 
-import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
+import { tokenizeQuery } from 'app/shared/utils/find';
 
-import { WorkerActions, WorkerOutputActions } from './search-worker-actions';
-import { SearchEntity } from './search-match';
-import { SankeyTraceNetwork } from '../interfaces';
+import { WorkerOutputActions } from './search-worker-actions';
 import { ControllerService } from './controller.service';
+
 
 @Injectable()
 // @ts-ignore
@@ -18,160 +17,144 @@ export class SankeySearchService implements OnDestroy {
     readonly common: ControllerService,
     private zone: NgZone
   ) {
-    if (typeof Worker !== 'undefined') {
-      this.setUpWorker();
-    } else {
-      //  fallback
-    }
-
-    zone.runOutsideAngular(() =>
-      this.common.networkTraces$.pipe(
-        switchMap(networkTraces => this.matches.pipe(
-          auditTime(500),
-          switchMap(matches => this.common.networkTraceIdx$.pipe(
-            map(networkTraceIdx => matches
-              .sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)
-              .filter(match => isNil(match.networkTraceIdx) || match.networkTraceIdx !== networkTraceIdx)
-              .map((match: SearchEntity & { networkTrace: SankeyTraceNetwork }) => {
-                if (!isNil(match.networkTraceIdx)) {
-                  match.networkTrace = networkTraces[match.networkTraceIdx];
-                }
-                return match;
-              })
-            )
-          ))
-        ))
-      ).subscribe(matches => {
-        this.zone.run(() =>
-          this.entitySearchList.next(matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
-        );
-      })
-    );
-
-    this.searchFocus = this.entitySearchListIdx.pipe(
-      map(entitySearchListIdx => this.entitySearchList.value[entitySearchListIdx])
-    );
-
-    this.entitySearchTerm.subscribe(entitySearchTerm => {
-      this.searchTerms = tokenizeQuery(
-        entitySearchTerm,
-        {singleTerm: true}
-      );
-      this.entitySearchListIdx.next(-1);
-      if (entitySearchTerm) {
-        this.findMatching(
-          this.searchTerms,
-          {wholeWord: false}
-        );
-      } else {
-        this.entitySearchList.next([]);
-      }
-    });
   }
 
-  entitySearchListIdx = new BehaviorSubject<number>(-1);
+  // +/- index of the currently focused match
+  focusIdx$ = new ReplaySubject<number>(1);
 
-  worker: Worker;
-  matches = new BehaviorSubject<SearchEntity[]>([]);
-  done;
+  term$ = new ReplaySubject<string>(1);
 
-  entitySearchTerm = new BehaviorSubject<string>('');
-  entitySearchList = new BehaviorSubject<SearchEntity[]>([]);
+  searchTokens$ = this.term$.pipe(
+    map(term => {
+      if (!term) {
+        return [];
+      }
+      return tokenizeQuery(term, {singleTerm: true});
+    })
+  );
 
-  searchFocus: Observable<SearchEntity>;
+  private _done$ = new ReplaySubject<boolean>(1);
+  done$ = this._done$.asObservable();
 
-  searchTerms = [];
+  matches$ = this.common.data$.pipe(
+    // limit size of data we operate on
+    map(({nodes, links, graph: {trace_networks}}) => ({
+      nodes,
+      links,
+      graph: {
+        trace_networks
+      }
+    })),
+    switchMap(data => this.searchTokens$.pipe(
+      switchMap(searchTokens => iif(
+        // if term is empty, return empty array
+        () => size(searchTokens) === 0,
+        of([]),
+        // as performance improvement start seaerch with visible network trace
+        this.common.networkTraceIdx$.pipe(
+          tap(() => this._done$.next(false)),
+          // not interested in network trace change after initial run
+          // results should be same independent of selected network trace
+          first(),
+          // build search context
+          map(networkTraceIdx => {
+            // create search observable for each search query
+            const results$ = new Subject();
+            // init web worker for this query (only this web worker sends results$.next results$.complete)
+            // beside that complete is only called when results$ gets destryoed
+            const worker = this.setUpWorker(results$);
+            return {
+              data,
+              searchTokens,
+              networkTraceIdx,
+              worker,
+              results$: results$.pipe(
+                // if pipe errors or completes then stop worker
+                finalize(() => {
+                  worker.terminate();
+                  this._done$.next(true);
+                }),
+                // results are returned in arbitrary batches so we concat them
+                scan((matches, newMatches) => matches.concat(newMatches), [])
+              )
+            };
+          }),
+          // init search
+          tap(searchContext => this.startWorkerSearch(searchContext)),
+          switchMap(({results$}) => results$)
+        )
+      ))
+    )),
+    // each subscriber gets same results$ (one worker)
+    shareReplay(1)
+  );
 
-  setUpWorker() {
-    this.worker = new Worker('./search.worker', {type: 'module'});
-    this.worker.onmessage = ({data: {action, actionLoad}}) => {
+  preprocessedMatches$ = this.matches$.pipe(
+    auditTime(500),
+    //     windowToggle(this.term$, () => new Subject()),
+    //     tap(searchTask$ => this.ongoingSearch$.next(searchTask$)),
+    //     switchMap(currentMatches$ => currentMatches$),
+    //     tap(matches => matches.sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)),
+    //     tap(matches => matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
+    //   )
+    // )
+  );
+
+  searchFocus$ = this.preprocessedMatches$.pipe(
+    switchMap(preprocessedMatches => {
+      const {length} = preprocessedMatches;
+      return this.focusIdx$.pipe(
+        map(focusIdx =>
+          // modulo which works on negative numbers
+          preprocessedMatches[((focusIdx % length) + length) % length]
+        )
+      );
+    })
+  );
+
+  resultsCount$ = this.preprocessedMatches$.pipe(
+    map(matches => matches.length)
+  );
+
+  setUpWorker(results$) {
+    console.log('setUpWorker');
+    const worker = new Worker('./search.worker', {type: 'module'});
+    worker.onmessage = ({data: {action, actionLoad}}) => {
       switch (action) {
         case WorkerOutputActions.match:
-          this.matches.next(
-            this.matches.value.concat(actionLoad)
-          );
-          break;
-        case WorkerOutputActions.interrupted:
-          this.matches.next([]);
+          results$.next(actionLoad);
           break;
         case WorkerOutputActions.done:
-          this.done = true;
+          results$.complete();
           break;
       }
     };
+    worker.onerror = event => results$.error(event);
+    return worker;
   }
 
-  ngOnDestroy() {
-    if (this.worker) {
-      this.worker.terminate();
-    }
-  }
-
-  workerUpdate(updateObj) {
-    this.worker.postMessage({
-      action: WorkerActions.update,
-      actionLoad: updateObj
+  startWorkerSearch({worker, searchTokens, data, networkTraceIdx, options = {wholeWord: false}}) {
+    worker.postMessage({
+      searchTokens,
+      data,
+      options,
+      networkTraceIdx
     });
   }
 
-  /**
-   * Get all nodes and edges that match some search terms.
-   * @param terms the terms
-   * @param options additional find options
-   */
-  findMatching(terms: string[], options: FindOptions = {}) {
-    this.workerStopSearch();
-    this.workerClear();
-    return this.common.data$.pipe(
-      tap(data => this.workerUpdate({
-        terms,
-        options,
-        data,
-        dataToSearch: data
-      })),
-      tap(() => this.workerSearch())
+  relativeFocusIdxChange(value: number) {
+    return this.focusIdx$.pipe(
+      first(),
+      map(focusIdx => focusIdx + value),
+      tap(focusIdx => this.focusIdx$.next(focusIdx))
     );
   }
 
-  search(query?: string) {
-    this.entitySearchTerm.next(query ?? this.entitySearchTerm.value);
-  }
-
-  workerSearch() {
-    this.done = false;
-    this.worker.postMessage({
-      action: WorkerActions.search
-    });
-  }
-
-  clearSearchQuery() {
-    this.entitySearchTerm.next('');
-    this.search();
-  }
-
   next() {
-    const currentEntitySearchListIdx = this.entitySearchListIdx.value;
-    if (currentEntitySearchListIdx >= this.entitySearchList.value.length - 1) {
-      this.entitySearchListIdx.next(0);
-    } else {
-      this.entitySearchListIdx.next(currentEntitySearchListIdx + 1);
-    }
+    return this.relativeFocusIdxChange(1).toPromise();
   }
 
   previous() {
-    const currentEntitySearchListIdx = this.entitySearchListIdx.value;
-    if (currentEntitySearchListIdx <= 0) {
-      this.entitySearchListIdx.next(this.entitySearchList.value.length - 1);
-    } else {
-      this.entitySearchListIdx.next(currentEntitySearchListIdx - 1);
-    }
-  }
-
-  private workerStopSearch() {
-    this.worker.postMessage({action: WorkerActions.stop});
-  }
-
-  workerClear() {
-    this.matches.next([]);
+    return this.relativeFocusIdxChange(-1).toPromise();
   }
 }

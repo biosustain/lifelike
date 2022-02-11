@@ -20,6 +20,7 @@ import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 
+export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
  * It is responsible for holding Sankey data and view options (including selected networks trace)
@@ -27,8 +28,8 @@ import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBaseOptions,
-  State extends SankeyBaseState = SankeyBaseState> extends StateControlAbstractService<Options, State> {
+export class BaseControllerService<Options extends SankeyBaseOptions, State extends SankeyBaseState>
+  extends StateControlAbstractService<Options, State> {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -168,7 +169,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  })
+  });
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
@@ -238,12 +239,5 @@ export class BaseControllerService<Options extends SankeyBaseOptions = SankeyBas
       })),
       shareReplay(1)
     );
-  }
-
-  /**
-   * Color nodes in gray scale based on group they are relating to.
-   */
-  colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
-    throw new Error('Method not implemented.');
   }
 }

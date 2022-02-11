@@ -12,7 +12,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
 import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
-import { SankeyBaseState } from '../base-views/interfaces';
+import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 import { unifiedAccessor } from './state-controlling-abstract.service';
 import { BaseControllerService } from './base-controller.service';
 
@@ -32,11 +32,12 @@ export const groupByTraceGroupWithAccumulation = () => {
 // https://sbrgsoftware.atlassian.net/browse/LL-3732
 export const DEFAULT_FONT_SIZE = 12 * 1.60;
 
+export type DefaultLayoutService = LayoutService<SankeyBaseOptions, SankeyBaseState>;
+
 @Injectable()
-// @ts-ignore
-export class LayoutService extends SankeyLayoutService {
+export class LayoutService<Options extends SankeyBaseOptions, State extends SankeyBaseState> extends SankeyLayoutService {
   constructor(
-    readonly baseView: BaseControllerService,
+    readonly baseView: BaseControllerService<Options, State>,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
@@ -137,8 +138,7 @@ export class LayoutService extends SankeyLayoutService {
           iif(
             () => isNil(view),
             this.linkGraph(networkTraceData).pipe(
-              switchMap(data => this.calculateLayout(data)),
-              tap(data => console.log('data', data)),
+              switchMap(data => this.calculateLayout(data))
             ),
             of(networkTraceData).pipe(
               tap((data: NetworkTraceData) => {
@@ -155,13 +155,11 @@ export class LayoutService extends SankeyLayoutService {
                   tap(state => this.state = state),
                   map(() => graph)
                 )),
-              shareReplay(1),
-              tap(data => console.log('data', data)),
+              shareReplay(1)
             ),
           ))
       )
     ),
-    tap(data => console.log('data', data)),
     shareReplay(1)
   );
 

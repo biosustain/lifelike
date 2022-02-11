@@ -11,11 +11,12 @@ import { LayoutService, groupByTraceGroupWithAccumulation } from 'app/sankey/ser
 import { DirectedTraversal } from '../../../services/directed-traversal';
 import { symmetricDifference } from '../../../components/sankey/utils';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
+import { SankeyMultiLaneOptions, SankeyMultiLaneState, BaseOptions, BaseState } from '../interfaces';
 
 @Injectable()
-export class MultiLaneLayoutService extends LayoutService {
+export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState> {
   constructor(
-    @Inject(forwardRef(() => MultiLaneBaseControllerService)) readonly baseView: MultiLaneBaseControllerService,
+    readonly baseView: MultiLaneBaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {

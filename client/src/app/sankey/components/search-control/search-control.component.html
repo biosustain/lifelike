@@ -1,7 +1,7 @@
-<app-search-control [ngModel]="search.entitySearchTerm | async" (ngModelChange)="search.search($event)"
-                    [resultIndex]="search.entitySearchListIdx | async"
-                    [resultCount]="(search.entitySearchList | async).length"
-                    (previous)="search.previous()" (next)="search.next()"
-                    [searching]="!search.done"
+<app-search-control [ngModel]="term$ | async" (ngModelChange)="term$.next($event)"
+                    [resultIndex]="focusIdx$ | async"
+                    [resultCount]="resultsCount$ | async"
+                    (previous)="previous()" (next)="next()"
+                    [searching]="!(done$ | async)"
 >
 </app-search-control>

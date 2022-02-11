@@ -131,8 +131,8 @@ export class SankeyLayoutService extends AttributeAccessors {
   };
 
   dy = 8;
-  dx = 24; // nodeWidth
-  py; // nodePadding
+  dx = 10; // nodeWidth
+  py = 10; // nodePadding
 
   nodeSort;
   linkSort;

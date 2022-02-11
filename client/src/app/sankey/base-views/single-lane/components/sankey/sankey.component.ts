@@ -1,14 +1,21 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, SimpleChanges, OnChanges, Input } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnChanges, Input, ElementRef, NgZone } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { isNil, compact } from 'lodash-es';
+import { compact, isNil } from 'lodash-es';
+import { zoom as d3_zoom } from 'd3-zoom';
+import { filter, startWith, pairwise } from 'rxjs/operators';
 
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
-import * as aligns from 'app/sankey/components/sankey/aligin';
 import { uuidv4 } from 'app/shared/utils';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import { SankeySingleLaneLink, SankeySingleLaneNode } from '../interfaces';
+import { SankeySingleLaneLink, SankeySingleLaneNode } from '../../interfaces';
 import { SankeyComponent } from '../../../../components/sankey/sankey.component';
+import { LayoutService } from '../../../../services/layout.service';
+import { SankeySelectionService } from '../../../../services/selection.service';
+import { SankeySearchService } from '../../../../services/search.service';
+import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 
 
 @Component({
@@ -17,46 +24,63 @@ import { SankeyComponent } from '../../../../components/sankey/sankey.component'
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeySingleLaneComponent extends SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
-  @Input() highlightCircular;
+export class SankeySingleLaneComponent extends SankeyComponent implements AfterViewInit, OnDestroy {
+  constructor(
+    readonly clipboard: ClipboardService,
+    readonly snackBar: MatSnackBar,
+    readonly sankey: SingleLaneLayoutService,
+    readonly wrapper: ElementRef,
+    protected zone: NgZone,
+    protected selection: SankeySelectionService,
+    protected search: SankeySearchService
+  ) {
+    super(
+      clipboard,
+      snackBar,
+      sankey,
+      wrapper,
+      zone,
+      selection,
+      search
+    );
+    this.linkClick = this.linkClick.bind(this);
+    this.nodeClick = this.nodeClick.bind(this);
+    this.nodeMouseOver = this.nodeMouseOver.bind(this);
+    this.pathMouseOver = this.pathMouseOver.bind(this);
+    this.nodeMouseOut = this.nodeMouseOut.bind(this);
+    this.pathMouseOut = this.pathMouseOut.bind(this);
+    this.dragmove = this.dragmove.bind(this);
+    this.attachLinkEvents = this.attachLinkEvents.bind(this);
+    this.attachNodeEvents = this.attachNodeEvents.bind(this);
 
-  @Input() selected: undefined | SankeySingleLaneLink | SankeySingleLaneNode;
+    this.zoom = d3_zoom()
+      .scaleExtent([0.1, 8]);
 
-  // region Life cycle
-  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
-    // todo react to leayout directly instead
-    // using on Changes in place of setters as order is important
-    if (nodeAlign) {
-      const align = nodeAlign.currentValue;
-      if (typeof align === 'function') {
-        this.sankey.align = align;
-      } else if (align) {
-        this.sankey.align = aligns[align];
-      }
-    }
+    sankey.dataToRender$.subscribe(data => {
+      this.updateDOM(data);
+    });
 
-    if (selected) {
-      if (isNil(selected.currentValue)) {
-        this.deselectNodes();
-        this.deselectLinks();
-        this.calculateAndApplyTransitiveConnections(null);
-      } else {
-        const {node, link} = selected.currentValue;
-        if (node) {
-          this.deselectLinks();
-          this.selectNode(node);
-          this.calculateAndApplyTransitiveConnections(node);
-        }
-        if (link) {
-          this.deselectNodes();
-          this.selectLink(link);
-          this.calculateAndApplyTransitiveConnections(link);
-        }
-      }
-    }
+    selection.selectedNodes$.subscribe(([node]) => {
+      this.deselectLinks();
+      this.selectNode(node);
+      this.calculateAndApplyTransitiveConnections(node);
+    });
 
-    if (searchedEntities) {
-      const entities = searchedEntities.currentValue;
+    selection.selectedLinks$.subscribe(([link]) => {
+      this.deselectNodes();
+      this.selectLink(link);
+      this.calculateAndApplyTransitiveConnections(link);
+    });
+
+    selection.selection$.pipe(
+      filter(isNil)
+    ).subscribe(() => {
+      this.deselectNodes();
+      this.deselectLinks();
+      this.calculateAndApplyTransitiveConnections(null);
+    });
+
+    search.preprocessedMatches$.subscribe(entities => {
       if (entities.length) {
         this.searchNodes(
           new Set(
@@ -72,26 +96,49 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
         this.stopSearchNodes();
         this.stopSearchLinks();
       }
-    }
-    if (focusedNode) {
-      const {currentValue, previousValue} = focusedNode;
+    });
+
+    this.focusedEntity$.pipe(
+      startWith(null),
+      pairwise()
+    ).subscribe(([currentValue, previousValue]) => {
       if (previousValue) {
         this.applyEntity(
-          previousValue,
+          {
+            nodeId: previousValue._id,
+            linkId: previousValue._id
+          },
           this.unFocusNode,
           this.unFocusLink
         );
       }
       if (currentValue) {
         this.applyEntity(
-          currentValue,
+          {
+            nodeId: previousValue._id,
+            linkId: previousValue._id
+          },
           this.focusNode,
           this.focusLink
         );
+        this.panToEntity(currentValue);
       }
-    }
+    });
+
+
   }
 
+  highlightCircular$ = this.sankey.baseView.highlightCircular$;
+  highlightCircular;
+
+  applyEntity({nodeId, linkId}, nodeCallback, linkCallback) {
+    if (nodeId) {
+      nodeCallback.call(this, nodeId);
+    }
+    if (linkId) {
+      linkCallback.call(this, linkId);
+    }
+  }
 
   // endregion
 
