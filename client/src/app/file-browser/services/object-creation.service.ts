@@ -133,7 +133,7 @@ export class ObjectCreationService {
     if (promiseList.length === 1) {
       finalPromise = promiseList[0];
     } else {
-      finalPromise = Promise.all(promiseList);
+      finalPromise = Promise.allSettled(promiseList);
     }
     this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();
