@@ -1,18 +1,18 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, tap, distinctUntilChanged } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged } from 'rxjs/operators';
 import { pick, isEqual } from 'lodash-es';
-import { of, BehaviorSubject } from 'rxjs';
+import { of } from 'rxjs';
 
 import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
+import { unifiedSingularAccessor } from 'app/sankey/services/state-controlling-abstract.service';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
-import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../interfaces';
-import { unifiedAccessor, unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
+import { BaseState, BaseOptions } from '../interfaces';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -21,7 +21,7 @@ import { unifiedAccessor, unifiedSingularAccessor } from '../../../services/stat
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class MultiLaneBaseControllerService extends BaseControllerService<SankeyMultiLaneOptions, SankeyMultiLaneState> {
+export class MultiLaneBaseControllerService  extends BaseControllerService<BaseOptions, BaseState> {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,

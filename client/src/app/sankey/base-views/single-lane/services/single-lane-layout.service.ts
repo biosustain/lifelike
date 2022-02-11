@@ -10,11 +10,13 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { LayoutService } from 'app/sankey/services/layout.service';
 
+import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
+import { BaseOptions, BaseState } from '../interfaces';
+
 @Injectable()
-// @ts-ignore
-export class SingleLaneLayoutService extends LayoutService {
+export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseState> {
   constructor(
-    readonly baseView: BaseControllerService,
+    readonly baseView: SingleLaneBaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {

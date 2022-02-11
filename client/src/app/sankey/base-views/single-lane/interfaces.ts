@@ -1,6 +1,7 @@
 import { SankeyLink, SankeyNode, SankeyData, SankeyTrace, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
 
-import { SankeyBaseState, SankeyBaseOptions } from '../../interfaces';
+import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
+import { SankeyMultiLaneOptions, SankeyMultiLaneState } from '../multi-lane/interfaces';
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
@@ -45,3 +46,6 @@ export type SankeySingleLaneSelection = {
 } | {
   trace: SankeyTrace
 };
+
+export type BaseOptions = SankeySingleLaneOptions;
+export type BaseState = SankeySingleLaneState;

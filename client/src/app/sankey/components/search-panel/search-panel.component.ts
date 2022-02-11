@@ -12,11 +12,11 @@ import { SankeySearchService } from '../../services/search.service';
 })
 export class SankeySearchPanelComponent {
   constructor(
-    public search: SankeySearchService
+    private search: SankeySearchService
   ) {
     combineLatest([
-      this.search.entitySearchList,
-      this.search.entitySearchListIdx
+      this.search.preprocessedMatches$,
+      this.search.focusIdx$
     ]).subscribe(([
                     entities,
                     focusedIdx
@@ -25,6 +25,13 @@ export class SankeySearchPanelComponent {
       }
     );
   }
+
+  term$ = this.search.term$;
+  searchTokens$ = this.search.searchTokens$;
+  focusIdx$ = this.search.focusIdx$;
+  preprocessedMatches$ = this.search.preprocessedMatches$;
+  resultsCount$ = this.search.resultsCount$;
+  done$ = this.search.done$;
 
   @ViewChildren('item', {read: ElementRef}) listItems;
 

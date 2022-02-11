@@ -7,9 +7,9 @@ import { omit, transform, pick, assign } from 'lodash-es';
 import { SankeyView, SankeyNode, SankeyLink, SankeyNodesOverwrites, SankeyLinksOverwrites, ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { LayoutService } from './layout.service';
+import { LayoutService, DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
-import { BaseControllerService } from './base-controller.service';
+import { BaseControllerService, DefaultBaseControllerService } from './base-controller.service';
 import { getCommonState, getBaseState } from '../stateLevels';
 
 /**
@@ -24,9 +24,6 @@ export class ViewControllerService {
     private common: ControllerService,
     readonly warningController: WarningControllerService
   ) {
-    this.common.views$.subscribe(views => {
-      console.log('ViewControllerService: views changed', views);
-    });
   }
 
   views$ = this.common.views$;
@@ -39,8 +36,8 @@ export class ViewControllerService {
     map(({viewName}) => viewName)
   );
 
-  layout$ = new ReplaySubject<LayoutService>(1);
-  baseView$ = new ReplaySubject<BaseControllerService>(1);
+  layout$ = new ReplaySubject<DefaultLayoutService>(1);
+  baseView$ = new ReplaySubject<DefaultBaseControllerService>(1);
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',
@@ -94,7 +91,7 @@ export class ViewControllerService {
     );
   }
 
-  registerLayout(layout: LayoutService) {
+  registerLayout(layout: DefaultLayoutService) {
     this.layout$.next(layout);
   }
 

@@ -3,8 +3,9 @@ import { FormBuilder } from '@angular/forms';
 
 import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
 
-import { SankeySingleLaneState, SankeySingleLaneOptions } from '../interfaces';
+
 import { SingleLaneBaseControllerService } from '../../services/single-lane-base-controller.service';
+import { BaseState, BaseOptions } from '../../interfaces';
 
 @Component({
   selector: 'app-sankey-advanced-panel',
@@ -12,7 +13,7 @@ import { SingleLaneBaseControllerService } from '../../services/single-lane-base
   styleUrls: ['./advanced-panel.component.scss'],
 })
 export class SankeySingleLaneAdvancedPanelComponent
-  extends SankeyAbstractAdvancedPanelComponent<SankeySingleLaneOptions, SankeySingleLaneState>
+  extends SankeyAbstractAdvancedPanelComponent<BaseOptions, BaseState>
   implements OnDestroy {
   form = this.formBuilder.group({
     colorLinkByType: [false, []],

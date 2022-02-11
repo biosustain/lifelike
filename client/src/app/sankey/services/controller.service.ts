@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
@@ -11,15 +11,11 @@ import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/provider
 import {
   SankeyData,
   SankeyTraceNetwork,
-  SankeyLink,
-  SankeyNode,
   SankeyPathReportEntity,
-  SankeyId,
   SankeyState,
   LINK_VALUE_GENERATOR,
   NODE_VALUE_GENERATOR,
   PREDEFINED_VALUE,
-  SankeyTrace,
   SankeyFileOptions,
   SankeyView,
   SankeyStaticOptions,
@@ -27,13 +23,18 @@ import {
   Prescaler,
   ValueAccessor,
   LINK_PROPERTY_GENERATORS,
-  SankeyViews
+  SankeyViews,
+  SankeyLink,
+  SankeyId,
+  SankeyTrace,
+  SankeyNode,
+  NodeAlign
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService, unifiedSingularAccessor, unifiedAccessor } from './state-controlling-abstract.service';
+import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
 import { LayoutService } from './layout.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
@@ -68,6 +69,7 @@ export function patchReducer(patch, callback) {
 @Injectable()
 // @ts-ignore
 export class ControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
+
   constructor(
     readonly warningController: WarningControllerService
   ) {
@@ -97,6 +99,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     });
   }
 
+  networkTraceIdx$: Observable<number>;
   baseViewName$: Observable<string>;
   baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
   viewName$: Observable<string>;
@@ -133,6 +136,8 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     )),
     shareReplay(1)
   );
+
+  networkTraces$ = unifiedSingularAccessor(this.options$, 'networkTraces');
 
   viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
 
@@ -206,13 +211,24 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
     switchMap(({sources, targets, traces}) => this.data$.pipe(
-      map(({links, nodes, graph: {node_sets}}) => ({
-        links,
-        nodes,
-        traces,
-        sources: node_sets[sources],
-        targets: node_sets[targets]
-      }))
+      map(({links, nodes, graph: {node_sets}}) => {
+        // const linkIdxs = flatMap(traces, trace => trace.edges);
+        // const _links = linkIdxs.map(idx => links[idx]);
+        // const nodeIds = flatMap(_links, link => [link.source, link.target]);
+        // const nodeById = this.getNodeById(nodes);
+        // const _nodes = nodeIds.map(id => nodeById.get(id));
+        return ({
+          // linkIds: flatMap(traces, trace => trace.edges),
+          // nodeIds: flatMap(traces, trace => trace.nodes),
+          // links: _links,
+          // nodes: _nodes,
+          links,
+          nodes,
+          traces,
+          sources: node_sets[sources],
+          targets: node_sets[targets]
+        });
+      })
     )),
     shareReplay(1)
   );
@@ -228,7 +244,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
-          // @ts-ignore
           // todo
           // const layout = new LayoutService();
           // layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
@@ -335,14 +350,18 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
 
   fileUpdated$ = new Subject<GraphFile>();
+  nodeAlign$: Observable<NodeAlign>;
 
   onInit() {
     super.onInit();
+
+    this.nodeAlign$ = this.stateAccessor('nodeAlign');
+    this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
     this.baseView$ = this.state$.pipe(
-    filter(obj => has(obj, 'baseViewName')),
-    map(obj => pick(obj, ['baseViewName', 'baseViewInitState'])),
-    distinctUntilChanged(isEqual),
+      filter(obj => has(obj, 'baseViewName')),
+      map(obj => pick(obj, ['baseViewName', 'baseViewInitState'])),
+      distinctUntilChanged(isEqual),
       shareReplay(1)
     );
     // do not use standart accessor for this one cause we want null if it wasnt set
@@ -579,8 +598,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   load(content) {
     this.addIds(content);
     this.preprocessData(content);
-    // this.resetOptions();
-    // this.resetState();
     this.extractOptionsFromGraph(content);
   }
 

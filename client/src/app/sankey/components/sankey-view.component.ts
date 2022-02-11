@@ -8,7 +8,8 @@ import {
   Injector,
   AfterViewInit,
   ChangeDetectorRef,
-  getModuleFactory
+  getModuleFactory,
+  NgZone
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -16,7 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, pairwise, startWith } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact, assign, mapValues, get, transform } from 'lodash-es';
+import { isNil, pick, compact, assign, mapValues, get } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -25,21 +26,11 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SelectionSingleLaneEntity } from 'app/sankey/base-views/single-lane/components/interfaces';
-import {
-  SankeyState,
-  SelectionType,
-  SelectionEntity,
-  SankeyURLLoadParam,
-  ViewBase,
-  SankeyOptions,
-  SankeyData
-} from 'app/sankey/interfaces';
+import { SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam, ViewBase, SankeyData } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
-import { FindOptions, tokenizeQuery } from 'app/shared/utils/find';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -47,12 +38,13 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { ControllerService } from '../services/controller.service';
-import { BaseControllerService } from '../services/base-controller.service';
+import { BaseControllerService, DefaultBaseControllerService } from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
-import { LayoutService } from '../services/layout.service';
+import { LayoutService, DefaultLayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
+import { SankeySelectionService } from '../services/selection.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -62,10 +54,11 @@ import { ViewControllerService } from '../services/view-controller.service';
     WarningControllerService,
     SankeySearchService,
     ControllerService,
-    ViewControllerService
+    ViewControllerService,
+    SankeySelectionService
   ]
 })
-export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterContentInit, AfterViewInit {
+export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterViewInit {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -80,6 +73,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     private componentFactoryResolver: ComponentFactoryResolver,
     public sankeyController: ControllerService,
     private injector: Injector,
+    private zone: NgZone,
     private viewController: ViewControllerService
   ) {
     this.loadTask = new BackgroundTask(hashId =>
@@ -134,14 +128,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       startWith({}), // initial prev value,
       pairwise(),
     ).subscribe(([prevInputState, inputState]) => {
-      const sankey = this._dynamicComponentRef.get('sankey');
+      const sankey = this.dynamicComponentRef.get('sankey');
       assign(sankey.instance, inputState);
-      const changes = mapValues(inputState, (value, key) => ({
-        currentValue: value,
-        firstChange: isNil(prevInputState),
-        previousValue: get(prevInputState, key)
-      }));
-      sankey.instance.ngOnChanges(changes);
       sankey.changeDetectorRef.detectChanges();
       sankey.injector.get(ChangeDetectorRef).detectChanges();
     });
@@ -152,27 +140,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       ))
     ).subscribe(data => this.saveFile(data));
   }
-
-  get warnings() {
-    return this.warningController.warnings;
-  }
-
-  get options() {
-    return this.sankeyController.options$ as Observable<SankeyOptions>;
-  }
-
-  get state() {
-    return this.sankeyController?.state$ as Observable<SankeyState>;
-  }
-
-  get nodeAlign() {
-    return this.sankeyController.state$.pipe(map(({nodeAlign}) => nodeAlign));
-  }
-
-  get searching() {
-    return !this.sankeySearch.done;
-  }
-
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
@@ -190,62 +157,32 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     ).toPromise();
   }
 
-  get entitySearchListIdx() {
-    return this._entitySearchListIdx;
-  }
-
-
-  set entitySearchListIdx(idx) {
-    this._entitySearchListIdx = idx;
-    const {networkTraceIdx} = this.entitySearchList.value[idx] ?? {};
-    this.sankeyController.state$.pipe(
-      first(),
-    ).subscribe(
-      state => {
-        if (!isNil(networkTraceIdx) && state.networkTraceIdx !== networkTraceIdx) {
-          this.selectNetworkTrace(networkTraceIdx);
-        } else {
-          this.setSearchFocus(idx);
-        }
-      }
-    );
-  }
-
-
   get sankey() {
-    return this._dynamicComponentRef.get('sankey').instance;
+    return this.dynamicComponentRef.get('sankey').instance;
   }
 
   get details() {
-    return this._dynamicComponentRef.get('details').instance;
+    return this.dynamicComponentRef.get('details').instance;
   }
 
   get advanced() {
-    return this._dynamicComponentRef.get('advanced').instance;
+    return this.dynamicComponentRef.get('advanced').instance;
   }
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  baseView$ = new ReplaySubject<BaseControllerService>(1);
-  layout$ = new ReplaySubject<LayoutService>(1);
-
-  selectedNetworkTrace$ = this.sankeyController.networkTrace$;
+  baseView$ = new ReplaySubject<DefaultBaseControllerService>(1);
+  layout$ = new ReplaySubject<DefaultLayoutService>(1);
 
   predefinedValueAccessor$ = this.baseView$.pipe(
     switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
   );
 
-  dynamicContainer;
-  _dynamicComponentRef = new Map();
+  private dynamicComponentRef = new Map();
 
   @ViewChild(SankeyDirective, {static: true}) sankeySlot;
   @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
   @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
-  baseViewInjectors = new WeakMap();
-
-  content = new ReplaySubject(1);
-
-  searchTerms = [];
 
   paramsSubscription: Subscription;
   returnUrl: string;
@@ -257,53 +194,31 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   detailsPanel = false;
   searchPanel = false;
   advancedPanel = false;
-  selectedTraces;
   object: FilesystemObject;
   currentFileId;
 
-  selection = new BehaviorSubject<Array<SelectionSingleLaneEntity>>([]);
-  selectionWithTraces = this.selection.pipe(
-    map((currentSelection) => {
-      const nodes = compact(currentSelection.map(e => e[SelectionType.node]));
-      const links = compact(currentSelection.map(e => e[SelectionType.link]));
-      const traces = [
-        ...this.sankeyController.getRelatedTraces({nodes, links})
-      ].map(trace => ({[SelectionType.trace]: trace} as SelectionEntity));
-      return [...currentSelection].reverse().concat(traces);
-    })
-  );
-  selectedNodes = this.selection.pipe(map(currentSelection => {
-    return new Set(compact(currentSelection.map(e => e[SelectionType.node])));
-  }));
-  selectedLinks = this.selection.pipe(map(currentSelection => {
-    return new Set(compact(currentSelection.map(e => e[SelectionType.link])));
-  }));
   isArray = Array.isArray;
 
-  entitySearchTerm = '';
-  entitySearchList = new BehaviorSubject([]);
-  _entitySearchListIdx = -1;
+  entitySearchTerm$ = new ReplaySubject<string>(1);
+  entitySearchList$ = new BehaviorSubject([]);
+  _entitySearchListIdx$ = new ReplaySubject<number>(1);
 
-  searchFocus = undefined;
 
-  predefinedState: Observable<Partial<SankeyState>>;
-
-  networkTraces$ = this.sankeyController.options$.pipe(map(({networkTraces}) => networkTraces));
+  networkTraces$ = this.sankeyController.networkTraces$;
 
   dataToRender$ = this.layout$.pipe(
     switchMap(layout => layout.dataToRender$)
   );
 
-  allData$ = this.sankeyController.data$;
-
+  data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
 
-  ngAfterViewInit() {
-    /**
-     * Load different base view components upom base view change
-     */
-    this.sankeyController.baseView$.subscribe(({baseViewName, baseViewInitState = {}}) => {
+  /**
+   * Load different base view components upom base view change
+   */
+  updateEmbeddedBaseView$ = this.sankeyController.baseView$.pipe(
+    map(({baseViewName, baseViewInitState = {}}) => {
       const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
       const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
@@ -315,9 +230,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         return componentRef;
       };
 
-      this._dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
-      this._dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
-      this._dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
+      this.dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
+      this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
+      this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
       const baseViewController = moduleRef.injector.get(BaseControllerService);
       const layoutController = moduleRef.injector.get(LayoutService);
@@ -326,34 +241,32 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.viewController.baseView$.next(baseViewController);
       this.viewController.layout$.next(layoutController);
       baseViewController.delta$.next(baseViewInitState);
-    });
+    })
+  );
+  searchFocus$ = new ReplaySubject<any>(1);
+
+  ngAfterViewInit() {
+    this.updateEmbeddedBaseView$.subscribe();
   }
 
+  // todo
+  // sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
+  //   let pass = true;
+  //   if (!trace_networks.length) {
+  //     this.warningController.warn('File does not contain any network traces', false);
+  //     pass = false;
+  //   }
+  //   if (!nodes.length) {
+  //     this.warningController.warn('File does not contain any nodes', false);
+  //     pass = false;
+  //   }
+  //   if (!links.length) {
+  //     this.warningController.warn('File does not contain any links', false);
+  //     pass = false;
+  //   }
+  //   return pass;
+  // }
 
-  sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
-    let pass = true;
-    if (!trace_networks.length) {
-      this.warningController.warn('File does not contain any network traces', false);
-      pass = false;
-    }
-    if (!nodes.length) {
-      this.warningController.warn('File does not contain any nodes', false);
-      pass = false;
-    }
-    if (!links.length) {
-      this.warningController.warn('File does not contain any links', false);
-      pass = false;
-    }
-    return pass;
-  }
-
-  ngAfterContentInit() {
-  }
-
-
-  initSelection() {
-    this.selection.subscribe(selection => this.detailsPanel = !!selection.length);
-  }
 
   saveFile(data: GraphFile) {
     const contentValue = new Blob(
@@ -383,10 +296,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   async selectNetworkTrace(networkTraceIdx) {
     await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
 
-    this.resetSelection();
-    if (this.entitySearchTerm) {
-      this.search();
-    }
+    // this.resetSelection();
+    // if (this.entitySearchTerm) {
+    //   this.search();
+    // }
   }
 
   open(content) {
@@ -491,14 +404,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.loadTask.update(hashId);
   }
 
-  loadFromUrl({file_id}) {
-    if (file_id) {
-      this.object = null;
-      this.currentFileId = null;
-      this.openSankey(file_id);
-    }
-  }
-
   requestRefresh() {
     if (confirm('There have been some changes. Would you like to refresh this open document?')) {
       this.openSankey(this.currentFileId);
@@ -507,8 +412,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   ngOnDestroy() {
     this.paramsSubscription.unsubscribe();
-    // todo
-    // this.openSankeySub.unsubscribe();
   }
 
   emitModuleProperties() {
@@ -543,37 +446,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     }));
   }
 
-  // region Selection
-  toggleSelect(entity, type: SelectionType) {
-    const currentSelection = this.selection.value;
-    const idxOfSelectedLink = currentSelection.findIndex(
-      d => d[type] === entity
-    );
-
-    if (idxOfSelectedLink !== -1) {
-      currentSelection.splice(idxOfSelectedLink, 1);
-    } else {
-      currentSelection.push({
-        [type]: entity
-      } as SelectionEntity);
-    }
-
-    this.selection.next(currentSelection);
-  }
-
-  selectNode(node) {
-    this.toggleSelect(node, SelectionType.node);
-  }
-
-  selectLink(link) {
-    this.toggleSelect(link, SelectionType.link);
-  }
-
-  resetSelection() {
-    this.selection.next([]);
-  }
-
-  // endregion
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
     return this.baseView$.pipe(
@@ -585,112 +457,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   }
 
   // region Search
-  /**
-   * Get all nodes and edges that match some search terms.
-   * @param terms the terms
-   * @param options additional find options
-   */
-  findMatching(terms: string[], options: FindOptions = {}) {
-    this.sankeySearch.stopSearch();
-    this.sankeySearch.clear();
-    combineLatest([this.allData$, this.dataToRender$]).pipe(
-      first()
-    ).subscribe(([data, dataToRender]) => {
-      this.sankeySearch.update({
-        terms,
-        options,
-        data,
-        dataToSearch: dataToRender
-      });
-      this.sankeySearch.search();
-    });
-  }
 
-  search() {
-    this.searchTerms = tokenizeQuery(
-      this.entitySearchTerm,
-      {singleTerm: true}
-    );
-    this.entitySearchListIdx = -1;
-    if (this.entitySearchTerm.length) {
-      this.searchPanel = true;
-      this.findMatching(
-        this.searchTerms,
-        {wholeWord: false}
-      );
-    } else {
-      this.searchPanel = false;
-      this.entitySearchList.next([]);
-    }
-  }
-
-  clearSearchQuery() {
-    this.searchPanel = false;
-    this.entitySearchTerm = '';
-    this.search();
-  }
-
-  panToEntity(entity) {
-    entity.subscribe(e => {
-      if (e) {
-        this.sankey.sankeySelection.transition().call(
-          this.sankey.zoom.translateTo,
-          // x
-          (e._x0 !== undefined) ?
-            (e._x0 + e._x1) / 2 :
-            (e._source._x1 + e._target._x0) / 2,
-          // y
-          (e._y0 + e._y1) / 2
-        );
-      }
-    });
-  }
-
-
-  resolveMatchToEntity({nodeId, linkId}) {
-    return this.dataToRender$.pipe(
-      first(),
-      map(({nodes, links}) => {
-        if (!isNil(nodeId)) {
-          // allow string == number match interpolation ("58" == 58 -> true)
-          // tslint:disable-next-line:triple-equals
-          return nodes.find(({_id}) => _id == nodeId);
-        }
-        if (!isNil(linkId)) {
-          // allow string == number match interpolation ("58" == 58 -> true)
-          // tslint:disable-next-line:triple-equals
-          return links.find(({_id}) => _id == linkId);
-        }
-      })
-    );
-  }
-
-  setSearchFocus(idx) {
-    const searchEntity = this.entitySearchList.value[idx];
-    if (searchEntity) {
-      this.searchFocus = searchEntity;
-      this.panToEntity(this.resolveMatchToEntity(this.searchFocus));
-    } else {
-      this.searchFocus = undefined;
-    }
-  }
-
-  next() {
-    if (this.entitySearchListIdx >= this.entitySearchList.value.length - 1) {
-      this.entitySearchListIdx = 0;
-    } else {
-      this.entitySearchListIdx++;
-    }
-  }
-
-  previous() {
-    // we need rule ..
-    if (this.entitySearchListIdx <= 0) {
-      this.entitySearchListIdx = this.entitySearchList.value.length - 1;
-    } else {
-      this.entitySearchListIdx--;
-    }
-  }
 
   // endregion
 }

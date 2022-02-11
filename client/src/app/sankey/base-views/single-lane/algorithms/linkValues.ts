@@ -9,7 +9,7 @@ import {
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
 import { SankeyTrace } from 'app/sankey/interfaces';
 
-import { SankeySingleLaneLink, SankeySingleLaneData } from '../components/interfaces';
+import { SankeySingleLaneLink, SankeySingleLaneData } from '../interfaces';
 import { SingleLaneLayoutService } from '../services/single-lane-layout.service';
 
 export function inputCount(

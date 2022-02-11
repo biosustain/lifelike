@@ -8,3 +8,6 @@ export interface SankeyMultiLaneOptions extends SankeyBaseOptions {
 export interface SankeyMultiLaneState extends SankeyBaseState {
   linkPaletteId: string;
 }
+
+export type BaseOptions = SankeyMultiLaneOptions;
+export type BaseState = SankeyMultiLaneState;

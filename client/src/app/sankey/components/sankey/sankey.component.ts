@@ -8,8 +8,6 @@ import {
   EventEmitter,
   Output,
   ViewEncapsulation,
-  SimpleChanges,
-  OnChanges,
   NgZone
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,16 +15,20 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { compact } from 'lodash-es';
-import { ReplaySubject } from 'rxjs';
+import { compact, isNil } from 'lodash-es';
+import { ReplaySubject, combineLatest } from 'rxjs';
+import { startWith, pairwise, map, switchMap } from 'rxjs/operators';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyData, SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
-import { LayoutService } from 'app/sankey/services/layout.service';
+import { SankeyData, SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
+import { LayoutService, DefaultLayoutService } from 'app/sankey/services/layout.service';
 
 import { representativePositiveNumber } from '../../utils';
-import * as aligns from './aligin';
+import { SankeySelectionService } from '../../services/selection.service';
+import { SankeySearchService } from '../../services/search.service';
+import { SankeyBaseOptions, SankeyBaseState } from '../../base-views/interfaces';
+
 
 @Component({
   selector: 'app-sankey',
@@ -34,19 +36,16 @@ import * as aligns from './aligin';
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
+export class SankeyComponent implements AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
-    readonly sankey: LayoutService,
+    readonly sankey: LayoutService<SankeyBaseOptions, SankeyBaseState>,
     readonly wrapper: ElementRef,
-    private zone: NgZone
+    protected zone: NgZone,
+    protected selection: SankeySelectionService,
+    protected search: SankeySearchService
   ) {
-    Object.assign(sankey, {
-      py: 10, // nodePadding
-      dx: 10, // nodeWidth
-    });
-
     this.linkClick = this.linkClick.bind(this);
     this.nodeClick = this.nodeClick.bind(this);
     this.nodeMouseOver = this.nodeMouseOver.bind(this);
@@ -60,11 +59,55 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
 
-    this.sankey.dataToRender$.subscribe(data => {
+    sankey.dataToRender$.subscribe(data => {
       this.updateDOM(data);
     });
+
+    selection.selectedNodes$.subscribe(nodes => {
+      if (nodes.size) {
+        this.selectNodes(nodes);
+      } else {
+        this.deselectNodes();
+      }
+    });
+
+    selection.selectedLinks$.subscribe(links => {
+      if (links.size) {
+        this.selectLinks(links);
+      } else {
+        this.deselectLinks();
+      }
+    });
+
+    combineLatest([
+      selection.selectedNodes$,
+      selection.selectedLinks$
+    ]).subscribe(([nodes, links]) => {
+      if (nodes || links) {
+        this.calculateAndApplyTransitiveConnections(nodes, links);
+      }
+    });
+
+    search.preprocessedMatches$.subscribe(entities => {
+      if (entities.length) {
+        this.searchNodes(
+          new Set(
+            compact(entities.map(({nodeId}) => nodeId))
+          )
+        );
+        this.searchLinks(
+          new Set(
+            compact(entities.map(({linkId}) => linkId))
+          )
+        );
+      } else {
+        this.stopSearchNodes();
+        this.stopSearchLinks();
+      }
+    });
+
+    this.focusedEntity$.subscribe(entity => this.panToEntity(entity));
   }
-  // endregion
 
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
@@ -111,6 +154,25 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // region Properties (&Accessors)
   static MARGIN = 10;
 
+  // endregion
+
+  focusedEntity$ = this.sankey.dataToRender$.pipe(
+    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
+      map(({nodeId, linkId}) => {
+        if (!isNil(nodeId)) {
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          return nodes.find(({_id}) => _id == nodeId);
+        }
+        if (!isNil(linkId)) {
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          return links.find(({_id}) => _id == linkId);
+        }
+      })
+    ))
+  );
+
   // shallow copy of input data
   _data = new ReplaySubject<SankeyData>(1);
   margin = {
@@ -130,18 +192,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
 
-  @Output() nodeClicked = new EventEmitter();
-  @Output() linkClicked = new EventEmitter();
   @Output() backgroundClicked = new EventEmitter();
   @Output() enter = new EventEmitter();
-  @Output() adjustLayout = new EventEmitter();
 
   @Input() normalizeLinks = true;
   @Input() selectedNodes = new Set<object>();
   @Input() searchedEntities = [];
   @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
-  @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
 
   static updateTextShadow(_) {
     // this contains ref to textGroup
@@ -159,93 +217,22 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     return type;
   }
 
+  panToEntity(entity) {
+    entity.subscribe(e => {
+      if (e) {
+        this.sankeySelection.transition().call(
+          this.zoom.translateTo,
+          // x
+          (e._x0 !== undefined) ?
+            (e._x0 + e._x1) / 2 :
+            (e._source._x1 + e._target._x0) / 2,
+          // y
+          (e._y0 + e._y1) / 2
+        );
+      }
+    });
+  }
   // endregion
-
-  // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
-    // using on Changes in place of setters as order is important
-    if (nodeAlign) {
-      const align = nodeAlign.currentValue;
-      if (typeof align === 'function') {
-        this.sankey.align = align;
-      } else if (align) {
-        this.sankey.align = aligns[align];
-      }
-    }
-
-    if (data && this.svg) {
-      // using this.data instead of current value so we use copy made by setter
-      // this.updateLayout(this.data).then(d => this.updateDOM(d));
-    }
-
-    const nodes = this.selectedNodes;
-    const links = this.selectedLinks;
-
-    if (selectedNodes) {
-      if (nodes.size) {
-        this.selectNodes(nodes);
-      } else {
-        this.deselectNodes();
-      }
-    }
-
-    if (selectedLinks) {
-      if (links.size) {
-        this.selectLinks(links);
-      } else {
-        this.deselectLinks();
-      }
-    }
-
-    if (selectedLinks || selectedNodes) {
-      this.calculateAndApplyTransitiveConnections(nodes, links);
-    }
-
-    if (searchedEntities) {
-      const entities = searchedEntities.currentValue;
-      if (entities.length) {
-        this.searchNodes(
-          new Set(
-            compact(entities.map(({nodeId}) => nodeId))
-          )
-        );
-        this.searchLinks(
-          new Set(
-            compact(entities.map(({linkId}) => linkId))
-          )
-        );
-      } else {
-        this.stopSearchNodes();
-        this.stopSearchLinks();
-      }
-    }
-    if (focusedNode) {
-      const {currentValue, previousValue} = focusedNode;
-      if (previousValue) {
-        this.applyEntity(
-          previousValue,
-          this.unFocusNode,
-          this.unFocusLink
-        );
-      }
-      if (currentValue) {
-        this.applyEntity(
-          currentValue,
-          this.focusNode,
-          this.focusLink
-        );
-      }
-    }
-  }
-
-  applyEntity({nodeId, linkId}, nodeCallback, linkCallback) {
-    if (nodeId) {
-      nodeCallback.call(this, nodeId);
-    }
-    if (linkId) {
-      linkCallback.call(this, linkId);
-    }
-  }
 
   ngAfterViewInit() {
     // attach zoom behaviour
@@ -256,7 +243,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     this.sankeySelection.on('click', () => {
       const e = d3_event;
       if (!e.target.__data__) {
-        this.backgroundClicked.emit();
+        // todo
+        // this.backgroundClicked.emit();
+
         // events are consumed by d3_zoom recall mouse down/up on document to close possible popups
         document.dispatchEvent(new MouseEvent('mousedown'));
         document.dispatchEvent(new MouseEvent('mouseup'));
@@ -307,6 +296,17 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       y0: margin.top,
       y1: extentY
     });
+    // todo
+    // const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
+    // this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
+    // const [innerWidth, innerHeight] = this.sankey.size;
+    //
+    // this.resized.emit({width: innerWidth, height: innerHeight});
+    //
+    // const parsedData = innerHeight / prevInnerHeight === 1 ?
+    //   this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
+    //   this.updateLayout(this.data);
+    // return parsedData.then(data => this.updateDOM(data));
   }
 
   // endregion
@@ -358,22 +358,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
   }
 
-  async linkClick(element, data) {
-    this.linkClicked.emit(data);
-    this.clipboard.writeToClipboard(data.path).then(_ =>
-        this.snackBar.open(
-          `Path copied to clipboard`,
-          undefined,
-          {duration: 500},
-        ),
-      console.error
+  linkClick(element, data) {
+    return this.selection.toggleLink(data).toPromise().then(() =>
+      this.clipboard.writeToClipboard(data.path).then(() =>
+          this.snackBar.open(
+            `Path copied to clipboard`,
+            undefined,
+            {duration: 500},
+          ),
+        console.error
+      )
     );
-
-    // this.showPopOverForSVGElement(element, {link: data});
   }
 
-  async nodeClick(element, data) {
-    this.nodeClicked.emit(data);
+  nodeClick(element, data) {
+    return this.selection.toggleNode(data).toPromise();
   }
 
   /**
@@ -714,6 +713,21 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       );
     }
   }
+
+  // todo
+  //         if (isObject(data._precomputedLayout)) {
+  //         const [currentWidth, currentHeight] = this.sankey.size;
+  //         const {width = currentWidth, height = currentHeight} = data._precomputedLayout;
+  //         this.zoom.scaleTo(
+  //           this.sankeySelection,
+  //           Math.min(
+  //             currentWidth / width,
+  //             currentHeight / height
+  //           ),
+  //           [0, 0]
+  //         );
+  //       }
+
 
   // region Render
 
