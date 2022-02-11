@@ -21,3 +21,7 @@ dh_param_dir: /home/ansible/dh-param
 elastic_file_content_index_id: file_staging
 
 container_registry: "gcr.io/able-goods-221820"
+
+# Temporary overwrite so staging looks like production
+# https://github.com/SBRG/kg-prototypes/pull/1526#discussion_r800913721
+webserver_environment_config: production
