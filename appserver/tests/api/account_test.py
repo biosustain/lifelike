@@ -1,6 +1,6 @@
 import json
 import pytest
-from neo4japp.models import AppUser, AppRole
+from neo4japp.models import AppUser
 from tests.helpers.api import generate_jwt_headers
 
 
@@ -14,7 +14,8 @@ def mock_users(session, fix_user_role):
             username=u,
             first_name=u,
             last_name=u,
-            email=f'{u}.***ARANGO_DB_NAME***.bio'
+            email=f'{u}.***ARANGO_DB_NAME***.bio',
+            subject=f'{u}.***ARANGO_DB_NAME***.bio'
         ) for u in mock_users]
     for u in users:
         u.roles.append(fix_user_role)

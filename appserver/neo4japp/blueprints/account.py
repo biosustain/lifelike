@@ -140,6 +140,7 @@ class AccountView(MethodView):
             email=params['email'],
             first_name=params['first_name'],
             last_name=params['last_name'],
+            subject=params['email'],
             forced_password_reset=params['created_by_admin']
         )
         app_user.set_password(params['password'])

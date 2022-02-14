@@ -174,6 +174,7 @@ def create_user(name, email):
         first_name=name,
         last_name=name,
         email=email,
+        subject=email,
     )
     # set default role
     account_service = get_account_service()
