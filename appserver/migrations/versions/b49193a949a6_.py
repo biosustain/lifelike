@@ -1,7 +1,7 @@
 """Add copyright infringement request table
 
 Revision ID: b49193a949a6
-Revises: 06e737103f71
+Revises: 6b7a2da00472
 Create Date: 2022-02-01 00:41:36.600878
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'b49193a949a6'
-down_revision = '06e737103f71'
+down_revision = '6b7a2da00472'
 branch_labels = None
 depends_on = None
 
