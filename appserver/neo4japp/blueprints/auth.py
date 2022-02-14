@@ -25,7 +25,6 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 auth = HTTPTokenAuth('Bearer')
 
-
 JWTToken = TypedDict(
     'JWTToken', {'sub': str, 'iat': datetime, 'exp': datetime, 'token_type': str, 'token': str})
 
@@ -66,7 +65,7 @@ class TokenService:
             'sub': sub,
             'exp': expiration,
             'typ': token_type,
-        }, secret, algorithm=self.algorithm).decode('utf-8')
+        }, secret, algorithm=self.algorithm)
         return {
             'sub': sub,
             'iat': time_now,
@@ -74,6 +73,15 @@ class TokenService:
             'token_type': token_type,
             'token': token
         }
+
+    def _get_key(self, token: str):
+        if current_app.config['JWKS_URL'] is not None:
+            client = jwt.PyJWKClient(current_app.config['JWKS_URL'])
+            return client.get_signing_key_from_jwt(token).key
+        elif current_app.config['JWT_SECRET']:
+            return current_app.config['JWT_SECRET']
+        else:
+            raise ValueError("Either JWKS_URL or JWT_SECRET must be set")
 
     def get_access_token(
         self,
@@ -99,9 +107,14 @@ class TokenService:
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
-    def decode_token(self, token: str, **options) -> JWTResp:
+    def decode_token(self, token: str, **options):
         try:
-            return jwt.decode(token, self.app_secret, algorithms=[self.algorithm], **options)
+            return jwt.decode(
+                token,
+                key=self._get_key(token),
+                algorithms=[self.algorithm],
+                **options
+            )
         # default to generic error message
         # NOTE: is this better than avoiding to
         # display an error message about
@@ -121,7 +134,7 @@ def verify_token(token):
     """ Verify JTW """
     try:
         token_service = TokenService(
-            current_app.config['JWT_SECRET_KEY'],
+            current_app.config['JWT_SECRET'],
             current_app.config['JWT_ALGORITHM']
         )
         decoded = token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
@@ -173,7 +186,7 @@ def refresh():
     data = request.get_json()
     token = data.get('jwt')
     token_service = TokenService(
-        current_app.config['JWT_SECRET_KEY'],
+        current_app.config['JWT_SECRET'],
         current_app.config['JWT_ALGORITHM']
     )
 
@@ -239,7 +252,7 @@ def login():
                     username=user.username,
                     event_type=LogEventType.AUTHENTICATION.value).to_dict())
             token_service = TokenService(
-                current_app.config['JWT_SECRET_KEY'],
+                current_app.config['JWT_SECRET'],
                 current_app.config['JWT_ALGORITHM']
             )
             access_jwt = token_service.get_access_token(user.email)
