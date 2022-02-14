@@ -244,6 +244,7 @@ def fix_admin_user(session, fix_admin_role, fix_superuser_role) -> AppUser:
         email='admin@lifelike.bio',
         first_name='Jim',
         last_name='Melancholy',
+        subject='admin@lifelike.bio',
     )
     user.set_password('password')
     user.roles.extend([fix_admin_role, fix_superuser_role])
@@ -259,7 +260,8 @@ def test_user(session, fix_user_role) -> AppUser:
         username='test',
         email='test@lifelike.bio',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='test@lifelike.bio',
     )
     user.set_password('password')
     user.roles.append(fix_user_role)
@@ -276,6 +278,7 @@ def test_user_2(session) -> AppUser:
         email='pleblife@hut.org',
         first_name='pleb',
         last_name='life',
+        subject='pleblife@hut.org',
     )
     user.set_password('password')
     user.roles.append(fix_user_role)
