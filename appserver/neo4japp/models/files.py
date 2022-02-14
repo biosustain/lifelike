@@ -254,6 +254,14 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         self.calculated_privileges = {}
 
     @property
+    def fallback_organism(self):
+        return {
+            'organism_name': self.organism_name,
+            'synonym': self.organism_synonym,
+            'tax_id': self.organism_taxonomy_id,
+        }
+
+    @property
     def parent_deleted(self):
         value = self.calculated_parent_deleted
         assert value is not None
