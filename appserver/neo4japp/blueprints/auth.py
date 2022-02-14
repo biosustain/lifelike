@@ -242,8 +242,8 @@ def login():
                 current_app.config['JWT_SECRET_KEY'],
                 current_app.config['JWT_ALGORITHM']
             )
-            access_jwt = token_service.get_access_token(user.hash_id)
-            refresh_jwt = token_service.get_refresh_token(user.hash_id)
+            access_jwt = token_service.get_access_token(user.email)
+            refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
             return jsonify(LifelikeJWTTokenResponse().dump({
                 'access_token': access_jwt,

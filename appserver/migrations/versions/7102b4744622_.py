@@ -47,17 +47,17 @@ def data_upgrades():
     t_appuser = table(
         'appuser',
         column('id', sa.Integer),
-        column('hash_id', sa.String))
+        column('email', sa.String))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_appuser.c.id,
-        t_appuser.c.hash_id
+        t_appuser.c.email
     ]))
 
     for chunk in window_chunk(files, 20):
         files_to_update = []
-        for id, hash_id in chunk:
-            files_to_update.append({'id': id, 'subject': hash_id})
+        for id, email in chunk:
+            files_to_update.append({'id': id, 'subject': email})
         try:
             session.bulk_update_mappings(AppUser, files_to_update)
             session.commit()
