@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnChanges, Input, ElementRef, NgZone } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { compact, isNil } from 'lodash-es';
+import { isNil } from 'lodash-es';
 import { zoom as d3_zoom } from 'd3-zoom';
 import { filter, startWith, pairwise } from 'rxjs/operators';
 
@@ -10,12 +10,12 @@ import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { uuidv4 } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import { SankeySingleLaneLink, SankeySingleLaneNode } from '../../interfaces';
+import { SankeySingleLaneLink } from '../../interfaces';
 import { SankeyComponent } from '../../../../components/sankey/sankey.component';
-import { LayoutService } from '../../../../services/layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
+import { EntityType } from '../../../../services/search-match';
 
 
 @Component({
@@ -82,16 +82,8 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
 
     search.preprocessedMatches$.subscribe(entities => {
       if (entities.length) {
-        this.searchNodes(
-          new Set(
-            compact(entities.map(({nodeId}) => nodeId))
-          )
-        );
-        this.searchLinks(
-          new Set(
-            compact(entities.map(({linkId}) => linkId))
-          )
-        );
+        this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
+        this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
       } else {
         this.stopSearchNodes();
         this.stopSearchLinks();

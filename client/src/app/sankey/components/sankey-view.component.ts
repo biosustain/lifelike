@@ -3,7 +3,6 @@ import {
   EventEmitter,
   OnDestroy,
   ViewChild,
-  AfterContentInit,
   ComponentFactoryResolver,
   Injector,
   AfterViewInit,
@@ -17,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, pairwise, startWith } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, compact, assign, mapValues, get } from 'lodash-es';
+import { isNil, pick, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -26,7 +25,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam, ViewBase, SankeyData } from 'app/sankey/interfaces';
+import { SankeyState, SankeyURLLoadParam, ViewBase, SankeyData } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -74,7 +73,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     public sankeyController: ControllerService,
     private injector: Injector,
     private zone: NgZone,
-    private viewController: ViewControllerService
+    private viewController: ViewControllerService,
+    private search: SankeySearchService
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -139,6 +139,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         map(data => ({...data, _views}))
       ))
     ).subscribe(data => this.saveFile(data));
+
+    this.search.term$.subscribe(term => {
+      this.searchPanel = !!term;
+    });
   }
 
   get viewParams() {
@@ -213,6 +217,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
+  networkTrace$ = this.sankeyController.networkTrace$;
 
   /**
    * Load different base view components upom base view change

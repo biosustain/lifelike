@@ -1,8 +1,13 @@
-import { Component, ViewEncapsulation, ViewChildren, ElementRef } from '@angular/core';
+import { Component, ViewEncapsulation, ViewChildren, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 
-import { combineLatest } from 'rxjs';
+import { Observable } from 'rxjs';
+import { groupBy, defer } from 'lodash-es';
+import { map } from 'rxjs/operators';
+import { NgbAccordion } from '@ng-bootstrap/ng-bootstrap';
 
 import { SankeySearchService } from '../../services/search.service';
+import { ControllerService } from '../../services/controller.service';
+import { SearchResultComponent } from './search-result/search-result.component';
 
 @Component({
   selector: 'app-sankey-search-panel',
@@ -10,36 +15,49 @@ import { SankeySearchService } from '../../services/search.service';
   styleUrls: ['./search-panel.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class SankeySearchPanelComponent {
+export class SankeySearchPanelComponent implements AfterViewInit {
   constructor(
-    private search: SankeySearchService
+    private search: SankeySearchService,
+    private common: ControllerService
   ) {
-    combineLatest([
-      this.search.preprocessedMatches$,
-      this.search.focusIdx$
-    ]).subscribe(([
-                    entities,
-                    focusedIdx
-                  ]) => {
-        this.scrollIntoView(focusedIdx);
-      }
-    );
   }
 
   term$ = this.search.term$;
   searchTokens$ = this.search.searchTokens$;
-  focusIdx$ = this.search.focusIdx$;
-  preprocessedMatches$ = this.search.preprocessedMatches$;
+  searchFocus$ = this.search.searchFocus$;
   resultsCount$ = this.search.resultsCount$;
   done$ = this.search.done$;
+  networkTraceIdx$ = this.common.networkTraceIdx$;
 
-  @ViewChildren('item', {read: ElementRef}) listItems;
+  groupedMatches$ = this.search.preprocessedMatches$.pipe(
+    map(matches => groupBy(matches, 'networkTraceIdx'))
+  );
+
+  @ViewChild(NgbAccordion) accordion: NgbAccordion;
+  @ViewChildren(SearchResultComponent) listItems;
+
+  setFocusIdx(idx: number) {
+    return this.search.setFocusIdx(idx).toPromise();
+  }
+
+  ngAfterViewInit() {
+    this.search.searchFocus$.subscribe(({networkTraceIdx, idx}) => {
+      this.accordion.expand(String(networkTraceIdx));
+      defer(() => this.scrollIntoView(idx));
+    });
+  }
+
+  networkTraceIdxToName(networkTraceIdx: number): Observable<string> {
+    return this.common.networkTraces$.pipe(
+      map(networkTraces => networkTraces[networkTraceIdx].description)
+    );
+  }
 
   scrollIntoView(focusedIdx): void {
     if (focusedIdx >= 0 && this.listItems) {
-      const itemNode = this.listItems.toArray()[focusedIdx];
+      const itemNode = this.listItems.toArray().find(({result: {idx}}) => focusedIdx == idx);
       if (itemNode) {
-        const {nativeElement} = itemNode;
+        const {element: {nativeElement}} = itemNode;
         if (nativeElement.scrollIntoViewIfNeeded) {
           nativeElement.scrollIntoViewIfNeeded();
         } else {
