@@ -11,7 +11,7 @@ import { openModal } from '../utils/modals';
 
 export interface ProgressDialogArguments {
   title: string;
-  progressObservable: Observable<Progress> | Observable<Progress>[];
+  progressObservables: Observable<Progress>[];
   onCancel?: () => void;
 }
 
@@ -27,7 +27,7 @@ export class ProgressDialog {
   display(args: ProgressDialogArguments, options?: NgbModalOptions) {
     const modalRef = openModal(this.modalService, ProgressDialogComponent, options);
     modalRef.componentInstance.title = args.title;
-    modalRef.componentInstance.progressObservable = args.progressObservable;
+    modalRef.componentInstance.progressObservables = args.progressObservables;
     modalRef.componentInstance.cancellable = !!args.onCancel;
     if (args.onCancel) {
       modalRef.componentInstance.progressCancel.subscribe(() => {

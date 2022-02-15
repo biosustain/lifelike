@@ -4,7 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { asyncScheduler, Observable, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import {Progress, ProgressMode} from 'app/interfaces/common-dialog.interface';
 
 
 /**
@@ -17,23 +17,18 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 export class ProgressDialogComponent implements OnInit, OnDestroy {
   @Input() title: string;
   @Input()
-  set progressObservable(observables: Observable<Progress>[] | Observable<Progress>) {
-    if (observables != null) {
-      this.progressObservables = Array.isArray(observables) ? observables : [observables];
-    } else {
-      this.progressObservables = [];
-    }
-  }
+  progressObservables: Observable<Progress>[];
+
 
   @Input() cancellable = false;
   @Output() readonly progressCancel = new EventEmitter<any>();
-  progressSubscriptions: Subscription[] = [];
   /**
    * Periodically updated with the progress of the upload.
    */
   lastProgresses: Progress[] = [];
 
-  progressObservables: Observable<Progress>[];
+
+  private progressSubscription = new Subscription();
 
 
   constructor(public activeModal: NgbActiveModal) {
@@ -43,23 +38,38 @@ export class ProgressDialogComponent implements OnInit, OnDestroy {
     for (let i = 0; i < this.progressObservables.length; i++) {
       const progressObservable = this.progressObservables[i];
       this.lastProgresses.push(new Progress());
-      this.progressSubscriptions[i] = progressObservable
+      this.progressSubscription.add(progressObservable
         .pipe(throttleTime(250, asyncScheduler, {
           leading: true,
           trailing: true,
         })) // The progress bar cannot be updated more than once every 250ms due to its CSS animation
-        .subscribe(value => this.lastProgresses[i] = value);
+        .subscribe(value => this.lastProgresses[i] = value));
     }
   }
 
   ngOnDestroy() {
-    for (const progressSubscription of this.progressSubscriptions) {
-      progressSubscription.unsubscribe();
-    }
+    this.progressSubscription.unsubscribe();
   }
 
   cancel() {
     this.activeModal.dismiss();
     this.progressCancel.emit();
   }
+}
+
+export function getProgressStatus(event, loadingStatus: string, finishStatus: string): Progress {
+  if (event.loaded >= event.total) {
+    return new Progress({
+      mode: ProgressMode.Buffer,
+      // status: 'Processing file...',
+      status: loadingStatus,
+      value: event.loaded / event.total,
+    });
+  }
+  return new Progress({
+      mode: ProgressMode.Determinate,
+      // status: 'Uploading file...',
+      status: finishStatus,
+      value: event.loaded / event.total,
+    });
 }

@@ -108,9 +108,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     modalRef.result.then(newUser => {
       const progressDialogRef = this.progressDialog.display({
         title: `Creating User`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({
           status: 'Creating user...',
-        })),
+        }))],
       });
 
       this.accountService.createUser(newUser)
@@ -141,9 +141,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         modalRef.result.then(updatedUser => {
           const progressDialogRef = this.progressDialog.display({
             title: `Updating User`,
-            progressObservable: new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new BehaviorSubject<Progress>(new Progress({
               status: 'Updating user...',
-            })),
+            }))],
           });
           this.accountService.updateUser(updatedUser)
           .pipe(this.errorHandler.create({label: 'Update user'}))
@@ -176,9 +176,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     if (confirm('Unlock user ' + user.username + '?')) {
       const progressDialogRef = this.progressDialog.display({
         title: `Unlocking User`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({
           status: 'Unlocking user...',
-        })),
+        }))],
       });
       this.accountService.unlockUser(user.hashId)
         .pipe(this.errorHandler.create({label: 'Unlock user'}))
