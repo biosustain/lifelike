@@ -16,7 +16,6 @@ export class SankeySearchControlComponent {
 
   term$ = this.search.term$;
   focusIdx$ = this.search.focusIdx$;
-  preprocessedMatches$ = this.search.preprocessedMatches$
   resultsCount$ = this.search.resultsCount$;
   done$ = this.search.done$;
 

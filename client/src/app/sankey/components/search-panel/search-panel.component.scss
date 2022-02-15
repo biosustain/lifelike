@@ -1,56 +1,29 @@
 @import 'sankey';
 
 app-sankey-search-panel {
-  @mixin clamp($max-lines) {
-    // oddly those prefixes are supported among all modern browsers
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: $max-lines;
-    display: -webkit-box;
-    overflow: hidden;
-  }
 
-  dt::after {
-    content: ':';
-    margin-right: .5em;
-  }
+  .simplified-accordion {
+    border: none;
 
-  dl {
-    margin-bottom: 0;
-  }
+    [role='tab'] {
+      padding: 0;
+      background: none;
+      border: none;
 
-  .property {
-    display: flex;
-    flex-wrap: wrap;
+      button {
+        background: none;
+        border: none;
+        padding: 0.5em;
+        text-align: left;
+      }
+    }
 
-    dd {
-      flex-grow: 1;
-      margin-bottom: 0;
+    [role='tabpanel'] {
+      border: none;
 
-      app-highlight-text > span {
-        @include clamp(3);
+      .card-body {
+        padding: 0;
       }
     }
   }
-
-  .fieldset-properties {
-    $border-color: $gray-400;
-    border: 1px solid $border-color;
-    cursor: pointer;
-    padding: 0 .75rem .75rem;
-
-    &:hover {
-      border-color: darken($border-color, 20%);
-    }
-
-    &.focused {
-      border: 2px solid $search-accent-color;
-    }
-
-    legend {
-      margin-bottom: 0;
-      margin-left: -.5rem;
-      padding: 0 .5rem;
-    }
-  }
-
 }

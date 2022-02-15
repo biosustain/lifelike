@@ -16,10 +16,13 @@ import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SankeySearchPanelComponent } from './search-panel.component';
+import { SearchResultComponent } from './search-result/search-result.component';
 
 @NgModule({
   declarations: [
-    SankeySearchPanelComponent
+    SankeySearchPanelComponent,
+    SearchResultComponent,
+    SearchResultComponent
   ],
   imports: [
     CommonModule,
@@ -35,7 +38,7 @@ import { SankeySearchPanelComponent } from './search-panel.component';
     FlexLayoutModule,
     MatButtonModule,
     MatRadioModule,
-    SharedModule,
+    SharedModule
   ],
   exports: [
     SankeySearchPanelComponent

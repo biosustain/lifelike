@@ -9,28 +9,27 @@
      "alert is undefined"
 */
 import { WorkerOutputActions } from './search-worker-actions';
-import { SankeySearch, SearchEntity } from './search-match';
+import { SankeySearch } from './search-match';
 
 addEventListener('message', async ({data}) => {
   const search = new SankeySearch(data);
-  const generator = search.traverseAll();
+  const [generator, multiMatchesGenerator] = search.traverseAll();
 
-  function step() {
-    const match = generator.next();
-    if (!match.done) {
-      const {matchGenerator, ...rest} = match.value;
-      postMessage({
-        action: WorkerOutputActions.match,
-        actionLoad: rest as SearchEntity
-      });
-      step();
-    } else {
-      postMessage({
-        action: WorkerOutputActions.done
-      });
-    }
+  for (const match of generator) {
+    postMessage({
+      action: WorkerOutputActions.match,
+      actionLoad: match
+    });
   }
-
-  step();
+  // Potentially to be supported in future
+  // for (const match of multiMatchesGenerator) {
+  //   postMessage({
+  //     action: WorkerOutputActions.update,
+  //     actionLoad: match
+  //   });
+  // }
+  postMessage({
+    action: WorkerOutputActions.done
+  });
   close();
 });
