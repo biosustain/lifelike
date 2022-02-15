@@ -8,6 +8,7 @@
 */
 export enum WorkerOutputActions {
   match,
+  update,
   done
 }
 

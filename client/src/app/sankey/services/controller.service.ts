@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, throwError, ReplaySubject, combineLatest, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
+import { of, Subject, iif, throwError, ReplaySubject, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
@@ -77,22 +77,13 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     this.onInit();
     this.state$.subscribe(state => {
       // side effect to load default state values if needed
-      if (has(state, 'networkTraceIdx')) {
-        return combineLatest([
-          iif(
-            // if there is no preset base view set it based on data
-            () => !state.baseViewName,
-            this.partialNetworkTraceData$.pipe(
-              first(),
-              map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
-              switchMap(bvn => this.patchDefaultState({
-                baseViewName: (bvn as ViewBase)
-              }))
-            ),
-            of({})
-          )
-        ]).pipe(
-          map(defaultStatePatches => merge({}, ...defaultStatePatches)),
+      if (has(state, 'networkTraceIdx') && !has(state, 'baseViewName')) {
+        return this.partialNetworkTraceData$.pipe(
+          first(),
+          map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
+          switchMap(bvn => this.patchDefaultState({
+            baseViewName: (bvn as ViewBase)
+          })),
           tap(defaultStatePatch => this.patchDefaultState(defaultStatePatch)),
         ).toPromise();
       }
