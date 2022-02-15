@@ -164,6 +164,13 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   readonly MIN_NODE_DISTANCE = 6.0;
 
+  /**
+   * Stores hashes of the images that were present when a map was created/saved. Used to keep track of
+   * image status on the server
+   * @private
+   */
+  private registeredImageHashes: Set<string>;
+
 
   constructor() {
     this.cola = cola
@@ -252,14 +259,53 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Save current state of the images after load/save
+   */
+  // TODO: Change this name, I do not like it
+  registerImages() {
+    this.registeredImageHashes = this.getCurrentImageSet();
+  }
+
+  /**
+   * Inspect current graph status and extract hashes of the images
+   */
+  getCurrentImageSet(): Set<string> {
+    return new Set(
+      this.nodes.flatMap(node => node.image_id !== undefined ? [node.image_id] : [])
+    );
+  }
+
+  /**
+   * Return elements of the first set that are not present in the second
+   * @param first set to filter
+   * @param second set to check against
+   */
+  // TODO: This could be moved as well as return Set instead. Do we even want this as a function?
+  setOutersect(first: Set<any>, second: Set<any>): any[] {
+    return [...first].filter(i => !second.has(i));
+  }
+
+  /**
+   * Get blobs of new images and hashes of deleted images that will be sent to the server
+   */
+  getImageChanges() {
+    const current = this.getCurrentImageSet();
+    const deletedImages = this.setOutersect(this.registeredImageHashes, current);
+    const newImages = this.setOutersect(current, this.registeredImageHashes);
+    return {newImages, deletedImages};
+  }
+
+  /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
-  // NOTE: This is actually called twice when opening a map in read-only mode - is this anticipated?
+  // NOTE: This is actually called twice when opening a map in read-only mode - why?
   setGraph(graph: UniversalGraph): void {
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
+
+    this.registerImages();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
