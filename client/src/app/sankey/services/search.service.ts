@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { ReplaySubject, iif, of, Subject, Observable } from 'rxjs';
-import { auditTime, map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilChanged, throttleTime } from 'rxjs/operators';
+import { map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilChanged, throttleTime, filter } from 'rxjs/operators';
 import { size, isNil } from 'lodash-es';
 
 import { tokenizeQuery } from 'app/shared/utils/find';
@@ -56,7 +56,8 @@ export class SankeySearchService implements OnDestroy {
       switchMap(searchTokens => iif(
         // if term is empty, return empty array
         () => size(searchTokens) === 0,
-        of([]),
+        // returning completed search observable so empty value propagates
+        of(of([])),
         // as performance improvement start seaerch with visible network trace
         this.common.networkTraceIdx$.pipe(
           tap(() => this._done$.next(false)),
@@ -133,11 +134,13 @@ export class SankeySearchService implements OnDestroy {
       const {length} = preprocessedMatches;
       return this.focusIdx$.pipe(
         map(focusIdx => preprocessedMatches[focusIdx]),
-        switchMap(searchFocus => this.common.patchState({
-          networkTraceIdx: searchFocus.networkTraceIdx
-        }).pipe(
-          map(() => searchFocus)
-        ))
+        filter(searchFocus => !!searchFocus),
+        switchMap(searchFocus =>
+          this.common.patchState({
+            networkTraceIdx: searchFocus.networkTraceIdx
+          }).pipe(
+            map(() => searchFocus)
+          ))
       );
     })
   );
