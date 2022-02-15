@@ -94,7 +94,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
             }
           },
           filename,
-          hasValidFilename: true,
+          hasErrors: false,
           filePossiblyAnnotatable: targetFile.type === 'application/pdf',
         };
         this.fileList.push(fileEntry);
@@ -147,7 +147,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       this.fileList[this.selectedFileIndex] = {
         filename: this.form.get('filename').value,
         formState: this.form.value,
-        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
+        hasErrors: !this.form.valid,
         filePossiblyAnnotatable: this.filePossiblyAnnotatable,
       };
     }
@@ -157,8 +157,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.form.markAsDirty();
     this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
     // Remove the warnings - they will come back if switched again
-    this.selectedFile.hasValidFilename = true;
-    this.invalidInputs = this.fileList.some((file) => !file.hasValidFilename);
+    this.selectedFile.hasErrors = false;
+    this.invalidInputs = this.fileList.some((file) => file.hasErrors);
 
   }
 
@@ -195,6 +195,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 export interface FileInput {
   filename: string;
   formState: any;
-  hasValidFilename: boolean;
+  hasErrors: boolean;
   filePossiblyAnnotatable: boolean;
 }
