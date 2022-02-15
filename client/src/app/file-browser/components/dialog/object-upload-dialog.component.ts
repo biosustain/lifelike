@@ -77,39 +77,31 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
   fileChanged(event) {
 
-    const oldFilename = this.form.get('filename').value;
     const uploadLimit = this.maxFileCount - this.fileList.length;
     for (let i = 0; (i < event.target.files.length) && (i <= uploadLimit); i++) {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
       this.extractDescription(targetFile, filename.split('.').pop()).then(description => {
-        this.form.get('description').setValue(description);
-        this.form.get('description').markAsDirty();
-      });
-      this.form.get('filename').setValue(filename);
-      const fileEntry: FileInput = {
-        formState: {
-          contentValue: targetFile,
+        const fileEntry: FileInput = {
+          formState: {
+            contentValue: targetFile,
+            filename,
+            description,
+            public: false,
+            organism: null,
+            annotationsConfigs: {
+              annotationMethods: this.defaultAnnotationMethods,
+              excludeReferences: true
+            }
+          },
           filename,
-          description: '',
-          public: false,
-          organism: null,
-          annotationsConfigs: {
-            annotationMethods: this.defaultAnnotationMethods,
-            excludeReferences: true
-          }
-        },
-        filename,
-        hasValidFilename: !this.form.get('filename').hasError('filenameError'),
-        filePossiblyAnnotatable: targetFile.type === 'application/pdf',
-      };
-      if (this.fileList.push(fileEntry) >= this.maxFileCount) {
-        break;
-      }
-
+          hasValidFilename: true,
+          filePossiblyAnnotatable: targetFile.type === 'application/pdf',
+        };
+        this.fileList.push(fileEntry);
+        this.changeSelectedFile(this.fileList.length - 1);
+      });
     }
-    this.form.get('filename').setValue(oldFilename);
-    this.changeSelectedFile(this.fileList.length - 1);
   }
 
 
@@ -143,6 +135,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       this.selectedFileIndex = -1;
       this.form.get('contentValue').setValue(null);
       this.filePossiblyAnnotatable = false;
+      this.form.get('filename').setValue('');
+      this.form.get('description').setValue('');
       return;
     }
     if (newIndex >= fileCount ) {
