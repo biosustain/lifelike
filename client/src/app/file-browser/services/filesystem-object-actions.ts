@@ -130,7 +130,7 @@ export class FilesystemObjectActions {
       request: {
         contentHashId: target.hashId,
       },
-    });
+    }).then(result => result.pop());
   }
 
   /**
