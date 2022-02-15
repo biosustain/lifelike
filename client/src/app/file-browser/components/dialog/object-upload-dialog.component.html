@@ -46,7 +46,7 @@
                   </td>
                   <td>
                     <i class="fa fa-lg fa-exclamation-circle alert-danger"
-                    ngbTooltip="Invalid filename!" *ngIf="!file.hasValidFilename"></i>
+                    ngbTooltip="Invalid input(s)!" *ngIf="file.hasErrors"></i>
                   </td>
                   <td class="text-right">
                       <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
