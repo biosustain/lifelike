@@ -1,26 +1,22 @@
 from flask import Blueprint, request
 
-from neo4japp.blueprints.auth import auth
 from neo4japp.models import AnnotationStyle, DomainURLsMap
 
 bp = Blueprint('entity-resources', __name__, url_prefix='/entity-resources')
 
 
 @bp.route('/style/<string:annotation_label>', methods=['GET'])
-@auth.login_required
 def get_style(annotation_label):
     style = AnnotationStyle.query.filter_by(label=annotation_label)[0]
     return style.get_as_json()
 
 
 @bp.route('/style', methods=['GET'])
-@auth.login_required
 def get_all_styles():
     return {'styles': [x.get_as_json() for x in AnnotationStyle.query.all()]}
 
 
 @bp.route('/uri', methods=['POST'])
-@auth.login_required
 def get_uri():
     """
     POST body:
@@ -40,7 +36,6 @@ def get_uri():
 
 
 @bp.route('/uri/batch', methods=['POST'])
-@auth.login_required
 def get_uri_batch():
     """
         POST body:

@@ -1,11 +1,10 @@
 import jwt
 import sentry_sdk
 
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
@@ -30,6 +29,15 @@ JWTToken = TypedDict(
 
 JWTResp = TypedDict(
     'JWTResp', {'sub': str, 'iat': str, 'exp': int, 'typ': str})
+
+
+def login_exempt(f):
+    """
+    Decorator used to specify endpoints that do not require user authentication. For example,
+    the /login endpoint.
+    """
+    f.login_exempt = True
+    return f
 
 
 class TokenService:
@@ -181,6 +189,7 @@ def verify_token(token):
 
 
 @bp.route('/refresh', methods=['POST'])
+@login_exempt
 def refresh():
     """ Renew access token with refresh token """
     data = request.get_json()
@@ -224,6 +233,7 @@ def refresh():
 
 
 @bp.route('/login', methods=['POST'])
+@login_exempt
 def login():
     """
         Generate JWT to validate graph API calls

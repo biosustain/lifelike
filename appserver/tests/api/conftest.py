@@ -1,10 +1,11 @@
+import hashlib
 import json
-import hashlib
 import os
-import types
-import hashlib
 import pytest
+import types
+
 from datetime import datetime
+from flask.app import Flask
 
 from neo4japp.models import (
     AppRole,
@@ -388,7 +389,7 @@ def login_as_user(self, email, password) -> AppUser:
 
 
 @pytest.fixture(scope='function')
-def client(app):
+def client(app: Flask):
     """Creates a HTTP client for REST actions for a test."""
     client = app.test_client()
     client.login_as_user = types.MethodType(login_as_user, client)

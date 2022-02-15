@@ -12,7 +12,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.auth import login_exempt
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import RecordNotFound, ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
@@ -48,7 +48,6 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 
 class AccountView(MethodView):
-    decorators = [auth.login_required]
 
     def get_or_create_role(self, rolename: str) -> AppRole:
         retval = AppRole.query.filter_by(name=rolename).one_or_none()
@@ -207,7 +206,6 @@ class AccountView(MethodView):
 
 
 class AccountSubjectView(MethodView):
-    decorators = [auth.login_required]
 
     def get(self, subject: str):
         """Fetch a single user by their subject. Useful for retrieving users created via a
@@ -241,7 +239,6 @@ bp.add_url_rule('/subject/<string:subject>', view_func=account_subject_view, met
 
 
 @bp.route('/<string:hash_id>/change-password', methods=['POST', 'PUT'])
-@auth.login_required
 @use_args(UserChangePasswordSchema)
 def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
@@ -273,6 +270,7 @@ def update_password(params: dict, hash_id):
 
 
 @bp.route('/<string:email>/reset-password', methods=['GET'])
+@login_exempt
 def reset_password(email: str):
     try:
         target = AppUser.query.filter_by(email=email).one()
@@ -328,7 +326,6 @@ def reset_password(email: str):
 
 
 @bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
-@auth.login_required
 def unlock_user(hash_id):
     if g.current_user.has_role('admin') is False:
         raise NotAuthorized(
@@ -347,7 +344,6 @@ def unlock_user(hash_id):
 
 
 class AccountSearchView(MethodView):
-    decorators = [auth.login_required]
 
     @use_args(UserSearchSchema)
     @use_args(PaginatedRequestSchema)
