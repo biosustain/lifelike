@@ -35,6 +35,7 @@ export class ObjectCreationService {
               protected readonly filesystemService: FilesystemService) {
   }
 
+
   /**
    * Handles the filesystem PUT request(s) with a progress dialog.
    * @param requests the request(s) data
@@ -44,15 +45,15 @@ export class ObjectCreationService {
   executePutWithProgressDialog(requests: ObjectCreateRequest[],
                                annotationOptions: PDFAnnotationGenerationRequest[]):
     Promise<FilesystemObject[]> {
-    const progressObservable = [];
+    const progressObservables = [];
     for (const req of requests) {
-      progressObservable.push(new BehaviorSubject<Progress>(new Progress({
-    status: `Preparing ${req.filename || 'file'}`,
-  })));
+      progressObservables.push(new BehaviorSubject<Progress>(new Progress({
+        status: `Preparing ${req.filename || 'file'}`,
+      })));
     }
     const progressDialogRef = this.progressDialog.display({
       title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
-      progressObservable,
+      progressObservables,
     });
     let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
     const promiseList: Promise<FilesystemObject>[] = [];
@@ -65,12 +66,12 @@ export class ObjectCreationService {
           // First we show progress for the upload itself
           if (event.type === HttpEventType.UploadProgress) {
             if (event.loaded === event.total && event.total) {
-              progressObservable[i].next(new Progress({
+              progressObservables[i].next(new Progress({
                 mode: ProgressMode.Indeterminate,
                 status: `${request.filename || 'File'} transmitted; saving...`,
               }));
             } else {
-              progressObservable[i].next(new Progress({
+              progressObservables[i].next(new Progress({
                 mode: ProgressMode.Determinate,
                 status: `Transmitting ${request.filename || 'file' }...`,
                 value: event.loaded / event.total,
@@ -83,7 +84,7 @@ export class ObjectCreationService {
         mergeMap((object: FilesystemObject) => {
           // Then we show progress for the annotation generation (although
           // we can't actually show a progress percentage)
-          progressObservable[i].next(new Progress({
+          progressObservables[i].next(new Progress({
             mode: ProgressMode.Indeterminate,
             status: `${request.filename || 'file'} saved; Parsing and identifying annotations...`,
           }));
@@ -99,7 +100,7 @@ export class ObjectCreationService {
             }
             return object;
           }));
-          progressObservable[i].next(new Progress({
+          progressObservables[i].next(new Progress({
                 mode: ProgressMode.Determinate,
                 status: `Done with ${request.filename || 'file' }...`,
                 value: 1,
