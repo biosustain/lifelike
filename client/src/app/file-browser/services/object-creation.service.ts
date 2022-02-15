@@ -36,21 +36,6 @@ export class ObjectCreationService {
   }
 
   /**
-   * Wrapper around put - enrichment tables require the return to be a single file.
-   * Even though this would never return an array, we need this code to make TypeScript happy.
-   * @param request the request data
-   * @param annotationOptions options for the annotation process
-   * @return the created object
-   */
-  executeSinglePutWithProgressDialog(request: ObjectCreateRequest,
-                                     annotationOptions: PDFAnnotationGenerationRequest):
-  Promise<FilesystemObject> {
-    return this.executePutWithProgressDialog([request], [annotationOptions])
-      .then( value => {
-        return Array.isArray(value) ? value[0] : value;
-    });
-  }
-  /**
    * Handles the filesystem PUT request(s) with a progress dialog.
    * @param requests the request(s) data
    * @param annotationOptions options for the annotation process(es)
@@ -129,19 +114,17 @@ export class ObjectCreationService {
       ).toPromise());
     }
 
-    let finalPromise;
-    if (promiseList.length === 1) {
-      finalPromise = promiseList[0];
-    } else {
-      finalPromise = Promise.allSettled(promiseList);
-    }
+
+    const finalPromise = Promise.allSettled(promiseList);
+
     this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();
     }, ( error ) => {
       progressDialogRef.close();
       console.error(error);
     });
-    return finalPromise;
+    // Filter and return only successful uploads - we have already thrown errors
+    return finalPromise.then(result => result.flatMap(res => res.status === 'fulfilled' ? [res.value] : []));
   }
 
   /**
@@ -150,7 +133,7 @@ export class ObjectCreationService {
    * @param options options for the dialog
    */
   openCreateDialog(target: FilesystemObject,
-                   options: CreateDialogOptions = {}): Promise<FilesystemObject> {
+                   options: CreateDialogOptions = {}): Promise<FilesystemObject[]> {
     const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;

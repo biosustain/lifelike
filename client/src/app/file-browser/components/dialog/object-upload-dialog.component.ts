@@ -76,11 +76,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   }
 
   fileChanged(event) {
-    if (!event.target.files.length) {
-      return;
-    }
+
     const oldFilename = this.form.get('filename').value;
-    for (const targetFile of event.target.files) {
+    const uploadLimit = this.maxFileCount - this.fileList.length;
+    for (let i = 0; (i < event.target.files.length) && (i <= uploadLimit); i++) {
+      const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
       this.extractDescription(targetFile, filename.split('.').pop()).then(description => {
         this.form.get('description').setValue(description);
