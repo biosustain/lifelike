@@ -11,7 +11,6 @@ from neo4japp.schemas.reports import CopyrightInfringementRequestSchema
 bp = Blueprint('reports', __name__, url_prefix='/reports')
 
 class CopyrightInfringementReportView(MethodView):
-    decorators = [auth.login_required]
 
     @use_args(CopyrightInfringementRequestSchema)
     def post(self, params: dict):
