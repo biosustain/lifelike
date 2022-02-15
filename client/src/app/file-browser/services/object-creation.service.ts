@@ -114,9 +114,7 @@ export class ObjectCreationService {
       ).toPromise());
     }
 
-
     const finalPromise = Promise.allSettled(promiseList);
-
     this.subscription = finalPromise.then(_ => {
       progressDialogRef.close();
     }, ( error ) => {
