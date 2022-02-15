@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 from neo4japp.services.rcache import redis_server
 from neo4japp.exceptions import ServerException
 

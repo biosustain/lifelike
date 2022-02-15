@@ -1,7 +1,8 @@
 from flask import current_app, g, Blueprint, jsonify
 from webargs.flaskparser import use_args
-from neo4japp.utils.logger import ClientErrorLog
+
 from neo4japp.schemas.errors import ClientErrorSchema
+from neo4japp.utils.logger import ClientErrorLog
 
 
 bp = Blueprint('logging', __name__, url_prefix='/logging')
