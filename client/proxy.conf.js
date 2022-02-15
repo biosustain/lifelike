@@ -1,7 +1,9 @@
 const process = require("process");
 
 const ENVIRONMENT_CONFIG = process.env.ENVIRONMENT_CONFIG || "development";
+
 const APPSERVER_UPSTREAM = process.env.APPSERVER_UPSTREAM || "http://appserver:5000";
+
 
 const PROXY_CONFIG = [
     {
