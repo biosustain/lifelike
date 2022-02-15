@@ -103,17 +103,17 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               mergeMap(newDocument => newDocument.save()),
               tap(() => progressDialogRef.close()),
               mergeMap(blob =>
-                from(this.objectCreationService.executeSinglePutWithProgressDialog({
+                from(this.objectCreationService.executePutWithProgressDialog([{
                   ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
                   contentValue: blob,
-                }, {
+                }], [{
                   organism: {
                     organism_name: document.organism,
                     synonym: document.organism,
-                    tax_id: document.taxID}})
+                    tax_id: document.taxID}}])
                 )),
               finalize(() => progressDialogRef.close()),
-            ).toPromise();
+            ).toPromise().then(results => results.pop());
           });
         },
       },
