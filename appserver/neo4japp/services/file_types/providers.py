@@ -460,12 +460,13 @@ def create_default_node(node):
         'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
         'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
         'shape': 'box',
-        'style': 'rounded,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+        'style': 'rounded,filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
             node['label'], {'color': 'black'}).get('color'),
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
+        'fillcolor': 'white',
         'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
@@ -545,7 +546,6 @@ def create_detail_node(node, params):
     :returns: modified params dict
     TODO: Mimic the text metric and text breaking from the drawing-tool
     """
-    params['style'] += ',filled'
     detail_text = node['data'].get('detail', '')
     if detail_text:
         # Split lines to inspect their length and replace them with '\l' later
