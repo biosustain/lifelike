@@ -61,14 +61,12 @@ export function getProgressStatus(event, loadingStatus: string, finishStatus: st
   if (event.loaded >= event.total) {
     return new Progress({
       mode: ProgressMode.Buffer,
-      // status: 'Processing file...',
       status: loadingStatus,
       value: event.loaded / event.total,
     });
   }
   return new Progress({
       mode: ProgressMode.Determinate,
-      // status: 'Uploading file...',
       status: finishStatus,
       value: event.loaded / event.total,
     });
