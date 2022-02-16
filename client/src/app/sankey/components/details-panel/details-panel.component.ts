@@ -1,7 +1,5 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 
-import { SelectionEntity } from 'app/sankey/interfaces';
-
 import { SankeySelectionService } from '../../services/selection.service';
 
 @Component({

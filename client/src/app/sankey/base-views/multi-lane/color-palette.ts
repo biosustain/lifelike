@@ -4,6 +4,7 @@ import { isDevMode } from '@angular/core';
 import { cubehelix } from 'd3-color';
 
 import { Palette } from 'app/sankey/interfaces';
+import { mapIterable } from 'app/shared/utils';
 
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;
@@ -137,5 +138,5 @@ export const linkPalettes: LINK_PALETTES = {
 export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
   const uniq = arr instanceof Set ? arr : new Set(arr);
   const palette = generator(uniq.size, params);
-  return new Map([...uniq].map((v, i) => [v, palette(i)]));
+  return mapIterable(uniq, (v, i) => [v, palette(i)], Map);
 };

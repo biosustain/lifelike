@@ -30,6 +30,7 @@ import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -148,7 +149,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
     this.selection$.pipe(
       switchMap(selection => selection.selection$),
-      map(selection => size(selection) > 0)
+      map(isNotEmpty)
     ).subscribe(open => {
       this.detailsPanel$.next(open);
     });

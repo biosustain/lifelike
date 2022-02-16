@@ -1,5 +1,9 @@
 import { formatNumber } from '@angular/common';
 
+import { clone } from 'lodash-es';
+
+import { reduceIterable } from 'app/shared/utils';
+
 // region Collections
 export function isIterable(obj) {
   // checks for null and undefined
@@ -44,7 +48,7 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
       if (propertyName === true) {
         return v.map(n => parseForRendering(n)).join(', ');
       }
-      const vAsArray = [...v];
+      const vAsArray = clone(v);
       if (vAsArray.length > 3) {
         return vAsArray.slice(0, 3).concat(`...${vAsArray.length - 3} hidden elements`);
       } else {
@@ -71,12 +75,16 @@ export const normalizeGenerator = values => {
 export const RELAYOUT_DURATION = 250;
 
 export function symmetricDifference(setA, setB, accessor) {
-  return [...uniqueBy(setB, accessor).entries()].reduce((difference, [identifier, elem]) => {
-    if (difference.has(identifier)) {
-      difference.delete(identifier);
-    } else {
-      difference.set(identifier, elem);
-    }
-    return difference;
-  }, uniqueBy(setA, accessor));
+  return reduceIterable(
+    uniqueBy(setB, accessor),
+    (difference, [identifier, elem]) => {
+      if (difference.has(identifier)) {
+        difference.delete(identifier);
+      } else {
+        difference.set(identifier, elem);
+      }
+      return difference;
+    },
+    uniqueBy(setA, accessor)
+  );
 }
