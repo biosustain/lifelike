@@ -1,7 +1,7 @@
-import { Component, ViewEncapsulation, ViewChildren, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ViewEncapsulation, ViewChildren, AfterViewInit, ViewChild } from '@angular/core';
 
 import { Observable } from 'rxjs';
-import { groupBy, defer } from 'lodash-es';
+import { groupBy, defer, sortBy } from 'lodash-es';
 import { map } from 'rxjs/operators';
 import { NgbAccordion } from '@ng-bootstrap/ng-bootstrap';
 
@@ -30,7 +30,17 @@ export class SankeySearchPanelComponent implements AfterViewInit {
   networkTraceIdx$ = this.common.networkTraceIdx$;
 
   groupedMatches$ = this.search.preprocessedMatches$.pipe(
-    map(matches => groupBy(matches, 'networkTraceIdx'))
+    map(matches =>
+      // grouping by network trace idx preserves priority order
+      groupBy(
+        // matches are sorted by their priority
+        sortBy(
+          matches,
+          'priority'
+        ),
+        'networkTraceIdx'
+      )
+    )
   );
 
   @ViewChild(NgbAccordion) accordion: NgbAccordion;
