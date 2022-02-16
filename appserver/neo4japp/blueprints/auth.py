@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import db
+from neo4japp.database import db, jwt_client
 from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     JWTTokenException,
@@ -84,8 +84,7 @@ class TokenService:
 
     def _get_key(self, token: str):
         if current_app.config['JWKS_URL'] is not None:
-            client = jwt.PyJWKClient(current_app.config['JWKS_URL'])
-            return client.get_signing_key_from_jwt(token).key
+            return jwt_client.get_signing_key_from_jwt(token).key
         elif current_app.config['JWT_SECRET']:
             return current_app.config['JWT_SECRET']
         else:
