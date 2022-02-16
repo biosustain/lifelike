@@ -29,9 +29,7 @@
               "src/silent-refresh.html"
             ],
             "styles": [
-              "node_modules/tachyons/css/tachyons.css",
               "node_modules/qtip2/dist/jquery.qtip.min.css",
-              "node_modules/jquery-ui-dist/jquery-ui.css",
               "src/lifelike-theme.scss",
               "src/styles.scss",
               "src/scss/bootstrap.scss"
@@ -39,7 +37,6 @@
             "scripts": [
               "node_modules/vis-network/dist/vis-network.min.js",
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/jquery-ui-dist/jquery-ui.min.js",
               "node_modules/qtip2/dist/jquery.qtip.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js"
             ],
