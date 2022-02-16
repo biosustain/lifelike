@@ -54,15 +54,16 @@ export class LifelikeAuthModule {
   }
 
   static forRoot(): ModuleWithProviders<LifelikeAuthModule> {
-    const oauthProviders = [
-      { provide: APP_INITIALIZER, useFactory: authAppInitializerFactory, deps: [LifelikeOAuthService], multi: true },
-      { provide: AuthConfig, useValue: authConfig },
-      { provide: OAuthModuleConfig, useValue: authModuleConfig },
-      { provide: OAuthStorage, useFactory: storageFactory },
-    ];
+    // Note: module `forRoot` methods must consist of only a single return statement
     return {
       ngModule: LifelikeAuthModule,
-      providers: environment.oauthEnabled ? oauthProviders : []
+      providers: environment.oauthEnabled
+        ? [
+            { provide: APP_INITIALIZER, useFactory: authAppInitializerFactory, deps: [LifelikeOAuthService], multi: true },
+            { provide: AuthConfig, useValue: authConfig },
+            { provide: OAuthModuleConfig, useValue: authModuleConfig },
+            { provide: OAuthStorage, useFactory: storageFactory }]
+        : []
     };
   }
 }
