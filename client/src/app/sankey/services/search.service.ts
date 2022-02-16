@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 
 import { ReplaySubject, iif, of, Subject, Observable } from 'rxjs';
 import { map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilChanged, throttleTime, filter } from 'rxjs/operators';
-import { size, isNil } from 'lodash-es';
+import { size, isNil, isEmpty } from 'lodash-es';
 
 import { tokenizeQuery } from 'app/shared/utils/find';
 
@@ -55,7 +55,7 @@ export class SankeySearchService implements OnDestroy {
     switchMap(data => this.searchTokens$.pipe(
       switchMap(searchTokens => iif(
         // if term is empty, return empty array
-        () => size(searchTokens) === 0,
+        () => isEmpty(searchTokens),
         // returning completed search observable so empty value propagates
         of(of([])),
         // as performance improvement start seaerch with visible network trace
@@ -86,7 +86,7 @@ export class SankeySearchService implements OnDestroy {
                 scan((matches, newMatch) => {
                   matches.push({
                     // save idx so we can ref it later
-                    idx: matches.length,
+                    idx: size(matches),
                     ...newMatch
                   });
                   return matches;
@@ -130,9 +130,7 @@ export class SankeySearchService implements OnDestroy {
   );
 
   searchFocus$ = this.preprocessedMatches$.pipe(
-    switchMap(preprocessedMatches => {
-      const {length} = preprocessedMatches;
-      return this.focusIdx$.pipe(
+    switchMap(preprocessedMatches => this.focusIdx$.pipe(
         map(focusIdx => preprocessedMatches[focusIdx]),
         filter(searchFocus => !!searchFocus),
         switchMap(searchFocus =>
@@ -141,12 +139,12 @@ export class SankeySearchService implements OnDestroy {
           }).pipe(
             map(() => searchFocus)
           ))
-      );
-    })
+      )
+    )
   );
 
   resultsCount$ = this.preprocessedMatches$.pipe(
-    map(matches => matches.length),
+    map(size),
     distinctUntilChanged(),
     shareReplay(1)
   );

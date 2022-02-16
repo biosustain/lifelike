@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last, merge, omit, isNil } from 'lodash-es';
+import { first, last, merge, omit, isNil, clone } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
 import { combineLatest, Observable, iif, of } from 'rxjs';
 
@@ -559,7 +559,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     relayoutNodes(dt.startNodes);
 
     const traces = [...traceOrder];
-    const groups = [...traces.map(({group}) => group)];
+    const groups = traces.map(({group}) => group);
 
     const tracesLength = traces.length;
     graph.links.forEach(link => {
@@ -578,7 +578,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
    * Helper so we can create columns copy with minimum overhead
    */
   getColumnsCopy() {
-    return this.columns.map(c => [...c]);
+    return this.columns.map(clone);
   }
 
   /**
@@ -593,7 +593,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     // create graph backup
     graph._nodes = graph.nodes;
     // and start to operate on substitutes
-    graph.nodes = [...graph.nodes];
+    graph.nodes = clone(graph.nodes);
     const _virtualPaths = new Map();
 
     for (const link of graph.links) {

@@ -194,11 +194,14 @@ export enum SelectionType {
 }
 
 export type SelectionEntity = {
-  [SelectionType.link]: SankeyLink;
+  type: SelectionType.link,
+  entity: SankeyLink;
 } | {
-  [SelectionType.node]: SankeyNode;
+  type: SelectionType.node,
+  entity: SankeyNode;
 } | {
-  [SelectionType.trace]: SankeyTrace;
+  type: SelectionType.trace,
+  entity: SankeyTrace;
 };
 
 // endregion

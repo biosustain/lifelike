@@ -10,6 +10,7 @@ import { size } from 'lodash-es';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { representativePositiveNumber } from '../utils/utils';
 import { SankeySelectionService } from '../services/selection.service';
@@ -159,7 +160,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     this.initSelection();
 
     this.search.preprocessedMatches$.subscribe(entities => {
-      if (entities.length) {
+      if (isNotEmpty(entities)) {
         this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
         this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
       } else {
@@ -586,7 +587,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     return this.search.preprocessedMatches$.pipe(
       first(),
       // resize shadow back to shorter test when it is used as search result
-      filter(matches => size(matches) > 0),
+      filter(isNotEmpty),
       tap(matches =>
         // postpone so the size is known
         requestAnimationFrame(_ =>
@@ -617,7 +618,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0);
+    .attr('width', ({_x1, _x0}) => _x1 - _x0)
 
   /**
    * Run d3 lifecycle code to update DOM

@@ -2,11 +2,10 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZ
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { isNil } from 'lodash-es';
-import { filter, startWith, pairwise, map, tap, switchMap } from 'rxjs/operators';
+import { startWith, pairwise, map, tap } from 'rxjs/operators';
 
-import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
-import { uuidv4 } from 'app/shared/utils';
+import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
+import { uuidv4, mapIterable } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeySingleLaneLink } from '../../interfaces';
@@ -16,6 +15,7 @@ import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
 
+type SankeyEntity = SankeyNode | SankeyLink;
 
 @Component({
   selector: 'app-sankey-single-lane',
@@ -61,29 +61,27 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
   }
 
   initSelection() {
-    this.selection.selectedNodes$.subscribe(([node]) => {
-      this.deselectLinks();
-      this.selectNode(node);
-      this.calculateAndApplyTransitiveConnections(node);
-    });
-
-    this.selection.selectedLinks$.subscribe(([link]) => {
-      this.deselectNodes();
-      this.selectLink(link);
-      this.calculateAndApplyTransitiveConnections(link);
-    });
-
-    this.selection.selection$.pipe(
-      filter(isNil)
-    ).subscribe(() => {
-      this.deselectNodes();
-      this.deselectLinks();
-      this.calculateAndApplyTransitiveConnections(null);
+    this.selection.selection$.subscribe(([selectedEntity]) => {
+      const {type, entity} = selectedEntity ?? {};
+      switch (type) {
+        case SelectionType.node:
+          this.deselectLinks();
+          this.selectNode(entity);
+          break;
+        case SelectionType.link:
+          this.deselectNodes();
+          this.selectLink(entity);
+          break;
+        default:
+          this.deselectNodes();
+          this.deselectLinks();
+      }
+      this.calculateAndApplyTransitiveConnections(entity);
     });
   }
 
   applyEntity({type, id}, nodeCallback, linkCallback) {
-    switch(type) {
+    switch (type) {
       case EntityType.Node:
         return nodeCallback(id);
       case EntityType.Link:
@@ -128,10 +126,10 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     }
   }
 
-  getConnectedNodesAndLinks(data: SankeyNode | SankeyLink) {
-    const traversalId = (data as SankeyNode)._id ?? uuidv4();
-    const leftNode = (data as SankeyLink)._source ?? data;
-    const rightNode = (data as SankeyLink)._target ?? data;
+  getConnectedNodesAndLinks(data: SankeyEntity) {
+    const traversalId = data._id;
+    const leftNode = ((data as SankeyLink)._source ?? data) as SankeyNode;
+    const rightNode = ((data as SankeyLink)._target ?? data) as SankeyNode;
 
     const objects2traverse = new Set([
       {
@@ -182,25 +180,31 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
         }
 
 
-        const links = new Set([...helper.left.traversedLinks, ...helper.right.traversedLinks]);
+        const links = new Set([
+          ...helper.left.traversedLinks,
+          ...helper.right.traversedLinks
+        ]);
 
         links.forEach(l => delete l._visited);
         delete (data as SankeySingleLaneLink)._graphRelativePosition;
         links.add((data as SankeySingleLaneLink));
 
-        return {nodes, links};
+        return {
+          nodesIds: mapIterable(nodes, ({_id}) => _id),
+          linksIds: mapIterable(links, ({_id}) => _id)
+        };
       })
     );
   }
 
   assignAttrToRelativeLinksAndNodes(data, attr) {
     return this.getConnectedNodesAndLinks(data).pipe(
-      tap(({nodes, links}) => {
+      tap(({nodesIds, linksIds}) => {
         this.assignAttrAndRaise(
           this.linkSelection,
           attr,
           (l) => {
-            const has = links.has(l);
+            const has = linksIds.has(l._id);
             if (has && l._graphRelativePosition) {
               return l._graphRelativePosition;
             } else {
@@ -211,7 +215,7 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
         this.assignAttrAndRaise(
           this.nodeSelection,
           attr,
-          (n) => nodes.has(n)
+          ({_id}) => nodesIds.has(_id)
         );
       })
     ).toPromise();
@@ -226,11 +230,11 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
   // region Select
 
   selectNode(selectedNode) {
-    this.assignAttrAndRaise(this.nodeSelection, 'selected', n => n === selectedNode);
+    this.assignAttrAndRaise(this.nodeSelection, 'selected', ({_id}) => _id === selectedNode._id);
   }
 
   selectLink(selectedLink) {
-    this.assignAttrAndRaise(this.linkSelection, 'selected', n => n === selectedLink);
+    this.assignAttrAndRaise(this.linkSelection, 'selected', ({_id}) => _id === selectedLink._id);
   }
 
   // endregion

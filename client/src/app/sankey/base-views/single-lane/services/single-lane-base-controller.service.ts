@@ -12,6 +12,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneNode, BaseOptions, BaseState } from '../interfaces';
@@ -45,7 +46,10 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   default$ = this.common.options$.pipe(
     map(({predefinedValueAccessors}) => ({
       predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
-      ...pick(predefinedValueAccessors[PREDEFINED_VALUE.fixed_height], ['nodeValueAccessorId', 'linkValueAccessorId']),
+      ...pick(
+        predefinedValueAccessors[PREDEFINED_VALUE.fixed_height],
+        ['nodeValueAccessorId', 'linkValueAccessorId']
+      ),
       highlightCircular: true,
       colorLinkByType: false,
       nodeHeight: {
@@ -155,7 +159,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
     mapNodePositionToColor(sourcesIds, NodePosition.left);
     mapNodePositionToColor(targetsIds, NodePosition.right);
     const reusedIds = intersection(sourcesIds, targetsIds);
-    if (reusedIds.length) {
+    if (isNotEmpty(reusedIds)) {
       this.warningController.warn(`Nodes set to be both in and out ${reusedIds}`);
       mapNodePositionToColor(reusedIds, NodePosition.multi);
     }

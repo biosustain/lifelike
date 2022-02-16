@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
@@ -231,7 +231,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         trace_networks,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
-          const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(n => ({...n}));
+          const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(clone);
           // todo
           // const layout = new LayoutService();
           // layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
@@ -527,7 +527,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   /**
    * Given nodes and links find all traces which they are relating to.
    */
-  getRelatedTraces({nodes, links}) {
+  getRelatedTraces({nodes, links}): SankeyTrace[] {
     // check nodes links for traces which are coming in and out
     const nodesLinks = [...nodes].reduce(
       (linksAccumulator, {_sourceLinks, _targetLinks}) =>
@@ -535,7 +535,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       , []
     );
     // add links traces and reduce to unique values
-    return new Set(flatMap(nodesLinks.concat([...links]), '_traces')) as Set<SankeyTrace>;
+    return uniq(flatMap(nodesLinks.concat([...links]), '_traces'));
   }
 
   // endregion
