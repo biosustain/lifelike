@@ -1,3 +1,5 @@
+import { clone } from 'lodash-es';
+
 import { ExtendedMap } from 'app/shared/utils/types';
 import { SankeyLink, SankeyNode, SankeyData } from 'app/sankey/interfaces';
 
@@ -55,7 +57,7 @@ export function initInputCountCalculation(
     // for checks
     maxExpectedValue: dt.startNodes.length,
     // iterate nodes leaves first
-    sortedNodes: [...data.nodes].sort(dt.depthSorter())
+    sortedNodes: clone(data.nodes).sort(dt.depthSorter())
   };
 }
 

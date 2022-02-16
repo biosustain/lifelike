@@ -28,6 +28,8 @@
 
 import { min } from 'd3-array';
 
+import { isNotEmpty } from 'app/shared/utils';
+
 function targetDepth(d) {
   return d._target._depth;
 }
@@ -41,11 +43,11 @@ export function right(node, n) {
 }
 
 export function justify(node, n) {
-  return node._sourceLinks.length ? node._depth : n - 1;
+  return isNotEmpty(node._sourceLinks) ? node._depth : n - 1;
 }
 
 export function center(node) {
-  return node._targetLinks.length ? node._depth
-      : node._sourceLinks.length ? (min(node._sourceLinks, targetDepth) as any) - 1
+  return isNotEmpty(node._targetLinks) ? node._depth
+      : isNotEmpty(node._sourceLinks) ? (min(node._sourceLinks, targetDepth) as any) - 1
       : 0;
 }

@@ -1,7 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last } from 'lodash-es';
+import { first, last, clone } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
@@ -207,7 +207,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
     relayoutNodes(dt.startNodes);
 
     const traces = [...traceOrder];
-    const groups = [...traces.map(({group}) => group)];
+    const groups = clone(traces.map(({group}) => group));
 
     const tracesLength = traces.length;
     graph.links.forEach(link => {
@@ -226,7 +226,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
    * Helper so we can create columns copy with minimum overhead
    */
   getColumnsCopy() {
-    return this.columns.map(c => [...c]);
+    return this.columns.map(clone);
   }
 
   /**
@@ -241,7 +241,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
     // create graph backup
     graph._nodes = graph.nodes;
     // and start to operate on substitutes
-    graph.nodes = [...graph.nodes];
+    graph.nodes = clone(graph.nodes);
     const _virtualPaths = new Map();
 
     for (const link of graph.links) {

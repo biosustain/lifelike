@@ -1,6 +1,7 @@
 import * as d3Sankey from 'd3-sankey-circular';
 
 import { ValueProcessingStep } from 'app/sankey/interfaces';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { representativePositiveNumber } from '../utils/utils';
 import { DefaultLayoutService } from '../services/layout.service';
@@ -45,7 +46,7 @@ export function fractionOfFixedNodeValue(this: DefaultLayoutService, {links, nod
   });
   return {
     nodes: nodes
-      .filter(n => n.sourceLinks.length + n.targetLinks.length > 0)
+      .filter(n => isNotEmpty(n.sourceLinks) || isNotEmpty(n.targetLinks))
       .map(({
               value,
               depth,
@@ -58,9 +59,9 @@ export function fractionOfFixedNodeValue(this: DefaultLayoutService, {links, nod
               x0, x1,
               y0, y1,
               ...node
-            }) => ({
-        ...node
-      })),
+            }) =>
+        node
+      ),
     links: links.map(({
                         value = 0.001,
                         y0, y1,

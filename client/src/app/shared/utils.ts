@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { from, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
-import { transform, isEqual, isObject } from 'lodash-es';
+import { transform, isEqual, isObject, isEmpty } from 'lodash-es';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
@@ -274,3 +274,70 @@ export const deepDiff = ([a, b]) =>
       }
     }
   );
+
+export const isNotEmpty = obj => !isEmpty(obj);
+
+/**
+ * Helper mapper function, that works not only with arrays, but also with objects, sets, maps etc.
+ * It is creating a new object of same type (as of default 'mappedObjectConstructor'), with mapped values.
+ * When 'mappedObjectConstructor' is set it is used to create new object.
+ *
+ * Mapping reflects Array.map() behaviour.
+ *
+ * Example:
+ *   mapIterable(new Map(['a', '2']), ([key, value], index) => [value, key])
+ *   // returns Map(['2', 'a'])
+ *
+ * @param itrable - the iterable object
+ * @param mapping - the mapping function
+ * @param mappedObjectConstructor - contructor
+ */
+export const mapIterable = <O, R>(itrable, mapping, mappedObjectConstructor?) =>
+  new (mappedObjectConstructor ?? itrable.constructor)(Array.from(itrable, mapping));
+
+/** Unique Symbol to be used as defualt value of parameter.
+ * We want to use it so we are not running into issue of differentiate between
+ * passed undefined and not provided parameter.
+ */
+const notDefined = Symbol('notDefined');
+
+/**
+ * Helper reducer function, that works not only with arrays, but also with objects, sets, maps etc.
+ * This method does not create intermidiate array in memory.
+ *
+ * Reduce behaves like Array.reduce()
+ *
+ * Example:
+ *   reduce(new Set([1, 2, 3]), (acc, val) => acc + val, 0)
+ *   // returns 6
+ *
+ * @param itrable - the iterable object
+ * @param callbackfn - A “reducer” function that takes four arguments:
+ *  + previousValue: the value resulting from the previous call to callbackFn.
+ *    On first call, initialValue if specified, otherwise the first value of iterable.
+ *  + currentValue: the value of the current element.
+ *    On first call, the first value of iterable if an initialValue was specified,
+ *    otherwise the second value of iterable.
+ *  + currentIndex: the index position of currentValue in the iterable.
+ *    On first call, 0 if initialValue was specified, otherwise 1.
+ *  + iterable: the itrable beeing traversed.
+ * @param initialValue - A value to which previousValue is initialized the first time the callback is called. If initialValue is specified,
+ *   that also causes currentValue to be initialized to the first value in the array. If initialValue is not specified, previousValue is
+ *   initialized to the first value in the array, and currentValue is initialized to the second value in the array.
+ */
+export const reduceIterable = (itrable, callbackfn, initialValue: any = notDefined) => {
+  const interator = itrable[Symbol.iterator]();
+  let currentIndex = 0;
+  if (initialValue === notDefined) {
+    const {done, value} = interator.next();
+    if (done) {
+      return undefined;
+    }
+    initialValue = value;
+    currentIndex++;
+  }
+  for (const value of interator) {
+    initialValue = callbackfn(initialValue, value, currentIndex++, itrable);
+  }
+  return initialValue;
+};
