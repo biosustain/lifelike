@@ -1,6 +1,6 @@
 import { ValueProcessingStep } from 'app/sankey/interfaces';
 
-import { representativePositiveNumber } from '../utils';
+import { representativePositiveNumber } from '../utils/utils';
 import { DefaultLayoutService } from '../services/layout.service';
 
 export const fixedValue: (value: number) => ValueProcessingStep =

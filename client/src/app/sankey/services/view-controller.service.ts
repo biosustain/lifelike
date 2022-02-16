@@ -10,7 +10,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { LayoutService, DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { BaseControllerService, DefaultBaseControllerService } from './base-controller.service';
-import { getCommonState, getBaseState } from '../stateLevels';
+import { getCommonState, getBaseState } from '../utils/stateLevels';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -37,7 +37,9 @@ export class ViewControllerService {
   );
 
   layout$ = new ReplaySubject<DefaultLayoutService>(1);
-  baseView$ = new ReplaySubject<DefaultBaseControllerService>(1);
+  baseView$ = this.layout$.pipe(
+    map(({baseView}) => baseView)
+  );
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',

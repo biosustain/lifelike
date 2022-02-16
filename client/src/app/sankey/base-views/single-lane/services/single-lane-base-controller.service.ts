@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 
 import { flatMap, groupBy, intersection, pick } from 'lodash-es';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, shareReplay } from 'rxjs/operators';
 // @ts-ignore
 import { tag } from 'rxjs-spy/operators/tag';
 import { of, Observable } from 'rxjs';
@@ -11,11 +11,11 @@ import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
+import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneLink, SankeySingleLaneNode, BaseOptions, BaseState } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
-import { unifiedSingularAccessor } from '../../../services/state-controlling-abstract.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -76,8 +76,8 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   // delta$ = new BehaviorSubject({});
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
-    switchMap(({links, nodes, sources, targets, traces}) => this.state$.pipe(
-      map(({colorLinkByType}) => {
+    switchMap(({links, nodes, sources, targets, traces}) => this.stateAccessor('colorLinkByType').pipe(
+      map(colorLinkByType => {
         const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
         const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodes);
         if (colorLinkByType) {
@@ -91,7 +91,8 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
           targets
         };
       })
-    ))
+    )),
+    shareReplay(1)
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');

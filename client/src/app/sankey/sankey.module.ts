@@ -29,7 +29,6 @@ import { SankeyViewDropdownComponent } from './components/view/dropdown/view-dro
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
 import { BaseViewsModule } from './base-views/base-views.module';
-import { SankeyComponent } from './components/sankey/sankey.component';
 import { SankeyDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
 
@@ -69,10 +68,7 @@ import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
     SankeyViewComponent
   ],
   providers: [
-    ClipboardService,
-    {provide: SANKEY_GRAPH, useValue: SankeyComponent},
-    {provide: SANKEY_DETAILS, useValue: SankeyDetailsPanelComponent},
-    {provide: SANKEY_ADVANCED, useValue: SankeyAdvancedPanelComponent}
+    ClipboardService
   ]
 })
 export class SankeyViewerLibModule {

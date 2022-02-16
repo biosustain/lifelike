@@ -7,7 +7,8 @@ import { Subscription, ConnectableObservable } from 'rxjs';
 
 import { uuidv4, deepDiff } from 'app/shared/utils';
 
-import { StateControlAbstractService } from '../services/state-controlling-abstract.service';
+import { StateControlAbstractService } from './state-control.service';
+
 
 export type DefaultAbstractAdvancedPanelComponent = SankeyAbstractAdvancedPanelComponent<object, object>;
 

@@ -16,11 +16,11 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
-import { SANKEY_ADVANCED, SANKEY_DETAILS } from 'app/sankey/DI';
+import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from 'app/sankey/DI';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { MultiLaneBaseAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { MultiLaneBaseControllerService } from './services/multi-lane-base-controller.service';
-import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
 import { MultiLaneLayoutService } from './services/multi-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
@@ -28,6 +28,8 @@ import { SankeyMultiLaneLinkDetailsComponent } from './components/details-panel/
 import { LayoutService } from '../../services/layout.service';
 import { SankeyMultiLaneDetailsPanelModule } from './components/details-panel/sankey-multi-lane-details-panel.module';
 import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
+import { SankeyMultiLaneComponent } from './components/sankey/sankey.component';
+import { SankeySelectionService } from '../../services/selection.service';
 
 @NgModule({
   id: ViewBase.sankeyMultiLane,
@@ -39,15 +41,14 @@ import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/
     },
     MultiLaneLayoutService,
     {
-      provide: SankeyLayoutService,
-      useExisting: MultiLaneLayoutService
-    },
-    {
       provide: LayoutService,
       useExisting: MultiLaneLayoutService
     },
+    SankeySelectionService,
+    ClipboardService,
     // Core components substitution
     {provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent},
+    {provide: SANKEY_GRAPH, useValue: SankeyMultiLaneComponent},
     {provide: SANKEY_DETAILS, useValue: SankeyMutiLaneDetailsPanelComponent}
   ],
   imports: [
@@ -69,7 +70,8 @@ import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/
     SankeyMultiLaneDetailsPanelModule
   ],
   declarations: [
-    MultiLaneBaseAdvancedPanelComponent
+    MultiLaneBaseAdvancedPanelComponent,
+    SankeyMultiLaneComponent
   ]
 })
 export class MultiLaneBaseModule {

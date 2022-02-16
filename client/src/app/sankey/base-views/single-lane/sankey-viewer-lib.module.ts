@@ -16,7 +16,8 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
-import { SANKEY_ADVANCED, SANKEY_GRAPH } from 'app/sankey/DI';
+import { SANKEY_ADVANCED, SANKEY_GRAPH, SANKEY_DETAILS } from 'app/sankey/DI';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyLayoutService } from '../../components/sankey/sankey-layout.service';
@@ -24,10 +25,13 @@ import { SingleLaneLayoutService } from './services/single-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SingleLaneBaseControllerService } from './services/single-lane-base-controller.service';
 import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
-import { SingleLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
+import { SankeySingleLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
 import { LayoutService } from '../../services/layout.service';
 import { SankeyComponent } from '../../components/sankey/sankey.component';
 import { SankeySingleLaneComponent } from './components/sankey/sankey.component';
+import { SankeySingleLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
+import { SankeySingleLaneDetailsPanelModule } from './components/details-panel/sankey-single-lane-details-panel.module';
+import { SankeySelectionService } from '../../services/selection.service';
 
 @NgModule({
   id: ViewBase.sankeySingleLane,
@@ -42,13 +46,12 @@ import { SankeySingleLaneComponent } from './components/sankey/sankey.component'
       provide: LayoutService,
       useExisting: SingleLaneLayoutService
     },
-    {
-      provide: SankeyLinkDetailsComponent,
-      useExisting: SingleLaneLinkDetailsComponent
-    },
+    SankeySelectionService,
+    ClipboardService,
     // Core components substitution
     {provide: SANKEY_ADVANCED, useValue: SankeySingleLaneAdvancedPanelComponent},
     {provide: SANKEY_GRAPH, useValue: SankeySingleLaneComponent},
+    {provide: SANKEY_DETAILS, useValue: SankeySingleLaneDetailsPanelComponent}
   ],
   imports: [
     CommonModule,
@@ -65,13 +68,13 @@ import { SankeySingleLaneComponent } from './components/sankey/sankey.component'
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
-    RouterModule.forChild([])
+    RouterModule.forChild([]),
+    SankeySingleLaneDetailsPanelModule
   ],
   declarations: [
-    SingleLaneLinkDetailsComponent,
     SankeySingleLaneAdvancedPanelComponent,
     SankeySingleLaneComponent
   ]
 })
-export class SankeySingleLaneOverwriteModule {
+export class SingleLaneBaseModule {
 }

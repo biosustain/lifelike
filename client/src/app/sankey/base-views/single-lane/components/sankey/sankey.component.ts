@@ -3,28 +3,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
 import { isNil } from 'lodash-es';
-import { zoom as d3_zoom } from 'd3-zoom';
-import { filter, startWith, pairwise } from 'rxjs/operators';
+import { filter, startWith, pairwise, map, tap } from 'rxjs/operators';
 
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { uuidv4 } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeySingleLaneLink } from '../../interfaces';
-import { SankeyComponent } from '../../../../components/sankey/sankey.component';
+import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
+import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
-import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
-import { EntityType } from '../../../../services/search-match';
 
 
 @Component({
   selector: 'app-sankey-single-lane',
-  templateUrl: './sankey.component.svg',
+  templateUrl: '../../../../abstract/sankey.component.svg',
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeySingleLaneComponent extends SankeyComponent implements AfterViewInit, OnDestroy {
+export class SankeySingleLaneComponent extends SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -34,62 +32,11 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
     protected selection: SankeySelectionService,
     protected search: SankeySearchService
   ) {
-    super(
-      clipboard,
-      snackBar,
-      sankey,
-      wrapper,
-      zone,
-      selection,
-      search
-    );
-    this.linkClick = this.linkClick.bind(this);
-    this.nodeClick = this.nodeClick.bind(this);
-    this.nodeMouseOver = this.nodeMouseOver.bind(this);
-    this.pathMouseOver = this.pathMouseOver.bind(this);
-    this.nodeMouseOut = this.nodeMouseOut.bind(this);
-    this.pathMouseOut = this.pathMouseOut.bind(this);
-    this.dragmove = this.dragmove.bind(this);
-    this.attachLinkEvents = this.attachLinkEvents.bind(this);
-    this.attachNodeEvents = this.attachNodeEvents.bind(this);
+    super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
+    this.initComopnent();
+  }
 
-    this.zoom = d3_zoom()
-      .scaleExtent([0.1, 8]);
-
-    sankey.dataToRender$.subscribe(data => {
-      this.updateDOM(data);
-    });
-
-    selection.selectedNodes$.subscribe(([node]) => {
-      this.deselectLinks();
-      this.selectNode(node);
-      this.calculateAndApplyTransitiveConnections(node);
-    });
-
-    selection.selectedLinks$.subscribe(([link]) => {
-      this.deselectNodes();
-      this.selectLink(link);
-      this.calculateAndApplyTransitiveConnections(link);
-    });
-
-    selection.selection$.pipe(
-      filter(isNil)
-    ).subscribe(() => {
-      this.deselectNodes();
-      this.deselectLinks();
-      this.calculateAndApplyTransitiveConnections(null);
-    });
-
-    search.preprocessedMatches$.subscribe(entities => {
-      if (entities.length) {
-        this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
-        this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
-      } else {
-        this.stopSearchNodes();
-        this.stopSearchLinks();
-      }
-    });
-
+  initFocus() {
     this.focusedEntity$.pipe(
       startWith(null),
       pairwise()
@@ -116,12 +63,29 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
         this.panToEntity(currentValue);
       }
     });
-
-
   }
 
-  highlightCircular$ = this.sankey.baseView.highlightCircular$;
-  highlightCircular;
+  initSelection() {
+    this.selection.selectedNodes$.subscribe(([node]) => {
+      this.deselectLinks();
+      this.selectNode(node);
+      this.calculateAndApplyTransitiveConnections(node);
+    });
+
+    this.selection.selectedLinks$.subscribe(([link]) => {
+      this.deselectNodes();
+      this.selectLink(link);
+      this.calculateAndApplyTransitiveConnections(link);
+    });
+
+    this.selection.selection$.pipe(
+      filter(isNil)
+    ).subscribe(() => {
+      this.deselectNodes();
+      this.deselectLinks();
+      this.calculateAndApplyTransitiveConnections(null);
+    });
+  }
 
   applyEntity({nodeId, linkId}, nodeCallback, linkCallback) {
     if (nodeId) {
@@ -133,6 +97,25 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
   }
 
   // endregion
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+  }
+
+
+  async pathMouseOver(element, data) {
+    this.highlightLink(element);
+  }
+
+  async pathMouseOut(_element, _data) {
+    this.unhighlightNodes();
+    this.unhighlightLinks();
+  }
+
 
   /**
    * Given the set of selected nodes and links, calculates the connected nodes/links and applies the `transitively-selected` attribute to
@@ -150,30 +133,11 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
     }
   }
 
-  deselectNodes() {
-    this.nodeSelection
-      .attr('selected', undefined);
-  }
-
-  deselectLinks() {
-    this.linkSelection
-      .attr('selected', undefined);
-  }
-
-  async pathMouseOver(element, data) {
-    this.highlightLink(element);
-  }
-
-  async pathMouseOut(_element, _data) {
-    this.unhighlightNodes();
-    this.unhighlightLinks();
-  }
-
   getConnectedNodesAndLinks(data: SankeyNode | SankeyLink) {
     const traversalId = (data as SankeyNode)._id ?? uuidv4();
     const leftNode = (data as SankeyLink)._source ?? data;
     const rightNode = (data as SankeyLink)._target ?? data;
-    const {highlightCircular} = this;
+
     const objects2traverse = new Set([
       {
         direction: 'left',
@@ -200,57 +164,62 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
     };
     const nodes = new Set([leftNode, rightNode]);
 
-    for (const {direction, node} of objects2traverse) {
-      const {
-        graphRelativePosition, nextNode, nextLinks, traversedLinks
-      } = helper[direction];
-      node[nextLinks].forEach((l: SankeySingleLaneLink) => {
-        const had = traversedLinks.has(l);
-        if (!had && (highlightCircular || !l._circular)) {
-          traversedLinks.add(l);
-          l._graphRelativePosition = l._visited === traversalId ? 'multiple' : graphRelativePosition;
-          l._visited = traversalId;
-          nodes.add(l[nextNode]);
-          objects2traverse.add({
-            direction,
-            node: l[nextNode]
+    return this.sankey.baseView.highlightCircular$.pipe(
+      map(highlightCircular => {
+
+        for (const {direction, node} of objects2traverse) {
+          const {
+            graphRelativePosition, nextNode, nextLinks, traversedLinks
+          } = helper[direction];
+          node[nextLinks].forEach((l: SankeySingleLaneLink) => {
+            const had = traversedLinks.has(l);
+            if (!had && (highlightCircular || !l._circular)) {
+              traversedLinks.add(l);
+              l._graphRelativePosition = l._visited === traversalId ? 'multiple' : graphRelativePosition;
+              l._visited = traversalId;
+              nodes.add(l[nextNode]);
+              objects2traverse.add({
+                direction,
+                node: l[nextNode]
+              });
+            }
           });
         }
-      });
-    }
 
-    const links = new Set([...helper.left.traversedLinks, ...helper.right.traversedLinks]);
 
-    links.forEach(l => delete l._visited);
-    delete (data as SankeySingleLaneLink)._graphRelativePosition;
-    links.add((data as SankeySingleLaneLink));
+        const links = new Set([...helper.left.traversedLinks, ...helper.right.traversedLinks]);
 
-    return {nodes, links};
+        links.forEach(l => delete l._visited);
+        delete (data as SankeySingleLaneLink)._graphRelativePosition;
+        links.add((data as SankeySingleLaneLink));
+
+        return {nodes, links};
+      })
+    );
   }
 
   assignAttrToRelativeLinksAndNodes(data, attr) {
-    const {nodes, links} = this.getConnectedNodesAndLinks(data);
-    this.assignAttrAndRaise(
-      this.linkSelection,
-      attr,
-      (l) => {
-        const has = links.has(l);
-        if (has && l._graphRelativePosition) {
-          return l._graphRelativePosition;
-        } else {
-          return has;
-        }
-      }
-    );
-    this.assignAttrAndRaise(
-      this.nodeSelection,
-      attr,
-      (n) => nodes.has(n)
-    );
-  }
-
-  async nodeMouseOver(element, data) {
-    this.highlightNode(element);
+    return this.getConnectedNodesAndLinks(data).pipe(
+      tap(({nodes, links}) => {
+        this.assignAttrAndRaise(
+          this.linkSelection,
+          attr,
+          (l) => {
+            const has = links.has(l);
+            if (has && l._graphRelativePosition) {
+              return l._graphRelativePosition;
+            } else {
+              return has;
+            }
+          }
+        );
+        this.assignAttrAndRaise(
+          this.nodeSelection,
+          attr,
+          (n) => nodes.has(n)
+        );
+      })
+    ).toPromise();
   }
 
   async nodeMouseOut(element, _data) {
@@ -278,10 +247,6 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
       .attr('highlighted', true);
   }
 
-  unhighlightLinks() {
-    this.linkSelection
-      .attr('highlighted', null);
-  }
 
   highlightNode(element) {
     const {
@@ -310,39 +275,8 @@ export class SankeySingleLaneComponent extends SankeyComponent implements AfterV
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
-        .each(SankeySingleLaneComponent.updateTextShadow)
+        .each(SankeyAbstractComponent.updateTextShadow)
     );
-  }
-
-  unhighlightNodes() {
-    this.nodeSelection
-      .attr('highlighted', null);
-  }
-
-  unhighlightNode(element) {
-    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
-
-    const selection = d3_select(element);
-    selection.select('text')
-      .filter(nodeLabelShouldBeShorted)
-      // todo: reenable when performance improves
-      // .transition().duration(RELAYOUT_DURATION)
-      // .textTween(n => {
-      //   const label = nodeLabelAccessor(n);
-      //   const length = label.length;
-      //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-      //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
-      // });
-      .text(nodeLabelShort);
-
-    // resize shadow back to shorter test when it is used as search result
-    if (searchedEntities.length) {
-      // postpone so the size is known
-      requestAnimationFrame(_ =>
-        selection.select('g')
-          .each(SankeySingleLaneComponent.updateTextShadow)
-      );
-    }
   }
 
   // endregion
