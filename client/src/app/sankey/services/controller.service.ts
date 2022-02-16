@@ -336,7 +336,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
 
-
   fileUpdated$ = new Subject<GraphFile>();
   nodeAlign$: Observable<NodeAlign>;
 
