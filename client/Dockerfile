@@ -1,93 +1,60 @@
 ARG NODE_IMAGE_TAG=node:14
 
 # ========================================
-# Landing page
+# Angular app dependencies
 # ========================================
-FROM $NODE_IMAGE_TAG as landing-build
-WORKDIR /app
-
-# Install dependencies
-COPY landing/package.json landing/yarn.lock ./
-RUN yarn install
-
-# Build landing page
-COPY landing ./
-RUN yarn build
-
-
-# ==================================================================
-# Angular app dependencies by default used for local development
-# ==================================================================
 FROM $NODE_IMAGE_TAG as angular-deps
 WORKDIR /app
 
 # Install dependencies
 COPY package.json yarn.lock ./
-RUN yarn install
+ARG YARN_INSTALL_OPTS
+RUN yarn install ${YARN_INSTALL_OPTS}
 
-# build time arguments for Angular environment
-ARG ANGULAR_CONFIG=development
-ARG CLIENT_VERSION=undefined
-# default enviroment presets
-ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
 
 # ========================================
 # Angular app bundle build
 # ========================================
 FROM angular-deps as angular-build
 
-# build time arguments for Angular environment
-ARG ANGULAR_CONFIG=production
-ARG CLIENT_VERSION=undefined
-
 # Copy the code and build the app bundle
 COPY src ./src
 COPY tslint ./tslint
 COPY e2e ./e2e
 COPY *.json browserslist ./
-RUN sed -i "s/__VERSION__/${CLIENT_VERSION}/" src/environments/environment.ts
-RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
+
+ARG ANGULAR_CONFIG=production
+ENV NODE_OPTIONS=--max-old-space-size=4096
+RUN yarn build --configuration=$ANGULAR_CONFIG --output-path=dist
+
+# When targeting this image stage, run angulat dev server
+EXPOSE 4200
+HEALTHCHECK --interval=5m --timeout=10s \
+  CMD curl -f localhost:4200 || exit 1
+CMD yarn dev-start
+
 
 # ========================================
 # Runtime stage - NGINX
 # ========================================
-FROM nginx:1.25.1
-LABEL app=kg-prototypes
+FROM nginx:1.21
+LABEL org.opencontainers.image.source https://github.com/SBRG/lifelike
+
 WORKDIR /usr/share/nginx/html
 
-# URL to proxy requests to /api
-ENV APPSERVER_UPSTREAM http://appserver:5000
+# Copy built assets
+COPY --from=angular-build /app/dist ./
 
-# Whether to run the app in prod mode
-ENV PRODUCTION_MODE true
+# Copy nginx configuraiton template
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Whether we are running with valid KEGG license
-ENV KEGG_ENABLED false
-
-# Whether to run the app with oauth login
-ENV OAUTH_ENABLED false
-
-# OAuth issuer discovert URL
-ENV OAUTH_ISSUER ""
-
-# Client ID of the OAuth application
-ENV OAUTH_CLIENT_ID ""
+# appserver URL to proxy /api requests
+ENV APPSERVER_URL http://appserver:5000
 
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
 ENV GZIP_EXTRA_TYPES text/tsv vnd.lifelike.document/bioc vnd.lifelike.document/enrichment-table vnd.lifelike.document/graph vnd.lifelike.document/map
 
-# build time argument for Angular environment
-ARG ANGULAR_CONFIG=production
-
-# default enviroment presets
-ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
-
-# Copy nginx configuraiton template
-COPY nginx.conf /etc/nginx/templates/default.conf.template
-
-# Copy built assets
-COPY --from=landing-build /app/dist ./
-COPY --from=angular-build /app/dist ./
-
-EXPOSE 80
+# Listen port
+ENV PORT 80
+EXPOSE $PORT
