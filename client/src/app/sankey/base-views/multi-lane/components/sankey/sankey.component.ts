@@ -3,16 +3,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
-import { LayoutService } from '../../../../services/layout.service';
-import { SankeyBaseOptions, SankeyBaseState } from '../../../interfaces';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
+import { EntityType } from '../../../../utils/search/search-match';
+import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -34,14 +35,37 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
     this.initComopnent();
   }
 
-  initFocus() {
-    this.focusedEntity$.subscribe(entity => this.panToEntity(entity));
-  }
-
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyMultiLaneLink, any, any> {
     // returns empty selection if DOM struct was not initialised
     return super.linkSelection;
+  }
+
+  focusedEntity$ = this.sankey.dataToRender$.pipe(
+    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
+      map(({type, id}) => {
+        let data;
+        switch (type) {
+          case EntityType.Node:
+            // allow string == number match interpolation ("58" == 58 -> true)
+            // tslint:disable-next-line:triple-equals
+            data = nodes.find(({_id}) => _id == id);
+            break;
+          case EntityType.Link:
+            // allow string == number match interpolation ("58" == 58 -> true)
+            // tslint:disable-next-line:triple-equals
+            data = (links as SankeySingleLaneLink[]).find(({_originLinkId}) => _originLinkId == id);
+            break;
+          default:
+            this.sankey.baseView.warningController.warn(`Node type ${type} is not supported`);
+        }
+        return {type, id, data};
+      })
+    ))
+  );
+
+  initFocus() {
+    this.focusedEntity$.subscribe(entity => this.panToEntity(entity));
   }
 
   initSelection() {

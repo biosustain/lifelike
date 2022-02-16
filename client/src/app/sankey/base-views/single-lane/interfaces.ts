@@ -18,6 +18,7 @@ export type SankeySingleLaneOptions = SankeyBaseOptions & SankeySingleLaneOption
 export interface SankeySingleLaneLink extends SankeyLink {
   _graphRelativePosition?: 'left' | 'right' | 'multiple';
   _visited?: string | number;
+  _originLinkId?: string;
   _traces?: SankeyTrace[];
 }
 

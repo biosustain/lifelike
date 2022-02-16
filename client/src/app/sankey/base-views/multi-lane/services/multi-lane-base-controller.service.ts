@@ -122,6 +122,7 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
             _color: color,
             _trace: trace,
             _order: -trace._group,
+            _originLinkId: originLink._id,
             _id: `${originLink._id}_${trace._group}_${traceIdx}`
           };
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
