@@ -4,11 +4,11 @@ import { SankeySingleLaneLink } from '../../interfaces';
 import { SankeyAbstractDetailsComponent } from '../../../../abstract/details-panel.component';
 
 @Component({
-  selector: 'app-sankey-link-details',
+  selector: 'app-sankey-single-lane-link-details',
   templateUrl: './link-details.component.html',
   styleUrls: ['./link-details.component.scss']
 })
-export class SingleLaneLinkDetailsComponent extends SankeyAbstractDetailsComponent {
+export class SankeySingleLaneLinkDetailsComponent extends SankeyAbstractDetailsComponent {
   @Input() entity: SankeySingleLaneLink;
 }
 

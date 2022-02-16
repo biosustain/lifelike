@@ -33,9 +33,10 @@ import {
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
-import { isPositiveNumber } from '../utils';
-import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
+import { isPositiveNumber } from '../utils/utils';
 import { LayoutService } from './layout.service';
+import { unifiedSingularAccessor } from '../utils/rxjs';
+import { StateControlAbstractService } from '../abstract/state-control.service';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -69,7 +70,6 @@ export function patchReducer(patch, callback) {
 @Injectable()
 // @ts-ignore
 export class ControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
-
   constructor(
     readonly warningController: WarningControllerService
   ) {
@@ -83,8 +83,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
           map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
           switchMap(bvn => this.patchDefaultState({
             baseViewName: (bvn as ViewBase)
-          })),
-          tap(defaultStatePatch => this.patchDefaultState(defaultStatePatch)),
+          }))
         ).toPromise();
       }
     });
@@ -111,9 +110,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   );
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-
   data$ = new ReplaySubject<SankeyData>(1);
-
 
   /**
    * Observable of current view options

@@ -4,7 +4,7 @@ import { first, last } from 'lodash-es';
 import { color } from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { DirectedTraversal } from 'app/sankey/services/directed-traversal';
+import { DirectedTraversal } from 'app/sankey/utils/directed-traversal';
 import { SankeyNode } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';

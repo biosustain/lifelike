@@ -1,6 +1,6 @@
 import { pick } from 'lodash-es';
 
-import { SankeyState } from './interfaces';
+import { SankeyState } from '../interfaces';
 
 export const reduceState = (state, keys) => {
   return pick(state, keys);

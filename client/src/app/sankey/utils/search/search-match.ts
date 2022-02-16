@@ -13,7 +13,7 @@ import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { GraphLink, GraphTrace, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 
-import { SankeyTrace, SankeyId } from '../pure_interfaces';
+import { SankeyTrace, SankeyId } from '../../pure_interfaces';
 
 interface SearchLink extends GraphLink {
   _id: SankeyId;

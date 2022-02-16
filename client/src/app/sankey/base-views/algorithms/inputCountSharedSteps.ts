@@ -1,7 +1,7 @@
 import { ExtendedMap } from 'app/shared/utils/types';
 import { SankeyLink, SankeyNode, SankeyData } from 'app/sankey/interfaces';
 
-import { DirectedTraversal } from '../../services/directed-traversal';
+import { DirectedTraversal } from '../../utils/directed-traversal';
 import { DefaultLayoutService } from '../../services/layout.service';
 
 export function calculateInputCountSkippingCircularLinks(

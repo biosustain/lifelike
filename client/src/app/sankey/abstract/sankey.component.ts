@@ -1,42 +1,26 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  ViewChild,
-  EventEmitter,
-  Output,
-  ViewEncapsulation,
-  NgZone
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation, NgZone } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { ReplaySubject, combineLatest } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
+import { map, switchMap, first, filter, tap } from 'rxjs/operators';
+import { size } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyData, SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
-import { LayoutService } from 'app/sankey/services/layout.service';
+import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
 
-import { representativePositiveNumber } from '../../utils';
-import { SankeySelectionService } from '../../services/selection.service';
-import { SankeySearchService } from '../../services/search.service';
-import { SankeyBaseOptions, SankeyBaseState } from '../../base-views/interfaces';
-import { EntityType } from '../../services/search-match';
+import { representativePositiveNumber } from '../utils/utils';
+import { SankeySelectionService } from '../services/selection.service';
+import { SankeySearchService } from '../services/search.service';
+import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
+import { EntityType } from '../utils/search/search-match';
+import { SankeyAbstractAdvancedPanelComponent } from './advanced-panel.component';
+import { LayoutService, DefaultLayoutService } from '../services/layout.service';
 
-
-@Component({
-  selector: 'app-sankey',
-  templateUrl: './sankey.component.svg',
-  styleUrls: ['./sankey.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-})
-export class SankeyComponent implements AfterViewInit, OnDestroy {
+export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -45,61 +29,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     protected zone: NgZone,
     protected selection: SankeySelectionService,
     protected search: SankeySearchService
-  ) {
-    this.linkClick = this.linkClick.bind(this);
-    this.nodeClick = this.nodeClick.bind(this);
-    this.nodeMouseOver = this.nodeMouseOver.bind(this);
-    this.pathMouseOver = this.pathMouseOver.bind(this);
-    this.nodeMouseOut = this.nodeMouseOut.bind(this);
-    this.pathMouseOut = this.pathMouseOut.bind(this);
-    this.dragmove = this.dragmove.bind(this);
-    this.attachLinkEvents = this.attachLinkEvents.bind(this);
-    this.attachNodeEvents = this.attachNodeEvents.bind(this);
-
-    this.zoom = d3_zoom()
-      .scaleExtent([0.1, 8]);
-
-    sankey.dataToRender$.subscribe(data => {
-      this.updateDOM(data);
-    });
-
-    selection.selectedNodes$.subscribe(nodes => {
-      if (nodes.size) {
-        this.selectNodes(nodes);
-      } else {
-        this.deselectNodes();
-      }
-    });
-
-    selection.selectedLinks$.subscribe(links => {
-      if (links.size) {
-        this.selectLinks(links);
-      } else {
-        this.deselectLinks();
-      }
-    });
-
-    combineLatest([
-      selection.selectedNodes$,
-      selection.selectedLinks$
-    ]).subscribe(([nodes, links]) => {
-      if (nodes || links) {
-        this.calculateAndApplyTransitiveConnections(nodes, links);
-      }
-    });
-
-    search.preprocessedMatches$.subscribe(entities => {
-      if (entities.length) {
-        this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
-        this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
-      } else {
-        this.stopSearchNodes();
-        this.stopSearchLinks();
-      }
-    });
-
-    this.focusedEntity$.subscribe(entity => this.panToEntity(entity));
-  }
+  ) {}
 
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
@@ -144,7 +74,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   }
 
   // region Properties (&Accessors)
-  static MARGIN = 10;
+  readonly MARGIN = 10;
 
   // endregion
 
@@ -167,15 +97,13 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     ))
   );
 
-  // shallow copy of input data
-  _data = new ReplaySubject<SankeyData>(1);
   margin = {
-    top: SankeyComponent.MARGIN,
-    right: SankeyComponent.MARGIN,
-    bottom: SankeyComponent.MARGIN,
-    left: SankeyComponent.MARGIN
+    top: this.MARGIN,
+    right: this.MARGIN,
+    bottom: this.MARGIN,
+    left: this.MARGIN
   };
-  resizeObserver: any;
+  resizeObserver;
   size;
   zoom;
   dragging = false;
@@ -186,14 +114,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
 
-  @Output() backgroundClicked = new EventEmitter();
-  @Output() enter = new EventEmitter();
-
-  @Input() normalizeLinks = true;
-  @Input() selectedNodes = new Set<object>();
-  @Input() searchedEntities = [];
-  @Input() focusedNode;
-  @Input() selectedLinks = new Set<object>();
+  // @Output() backgroundClicked = new EventEmitter();
+  // @Output() enter = new EventEmitter();
+  //
+  // @Input() normalizeLinks = true;
+  // @Input() selectedNodes = new Set<object>();
+  // @Input() searchedEntities = [];
+  // @Input() focusedNode;
+  // @Input() selectedLinks = new Set<object>();
 
   static updateTextShadow(_) {
     // this contains ref to textGroup
@@ -207,8 +135,44 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .attr('height', height);
   }
 
-  static nodeGroupAccessor({type}) {
-    return type;
+  initComopnent() {
+    this.linkClick = this.linkClick.bind(this);
+    this.nodeClick = this.nodeClick.bind(this);
+    this.nodeMouseOver = this.nodeMouseOver.bind(this);
+    this.pathMouseOver = this.pathMouseOver.bind(this);
+    this.nodeMouseOut = this.nodeMouseOut.bind(this);
+    this.pathMouseOut = this.pathMouseOut.bind(this);
+    this.dragmove = this.dragmove.bind(this);
+    this.attachLinkEvents = this.attachLinkEvents.bind(this);
+    this.attachNodeEvents = this.attachNodeEvents.bind(this);
+
+    this.zoom = d3_zoom()
+      .scaleExtent([0.1, 8]);
+
+    this.sankey.dataToRender$.subscribe(data => {
+      this.updateDOM(data);
+    });
+
+    this.initSelection();
+
+    this.search.preprocessedMatches$.subscribe(entities => {
+      if (entities.length) {
+        this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
+        this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
+      } else {
+        this.stopSearchNodes();
+        this.stopSearchLinks();
+      }
+    });
+    this.initFocus();
+  }
+
+  initFocus() {
+    throw new Error('Not implemented');
+  }
+
+  initSelection() {
+    throw new Error('Method not implemented.');
   }
 
   panToEntity(e) {
@@ -252,8 +216,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() =>
       // resize and listen to future resize events
       this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
-        .subscribe(size =>
-          this.zone.run(() => this.onResize(size))
+        .subscribe(rect =>
+          this.zone.run(() => this.onResize(rect))
         )
     );
   }
@@ -374,8 +338,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * @param data object representing the link data
    */
   async pathMouseOver(element, data) {
-    d3_select(element)
-      .raise();
+    throw new Error('Not implemented');
   }
 
   /**
@@ -384,9 +347,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * @param data object representing the link data
    */
   async pathMouseOut(element, data) {
-    // temporary disabled as of LL-3726
-    // this.unhighlightNodes();
-    // this.unhighlightLinks();
+    throw new Error('Not implemented');
   }
 
   /**
@@ -396,7 +357,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * @param data object representing the node data
    */
   async nodeMouseOver(element, data) {
-    this.applyNodeHover(element);
+    this.highlightNode(element);
   }
 
   /**
@@ -405,11 +366,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
    * @param data object representing the node data
    */
   async nodeMouseOut(element, data) {
-    this.unapplyNodeHover(element);
-
-    // temporary disabled as of LL-3726
-    // this.unhighlightNodes();
-    // this.unhighlightLinks();
+    throw new Error('Not implemented');
   }
 
   scaleZoom(scaleBy) {
@@ -469,27 +426,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .call(e => e.raise());
   }
 
-  // region Select
-  /**
-   * Adds the `selected` property to the given input nodes.
-   * @param nodes set of node data objects to use for selection
-   */
-  selectNodes(nodes: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
-    this.nodeSelection
-      .attr('selected', n => nodes.has(n));
-  }
-
-  /**
-   * Adds the `selected` property to the given input links.
-   * @param links set of link data objects to use for selection
-   */
-  selectLinks(links: Set<object>) {
-    // tslint:disable-next-line:no-unused-expression
-    this.linkSelection
-      .attr('selected', l => links.has(l));
-  }
-
   /**
    * Removes the `selected` property from all nodes on the canvas.
    */
@@ -506,33 +442,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       .attr('selected', undefined);
   }
 
-  /**
-   * Given the set of selected nodes and links, calculcates the connected nodes/links and applies the `transitively-selected` attribute to
-   * them.
-   * @param nodes the full set of currently selected nodes
-   * @param links the full set of currently selected links
-   */
-  calculateAndApplyTransitiveConnections(nodes: Set<object>, links: Set<object>) {
-    if (nodes.size + links.size === 0) {
-      this.nodeSelection
-        .attr('transitively-selected', undefined);
-      this.linkSelection
-        .attr('transitively-selected', undefined);
-      return;
-    }
-
-    const traces = new Set<any>();
-    links.forEach((link: any) => traces.add(link._trace));
-    nodes.forEach((data: any) => [].concat(data._sourceLinks, data._targetLinks).forEach(link => traces.add(link._trace)));
-    const nodeGroup = this.calculateNodeGroupFromTraces(traces);
-
-
-    this.nodeSelection
-      .attr('transitively-selected', ({id}) => nodeGroup.has(id));
-    this.linkSelection
-      .attr('transitively-selected', ({_trace}) => traces.has(_trace));
-  }
-
   // endregion
 
   // region Search
@@ -546,7 +455,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
-        .each(SankeyComponent.updateTextShadow)
+        .each(SankeyAbstractComponent.updateTextShadow)
     );
   }
 
@@ -589,7 +498,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
-        .each(SankeyComponent.updateTextShadow)
+        .each(SankeyAbstractComponent.updateTextShadow)
     );
   }
 
@@ -609,7 +518,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection
-        .each(SankeyComponent.updateTextShadow)
+        .each(SankeyAbstractComponent.updateTextShadow)
     );
   }
 
@@ -634,14 +543,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
     this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({_trace}) => traces.has(_trace));
   }
 
-  unhighlightLinks() {
-    this.linkSelection
-      .attr('highlighted', undefined);
-  }
-
   highlightNodeGroup(group) {
     this.nodeSelection
       .attr('highlighted', ({id}) => group.has(id));
+  }
+
+  unhighlightLinks() {
+    this.linkSelection
+      .attr('highlighted', undefined);
   }
 
   unhighlightNodes() {
@@ -651,38 +560,12 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
 
   // endregion
 
-  applyNodeHover(element) {
-    const {
-      nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
-    } = this.sankey;
-    const selection = d3_select(element)
-      .raise()
-      .select('g')
-      .call(textGroup => {
-        textGroup
-          .select('text')
-          .text(nodeLabelShort)
-          .filter(nodeLabelShouldBeShorted)
-          // todo: reenable when performance improves
-          // .transition().duration(RELAYOUT_DURATION)
-          // .textTween(n => {
-          //   const label = nodeLabelAccessor(n);
-          //   const length = label.length;
-          //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-          //   return t => t === 1 ? label :
-          //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
-          // })
-          .text(nodeLabel);
-      });
-    // postpone so the size is known
-    requestAnimationFrame(_ =>
-      selection
-        .each(SankeyComponent.updateTextShadow)
-    );
+  highlightNode(element) {
+    throw new Error('Not implemented');
   }
 
-  unapplyNodeHover(element) {
-    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}, searchedEntities} = this;
+  unhighlightNode(element) {
+    const {sankey: {nodeLabelShort, nodeLabelShouldBeShorted}} = this;
 
     const selection = d3_select(element);
     selection.select('text')
@@ -697,14 +580,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
       // });
       .text(nodeLabelShort);
 
-    // resize shadow back to shorter test when it is used as search result
-    if (searchedEntities.length) {
-      // postpone so the size is known
-      requestAnimationFrame(_ =>
-        selection.select('g')
-          .each(SankeyComponent.updateTextShadow)
-      );
-    }
+    return this.search.preprocessedMatches$.pipe(
+      first(),
+      // resize shadow back to shorter test when it is used as search result
+      filter(matches => size(matches) > 0),
+      tap(matches =>
+        // postpone so the size is known
+        requestAnimationFrame(_ =>
+          selection.select('g')
+            .each(SankeyAbstractComponent.updateTextShadow)
+        )
+      ),
+    ).toPromise();
   }
 
   // todo
@@ -727,7 +614,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0);
+    .attr('width', ({_x1, _x0}) => _x1 - _x0)
 
   /**
    * Run d3 lifecycle code to update DOM
@@ -821,8 +708,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           .call(enterNode =>
             enterNode.append('title')
               .text(nodeLabel)
-          )
-          .call(e => this.enter.emit(e)),
+          ),
+        // it was used in some very strage construct - hope it is not needed anymore
+        // .call(e => this.enter.emit(e)),
         update => update
           .call(enterNode => {
             updateNodeRect(
@@ -856,27 +744,5 @@ export class SankeyComponent implements AfterViewInit, OnDestroy {
           });
       });
   }
-
-  // endregion
-
-  // region Helpers
-
-  /**
-   * Given a set of traces, returns a set of all nodes within those traces.
-   * @param traces a set of trace objects
-   * @returns a set of node ids representing all nodes in the given traces
-   */
-  calculateNodeGroupFromTraces(traces: Set<any>) {
-    const nodeGroup = new Set<number>();
-    traces.forEach(
-      trace => trace.node_paths.forEach(
-        path => path.forEach(
-          nodeId => nodeGroup.add(nodeId)
-        )
-      )
-    );
-    return nodeGroup;
-  }
-
   // endregion
 }

@@ -55,6 +55,8 @@ export class SankeySearchPanelComponent implements AfterViewInit {
 
   scrollIntoView(focusedIdx): void {
     if (focusedIdx >= 0 && this.listItems) {
+      // allow casting matches "0" == 0 => true
+      // tslint:disable-next-line:triple-equals
       const itemNode = this.listItems.toArray().find(({result: {idx}}) => focusedIdx == idx);
       if (itemNode) {
         const {element: {nativeElement}} = itemNode;
