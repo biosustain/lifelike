@@ -1,10 +1,9 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation, NgZone } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { combineLatest } from 'rxjs';
 import { map, switchMap, first, filter, tap } from 'rxjs/operators';
 import { size } from 'lodash-es';
 
@@ -17,8 +16,7 @@ import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { EntityType } from '../utils/search/search-match';
-import { SankeyAbstractAdvancedPanelComponent } from './advanced-panel.component';
-import { LayoutService, DefaultLayoutService } from '../services/layout.service';
+import { LayoutService } from '../services/layout.service';
 
 export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   constructor(
@@ -29,7 +27,8 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     protected zone: NgZone,
     protected selection: SankeySelectionService,
     protected search: SankeySearchService
-  ) {}
+  ) {
+  }
 
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
@@ -81,18 +80,22 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   focusedEntity$ = this.sankey.dataToRender$.pipe(
     switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
       map(({type, id}) => {
+        let data;
         switch (type) {
           case EntityType.Node:
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            return nodes.find(({_id}) => _id == id);
+            data = nodes.find(({_id}) => _id == id);
+            break;
           case EntityType.Link:
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            return links.find(({_id}) => _id == id);
+            data = links.find(({_id}) => _id == id);
+            break;
           default:
-            return null;
+            this.sankey.baseView.warningController.warn(`Node type ${type} is not supported`);
         }
+        return { type, id, data };
       })
     ))
   );
@@ -175,16 +178,16 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     throw new Error('Method not implemented.');
   }
 
-  panToEntity(e) {
-    if (e) {
+  panToEntity({data}) {
+    if (data) {
       this.sankeySelection.transition().call(
         this.zoom.translateTo,
         // x
-        (e._x0 !== undefined) ?
-          (e._x0 + e._x1) / 2 :
-          (e._source._x1 + e._target._x0) / 2,
+        (data._x0 !== undefined) ?
+          (data._x0 + data._x1) / 2 :
+          (data._sourcdata._x1 + data._target._x0) / 2,
         // y
-        (e._y0 + e._y1) / 2
+        (data._y0 + data._y1) / 2
       );
     }
   }
@@ -614,7 +617,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   updateNodeRect = rects => rects
     .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
     .attr('width', ({_x1, _x0}) => _x1 - _x0)
-    .attr('width', ({_x1, _x0}) => _x1 - _x0)
+    .attr('width', ({_x1, _x0}) => _x1 - _x0);
 
   /**
    * Run d3 lifecycle code to update DOM
@@ -744,5 +747,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
           });
       });
   }
+
   // endregion
 }

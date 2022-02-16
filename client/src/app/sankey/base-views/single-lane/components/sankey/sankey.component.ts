@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
 import { isNil } from 'lodash-es';
-import { filter, startWith, pairwise, map, tap } from 'rxjs/operators';
+import { filter, startWith, pairwise, map, tap, switchMap } from 'rxjs/operators';
 
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { uuidv4 } from 'app/shared/utils';
@@ -14,6 +14,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
+import { EntityType } from '../../../../utils/search/search-match';
 
 
 @Component({
@@ -43,20 +44,14 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     ).subscribe(([currentValue, previousValue]) => {
       if (previousValue) {
         this.applyEntity(
-          {
-            nodeId: previousValue._id,
-            linkId: previousValue._id
-          },
+          previousValue,
           this.unFocusNode,
           this.unFocusLink
         );
       }
       if (currentValue) {
         this.applyEntity(
-          {
-            nodeId: previousValue._id,
-            linkId: previousValue._id
-          },
+          currentValue,
           this.focusNode,
           this.focusLink
         );
@@ -87,12 +82,12 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     });
   }
 
-  applyEntity({nodeId, linkId}, nodeCallback, linkCallback) {
-    if (nodeId) {
-      nodeCallback.call(this, nodeId);
-    }
-    if (linkId) {
-      linkCallback.call(this, linkId);
+  applyEntity({type, id}, nodeCallback, linkCallback) {
+    switch(type) {
+      case EntityType.Node:
+        return nodeCallback(id);
+      case EntityType.Link:
+        return linkCallback(id);
     }
   }
 
