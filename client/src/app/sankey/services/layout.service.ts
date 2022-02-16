@@ -9,12 +9,12 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, NetworkTraceData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { DirectedTraversal } from './directed-traversal';
-import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
-import { normalizeGenerator, symmetricDifference } from '../components/sankey/utils';
+import { DirectedTraversal } from '../utils/directed-traversal';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
-import { unifiedAccessor } from './state-controlling-abstract.service';
 import { BaseControllerService } from './base-controller.service';
+import { symmetricDifference, normalizeGenerator } from '../utils/utils';
+import { SankeyAbstractLayoutService } from '../abstract/sankey-layout.service';
+import { unifiedAccessor } from '../utils/rxjs';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -35,7 +35,7 @@ export const DEFAULT_FONT_SIZE = 12 * 1.60;
 export type DefaultLayoutService = LayoutService<SankeyBaseOptions, SankeyBaseState>;
 
 @Injectable()
-export class LayoutService<Options extends SankeyBaseOptions, State extends SankeyBaseState> extends SankeyLayoutService {
+export class LayoutService<Options extends SankeyBaseOptions, State extends SankeyBaseState> extends SankeyAbstractLayoutService {
   constructor(
     readonly baseView: BaseControllerService<Options, State>,
     readonly truncatePipe: TruncatePipe,
@@ -160,7 +160,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           ))
       )
     ),
-    shareReplay(1)
+    shareReplay<NetworkTraceData>(1)
   );
 
   /**
@@ -193,7 +193,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       // Calculate the nodes' and links' vertical position within their respective column
       //     Also readjusts sankeyCircular size if circular links are needed, and node x's
       tap(graph => this.computeNodeBreadths(graph)),
-      tap(graph => SankeyLayoutService.computeLinkBreadths(graph)),
+      tap(graph => SankeyAbstractLayoutService.computeLinkBreadths(graph)),
       tap(graph => this.cleanVirtualNodes(graph)),
       this.populateHorizontalSnapshot(),
       tap(graph => this.positionNodesHorizontaly(graph)),

@@ -2,6 +2,6 @@
                     [resultIndex]="focusIdx$ | async"
                     [resultCount]="resultsCount$ | async"
                     (previous)="previous()" (next)="next()"
-                    [searching]="!(done$ | async)"
+                    [searching]="(done$ | async) === false"
 >
 </app-search-control>

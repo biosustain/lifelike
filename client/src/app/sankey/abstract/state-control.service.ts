@@ -1,43 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import { Observable, ReplaySubject, combineLatest, Subject, of, iif } from 'rxjs';
-import { pick, isEqual, has, isArray, merge, omitBy, isNil, partial } from 'lodash-es';
-import { switchMap, map, filter, shareReplay, distinctUntilChanged, first, tap } from 'rxjs/operators';
+import { isEqual, merge, omitBy, isNil, partial } from 'lodash-es';
+import { switchMap, map, shareReplay, distinctUntilChanged, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
 
-export interface AbstractInjectable {
-  onInit: () => void;
-}
-
-/**
- * Pick property from observable object
- * @param observable object
- * @param prop property name (can be also list of properties)
- */
-export const unifiedAccessor = <R extends object, K extends Many<keyof R>>(observable: Observable<R>, prop: K) => {
-  const hasOwnProp = isArray(prop) ?
-    obj => prop.every(p => has(obj, p)) :
-    obj => has(obj, prop);
-  return observable.pipe(
-    filter(hasOwnProp),
-    map(obj => pick(obj, prop)),
-    distinctUntilChanged(isEqual),
-  );
-};
-
-/**
- * Pick property from observable object
- * @param observable object
- * @param prop property name (can be also list of properties)
- */
-export function unifiedSingularAccessor<R extends object, K extends keyof R>(observable: Observable<R>, prop: K) {
-  return observable.pipe(
-    filter(obj => has(obj, prop)),
-    map(obj => obj[prop]),
-    distinctUntilChanged(),
-  ) as Observable<R[K]>;
-}
+import { unifiedAccessor, AbstractInjectable } from '../utils/rxjs';
 
 @Injectable()
 export class StateControlAbstractService<Options extends object, State extends object> implements AbstractInjectable {

@@ -8,7 +8,6 @@ import { SankeyAbstractDetailsComponent } from '../../abstract/details-panel.com
   selector: 'app-sankey-node-details',
   templateUrl: './node-details.component.html'
 })
-// @ts-ignore
 export class SankeyNodeDetailsComponent extends SankeyAbstractDetailsComponent {
   @Input() entity: SankeyNode;
 

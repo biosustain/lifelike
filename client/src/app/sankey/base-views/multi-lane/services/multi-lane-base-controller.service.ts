@@ -8,7 +8,7 @@ import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFI
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
-import { unifiedSingularAccessor } from 'app/sankey/services/state-controlling-abstract.service';
+import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
@@ -69,13 +69,7 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
     linkPalettes
   }));
 
-  palette$ = this.options$.pipe(
-    switchMap(({linkPalettes: lps}) =>
-      this.state$.pipe(
-        map(({linkPaletteId}) => lps[linkPaletteId])
-      )
-    )
-  );
+  palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, traces, ...rest}) => this.palette$.pipe(

@@ -8,10 +8,10 @@ import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { LayoutService, groupByTraceGroupWithAccumulation } from 'app/sankey/services/layout.service';
 
-import { DirectedTraversal } from '../../../services/directed-traversal';
-import { symmetricDifference } from '../../../components/sankey/utils';
+import { DirectedTraversal } from '../../../utils/directed-traversal';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
 import { SankeyMultiLaneOptions, SankeyMultiLaneState, BaseOptions, BaseState } from '../interfaces';
+import { symmetricDifference } from '../../../utils/utils';
 
 @Injectable()
 export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState> {

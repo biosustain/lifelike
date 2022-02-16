@@ -14,9 +14,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first, pairwise, startWith } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first, pairwise, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, assign } from 'lodash-es';
+import { isNil, pick, assign, size } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -37,11 +37,11 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { ControllerService } from '../services/controller.service';
-import { BaseControllerService, DefaultBaseControllerService } from '../services/base-controller.service';
+import { BaseControllerService } from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
-import { SankeySingleLaneOverwriteModule } from '../base-views/single-lane/sankey-viewer-lib.module';
+import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
-import { LayoutService, DefaultLayoutService } from '../services/layout.service';
+import { LayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 
@@ -53,8 +53,7 @@ import { SankeySelectionService } from '../services/selection.service';
     WarningControllerService,
     SankeySearchService,
     ControllerService,
-    ViewControllerService,
-    SankeySelectionService
+    ViewControllerService
   ]
 })
 export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterViewInit {
@@ -140,8 +139,18 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       ))
     ).subscribe(data => this.saveFile(data));
 
-    this.search.term$.subscribe(term => {
-      this.searchPanel = !!term;
+    this.search.term$.pipe(
+      startWith(false),
+      map(term => !!term)
+    ).subscribe(open => {
+      this.searchPanel$.next(open);
+    });
+
+    this.selection$.pipe(
+      switchMap(selection => selection.selection$),
+      map(selection => size(selection) > 0)
+    ).subscribe(open => {
+      this.detailsPanel$.next(open);
     });
   }
 
@@ -175,12 +184,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
-  baseView$ = new ReplaySubject<DefaultBaseControllerService>(1);
-  layout$ = new ReplaySubject<DefaultLayoutService>(1);
-
-  predefinedValueAccessor$ = this.baseView$.pipe(
-    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
-  );
 
   private dynamicComponentRef = new Map();
 
@@ -195,8 +198,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   ready = false;
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  detailsPanel = false;
-  searchPanel = false;
+  searchPanel$ = new BehaviorSubject(false);
   advancedPanel = false;
   object: FilesystemObject;
   currentFileId;
@@ -210,9 +212,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   networkTraces$ = this.sankeyController.networkTraces$;
 
-  dataToRender$ = this.layout$.pipe(
-    switchMap(layout => layout.dataToRender$)
-  );
 
   data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
@@ -222,9 +221,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   /**
    * Load different base view components upom base view change
    */
-  updateEmbeddedBaseView$ = this.sankeyController.baseView$.pipe(
+  baseViewContext$ = this.sankeyController.baseView$.pipe(
     map(({baseViewName, baseViewInitState = {}}) => {
-      const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SankeySingleLaneOverwriteModule;
+      const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
       const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
       const injectComponent = (container, token) => {
@@ -239,19 +238,39 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
       this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
-      const baseViewController = moduleRef.injector.get(BaseControllerService);
-      const layoutController = moduleRef.injector.get(LayoutService);
-      this.baseView$.next(baseViewController);
-      this.layout$.next(layoutController);
-      this.viewController.baseView$.next(baseViewController);
-      this.viewController.layout$.next(layoutController);
-      baseViewController.delta$.next(baseViewInitState);
-    })
+      return {
+        baseView: moduleRef.injector.get(BaseControllerService),
+        layout: moduleRef.injector.get(LayoutService),
+        selection: moduleRef.injector.get(SankeySelectionService),
+        baseViewInitState
+      };
+    }),
+    tap(({layout, baseView, baseViewInitState}) => {
+      this.viewController.layout$.next(layout);
+      baseView.delta$.next(baseViewInitState);
+    }),
+    shareReplay(1)
   );
-  searchFocus$ = new ReplaySubject<any>(1);
+
+  baseView$ = this.baseViewContext$.pipe(
+    map(({baseView}) => baseView)
+  );
+  predefinedValueAccessor$ = this.baseView$.pipe(
+    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
+  );
+  layout$ = this.baseViewContext$.pipe(
+    map(({layout}) => layout)
+  );
+  dataToRender$ = this.layout$.pipe(
+    switchMap(layout => layout.dataToRender$)
+  );
+  selection$ = this.baseViewContext$.pipe(
+    map(({selection}) => selection)
+  );
+  detailsPanel$ = new BehaviorSubject(false);
 
   ngAfterViewInit() {
-    this.updateEmbeddedBaseView$.subscribe();
+    this.baseViewContext$.subscribe();
   }
 
   // todo
@@ -380,16 +399,16 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   // endregion
 
   openDetailsPanel() {
-    this.detailsPanel = true;
+    this.detailsPanel$.next(true);
   }
 
   closeDetailsPanel() {
-    this.detailsPanel = false;
+    this.detailsPanel$.next(false);
     // this.resetSelection();
   }
 
   closeSearchPanel() {
-    this.searchPanel = false;
+    this.searchPanel$.next(false);
   }
 
   closeAdvancedPanel() {

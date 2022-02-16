@@ -61,8 +61,8 @@ import { ReplaySubject, Subject, BehaviorSubject } from 'rxjs';
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
-import { AttributeAccessors } from './attribute-accessors';
-import { justify } from './aligin';
+import { AttributeAccessors } from '../utils/attribute-accessors';
+import { justify } from '../utils/aligin';
 
 interface Extent {
   x0: number;
@@ -105,7 +105,7 @@ interface LayoutData {
 }
 
 @Injectable()
-export class SankeyLayoutService extends AttributeAccessors {
+export class SankeyAbstractLayoutService extends AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
     super(truncatePipe);
   }
@@ -148,11 +148,11 @@ export class SankeyLayoutService extends AttributeAccessors {
   x: number;
 
   static ascendingSourceBreadth(a, b) {
-    return SankeyLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
+    return SankeyAbstractLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
   }
 
   static ascendingTargetBreadth(a, b) {
-    return SankeyLayoutService.ascendingBreadth(a._target, b._target) || a._index - b._index;
+    return SankeyAbstractLayoutService.ascendingBreadth(a._target, b._target) || a._index - b._index;
   }
 
   static ascendingBreadth(a, b) {
@@ -203,7 +203,7 @@ export class SankeyLayoutService extends AttributeAccessors {
   }
 
   update(graph) {
-    SankeyLayoutService.computeLinkBreadths(graph);
+    SankeyAbstractLayoutService.computeLinkBreadths(graph);
   }
 
   /**
@@ -212,7 +212,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    */
   registerLinks({links, nodes}) {
     const {id} = this;
-    const {find} = SankeyLayoutService;
+    const {find} = SankeyAbstractLayoutService;
 
     const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
     for (const [i, link] of links.entries()) {
@@ -461,7 +461,7 @@ export class SankeyLayoutService extends AttributeAccessors {
         this.reorderNodeLinks(target);
       }
       if (this.nodeSort === undefined) {
-        column.sort(SankeyLayoutService.ascendingBreadth);
+        column.sort(SankeyAbstractLayoutService.ascendingBreadth);
       }
       this.resolveCollisions(column, beta);
     }
@@ -472,7 +472,7 @@ export class SankeyLayoutService extends AttributeAccessors {
    * then resolve just made collisions.
    */
   relaxRightToLeft(columns, alpha, beta) {
-    const {ascendingBreadth} = SankeyLayoutService;
+    const {ascendingBreadth} = SankeyAbstractLayoutService;
 
     for (let n = columns.length, i = n - 2; i >= 0; --i) {
       const column = columns[i];
@@ -549,7 +549,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     const {
       ascendingTargetBreadth,
       ascendingSourceBreadth
-    } = SankeyLayoutService;
+    } = SankeyAbstractLayoutService;
 
     for (const {_source} of _targetLinks) {
       _source._sourceLinks.sort(ascendingTargetBreadth);
@@ -563,7 +563,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     const {
       ascendingTargetBreadth,
       ascendingSourceBreadth
-    } = SankeyLayoutService;
+    } = SankeyAbstractLayoutService;
 
     for (const {_sourceLinks, _targetLinks} of nodes) {
       _sourceLinks.sort(ascendingTargetBreadth);

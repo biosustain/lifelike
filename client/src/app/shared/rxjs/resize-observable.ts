@@ -9,7 +9,7 @@ import { isEqual } from 'lodash-es';
  * + skips updates when `display: none;`
  * @param element - DOM element to observe
  */
-export function createResizeObservable(element: HTMLElement) {
+export function createResizeObservable(element: HTMLElement): Observable<DOMRect> {
   return new Observable<DOMRectReadOnly>(subscriber => {
     // @ts-ignore there is not type definition for ResizeObserver in Angular
     const ro = new ResizeObserver(([{contentRect}]: ResizeObserverEntry[]) => {

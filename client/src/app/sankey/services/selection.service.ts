@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, BehaviorSubject } from 'rxjs';
 import { compact } from 'lodash-es';
 import { map, first } from 'rxjs/operators';
 
@@ -13,7 +13,7 @@ export class SankeySelectionService {
     private sankeyController: ControllerService
   ) {}
 
-  selection$ = new ReplaySubject<Array<any>>(1);
+  selection$ = new BehaviorSubject<Array<any>>([]);
   selectedNodes$ = this.selection$.pipe(map(currentSelection => {
     return new Set(compact(currentSelection.map(e => e[SelectionType.node])));
   }));
@@ -42,7 +42,7 @@ export class SankeySelectionService {
         if (idxOfSelectedLink !== -1) {
           selection.splice(idxOfSelectedLink, 1);
         } else {
-          selection.push({
+          selection.unshift({
             [type]: entity
           } as SelectionEntity);
         }

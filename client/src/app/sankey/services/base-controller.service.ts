@@ -14,11 +14,12 @@ import {
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
-import { StateControlAbstractService, unifiedSingularAccessor } from './state-controlling-abstract.service';
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
+import { StateControlAbstractService } from '../abstract/state-control.service';
+import { unifiedSingularAccessor } from '../utils/rxjs';
 
 export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
 /**
@@ -169,7 +170,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  });
+  })
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution

@@ -6,9 +6,9 @@ import { size, isNil } from 'lodash-es';
 
 import { tokenizeQuery } from 'app/shared/utils/find';
 
-import { WorkerOutputActions } from './search-worker-actions';
+import { WorkerOutputActions } from '../utils/search/search-worker-actions';
 import { ControllerService } from './controller.service';
-import { Match } from './search-match';
+import { Match } from '../utils/search/search-match';
 
 @Injectable()
 // @ts-ignore
@@ -153,7 +153,6 @@ export class SankeySearchService implements OnDestroy {
 
   setFocusIdx(focusIdx: number) {
     return this.resultsCount$.pipe(
-      tap(r => console.log('resultsCount', r)),
       // modulo which works on negative numbers
       map(resultsCount => ((focusIdx % resultsCount) + resultsCount) % resultsCount),
       distinctUntilChanged(),
@@ -162,8 +161,7 @@ export class SankeySearchService implements OnDestroy {
   }
 
   setUpWorker(results$) {
-    console.log('setUpWorker');
-    const worker = new Worker('./search.worker', {type: 'module'});
+    const worker = new Worker('../utils/search/search.worker', {type: 'module'});
     worker.onmessage = ({data: {action, actionLoad}}) => {
       switch (action) {
         case WorkerOutputActions.match:

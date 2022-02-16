@@ -17,13 +17,13 @@ import { SankeyDetailsPanelModule } from 'app/sankey/components/details-panel/sa
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
-import { SankeyMutiLaneDetailsPanelComponent } from './details-panel.component';
-import { SankeyMultiLaneLinkDetailsComponent } from './link-details.component';
+import { SankeySingleLaneDetailsPanelComponent } from './details-panel.component';
+import { SankeySingleLaneLinkDetailsComponent } from './link-details.component';
 
 @NgModule({
   declarations: [
-    SankeyMutiLaneDetailsPanelComponent,
-    SankeyMultiLaneLinkDetailsComponent
+    SankeySingleLaneDetailsPanelComponent,
+    SankeySingleLaneLinkDetailsComponent
   ],
   imports: [
     CommonModule,
@@ -44,8 +44,8 @@ import { SankeyMultiLaneLinkDetailsComponent } from './link-details.component';
     RouterModule.forChild([])
   ],
   exports: [
-    SankeyMutiLaneDetailsPanelComponent
+    SankeySingleLaneDetailsPanelComponent
   ],
 })
-export class SankeyMultiLaneDetailsPanelModule {
+export class SankeySingleLaneDetailsPanelModule {
 }

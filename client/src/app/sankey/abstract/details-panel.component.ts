@@ -1,13 +1,14 @@
-import { Input, } from '@angular/core';
+import { Input, Injectable, } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 import { map } from 'rxjs/operators';
 
-import { parseForRendering } from '../utils';
+import { parseForRendering } from '../utils/utils';
 import { ControllerService } from '../services/controller.service';
 import { SankeyNode } from '../interfaces';
 
+@Injectable()
 export class SankeyAbstractDetailsComponent {
   constructor(
     private common: ControllerService,

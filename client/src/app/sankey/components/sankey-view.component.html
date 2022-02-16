@@ -166,7 +166,7 @@
             <as-split-area [order]="0">
                 <ng-template appSankey></ng-template>
             </as-split-area>
-            <as-split-area [order]="0.1" size="340">
+            <as-split-area [order]="0.1" size="50">
                 <h5>Common:</h5>
                 <app-object-explorer *ngIf="{
                               default$: sankeyController.default$ | async,
@@ -198,10 +198,10 @@
             </as-split-area>
             <as-split-area [class]="[
                                 'as-split-area',
-                                detailsPanel ? 'border' : 'as-hidden'
+                                detailsPanel$ ? 'border' : 'as-hidden'
                                ].join(' ')"
                            [order]="1"
-                           [visible]="detailsPanel"
+                           [visible]="detailsPanel$ | async"
                            size="340">
                 <div class="w-100 h-100 p-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -221,10 +221,10 @@
             </as-split-area>
             <as-split-area [class]="[
                                 'as-split-area',
-                                searchPanel ? 'border' : 'as-hidden'
+                                searchPanel$ ? 'border' : 'as-hidden'
                                ].join(' ')"
                            [order]="1"
-                           [visible]="searchPanel"
+                           [visible]="searchPanel$ | async"
                            size="340">
                 <div class="w-100 h-100 p-3 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-center">

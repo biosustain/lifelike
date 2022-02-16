@@ -7,7 +7,7 @@ import { Component, OnInit, Input, ElementRef } from '@angular/core';
 })
 export class SearchResultComponent {
   constructor(protected element: ElementRef) {}
-  @Input('result') result!: any;
-  @Input('searchTokens') searchTokens!: any;
-  @Input('focused') focused: boolean;
+  @Input() result!: any;
+  @Input() searchTokens!: any;
+  @Input() focused: boolean;
 }
