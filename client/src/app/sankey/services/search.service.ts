@@ -115,18 +115,9 @@ export class SankeySearchService implements OnDestroy {
   );
 
   preprocessedMatches$ = this.matches$.pipe(
-    tap(results => console.count('source results update')),
     throttleTime(0, undefined, {leading: false, trailing: true}),
-    tap(results => console.count('results update')),
     // each subscriber gets same results$ (one worker)
     shareReplay(1)
-    //     windowToggle(this.term$, () => new Subject()),
-    //     tap(searchTask$ => this.ongoingSearch$.next(searchTask$)),
-    //     switchMap(currentMatches$ => currentMatches$),
-    //     tap(matches => matches.sort((a, b) => a.networkTraceIdx - b.networkTraceIdx)),
-    //     tap(matches => matches.sort((a, b) => b.calculatedMatches[0].priority - a.calculatedMatches[0].priority))
-    //   )
-    // )
   );
 
   searchFocus$ = this.preprocessedMatches$.pipe(
