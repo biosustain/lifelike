@@ -77,9 +77,9 @@ export class UserProfileComponent implements OnInit  {
   submit() {
     const progressDialogRef = this.progressDialog.display({
             title: `Updating User`,
-            progressObservable: new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new BehaviorSubject<Progress>(new Progress({
               status: 'Updating user...',
-            })),
+            }))],
           });
     const updatedUser = this.getValue();
     // Data object containing one key (hash_id) -> no update data provided

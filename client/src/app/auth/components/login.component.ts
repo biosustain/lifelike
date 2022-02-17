@@ -69,9 +69,9 @@ export class LoginComponent {
     modalRef.result.then(email => {
       const progressDialogRef = this.progressDialog.display({
         title: `Sending request`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({
           status: 'Sending request...',
-        })),
+        }))],
       });
       this.accountService.resetPassword(email.email)
         .pipe()
