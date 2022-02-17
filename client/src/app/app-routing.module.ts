@@ -30,9 +30,11 @@ import { ObjectViewerComponent } from 'app/file-browser/components/object-viewer
 import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.component';
 import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.component';
 import { SankeyManyToManyViewComponent } from 'app/sankey-many-to-many-viewer/components/sankey-view.component';
-import { PolicyViewerComponent } from 'app/policies/components/policy-viewer.component';
-import { HelpAndInfoComponent } from 'app/help-and-info/components/help-and-info.component';
 import { CopyrightInfringementFormComponent } from 'app/reports/components/copyright-infringement-form.component';
+import { CookiePolicyComponent } from 'app/policies/components/cookie-policy.component';
+import { CopyrightInfringementPolicyComponent } from 'app/policies/components/copyright-infringement-policy.component';
+import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
+import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
 
 
 const routes: Routes = [
@@ -313,27 +315,35 @@ const routes: Routes = [
     },
   },
   {
-    path: 'policies',
-    component: PolicyViewerComponent,
+    path: 'terms-and-conditions',
+    component: TermsAndConditionsComponent,
     data: {
-      title: 'Policies',
+      title: 'Terms and Conditions',
       fontAwesomeIcon: 'fas fa-file-alt',
     },
   },
   {
-    path: 'policies/:policy',
-    component: PolicyViewerComponent,
+    path: 'privacy-policy',
+    component: PrivacyPolicyComponent,
     data: {
-      title: 'Policies',
+      title: 'Privacy Policy',
       fontAwesomeIcon: 'fas fa-file-alt',
     },
   },
   {
-    path: 'help',
-    component: HelpAndInfoComponent,
+    path: 'cookie-policy',
+    component: CookiePolicyComponent,
     data: {
-      title: 'Help & Info',
-      fontAwesomeIcon: 'fas fa-question-circle',
+      title: 'Cookie Policy',
+      fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'copyright-infringement-policy',
+    component: CopyrightInfringementPolicyComponent,
+    data: {
+      title: 'Copyright Infringement Policy',
+      fontAwesomeIcon: 'fas fa-file-alt',
     },
   },
   {
