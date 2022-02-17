@@ -4,7 +4,7 @@ import { max, min, sum } from 'd3-array';
 import { first, last, clone } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyData } from 'app/sankey/interfaces';
+import { SankeyNode, NetworkTraceData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { LayoutService, groupByTraceGroupWithAccumulation } from 'app/sankey/services/layout.service';
 
@@ -125,7 +125,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
   /**
    * Same as parent method just ignoring circular links
    */
-  computeNodeHeights({nodes}: SankeyData) {
+  computeNodeHeights({nodes}: NetworkTraceData) {
     const {
       ky, nodeHeight, value
     } = this;
