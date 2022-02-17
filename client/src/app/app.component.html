@@ -46,9 +46,25 @@
         <i class="fa fa-comment"></i>
       </a>
 
-      <a class="dropdown-item" [routerLink]="['/help']" placement="right" triggers="hover" ngbTooltip="Help & Info">
-        <i class="fas fa-question-circle"></i>
-      </a>
+      <div ngbDropdown placement="top-left" container="body">
+        <a id="terms-and-policies-dropdown" ngbDropdownToggle ngbTooltip="Terms & Policies" container="body">
+          <i class="far fa-file-contract"></i>
+        </a>
+        <div ngbDropdownMenu aria-labelledby="terms-and-policies-dropdown" class="dropdown-menu">
+          <a class="dropdown-item" [routerLink]="['/terms-and-conditions']" placement="right">
+            Terms & Conditions
+          </a>
+          <a class="dropdown-item" [routerLink]="['/privacy-policy']" placement="right">
+            Privacy Policy
+          </a>
+          <a class="dropdown-item" [routerLink]="['/cookie-policy']" placement="right">
+            Cookie Policy
+          </a>
+          <a class="dropdown-item" [routerLink]="['/copyright-infringement-policy']" placement="right">
+            Copyright Infringement Policy
+          </a>
+        </div>
+      </div>
 
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
