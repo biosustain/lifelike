@@ -89,8 +89,6 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     }
   }
 
-  // endregion
-
   ngAfterViewInit() {
     super.ngAfterViewInit();
   }
@@ -248,29 +246,12 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
 
 
   highlightNode(element) {
-    const {
-      nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
-    } = this.sankey;
+    const { extendNodeLabel } = this;
     const selection = d3_select(element)
       .raise()
       .attr('highlighted', true)
       .select('g')
-      .call(textGroup => {
-        textGroup
-          .select('text')
-          .text(nodeLabelShort)
-          .filter(nodeLabelShouldBeShorted)
-          // todo: reenable when performance improves
-          // .transition().duration(RELAYOUT_DURATION)
-          // .textTween(n => {
-          //   const label = nodeLabelAccessor(n);
-          //   const length = label.length;
-          //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-          //   return t => t === 1 ? label :
-          //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
-          // })
-          .text(nodeLabel);
-      });
+      .call(extendNodeLabel);
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection

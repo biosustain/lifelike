@@ -32,12 +32,9 @@ export interface SankeySingleLaneData extends SankeyData {
   nodes: SankeySingleLaneNode[];
 }
 
-
-// region Selection
 export type SelectionSingleLaneEntity = SelectionEntity | {
   [SelectionType.link]: SankeySingleLaneLink;
 };
-// endregion
 
 export type SankeySingleLaneSelection = {
   node: SankeySingleLaneNode

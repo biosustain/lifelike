@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { first, last, merge, omit, isNil, clone } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
-import { combineLatest, Observable, iif, of } from 'rxjs';
+import { combineLatest, Observable, iif, of, ReplaySubject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyState, SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
@@ -100,7 +100,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
       // check if any trace is finishing or starting here
       const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
-      // if it is only one then color node
+      // if there is only one trace start/end then color node with its color
       if (difference.size === 1) {
         return difference.values().next().value._trace._color;
       } else {
@@ -148,6 +148,20 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
               }),
               this.populateVerticalSnapshot(),
               this.populateHorizontalSnapshot(),
+              // Adjust the zoom so view fits into viewport
+              tap(graph => {
+                const {horizontal: {width: currentWidth}, vertical: {height: currentHeight}} = this;
+                const {
+                  width = currentWidth,
+                  height = currentHeight
+                } = view.size;
+                this.zoomAdjustment$.next(
+                  Math.min(
+                    currentWidth / width,
+                    currentHeight / height
+                  )
+                );
+              }),
               switchMap(graph =>
                 unifiedAccessor(this.baseView.common.state$, [
                   'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
@@ -162,6 +176,24 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     ),
     shareReplay<NetworkTraceData>(1)
   );
+
+  zoomAdjustment$ = new ReplaySubject<number>(1);
+
+  /**
+   * Same as parent method just ignoring circular links
+   */
+  computeNodeHeights({nodes}: NetworkTraceData) {
+    const {
+      ky, nodeHeight, value
+    } = this;
+    for (const node of nodes) {
+      if (nodeHeight.min.enabled && nodeHeight.min.value) {
+        node._height = Math.max(value(node) * ky, nodeHeight.min.value);
+      } else {
+        node._height = value(node) * ky;
+      }
+    }
+  }
 
   /**
    * Calculate layout and address possible circular links
@@ -196,7 +228,17 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       tap(graph => SankeyAbstractLayoutService.computeLinkBreadths(graph)),
       tap(graph => this.cleanVirtualNodes(graph)),
       this.populateHorizontalSnapshot(),
-      tap(graph => this.positionNodesHorizontaly(graph)),
+      // Ussing map since tap does not keep track of index
+      map((graph, callIndex) => {
+        if (callIndex === 0) {
+          // Absolute node positioning
+          this.positionNodesHorizontaly(graph);
+        } else {
+          // Relative node positioning (to preserve draged node position)
+          this.repositionNodesHorizontaly(graph);
+        }
+        return graph;
+      }),
       switchMap(graph =>
         unifiedAccessor(this.baseView.common.state$, [
           'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
@@ -233,7 +275,14 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   populateHorizontalSnapshot<T>() {
     return switchMap((graph: T) => this.horizontal$.pipe(
-      tap(snapshot => this.horizontal = snapshot),
+      map((snapshot, callIndex) => {
+        if (callIndex === 0) {
+          this.horizontal = snapshot;
+        } else {
+          // modifies snapshot - keeps track of change ratio
+          this.horizontal.set(snapshot);
+        }
+      }),
       map(() => graph)
     ));
   }
@@ -346,19 +395,14 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       const targetNormalizer = _targetLinks._normalizer ?? (_targetLinks._normalizer = normalizeGenerator(targetValues));
       const sourceHeight = _source._y1 - _source._y0;
       const targetHeight = _target._y1 - _target._y0;
-      // tslint:disable-next-line:no-bitwise
+
       sourceY0 = (sourceNormalizer.normalize(sourceY) * sourceHeight) + _source._y0;
-      // tslint:disable-next-line:no-bitwise
       targetY0 = (targetNormalizer.normalize(targetY) * targetHeight) + _target._y0;
       if (_multiple_values) {
-        // tslint:disable-next-line:no-bitwise
         sourceY1 = (sourceNormalizer.normalize(_multiple_values[0]) * sourceHeight) + sourceY0;
-        // tslint:disable-next-line:no-bitwise
         targetY1 = (targetNormalizer.normalize(_multiple_values[1]) * targetHeight) + targetY0;
       } else {
-        // tslint:disable-next-line:no-bitwise
         sourceY1 = (sourceNormalizer.normalize(linkValue) * sourceHeight) + sourceY0;
-        // tslint:disable-next-line:no-bitwise
         targetY1 = (targetNormalizer.normalize(linkValue) * targetHeight) + targetY0;
       }
     } else {
@@ -366,19 +410,13 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       _width = _width || 1e-4;
       const valueScaler = _width / linkValue;
 
-      // tslint:disable-next-line:no-bitwise
       sourceY0 = sourceY * valueScaler + _source._y0;
-      // tslint:disable-next-line:no-bitwise
       targetY0 = targetY * valueScaler + _target._y0;
       if (_multiple_values) {
-        // tslint:disable-next-line:no-bitwise
         sourceY1 = _multiple_values[0] * valueScaler + sourceY0;
-        // tslint:disable-next-line:no-bitwise
         targetY1 = _multiple_values[1] * valueScaler + targetY0;
       } else {
-        // tslint:disable-next-line:no-bitwise
         sourceY1 = linkValue * valueScaler + sourceY0;
-        // tslint:disable-next-line:no-bitwise
         targetY1 = linkValue * valueScaler + targetY0;
       }
     }
@@ -472,23 +510,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       next = new Set();
     }
   };
-
-
-  /**
-   * Same as parent method just ignoring circular links
-   */
-  computeNodeHeights({nodes}: NetworkTraceData) {
-    const {
-      ky, nodeHeight, value
-    } = this;
-    for (const node of nodes) {
-      if (nodeHeight.min.enabled && nodeHeight.min.value) {
-        node._height = Math.max(value(node) * ky, nodeHeight.min.value);
-      } else {
-        node._height = value(node) * ky;
-      }
-    }
-  }
 
   layoutNodesWithinColumns(columns) {
     const {ky} = this;

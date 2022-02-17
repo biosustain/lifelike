@@ -3,9 +3,6 @@ import { Injectable } from '@angular/core';
 import { of, Subject, iif, throwError, ReplaySubject, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
 import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
-// @ts-ignore
-import { tag } from 'rxjs-spy/operators/tag';
-
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -32,7 +29,7 @@ import {
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
-import { isPositiveNumber } from '../utils/utils';
+import { isPositiveNumber, indexByProperty } from '../utils/utils';
 import { LayoutService } from './layout.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { StateControlAbstractService } from '../abstract/state-control.service';
@@ -199,16 +196,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   partialNetworkTraceData$ = this.networkTrace$.pipe(
     switchMap(({sources, targets, traces}) => this.data$.pipe(
       map(({links, nodes, graph: {node_sets}}) => {
-        // const linkIdxs = flatMap(traces, trace => trace.edges);
-        // const _links = linkIdxs.map(idx => links[idx]);
-        // const nodeIds = flatMap(_links, link => [link.source, link.target]);
-        // const nodeById = this.getNodeById(nodes);
-        // const _nodes = nodeIds.map(id => nodeById.get(id));
         return ({
-          // linkIds: flatMap(traces, trace => trace.edges),
-          // nodeIds: flatMap(traces, trace => trace.nodes),
-          // links: _links,
-          // nodes: _nodes,
           links,
           nodes,
           traces,
@@ -231,9 +219,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(clone);
-          // todo
-          // const layout = new LayoutService();
-          // layout.computeNodeLinks({links: traceLinks, nodes: traceNodes});
+
           const source = traceNodes.find(n => n._id === String(trace.source));
           const target = traceNodes.find(n => n._id === String(trace.target));
 
@@ -374,8 +360,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     return this.patchState({
       networkTraceIdx,
       baseViewName: null,
-      // todo check
-      // predefinedValueAccessorId: null
     });
   }
 
@@ -408,10 +392,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
    * Helper to create Map for fast lookup
    */
   getNodeById<T extends { _id: SankeyId }>(nodes: T[]) {
-    // todo: find the way to declare it only once
-    // tslint:disable-next-line
-    const id = ({_id}, i?, nodes?) => _id;
-    return new Map<number, T>(nodes.map((d, i) => [id(d, i, nodes), d]));
+    return indexByProperty(nodes, '_id');
   }
 
   /**
@@ -584,6 +565,4 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     this.preprocessData(content);
     this.extractOptionsFromGraph(content);
   }
-
-
 }

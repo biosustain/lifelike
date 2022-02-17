@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { ReplaySubject, iif, of, Subject, Observable } from 'rxjs';
 import { map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilChanged, throttleTime, filter } from 'rxjs/operators';
@@ -11,8 +11,7 @@ import { ControllerService } from './controller.service';
 import { Match } from '../utils/search/search-match';
 
 @Injectable()
-// @ts-ignore
-export class SankeySearchService implements OnDestroy {
+export class SankeySearchService {
   constructor(
     readonly common: ControllerService
   ) {
@@ -26,7 +25,7 @@ export class SankeySearchService implements OnDestroy {
     });
   }
 
-  // +/- index of the currently focused match
+  // index of the currently focused match
   focusIdx$ = new ReplaySubject<number>(1);
 
   term$ = new ReplaySubject<string>(1);
@@ -91,11 +90,6 @@ export class SankeySearchService implements OnDestroy {
                   });
                   return matches;
                 }, [] as Match[]),
-                // Grouping
-                // scan((matches, newMatches) => {
-                //   matches[newMatches.networkTraceIdx].push(newMatches);
-                //   return matches;
-                // }, data.graph.trace_networks.map(() => [] as Match[])),
                 shareReplay<Match[]>(1)
               )
             };

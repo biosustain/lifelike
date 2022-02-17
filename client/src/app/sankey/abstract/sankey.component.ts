@@ -5,7 +5,6 @@ import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap } from 'rxjs/operators';
-import { size } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -73,10 +72,29 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
       .attr('font-size', fontSize);
   }
 
-  // region Properties (&Accessors)
-  readonly MARGIN = 10;
+  get extendNodeLabel() {
+    const {
+      nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
+    } = this.sankey;
+    return textGroup => {
+      textGroup
+        .select('text')
+        .text(nodeLabelShort)
+        .filter(nodeLabelShouldBeShorted)
+        // todo: reenable when performance improves
+        // .transition().duration(RELAYOUT_DURATION)
+        // .textTween(n => {
+        //   const label = nodeLabelAccessor(n);
+        //   const length = label.length;
+        //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
+        //   return t => t === 1 ? label :
+        //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
+        // })
+        .text(nodeLabel);
+    };
+  }
 
-  // endregion
+  readonly MARGIN = 10;
 
   focusedEntity$ = this.sankey.dataToRender$.pipe(
     switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
@@ -96,7 +114,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
           default:
             this.sankey.baseView.warningController.warn(`Node type ${type} is not supported`);
         }
-        return { type, id, data };
+        return {type, id, data};
       })
     ))
   );
@@ -117,15 +135,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   @ViewChild('g', {static: false}) g!: ElementRef;
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
-
-  // @Output() backgroundClicked = new EventEmitter();
-  // @Output() enter = new EventEmitter();
-  //
-  // @Input() normalizeLinks = true;
-  // @Input() selectedNodes = new Set<object>();
-  // @Input() searchedEntities = [];
-  // @Input() focusedNode;
-  // @Input() selectedLinks = new Set<object>();
 
   static updateTextShadow(_) {
     // this contains ref to textGroup
@@ -152,6 +161,14 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
 
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
+
+    this.sankey.zoomAdjustment$.subscribe(adjustment =>
+      this.zoom.scaleTo(
+        this.sankeySelection,
+        adjustment,
+        [0, 0]
+      )
+    );
 
     this.sankey.dataToRender$.subscribe(data => {
       this.updateDOM(data);
@@ -232,8 +249,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // endregion
-
   // region Graph sizing
   onResize({width, height}) {
     const {zoom, margin} = this;
@@ -247,7 +262,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
       .call(
         zoom
           .extent([[0, 0], [width, height]])
-        // .translateExtent([[0, 0], [width, height]])
       );
 
     this.sankey.setExtent({
@@ -256,17 +270,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
       y0: margin.top,
       y1: extentY
     });
-    // todo
-    // const [prevInnerWidth, prevInnerHeight] = this.sankey.size;
-    // this.sankey.extent = [[margin.left, margin.top], [extentX, extentY]];
-    // const [innerWidth, innerHeight] = this.sankey.size;
-    //
-    // this.resized.emit({width: innerWidth, height: innerHeight});
-    //
-    // const parsedData = innerHeight / prevInnerHeight === 1 ?
-    //   this.scaleLayout(this.data, innerWidth / prevInnerWidth) :
-    //   this.updateLayout(this.data);
-    // return parsedData.then(data => this.updateDOM(data));
   }
 
   // endregion
@@ -373,14 +376,13 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   }
 
   scaleZoom(scaleBy) {
-    // @ts-ignore
-    this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
+    return this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
   }
 
   // noinspection JSUnusedGlobalSymbols
   resetZoom() {
     // it is used by its parent
-    this.sankeySelection.call(this.zoom.transform, d3_zoomIdentity);
+    return this.sankeySelection.call(this.zoom.transform, d3_zoomIdentity);
   }
 
   // the function for moving the nodes
@@ -445,8 +447,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
       .attr('selected', undefined);
   }
 
-  // endregion
-
   // region Search
   searchNodes(nodeIdxs: Set<string | number>) {
     const selection = this.nodeSelection
@@ -476,8 +476,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   }
 
   stopSearchLinks() {
-    // tslint:disable-next-line:no-unused-expression
-    this.linkSelection
+    return this.linkSelection
       .attr('searched', undefined);
   }
 
@@ -597,21 +596,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     ).toPromise();
   }
 
-  // todo
-  //         if (isObject(data._precomputedLayout)) {
-  //         const [currentWidth, currentHeight] = this.sankey.size;
-  //         const {width = currentWidth, height = currentHeight} = data._precomputedLayout;
-  //         this.zoom.scaleTo(
-  //           this.sankeySelection,
-  //           Math.min(
-  //             currentWidth / width,
-  //             currentHeight / height
-  //           ),
-  //           [0, 0]
-  //         );
-  //       }
-
-
   // region Render
 
   updateNodeRect = rects => rects
@@ -624,7 +608,6 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
    * @param graph: { links, nodes } to be rendered
    */
   updateDOM(graph) {
-    // noinspection JSUnusedLocalSymbols
     const {
       updateNodeRect, updateNodeText,
       sankey: {

@@ -136,6 +136,16 @@ export class ViewControllerService {
           ...partialView,
           nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
           links: this.mapToPropertyObject(links, this.linkViewProperties)
+        }))
+      )),
+      switchMap(partialView => this.layout$.pipe(
+        first(),
+        map(layout => ({
+          ...partialView,
+          size: {
+            width: layout.horizontal.width,
+            height: layout.vertical.height
+          }
         } as SankeyView))
       )),
       switchMap(view => this.views$.pipe(

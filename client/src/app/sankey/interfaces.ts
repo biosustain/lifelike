@@ -214,7 +214,7 @@ export interface SankeyPathReport {
 
 // endregion
 
-// Do not change! tightly coupled with url
+// Do not change these strings! They are tightly coupled with urls.
 export enum ViewBase {
   sankeyMultiLane = 'sankey',
   sankeySingleLane = 'sankey-many-to-many'

@@ -139,7 +139,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     return this.predefinedValueAccessorReducer({predefinedValueAccessors}, {predefinedValueAccessorId});
   }
 
-  // @ts-ignore
   patchState(statePatch) {
     return this.delta$.pipe(
       first(),
@@ -192,7 +191,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
       )
     );
 
-    // noinspection JSVoidFunctionReturnValueUsed
     this.linkValueAccessor$ = unifiedSingularAccessor(
       this.state$, 'linkValueAccessorId'
     ).pipe(

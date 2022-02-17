@@ -23,7 +23,7 @@ export function calculateInputCountSkippingCircularLinks(
     const nextLinks = dt.nextLinks(n);
     n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
     this.warningController.assert(
-      // JS floats calculations has very limited precision
+      // JS floats calculations has very limited precision which can lead to rounding error in here
       n._fixedValue.toPrecision(5) <= maxExpectedValue,
       'Input count algorithm fail - node value exceeds input node count'
     );
