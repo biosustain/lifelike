@@ -62,7 +62,7 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
-import { justify, left, right } from '../utils/aligin';
+import { left, right } from '../utils/aligin';
 
 interface Extent {
   x0: number;
@@ -73,29 +73,54 @@ interface Extent {
 
 class Horizontal {
   constructor({x0, x1}) {
-    this.x0 = x0;
-    this.x1 = x1;
+    this._x0 = x0;
+    this._x1 = x1;
   }
 
-  x0: number;
-  x1: number;
-
   get width() {
-    return this.x1 - this.x0;
+    return this._x1 - this._x0;
+  }
+
+  private _changeRatio = 1;
+  get changeRatio() {
+    return this._changeRatio;
+  }
+
+  private _x0: number;
+  get x0() {
+    return this._x0;
+  }
+
+  private _x1: number;
+  get x1() {
+    return this._x1;
+  }
+
+  set({x0, x1}) {
+    this._changeRatio = (x1 - x0) / this.width;
+    this._x0 = x0;
+    this._x1 = x1;
   }
 }
 
 class Vertical {
   constructor({y0, y1}) {
-    this.y0 = y0;
-    this.y1 = y1;
+    this._y0 = y0;
+    this._y1 = y1;
   }
 
-  y0: number;
-  y1: number;
+  private _y0: number;
+  get y0() {
+    return this._y0;
+  }
+
+  private _y1: number;
+  get y1() {
+    return this._y1;
+  }
 
   get height() {
-    return this.y1 - this.y0;
+    return this._y1 - this._y0;
   }
 }
 
@@ -620,10 +645,18 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
   }
 
   positionNodesHorizontaly(graph) {
-    const {x , horizontal: {x1, x0}, dx} = this;
+    const {x, horizontal: {x1, x0}, dx} = this;
     const kx = (x1 - x0 - dx) / (x - 1);
     for (const node of graph.nodes) {
       node._x0 = x0 + node._layer * kx;
+      node._x1 = node._x0 + dx;
+    }
+  }
+
+  repositionNodesHorizontaly(graph) {
+    const { horizontal: {changeRatio, x0}, dx} = this;
+    for (const node of graph.nodes) {
+      node._x0 = (node._x0 - x0) * changeRatio + x0;
       node._x1 = node._x0 + dx;
     }
   }

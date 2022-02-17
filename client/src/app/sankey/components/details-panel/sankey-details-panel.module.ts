@@ -29,7 +29,6 @@ import { SankeyDetailsPanelComponent } from './details-panel.component';
   imports: [
     CommonModule,
     FormsModule,
-    // BrowserAnimationsModule,
     MatFormFieldModule,
     MatCheckboxModule,
     MatSidenavModule,

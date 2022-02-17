@@ -16,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, pairwise, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, assign, size } from 'lodash-es';
+import { isNil, pick, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -92,7 +92,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         this.object = object;
         this.emitModuleProperties();
         this.currentFileId = object.hashId;
-        return this.sankeyController.loadData(content as SankeyData);
+        if (this.sanityChecks(content)) {
+          return this.sankeyController.loadData(content as SankeyData);
+        }
       })
     ).subscribe(() => {
     });
@@ -274,23 +276,22 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     this.baseViewContext$.subscribe();
   }
 
-  // todo
-  // sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
-  //   let pass = true;
-  //   if (!trace_networks.length) {
-  //     this.warningController.warn('File does not contain any network traces', false);
-  //     pass = false;
-  //   }
-  //   if (!nodes.length) {
-  //     this.warningController.warn('File does not contain any nodes', false);
-  //     pass = false;
-  //   }
-  //   if (!links.length) {
-  //     this.warningController.warn('File does not contain any links', false);
-  //     pass = false;
-  //   }
-  //   return pass;
-  // }
+  sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
+    let pass = true;
+    if (!trace_networks.length) {
+      this.warningController.warn('File does not contain any network traces', false);
+      pass = false;
+    }
+    if (!nodes.length) {
+      this.warningController.warn('File does not contain any nodes', false);
+      pass = false;
+    }
+    if (!links.length) {
+      this.warningController.warn('File does not contain any links', false);
+      pass = false;
+    }
+    return pass;
+  }
 
 
   saveFile(data: GraphFile) {
@@ -320,11 +321,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   async selectNetworkTrace(networkTraceIdx) {
     await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
-
-    // this.resetSelection();
-    // if (this.entitySearchTerm) {
-    //   this.search();
-    // }
   }
 
   open(content) {
@@ -405,7 +401,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   closeDetailsPanel() {
     this.detailsPanel$.next(false);
-    // this.resetSelection();
   }
 
   closeSearchPanel() {
@@ -480,9 +475,4 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       ),
     ).toPromise();
   }
-
-  // region Search
-
-
-  // endregion
 }

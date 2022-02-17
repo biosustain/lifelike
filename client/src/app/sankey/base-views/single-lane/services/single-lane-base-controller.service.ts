@@ -2,8 +2,6 @@ import { Injectable, Injector } from '@angular/core';
 
 import { flatMap, groupBy, intersection, pick } from 'lodash-es';
 import { switchMap, map, shareReplay } from 'rxjs/operators';
-// @ts-ignore
-import { tag } from 'rxjs-spy/operators/tag';
 import { of, Observable } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
@@ -33,12 +31,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   ) {
     super(common, warningController, injector);
     this.onInit();
-    // todo make it direct
-    this.graphInputState$ = this.common.state$.pipe(
-      map(state => pick(state, ['normalizeLinks'])),
-      // disable so temp each change cause update
-      // distinctUntilChanged(isEqual)
-    );
   }
 
   viewBase = ViewBase.sankeySingleLane;

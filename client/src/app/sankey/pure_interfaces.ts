@@ -4,9 +4,9 @@
 import { GraphNode, GraphLink, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 // region Graph as Sankey
-// Add properties used internally to compute layout
 export type SankeyId = string | number;
 
+// Add properties used internally to compute layout
 export interface SankeyNode extends GraphNode {
   // Temp definitions to fix LL-3499
   sourceLinks?: Array<SankeyLink>;
