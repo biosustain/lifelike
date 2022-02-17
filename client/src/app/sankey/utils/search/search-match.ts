@@ -7,13 +7,14 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, transform, isObject, uniq, flatMap, pullAt } from 'lodash-es';
+import { omit, slice, isObject, uniq, flatMap, pullAt } from 'lodash-es';
 
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { GraphLink, GraphTrace, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 
 import { SankeyTrace, SankeyId } from '../../pure_interfaces';
+import { indexByProperty } from '../utils';
 
 interface SearchLink extends GraphLink {
   _id: SankeyId;
@@ -53,18 +54,6 @@ export interface MatchGenerator {
   id: SankeyId;
   matchGenerator: Generator<Match>;
 }
-
-/**
- * When searching for item based on property, we can get performance boost by
- * making index by the property first.
- * ***NOTE***:
- * This code assumes that the property is unique.
- * If it is not, then the last match will be returned for given index,
- * @param data - set of objects to index
- * @param property - property to index by
- */
-const indexByProperty = <D extends object>(data: Array<D>, property: keyof D) =>
-  transform(data, (acc, n) => acc.set(n[property], n), new Map());
 
 export class SankeySearch {
   constructor({

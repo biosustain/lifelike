@@ -79,7 +79,7 @@ export class StateControlAbstractService<Options extends object, State extends o
         return iif(
           () => !isNil(newStateDelta),
           of(
-            // ommit empty values so they can be overridden by defaultState
+            // ommit empty values so they can be reset to defaultState
             omitBy(
               newStateDelta,
               isNil

@@ -1,4 +1,3 @@
-// region Colors
 import { isDevMode } from '@angular/core';
 
 import { cubehelix } from 'd3-color';

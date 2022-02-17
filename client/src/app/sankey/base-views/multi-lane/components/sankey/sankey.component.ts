@@ -8,7 +8,7 @@ import { isEmpty, flatMap } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { mapIterable } from 'app/shared/utils';
-import { SankeyId, SankeyTrace, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
+import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode } from '../../interfaces';
@@ -139,15 +139,12 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
     // this.unhighlightLinks();
   }
 
-  // endregion
-
   // region Select
   /**
    * Adds the `selected` property to the given input nodes.
    * @param nodesIds set of node data objects to use for selection
    */
   selectNodes(nodesIds: Set<SankeyId>) {
-    // tslint:disable-next-line:no-unused-expression
     this.nodeSelection
       .attr('selected', ({_id}) => nodesIds.has(_id));
   }
@@ -157,8 +154,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
    * @param linksIds set of link data objects to use for selection
    */
   selectLinks(linksIds: Set<SankeyId>) {
-    // tslint:disable-next-line:no-unused-expression
-    this.linkSelection
+    return this.linkSelection
       .attr('selected', ({_id}) => linksIds.has(_id));
   }
 
@@ -206,28 +202,11 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
   }
 
   highlightNode(element) {
-    const {
-      nodeLabelShort, nodeLabelShouldBeShorted, nodeLabel
-    } = this.sankey;
+    const {extendNodeLabel} = this;
     const selection = d3_select(element)
       .raise()
       .select('g')
-      .call(textGroup => {
-        textGroup
-          .select('text')
-          .text(nodeLabelShort)
-          .filter(nodeLabelShouldBeShorted)
-          // todo: reenable when performance improves
-          // .transition().duration(RELAYOUT_DURATION)
-          // .textTween(n => {
-          //   const label = nodeLabelAccessor(n);
-          //   const length = label.length;
-          //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-          //   return t => t === 1 ? label :
-          //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
-          // })
-          .text(nodeLabel);
-      });
+      .call(extendNodeLabel);
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection

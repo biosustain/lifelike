@@ -55,8 +55,6 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
     }))
   );
 
-  // delta$ = new BehaviorSubject({});
-
   linkValueAccessors = {
     ...this.linkValueAccessors,
     [LINK_VALUE_GENERATOR.input_count]: {

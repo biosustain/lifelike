@@ -1,6 +1,6 @@
 import { formatNumber } from '@angular/common';
 
-import { clone } from 'lodash-es';
+import { clone, transform } from 'lodash-es';
 
 import { reduceIterable } from 'app/shared/utils';
 
@@ -88,3 +88,15 @@ export function symmetricDifference(setA, setB, accessor) {
     uniqueBy(setA, accessor)
   );
 }
+
+/**
+ * When searching for item based on property, we can get performance boost by
+ * making index by the property first.
+ * ***NOTE***:
+ * This code assumes that the property is unique.
+ * If it is not, then the last match will be returned for given index,
+ * @param data - set of objects to index
+ * @param property - property to index by
+ */
+export const indexByProperty = <D extends object>(data: Array<D>, property: keyof D) =>
+  transform(data, (acc, n) => acc.set(n[property], n), new Map());
