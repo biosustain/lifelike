@@ -30,7 +30,7 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
     super(common, warningController, injector);
     this.onInit();
     this.graphInputState$ = this.common.state$.pipe(
-      map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
+      map(state => pick(state, ['normalizeLinks'])),
       distinctUntilChanged(isEqual)
     );
   }
@@ -90,8 +90,6 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
       })
     ))
   );
-
-  graphInputState$;
 
   linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');
 
