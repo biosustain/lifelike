@@ -2,11 +2,10 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import {Observable, Subscription, forkJoin} from 'rxjs';
+import { Subscription, forkJoin} from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
-import JSZip from 'jszip';
-import {defaultIfEmpty} from 'rxjs/operators';
+import { defaultIfEmpty } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -20,6 +19,7 @@ import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { ImageBlob } from 'app/shared/utils/forms';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -79,10 +79,8 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
-    // Add a dummy observable to always fire the subscription below
-    const { newImages, deletedImages } = this.graphCanvas.getImageChanges();
-    const newImageBlobs = newImages.map(hash => this.mapImageProviderService.getBlob(hash));
-
+    const { newImageHashes, deletedImages } = this.graphCanvas.getImageChanges();
+    const newImageBlobs = newImageHashes.map(hash => this.mapImageProviderService.getBlob(hash));
     const graphString = JSON.stringify(this.graphCanvas.getGraph());
     const bytes = new TextEncoder().encode(graphString);
     const content = new Blob([bytes], {
@@ -90,8 +88,17 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
     const hashesOfLinked = Array.from(this.graphCanvas.getHashesOfLinked());
     // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
-    forkJoin(newImageBlobs).pipe(defaultIfEmpty(null)).subscribe((imageBlobs: Blob[]) => {
-      this.filesystemService.save([this.locator], { contentValue: content, hashesOfLinked, newImages: imageBlobs, deletedImages})
+    forkJoin(newImageBlobs).pipe(defaultIfEmpty([])).subscribe((imageBlobs: Blob[]) => {
+      const newImages: ImageBlob[] = [];
+      for (let i = 0; i < imageBlobs.length; i++) {
+        newImages.push({
+          blob: imageBlobs[i],
+          filename: newImageHashes[i],
+        });
+      }
+      this.filesystemService.save([this.locator], {
+        contentValue: content, newImages, hashesOfLinked, deletedImages, newImageHashes
+      })
         .pipe(this.errorHandler.create({label: 'Update map'}))
         .subscribe(() => {
           this.unsavedChanges$.next(false);

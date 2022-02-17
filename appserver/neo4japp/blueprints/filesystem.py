@@ -300,9 +300,11 @@ class FilesystemBaseView(MethodView):
         # ========================================
         # Fetch and check
         # ========================================
-
+        # TODO: Loading of the content is required only when dealing with a map - maybe we can
+        # add some check to not load it when not needed
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids)
+                                                   require_hash_ids=require_hash_ids,
+                                                   lazy_load_content=True)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
@@ -406,7 +408,7 @@ class FilesystemBaseView(MethodView):
 
                     # Get the provider
                     provider = file_type_service.get(file)
-
+                    buffer = provider.prepare_content(buffer, params, file)
                     try:
                         provider.validate_content(buffer)
                         buffer.seek(0)  # Must rewind
@@ -837,6 +839,7 @@ class FileListView(FilesystemBaseView):
     def patch(self, targets, params):
         """File update endpoint."""
 
+        print(params)
         # do NOT write any code before those two lines - it will cause some unit tests to fail
         current_user = g.current_user
         missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)

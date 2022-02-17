@@ -291,8 +291,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   getImageChanges() {
     const current = this.getCurrentImageSet();
     const deletedImages = this.setOutersect(this.registeredImageHashes, current);
-    const newImages = this.setOutersect(current, this.registeredImageHashes);
-    return {newImages, deletedImages};
+    const newImageHashes = this.setOutersect(current, this.registeredImageHashes);
+    return {newImageHashes, deletedImages};
   }
 
   /**

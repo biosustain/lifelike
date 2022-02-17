@@ -148,6 +148,13 @@ class BaseFileTypeProvider:
         """
         raise ExportFormatError()
 
+    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files):
+        """
+        Create a content to store from request data. Return unmodified if the content does not
+        require additional processing (currently, only maps do)
+        """
+        return buffer
+
     def handle_content_update(self, file: Files):
         """
         Do something after a file content update.
