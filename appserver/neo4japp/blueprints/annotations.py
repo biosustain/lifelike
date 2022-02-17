@@ -17,7 +17,6 @@ from flask import (
     jsonify,
 )
 from flask.views import MethodView
-from flask_apispec import use_kwargs
 from json import JSONDecodeError
 from marshmallow import validate, fields
 from sqlalchemy import and_
@@ -47,7 +46,6 @@ from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
     AnnotationGenerationRequestSchema,
     GlobalAnnotationTableType,
-    FallbackOrganismSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
     GlobalAnnotationListSchema,
@@ -462,11 +460,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             if override_organism is not None:
                 effective_organism = override_organism
             else:
-                effective_organism = dict(
-                    organism_name=file.organism_name,
-                    synonym=file.organism_synonym,
-                    tax_id=file.organism_taxonomy_id
-                )
+                effective_organism = file.fallback_organism
 
             if override_annotation_configs is not None:
                 effective_annotation_configs = override_annotation_configs
