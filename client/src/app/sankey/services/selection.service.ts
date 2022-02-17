@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { isEqual, uniqBy, partialRight } from 'lodash-es';
-import { map, first, distinctUntilChanged, shareReplay } from 'rxjs/operators';
+import { map, first, distinctUntilChanged, shareReplay, tap } from 'rxjs/operators';
 
 import { SelectionType, SelectionEntity, SankeyNode, SankeyLink } from '../interfaces';
 import { ControllerService } from './controller.service';
@@ -51,7 +51,7 @@ export class SankeySelectionService {
           .filter(s => s.type === type)
           .map(s => s.entity)
       ),
-      map(partialRight(uniqBy, '_id')),
+      map(n => uniqBy(n, '_id')),
       distinctUntilChanged(isEqual),
       shareReplay(1)
     );
