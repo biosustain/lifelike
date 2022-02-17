@@ -3,7 +3,7 @@ import { GraphTraceNetwork, GraphGraph, GraphLink, GraphNode, GraphFile } from '
 import { RecursivePartial } from 'app/shared/schemas/common';
 
 import { DefaultLayoutService } from './services/layout.service';
-import { SankeyTrace, SankeyNode, SankeyLink } from './pure_interfaces';
+import { SankeyTrace, SankeyNode, SankeyLink, SankeyId } from './pure_interfaces';
 
 // Re-export the interfaces which are defined separately for DOMless ussage
 export * from './pure_interfaces';
@@ -104,13 +104,7 @@ export interface SankeyFileOptions {
 
 export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 
-export enum NodeAlign {
-  left = 'left',
-  right = 'right'
-}
-
 export interface SankeyState {
-  nodeAlign?: NodeAlign;
   networkTraceIdx?: number;
   prescalerId?: string;
   normalizeLinks?: boolean;
@@ -229,6 +223,8 @@ export enum ViewBase {
 export interface NetworkTraceData {
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
+  sources: SankeyId[];
+  targets: SankeyId[];
 }
 
 export interface ViewSize {

@@ -59,10 +59,10 @@ import { max, min, sum } from 'd3-array';
 import { ReplaySubject, Subject, BehaviorSubject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
-import { justify } from '../utils/aligin';
+import { justify, left, right } from '../utils/aligin';
 
 interface Extent {
   x0: number;
@@ -102,6 +102,8 @@ class Vertical {
 interface LayoutData {
   nodes: SankeyNode[];
   links: SankeyLink[];
+  sources: SankeyId[];
+  targets: SankeyId[];
 }
 
 @Injectable()
@@ -196,10 +198,6 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
       this.vertical$.next(new Vertical(extent));
     }
     this.prevExtent = extent;
-  }
-
-  align(n, node) {
-    return justify(n, node);
   }
 
   update(graph) {
@@ -367,13 +365,19 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     }
   };
 
+  getAlign({sources, targets}: LayoutData) {
+    return sources.length > targets.length ? right : left;
+  }
+
   /**
    * Calculate into which layer node has to be placed and assign x coordinates of this layer
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
-  computeNodeLayers({nodes}: LayoutData): SankeyNode[][] {
-    const {dx, align} = this;
+  computeNodeLayers(graph: LayoutData): SankeyNode[][] {
+    const {dx} = this;
+    const align = this.getAlign(graph);
+    const nodes = graph.nodes;
     const x = max(nodes, d => d._depth) + 1;
     this.x = x;
     const columns = new Array(x);

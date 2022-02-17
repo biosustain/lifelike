@@ -35,7 +35,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
     this.onInit();
     // todo make it direct
     this.graphInputState$ = this.common.state$.pipe(
-      map(state => pick(state, ['nodeAlign', 'normalizeLinks'])),
+      map(state => pick(state, ['normalizeLinks'])),
       // disable so temp each change cause update
       // distinctUntilChanged(isEqual)
     );

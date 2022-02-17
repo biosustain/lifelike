@@ -12,7 +12,6 @@ export const composeState = (states) => {
 
 const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'networkTraceIdx',
-  'nodeAlign',
   'networkTraceIdx',
   'prescalerId',
   'normalizeLinks',
