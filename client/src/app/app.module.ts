@@ -35,7 +35,6 @@ import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { SankeyManyToManyViewerLibModule } from 'app/sankey-many-to-many-viewer/sankey-viewer-lib.module';
 import { FileTypesModule } from 'app/file-types/file-types.module';
 import { PoliciesModule } from 'app/policies/policies.module';
-import { HelpAndInfoModule } from 'app/help-and-info/help-and-info.module';
 import { ReportsModule } from 'app/reports/reports.module';
 
 @NgModule({
@@ -76,7 +75,6 @@ import { ReportsModule } from 'app/reports/reports.module';
     ShortestPathModule,
     EnrichmentTablesModule,
     PoliciesModule,
-    HelpAndInfoModule,
     ReportsModule,
   ],
   providers: [
