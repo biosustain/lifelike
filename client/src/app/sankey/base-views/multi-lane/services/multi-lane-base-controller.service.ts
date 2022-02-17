@@ -51,7 +51,7 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
           ratio: 10
         }
       },
-      linkPaletteId: LINK_PALETTE_ID.adaptive_hue_sat_lgh
+      linkPaletteId: LINK_PALETTE_ID.hue_palette
     }))
   );
 
