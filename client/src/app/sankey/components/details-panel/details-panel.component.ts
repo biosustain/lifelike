@@ -1,6 +1,7 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 import { SankeySelectionService } from '../../services/selection.service';
+import { SelectionType } from '../../interfaces';
 
 @Component({
   selector: 'app-sankey-details-panel',
@@ -11,7 +12,10 @@ import { SankeySelectionService } from '../../services/selection.service';
 export class SankeyDetailsPanelComponent {
   constructor(
     private selectionService: SankeySelectionService
-  ) {  }
+  ) {
+  }
+
+  readonly SelectionType = SelectionType;
 
   details$ = this.selectionService.selection$;
 }

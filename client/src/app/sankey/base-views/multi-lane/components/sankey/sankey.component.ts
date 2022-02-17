@@ -4,11 +4,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
+import { isEmpty, flatMap } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { mapIterable } from 'app/shared/utils';
+import { SankeyId, SankeyTrace, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
-import { SankeyMultiLaneLink } from '../../interfaces';
+import { SankeyMultiLaneLink, SankeyMultiLaneNode } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
@@ -69,29 +72,26 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
   }
 
   initSelection() {
-    this.selection.selectedNodes$.subscribe(nodes => {
-      if (nodes.size) {
-        this.selectNodes(nodes);
-      } else {
-        this.deselectNodes();
-      }
-    });
-
-    this.selection.selectedLinks$.subscribe(links => {
-      if (links.size) {
-        this.selectLinks(links);
-      } else {
-        this.deselectLinks();
-      }
-    });
-
     combineLatest([
       this.selection.selectedNodes$,
       this.selection.selectedLinks$
-    ]).subscribe(([nodes, links]) => {
-      if (nodes || links) {
-        this.calculateAndApplyTransitiveConnections(nodes, links);
+    ]).pipe(
+      map(([nodes, links]) => ({
+        nodes: new Set(nodes),
+        links: new Set(links)
+      }))
+    ).subscribe(({nodes, links}) => {
+      if (nodes.size) {
+        this.selectNodes(mapIterable(nodes, ({_id}) => _id));
+      } else {
+        this.deselectNodes();
       }
+      if (links.size) {
+        this.selectLinks(mapIterable(links, ({_id}) => _id));
+      } else {
+        this.deselectLinks();
+      }
+      this.calculateAndApplyTransitiveConnections(nodes, links);
     });
   }
 
@@ -144,22 +144,22 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
   // region Select
   /**
    * Adds the `selected` property to the given input nodes.
-   * @param nodes set of node data objects to use for selection
+   * @param nodesIds set of node data objects to use for selection
    */
-  selectNodes(nodes: Set<object>) {
+  selectNodes(nodesIds: Set<SankeyId>) {
     // tslint:disable-next-line:no-unused-expression
     this.nodeSelection
-      .attr('selected', n => nodes.has(n));
+      .attr('selected', ({_id}) => nodesIds.has(_id));
   }
 
   /**
    * Adds the `selected` property to the given input links.
-   * @param links set of link data objects to use for selection
+   * @param linksIds set of link data objects to use for selection
    */
-  selectLinks(links: Set<object>) {
+  selectLinks(linksIds: Set<SankeyId>) {
     // tslint:disable-next-line:no-unused-expression
     this.linkSelection
-      .attr('selected', l => links.has(l));
+      .attr('selected', ({_id}) => linksIds.has(_id));
   }
 
 
@@ -169,25 +169,28 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
    * @param nodes the full set of currently selected nodes
    * @param links the full set of currently selected links
    */
-  calculateAndApplyTransitiveConnections(nodes: Set<object>, links: Set<object>) {
-    if (nodes.size + links.size === 0) {
+  calculateAndApplyTransitiveConnections(nodes: Set<SankeyMultiLaneNode>, links: Set<SankeyMultiLaneLink>) {
+    if (isEmpty(nodes) && isEmpty(links)) {
       this.nodeSelection
         .attr('transitively-selected', undefined);
       this.linkSelection
         .attr('transitively-selected', undefined);
-      return;
+    } else {
+      const traces = new Set<SankeyTrace>(
+        flatMap(
+          [...nodes],
+          ({_sourceLinks, _targetLinks}) => [..._sourceLinks, ..._targetLinks]
+        )
+          .concat([...links])
+          .map(({_trace}) => _trace)
+      );
+      const nodeGroup = this.calculateNodeGroupFromTraces(traces);
+
+      this.nodeSelection
+        .attr('transitively-selected', ({id}) => nodeGroup.has(id));
+      this.linkSelection
+        .attr('transitively-selected', ({_trace}) => traces.has(_trace));
     }
-
-    const traces = new Set<any>();
-    links.forEach((link: any) => traces.add(link._trace));
-    nodes.forEach((data: any) => [].concat(data._sourceLinks, data._targetLinks).forEach(link => traces.add(link._trace)));
-    const nodeGroup = this.calculateNodeGroupFromTraces(traces);
-
-
-    this.nodeSelection
-      .attr('transitively-selected', ({id}) => nodeGroup.has(id));
-    this.linkSelection
-      .attr('transitively-selected', ({_trace}) => traces.has(_trace));
   }
 
   // endregion
