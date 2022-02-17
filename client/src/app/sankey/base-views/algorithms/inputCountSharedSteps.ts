@@ -22,7 +22,11 @@ export function calculateInputCountSkippingCircularLinks(
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
     n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
-    this.warningController.assert(n._fixedValue <= maxExpectedValue, 'Input count algorithm fail - node value exceeds input node count');
+    this.warningController.assert(
+      // JS floats calculations has very limited precision
+      n._fixedValue.toPrecision(5) <= maxExpectedValue,
+      'Input count algorithm fail - node value exceeds input node count'
+    );
     const outFrac = nextLinkValue(n._fixedValue, nextLinks);
     nextLinks.forEach(l => {
       // skip setting circular values
