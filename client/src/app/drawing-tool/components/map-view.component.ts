@@ -97,7 +97,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         });
       }
       this.filesystemService.save([this.locator], {
-        contentValue: content, newImages, hashesOfLinked, deletedImages, newImageHashes
+        contentValue: content, newImages, hashesOfLinked, deletedImages
       })
         .pipe(this.errorHandler.create({label: 'Update map'}))
         .subscribe(() => {
