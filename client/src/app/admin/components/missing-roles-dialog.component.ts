@@ -46,9 +46,9 @@ export class MissingRolesDialogComponent extends CommonFormDialogComponent {
     const updateRequest: UserUpdateRequest = {hashId: user.hashId, roles: ['user']};
     const progressDialogRef = this.progressDialog.display({
             title: `Updating User`,
-            progressObservable: new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new BehaviorSubject<Progress>(new Progress({
               status: 'Updating user...',
-            })),
+            }))],
           });
     this.accountService.updateUser(updateRequest)
     .pipe(this.errorHandler.create({label: 'Update user role'}))

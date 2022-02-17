@@ -268,10 +268,10 @@ Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organis
 @click.argument('user')  # the user email
 @click.argument('password')
 def reannotate_files(user, password):
-    from neo4japp.models import FileContent, FallbackOrganism
+    from neo4japp.models import FileContent
     # from neo4japp.exceptions import AnnotationError
     from neo4japp.schemas.annotations import AnnotationConfigurations
-    from multiprocessing import Process, Queue, cpu_count
+    from multiprocessing import Queue
     import time
 
     def get_token():
@@ -306,21 +306,17 @@ def reannotate_files(user, password):
 
     # NUM_PROCESSES = 2
     task_queue = Queue()
-    running = {}
 
     files = db.session.query(
         Files.id,
         Files.hash_id,
         Files.annotation_configs,
-        FallbackOrganism.organism_name,
-        FallbackOrganism.organism_synonym,
-        FallbackOrganism.organism_taxonomy_id
+        Files.organism_name,
+        Files.organism_synonym,
+        Files.organism_taxonomy_id
     ).join(
         FileContent,
         FileContent.id == Files.content_id
-    ).join(
-        FallbackOrganism,
-        FallbackOrganism.id == Files.fallback_organism_id
     ).filter(
         and_(
             Files.mime_type.in_([FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]),

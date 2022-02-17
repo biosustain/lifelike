@@ -25,7 +25,12 @@
             "aot": false,
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "*.css",
+                "input": "src/environments/",
+                "output": "/environments/"
+              }
             ],
             "styles": [
               "node_modules/tachyons/css/tachyons.css",
@@ -74,12 +79,6 @@
               ]
             },
             "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
               "optimization": false,
               "outputHashing": "all",
               "sourceMap": false,
@@ -102,30 +101,9 @@
                 }
               ]
             },
-            "staging": {
-              "fileReplacements": [
-                {
-                  "replace": "src/scss/bootstrap.scss",
-                  "with": "src/scss/bootstrap.staging.scss"
-                }
-              ]
-            },
-            "qa": {
-              "fileReplacements": [
-                {
-                  "replace": "src/scss/bootstrap.scss",
-                  "with": "src/scss/bootstrap.qa.scss"
-                }
-              ]
-            },
-            "demo": {
-              "fileReplacements": [
-                {
-                  "replace": "src/scss/bootstrap.scss",
-                  "with": "src/scss/bootstrap.demo.scss"
-                }
-              ]
-            }
+            "staging": {},
+            "qa": {},
+            "demo": {}
           }
         },
         "serve": {

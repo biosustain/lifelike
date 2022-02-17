@@ -651,11 +651,6 @@ class FileListView(FilesystemBaseView):
         file.modifier = current_user
         file.public = params.get('public', False)
 
-        if params.get('fallback_organism', None):
-            file.organism_name = params['fallback_organism']['organism_name']
-            file.organism_synonym = params['fallback_organism']['synonym']
-            file.organism_taxonomy_id = params['fallback_organism']['tax_id']
-
         # ========================================
         # Resolve parent
         # ========================================
@@ -786,6 +781,11 @@ class FileListView(FilesystemBaseView):
         # ========================================
         # Annotation options
         # ========================================
+
+        if params.get('fallback_organism', None):
+            file.organism_name = params['fallback_organism']['organism_name']
+            file.organism_synonym = params['fallback_organism']['synonym']
+            file.organism_taxonomy_id = params['fallback_organism']['tax_id']
 
         if params.get('annotation_configs'):
             file.annotation_configs = params['annotation_configs']
