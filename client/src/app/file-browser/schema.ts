@@ -108,7 +108,6 @@ interface ContentValue {
   hashesOfLinked?: string[];
   newImages?: ImageBlob[];
   deletedImages?: string[];
-  newImageHashes?: string[];
 }
 
 interface ContentUrl {
