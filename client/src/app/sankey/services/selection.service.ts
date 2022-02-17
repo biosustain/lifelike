@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, combineLatest } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { isEqual, uniqBy, partialRight } from 'lodash-es';
 import { map, first, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 
-import { SelectionType, SelectionEntity } from '../interfaces';
+import { SelectionType, SelectionEntity, SankeyNode, SankeyLink } from '../interfaces';
 import { ControllerService } from './controller.service';
 
 @Injectable()
@@ -15,8 +15,8 @@ export class SankeySelectionService {
   }
 
   selection$ = new BehaviorSubject<SelectionEntity[]>([]);
-  selectedNodes$ = this.selectionByType(SelectionType.node);
-  selectedLinks$ = this.selectionByType(SelectionType.link);
+  selectedNodes$: Observable<SankeyNode[]> = this.selectionByType(SelectionType.node);
+  selectedLinks$: Observable<SankeyLink[]> = this.selectionByType(SelectionType.link);
 
   selectedTraces$ = combineLatest([
     this.selectedNodes$,
@@ -62,7 +62,7 @@ export class SankeySelectionService {
       first(),
       map(selection => {
         const idxOfSelectedLink = selection.findIndex(
-          d => d[type] === entity
+          d => d.entity === entity
         );
 
         if (idxOfSelectedLink !== -1) {

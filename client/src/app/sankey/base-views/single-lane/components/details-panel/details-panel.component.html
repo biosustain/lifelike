@@ -1,15 +1,15 @@
 <ng-container *ngFor="let detailView of details$ | async">
     <app-sankey-node-details
-            *ngIf="detailView.node"
-            [entity]="detailView.node"
+            *ngIf="detailView.type === SelectionType.node"
+            [entity]="detailView.entity"
     ></app-sankey-node-details>
     <app-sankey-single-lane-link-details
-            *ngIf="detailView.link"
-            [entity]="detailView.link"
+            *ngIf="detailView.type === SelectionType.link"
+            [entity]="detailView.entity"
     ></app-sankey-single-lane-link-details>
     <app-sankey-trace-details
-            *ngIf="detailView.trace"
-            [entity]="detailView.trace"
+            *ngIf="detailView.type === SelectionType.trace"
+            [entity]="detailView.entity"
     ></app-sankey-trace-details>
 </ng-container>
 

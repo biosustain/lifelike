@@ -204,8 +204,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     this.sankeySelection.on('click', () => {
       const e = d3_event;
       if (!e.target.__data__) {
-        // todo
-        // this.backgroundClicked.emit();
+        this.selection.selection$.next([]);
 
         // events are consumed by d3_zoom recall mouse down/up on document to close possible popups
         document.dispatchEvent(new MouseEvent('mousedown'));
