@@ -1,7 +1,7 @@
 import { clone } from 'lodash-es';
 
 import { ExtendedMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyNode, SankeyData } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode, NetworkTraceData } from 'app/sankey/interfaces';
 
 import { DirectedTraversal } from '../../utils/directed-traversal';
 import { DefaultLayoutService } from '../../services/layout.service';
@@ -39,7 +39,7 @@ export function calculateInputCountSkippingCircularLinks(
 
 export function initInputCountCalculation(
   this: DefaultLayoutService,
-  data: SankeyData
+  data: NetworkTraceData
 ) {
   // initially links does not carry values but we need to init it
   data.links.forEach(l => {
