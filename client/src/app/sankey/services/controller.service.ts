@@ -27,8 +27,7 @@ import {
   SankeyLink,
   SankeyId,
   SankeyTrace,
-  SankeyNode,
-  NodeAlign
+  SankeyNode
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
@@ -337,12 +336,10 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
 
   fileUpdated$ = new Subject<GraphFile>();
-  nodeAlign$: Observable<NodeAlign>;
 
   onInit() {
     super.onInit();
 
-    this.nodeAlign$ = this.stateAccessor('nodeAlign');
     this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
     this.baseView$ = this.state$.pipe(
