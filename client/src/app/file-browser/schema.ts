@@ -6,6 +6,7 @@ import {
   Meta,
 } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
+import { ImageBlob } from 'app/shared/utils/forms';
 
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
@@ -105,8 +106,9 @@ export interface FilesystemObjectData {
 interface ContentValue {
   contentValue: Blob;
   hashesOfLinked?: string[];
-  newImages?: Blob[];
+  newImages?: ImageBlob[];
   deletedImages?: string[];
+  newImageHashes?: string[];
 }
 
 interface ContentUrl {
