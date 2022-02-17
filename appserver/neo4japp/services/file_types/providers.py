@@ -5,7 +5,6 @@ import re
 import typing
 import zipfile
 import tempfile
-from collections import namedtuple
 
 from base64 import b64encode
 
@@ -1213,6 +1212,37 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.setLayout(layout2)
         doc.save(result_string)
         return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
+
+    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+        """
+        Evaluate the changes in the images and create a new blob to store in the content
+        """
+
+        images_to_delete = params.get('deleted_images') or []
+        new_images = params.get('new_images') or []
+
+        previous_content = file.content.raw_file
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(previous_content))
+        except zipfile.BadZipfile:
+            # NOTE: Do we need an error here? Seems unlikely
+            raise ValidationError('Previous content of the map is corrupted!')
+
+        images_to_delete.append('graph')
+        # Deleting form an existing archive is not supported - we need a new one
+        new_content = io.BytesIO()
+        new_zip = zipfile.ZipFile(new_content, 'w')
+        files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                         hash_id.split('/')[-1].split('.')[0] not in images_to_delete]
+        new_zip.writestr('graph.json', params['content_value'].read())
+        for filename in files_to_copy:
+            new_zip.writestr(filename, zip_file.read(filename))
+        for i, image in enumerate(new_images):
+            new_zip.writestr('images/' + image.filename + '.png', image.read())
+        new_zip.close()
+
+        new_content.seek(0)
+        return typing.cast(BufferedIOBase, new_content)
 
 
 class GraphTypeProvider(BaseFileTypeProvider):

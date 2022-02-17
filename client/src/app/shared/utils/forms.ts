@@ -34,9 +34,20 @@ export function objectToMixedFormData(object: object): FormData {
     if (value instanceof Blob) {
       formData.append(key, value);
     } else {
-      data[key] = value;
+      if (Array.isArray(value) && value.length && value[0].blob instanceof Blob) {
+        for (const imageBlob of value) {
+          formData.append(key, imageBlob.blob, imageBlob.filename);
+        }
+      } else {
+        data[key] = value;
+      }
     }
   }
   formData.append('json$', JSON.stringify(data));
   return formData;
+}
+
+export interface ImageBlob {
+  blob: Blob;
+  filename: string;
 }
