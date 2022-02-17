@@ -40,6 +40,7 @@ def upgrade():
                 'migration'
             )
 
+
 def downgrade():
     return
 
