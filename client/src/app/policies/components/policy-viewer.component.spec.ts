@@ -1,17 +1,22 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFactoryResolver } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+
+import { configureTestSuite } from 'ng-bullet';
 
 import { PolicyViewerComponent } from './policy-viewer.component';
+import { PolicyHostDirective } from '../directives/policy-host.directive';
 
 describe('PolicyViewerComponent', () => {
   let component: PolicyViewerComponent;
   let fixture: ComponentFixture<PolicyViewerComponent>;
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ PolicyViewerComponent ]
-    })
-    .compileComponents();
-  }));
+      imports: [ RouterTestingModule ],
+      declarations: [ PolicyViewerComponent, PolicyHostDirective ],
+    });
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PolicyViewerComponent);
