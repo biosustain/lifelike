@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil } from 'lodash-es';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
 import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
@@ -362,7 +362,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
               },
               getCommonState(view.state),
               // if there was no change of view name allow for the view to be updated
-              (previousDelta.viewName === delta.viewName ? delta : {})
+              (previousDelta.viewName === delta.viewName ? omit(delta, 'baseViewName') : {})
             ))
           )
         )
