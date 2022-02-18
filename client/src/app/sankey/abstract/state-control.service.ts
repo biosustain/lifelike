@@ -9,23 +9,10 @@ import { Many } from 'app/shared/schemas/common';
 import { unifiedAccessor, AbstractInjectable } from '../utils/rxjs';
 
 @Injectable()
-export class StateControlAbstractService<Options extends object, State extends object> implements AbstractInjectable {
-  default$: Observable<State>;
+export class StateControlAbstractService<Options extends object, State extends object> {
   delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
   state$: Observable<State>;
   options$: Observable<Options>;
-
-  onInit() {
-    this.state$ = combineLatest([
-      this.default$,
-      this.delta$
-    ]).pipe(
-      distinctUntilChanged(isEqual),
-      map(states => merge({}, ...states)),
-      shareReplay(1)
-    );
-  }
-
 
   /**
    * Pick property from property value from state object

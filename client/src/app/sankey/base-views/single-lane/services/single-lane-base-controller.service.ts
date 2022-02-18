@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { flatMap, groupBy, intersection, pick } from 'lodash-es';
-import { switchMap, map, shareReplay } from 'rxjs/operators';
-import { of, Observable } from 'rxjs';
+import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
+import { switchMap, map, shareReplay, tap, distinctUntilChanged, publish } from 'rxjs/operators';
+import { of, Observable, combineLatest } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -35,26 +35,30 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
 
   viewBase = ViewBase.sankeySingleLane;
 
-  default$ = this.common.options$.pipe(
-    map(({predefinedValueAccessors}) => ({
-      predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
-      ...pick(
-        predefinedValueAccessors[PREDEFINED_VALUE.fixed_height],
-        ['nodeValueAccessorId', 'linkValueAccessorId']
-      ),
-      highlightCircular: true,
-      colorLinkByType: false,
-      nodeHeight: {
-        min: {
-          enabled: true,
-          value: 4
-        },
-        max: {
-          enabled: true,
-          ratio: 2
-        }
-      }
-    }))
+  state$ = this.delta$.pipe(
+    publish(delta$ =>
+      combineLatest([
+        of({
+          highlightCircular: true,
+          colorLinkByType: false,
+          nodeHeight: {
+            min: {
+              enabled: true,
+              value: 4
+            },
+            max: {
+              enabled: true,
+              ratio: 2
+            }
+          }
+        }),
+        delta$,
+        this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.fixed_height),
+      ])
+    ),
+    map((deltas) => merge({}, ...deltas)),
+    distinctUntilChanged(isEqual),
+    shareReplay(1)
   );
 
   linkValueAccessors = {
@@ -88,7 +92,8 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         };
       })
     )),
-    shareReplay(1)
+    shareReplay(1),
+    tap(d => console.log('SingleLane networkTraceData$', d))
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
