@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish } from 'rxjs/operators';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil } from 'lodash-es';
+import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -33,6 +33,7 @@ import { isPositiveNumber, indexByProperty } from '../utils/utils';
 import { LayoutService } from './layout.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { StateControlAbstractService } from '../abstract/state-control.service';
+import { getBaseState, getCommonState } from '../utils/stateLevels';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -81,31 +82,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
   viewName$: Observable<string>;
 
-
-  resolveNetworkTraceAndBaseView(delta$, defaultNetworkTraceIdx = 0) {
-    return delta$.pipe(
-      map(delta => pick(delta, ['networkTraceIdx', 'baseViewName'])),
-      distinctUntilChanged(isEqual),
-      switchMap(({networkTraceIdx = defaultNetworkTraceIdx, baseViewName}) =>
-        iif(
-          () => baseViewName,
-          of({networkTraceIdx}),
-          this.data$.pipe(
-            map(({graph: {trace_networks, node_sets}}) => {
-              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
-              const sources = node_sets[sourcesSetId];
-              const targets = node_sets[targetsNameId];
-              return {
-                networkTraceIdx,
-                baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
-              };
-            })
-          )
-        )
-      )
-    );
-  }
-
   state$ = this.delta$.pipe(
     publish(delta$ =>
       combineLatest([
@@ -120,6 +96,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         }),
         delta$,
         this.resolveNetworkTraceAndBaseView(delta$),
+        this.resolveView(delta$)
       ])
     ),
     map((deltas) => merge({}, ...deltas)),
@@ -342,15 +319,60 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
 
   fileUpdated$ = new Subject<GraphFile>();
 
+
+  resolveNetworkTraceAndBaseView(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
+    return delta$.pipe(
+      map(delta => pick(delta, ['networkTraceIdx', 'baseViewName'])),
+      distinctUntilChanged(isEqual),
+      switchMap(({networkTraceIdx = defaultNetworkTraceIdx, baseViewName}) =>
+        iif(
+          () => baseViewName,
+          of({networkTraceIdx}),
+          this.data$.pipe(
+            map(({graph: {trace_networks, node_sets}}) => {
+              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
+              const sources = node_sets[sourcesSetId];
+              const targets = node_sets[targetsNameId];
+              return {
+                networkTraceIdx,
+                baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+              };
+            })
+          )
+        )
+      )
+    );
+  }
+
+  resolveView(delta$: Observable<Partial<SankeyState>>) {
+    return delta$.pipe(
+      // track change
+      startWith(null),
+      pairwise(),
+      switchMap(([previousDelta, delta]) =>
+        iif(
+          () => isNil(delta.viewName),
+          of({}),
+          this.views$.pipe(
+            map((views, index) => views[delta.viewName]),
+            map(view => merge(
+              {
+                baseViewName: view.base,
+                baseViewInitState: getBaseState(view.state),
+              },
+              getCommonState(view.state),
+              // if there was no change of view name allow for the view to be updated
+              (previousDelta.viewName === delta.viewName ? delta : {})
+            ))
+          )
+        )
+      )
+    );
+  }
+
   onInit() {
     this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
-    this.baseView$ = this.state$.pipe(
-      filter(obj => has(obj, 'baseViewName')),
-      map(obj => pick(obj, ['baseViewName', 'baseViewInitState'])),
-      distinctUntilChanged(isEqual),
-      shareReplay(1)
-    );
     // do not use standart accessor for this one cause we want null if it wasnt set
     this.viewName$ = this.state$.pipe(
       map(({viewName = null}) => viewName),

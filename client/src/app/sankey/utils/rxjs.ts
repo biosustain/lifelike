@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { filter, map, distinctUntilChanged } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged, tap } from 'rxjs/operators';
 import { has, isArray, pick, isEqual } from 'lodash-es';
 
 import { Many } from 'app/shared/schemas/common';
@@ -20,6 +20,7 @@ export const unifiedAccessor = <R extends object, K extends Many<keyof R>>(obser
   return observable.pipe(
     filter(hasOwnProp),
     map(obj => pick(obj, prop)),
+    tap(o => console.log(o)),
     distinctUntilChanged(isEqual),
   );
 };

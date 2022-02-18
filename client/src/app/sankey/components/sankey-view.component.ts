@@ -213,8 +213,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   /**
    * Load different base view components upom base view change
    */
-  baseViewContext$ = this.sankeyController.baseView$.pipe(
-    map(({baseViewName, baseViewInitState = {}}) => {
+  baseViewContext$ = this.sankeyController.baseViewName$.pipe(
+    map(baseViewName => {
       const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
       const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
@@ -233,13 +233,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       return {
         baseView: moduleRef.injector.get(BaseControllerService),
         layout: moduleRef.injector.get(LayoutService),
-        selection: moduleRef.injector.get(SankeySelectionService),
-        baseViewInitState
+        selection: moduleRef.injector.get(SankeySelectionService)
       };
     }),
-    tap(({layout, baseView, baseViewInitState}) => {
+    tap(({layout, baseView}) => {
       this.viewController.layout$.next(layout);
-      baseView.delta$.next(baseViewInitState);
+      baseView.delta$.next({});
     }),
     shareReplay(1)
   );

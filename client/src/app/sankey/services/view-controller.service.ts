@@ -72,20 +72,7 @@ export class ViewControllerService {
 
 
   selectView(viewName) {
-    this.common.patchState({viewName});
-    // return this.common.views$.pipe(
-    //   first(),
-    //   map(views => views[viewName]),
-    //   filter(view => !!view),
-    //   tap(view =>
-    //     this.common.delta$.next({
-    //       viewName,
-    //       baseViewName: view.base,
-    //       baseViewInitState: getBaseState(view.state),
-    //       ...getCommonState(view.state)
-    //     })
-    //   )
-    // );
+    return this.common.patchState({viewName});
   }
 
   registerLayout(layout: DefaultLayoutService) {

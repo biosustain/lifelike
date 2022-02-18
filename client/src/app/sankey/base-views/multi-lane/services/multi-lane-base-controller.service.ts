@@ -51,6 +51,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
       }),
         delta$,
         this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.input_count),
+        this.resolveView(delta$)
       ])
     ),
     map((deltas) => merge({}, ...deltas)),

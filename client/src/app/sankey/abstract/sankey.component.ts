@@ -170,6 +170,7 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
     );
 
     this.sankey.dataToRender$.subscribe(data => {
+      console.count('sankey.dataToRender$');
       this.updateDOM(data);
     });
 

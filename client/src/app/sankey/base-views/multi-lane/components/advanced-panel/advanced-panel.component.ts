@@ -7,6 +7,7 @@ import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanc
 
 import { MultiLaneBaseControllerService } from '../../services/multi-lane-base-controller.service';
 import { BaseOptions, BaseState } from '../../interfaces';
+import { StateControlAbstractService } from '../../../../abstract/state-control.service';
 
 
 @Component({
@@ -42,6 +43,17 @@ export class MultiLaneBaseAdvancedPanelComponent
   ) {
     super(baseView, formBuilder);
     this.onInit();
+    this.baseView.common.viewName$.subscribe(viewName => {
+      if (viewName) {
+        this.form.get('nodeHeight').disable();
+        this.form.get('linkValueAccessorId').disable();
+        this.form.get('nodeValueAccessorId').disable();
+      } else {
+        this.form.get('nodeHeight').enable();
+        this.form.get('linkValueAccessorId').enable();
+        this.form.get('nodeValueAccessorId').enable();
+      }
+    });
   }
 
   linkPalettes$ = this.baseView.linkPalettes$;

@@ -115,8 +115,6 @@ export interface SankeyState {
   fontSizeScale?: number;
   viewName?: string;
   baseViewName?: ViewBase;
-  // initial state for base view
-  baseViewInitState?: object;
 }
 
 // endregion
