@@ -3,11 +3,16 @@
 </ng-template>
 
 <div class="input-group input-border rounded">
-  <input type="text" class="form-control border-0"
-    [class.is-invalid]="fetchFailed" [(ngModel)]="organism"
-    [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
-    (selectItem)="notifySelection($event)"
-  >
+  <input type="text"
+    class="form-control border-0"
+    [class.is-invalid]="fetchFailed"
+    [(ngModel)]="organism"
+    [editable]='false'
+    [inputFormatter]="formatter"
+    [ngbTypeahead]="searcher"
+    [resultTemplate]="rt"
+    (focus)="focus$.next($any($event).target.value)"
+    (selectItem)="notifySelection($event)">
   <div *ngIf="organism" class="input-group-append">
     <button type="button"
             class="form-control border-0"
