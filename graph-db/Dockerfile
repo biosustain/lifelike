@@ -1,4 +1,4 @@
-FROM maven:3.8.3-openjdk-11-slim
+FROM maven:3.8-jdk-11-slim
 
 RUN apt-get update && apt-get install -y vim curl
 
