@@ -54,6 +54,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         }),
         delta$,
         this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.fixed_height),
+        this.resolveView(delta$)
       ])
     ),
     map((deltas) => merge({}, ...deltas)),

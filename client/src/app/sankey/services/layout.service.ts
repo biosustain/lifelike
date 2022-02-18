@@ -162,13 +162,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
                   )
                 );
               }),
-              switchMap(graph =>
-                unifiedAccessor(this.baseView.common.state$, [
-                  'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
-                ]).pipe(
-                  tap(state => this.state = state),
-                  map(() => graph)
-                )),
+              this.linkRenderingProps(),
               shareReplay(1)
             ),
           ))
@@ -193,6 +187,17 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
         node._height = value(node) * ky;
       }
     }
+  }
+
+  linkRenderingProps() {
+    return switchMap(graph =>
+      unifiedAccessor(this.baseView.common.state$, [
+        'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
+      ]).pipe(
+        tap(state => console.count('linkRenderingProps')),
+        tap(state => this.state = state),
+        map(() => graph)
+      ));
   }
 
   /**
@@ -239,13 +244,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
         }
         return graph;
       }),
-      switchMap(graph =>
-        unifiedAccessor(this.baseView.common.state$, [
-          'normalizeLinks', 'fontSizeScale', 'labelEllipsis'
-        ]).pipe(
-          tap(state => this.state = state),
-          map(() => graph)
-        )),
+      this.linkRenderingProps(),
       shareReplay(1)
     ) as Observable<NetworkTraceData>;
   }
@@ -481,7 +480,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  )
+  );
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -489,7 +488,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
