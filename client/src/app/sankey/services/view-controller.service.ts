@@ -72,25 +72,20 @@ export class ViewControllerService {
 
 
   selectView(viewName) {
-    return this.common.views$.pipe(
-      first(),
-      map(views => views[viewName]),
-      filter(view => !!view),
-      tap(view =>
-        this.common.delta$.next({
-          viewName,
-          baseViewName: view.base,
-          ...getCommonState(view.state)
-        })
-      ),
-      switchMap(view =>
-        this.baseView$.pipe(
-          map(baseView =>
-            baseView.delta$.next(getBaseState(view.state))
-          )
-        )
-      )
-    );
+    this.common.patchState({viewName});
+    // return this.common.views$.pipe(
+    //   first(),
+    //   map(views => views[viewName]),
+    //   filter(view => !!view),
+    //   tap(view =>
+    //     this.common.delta$.next({
+    //       viewName,
+    //       baseViewName: view.base,
+    //       baseViewInitState: getBaseState(view.state),
+    //       ...getCommonState(view.state)
+    //     })
+    //   )
+    // );
   }
 
   registerLayout(layout: DefaultLayoutService) {

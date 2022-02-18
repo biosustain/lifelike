@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
 import { Observable, combineLatest, of, iif } from 'rxjs';
-import { map, tap, shareReplay, switchMap, first } from 'rxjs/operators';
-import { merge, isNil, omitBy, has } from 'lodash-es';
+import { map, tap, shareReplay, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
+import { merge, isNil, omitBy, has, pick } from 'lodash-es';
 
 import {
   ValueGenerator,
@@ -38,15 +38,11 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   ) {
     super();
   }
-
   networkTraceData$: Observable<NetworkTraceData>;
   viewBase;
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
   predefinedValueAccessor$;
-  graphInputState$: Observable<any>;
-
-  mergedState$;
 
   readonly linkValueAccessors: {
     [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
@@ -117,6 +113,25 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     }
   };
 
+  resolvePredefinedValueAccessor(delta$, defaultValue) {
+    return delta$.pipe(
+      map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
+      distinctUntilChanged(),
+      switchMap(predefinedValueAccessorId =>
+        iif(
+          () => predefinedValueAccessorId === customisedMultiValueAccessorId,
+          of({}),
+          this.common.options$.pipe(
+            map(({predefinedValueAccessors}) => pick(
+              predefinedValueAccessors[predefinedValueAccessorId as string],
+              ['nodeValueAccessorId', 'linkValueAccessorId']
+            ))
+          )
+        )
+      )
+    );
+  }
+
 
   predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
     if (!isNil(predefinedValueAccessorId)) {
@@ -175,7 +190,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
    */
   onInit() {
-    super.onInit();
     this.nodeValueAccessor$ = unifiedSingularAccessor(
       this.state$,
       'nodeValueAccessorId',
@@ -225,18 +239,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
             customisedMultiValueAccessor :
             predefinedValueAccessors[predefinedValueAccessorId]
         )))
-    );
-
-
-    this.mergedState$ = combineLatest([
-      this.common.state$,
-      this.state$
-    ]).pipe(
-      map(([state, baseState]) => ({
-        ...state,
-        baseState
-      })),
-      shareReplay(1)
     );
   }
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, throwError, ReplaySubject, BehaviorSubject, merge as rx_merge, Observable } from 'rxjs';
+import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
 import { merge, transform, cloneDeepWith, clone, max, flatMap, has, pick, isEqual, uniq } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, tap, shareReplay, distinctUntilChanged } from 'rxjs/operators';
+import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -71,42 +71,61 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   ) {
     super();
     this.onInit();
-    this.state$.subscribe(state => {
-      // side effect to load default state values if needed
-      if (has(state, 'networkTraceIdx') && !has(state, 'baseViewName')) {
-        return this.partialNetworkTraceData$.pipe(
-          first(),
-          map(({sources, targets}) => sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane),
-          switchMap(bvn => this.patchDefaultState({
-            baseViewName: (bvn as ViewBase)
-          }))
-        ).toPromise();
-      }
-    });
+    this.state$.subscribe(s => console.log('state changed', s));
   }
 
+  delta$ = new ReplaySubject<Partial<SankeyState>>(1);
+  data$ = new ReplaySubject<SankeyData>(1);
   networkTraceIdx$: Observable<number>;
   baseViewName$: Observable<string>;
   baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
   viewName$: Observable<string>;
 
-  /**
-   * Observable of current default state which is based inclusively on loaded data
-   */
-  default$ = new BehaviorSubject<SankeyState>(Object.freeze({
-      networkTraceIdx: 0,
-      normalizeLinks: false,
-      prescalerId: PRESCALER_ID.none,
-      labelEllipsis: {
-        enabled: true,
-        value: LayoutService.labelEllipsis
-      },
-      fontSizeScale: 1.0
-    })
-  );
 
-  delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  data$ = new ReplaySubject<SankeyData>(1);
+  resolveNetworkTraceAndBaseView(delta$, defaultNetworkTraceIdx = 0) {
+    return delta$.pipe(
+      map(delta => pick(delta, ['networkTraceIdx', 'baseViewName'])),
+      distinctUntilChanged(isEqual),
+      switchMap(({networkTraceIdx = defaultNetworkTraceIdx, baseViewName}) =>
+        iif(
+          () => baseViewName,
+          of({networkTraceIdx}),
+          this.data$.pipe(
+            map(({graph: {trace_networks, node_sets}}) => {
+              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
+              const sources = node_sets[sourcesSetId];
+              const targets = node_sets[targetsNameId];
+              return {
+                networkTraceIdx,
+                baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+              };
+            })
+          )
+        )
+      )
+    );
+  }
+
+  state$ = this.delta$.pipe(
+    publish(delta$ =>
+      combineLatest([
+        of({
+          normalizeLinks: false,
+          prescalerId: PRESCALER_ID.none,
+          labelEllipsis: {
+            enabled: true,
+            value: LayoutService.labelEllipsis
+          },
+          fontSizeScale: 1.0
+        }),
+        delta$,
+        this.resolveNetworkTraceAndBaseView(delta$),
+      ])
+    ),
+    map((deltas) => merge({}, ...deltas)),
+    distinctUntilChanged(isEqual),
+    shareReplay(1)
+  );
 
   /**
    * Observable of current view options
@@ -324,8 +343,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   fileUpdated$ = new Subject<GraphFile>();
 
   onInit() {
-    super.onInit();
-
     this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
     this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
     this.baseView$ = this.state$.pipe(
@@ -345,14 +362,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       )),
       distinctUntilChanged(),
       shareReplay(1)
-    );
-  }
-
-  patchDefaultState(patch: Partial<SankeyState>) {
-    return this.default$.pipe(
-      first(),
-      map(defaultState => merge({}, defaultState, patch)),
-      tap(defaultState => this.default$.next(defaultState))
     );
   }
 

@@ -125,17 +125,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
       this.openSankey(file_id);
     });
 
-    this.baseView$.pipe(
-      switchMap(({graphInputState$}) => graphInputState$),
-      startWith({}), // initial prev value,
-      pairwise(),
-    ).subscribe(([prevInputState, inputState]) => {
-      const sankey = this.dynamicComponentRef.get('sankey');
-      assign(sankey.instance, inputState);
-      sankey.changeDetectorRef.detectChanges();
-      sankey.injector.get(ChangeDetectorRef).detectChanges();
-    });
-
     this.sankeyController.viewsUpdate$.pipe(
       switchMap(_views => this.sankeyController.data$.pipe(
         map(data => ({...data, _views}))

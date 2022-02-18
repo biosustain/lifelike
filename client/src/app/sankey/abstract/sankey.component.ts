@@ -136,10 +136,9 @@ export class SankeyAbstractComponent implements AfterViewInit, OnDestroy {
   @ViewChild('nodes', {static: false}) nodes!: ElementRef;
   @ViewChild('links', {static: false}) links!: ElementRef;
 
-  static updateTextShadow(_) {
+  static updateTextShadow(this: SVGElement, _) {
     // this contains ref to textGroup
-    // @ts-ignore
-    const [shadow, text] = this.children;
+    const [shadow, text] = this.children as any as [SVGRectElement, SVGTextElement];
     const {x, y, width, height} = text.getBBox();
     d3_select(shadow)
       .attr('x', x)
