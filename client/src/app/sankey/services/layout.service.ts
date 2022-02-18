@@ -494,7 +494,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
