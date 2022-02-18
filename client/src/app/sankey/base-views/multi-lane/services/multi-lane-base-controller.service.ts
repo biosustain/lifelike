@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged } from 'rxjs/operators';
-import { pick, isEqual } from 'lodash-es';
-import { of } from 'rxjs';
+import { switchMap, map, distinctUntilChanged, tap, shareReplay, publish } from 'rxjs/operators';
+import { isEqual, merge } from 'lodash-es';
+import { of, combineLatest } from 'rxjs';
 
 import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -21,7 +21,7 @@ import { BaseState, BaseOptions } from '../interfaces';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class MultiLaneBaseControllerService  extends BaseControllerService<BaseOptions, BaseState> {
+export class MultiLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -29,30 +29,33 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
   ) {
     super(common, warningController, injector);
     this.onInit();
-    this.graphInputState$ = this.common.state$.pipe(
-      map(state => pick(state, ['normalizeLinks'])),
-      distinctUntilChanged(isEqual)
-    );
   }
 
   viewBase = ViewBase.sankeyMultiLane;
 
-  default$ = this.common.options$.pipe(
-    map(({predefinedValueAccessors}) => ({
-      predefinedValueAccessorId: PREDEFINED_VALUE.input_count,
-      ...pick(predefinedValueAccessors[PREDEFINED_VALUE.input_count], ['nodeValueAccessorId', 'linkValueAccessorId']),
-      nodeHeight: {
-        min: {
-          enabled: true,
-          value: 1
+  state$ = this.delta$.pipe(
+    publish(delta$ =>
+      combineLatest([
+        of({
+        nodeHeight: {
+          min: {
+            enabled: true,
+            value: 1
+          },
+          max: {
+            enabled: false,
+            ratio: 10
+          }
         },
-        max: {
-          enabled: false,
-          ratio: 10
-        }
-      },
-      linkPaletteId: LINK_PALETTE_ID.hue_palette
-    }))
+        linkPaletteId: LINK_PALETTE_ID.hue_palette
+      }),
+        delta$,
+        this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.input_count),
+      ])
+    ),
+    map((deltas) => merge({}, ...deltas)),
+    distinctUntilChanged(isEqual),
+    shareReplay(1)
   );
 
   linkValueAccessors = {
@@ -86,7 +89,9 @@ export class MultiLaneBaseControllerService  extends BaseControllerService<BaseO
           ...rest
         };
       })
-    ))
+    )),
+    shareReplay(1),
+    tap(d => console.log('Multilane networkTraceData$', d))
   );
 
   linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');

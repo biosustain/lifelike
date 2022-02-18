@@ -370,7 +370,7 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();
@@ -402,7 +402,7 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
   computeNodeLayers(graph: LayoutData): SankeyNode[][] {
     const {dx} = this;
     const align = this.getAlign(graph);
-    const nodes = graph.nodes;
+    const {nodes} = graph;
     const x = max(nodes, d => d._depth) + 1;
     this.x = x;
     const columns = new Array(x);
@@ -654,10 +654,12 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
   }
 
   repositionNodesHorizontaly(graph) {
-    const { horizontal: {changeRatio, x0}, dx} = this;
-    for (const node of graph.nodes) {
-      node._x0 = (node._x0 - x0) * changeRatio + x0;
-      node._x1 = node._x0 + dx;
+    const {horizontal: {changeRatio, x0}, dx} = this;
+    if (changeRatio !== 1) {
+      for (const node of graph.nodes) {
+        node._x0 = (node._x0 - x0) * changeRatio + x0;
+        node._x1 = node._x0 + dx;
+      }
     }
   }
 }

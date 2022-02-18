@@ -1,4 +1,4 @@
-import { pick } from 'lodash-es';
+import { pick, omit } from 'lodash-es';
 
 import { SankeyState } from '../interfaces';
 
@@ -21,5 +21,5 @@ const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'baseViewName',
 ];
 
-export const getCommonState = (state: object) => pick(state, SANKEY_STATE_KEYS);
-export const getBaseState = (state: object) => pick(state, SANKEY_STATE_KEYS);
+export const getCommonState = state => pick(state, SANKEY_STATE_KEYS);
+export const getBaseState = state => omit(state, SANKEY_STATE_KEYS);
