@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { first, last, merge, omit, isNil, clone } from 'lodash-es';
-import { map, tap, switchMap, shareReplay, filter } from 'rxjs/operators';
+import { map, tap, switchMap, shareReplay, filter, startWith, pairwise } from 'rxjs/operators';
 import { combineLatest, Observable, iif, of, ReplaySubject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -134,6 +134,20 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   dataToRender$: Observable<NetworkTraceData> = this.baseView.networkTraceData$.pipe(
     switchMap(networkTraceData => this.baseView.common.view$.pipe(
+        // todo temporary fixes needs to work but do not know how to make it better
+        startWith(null),
+        pairwise(),
+        map(([previousView, view]) => {
+          // reset zoom adjustments after leaving the view
+          if (!isNil(previousView) && isNil(view)) {
+            this.zoomAdjustment$.next(1);
+          }
+          // reset horizontal extent observable
+          this.prevExtent = {} as this['prevExtent'];
+          this.horizontal$.next(this.horizontal);
+          return view;
+        }),
+        // temporary fixes end
         switchMap(view =>
           iif(
             () => isNil(view),
@@ -162,8 +176,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
                   )
                 );
               }),
-              this.linkRenderingProps(),
-              shareReplay(1)
+              this.linkRenderingProps()
             ),
           ))
       )
@@ -240,6 +253,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           this.positionNodesHorizontaly(graph);
         } else {
           // Relative node positioning (to preserve draged node position)
+          console.count('relative node positioning');
           this.repositionNodesHorizontaly(graph);
         }
         return graph;
