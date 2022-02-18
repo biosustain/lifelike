@@ -195,7 +195,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  });
+  })
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution

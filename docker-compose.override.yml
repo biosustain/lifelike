@@ -149,7 +149,7 @@ services:
         build:
             context: ./client
             dockerfile: Dockerfile
-            target: angular-deps
+#            target: angular-deps
         command: yarn dev-start
         volumes:
             - ./client:/app
