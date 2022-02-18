@@ -18,6 +18,13 @@ export class SankeyAdvancedPanelComponent extends SankeyAbstractAdvancedPanelCom
   ) {
     super(common, formBuilder);
     this.onInit();
+    this.common.viewName$.subscribe(viewName => {
+      if (viewName) {
+        this.form.get('prescalerId').disable();
+      } else {
+        this.form.get('prescalerId').enable();
+      }
+    });
   }
 
   form = this.formBuilder.group({

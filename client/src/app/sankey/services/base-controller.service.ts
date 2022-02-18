@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { Observable, combineLatest, of, iif } from 'rxjs';
-import { map, tap, shareReplay, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, of, iif } from 'rxjs';
+import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
 import { merge, isNil, omitBy, has, pick } from 'lodash-es';
 
 import {
@@ -9,7 +9,9 @@ import {
   NODE_VALUE_GENERATOR,
   LINK_VALUE_GENERATOR,
   LINK_PROPERTY_GENERATORS,
-  NetworkTraceData
+  NetworkTraceData,
+  SankeyState,
+  SankeyView
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -20,8 +22,10 @@ import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
+import { getBaseState } from '../utils/stateLevels';
 
 export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
+
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
  * It is responsible for holding Sankey data and view options (including selected networks trace)
@@ -38,6 +42,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   ) {
     super();
   }
+
   networkTraceData$: Observable<NetworkTraceData>;
   viewBase;
   nodeValueAccessor$: Observable<ValueGenerator>;
@@ -132,6 +137,12 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     );
   }
 
+  resolveView(delta$) {
+    return delta$.pipe(
+      switchMap(delta => this.common.view$),
+      map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
+    );
+  }
 
   predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
     if (!isNil(predefinedValueAccessorId)) {
@@ -184,7 +195,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  })
+  });
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
