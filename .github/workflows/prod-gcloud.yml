@@ -22,8 +22,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        env:
+          INFRA_PAT: ***REMOVED***
         with:
+          token: ${{ env.INFRA_PAT }}
           submodules: recursive
+          fetch-depth: 0
 
       - name: Set git commit timestamp
         id: timestamp
