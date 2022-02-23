@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "demo"
+      - demo
 
 jobs:
   build:
@@ -21,6 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          submodules: recursive
           fetch-depth: 0
 
       - name: Set git commit timestamp
