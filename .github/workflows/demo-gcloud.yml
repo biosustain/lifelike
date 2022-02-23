@@ -20,7 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        env:
+          INFRA_PAT: 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
         with:
+          token: ${{ env.INFRA_PAT }}
           submodules: recursive
           fetch-depth: 0
 
