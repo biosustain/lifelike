@@ -7,3 +7,7 @@
 [submodule "website"]
 	path = website
 	url = https://github.com/SBRG/lifelike-website
+[submodule "deployment"]
+	path = deployment
+	url = https://github.com/SBRG/lifelike-infra
+	branch = ansible
