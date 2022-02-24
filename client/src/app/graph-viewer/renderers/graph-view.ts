@@ -15,6 +15,7 @@ import {
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import {associatedMapsRegex} from 'app/shared/constants';
+import { setOutersect } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -217,7 +218,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
-  // TODO: Move
   /**
    * Iterate through the link nodes of the GraphEntity and return hashes to linked documents/ET
    * @params links: list to check
@@ -261,7 +261,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Save current state of the images after load/save
    */
-  // TODO: Change this name, I do not like it
   saveImagesState() {
     this.savedImageHashes = this.getCurrentImageSet();
   }
@@ -276,22 +275,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Return elements of the first set that are not present in the second
-   * @param first set to filter
-   * @param second set to check against
-   */
-  // TODO: This could be moved as well as return Set instead. Do we even want this as a function?
-  setOutersect(first: Set<any>, second: Set<any>): any[] {
-    return [...first].filter(i => !second.has(i));
-  }
-
-  /**
    * Get blobs of new images and hashes of deleted images that will be sent to the server
    */
   getImageChanges() {
     const current = this.getCurrentImageSet();
-    const deletedImages = this.setOutersect(this.savedImageHashes, current);
-    const newImageHashes = this.setOutersect(current, this.savedImageHashes);
+    const deletedImages = setOutersect(this.savedImageHashes, current);
+    const newImageHashes = setOutersect(current, this.savedImageHashes);
     return {newImageHashes, deletedImages};
   }
 
