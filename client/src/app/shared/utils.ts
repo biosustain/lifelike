@@ -224,6 +224,15 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
 }
 
 /**
+ * Return elements of the first set that are not present in the second
+ * @param first set to filter
+ * @param second set to check against
+ */
+export function setOutersect(first: Set<any>, second: Set<any>): any[] {
+    return [...first].filter(i => !second.has(i));
+}
+
+/**
  * Matches filename/url with supported extensions and returns its information
  */
 export function getSupportedFileCodes(text: string): SupportedExtensionInfo {
