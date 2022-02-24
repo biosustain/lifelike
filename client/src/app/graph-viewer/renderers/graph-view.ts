@@ -166,10 +166,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   /**
    * Stores hashes of the images that were present when a map was created/saved. Used to keep track of
-   * image status on the server
+   * image status on the server in order to send only new images
    * @private
    */
-  private registeredImageHashes: Set<string>;
+  private savedImageHashes: Set<string>;
 
 
   constructor() {
@@ -262,8 +262,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Save current state of the images after load/save
    */
   // TODO: Change this name, I do not like it
-  registerImages() {
-    this.registeredImageHashes = this.getCurrentImageSet();
+  saveImagesState() {
+    this.savedImageHashes = this.getCurrentImageSet();
   }
 
   /**
@@ -290,8 +290,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getImageChanges() {
     const current = this.getCurrentImageSet();
-    const deletedImages = this.setOutersect(this.registeredImageHashes, current);
-    const newImageHashes = this.setOutersect(current, this.registeredImageHashes);
+    const deletedImages = this.setOutersect(this.savedImageHashes, current);
+    const newImageHashes = this.setOutersect(current, this.savedImageHashes);
     return {newImageHashes, deletedImages};
   }
 
@@ -305,7 +305,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
-    this.registerImages();
+    this.saveImagesState();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(

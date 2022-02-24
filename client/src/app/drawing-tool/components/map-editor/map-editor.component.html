@@ -15,16 +15,16 @@
                          (objectUpdate)="emitModuleProperties()">
         </app-module-menu>
         <div *ngIf="unsavedChanges$.value">
-                <span class="badge badge-danger badge-pill ml-1"
-                      ngbTooltip="Has unsaved changes" container="body">
-                  <i class="fa fa-pencil-alt"></i>
-                </span>
+            <span class="badge badge-danger badge-pill ml-1"
+                  ngbTooltip="Has unsaved changes" container="body">
+              <i class="fa fa-pencil-alt"></i>
+            </span>
         </div>
-
         <div class="btn-group ml-1">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Save" placement="bottom" container="body" (click)="save()">
-                <i class="fa fa-fw fa-save"></i>
+                <i class="fa fa-fw fa-save" *ngIf="!isSaving"></i>
+                <span class="spinner-border spinner-border-sm" role="status" *ngIf="isSaving"></span>
             </button>
         </div>
 

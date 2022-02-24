@@ -31,7 +31,6 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import {ImageUploadBehavior} from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import {DragDropEntityBehavior} from 'app/graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
 
 import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
