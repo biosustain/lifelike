@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     name: Setup, Build, Publish
-
     runs-on: ubuntu-latest
 
     outputs:
@@ -25,7 +24,6 @@ jobs:
         with:
           token: ${{ env.INFRA_PAT }}
           submodules: recursive
-          fetch-depth: 0
 
       - name: Set git commit timestamp
         id: timestamp
@@ -126,9 +124,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+        env:
+          INFRA_PAT: ***REMOVED***
+        with:
+          token: ${{ env.INFRA_PAT }}
+          submodules: recursive
 
       - name: Deploy application
         uses: ./.github/actions/ansible
