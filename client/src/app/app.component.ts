@@ -67,7 +67,6 @@ export class AppComponent {
         this.fragment = urlParts[1];
       }
     });
-
   }
   /**
    * View Lifelike meta information

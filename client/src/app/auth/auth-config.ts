@@ -1,9 +1,10 @@
+import { environment } from 'environments/environment';
+
 import { AuthConfig } from 'angular-oauth2-oidc';
 
 export const authConfig: AuthConfig = {
-  // TODO: These should probably all be environment specific (i.e., we may not use keycloak for all environments)
-  issuer: 'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master',
-  clientId: '***ARANGO_DB_NAME***-frontend',
+  issuer: environment.oauthIssuer,
+  clientId: environment.oauthClientId,
   responseType: 'code',
   redirectUri: window.location.origin + '/',
   silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
