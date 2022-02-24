@@ -64,7 +64,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
-    const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
+    const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
 
     let textColor = '#000';
     let bgColor = '#fff';
@@ -137,7 +137,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
         shapeFillColor: this.detailTypeBackgrounds.get(d.label),
-        forceHighDetailLevel,
+        forceVisibleText,
       });
 
     } else if (iconCode) {
@@ -221,7 +221,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         y: d.data.y,
         iconTextbox,
         labelTextbox,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
 
     } else if (d.image_id) {
@@ -281,7 +281,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           strokeColor,
         ),
         shapeFillColor: bgColor,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
     }
   }
@@ -351,7 +351,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         lineWidth,
         strokeColor,
       ),
-      forceHighDetailLevel: placementOptions.selected || placementOptions.highlighted,
+      forceVisibleText: placementOptions.selected || placementOptions.highlighted,
     });
   }
 

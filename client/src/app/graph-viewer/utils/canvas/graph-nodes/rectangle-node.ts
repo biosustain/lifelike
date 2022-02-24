@@ -10,7 +10,7 @@ export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
   shapeFillColor?: string;
   stroke?: Line;
-  forceHighDetailLevel?: boolean;
+  forceVisibleText?: boolean;
 }
 
 /**
