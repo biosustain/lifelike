@@ -115,6 +115,12 @@ export class ObjectCreationService {
           status: `Done with ${request.filename || 'file' }...`,
           value: 1,
         }));
+      }, _ => {
+        progressObservables[i].next(new Progress({
+          mode: ProgressMode.Determinate,
+          status: `Error occurred during upload/parsing of ${request.filename || 'file' }!`,
+          value: 0,
+        }));
       });
       promiseList.push(promise);
     }
