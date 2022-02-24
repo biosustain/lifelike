@@ -300,8 +300,7 @@ class FilesystemBaseView(MethodView):
         # ========================================
         # Fetch and check
         # ========================================
-        # TODO: Loading of the content is required only when dealing with a map - maybe we can
-        # add some check to not load it when not needed
+        # We need to fetch content as it is used in maps update.
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
                                                    require_hash_ids=require_hash_ids,
                                                    lazy_load_content=True)
