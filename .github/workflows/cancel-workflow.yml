@@ -1,12 +1,10 @@
-# Used to only run the latest changes of
-# a specified workflow (e.g. cancels the
-# previous push)
+# Reg: https://github.com/styfle/cancel-workflow-action
 name: Cancel Redundant Workflows
 
 on:
   push:
     branches-ignore:
-        - master
+      - master
 
 jobs:
   cancel:
