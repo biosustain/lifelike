@@ -21,9 +21,9 @@ export class RectangleNode extends BaseRectangleNode {
   readonly textbox: TextElement;
   readonly shapeFillColor: string;
   readonly stroke: Line | undefined;
-  readonly forceHighDetailLevel = false;
+  readonly forceVisibleText = false;
 
-  readonly previousHighDetailThreshold = 0.45;
+  readonly visibleTextThreshold = 0.45;
   readonly defaultFontSize = 16;
 
 
@@ -38,10 +38,10 @@ export class RectangleNode extends BaseRectangleNode {
     const ctx = this.ctx;
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = +this.textbox.font.split('px').shift();
-    const highDetailLevel = this.forceHighDetailLevel || transform.k >=
-      this.previousHighDetailThreshold * (this.defaultFontSize / fontSize);
+    const visibleText = this.forceVisibleText ||
+      transform.k >= this.visibleTextThreshold * (this.defaultFontSize / fontSize);
 
-    if (highDetailLevel) {
+    if (visibleText) {
       // Node shape
       ctx.save();
       (ctx as any).roundedRect(
