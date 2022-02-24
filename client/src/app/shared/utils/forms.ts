@@ -36,7 +36,7 @@ export function objectToMixedFormData(object: object): FormData {
     } else {
       if (Array.isArray(value) && value.length && value[0].blob instanceof Blob) {
         for (const imageBlob of value) {
-          formData.append(key, imageBlob.blob, imageBlob.filename);
+          formData.append(key, imageBlob.blob, imageBlob.filename || 'blob');
         }
       } else {
         data[key] = value;

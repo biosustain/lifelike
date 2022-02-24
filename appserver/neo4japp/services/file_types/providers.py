@@ -1215,32 +1215,40 @@ class MapTypeProvider(BaseFileTypeProvider):
 
     def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
         """
-        Evaluate the changes in the images and create a new blob to store in the content
+        Evaluate the changes in the images and create a new blob to store in the content.
+        Since we cannot delete files from an archive, we need to copy everything (except for
+        graph.json) into a new one.
+        :params:
+        :param buffer: buffer containing request data
+        :param params: request parameters, containing info about images
+        :param file: file which content is being modified
         """
 
         images_to_delete = params.get('deleted_images') or []
         new_images = params.get('new_images') or []
-
         previous_content = file.content.raw_file
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(previous_content))
         except zipfile.BadZipfile:
-            # NOTE: Do we need an error here? Seems unlikely
             raise ValidationError('Previous content of the map is corrupted!')
 
-        images_to_delete.append('graph')
-        # Deleting form an existing archive is not supported - we need a new one
         new_content = io.BytesIO()
         new_zip = zipfile.ZipFile(new_content, 'w')
+
+        # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
+        # to make sure that the graph.json is not copied as well.
+        images_to_delete.append('graph')
         files_to_copy = [hash_id for hash_id in zip_file.namelist() if
                          hash_id.split('/')[-1].split('.')[0] not in images_to_delete]
-        new_zip.writestr('graph.json', params['content_value'].read())
         for filename in files_to_copy:
             new_zip.writestr(filename, zip_file.read(filename))
-        for i, image in enumerate(new_images):
+
+        for image in new_images:
             new_zip.writestr('images/' + image.filename + '.png', image.read())
+        new_zip.writestr('graph.json', params['content_value'].read())
         new_zip.close()
 
+        # Remember to always rewind when working with BufferedIOBase
         new_content.seek(0)
         return typing.cast(BufferedIOBase, new_content)
 
