@@ -1,4 +1,5 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
+import { defaultLabelFontSize } from 'app/shared/constants';
 
 import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
@@ -12,7 +13,7 @@ export interface StandardEdgeOptions {
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
   stroke?: Line;
-  forceHighDetailLevel?: boolean;
+  forceVisibleText?: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ export class LineEdge extends PlacedEdge {
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;
   readonly stroke: Line | undefined;
-  readonly forceHighDetailLevel = false;
+  readonly forceVisibleText = false;
 
   readonly labelX: number;
   readonly labelY: number;
@@ -34,6 +35,8 @@ export class LineEdge extends PlacedEdge {
   readonly labelMinY: number;
   readonly labelMaxY: number;
   readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+
+  readonly visibleTextThreshold = 0.45;
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
     super();
@@ -155,9 +158,11 @@ export class LineEdge extends PlacedEdge {
 
   drawLayer2(transform: any) {
     if (this.textbox) {
-      const highDetailLevel = this.forceHighDetailLevel || transform.k >= 0.35;
+      const fontSize = +this.textbox.font.split('px').shift();
+      const visibleText = this.forceVisibleText || transform.k
+        >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
-      if (highDetailLevel) {
+      if (visibleText) {
         this.textbox.drawCenteredAt(this.labelX, this.labelY);
       }
     }
