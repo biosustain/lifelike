@@ -1,5 +1,7 @@
 import 'canvas-plus';
 
+import { defaultLabelFontSize } from 'app/shared/constants';
+
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
@@ -24,7 +26,6 @@ export class RectangleNode extends BaseRectangleNode {
   readonly forceVisibleText = false;
 
   readonly visibleTextThreshold = 0.45;
-  readonly defaultFontSize = 16;
 
 
 
@@ -39,7 +40,7 @@ export class RectangleNode extends BaseRectangleNode {
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = +this.textbox.font.split('px').shift();
     const visibleText = this.forceVisibleText ||
-      transform.k >= this.visibleTextThreshold * (this.defaultFontSize / fontSize);
+      transform.k >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
     if (visibleText) {
       // Node shape
