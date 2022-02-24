@@ -60,7 +60,7 @@ export class ObjectCreationService {
     for (let i = 0; i < requests.length; i++) {
       const request = requests[i];
       const annotationOption = annotationOptions[i] || {};
-      promiseList.push(this.filesystemService.create(request)
+      const promise = this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
@@ -100,11 +100,7 @@ export class ObjectCreationService {
             }
             return object;
           }));
-          progressObservables[i].next(new Progress({
-                mode: ProgressMode.Determinate,
-                status: `Done with ${request.filename || 'file' }...`,
-                value: 1,
-              }));
+
           return iif(
             () => object.isAnnotatable,
             merge(annotationsService),
@@ -112,7 +108,15 @@ export class ObjectCreationService {
           );
         }),
         this.errorHandler.create({label: 'Create object'})
-      ).toPromise());
+      ).toPromise();
+      promise.then( _ => {
+        progressObservables[i].next(new Progress({
+          mode: ProgressMode.Determinate,
+          status: `Done with ${request.filename || 'file' }...`,
+          value: 1,
+        }));
+      });
+      promiseList.push(promise);
     }
 
     const finalPromise = Promise.allSettled(promiseList);
