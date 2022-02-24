@@ -145,3 +145,5 @@ export enum SizeUnits {
   GiB = 2e30,
   TiB = 2e40
 }
+
+export const defaultLabelFontSize = 16;
