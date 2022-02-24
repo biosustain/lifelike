@@ -42,49 +42,29 @@ export class RectangleNode extends BaseRectangleNode {
     const visibleText = this.forceVisibleText ||
       transform.k >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
-    if (visibleText) {
-      // Node shape
-      ctx.save();
-      (ctx as any).roundedRect(
-        this.nodeX,
-        this.nodeY,
-        this.nodeWidth,
-        this.nodeHeight,
-        5,
-      );
-      if (this.shapeFillColor) {
-        ctx.fillStyle = this.shapeFillColor;
-        ctx.fill();
-      }
-      if (this.stroke) {
-        this.stroke.setContext(ctx);
-        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-        ctx.stroke();
-      }
-      ctx.restore();
+    // Node shape
+    ctx.save();
+    (ctx as any).roundedRect(
+      this.nodeX,
+      this.nodeY,
+      this.nodeWidth,
+      this.nodeHeight,
+      visibleText ? 5 : 3,
+    );
+    if (this.shapeFillColor) {
+      ctx.fillStyle = this.shapeFillColor;
+      ctx.fill();
+    }
+    if (this.stroke) {
+      this.stroke.setContext(ctx);
+      ctx.lineWidth = zoomResetScale * ctx.lineWidth;
+      ctx.stroke();
+    }
+    ctx.restore();
 
-      // Node text
+    // Node text
+    if (visibleText) {
       this.textbox.drawCenteredAt(this.x, this.y);
-    } else {
-      // Node shape
-      ctx.save();
-      (ctx as any).roundedRect(
-        this.nodeX,
-        this.nodeY,
-        this.nodeWidth,
-        this.nodeHeight,
-        3,
-      );
-      if (this.shapeFillColor) {
-        ctx.fillStyle = this.shapeFillColor;
-        ctx.fill();
-      }
-      if (this.stroke) {
-        this.stroke.setContext(ctx);
-        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-        ctx.stroke();
-      }
-      ctx.restore();
     }
   }
 }
