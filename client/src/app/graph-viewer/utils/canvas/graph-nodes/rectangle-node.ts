@@ -23,6 +23,11 @@ export class RectangleNode extends BaseRectangleNode {
   readonly stroke: Line | undefined;
   readonly forceHighDetailLevel = false;
 
+  readonly previousHighDetailThreshold = 0.45;
+  readonly defaultFontSize = 16;
+
+
+
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
     super(ctx, options);
     this.nodeWidth = (this.width != null ? this.width : this.textbox.actualWidth) + this.padding;
@@ -32,7 +37,9 @@ export class RectangleNode extends BaseRectangleNode {
   draw(transform: any): void {
     const ctx = this.ctx;
     const zoomResetScale = 1 / transform.scale(1).k;
-    const highDetailLevel = this.forceHighDetailLevel || transform.k >= 0.35;
+    const fontSize = +this.textbox.font.split('px').shift();
+    const highDetailLevel = this.forceHighDetailLevel || transform.k >=
+      this.previousHighDetailThreshold * (this.defaultFontSize / fontSize);
 
     if (highDetailLevel) {
       // Node shape
