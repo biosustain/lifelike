@@ -2,9 +2,24 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+interface EnvironmentVars {
+  production: boolean;
+  oauthEnabled: boolean;
+  testVar: string;
+  oauthIssuer: string;
+  oauthClientId: string;
+}
+
+// Read environment variables (set by env.js) from browser window
+const browserWindow = window || {};
+const envAccessor = '__env';
+const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}) as EnvironmentVars;
+
 export const environment = {
-  production: false,
-  oauthEnabled: false,
+  production: browserWindowEnv.production || false,
+  oauthEnabled: browserWindowEnv.oauthEnabled || false,
+  oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
+  oauthClientId: browserWindowEnv.oauthClientId || 'client',
 };
 
 /*
