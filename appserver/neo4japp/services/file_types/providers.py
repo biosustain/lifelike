@@ -819,7 +819,8 @@ def create_edge(edge, node_hash_type_dict):
         else '0.0',
         'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
-        'URL': url
+        # We need to encode ', or export will fail
+        'URL': url.replace("'", "%27")
     }
 
 
