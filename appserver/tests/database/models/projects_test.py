@@ -2,7 +2,6 @@ import pytest
 
 from neo4japp.models import Files
 from neo4japp.models.auth import (
-    AccessControlPolicy,
     AppRole,
     AppUser,
 )
@@ -16,7 +15,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 @pytest.mark.parametrize('name', [
     ('!nva!d|'),
     ('i3cr3e@m>i4cr4e@m'),
-    ('s t y l e'),
+    ('   style    '),
 ])
 def test_flag_invalid_projects_name(session, name):
     with pytest.raises(ValueError):
@@ -28,7 +27,7 @@ def test_flag_invalid_projects_name(session, name):
 
 @pytest.mark.parametrize('name', [
     ('test-project'),
-    ('project1'),
+    ('p r o j e c t 1'),
     ('valid_underscore'),
     ('ö-german'),
     ('æØÅ_nordic#letters$are@valid')
@@ -152,19 +151,10 @@ def test_projects_init_with_roles(session, test_user: AppUser):
     session.flush()
 
     acp_roles = session.query(
-        AccessControlPolicy.id,
         AppRole.name,
-    ).filter(
-        AccessControlPolicy.principal_type == AppRole.__tablename__,
-    ).filter(
-        AccessControlPolicy.asset_type == Projects.__tablename__,
-        AccessControlPolicy.asset_id == p.id,
-    ).join(
-        AppRole,
-        AppRole.id == AccessControlPolicy.principal_id,
     ).all()
 
-    roles = [role for _, role in acp_roles]
+    roles = [role for role, in acp_roles]
     assert 'project-admin' in roles
     assert 'project-read' in roles
     assert 'project-write' in roles

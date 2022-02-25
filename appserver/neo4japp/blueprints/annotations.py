@@ -17,7 +17,6 @@ from flask import (
     jsonify,
 )
 from flask.views import MethodView
-from flask_apispec import use_kwargs
 from json import JSONDecodeError
 from marshmallow import validate, fields
 from sqlalchemy import and_
@@ -40,7 +39,6 @@ from ..models import (
     AppUser,
     Files,
     GlobalList,
-    FallbackOrganism
 )
 from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
@@ -449,8 +447,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         if params.get('organism'):
             override_organism = params['organism']
-            db.session.add(override_organism)
-            db.session.flush()
 
         if params.get('annotation_configs'):
             override_annotation_configs = params['annotation_configs']
@@ -567,7 +563,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         file: Files,
         cause: AnnotationChangeCause,
         configs: dict,
-        organism: Optional[FallbackOrganism] = None,
+        organism: Optional[Dict] = None,
         user_id: int = None
     ):
         """Annotate PDF files."""
@@ -591,8 +587,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         ).identify(
             annotation_methods=configs['annotation_methods']
         ).annotate(
-            specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
-            specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
+            specified_organism_synonym=organism.get('synonym') if organism else '',  # noqa
+            specified_organism_tax_id=organism.get('tax_id') if organism else '',  # noqa
             custom_annotations=file.custom_annotations or [],
             filename=file.filename)
 
@@ -603,8 +599,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         }
 
         if organism:
-            update['fallback_organism'] = organism
-            update['fallback_organism_id'] = organism.id
+            update['organism_name'] = organism.get('organism_name')
+            update['organism_synonym'] = organism.get('synonym')
+            update['organism_taxonomy_id'] = organism.get('tax_id'),
 
         version = {
             'file_id': file.id,
@@ -624,7 +621,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         user_id: int,
         enrichment: dict,
         configs: dict,
-        organism: Optional[FallbackOrganism] = None
+        organism: Optional[Dict] = None
     ):
         """Annotate all text in enrichment table."""
         text, parsed = Pipeline.parse(file.mime_type, text=enriched.text)
@@ -646,8 +643,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         ).identify(
             annotation_methods=configs['annotation_methods']
         ).annotate(
-            specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
-            specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
+            specified_organism_synonym=organism.get('synonym') if organism else '',  # noqa
+            specified_organism_tax_id=organism.get('tax_id') if organism else '',  # noqa
             custom_annotations=file.custom_annotations or [],
             filename=file.filename,
             enrichment_mappings=enriched.text_index_map)
@@ -722,8 +719,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         }
 
         if organism:
-            update['fallback_organism'] = organism
-            update['fallback_organism_id'] = organism.id
+            update['organism_name'] = organism.get('organism_name')
+            update['organism_synonym'] = organism.get('synonym')
+            update['organism_taxonomy_id'] = organism.get('tax_id'),
 
         version = {
             'file_id': file.id,

@@ -143,7 +143,6 @@ class FileSchema(CamelCaseSchema):
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     true_filename = fields.String()
-    fallback_organism = fields.Nested(FallbackOrganismSchema)
     annotation_configs = fields.Nested(AnnotationConfigurations)
 
     def get_user_privilege_filter(self):
