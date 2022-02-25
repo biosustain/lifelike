@@ -1,5 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
-from common.graph_models import *
+from common.constants import *
+from common.graph_models import RelationshipType
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
@@ -16,29 +17,24 @@ class ClassParser(BaseDataFileParser):
     """
     The classes.dat file contains list of terms for biocyc classification, including some go terms and taxonomy.
     """
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'classes.dat', NODE_CLASS, ATTR_NAMES, REL_NAMES)
+    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
+        super().__init__(prefix, base_dir, db_name, tarfile, 'classes.dat', NODE_CLASS, ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_SYNONYMS]
 
-    def create_synonym_rels(self) -> bool:
-        return False
+    def __str__(self):
+        return 'biocyc-class'
 
-    def parse_data_file(self):
-        nodes = BaseDataFileParser.parse_data_file(self)
-        mynodes = []
-        for node in nodes:
-            # skip GO terms, Taxonomy terms, Organims
-            if node.get_attribute(PROP_BIOCYC_ID).startswith('GO:') or \
-                    node.get_attribute(PROP_BIOCYC_ID).startswith('TAX-') or \
-                    node.get_attribute(PROP_BIOCYC_ID).startswith('ORG-'):
-                continue
-            mynodes.append(node)
+    def parse_and_write_data_files(self):
+        self.nodes = [n for n in self.nodes if not n.get_attribute(PROP_BIOCYC_ID).startswith(('GO:', 'TAX-', 'ORG-'))]
+        for node in self.nodes:
+            name = node.get_attribute(PROP_NAME)
+            if name:
+                if name.startswith('a '):
+                    name = name[2:]
+                elif name.startswith('an '):
+                    name = name[3:]
+                node.update_attribute(PROP_NAME, name)
+            edges_with_type_of = set([e for e in node.edges if e.label == REL_TYPE])
             # Skip relationships of type FRAMES, since there is no biocyc id 'FRAMES'
-            edges = set(node.edges)
-            for edge in edges:
-                if edge.label == REL_TYPE:
-                    if edge.dest.get_attribute(PROP_BIOCYC_ID) == FRAMES or edge.source.get_attribute(PROP_BIOCYC_ID)==FRAMES:
-                        node.edges.remove(edge)
-        return mynodes
-
-
+            node.edges = [edge for edge in edges_with_type_of if edge.dest.get_attribute(PROP_BIOCYC_ID) != FRAMES and edge.source.get_attribute(PROP_BIOCYC_ID) != FRAMES]
+        super().parse_and_write_data_files()

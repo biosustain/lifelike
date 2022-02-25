@@ -115,7 +115,8 @@ def get_create_relationships_query(
     relationship:str,
     rel_properties=[],
     foreach=False,
-    foreach_property=''
+    foreach_property='',
+    return_node_count=False
 ):
     """
     Build the query to create relationships.
@@ -137,15 +138,16 @@ def get_create_relationships_query(
         rows.append("FOREACH (item IN CASE WHEN row.%s = '%s' THEN [1] ELSE [] END | MERGE (a)-[r:%s]->(b))" % (
             foreach_property, relationship, relationship))
     else:
-        rows.append(f"MERGE (a)-[r:{relationship}]->(b)")
+        rows.append(f'MERGE (a)-[r:{relationship}]->(b)')
     prop_sets = []
     if rel_properties:
         for prop in rel_properties:
-            prop_sets.append(f"r.{prop}=row.{prop}")
+            prop_sets.append(f'r.{prop}=row.{prop}')
     if prop_sets:
         set_phrase = ', '.join(prop_sets)
-        rows.append(f"SET {set_phrase}")
-    rows.append('RETURN COUNT(*)')
+        rows.append(f'SET {set_phrase}')
+    if return_node_count:
+        rows.append('RETURN COUNT(*)')
     return '\n'.join(rows)
 
 
