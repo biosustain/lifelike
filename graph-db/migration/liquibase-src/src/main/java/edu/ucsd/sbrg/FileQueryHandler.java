@@ -15,14 +15,11 @@ import liquibase.resource.ResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * <changeSet id="..." author="...">
@@ -53,6 +50,13 @@ public class FileQueryHandler implements CustomTaskChange {
     private String fileType;
     private int startAt;
     private ResourceAccessor resourceAccessor;
+    /**
+     * TODO: The way Liquibase is implemented (under the hood), it doesn't work well with loggers.
+     * It's unfortunate, but if we want to get this to work, we will have to implement an
+     * extension somehow.
+     *
+     * Possible solution: https://stackoverflow.com/questions/20880783/how-to-get-liquibase-to-log-using-slf4j
+     */
     static final Logger logger = LogManager.getLogger(FileQueryHandler.class);
 
     private String neo4jHost;
@@ -150,10 +154,9 @@ public class FileQueryHandler implements CustomTaskChange {
         FileExtract fileExtract = new FileExtractFactory(FileType.valueOf(this.getFileType())).getInstance(this.getFileName(), this.getLocalSaveFileDir());
         Neo4jGraph graph = new Neo4jGraph(this.getNeo4jHost(), this.getNeo4jCredentials(), this.getNeo4jDatabase());
 
-        List<String[]> content = new ArrayList<>();
+        List<String[]> content;
         final int chunkSize = 5000;
         int processed = 0;
-        int skipCount = 0;
         String lastProcessedLine = null;
         String[] header = null;
         try {
@@ -170,58 +173,23 @@ public class FileQueryHandler implements CustomTaskChange {
                 cloudStorage.downloadToFile(fileExtract.getFileName(), fileExtract.getFileDir());
                 System.out.println("Finished downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
             }
-            FileInputStream input = new FileInputStream(fileExtract.getFilePath());
-            Scanner sc = new Scanner(input);
-            sc.useDelimiter(fileExtract.getDelimiter());
-            while (sc.hasNextLine()) {
-                String currentLine = sc.nextLine();
-                logger.debug("Read line '" + currentLine + "' from file.");
-                if (header == null) {
-                    header = currentLine.split(fileExtract.getDelimiter(), -1);
-                    skipCount++;
-                } else {
-                    if (skipCount != this.getStartAt()) {
-                        skipCount++;
-                    } else {
-                        if ((content.size() > 0 && (content.size() % (chunkSize * 4) == 0))) {
-                            try {
-                                graph.execute(this.getQuery(), content, header, chunkSize);
-                            } catch (CustomChangeException ce) {
-                                ce.printStackTrace();
-                                String output = "Encountered error! Set startAt to line " +
-                                        (processed + 1) + " (last value processed in file: " + lastProcessedLine +
-                                        ") to pick up where left off.";
-                                System.out.println(output);
-                                throw new CustomChangeException();
-                            }
-                            processed += content.size();
-                            lastProcessedLine = Arrays.toString(content.get(content.size() - 1));
-                            content.clear();
-                        }
-                        content.add(currentLine.split(fileExtract.getDelimiter(), -1));
-                    }
-                }
-            }
 
-            input.close();
-            sc.close();
-
-            // wrap up any leftovers in content
-            // since file could be smaller than chunkSize * 4
-            if (content.size() > 0) {
+            FileContent fileContent = new FileReader().readFile(fileExtract.getFilePath(), fileExtract.getDelimiter(), this.getStartAt());
+            header = fileContent.getHeader();
+            while (!fileContent.getContent().isEmpty()) {
+                content = fileContent.getContent().remove();
                 try {
                     graph.execute(this.getQuery(), content, header, chunkSize);
-                    processed += content.size();
-                    lastProcessedLine = Arrays.toString(content.get(content.size() - 1));
-                    content.clear();
                 } catch (CustomChangeException ce) {
                     ce.printStackTrace();
                     String output = "Encountered error! Set startAt to line " +
                             (processed + 1) + " (last value processed in file: " + lastProcessedLine +
                             ") to pick up where left off.";
-                    logger.error(output);
+                    System.out.println(output);
                     throw new CustomChangeException();
                 }
+                processed += content.size();
+                lastProcessedLine = Arrays.toString(content.get(content.size() - 1));
             }
         } catch (IOException e) {
             e.printStackTrace();

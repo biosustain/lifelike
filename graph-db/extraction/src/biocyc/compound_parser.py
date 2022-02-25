@@ -1,5 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
-from common.graph_models import *
+from common.constants import *
+from common.graph_models import RelationshipType
 from biocyc.utils import cleanhtml
 
 
@@ -21,16 +22,18 @@ REL_NAMES = {
 DB_LINK_SOURCES = {'CHEBI':True}
 
 class CompoundParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
+    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
+        super().__init__(prefix, base_dir, db_name, tarfile, 'compounds.dat', NODE_COMPOUND, ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY]
+
+    def __str__(self):
+        return 'biocyc-compound'
 
     def create_synonym_rels(self) -> bool:
         return True
 
-    def parse_data_file(self):
-        nodes = BaseDataFileParser.parse_data_file(self)
-        for node in nodes:
+    def parse_and_write_data_files(self):
+        for node in self.nodes:
             name = node.get_attribute(PROP_NAME)
             if name:
                 # clean compound names
@@ -44,8 +47,4 @@ class CompoundParser(BaseDataFileParser):
             inchi_key = node.get_attribute(PROP_INCHI_KEY)
             if inchi_key:
                 node.update_attribute(PROP_INCHI_KEY, inchi_key[len('InChIKey='):])
-
-        return nodes
-
-
-
+        super().parse_and_write_data_files()

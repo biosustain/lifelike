@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="Biocyc Ecocyc data initial load 01282022" author="Binh Vu">
+    <comment>Create constraints and indexes for Biocyc Ecocyc nodes</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_ecocyc_id IF NOT EXISTS ON (n:db_EcoCyc) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_ecocyc_biocycid IF NOT EXISTS ON (n:db_EcoCyc) ASSERT n.biocyc_id IS UNIQUE;
+CREATE INDEX index_ecocyc_name IF NOT EXISTS FOR (n:db_EcoCyc) ON (n.name);
+    </sql>
+  </changeSet>
+
+  <changeSet id="LL-3164 Create Biocyc Ecocyc nodes on date 01282022" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+MERGE (n:db_BioCyc {biocyc_id: row.biocyc_id})
+SET n:db_BioCyc:db_EcoCyc:BioCycClass,n.name=row.name,n.eid=row.eid,n.synonyms=row.synonyms,n.data_source='BioCyc'
+      "
+      fileName="jira-LL-3164-biocyc-class-nodes.tsv"
+      zipFileName="jira-LL-3164-ecocyc.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="LL-3164 Create Biocyc Ecocyc relationship on date 01282022" author="Binh Vu">
+    <comment>
+        
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+MATCH (a:db_BioCyc {biocyc_id: row.from_id}), (b:db_BioCyc {biocyc_id: row.to_id})
+MERGE (a)-[r:TYPE_OF]->(b)
+      "
+      fileName="jira-LL-3164-biocyc-class-node-rels.tsv"
+      zipFileName="jira-LL-3164-ecocyc.zip"
+      startAt="1"
+      fileType="TSV" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      azureStorageName="${azureStorageName}"
+      azureStorageKey="${azureStorageKey}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+</databaseChangeLog>
