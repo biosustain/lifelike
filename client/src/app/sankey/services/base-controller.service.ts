@@ -10,19 +10,21 @@ import {
   LINK_VALUE_GENERATOR,
   LINK_PROPERTY_GENERATORS,
   NetworkTraceData,
-  SankeyState,
-  SankeyView
+  SankeyView,
+  MultiValueAccessor
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
-import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
+import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
 import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { getBaseState } from '../utils/stateLevels';
+import { ErrorMessages, NotImplemented } from '../error';
+import { ServiceOnInit } from '../../shared/schemas/common';
 
 export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
 
@@ -34,7 +36,9 @@ export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptio
  */
 @Injectable()
 export class BaseControllerService<Options extends SankeyBaseOptions, State extends SankeyBaseState>
-  extends StateControlAbstractService<Options, State> {
+  extends StateControlAbstractService<Options, State>  implements ServiceOnInit {
+  fontSizeScale$: Observable<unknown>;
+
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -43,11 +47,70 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     super();
   }
 
+    /**
+     * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
+     */
+  onInit() {
+    this.nodeValueAccessor$ = unifiedSingularAccessor(
+      this.state$,
+      'nodeValueAccessorId',
+    ).pipe(
+      map((nodeValueAccessorId) =>
+        nodeValueAccessorId ? (
+          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
+          this.nodePropertyAcessor(nodeValueAccessorId)
+        ) : (
+          this.warningController.warn(ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)),
+            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
+        )
+      )
+    );
+
+    this.linkValueAccessor$ = unifiedSingularAccessor(
+      this.state$, 'linkValueAccessorId'
+    ).pipe(
+      switchMap((linkValueAccessorId) =>
+        iif(
+          () => has(this.linkValueAccessors, linkValueAccessorId),
+          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
+          unifiedSingularAccessor(
+            this.common.options$,
+            'linkValueAccessors'
+          ).pipe(
+            map(linkValueAccessors =>
+                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
+                  this.warningController.warn(ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)),
+                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
+                )
+            )
+          )
+        )
+      ));
+
+    this.predefinedValueAccessor$ = unifiedSingularAccessor(
+      this.common.options$,
+      'predefinedValueAccessors'
+    ).pipe(
+      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
+        this.state$,
+        'predefinedValueAccessorId'
+      ).pipe(
+        map(predefinedValueAccessorId =>
+          predefinedValueAccessorId === customisedMultiValueAccessorId ?
+            customisedMultiValueAccessor :
+            predefinedValueAccessors[predefinedValueAccessorId]
+        )))
+    );
+
+    this.nodeHeight$ = this.stateAccessor('nodeHeight');
+  }
+
+  nodeHeight$: Observable<SankeyNodeHeight>;
   networkTraceData$: Observable<NetworkTraceData>;
   viewBase;
   nodeValueAccessor$: Observable<ValueGenerator>;
   linkValueAccessor$: Observable<ValueGenerator>;
-  predefinedValueAccessor$;
+  predefinedValueAccessor$: Observable<MultiValueAccessor>;
 
   readonly linkValueAccessors: {
     [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
@@ -65,7 +128,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     // defined per base view - different implementation
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: () => {
-        throw new Error('Not implemented');
+        throw new NotImplemented();
       }
     }
   });
@@ -125,12 +188,15 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
       switchMap(predefinedValueAccessorId =>
         iif(
           () => predefinedValueAccessorId === customisedMultiValueAccessorId,
-          of({}),
+          of({predefinedValueAccessorId}),
           this.common.options$.pipe(
-            map(({predefinedValueAccessors}) => pick(
-              predefinedValueAccessors[predefinedValueAccessorId as string],
-              ['nodeValueAccessorId', 'linkValueAccessorId']
-            ))
+            map(({predefinedValueAccessors}) => ({
+              predefinedValueAccessorId,
+              ...pick(
+                predefinedValueAccessors[predefinedValueAccessorId as string],
+                ['nodeValueAccessorId', 'linkValueAccessorId']
+              )
+            }))
           )
         )
       )
@@ -195,61 +261,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  })
+  });
 
-  /**
-   * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
-   */
-  onInit() {
-    this.nodeValueAccessor$ = unifiedSingularAccessor(
-      this.state$,
-      'nodeValueAccessorId',
-    ).pipe(
-      map((nodeValueAccessorId) =>
-        nodeValueAccessorId ? (
-          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
-          this.nodePropertyAcessor(nodeValueAccessorId)
-        ) : (
-          this.warningController.warn(`Node values accessor ${nodeValueAccessorId} could not be found`),
-            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
-        )
-      )
-    );
-
-    this.linkValueAccessor$ = unifiedSingularAccessor(
-      this.state$, 'linkValueAccessorId'
-    ).pipe(
-      switchMap((linkValueAccessorId) =>
-        iif(
-          () => has(this.linkValueAccessors, linkValueAccessorId),
-          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
-          unifiedSingularAccessor(
-            this.common.options$,
-            'linkValueAccessors'
-          ).pipe(
-            map(linkValueAccessors =>
-                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
-                  this.warningController.warn(`Link values accessor ${linkValueAccessorId} could not be found`),
-                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
-                )
-            )
-          )
-        )
-      ));
-
-    this.predefinedValueAccessor$ = unifiedSingularAccessor(
-      this.common.options$,
-      'predefinedValueAccessors'
-    ).pipe(
-      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
-        this.state$,
-        'predefinedValueAccessorId'
-      ).pipe(
-        map(predefinedValueAccessorId =>
-          predefinedValueAccessorId === customisedMultiValueAccessorId ?
-            customisedMultiValueAccessor :
-            predefinedValueAccessors[predefinedValueAccessorId]
-        )))
-    );
-  }
 }

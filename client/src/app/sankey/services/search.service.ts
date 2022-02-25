@@ -5,6 +5,7 @@ import { map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilC
 import { size, isNil, isEmpty } from 'lodash-es';
 
 import { tokenizeQuery } from 'app/shared/utils/find';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { WorkerOutputActions } from '../utils/search/search-worker-actions';
 import { ControllerService } from './controller.service';
@@ -20,7 +21,6 @@ export class SankeySearchService {
         first()
       ))
     ).subscribe(() => {
-      console.count('Search term changed');
       this.focusIdx$.next(0);
     });
   }
@@ -90,6 +90,7 @@ export class SankeySearchService {
                   });
                   return matches;
                 }, [] as Match[]),
+                debug('search results'),
                 shareReplay<Match[]>(1)
               )
             };
@@ -100,6 +101,7 @@ export class SankeySearchService {
         )
       ))
     )),
+    debug('current search'),
     // each subscriber gets same results$ (one worker)
     shareReplay<Observable<Match[]>>(1)
   );
@@ -110,8 +112,9 @@ export class SankeySearchService {
 
   preprocessedMatches$ = this.matches$.pipe(
     throttleTime(0, undefined, {leading: false, trailing: true}),
+    debug('preprocessed matches'),
     // each subscriber gets same results$ (one worker)
-    shareReplay(1)
+    shareReplay<Match[]>(1)
   );
 
   searchFocus$ = this.preprocessedMatches$.pipe(
@@ -131,7 +134,8 @@ export class SankeySearchService {
   resultsCount$ = this.preprocessedMatches$.pipe(
     map(size),
     distinctUntilChanged(),
-    shareReplay(1)
+    debug('results count'),
+    shareReplay<number>(1)
   );
 
   setFocusIdx(focusIdx: number) {

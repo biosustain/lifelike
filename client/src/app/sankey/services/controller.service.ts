@@ -18,15 +18,17 @@ import {
   SankeyStaticOptions,
   ViewBase,
   Prescaler,
-  ValueAccessor,
   LINK_PROPERTY_GENERATORS,
   SankeyViews,
   SankeyLink,
   SankeyId,
   SankeyTrace,
-  SankeyNode
+  SankeyNode,
+  SankeyOptions,
+  MultiValueAccessor
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
 import { isPositiveNumber, indexByProperty } from '../utils/utils';
@@ -34,12 +36,13 @@ import { LayoutService } from './layout.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { getBaseState, getCommonState } from '../utils/stateLevels';
+import { ErrorMessages, NotImplemented } from '../error';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
 export const customisedMultiValueAccessor = {
   description: customisedMultiValueAccessorId
-} as ValueAccessor;
+} as MultiValueAccessor;
 
 enum SankeyActionType {
   selectNetworkTrace
@@ -65,22 +68,16 @@ export function patchReducer(patch, callback) {
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-// @ts-ignore
-export class ControllerService extends StateControlAbstractService<SakeyOptions, SankeyState> {
+export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> {
   constructor(
     readonly warningController: WarningControllerService
   ) {
     super();
-    this.onInit();
-    this.state$.subscribe(s => console.log('state changed', s));
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   data$ = new ReplaySubject<SankeyData>(1);
-  networkTraceIdx$: Observable<number>;
-  baseViewName$: Observable<string>;
   baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
-  viewName$: Observable<string>;
 
   state$ = this.delta$.pipe(
     publish(delta$ =>
@@ -101,7 +98,15 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     ),
     map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
+    debug('state$'),
     shareReplay(1)
+  );
+  networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
+  baseViewName$ = this.stateAccessor('baseViewName');
+  // do not use standart accessor for this one cause we want null if it wasnt set
+  viewName$ = this.state$.pipe(
+    map(({viewName = null}) => viewName),
+    distinctUntilChanged()
   );
 
   /**
@@ -114,27 +119,36 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       this.staticOptions,
       this.extractOptionsFromGraph(data)
     )),
-    shareReplay(1)
+    debug('options$'),
+    shareReplay<SankeyOptions>(1)
   );
 
   networkTraces$ = unifiedSingularAccessor(this.options$, 'networkTraces');
 
   viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
+  fontSizeScale$ = this.stateAccessor('fontSizeScale');
 
   views$ = rx_merge(
-    this.data$.pipe(
-      map(({_views = {}}) => _views),
-      shareReplay(1)
-    ),
+    this.data$.pipe(map(({_views = {}}) => _views)),
     this.viewsUpdate$
   ).pipe(
-    shareReplay(1)
+    debug('views$'),
+    shareReplay<SankeyViews>(1)
   );
 
   /**
    * Returns active view or null if no view is active
    */
-  view$: Observable<SankeyView | null>;
+  view$ = this.views$.pipe(
+    switchMap(views => this.viewName$.pipe(
+      map(viewName => views[viewName] ?? null),
+    )),
+    distinctUntilChanged(),
+    debug('view'),
+    shareReplay<SankeyView>(1)
+  );
+
+  labelEllipsis$ = this.stateAccessor('labelEllipsis');
 
   /**
    * Predefined options for Sankey visualisation which are not based on loaded data not user input
@@ -201,6 +215,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
         });
       })
     )),
+    debug('partialNetworkTraceData$'),
     shareReplay(1)
   );
 
@@ -316,7 +331,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
   linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
   nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
-
+  normalizeLinks$ = this.stateAccessor('normalizeLinks');
   fileUpdated$ = new Subject<GraphFile>();
 
 
@@ -370,23 +385,6 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     );
   }
 
-  onInit() {
-    this.networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
-    this.baseViewName$ = this.stateAccessor<ViewBase>('baseViewName');
-    // do not use standart accessor for this one cause we want null if it wasnt set
-    this.viewName$ = this.state$.pipe(
-      map(({viewName = null}) => viewName),
-      distinctUntilChanged()
-    );
-    this.view$ = this.views$.pipe(
-      switchMap(views => this.viewName$.pipe(
-        map(viewName => views[viewName] ?? null),
-      )),
-      distinctUntilChanged(),
-      shareReplay(1)
-    );
-  }
-
   selectNetworkTrace(networkTraceIdx: number) {
     return this.patchState({
       networkTraceIdx,
@@ -416,7 +414,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     links: ReadonlyArray<Readonly<SankeyLink>>,
     colorMap?
   ) {
-    throw new Error('Method not implemented.');
+    throw new NotImplemented();
   }
 
   /**
@@ -435,24 +433,23 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
     nodes: ReadonlyArray<Readonly<GraphNode>>
   ) {
     const nodeById = this.getNodeById(nodes.map(n => clone(n) as SankeyNode));
-    return [
-      ...networkTraceLinks.reduce((o, link) => {
-        let {_source = link.source, _target = link.target} = link;
-        if (typeof _source !== 'object') {
-          _source = LayoutService.find(nodeById, _source);
-        }
-        if (typeof _target !== 'object') {
-          _target = LayoutService.find(nodeById, _target);
-        }
-        o.add(_source);
-        o.add(_target);
-        return o;
-      }, new Set<SankeyNode>())
-    ];
+
+    return uniq(
+      flatMap(networkTraceLinks, ({source, target}) => [source, target])
+    ).reduce((nodes, id) => {
+      // map, filter, warn on one intteration
+      const node = nodeById.get(id);
+      if (!node) {
+        this.warningController.warn(ErrorMessages.missingNode(id));
+      } else {
+        nodes.push(node);
+      }
+      return nodes;
+    }, []);
   }
 
   computeData(): SankeyData {
-    throw new Error('Not implemented');
+    throw new NotImplemented();
   }
 
   // region Extract options
@@ -482,7 +479,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       }
     }
     if (predefinedPropertiesToFind.size) {
-      this.warningController.warn(`Predefined link value accessor accesses not existing properties: ${[...predefinedPropertiesToFind]}`);
+      this.warningController.warn(ErrorMessages.incorrectLinkValueAccessor(predefinedPropertiesToFind));
     }
     return linkValueAccessors;
   }
@@ -505,7 +502,7 @@ export class ControllerService extends StateControlAbstractService<SakeyOptions,
       }
     }
     if (predefinedPropertiesToFind.size) {
-      this.warningController.warn(`Predefined node value accessor accesses not existing properties: ${[...predefinedPropertiesToFind]}`);
+      this.warningController.warn(ErrorMessages.incorrectNodeValueAccessor(predefinedPropertiesToFind));
     }
     return nodeValueAccessors;
   }

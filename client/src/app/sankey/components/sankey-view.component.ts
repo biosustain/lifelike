@@ -6,17 +6,17 @@ import {
   ComponentFactoryResolver,
   Injector,
   AfterViewInit,
-  ChangeDetectorRef,
   getModuleFactory,
-  NgZone
+  NgZone,
+  OnInit
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first, pairwise, startWith, shareReplay } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick, assign } from 'lodash-es';
+import { isNil, pick } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -31,6 +31,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { isNotEmpty } from 'app/shared/utils';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -38,13 +39,20 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { ControllerService } from '../services/controller.service';
-import { BaseControllerService } from '../services/base-controller.service';
+import { BaseControllerService, DefaultBaseControllerService } from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
-import { LayoutService } from '../services/layout.service';
+import { LayoutService, DefaultLayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
+import { ErrorMessages } from '../error';
+
+interface BaseViewContext {
+  baseView: DefaultBaseControllerService;
+  layout: DefaultLayoutService;
+  selection: SankeySelectionService;
+}
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -57,7 +65,8 @@ import { SankeySelectionService } from '../services/selection.service';
     ViewControllerService
   ]
 })
-export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, AfterViewInit {
+export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareComponent, AfterViewInit {
+
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -137,13 +146,6 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     ).subscribe(open => {
       this.searchPanel$.next(open);
     });
-
-    this.selection$.pipe(
-      switchMap(selection => selection.selection$),
-      map(isNotEmpty)
-    ).subscribe(open => {
-      this.detailsPanel$.next(open);
-    });
   }
 
   get viewParams() {
@@ -173,6 +175,12 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   get advanced() {
     return this.dynamicComponentRef.get('advanced').instance;
   }
+  baseViewContext$: Observable<BaseViewContext>;
+  baseView$: Observable<DefaultBaseControllerService>;
+  selection$: Observable<SankeySelectionService>;
+  predefinedValueAccessor$: Observable<object>;
+  layout$: Observable<DefaultLayoutService>;
+  graph$: Observable<object>;
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
 
@@ -210,55 +218,68 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   options$ = this.sankeyController.options$;
   networkTrace$ = this.sankeyController.networkTrace$;
 
-  /**
-   * Load different base view components upom base view change
-   */
-  baseViewContext$ = this.sankeyController.baseViewName$.pipe(
-    map(baseViewName => {
-      const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
-      const moduleFactory = getModuleFactory(baseViewName);
-      const moduleRef = moduleFactory.create(this.injector);
-      const injectComponent = (container, token) => {
-        const comp = moduleRef.injector.get(token);
-        const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
-        container.clear();
-        const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
-        return componentRef;
-      };
-
-      this.dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
-      this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
-      this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
-
-      return {
-        baseView: moduleRef.injector.get(BaseControllerService),
-        layout: moduleRef.injector.get(LayoutService),
-        selection: moduleRef.injector.get(SankeySelectionService)
-      };
-    }),
-    tap(({layout, baseView}) => {
-      this.viewController.layout$.next(layout);
-      baseView.delta$.next({});
-    }),
-    shareReplay(1)
-  );
-
-  baseView$ = this.baseViewContext$.pipe(
-    map(({baseView}) => baseView)
-  );
-  predefinedValueAccessor$ = this.baseView$.pipe(
-    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
-  );
-  layout$ = this.baseViewContext$.pipe(
-    map(({layout}) => layout)
-  );
-  dataToRender$ = this.layout$.pipe(
-    switchMap(layout => layout.dataToRender$)
-  );
-  selection$ = this.baseViewContext$.pipe(
-    map(({selection}) => selection)
-  );
   detailsPanel$ = new BehaviorSubject(false);
+
+
+  ngOnInit() {
+
+    /**
+     * Load different base view components upom base view change
+     */
+    this.baseViewContext$ = this.sankeyController.baseViewName$.pipe(
+      map(baseViewName => {
+        const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
+        const moduleFactory = getModuleFactory(baseViewName);
+        const moduleRef = moduleFactory.create(this.injector);
+        const injectComponent = (container, token) => {
+          const comp = moduleRef.injector.get(token);
+          const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
+          container.clear();
+          const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
+          return componentRef;
+        };
+
+        this.dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
+        this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
+        this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
+
+        return {
+          baseView: moduleRef.injector.get(BaseControllerService),
+          layout: moduleRef.injector.get(LayoutService),
+          selection: moduleRef.injector.get(SankeySelectionService)
+        };
+      }),
+      tap(({layout, baseView}) => {
+        this.viewController.layout$.next(layout);
+        baseView.delta$.next({});
+      }),
+      debug('baseViewContext$'),
+      shareReplay<BaseViewContext>(1)
+    );
+
+    this.baseView$ = this.baseViewContext$.pipe(
+      map(({baseView}) => baseView)
+    );
+    this.predefinedValueAccessor$ = this.baseView$.pipe(
+      switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
+    );
+    this.layout$ = this.baseViewContext$.pipe(
+      map(({layout}) => layout)
+    );
+    this.graph$ = this.layout$.pipe(
+      switchMap(layout => layout.graph$)
+    );
+    this.selection$ = this.baseViewContext$.pipe(
+      map(({selection}) => selection)
+    );
+
+    this.selection$.pipe(
+      switchMap(selection => selection.selection$),
+      map(isNotEmpty)
+    ).subscribe(open => {
+      this.detailsPanel$.next(open);
+    });
+  }
 
   ngAfterViewInit() {
     this.baseViewContext$.subscribe();
@@ -267,15 +288,15 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
   sanityChecks({graph: {trace_networks}, nodes, links}: GraphFile) {
     let pass = true;
     if (!trace_networks.length) {
-      this.warningController.warn('File does not contain any network traces', false);
+      this.warningController.warn(ErrorMessages.missingNetworkTraces, false);
       pass = false;
     }
     if (!nodes.length) {
-      this.warningController.warn('File does not contain any nodes', false);
+      this.warningController.warn(ErrorMessages.missingNodes, false);
       pass = false;
     }
     if (!links.length) {
-      this.warningController.warn('File does not contain any links', false);
+      this.warningController.warn(ErrorMessages.missingLinks, false);
       pass = false;
     }
     return pass;

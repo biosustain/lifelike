@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 
 import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
-import { switchMap, map, shareReplay, tap, distinctUntilChanged, publish } from 'rxjs/operators';
+import { switchMap, map, shareReplay, distinctUntilChanged, publish } from 'rxjs/operators';
 import { of, Observable, combineLatest } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
@@ -11,10 +11,20 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
+import { ErrorMessages } from 'app/sankey/error';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { inputCount } from '../algorithms/linkValues';
-import { SankeySingleLaneLink, SankeySingleLaneNode, BaseOptions, BaseState } from '../interfaces';
+import {
+  SankeySingleLaneLink,
+  SankeySingleLaneNode,
+  BaseOptions,
+  BaseState,
+  SingleLaneNetworkTraceData,
+  SankeySingleLaneState
+} from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
+import { ServiceOnInit } from '../../../../shared/schemas/common';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -23,7 +33,7 @@ import { nodeColors, NodePosition } from '../utils/nodeColors';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SingleLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> {
+export class SingleLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> implements ServiceOnInit {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -59,8 +69,11 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
     ),
     map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
-    shareReplay(1)
+    debug('SingleLaneBaseControllerService.state$'),
+    shareReplay<SankeySingleLaneState>(1)
   );
+
+  highlightCircular$ = this.stateAccessor('highlightCircular');
 
   linkValueAccessors = {
     ...this.linkValueAccessors,
@@ -74,9 +87,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
     colorLinkTypes: EdgeColorCodes
   }));
 
-  // delta$ = new BehaviorSubject({});
-
-  networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
+  networkTraceData$: Observable<SingleLaneNetworkTraceData> = this.common.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, sources, targets, traces}) => this.stateAccessor('colorLinkByType').pipe(
       map(colorLinkByType => {
         const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
@@ -93,18 +104,12 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         };
       })
     )),
-    shareReplay(1),
-    tap(d => console.log('SingleLane networkTraceData$', d))
+    debug('SingleLaneBaseControllerService.networkTraceData$'),
+    shareReplay<SingleLaneNetworkTraceData>(1)
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
 
-  highlightCircular$: Observable<boolean>;
-
-  onInit() {
-    super.onInit();
-    this.highlightCircular$ = this.stateAccessor('highlightCircular');
-  }
 
   // Trace logic
   /**
@@ -133,7 +138,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         if (color) {
           link._color = color;
         } else {
-          this.warningController.warn(`There is no color mapping for label: ${label}`);
+          this.warningController.warn(ErrorMessages.noColorMapping(label));
         }
       }
     });
@@ -151,14 +156,14 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         if (node) {
           node._color = nodeColors.get(position);
         } else {
-          this.warningController.warn(`ID ${id} could not be mapped to node - inconsistent file`, true);
+          this.warningController.warn(ErrorMessages.missingNode(id), true);
         }
       });
     mapNodePositionToColor(sourcesIds, NodePosition.left);
     mapNodePositionToColor(targetsIds, NodePosition.right);
     const reusedIds = intersection(sourcesIds, targetsIds);
     if (isNotEmpty(reusedIds)) {
-      this.warningController.warn(`Nodes set to be both in and out ${reusedIds}`);
+      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reusedIds));
       mapNodePositionToColor(reusedIds, NodePosition.multi);
     }
   }

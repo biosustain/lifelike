@@ -1,4 +1,4 @@
-import { Component, OnDestroy, } from '@angular/core';
+import { Component, OnDestroy, OnInit, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
 import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
@@ -14,7 +14,14 @@ import { BaseState, BaseOptions } from '../../interfaces';
 })
 export class SankeySingleLaneAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<BaseOptions, BaseState>
-  implements OnDestroy {
+  implements OnInit, OnDestroy {
+
+  constructor(
+    protected baseView: SingleLaneBaseControllerService,
+    protected formBuilder: FormBuilder
+  ) {
+    super(baseView, formBuilder);
+  }
   form = this.formBuilder.group({
     colorLinkByType: [false, []],
     highlightCircular: ['', []],
@@ -35,12 +42,14 @@ export class SankeySingleLaneAdvancedPanelComponent
     nodeValueAccessorId: [undefined, []],
   });
 
-  constructor(
-    protected baseView: SingleLaneBaseControllerService,
-    protected formBuilder: FormBuilder
-  ) {
-    super(baseView, formBuilder);
-    this.onInit();
+  colorLinkTypes$ = this.baseView.colorLinkTypes$;
+  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
+  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
+  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
+  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
+
+  ngOnInit() {
+    super.ngOnInit();
     this.baseView.common.viewName$.subscribe(viewName => {
       if (viewName) {
         this.form.get('nodeHeight').disable();
@@ -53,12 +62,6 @@ export class SankeySingleLaneAdvancedPanelComponent
       }
     });
   }
-
-  colorLinkTypes$ = this.baseView.colorLinkTypes$;
-  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
-  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
-  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
-  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnDestroy() {
     super.ngOnDestroy();

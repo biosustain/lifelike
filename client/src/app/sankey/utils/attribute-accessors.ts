@@ -17,15 +17,15 @@ export class AttributeAccessors {
     return ({label = ''}) => label;
   }
 
-  get nodeLabelShort(): ValueFn<any, SankeyNode, string> {
-    const {nodeLabel, truncatePipe: {transform}} = this;
-    return (d, i?, n?) => transform(nodeLabel(d, i, n), AttributeAccessors.labelEllipsis);
-  }
-
-  get nodeLabelShouldBeShorted(): ValueFn<any, SankeyNode, boolean> {
-    const {nodeLabel} = this;
-    return (d, i, n) => nodeLabel(d, i, n).length > AttributeAccessors.labelEllipsis;
-  }
+  // get nodeLabelShort(): ValueFn<any, SankeyNode, string> {
+  //   const {nodeLabel, truncatePipe: {transform}} = this;
+  //   return (d, i?, n?) => transform(nodeLabel(d, i, n), AttributeAccessors.labelEllipsis);
+  // }
+  //
+  // get nodeLabelShouldBeShorted(): ValueFn<any, SankeyNode, boolean> {
+  //   const {nodeLabel} = this;
+  //   return (d, i, n) => nodeLabel(d, i, n).length > AttributeAccessors.labelEllipsis;
+  // }
 
   // color can be object with toString method
   get nodeColor(): ValueFn<any, SankeyNode, string | object> {
@@ -52,17 +52,17 @@ export class AttributeAccessors {
     return ({_value = 0}) => _value;
   }
 
-  get linkPath(): ValueFn<any, SankeyLink, string> {
-    return d3Sankey.sankeyLinkHorizontal;
-  }
+  // get linkPath(): ValueFn<any, SankeyLink, string> {
+  //   return d3Sankey.sankeyLinkHorizontal;
+  // }
 
   get circular(): ValueFn<any, SankeyLink, boolean> {
     return ({_circular}) => _circular;
   }
 
-  get fontSize(): ValueFn<any, SankeyNode, number | string> {
-    return () => 12;
-  }
+  // get fontSize(): ValueFn<any, SankeyNode, number | string> {
+  //   return () => 12;
+  // }
 
   static labelEllipsis = 10;
 }

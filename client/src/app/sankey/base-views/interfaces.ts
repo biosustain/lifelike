@@ -1,4 +1,4 @@
-interface SankeyNodeHeight {
+export interface SankeyNodeHeight {
   min: {
     enabled: boolean,
     value: number
