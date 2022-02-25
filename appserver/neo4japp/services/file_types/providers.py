@@ -465,7 +465,7 @@ def create_default_node(node):
             node['label'], {'color': 'black'}).get('color'),
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
-        'fillcolor': 'white',
+        'fillcolor': style.get('bgColor', 'white'),
         'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
@@ -563,9 +563,10 @@ def create_detail_node(node, params):
         detail_text = r"\l".join(lines) + r'\l'
 
     params['label'] = detail_text
-    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                     {'bgcolor': 'black'}
-                                                     ).get('bgcolor')
+    if params['fillcolor'] == 'white':
+        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                         {'bgcolor': 'black'}
+                                                         ).get('bgcolor')
 
     doi_src = look_for_doi_link(node)
     if doi_src:
@@ -655,8 +656,9 @@ def create_icon_node(node, params):
     """
     style = node.get('style', {})
     label = escape(node['label'])
-    # remove border around icon label
+    # Remove border around icon label and background color
     params['penwidth'] = '0.0'
+    params['fillcolor'] = 'white'
     # Calculate the distance between icon and the label center
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
         * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
@@ -718,7 +720,7 @@ def create_relation_node(node, params):
     :returns: altered params dict
     """
     style = node.get('style', {})
-    default_color = ANNOTATION_STYLES_DICT.get(
+    default_color = style.get('bgColor') or ANNOTATION_STYLES_DICT.get(
         node['label'],
         {'color': 'black'})['color']
     params['color'] = style.get('strokeColor') or default_color
