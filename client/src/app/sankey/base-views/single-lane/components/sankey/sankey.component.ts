@@ -1,19 +1,20 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
 import { startWith, pairwise, map, tap } from 'rxjs/operators';
 
 import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
-import { uuidv4, mapIterable } from 'app/shared/utils';
+import { mapIterable } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
-import { SankeySingleLaneLink } from '../../interfaces';
+import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
+import { d3EventCallback } from '../../../../../shared/utils/d3';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -23,7 +24,8 @@ type SankeyEntity = SankeyNode | SankeyLink;
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeySingleLaneComponent extends SankeyAbstractComponent implements AfterViewInit, OnDestroy {
+export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySingleLaneOptions, SankeySingleLaneState>
+  implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -34,7 +36,10 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     protected search: SankeySearchService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
-    this.initComopnent();
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
   }
 
   initFocus() {
@@ -97,11 +102,12 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     super.ngOnDestroy();
   }
 
-
+  @d3EventCallback
   async pathMouseOver(element, data) {
     this.highlightLink(element);
   }
 
+  @d3EventCallback
   async pathMouseOut(_element, _data) {
     this.unhighlightNodes();
     this.unhighlightLinks();
@@ -219,6 +225,7 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
     ).toPromise();
   }
 
+  @d3EventCallback
   async nodeMouseOut(element, _data) {
     this.unhighlightNode(element);
     this.unhighlightNodes();
@@ -246,12 +253,11 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent implement
 
 
   highlightNode(element) {
-    const { extendNodeLabel } = this;
     const selection = d3_select(element)
       .raise()
       .attr('highlighted', true)
       .select('g')
-      .call(extendNodeLabel);
+      .call(this.extendNodeLabel);
     // postpone so the size is known
     requestAnimationFrame(_ =>
       selection

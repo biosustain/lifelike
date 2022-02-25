@@ -76,3 +76,7 @@ export interface ErrorLog extends ErrorLogMeta {
   stacktrace?: string;
   transactionId?: string;
 }
+
+export interface ServiceOnInit {
+  onInit(): void;
+}

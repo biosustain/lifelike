@@ -5,6 +5,8 @@ import { cubehelix } from 'd3-color';
 import { Palette } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 
+import { ErrorMessages } from '../../error';
+
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;
 export const DEFAULT_ALPHA = 1;
@@ -34,7 +36,7 @@ export const predefinedColorPaletteGenerator = (
   } = {}
 ) => {
   if (isDevMode() && palette.length < size) {
-    this.warningController.warn(`Predefined palette has not enough colors.`, palette, size);
+    this.warningController.warn(ErrorMessages.exccedPaletteSize(palette, size));
   }
   return i => palette[i % palette.length];
 };

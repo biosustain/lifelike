@@ -2,25 +2,29 @@ import { Injectable } from '@angular/core';
 
 import { first, last } from 'lodash-es';
 import { color } from 'd3-color';
+import { tap } from 'rxjs/operators';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { DirectedTraversal } from 'app/sankey/utils/directed-traversal';
 import { SankeyNode } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { BaseControllerService } from 'app/sankey/services/base-controller.service';
-import { LayoutService } from 'app/sankey/services/layout.service';
+import { LayoutService, LayersContext } from 'app/sankey/services/layout.service';
 
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
-import { BaseOptions, BaseState } from '../interfaces';
+import { BaseOptions, BaseState, SingleLaneNetworkTraceData } from '../interfaces';
+import { ServiceOnInit } from 'app/shared/schemas/common';
+
+type SinglelaneDataWithContext = LayersContext<SingleLaneNetworkTraceData>;
 
 @Injectable()
-export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseState> {
+export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseState> implements ServiceOnInit {
   constructor(
     readonly baseView: SingleLaneBaseControllerService,
     readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService
   ) {
     super(baseView, truncatePipe, warningController);
+    this.onInit();
   }
 
   get linkBorder() {
@@ -39,9 +43,7 @@ export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseStat
    * It calculate nodes position by traversing it from side with less nodes as a tree
    * iteratively figuring order of the nodes.
    */
-  computeNodeBreadths(graph) {
-    const {columns} = this;
-
+  computeNodeBreadths = tap(({columns, ...context}: SinglelaneDataWithContext) => {
     // decide on direction
     const dt = new DirectedTraversal([first(columns), last(columns)]);
     // order next related nodes in order this group first appeared
@@ -65,8 +67,5 @@ export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseStat
       });
     // traverse tree of connections
     relayoutNodes(dt.startNodes);
-
-
-    this.layoutNodesWithinColumns(columns);
-  }
+  });
 }

@@ -1,4 +1,4 @@
-import { SankeyLink, SankeyNode, SankeyData, SankeyTrace, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
+import { SankeyData, SelectionType, SelectionEntity, SankeyNode, SankeyTrace, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 
@@ -46,3 +46,5 @@ export type SankeySingleLaneSelection = {
 
 export type BaseOptions = SankeySingleLaneOptions;
 export type BaseState = SankeySingleLaneState;
+
+export type SingleLaneNetworkTraceData = NetworkTraceData<SankeySingleLaneNode, SankeySingleLaneLink>;

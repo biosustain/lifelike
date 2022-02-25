@@ -1,4 +1,4 @@
-import { Component, OnDestroy, } from '@angular/core';
+import { Component, OnDestroy, OnInit, } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
 import { tap } from 'rxjs/operators';
@@ -7,7 +7,6 @@ import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanc
 
 import { MultiLaneBaseControllerService } from '../../services/multi-lane-base-controller.service';
 import { BaseOptions, BaseState } from '../../interfaces';
-import { StateControlAbstractService } from '../../../../abstract/state-control.service';
 
 
 @Component({
@@ -17,7 +16,14 @@ import { StateControlAbstractService } from '../../../../abstract/state-control.
 })
 export class MultiLaneBaseAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<BaseOptions, BaseState>
-  implements OnDestroy {
+  implements OnInit, OnDestroy {
+
+  constructor(
+    protected baseView: MultiLaneBaseControllerService,
+    protected formBuilder: FormBuilder
+  ) {
+    super(baseView, formBuilder);
+  }
   form = this.formBuilder.group({
     nodeHeight: this.formBuilder.group({
       min: this.formBuilder.group({
@@ -37,12 +43,14 @@ export class MultiLaneBaseAdvancedPanelComponent
     nodeValueAccessorId: [undefined, []],
   });
 
-  constructor(
-    protected baseView: MultiLaneBaseControllerService,
-    protected formBuilder: FormBuilder
-  ) {
-    super(baseView, formBuilder);
-    this.onInit();
+  linkPalettes$ = this.baseView.linkPalettes$;
+  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
+  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
+  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
+  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
+
+  ngOnInit() {
+    super.ngOnInit();
     this.baseView.common.viewName$.subscribe(viewName => {
       if (viewName) {
         this.form.get('nodeHeight').disable();
@@ -55,12 +63,6 @@ export class MultiLaneBaseAdvancedPanelComponent
       }
     });
   }
-
-  linkPalettes$ = this.baseView.linkPalettes$;
-  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
-  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
-  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
-  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnDestroy() {
     super.ngOnDestroy();

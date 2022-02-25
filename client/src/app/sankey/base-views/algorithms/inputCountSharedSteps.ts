@@ -15,19 +15,19 @@ export function calculateInputCountSkippingCircularLinks(
 ) {
   sortedNodes.forEach(n => {
     if (dt.startNodes.includes(n.id)) {
-      n._fixedValue = 1;
+      n._value = 1;
     } else {
-      n._fixedValue = 0;
+      n._value = 0;
     }
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
-    n._fixedValue = prevLinks.reduce((a, l) => a + l._value, n._fixedValue || 0);
+    n._value = prevLinks.reduce((a, l) => a + l._value, n._value || 0);
     this.warningController.assert(
       // JS floats calculations has very limited precision which can lead to rounding error in here
-      n._fixedValue.toPrecision(5) <= maxExpectedValue,
+      n._value.toPrecision(5) <= maxExpectedValue,
       'Input count algorithm fail - node value exceeds input node count'
     );
-    const outFrac = nextLinkValue(n._fixedValue, nextLinks);
+    const outFrac = nextLinkValue(n._value, nextLinks);
     nextLinks.forEach(l => {
       // skip setting circular values
       if (!l._circular) {
@@ -41,17 +41,6 @@ export function initInputCountCalculation(
   this: DefaultLayoutService,
   data: NetworkTraceData
 ) {
-  // initially links does not carry values but we need to init it
-  data.links.forEach(l => {
-    l._value = 0;
-  });
-  // don't calculate whole layout, only things needed to get nodes depths
-  this.computeNodeLinks(data);
-  this.identifyCircles(data);
-  this.computeNodeValues(data);
-  this.computeNodeDepths(data);
-  this.computeNodeReversedDepths(data);
-  this.computeNodeLayers(data);
   // traverse from side with less nodes
   const dt = new DirectedTraversal([data.sources, data.targets]);
   // traverse starting from leaves nodes
