@@ -70,7 +70,13 @@ class BaseDataFileParser(BaseParser):
         version = None
         for file in tar.getmembers():
             if '/data' in file.name:
-                paths = file.name.split('/data')[0].split('/')
+                try:
+                    paths = file.name.split(path.sep)
+                    data_idx = paths.index('data')
+                    curr_version = float(paths[data_idx-1])
+                    version = curr_version if version is None else max(version, curr_version)
+                catch ValueError:
+                    pass
                 curr_version = float(paths[-1])
                 version = curr_version if version is None else max(version, curr_version)
         return str(version)
@@ -82,7 +88,7 @@ class BaseDataFileParser(BaseParser):
                 self.version = self.get_db_version(tar)
                 self.logger.info(f'Database file version: "{self.version}"')
             for tarinfo in tar:
-                if tarinfo.name.endswith('/' + self.datafile) and self.version in tarinfo.name:
+                if path.basename(tarinfo.name) == self.datafile and self.version in tarinfo.name:
                     self.logger.info('Parse ' + tarinfo.name)
                     utf8reader = codecs.getreader('ISO-8859-1')
                     f = utf8reader(tar.extractfile(tarinfo.name))

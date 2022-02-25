@@ -152,8 +152,9 @@ class BiocycParser(CloudMixin):
         with ZipFile(os.path.join(dir, f'jira-{self.prefix}.zip'), 'w', ZIP_DEFLATED) as zipped:
             for parent, subfolders, filenames in os.walk(os.path.join(dir)):
                 for fn in filenames:
-                    if fn.lower().endswith('.tsv'):
-                        zipped.write(f'{parent}/{fn}', fn)
+                    [path, ext] = path.splitext(fn.lower())
+                    if ext == '.tsv':
+                        zipped.write(path.join(parent, fn), fn)
 
 
 def main(args):
