@@ -159,7 +159,7 @@ export class FilesystemService {
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
         hashIds
-      }), this.apiService.getHttpOptions(true),
+      }),
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
