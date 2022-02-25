@@ -20,7 +20,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
   private _project: ProjectImpl;
 
   readonly form: FormGroup = new FormGroup({
-    name: new FormControl('', [Validators.required, noWhitespaceValidator, filenameValidator]),
+    name: new FormControl('', [Validators.required, filenameValidator]),
     description: new FormControl(),
   });
 
