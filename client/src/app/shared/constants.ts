@@ -335,3 +335,9 @@ export const COUNTRY_NAME_LIST = [
   'Zambia',
   'Zimbabwe',
 ];
+export enum SizeUnits {
+  KiB = 2e10,
+  MiB = 2e20,
+  GiB = 2e30,
+  TiB = 2e40
+};
