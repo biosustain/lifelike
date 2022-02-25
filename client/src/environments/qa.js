@@ -8,8 +8,8 @@
     window.__env.oauthEnabled = false;
 
     // OAuth issuer URL
-    window.__env.issuer = 'https://keycloak.apps.lifelike.cloud/auth/realms/master';
+    window.__env.oauthIssuer = 'https://keycloak.apps.lifelike.cloud/auth/realms/master';
 
     // Client ID of the OAuth application
-    window.__env.clientId = 'lifelike-frontend';
+    window.__env.oauthClientId = 'lifelike-frontend';
 }(this));
