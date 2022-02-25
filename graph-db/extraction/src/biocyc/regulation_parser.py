@@ -1,5 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
-from common.graph_models import *
+from common.constants import *
+from common.graph_models import RelationshipType
 
 
 ATTR_NAMES = {
@@ -15,10 +16,9 @@ REL_NAMES = {
 }
 
 class RegulationParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'regulation.dat', NODE_REGULATION,ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_MODE, PROP_MECHANISM]
+    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
+        super().__init__(prefix, base_dir, db_name, tarfile, 'regulation.dat', NODE_REGULATION,ATTR_NAMES, REL_NAMES)
+        self.attrs = [PROP_BIOCYC_ID, PROP_MODE]
 
-
-
-
+    def __str__(self):
+        return 'biocyc-regulation'

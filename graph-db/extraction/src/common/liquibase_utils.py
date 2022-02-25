@@ -8,6 +8,7 @@ from common.utils import *
 template_dir = os.path.join(get_data_dir(), 'templates')
 sql_template = 'sql_changeset.template'
 custom_template = 'custom_changeset.template'
+zip_custom_template = 'custom_changeset_zip.template'
 changelog_template = 'changelog.template'
 
 CUSTOM_PARAMS = """
@@ -92,6 +93,28 @@ class CustomChangeSet(ChangeSet):
         return template.render(change_id=self.id, change_comment=self.comment, author=self.author,
                                handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
                                start_at=self.start_at, file_type=self.filetype, params=CUSTOM_PARAMS)
+
+
+class ZipCustomChangeSet(ChangeSet):
+    def __init__(self, id, author, comment, cypher,
+                 filename:str,
+                 zip_filename: str,
+                 handler="edu.ucsd.sbrg.ZipFileQueryHandler",
+                 filetype='TSV',
+                 startrow=1):
+        ChangeSet.__init__(self, id, author, comment, cypher)
+        self.handler = handler
+        self.zip_filename = zip_filename
+        self.filename = filename
+        self.filetype = filetype
+        self.start_at = startrow
+
+    def create_changelog_str(self):
+        template = get_template(zip_custom_template)
+        return template.render(change_id=self.id, change_comment=self.comment, author=self.author,
+                               handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
+                               zip_data_file=self.zip_filename, start_at=self.start_at, file_type=self.filetype,
+                               params=CUSTOM_PARAMS)
 
 
 def generate_sql_changelog_file(id, author, comment, cypher, outfile):

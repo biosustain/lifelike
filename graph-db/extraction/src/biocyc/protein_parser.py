@@ -1,6 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
 from common.constants import *
-from common.graph_models import *
+from common.graph_models import RelationshipType
 
 
 ATTR_NAMES = {
@@ -26,27 +26,30 @@ POLYPEPTIDES = 'Polypeptides'
 MODIFIED_PROTEINS = 'Modified-Proteins'
 COMPLEXES = 'Complexes'
 
+
 class ProteinParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD, PROP_PI]
+    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
+        super().__init__(prefix, base_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD]
+
+    def __str__(self):
+        return 'biocyc-protein'
 
     def create_synonym_rels(self) -> bool:
         return True
 
-    def parse_data_file(self):
+    def parse_and_write_data_files(self):
         """
         protligandcplxes.dat contains protein complex data. However, the information were mostly also in proteins.dat.
         In case there is any additional information.  In additiona, the 'TYPE_OF' relationship for general type
         (e.g. polyperptide, modified protein, complex) were removed since we don't have a use case to use them now and
         it made the relationships more complicated.  Those can be added later if needed by deleting the code for edge removing.
         """
-        nodes = BaseDataFileParser.parse_data_file(self)
+        nodes = [n for n in self.nodes]
         self.datafile = 'protligandcplxes.dat'
-        nodes2 = BaseDataFileParser.parse_data_file(self)
-        if nodes2:
-            nodes = nodes + nodes2
-        for node in nodes:
+        super().parse_data_file()
+        self.nodes += nodes
+        for node in self.nodes:
             go_id_str = node.get_attribute(DB_GO)
             if go_id_str:
                 go_ids = go_id_str.split('|')
@@ -56,9 +59,9 @@ class ProteinParser(BaseDataFileParser):
             edges = set(node.edges)
             for edge in edges:
                 if edge.label == REL_TYPE:
-                    if edge.dest.get_attribute(PROP_BIOCYC_ID)== POLYPEPTIDES:
+                    if edge.dest.get_attribute(PROP_BIOCYC_ID) == POLYPEPTIDES:
                         node.edges.remove(edge)
-                    elif edge.dest.get_attribute(PROP_BIOCYC_ID)==MODIFIED_PROTEINS:
+                    elif edge.dest.get_attribute(PROP_BIOCYC_ID) == MODIFIED_PROTEINS:
                         node.edges.remove(edge)
                         for e in edges:
                             if e.label == REL_ENCODE:
@@ -67,7 +70,4 @@ class ProteinParser(BaseDataFileParser):
                     elif edge.dest.get_attribute(PROP_BIOCYC_ID).endswith(COMPLEXES):
                         node.add_label([NODE_COMPLEX])
                         node.edges.remove(edge)
-        return nodes
-
-
-
+        super().parse_and_write_data_files()

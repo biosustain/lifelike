@@ -67,7 +67,7 @@ BIOCYC_ATTR_NAMES = {'ABBREV-NAME': (),
                      'YEAR': ('', 'int'), }
 
 
-def get_attr_name_from_line(line: str)->str:
+def get_attr_name_from_line(line: str) -> str:
     if not line.startswith('/'):
         tokens = line.split(' - ')
         if len(tokens) > 1:
@@ -75,7 +75,7 @@ def get_attr_name_from_line(line: str)->str:
     return None
 
 
-def get_attr_val_from_line(line: str) ->():
+def get_attr_val_from_line(line: str) -> tuple:
     tokens = line.split(' - ')
     if len(tokens) > 1:
         attr = tokens[0]
@@ -100,10 +100,8 @@ def get_property_name_type(attr_name: str, attr_name_map=None):
             return name, type
     return None, None
 
+
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
-
-
-
