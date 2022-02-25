@@ -25,7 +25,6 @@ export interface SankeyNode extends GraphNode {
   _reversedDepth?: number;
   _height?: number;
   _value?: number;
-  _fixedValue?: number;
   _layer?: number;
   _color?: string;
   _order?: number;
@@ -34,8 +33,8 @@ export interface SankeyNode extends GraphNode {
 export interface SankeyLink extends GraphLink {
   l: number[];
   _id: SankeyId;
-  _source?: SankeyNode | string | number;
-  _target?: SankeyNode | string | number;
+  _source?: SankeyNode;
+  _target?: SankeyNode;
   _sourceLinks?: SankeyLink[];
   _targetLinks?: SankeyLink[];
   _width?: number;

@@ -1,4 +1,4 @@
-import { OnDestroy, } from '@angular/core';
+import { OnDestroy, OnInit, } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { omit, forEach, isEmpty } from 'lodash-es';
@@ -12,7 +12,7 @@ import { StateControlAbstractService } from './state-control.service';
 
 export type DefaultAbstractAdvancedPanelComponent = SankeyAbstractAdvancedPanelComponent<object, object>;
 
-export class SankeyAbstractAdvancedPanelComponent<Options extends object, State extends object> implements OnDestroy {
+export class SankeyAbstractAdvancedPanelComponent<Options extends object, State extends object> implements OnInit, OnDestroy {
   constructor(
     protected stateController: StateControlAbstractService<Options, State>,
     protected formBuilder: FormBuilder
@@ -34,7 +34,7 @@ export class SankeyAbstractAdvancedPanelComponent<Options extends object, State 
     ))
   );
 
-  onInit() {
+  ngOnInit() {
     // make the connection hot
     this.formToStateSubscribtion = this.formStateSync$.subscribe();
   }

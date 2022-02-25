@@ -218,9 +218,9 @@ export enum ViewBase {
   sankeySingleLane = 'sankey-many-to-many'
 }
 
-export interface NetworkTraceData {
-  nodes: Array<SankeyNode>;
-  links: Array<SankeyLink>;
+export interface NetworkTraceData<Node extends SankeyNode = SankeyNode, Link extends SankeyLink = SankeyLink> {
+  nodes: Array<Node>;
+  links: Array<Link>;
   sources: SankeyId[];
   targets: SankeyId[];
 }
@@ -228,4 +228,11 @@ export interface NetworkTraceData {
 export interface ViewSize {
   width: number;
   height: number;
+}
+
+export interface RenderableGraph {
+  width: number;
+  height: number;
+  // todo
+  data: any;
 }

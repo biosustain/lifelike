@@ -29,7 +29,7 @@ export function fractionOfFixedNodeValue(this: DefaultLayoutService, {links, nod
     l.s = l.source;
     l.t = l.target;
   });
-  nodes.forEach(n => n.fixedValue = n._fixedValue);
+  nodes.forEach(n => n.fixedValue = n._value);
   d3Sankey.sankeyCircular()
     .nodeId(n => n._id)
     .nodePadding(1)

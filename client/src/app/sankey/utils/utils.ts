@@ -100,3 +100,4 @@ export function symmetricDifference(setA, setB, accessor) {
  */
 export const indexByProperty = <D extends object>(data: Array<D>, property: keyof D) =>
   transform(data, (acc, n) => acc.set(n[property], n), new Map());
+

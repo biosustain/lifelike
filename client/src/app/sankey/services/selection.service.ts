@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { isEqual, uniqBy, partialRight } from 'lodash-es';
-import { map, first, distinctUntilChanged, shareReplay, tap } from 'rxjs/operators';
+import { isEqual, uniqBy } from 'lodash-es';
+import { map, first, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 
-import { SelectionType, SelectionEntity, SankeyNode, SankeyLink } from '../interfaces';
+import { debug } from 'app/shared/rxjs/debug';
+
+import { SelectionType, SelectionEntity, SankeyNode, SankeyLink, SankeyTrace } from '../interfaces';
 import { ControllerService } from './controller.service';
 
 @Injectable()
@@ -15,8 +17,8 @@ export class SankeySelectionService {
   }
 
   selection$ = new BehaviorSubject<SelectionEntity[]>([]);
-  selectedNodes$: Observable<SankeyNode[]> = this.selectionByType(SelectionType.node);
-  selectedLinks$: Observable<SankeyLink[]> = this.selectionByType(SelectionType.link);
+  selectedNodes$ = this.selectionByType(SelectionType.node) as Observable<SankeyNode[]>;
+  selectedLinks$  = this.selectionByType(SelectionType.link) as Observable<SankeyLink[]>;
 
   selectedTraces$ = combineLatest([
     this.selectedNodes$,
@@ -24,7 +26,8 @@ export class SankeySelectionService {
   ]).pipe(
     map(([nodes, links]) => this.sankeyController.getRelatedTraces({nodes, links})),
     distinctUntilChanged(isEqual),
-    shareReplay(1)
+    debug('selectedTraces$'),
+    shareReplay<SankeyTrace[]>(1)
   );
 
   selectionWithTraces$ = combineLatest([
@@ -41,6 +44,7 @@ export class SankeySelectionService {
             }))
         )
     ),
+    debug('selectionWithTraces$'),
     shareReplay(1)
   );
 
@@ -53,6 +57,7 @@ export class SankeySelectionService {
       ),
       map(n => uniqBy(n, '_id')),
       distinctUntilChanged(isEqual),
+      debug(`selectionByType(${type})`),
       shareReplay(1)
     );
   }

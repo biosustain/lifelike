@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
 
 import { combineLatest, ReplaySubject, Observable } from 'rxjs';
-import { map, tap, switchMap, filter, first } from 'rxjs/operators';
+import { map, tap, switchMap, first } from 'rxjs/operators';
 import { omit, transform, pick, assign } from 'lodash-es';
 
 import { SankeyView, SankeyNodesOverwrites, SankeyLinksOverwrites, ViewBase, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { LayoutService, DefaultLayoutService } from './layout.service';
+import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
-import { BaseControllerService, DefaultBaseControllerService } from './base-controller.service';
-import { getCommonState, getBaseState } from '../utils/stateLevels';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -43,7 +41,7 @@ export class ViewControllerService {
 
   readonly nodeViewProperties: Array<keyof SankeyNode> = [
     '_layer',
-    '_fixedValue',
+    '_value',
     '_value',
     '_depth',
     '_height',
@@ -66,8 +64,8 @@ export class ViewControllerService {
   ];
   readonly statusOmitProperties = ['viewName', 'baseViewName', 'baseViewInitialState'];
 
-  dataToRender$ = this.layout$.pipe(
-    switchMap(layout => layout.dataToRender$)
+  graph$ = this.layout$.pipe(
+    switchMap(layout => layout.graph$)
   );
 
 
@@ -112,22 +110,13 @@ export class ViewControllerService {
           base
         })),
       )),
-      switchMap(partialView => this.dataToRender$.pipe(
+      switchMap(partialView => this.graph$.pipe(
         first(),
-        map(({nodes, links}) => ({
+        map(({data: {nodes, links}, width, height}) => ({
           ...partialView,
           nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
-          links: this.mapToPropertyObject(links, this.linkViewProperties)
-        }))
-      )),
-      switchMap(partialView => this.layout$.pipe(
-        first(),
-        map(layout => ({
-          ...partialView,
-          size: {
-            width: layout.horizontal.width,
-            height: layout.vertical.height
-          }
+          links: this.mapToPropertyObject(links, this.linkViewProperties),
+          size: {width, height}
         } as SankeyView))
       )),
       switchMap(view => this.views$.pipe(

@@ -1,22 +1,24 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, filter } from 'rxjs/operators';
 import { isEmpty, flatMap } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { mapIterable } from 'app/shared/utils';
+import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
+import { ErrorMessages } from 'app/sankey/error';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
-import { SankeyMultiLaneLink, SankeyMultiLaneNode } from '../../interfaces';
+import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
 import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
+import { d3EventCallback } from '../../../../../shared/utils/d3';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -24,7 +26,7 @@ import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements AfterViewInit, OnDestroy {
+export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState> implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -34,8 +36,12 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
     protected selection: SankeySelectionService,
     protected search: SankeySearchService
   ) {
+    // @ts-ignore
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
-    this.initComopnent();
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
   }
 
   // region D3Selection
@@ -44,8 +50,8 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
     return super.linkSelection;
   }
 
-  focusedEntity$ = this.sankey.dataToRender$.pipe(
-    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
+  focusedEntity$ = this.sankey.graph$.pipe(
+    switchMap(({data: {nodes, links}}) => this.search.searchFocus$.pipe(
       map(({type, id}) => {
         let data;
         switch (type) {
@@ -60,7 +66,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
             data = (links as SankeySingleLaneLink[]).find(({_originLinkId}) => _originLinkId == id);
             break;
           default:
-            this.sankey.baseView.warningController.warn(`Node type ${type} is not supported`);
+            this.sankey.baseView.warningController.warn(ErrorMessages.missingEntityType(type));
         }
         return {type, id, data};
       })
@@ -68,7 +74,11 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
   );
 
   initFocus() {
-    this.focusedEntity$.subscribe(entity => this.panToEntity(entity));
+    this.focusedEntity$.pipe(
+      filter(isNotEmpty)
+    ).subscribe(entity => {
+      this.panToEntity(entity);
+    });
   }
 
   initSelection() {
@@ -110,6 +120,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
+  @d3EventCallback
   async pathMouseOver(element, data) {
     d3_select(element)
       .raise();
@@ -120,6 +131,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
+  @d3EventCallback
   async pathMouseOut(element, data) {
     // temporary disabled as of LL-3726
     // this.unhighlightNodes();
@@ -131,6 +143,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
    * @param element the svg element being hovered over
    * @param data object representing the node data
    */
+  @d3EventCallback
   async nodeMouseOut(element, data) {
     this.unhighlightNode(element);
 
@@ -202,13 +215,12 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent implements
   }
 
   highlightNode(element) {
-    const {extendNodeLabel} = this;
     const selection = d3_select(element)
       .raise()
       .select('g')
-      .call(extendNodeLabel);
+      .call(this.extendNodeLabel);
     // postpone so the size is known
-    requestAnimationFrame(_ =>
+    requestAnimationFrame(() =>
       selection
         .each(SankeyAbstractComponent.updateTextShadow)
     );

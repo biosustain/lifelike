@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged, tap, shareReplay, publish } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged, shareReplay, publish } from 'rxjs/operators';
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
@@ -9,10 +9,12 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
-import { BaseState, BaseOptions } from '../interfaces';
+import { BaseState, BaseOptions, MultiLaneNetworkTraceData, SankeyMultiLaneState } from '../interfaces';
+import { ServiceOnInit } from 'app/shared/schemas/common';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -21,7 +23,7 @@ import { BaseState, BaseOptions } from '../interfaces';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class MultiLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> {
+export class MultiLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> implements ServiceOnInit {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -56,7 +58,8 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
     ),
     map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
-    shareReplay(1)
+    debug('MultiLaneBaseControllerService.state$'),
+    shareReplay<SankeyMultiLaneState>(1)
   );
 
   linkValueAccessors = {
@@ -91,8 +94,8 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
         };
       })
     )),
-    shareReplay(1),
-    tap(d => console.log('Multilane networkTraceData$', d))
+    debug('MultiLaneBaseControllerService.networkTraceData$'),
+    shareReplay<MultiLaneNetworkTraceData>(1)
   );
 
   linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');

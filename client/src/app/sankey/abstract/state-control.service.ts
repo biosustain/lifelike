@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, ReplaySubject, combineLatest, Subject, of, iif } from 'rxjs';
-import { isEqual, merge, omitBy, isNil, partial } from 'lodash-es';
-import { switchMap, map, shareReplay, distinctUntilChanged, first, tap } from 'rxjs/operators';
+import { Observable, ReplaySubject, Subject, of, iif } from 'rxjs';
+import { merge, omitBy, isNil, partial } from 'lodash-es';
+import { switchMap, map, shareReplay, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
+import { debug } from 'app/shared/rxjs/debug';
 
-import { unifiedAccessor, AbstractInjectable } from '../utils/rxjs';
+import { unifiedAccessor } from '../utils/rxjs';
 
 @Injectable()
 export class StateControlAbstractService<Options extends object, State extends object> {
@@ -17,26 +18,34 @@ export class StateControlAbstractService<Options extends object, State extends o
   /**
    * Pick property from property value from state object
    */
-  stateAccessor<R>(property) {
+  stateAccessor<StateProperty extends keyof State>(property: StateProperty) {
     return unifiedAccessor(this.state$, property).pipe(
       map(state => state[property]),
+      debug(`stateAccessor(${property})`),
       shareReplay(1)
-    ) as Observable<R>;
+    ) as Observable<State[StateProperty]>;
   }
 
   /**
    * Resolve option value from state
    * @param mapping - defines how to combine option value with coresponding state
    */
-  optionStateAccessor<R>(optionProperty, stateProperty, mapping?) {
-    mapping = mapping ?? ((option, statePropertyValue) => option[statePropertyValue]);
+  optionStateAccessor<MappingResult>(
+    optionProperty: keyof Options,
+    stateProperty: keyof State,
+    mapping?: (option: Options[keyof Options], state: State[keyof State]) => MappingResult
+  ) {
+    mapping = mapping ?? (
+      (option, statePropertyValue) =>
+        option[statePropertyValue as any] as MappingResult
+    );
     return this.optionStateMultiAccessor(
       optionProperty,
       stateProperty,
       mapping ?
         (options, state) => mapping(options[optionProperty], state[stateProperty]) :
-        (options, state) => options[optionProperty][state[stateProperty]]
-    ) as Observable<R>;
+        (options, state) => options[optionProperty][state[stateProperty] as any]
+    ) as Observable<MappingResult>;
   }
 
   /**
@@ -45,14 +54,19 @@ export class StateControlAbstractService<Options extends object, State extends o
    * is resolved either by linkValueAccessors or linkValueGenerators
    * @param mapping - defines how to combine options values with coresponding states
    */
-  optionStateMultiAccessor<R>(optionProperties: Many<keyof Options>, stateProperties, mapping?) {
-    mapping = mapping ?? ((options, state) => ({options, state}));
+  optionStateMultiAccessor<MappingResult>(
+    optionProperties: Many<keyof Options>,
+    stateProperties: Many<keyof State>,
+    mapping?: (options: Partial<Options>, state: Partial<State>) => MappingResult
+  ) {
+    mapping = mapping ?? ((options, state) => ({options, state} as any as MappingResult));
     return unifiedAccessor(this.options$, optionProperties).pipe(
       switchMap(options => unifiedAccessor(this.state$, stateProperties).pipe(
         map(state => mapping(options, state)),
+        debug(`optionStateMultiAccessor(${optionProperties}, ${stateProperties})`),
         shareReplay(1)
       ))
-    ) as Observable<R>;
+    ) as Observable<MappingResult>;
   }
 
   patchState(
