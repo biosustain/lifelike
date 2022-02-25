@@ -95,9 +95,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       }
     }
 
-    if (styleData.strokeColor != null) {
-      strokeColor = styleData.strokeColor;
-    }
+    strokeColor = styleData.strokeColor ?? strokeColor;
+    bgColor = styleData.bgColor ?? bgColor;
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
@@ -132,7 +131,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
           nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
-        shapeFillColor: this.detailTypeBackgrounds.get(d.label),
+        shapeFillColor: styleData.bgColor ?? this.detailTypeBackgrounds.get(d.label),
         forceHighDetailLevel,
       });
 
