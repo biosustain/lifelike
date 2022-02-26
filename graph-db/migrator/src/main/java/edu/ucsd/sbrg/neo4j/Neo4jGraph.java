@@ -5,7 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.neo4j.driver.*;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,7 +52,9 @@ public class Neo4jGraph {
         return this.neo4jPassword;
     }
 
-    public Driver getDriver() { return this.driver; }
+    public Driver getDriver() {
+        return this.driver;
+    }
 
     public Session getSession() {
         return this.driver.session(SessionConfig.forDatabase(databaseName));
@@ -68,7 +69,8 @@ public class Neo4jGraph {
 
     public void execute(String query, List<String[]> data, String[] keys, int chunkSize) throws CustomChangeException {
         if (keys.length != data.get(0).length) {
-            logger.warn("Invalid length not equal; keys.length = " + keys.length + " and data.get(0).length = " + data.get(0).length + ".");
+            logger.warn("Invalid length not equal; keys.length = " + keys.length + " and data.get(0).length = "
+                    + data.get(0).length + ".");
             throw new IllegalArgumentException("The number of keys do not match number of data entries!");
         }
 
