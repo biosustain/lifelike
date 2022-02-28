@@ -6,12 +6,14 @@ import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, 
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
+import { assign, partial } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyLink, SankeyNode, SankeyId, RenderableGraph } from 'app/sankey/interfaces';
-import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
+import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { representativePositiveNumber } from '../utils/utils';
 import { SankeySelectionService } from '../services/selection.service';
@@ -20,8 +22,6 @@ import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { EntityType } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
 import { ErrorMessages, NotImplemented } from '../error';
-import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
-import { partialRight, assign, partial } from 'lodash-es';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
@@ -244,13 +244,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   attachResizeObserver() {
-    this.zone.runOutsideAngular(() =>
-      // resize and listen to future resize events
-      this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
-        .subscribe(rect =>
-          this.zone.run(() => this.onResize(rect))
-        )
-    );
+    // resize and listen to future resize events
+    this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
+      .subscribe(rect => this.onResize(rect));
   }
 
   ngOnDestroy() {
@@ -631,7 +627,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     return rects
       .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
       .attr('width', ({_x1, _x0}) => _x1 - _x0)
-      .attr('width', ({_x1, _x0}) => _x1 - _x0)
+      .attr('width', ({_x1, _x0}) => _x1 - _x0);
   }
 
   renderLinks({data: {links}}) {

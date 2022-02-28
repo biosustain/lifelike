@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 
-import { tap, map } from 'rxjs/operators';
-
 import { SankeySearchService } from '../../services/search.service';
 
 @Component({

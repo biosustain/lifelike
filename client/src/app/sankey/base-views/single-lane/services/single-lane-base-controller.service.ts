@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 
 import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
-import { switchMap, map, shareReplay, distinctUntilChanged, publish } from 'rxjs/operators';
+import { switchMap, map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { of, Observable, combineLatest } from 'rxjs';
 
 import { LINK_VALUE_GENERATOR, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
@@ -13,6 +13,7 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
 import { ErrorMessages } from 'app/sankey/error';
 import { debug } from 'app/shared/rxjs/debug';
+import { ServiceOnInit } from 'app/shared/schemas/common';
 
 import { inputCount } from '../algorithms/linkValues';
 import {
@@ -24,7 +25,6 @@ import {
   SankeySingleLaneState
 } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
-import { ServiceOnInit } from '../../../../shared/schemas/common';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -45,28 +45,30 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
 
   viewBase = ViewBase.sankeySingleLane;
 
-  state$ = this.delta$.pipe(
-    publish(delta$ =>
-      combineLatest([
-        of({
-          highlightCircular: true,
-          colorLinkByType: false,
-          nodeHeight: {
-            min: {
-              enabled: true,
-              value: 4
-            },
-            max: {
-              enabled: true,
-              ratio: 2
-            }
-          }
-        }),
-        delta$,
-        this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.fixed_height),
-        this.resolveView(delta$)
-      ])
-    ),
+  // parseDelta$ = this.delta$.pipe(
+  //   // @ts-ignore
+  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
+  // );
+
+  state$ = combineLatest([
+    of({
+      highlightCircular: true,
+      colorLinkByType: false,
+      nodeHeight: {
+        min: {
+          enabled: true,
+          value: 4
+        },
+        max: {
+          enabled: true,
+          ratio: 2
+        }
+      }
+    }),
+    this.delta$,
+    this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height),
+    this.resolveView$
+  ]).pipe(
     map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
     debug('SingleLaneBaseControllerService.state$'),
