@@ -7,6 +7,7 @@ import { startWith, pairwise, map, tap } from 'rxjs/operators';
 import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { d3EventCallback } from 'app/shared/utils/d3';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
@@ -14,7 +15,6 @@ import { SingleLaneLayoutService } from '../../services/single-lane-layout.servi
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
-import { d3EventCallback } from '../../../../../shared/utils/d3';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -259,7 +259,7 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
       .select('g')
       .call(this.extendNodeLabel);
     // postpone so the size is known
-    requestAnimationFrame(_ =>
+    requestAnimationFrame(() =>
       selection
         .each(SankeyAbstractComponent.updateTextShadow)
     );
