@@ -22,6 +22,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
     readonly warningController: WarningControllerService
   ) {
     super(baseView, truncatePipe, warningController);
+    this.onInit();
   }
 
   /**
@@ -51,8 +52,8 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
         }
         visited.add(node);
         node._order = order++;
-        const links = sortByTrace(dt.nextLinks(node));
-        relayoutLinks(links);
+        const sortedLinks = sortByTrace(dt.nextLinks(node));
+        relayoutLinks(sortedLinks);
       });
     // traverse tree of connections
     relayoutNodes(dt.startNodes);

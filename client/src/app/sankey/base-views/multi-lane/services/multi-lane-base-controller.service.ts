@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged, shareReplay, publish } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged, shareReplay, tap } from 'rxjs/operators';
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
@@ -10,11 +10,11 @@ import { BaseControllerService } from 'app/sankey/services/base-controller.servi
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
+import { ServiceOnInit } from 'app/shared/schemas/common';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
 import { BaseState, BaseOptions, MultiLaneNetworkTraceData, SankeyMultiLaneState } from '../interfaces';
-import { ServiceOnInit } from 'app/shared/schemas/common';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -35,27 +35,24 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
 
   viewBase = ViewBase.sankeyMultiLane;
 
-  state$ = this.delta$.pipe(
-    publish(delta$ =>
-      combineLatest([
-        of({
-        nodeHeight: {
-          min: {
-            enabled: true,
-            value: 1
-          },
-          max: {
-            enabled: false,
-            ratio: 10
-          }
+  state$ = combineLatest([
+    of({
+      nodeHeight: {
+        min: {
+          enabled: true,
+          value: 1
         },
-        linkPaletteId: LINK_PALETTE_ID.hue_palette
-      }),
-        delta$,
-        this.resolvePredefinedValueAccessor(delta$, PREDEFINED_VALUE.input_count),
-        this.resolveView(delta$)
-      ])
-    ),
+        max: {
+          enabled: false,
+          ratio: 10
+        }
+      },
+      linkPaletteId: LINK_PALETTE_ID.hue_palette
+    }),
+    this.delta$,
+    this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.input_count),
+    this.resolveView$
+  ]).pipe(
     map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
     debug('MultiLaneBaseControllerService.state$'),
@@ -77,7 +74,9 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
   palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
+    tap(d => console.log('networkTraceData$', d)),
     switchMap(({links, nodes, traces, ...rest}) => this.palette$.pipe(
+      tap(d => console.log('palette$', d)),
       map(({palette}) => {
         const traceColorPaletteMap = createMapToColor(
           traces.map(({_group}) => _group),

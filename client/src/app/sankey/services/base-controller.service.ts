@@ -1,9 +1,10 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { Observable, of, iif } from 'rxjs';
-import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
-import { merge, isNil, omitBy, has, pick } from 'lodash-es';
+import { Observable, of, iif, merge as rxjs_merge } from 'rxjs';
+import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/operators';
+import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
 
+import { isNotEmpty } from 'app/shared/utils';
 import {
   ValueGenerator,
   NODE_VALUE_GENERATOR,
@@ -15,6 +16,8 @@ import {
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
+import { ServiceOnInit } from 'app/shared/schemas/common';
+import { debug } from 'app/shared/rxjs/debug';
 
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
@@ -24,7 +27,6 @@ import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { getBaseState } from '../utils/stateLevels';
 import { ErrorMessages, NotImplemented } from '../error';
-import { ServiceOnInit } from '../../shared/schemas/common';
 
 export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
 
@@ -36,8 +38,7 @@ export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptio
  */
 @Injectable()
 export class BaseControllerService<Options extends SankeyBaseOptions, State extends SankeyBaseState>
-  extends StateControlAbstractService<Options, State>  implements ServiceOnInit {
-  fontSizeScale$: Observable<unknown>;
+  extends StateControlAbstractService<Options, State> implements ServiceOnInit {
 
   constructor(
     readonly common: ControllerService,
@@ -47,63 +48,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     super();
   }
 
-    /**
-     * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
-     */
-  onInit() {
-    this.nodeValueAccessor$ = unifiedSingularAccessor(
-      this.state$,
-      'nodeValueAccessorId',
-    ).pipe(
-      map((nodeValueAccessorId) =>
-        nodeValueAccessorId ? (
-          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
-          this.nodePropertyAcessor(nodeValueAccessorId)
-        ) : (
-          this.warningController.warn(ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)),
-            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
-        )
-      )
-    );
-
-    this.linkValueAccessor$ = unifiedSingularAccessor(
-      this.state$, 'linkValueAccessorId'
-    ).pipe(
-      switchMap((linkValueAccessorId) =>
-        iif(
-          () => has(this.linkValueAccessors, linkValueAccessorId),
-          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
-          unifiedSingularAccessor(
-            this.common.options$,
-            'linkValueAccessors'
-          ).pipe(
-            map(linkValueAccessors =>
-                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
-                  this.warningController.warn(ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)),
-                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
-                )
-            )
-          )
-        )
-      ));
-
-    this.predefinedValueAccessor$ = unifiedSingularAccessor(
-      this.common.options$,
-      'predefinedValueAccessors'
-    ).pipe(
-      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
-        this.state$,
-        'predefinedValueAccessorId'
-      ).pipe(
-        map(predefinedValueAccessorId =>
-          predefinedValueAccessorId === customisedMultiValueAccessorId ?
-            customisedMultiValueAccessor :
-            predefinedValueAccessors[predefinedValueAccessorId]
-        )))
-    );
-
-    this.nodeHeight$ = this.stateAccessor('nodeHeight');
-  }
+  fontSizeScale$: Observable<unknown>;
 
   nodeHeight$: Observable<SankeyNodeHeight>;
   networkTraceData$: Observable<NetworkTraceData>;
@@ -181,32 +126,106 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     }
   };
 
-  resolvePredefinedValueAccessor(delta$, defaultValue) {
-    return delta$.pipe(
-      map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
-      distinctUntilChanged(),
-      switchMap(predefinedValueAccessorId =>
-        iif(
-          () => predefinedValueAccessorId === customisedMultiValueAccessorId,
-          of({predefinedValueAccessorId}),
-          this.common.options$.pipe(
-            map(({predefinedValueAccessors}) => ({
-              predefinedValueAccessorId,
-              ...pick(
-                predefinedValueAccessors[predefinedValueAccessorId as string],
-                ['nodeValueAccessorId', 'linkValueAccessorId']
-              )
-            }))
-          )
+  resolveView$ = this.common.view$.pipe(
+    map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
+  );
+
+  /**
+   * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
+   */
+  onInit() {
+    this.nodeValueAccessor$ = unifiedSingularAccessor(
+      this.state$,
+      'nodeValueAccessorId',
+    ).pipe(
+      map((nodeValueAccessorId) =>
+        nodeValueAccessorId ? (
+          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
+          this.nodePropertyAcessor(nodeValueAccessorId)
+        ) : (
+          this.warningController.warn(ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)),
+            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
         )
       )
     );
+
+    this.linkValueAccessor$ = unifiedSingularAccessor(
+      this.state$, 'linkValueAccessorId'
+    ).pipe(
+      switchMap((linkValueAccessorId) =>
+        iif(
+          () => has(this.linkValueAccessors, linkValueAccessorId),
+          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
+          unifiedSingularAccessor(
+            this.common.options$,
+            'linkValueAccessors'
+          ).pipe(
+            map(linkValueAccessors =>
+                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
+                  this.warningController.warn(ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)),
+                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
+                )
+            )
+          )
+        )
+      ));
+
+    this.predefinedValueAccessor$ = unifiedSingularAccessor(
+      this.common.options$,
+      'predefinedValueAccessors'
+    ).pipe(
+      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
+        this.state$,
+        'predefinedValueAccessorId'
+      ).pipe(
+        map(predefinedValueAccessorId =>
+          predefinedValueAccessorId === customisedMultiValueAccessorId ?
+            customisedMultiValueAccessor :
+            predefinedValueAccessors[predefinedValueAccessorId]
+        )))
+    );
+
+    this.nodeHeight$ = this.stateAccessor('nodeHeight');
   }
 
-  resolveView(delta$) {
-    return delta$.pipe(
-      switchMap(delta => this.common.view$),
-      map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
+  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId', 'predefinedValueAccessorId']);
+
+  resolvePredefinedValueAccessor(defaultValue) {
+    // whichever change was more recent
+    return rxjs_merge(
+      this.delta$.pipe(
+        map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
+        distinctUntilChanged(),
+        // here we are sensing change of predefinedValueAccessorId
+        // actual accessors are resolved based on options$
+        switchMap(predefinedValueAccessorId => this.common.options$.pipe(
+            map(({predefinedValueAccessors}) => ({
+              predefinedValueAccessorId,
+              ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
+            }))
+          )),
+        distinctUntilChanged(isEqual),
+        debug<Partial<State>>('predefinedValueAccessorId change')
+      ),
+      this.delta$.pipe(
+        map(this.pickPartialAccessors),
+        distinctUntilChanged(isEqual),
+        filter(isNotEmpty),
+        // here we are sensing change of (node|link)ValueAccessorId
+        // usually we just change one of them so we need to preserve state for the other one
+        switchMap(delta => this.state$.pipe(
+            first(),
+            map(this.pickPartialAccessors),
+            map(state => merge(
+              {predefinedValueAccessorId: customisedMultiValueAccessorId},
+              state,
+              delta
+            ))
+          )
+        ),
+        distinctUntilChanged(isEqual),
+        debug<Partial<State>>('partialAccessors change')
+      )
     );
   }
 
@@ -261,6 +280,6 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  });
+  })
 
 }

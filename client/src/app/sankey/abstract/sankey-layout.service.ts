@@ -56,24 +56,40 @@ import { Injectable } from '@angular/core';
 
 import findCircuits from 'elementary-circuits-directed-graph';
 import { max } from 'd3-array';
-import { ReplaySubject, Subject, OperatorFunction } from 'rxjs';
+import { ReplaySubject, Subject, OperatorFunction, Observable } from 'rxjs';
 import { map, tap, distinctUntilChanged } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink, SankeyId, SankeyData, NetworkTraceData } from 'app/sankey/interfaces';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
 import { left, right } from '../utils/aligin';
 import { LayersContext } from '../services/layout.service';
 import { ErrorMessages } from '../error';
 
-interface Extent {
+interface Horizontal {
+  width: number;
   x0: number;
   x1: number;
+}
+
+interface Vertical {
+  height: number;
   y0: number;
   y1: number;
 }
+
+export interface Extent {
+  x0: number;
+  x1: number;
+
+  y0: number;
+  y1: number;
+}
+
+type ProcessedExtent = Horizontal & Vertical;
 
 export interface LayoutData {
   nodes: SankeyNode[];
@@ -99,20 +115,23 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
   }
 
   _extent$: Subject<Extent> = new ReplaySubject<Extent>();
-  extent$ = this._extent$.pipe(
+  extent$: Observable<ProcessedExtent> = this._extent$.pipe(
     map(({x0, x1, y0, y1}) => ({
       x0, x1, width: x1 - x0,
       y0, y1, height: y1 - y0
     })),
-    distinctUntilChanged(isEqual)
+    distinctUntilChanged(isEqual),
+    debug<ProcessedExtent>('extent$')
   );
   horizontal$ = this.extent$.pipe(
     map(({x0, x1, width}) => ({x0, x1, width})),
-    distinctUntilChanged(isEqual)
+    distinctUntilChanged(isEqual),
+    debug<Horizontal>('horizontal$')
   );
   vertical$ = this.extent$.pipe(
     map(({y0, y1, height}) => ({y0, y1, height})),
-    distinctUntilChanged(isEqual)
+    distinctUntilChanged(isEqual),
+    debug<Vertical>('vertical$')
   );
 
   dy = 8;

@@ -2,7 +2,19 @@ import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
 import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
+import {
+  switchMap,
+  map,
+  filter,
+  catchError,
+  first,
+  shareReplay,
+  distinctUntilChanged,
+  publish,
+  startWith,
+  pairwise,
+  tap
+} from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -216,7 +228,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       })
     )),
     debug('partialNetworkTraceData$'),
-    shareReplay(1)
+    shareReplay(1),
+    tap(d => console.log('zsdfzs', d))
   );
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
@@ -436,15 +449,15 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
     return uniq(
       flatMap(networkTraceLinks, ({source, target}) => [source, target])
-    ).reduce((nodes, id) => {
+    ).reduce((ns, id) => {
       // map, filter, warn on one intteration
       const node = nodeById.get(id);
       if (!node) {
         this.warningController.warn(ErrorMessages.missingNode(id));
       } else {
-        nodes.push(node);
+        ns.push(node);
       }
-      return nodes;
+      return ns;
     }, []);
   }
 

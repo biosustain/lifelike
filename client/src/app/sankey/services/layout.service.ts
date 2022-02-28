@@ -19,13 +19,13 @@ import {
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
+import { ServiceOnInit } from 'app/shared/schemas/common';
 
-import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
+import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
 import { symmetricDifference, normalizeGenerator } from '../utils/utils';
 import { SankeyAbstractLayoutService } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../error';
-import { ServiceOnInit } from '../../shared/schemas/common';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -73,6 +73,7 @@ interface VerticalContext<Data extends NetworkTraceData = NetworkTraceData> exte
   y1: number;
   ky: number;
   height: number;
+  nodeHeight: SankeyNodeHeight;
 }
 
 @Injectable()
@@ -84,38 +85,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     readonly warningController: WarningControllerService
   ) {
     super(truncatePipe);
-  }
-
-  onInit(): void {
-    this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
-      // Calculate layout and address possible circular links
-      // Associate the nodes with their respective links, and vice versa
-      this.computeNodeLinks,
-      // Determine which links result in a circular path in the graph
-      this.identifyCircles,
-      // Calculate the nodes' depth based on the incoming and outgoing links
-      //     Sets the nodes':
-      //     - depth:  the depth in the graph
-      //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-      //     - x0, x1: the x coordinates, as is relates to visual position from left to right
-      this.computeNodeDepths,
-      this.computeNodeReversedDepths,
-      // After this method data becomes wrapped in context {data, ...context}
-      this.computeNodeLayers,
-      // Calculate the nodes' values, based on the values of the incoming and outgoing links
-      this.assignValues,
-      this.createVirtualNodes,
-      this.setVerticalLayoutParams,
-      this.computeNodeHeights,
-      // Calculate the nodes' and links' vertical position within their respective column
-      //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-      this.computeNodeBreadths,
-      this.layoutNodesWithinColumns,
-      this.computeLinkBreadths,
-      this.positionNodes,
-      debug('calculateLayout'),
-      shareReplay(1)
-    );
   }
 
   get nodeColor() {
@@ -180,6 +149,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       }
       return view;
     }),
+    tap(view => console.log('view', view)),
     // temporary fixes end
     switchMap(view =>
       iif(
@@ -199,23 +169,17 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   /**
    * Same as parent method just ignoring circular links
    */
-  computeNodeHeights = switchMap((graph: VerticalContext) => {
-      const {data, nodesAndPlaceholders, ky} = graph;
-      return this.baseView.nodeHeight$.pipe(
-        map(({min: {enabled, value}}) => {
-          const {value: valueAccessor} = this;
-          for (const node of nodesAndPlaceholders) {
-            if (enabled && value) {
-              node._height = Math.max(valueAccessor(node) * ky, value);
-            } else {
-              node._height = valueAccessor(node) * ky;
-            }
-          }
-          return graph;
-        })
-      );
+  computeNodeHeights = tap((graph: VerticalContext) => {
+    const {data, nodeHeight: {min: {enabled, value}}, nodesAndPlaceholders, ky} = graph;
+    const {value: valueAccessor} = this;
+    for (const node of nodesAndPlaceholders) {
+      if (enabled && value) {
+        node._height = Math.max(valueAccessor(node) * ky, value);
+      } else {
+        node._height = valueAccessor(node) * ky;
+      }
     }
-  );
+  });
 
   assignValues = switchMap(({data, ...context}) =>
     combineLatest([
@@ -283,7 +247,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     )
   );
 
-  positionNodes = switchMap((graph: LayersContext, callIndex) => this.horizontal$.pipe(
+  positionNodes = switchMap((graph: LayersContext) => this.horizontal$.pipe(
     // calculate width change ratio for repositioning of the nodes
     startWith(undefined),
     pairwise(),
@@ -295,16 +259,16 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
         widthChangeRatio: horizontal.width / prevWidth,
       };
     }),
-    map(graph => {
+    map((_graph, callIndex) => {
       if (callIndex === 0) {
         // Absolute node positioning
-        this.positionNodesHorizontaly(graph);
+        this.positionNodesHorizontaly(_graph);
       } else {
         // Relative node positioning (to preserve draged node position)
         console.count('relative node positioning');
-        this.repositionNodesHorizontaly(graph);
+        this.repositionNodesHorizontaly(_graph);
       }
-      return graph;
+      return _graph;
     })
   ));
 
@@ -432,7 +396,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
             }
             return {
               ...graph,
-              ky, height, y0, y1,
+              ky, height, y0, y1, nodeHeight,
               // readjust py for current context
               py: Math.min(dy, height / (max(columnsWithLinkPlaceholders, (c: Array<any>) => c.length) - 1))
             } as VerticalContext;
@@ -443,6 +407,52 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   );
 
   private calculateLayout$;
+
+  onInit(): void {
+    this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
+      tap(d => console.log('networkTraceData$', d)),
+      // Calculate layout and address possible circular links
+      // Associate the nodes with their respective links, and vice versa
+      this.computeNodeLinks,
+      debug('computeNodeLinks'),
+      // Determine which links result in a circular path in the graph
+      this.identifyCircles,
+      debug('identifyCircles'),
+      // Calculate the nodes' depth based on the incoming and outgoing links
+      //     Sets the nodes':
+      //     - depth:  the depth in the graph
+      //     - column: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+      //     - x0, x1: the x coordinates, as is relates to visual position from left to right
+      this.computeNodeDepths,
+      debug('computeNodeDepths'),
+      this.computeNodeReversedDepths,
+      debug('computeNodeReversedDepths'),
+      // After this method data becomes wrapped in context {data, ...context}
+      this.computeNodeLayers,
+      debug('computeNodeLayers'),
+      // Calculate the nodes' values, based on the values of the incoming and outgoing links
+      this.assignValues,
+      debug('assignValues'),
+      this.createVirtualNodes,
+      debug('createVirtualNodes'),
+      this.setVerticalLayoutParams,
+      debug('setVerticalLayoutParams'),
+      this.computeNodeHeights,
+      debug('computeNodeHeights'),
+      // Calculate the nodes' and links' vertical position within their respective column
+      //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+      this.computeNodeBreadths,
+      debug('computeNodeBreadths'),
+      this.layoutNodesWithinColumns,
+      debug('layoutNodesWithinColumns'),
+      this.computeLinkBreadths,
+      debug('computeLinkBreadths'),
+      this.positionNodes,
+      debug('positionNodes'),
+      debug('calculateLayout'),
+      shareReplay(1)
+    );
+  }
 
 
   adjustViewToViewport(view) {
@@ -606,7 +616,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     (a._source._order - b._source._order) ||
     (a._target._order - b._target._order) ||
     (a._order - b._order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -614,7 +624,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
    * @param nextNodeProperty - property of link pointing to next node (_source, _target)
    * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
     const n = nodes.length;
     let current = new Set<SankeyNode>(nodes);
     let next = new Set<SankeyNode>();

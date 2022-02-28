@@ -10,6 +10,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
 import { ErrorMessages } from 'app/sankey/error';
+import { d3EventCallback } from 'app/shared/utils/d3';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
@@ -18,7 +19,6 @@ import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
 import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
-import { d3EventCallback } from '../../../../../shared/utils/d3';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -26,7 +26,8 @@ import { d3EventCallback } from '../../../../../shared/utils/d3';
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState> implements OnInit, AfterViewInit, OnDestroy {
+export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
+  implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -36,12 +37,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMult
     protected selection: SankeySelectionService,
     protected search: SankeySearchService
   ) {
-    // @ts-ignore
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
-  }
-
-  ngOnInit() {
-    super.ngOnInit();
   }
 
   // region D3Selection
@@ -72,6 +68,10 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMult
       })
     ))
   );
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
 
   initFocus() {
     this.focusedEntity$.pipe(
