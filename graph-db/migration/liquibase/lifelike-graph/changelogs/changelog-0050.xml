@@ -8,8 +8,8 @@
   <changeSet id="Biocyc Ecocyc data initial load 01282022" author="Binh Vu">
     <comment>Create constraints and indexes for Biocyc Ecocyc nodes</comment>
     <sql>
-        DROP INDEX index_ecocyc_id IF EXISTS
-        DROP INDEX index_ecocyc_biocycid IF EXISTS
+        DROP INDEX index_ecocyc_id IF EXISTS;
+        DROP INDEX index_ecocyc_biocycid IF EXISTS;
         CREATE CONSTRAINT constraint_ecocyc_id IF NOT EXISTS ON (n:db_EcoCyc) ASSERT n.eid IS UNIQUE;
         CREATE CONSTRAINT constraint_ecocyc_biocycid IF NOT EXISTS ON (n:db_EcoCyc) ASSERT n.biocyc_id IS UNIQUE;
         CREATE INDEX index_ecocyc_name IF NOT EXISTS FOR (n:db_EcoCyc) ON (n.name);
