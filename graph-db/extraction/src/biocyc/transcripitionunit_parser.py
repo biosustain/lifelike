@@ -1,6 +1,6 @@
 from biocyc.base_data_file_parser import BaseDataFileParser
 from common.constants import *
-from common.graph_models import RelationshipType
+from common.graph_models import *
 
 
 PROP_TRANS_DIRECTION = 'transcription_direction'
@@ -14,12 +14,10 @@ REL_NAMES = {
 
 
 class TranscriptionUnitParser(BaseDataFileParser):
-    def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir, db_name, tarfile, 'transunits.dat', NODE_TRANS_UNIT, ATTR_NAMES, REL_NAMES)
+    def __init__(self, db_name, tarfile, base_data_dir):
+        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'transunits.dat', NODE_TRANS_UNIT, ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME]
 
-    def __str__(self):
-        return 'biocyc-transcriptionunit'
+    def create_synonym_rels(self) -> bool:
+        return False
 
-    # def create_synonym_rels(self) -> bool:
-    #     return False

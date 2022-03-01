@@ -18,7 +18,7 @@ class RelationshipType(object):
         self.match_attr_data_type = match_attr_data_type
 
 
-class Item:
+class Item(object):
     def __init__(self, label=None, id_attr: str = None):
         self.attributes = dict()
         self.label = label
@@ -101,7 +101,7 @@ class NodeData(Item):
         self.index_label = ''  # label name for id index, e.g. db_BioCyc for biocyc_id, db_RegulonDB for regulondb_id
         self.edges = []
 
-    def add_label(self, new_labels: list):
+    def add_label(self, new_labels:[]):
         self.label = self.get_label_list() + new_labels
 
     def get_label_list(self):
@@ -174,11 +174,11 @@ class NodeData(Item):
                 edge in self.edges]
         return rows
 
-    def get_attr_values(self, attr_names: list):
+    def get_attr_values(self, attr_names:[]):
         return [self.get_attribute(attr) for attr in attr_names]
 
     @classmethod
-    def get_entity_data_rows(cls, nodes: list, node_attributes: list, show_label_col=False):
+    def get_entity_data_rows(cls, nodes: [], node_attributes: [], show_label_col=False):
         """
         Format nodes data as tab delimited file format
         :param nodes: list of NodeData
@@ -195,7 +195,7 @@ class NodeData(Item):
         return rows
 
     @classmethod
-    def get_entity_header_row(cls, node_attributes: list, id_prop: str, index_name, show_label_col=False):
+    def get_entity_header_row(cls, node_attributes: [], id_prop: str, index_name, show_label_col=False):
         """
         Get header for neo4j-admin import
         :param node_attributes:
@@ -241,3 +241,6 @@ class EdgeData(Item):
             """ % (source_id_attr, self.source.get_attribute(source_id_attr),
                    dest_id_attr, self.dest.get_attribute(dest_id_attr), self.label)
         return query
+
+
+
