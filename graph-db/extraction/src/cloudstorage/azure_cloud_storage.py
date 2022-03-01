@@ -61,7 +61,7 @@ class AzureCloudStorage(CloudStorage):
     def close(self):
         self.provider.close_all_handles()
 
-    def upload(self, filename: str, filepath: str, is_zip=False) -> None:
+    def upload(self, filename: str, filepath: str) -> None:
         zipfilename = filename.replace('.tsv', '.zip')
         zipfilepath = filepath.replace('.tsv', '.zip')
 
@@ -72,9 +72,8 @@ class AzureCloudStorage(CloudStorage):
             checksum = hash_fn.digest()
             self.logger.info(f'Uploading file "{zipfilename}"; content checksum as string: "{hash_fn.hexdigest()}"')
 
-        if not is_zip:
-            with ZipFile(zipfilepath, 'w', ZIP_DEFLATED) as zipped:
-                zipped.write(filepath, arcname=filename)
+        with ZipFile(zipfilepath, 'w', ZIP_DEFLATED) as zipped:
+            zipped.write(filepath, arcname=filename)
 
         with open(zipfilepath, 'rb') as zipfile:
             self.provider.upload_file(zipfile, content_settings=ContentSettings(content_md5=checksum))
