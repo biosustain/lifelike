@@ -1,0 +1,114 @@
+name: Lifelike GCP deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: Environment nme (prod, staging, qa or demo)
+        required: true
+        type: string
+      build_angular_config:
+        description: Angular build configuration
+        required: true
+        default: production
+        type: string
+      client_config:
+        description: Client Runtime configuration preset
+        required: true
+        default: production
+        type: string
+      container_registry:
+        description: Container registry name
+        required: false
+        default: lifelike.azurecr.io
+        type: string
+    secrets:
+      CONTAINER_REGISTRY_USERNAME:
+        required: true
+      CONTAINER_REGISTRY_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - image: kg-webserver
+            path: ./client
+            build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.build_angular_config }}
+
+          - image: kg-appserver
+            path: ./appserver
+
+          - image: kg-cache-service
+            path: ./cache-invalidator
+
+          - image: kg-statistical-enrichment
+            path: ./statistical-enrichment
+
+          - image: kg-liquibase
+            path: ./graph-db
+
+          - image: filebeat
+            path: ./filebeat
+
+          - image: metricbeat
+            path: ./metricbeat
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and push ${{ matrix.image }} image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          context: ${{ matrix.path }}
+          image_name: ${{ matrix.image }}
+          image_tag: ${{ github.sha }},${{ inputs.environment_name }},latest
+          build_extra_args: ${{ matrix.build_extra_args }}
+          registry: ${{ inputs.container_registry }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+          dockerfile: ./Dockerfile
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ env.INFRA_PAT }}
+          submodules: recursive
+        env:
+          INFRA_PAT: ***REMOVED***
+
+      - name: Set git metadata
+        id: git-meta
+        run: |
+          echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
+          echo ::set-output name=build_number::$(git rev-list --count HEAD)
+          echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
+
+      - name: Run Ansible deployment action
+        uses: ./.github/actions/ansible
+        timeout-minutes: 720 ## workaround: increase step timeout to let Ansible action wait for long running Liquibase updates.
+        with:
+          workspace_dir: deployment/ansible
+          playbook_file_path: playbooks/deploy-gcloud.yml
+          inventory_file_path: inventories/hosts.yml
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars environment_name=${{ inputs.environment_name }}
+            --extra-vars client_config=${{ inputs.client_config }}
+            --extra-vars docker_img_hash=${{ github.sha }}
+            --extra-vars git_timestamp=${{ steps.git-meta.outputs.commit_timestamp }}
+            --extra-vars app_build_number=${{ steps.git-meta.outputs.build_number }}
+            --extra-vars app_version=${{ steps.git-meta.outputs.build_version}}
+            --user ansible
+            --verbose
