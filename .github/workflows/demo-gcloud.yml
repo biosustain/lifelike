@@ -4,12 +4,11 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "demo"
+      - demo
 
 jobs:
   build:
     name: Setup, Build, Publish
-
     runs-on: ubuntu-latest
 
     outputs:
@@ -20,8 +19,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        env:
+          INFRA_PAT: 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
         with:
-          fetch-depth: 0
+          token: ${{ env.INFRA_PAT }}
+          submodules: recursive
 
       - name: Set git commit timestamp
         id: timestamp
@@ -122,9 +124,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+        env:
+          INFRA_PAT: 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
+        with:
+          token: ${{ env.INFRA_PAT }}
+          submodules: recursive
 
       - name: Deploy application
         uses: ./.github/actions/ansible
