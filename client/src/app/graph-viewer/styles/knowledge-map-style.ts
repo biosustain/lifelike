@@ -62,41 +62,17 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const labelFont = (16 * labelFontSizeScale) + 'px ' + this.font;
     const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
 
-    let textColor = '#000';
-    let bgColor = '#fff';
-    let strokeColor = '#2B7CE9';
-    let iconCode = null;
-
     // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
 
-    if (annotationStyle) {
-      if (annotationStyle.iconCode) {
-        iconCode = annotationStyle.iconCode;
-      }
-    }
 
-    if (styleData.fillColor != null) {
-      textColor = styleData.fillColor;
-    } else if (annotationStyle) {
-      if (annotationStyle.color) {
-        textColor = annotationStyle.color;
-      }
-      if (annotationStyle.style) {
-        if (annotationStyle.style.background) {
-          bgColor = annotationStyle.style.background;
-        }
-        if (annotationStyle.style.color) {
-          textColor = annotationStyle.style.color;
-        }
-        if (annotationStyle.style.border) {
-          strokeColor = annotationStyle.style.border;
-        }
-      }
-    }
+    let iconCode = annotationStyle?.iconCode;
 
-    strokeColor = styleData.strokeColor ?? strokeColor;
-    bgColor = styleData.bgColor ?? bgColor;
+    // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
+    // Relation nodes have their font color stored elsewhere, so we need to check that first
+    const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || '#000'));
+    const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || '#fff');
+    const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || '#2B7CE9');
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
