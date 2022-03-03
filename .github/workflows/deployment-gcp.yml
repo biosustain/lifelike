@@ -22,6 +22,10 @@ on:
         required: true
       CONTAINER_REGISTRY_PASSWORD:
         required: true
+      VAULT_PASSWORD:
+        required: true
+      SSH_KEY:
+        required: true
 
 jobs:
   build:
@@ -96,8 +100,8 @@ jobs:
           workspace_dir: deployment/ansible
           playbook_file_path: playbooks/deploy-gcloud.yml
           inventory_file_path: inventories/hosts.yml
-          vault_password: ${{ secrets.ANSIBLE_VAULT }}
-          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          vault_password: ${{ secrets.VAULT_PASSWORD }}
+          ssh_key: ${{ secrets.SSH_KEY }}
           options: |
             --extra-vars environment_name=${{ inputs.environment_name }}
             --extra-vars client_config=${{ inputs.client_config }}
