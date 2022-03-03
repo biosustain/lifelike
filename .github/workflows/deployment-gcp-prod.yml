@@ -14,5 +14,7 @@ jobs:
       environment_name: prod
       client_config: production
     secrets:
+      VAULT_PASSORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
       CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
       CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}

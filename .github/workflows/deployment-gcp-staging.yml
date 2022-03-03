@@ -13,5 +13,7 @@ jobs:
       environment_name: staging
       client_config: staging
     secrets:
+      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
       CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
       CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
