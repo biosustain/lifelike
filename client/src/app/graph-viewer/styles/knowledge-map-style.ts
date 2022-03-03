@@ -66,7 +66,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
 
 
-    let iconCode = annotationStyle?.iconCode;
+    let iconCode: any = annotationStyle?.iconCode;
 
     // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
     // Relation nodes have their font color stored elsewhere, so we need to check that first
