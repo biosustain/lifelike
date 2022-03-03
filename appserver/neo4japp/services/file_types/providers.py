@@ -765,7 +765,7 @@ def get_node_href(node):
             href = get_node_href(node)
         else:
             href = LIFELIKE_DOMAIN + current_link
-    # For some reason, ' inside link breaks graphviz export. We need to encode it to %27
+    # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
     return href.replace("'", '%27')
 
 
