@@ -10,7 +10,7 @@ import { assign, partial } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyLink, SankeyNode, SankeyId, RenderableGraph } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
@@ -65,7 +65,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   readonly MARGIN = 10;
 
   focusedEntity$ = this.sankey.graph$.pipe(
-    switchMap(({data: {nodes, links}}) => this.search.searchFocus$.pipe(
+    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
       map(({type, id}) => {
         let data;
         switch (type) {
@@ -109,14 +109,16 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param graph: { links, nodes } to be rendered
    */
   private updateDOM$ = this.sankey.graph$.pipe(
-    switchMap((graph: RenderableGraph) => {
+    switchMap(({links, nodes}) => {
       return combineLatest([
-        this.renderNodes(graph),
-        this.renderLinks(graph)
+        this.renderNodes(nodes),
+        this.renderLinks(links)
       ]);
     }),
     debug('updateDOM')
   );
+
+  width: number;
 
   static updateTextShadow(this: SVGElement, _) {
     // this contains ref to textGroup
@@ -153,7 +155,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     ).toPromise();
   }
 
-  updateNodeText(width, fontSize, texts) {
+  @d3Callback
+  updateNodeText(fontSize, texts) {
+    const {width} = this;
     return texts
       .attr('transform', ({_x0, _x1, _y0, _y1}) =>
         `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
@@ -173,13 +177,12 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     this.zoom = d3_zoom()
       .scaleExtent([0.1, 8]);
 
-    this.sankey.zoomAdjustment$.subscribe(adjustment =>
-      this.zoom.scaleTo(
+    this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
+      this.zoom.transform(
         this.sankeySelection,
-        adjustment,
-        [0, 0]
-      )
-    );
+        d3_zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0)
+      );
+    });
 
     this.updateDOM$.subscribe(() => {
       console.log('updateDOM');
@@ -258,6 +261,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   // region Graph sizing
   onResize({width, height}) {
+    this.width = width;
     const {zoom, margin} = this;
     const extentX = width - margin.right;
     const extentY = height - margin.bottom;
@@ -630,7 +634,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr('width', ({_x1, _x0}) => _x1 - _x0);
   }
 
-  renderLinks({data: {links}}) {
+  renderLinks(links) {
     return this.sankey.linkPath$.pipe(
       tap(linkPath => {
         const {
@@ -682,7 +686,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     );
   }
 
-  renderNodes({data: {nodes}, width}) {
+  renderNodes(nodes) {
     return combineLatest([
       this.sankey.fontSize$,
       this.sankey.nodeLabel$
@@ -713,7 +717,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
               .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`)
               .call(enterNode =>
                 updateNodeText(
-                  width,
                   fontSize,
                   enterNode
                     .append('g')
@@ -738,7 +741,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
                   // .transition().duration(RELAYOUT_DURATION)
                 );
                 updateNodeText(
-                  width,
                   fontSize,
                   enterNode.select('g')
                     .attr('dy', '0.35em')

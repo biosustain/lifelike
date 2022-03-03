@@ -1,11 +1,11 @@
 // @ts-nocheck
 import { isDevMode } from '@angular/core';
 
-import { tap } from 'rxjs/operators';
+import { tap, finalize } from 'rxjs/operators';
 
-const statusMessage = (level, color, label, id) => (...args) => console[level](
+const statusMessage = ({level, label, id, bgColor, color}) => (...args) => console[level](
   `%c%s%c %s${args.length ? ':' : ''}%c`,
-  `background-color: ${color}; color: white; mix-blend-mode: difference; padding: 2px 4px;`,
+  `background-color: ${bgColor}; color: ${color}; padding: 2px 4px;`,
   label.toUpperCase(),
   `background-color: initial; font-weight: bold;`,
   id,
@@ -13,14 +13,25 @@ const statusMessage = (level, color, label, id) => (...args) => console[level](
   ...args
 );
 
-const init      = (id, label = 'init',      level = 'debug', color = 'deeppink') => statusMessage(level, color, label, id);
-const updated   = (id, label = 'updated',   level = 'log',   color = 'green'   ) => statusMessage(level, color, label, id);
-const error     = (id, label = 'error',     level = 'error', color = 'red'     ) => statusMessage(level, color, label, id);
-const completed = (id, label = 'completed', level = 'info',  color = 'blue'    ) => statusMessage(level, color, label, id);
+const init = params => statusMessage({
+  label: 'init', level: 'debug', bgColor: 'deeppink', color: 'white', ...params
+});
+const updated = params => statusMessage({
+  label: 'updated', level: 'log', bgColor: 'green', color: 'white', ...params
+});
+const error = params => statusMessage({
+  label: 'error', level: 'error', bgColor: 'red', color: 'white', ...params
+});
+const completed = params => statusMessage({
+  label: 'completed', level: 'info', bgColor: 'blue', color: 'white', ...params
+});
+const unsubscribed = params => statusMessage({
+  label: 'unsubscribed', level: 'info', bgColor: 'yellow', color: 'black', ...params
+});
 
-export const debug = <T>(id) => isDevMode() ?
-  (source) => {
-    init(id)(source);
+export const debug: <T>(id) => ReturnType<tap<T>> = id => isDevMode() ?
+  (source: T): Observable<T> => {
+    init({id})(source);
     // Makes all debugged observables hot - very useful for debugging
     // source.subscribe(
     //   updated(id, 'forced hot updated'),
@@ -28,10 +39,12 @@ export const debug = <T>(id) => isDevMode() ?
     //   error(id, 'forced hot error'),
     //   completed(id, 'forced hot completed'),
     // );
-    return tap<T>(
-      updated(id),
-      error(id),
-      completed(id),
-    )(source);
-  } :
-  tap<T>();
+    return source.pipe(
+      tap(
+        updated({id}),
+        error({id}),
+        completed({id}),
+      ),
+      finalize(unsubscribed({id}))
+    ) as Observable<T>;
+  } : (source: T) => source;

@@ -31,44 +31,43 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
    * It calculate nodes position by traversing it from side with less nodes as a tree
    * iteratively figuring order of the nodes.
    */
-  computeNodeBreadths = tap((graph: MultilaneDataWithContext) => {
-    const {data: {links}, columns, ...context} = graph;
-    // decide on direction
-    const dt = new DirectedTraversal([first(columns), last(columns)]);
-    // order next related nodes in order this group first appeared
-    const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
-    const visited = new Set();
-    let order = 0;
-    const traceOrder = new Set();
-    const relayoutLinks = linksToTraverse =>
-      linksToTraverse.forEach(l => {
-        relayoutNodes([dt.nextNode(l)]);
-        traceOrder.add(l._trace);
-      });
-    const relayoutNodes = nodesToTraverse =>
-      nodesToTraverse.forEach(node => {
-        if (visited.has(node)) {
-          return;
-        }
-        visited.add(node);
-        node._order = order++;
-        const sortedLinks = sortByTrace(dt.nextLinks(node));
-        relayoutLinks(sortedLinks);
-      });
-    // traverse tree of connections
-    relayoutNodes(dt.startNodes);
+  computeNodeBreadths({links}, columns) {
+      // decide on direction
+      const dt = new DirectedTraversal([first(columns), last(columns)]);
+      // order next related nodes in order this group first appeared
+      const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
+      const visited = new Set();
+      let order = 0;
+      const traceOrder = new Set();
+      const relayoutLinks = linksToTraverse =>
+        linksToTraverse.forEach(l => {
+          relayoutNodes([dt.nextNode(l)]);
+          traceOrder.add(l._trace);
+        });
+      const relayoutNodes = nodesToTraverse =>
+        nodesToTraverse.forEach(node => {
+          if (visited.has(node)) {
+            return;
+          }
+          visited.add(node);
+          node._order = order++;
+          const sortedLinks = sortByTrace(dt.nextLinks(node));
+          relayoutLinks(sortedLinks);
+        });
+      // traverse tree of connections
+      relayoutNodes(dt.startNodes);
 
-    const traces = [...traceOrder];
-    const groups = clone(traces.map(({group}) => group));
+      const traces = [...traceOrder];
+      const groups = clone(traces.map(({group}) => group));
 
-    const tracesLength = traces.length;
-    links.forEach(link => {
-      link._order = sum([
-        // save order by group
-        groups.indexOf(link._trace._group),
-        // top up with fraction to order by trace
-        traces.indexOf(link._trace) / tracesLength
-      ]);
-    });
-  });
+      const tracesLength = traces.length;
+      links.forEach(link => {
+        link._order = sum([
+          // save order by group
+          groups.indexOf(link._trace._group),
+          // top up with fraction to order by trace
+          traces.indexOf(link._trace) / tracesLength
+        ]);
+      });
+  }
 }

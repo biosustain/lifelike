@@ -123,15 +123,15 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     distinctUntilChanged(isEqual),
     debug<ProcessedExtent>('extent$')
   );
-  horizontal$ = this.extent$.pipe(
+  horizontal$: Observable<Horizontal> = this.extent$.pipe(
     map(({x0, x1, width}) => ({x0, x1, width})),
     distinctUntilChanged(isEqual),
-    debug<Horizontal>('horizontal$')
+    debug('horizontal$')
   );
-  vertical$ = this.extent$.pipe(
+  vertical$: Observable<Vertical> = this.extent$.pipe(
     map(({y0, y1, height}) => ({y0, y1, height})),
     distinctUntilChanged(isEqual),
-    debug<Vertical>('vertical$')
+    debug('vertical$')
   );
 
   dy = 8;
@@ -232,7 +232,7 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
    * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
    * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
    */
-  computeNodeLayers: OperatorFunction<NetworkTraceData, LayersContext> = map(data => {
+  computeNodeLayers(data) {
     const {dx} = this;
     const align = this.getAlign(data);
     const {nodes} = data as SankeyData;
@@ -251,10 +251,9 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     }
     return {
       x,
-      data,
       columns
     } as LayersContext;
-  });
+  }
 
   static ascendingSourceBreadth(a, b) {
     return SankeyAbstractLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
@@ -365,8 +364,7 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     return sources.length > targets.length ? right : left;
   }
 
-
-  positionNodesHorizontaly({data, x, x1, x0, width}) {
+  positionNodesHorizontaly(data, {x1, x0, width}, x) {
     const {dx} = this;
     const kx = (width - dx) / (x - 1);
     for (const node of data.nodes) {
@@ -375,7 +373,7 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     }
   }
 
-  repositionNodesHorizontaly({data, x0, widthChangeRatio}) {
+  repositionNodesHorizontaly(data, {x0}, widthChangeRatio) {
     const {dx} = this;
     if (widthChangeRatio !== 1) {
       for (const node of data.nodes) {

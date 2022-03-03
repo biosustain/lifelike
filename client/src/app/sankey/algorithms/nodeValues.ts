@@ -13,7 +13,6 @@ export const fixedValue: (value: number) => ValueProcessingStep =
         n._value = value;
       });
       return {
-        nodes,
         _sets: {
           node: {
             _value: true

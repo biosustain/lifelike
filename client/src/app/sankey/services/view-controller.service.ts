@@ -68,6 +68,9 @@ export class ViewControllerService {
     switchMap(layout => layout.graph$)
   );
 
+  extent$ = this.layout$.pipe(
+    switchMap(layout => layout.extent$)
+  );
 
   selectView(viewName) {
     return this.common.patchState({viewName});
@@ -112,10 +115,16 @@ export class ViewControllerService {
       )),
       switchMap(partialView => this.graph$.pipe(
         first(),
-        map(({data: {nodes, links}, width, height}) => ({
+        map(({nodes, links}) => ({
           ...partialView,
           nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
-          links: this.mapToPropertyObject(links, this.linkViewProperties),
+          links: this.mapToPropertyObject(links, this.linkViewProperties)
+        }))
+      )),
+      switchMap(partialView => this.extent$.pipe(
+        first(),
+        map(({width, height}) => ({
+          ...partialView,
           size: {width, height}
         } as SankeyView))
       )),
