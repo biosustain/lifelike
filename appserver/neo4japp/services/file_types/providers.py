@@ -720,14 +720,9 @@ def create_relation_node(node, params):
     :returns: altered params dict
     """
     style = node.get('style', {})
-    default_color = style.get('bgColor') or ANNOTATION_STYLES_DICT.get(
-        node['label'],
-        {'color': 'black'})['color']
+    default_color = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
     params['color'] = style.get('strokeColor') or default_color
-    if style.get('fillColor'):
-        params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
-    # Changing font color changes background to white
-    params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+    params['fillcolor'] = style.get('bgColor') or default_color
     params['fontcolor'] = style.get('fillColor') or 'black'
     params['style'] += ',filled'
     return params
