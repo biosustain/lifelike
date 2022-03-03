@@ -47,7 +47,7 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMult
   }
 
   focusedEntity$ = this.sankey.graph$.pipe(
-    switchMap(({data: {nodes, links}}) => this.search.searchFocus$.pipe(
+    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
       map(({type, id}) => {
         let data;
         switch (type) {

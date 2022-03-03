@@ -175,6 +175,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   get advanced() {
     return this.dynamicComponentRef.get('advanced').instance;
   }
+
   baseViewContext$: Observable<BaseViewContext>;
   baseView$: Observable<DefaultBaseControllerService>;
   selection$: Observable<SankeySelectionService>;
@@ -277,7 +278,11 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       switchMap(selection => selection.selection$),
       map(isNotEmpty)
     ).subscribe(open => {
-      this.detailsPanel$.next(open);
+      // oddly it runs out of sync with angular template
+      // if we do not force it into zone template will not update
+      this.zone.run(() => {
+        this.detailsPanel$.next(open);
+      });
     });
   }
 

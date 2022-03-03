@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { merge, omit, isNil, clone } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil } from 'rxjs/operators';
-import { combineLatest, Observable, iif, ReplaySubject } from 'rxjs';
+import { combineLatest, iif, ReplaySubject, Observable } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import {
@@ -14,8 +14,7 @@ import {
   SankeyNode,
   SankeyLink,
   ValueGenerator,
-  Prescaler,
-  RenderableGraph
+  Prescaler
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
@@ -50,6 +49,8 @@ export type DefaultLayoutService = LayoutService<SankeyBaseOptions, SankeyBaseSt
  */
 const copy2DArray = (arr: any[][]) => arr.map(clone);
 
+type NodeColumns = SankeyNode[][];
+
 export interface LayersContext<Data extends NetworkTraceData = NetworkTraceData> {
   data: Data;
   columns: Data['nodes'][];
@@ -68,7 +69,7 @@ interface VirtualNodesContext<Data extends NetworkTraceData = NetworkTraceData> 
   columnsWithLinkPlaceholders: Data['nodes'][];
 }
 
-interface VerticalContext<Data extends NetworkTraceData = NetworkTraceData> extends VirtualNodesContext<Data> {
+interface VerticalContext {
   y0: number;
   y1: number;
   ky: number;
@@ -99,6 +100,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       }
     };
   }
+
 
   linkPath$ = this.baseView.common.normalizeLinks$.pipe(
     map(normalizeLinks => {
@@ -137,7 +139,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
 
-  graph$ = this.baseView.common.view$.pipe(
+  graph$: Observable<NetworkTraceData<SankeyNode, SankeyLink>> = this.baseView.common.view$.pipe(
     tap(view => console.log('view', view)),
     // todo temporary fixes needs to work but do not know how to make it better
     startWith(undefined),
@@ -145,7 +147,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     map(([previousView, view]) => {
       // reset zoom adjustments after leaving the view
       if (!isNil(previousView) && isNil(view)) {
-        this.zoomAdjustment$.next(1);
+        this.zoomAdjustment$.next({zoom: 1});
       }
       return view;
     }),
@@ -160,35 +162,63 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     ),
     debug('graph$'),
     shareReplay(1)
-  ) as Observable<RenderableGraph>;
+  );
 
-  zoomAdjustment$ = new ReplaySubject<number>(1);
+  zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
 
   takeUntilViewChange = takeUntil(this.baseView.common.view$);
 
-  /**
-   * Same as parent method just ignoring circular links
-   */
-  computeNodeHeights = tap((graph: VerticalContext) => {
-    const {data, nodeHeight: {min: {enabled, value}}, nodesAndPlaceholders, ky} = graph;
-    const {value: valueAccessor} = this;
-    for (const node of nodesAndPlaceholders) {
-      if (enabled && value) {
-        node._height = Math.max(valueAccessor(node) * ky, value);
-      } else {
-        node._height = valueAccessor(node) * ky;
-      }
-    }
-  });
+  private calculateLayout$;
 
-  assignValues = switchMap(({data, ...context}) =>
-    combineLatest([
+  positionNodes(x) {
+    return switchMap(data => this.horizontal$.pipe(
+      // calculate width change ratio for repositioning of the nodes
+      startWith({} as any),
+      pairwise(),
+      map(([prevHorizontal, horizontal], callIndex) => {
+        if (callIndex === 0) {
+          // Absolute node positioning
+          this.positionNodesHorizontaly(data, horizontal, x);
+        } else {
+          const prevWidth = prevHorizontal?.width ?? horizontal.width;
+          const widthChangeRatio = horizontal.width / prevWidth;
+
+          // Relative node positioning (to preserve draged node position)
+          console.count('relative node positioning');
+          this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
+        }
+        return data;
+      })
+    ));
+  }
+
+  computeLinkBreadths(nodesAndPlaceholders) {
+    return tap(x => {
+      for (const node of nodesAndPlaceholders) {
+        let y0 = node._y0;
+        let y1 = y0;
+        for (const link of node._sourceLinks) {
+          link._y0 = y0 + link._width / 2;
+          // noinspection JSSuspiciousNameCombination
+          y0 += link._width;
+        }
+        for (const link of node._targetLinks) {
+          link._y1 = y1 + link._width / 2;
+          // noinspection JSSuspiciousNameCombination
+          y1 += link._width;
+        }
+      }
+    });
+  }
+
+  assignValues(data) {
+    return combineLatest([
       this.baseView.nodeValueAccessor$,
       this.baseView.linkValueAccessor$,
       this.baseView.common.prescaler$
     ]).pipe(
       filter<[ValueGenerator, ValueGenerator, Prescaler]>(params => params.every(param => !!param)),
-      map(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
+      tap(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
 
         const preprocessedLinks = linkValueAccessor.preprocessing.call(this, data) ?? {};
         const preprocessedNodes = nodeValueAccessor.preprocessing.call(this, data) ?? {};
@@ -238,88 +268,9 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
             }
           });
         }
-
-        return {
-          data,
-          ...context
-        };
       })
-    )
-  );
-
-  positionNodes = switchMap((graph: LayersContext) => this.horizontal$.pipe(
-    // calculate width change ratio for repositioning of the nodes
-    startWith(undefined),
-    pairwise(),
-    map(([prevHorizontal, horizontal]) => {
-      const prevWidth = prevHorizontal?.width ?? horizontal.width;
-      return {
-        ...graph,
-        ...horizontal,
-        widthChangeRatio: horizontal.width / prevWidth,
-      };
-    }),
-    map((_graph, callIndex) => {
-      if (callIndex === 0) {
-        // Absolute node positioning
-        this.positionNodesHorizontaly(_graph);
-      } else {
-        // Relative node positioning (to preserve draged node position)
-        console.count('relative node positioning');
-        this.repositionNodesHorizontaly(_graph);
-      }
-      return _graph;
-    })
-  ));
-
-  computeNodeBreadths = tap(() => {
-    throw new Error();
-  });
-
-  computeLinkBreadths = tap(({nodesAndPlaceholders, ...context}) => {
-    for (const node of nodesAndPlaceholders) {
-      let y0 = node._y0;
-      let y1 = y0;
-      for (const link of node._sourceLinks) {
-        link._y0 = y0 + link._width / 2;
-        // noinspection JSSuspiciousNameCombination
-        y0 += link._width;
-      }
-      for (const link of node._targetLinks) {
-        link._y1 = y1 + link._width / 2;
-        // noinspection JSSuspiciousNameCombination
-        y1 += link._width;
-      }
-    }
-  });
-
-  layoutNodesWithinColumns = tap(({ky, y0, y1, height, columns}) =>
-    columns.forEach(nodes => {
-      const {length} = nodes;
-      const nodesHeight = sum(nodes, ({_height}) => _height);
-      // do we want space above and below nodes or should it fill column till the edges?
-      const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
-      const freeSpace = height - nodesHeight;
-      const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
-      let y = additionalSpacers ? spacerSize + y0 : y0;
-      // nodes are placed in order from tree traversal
-      nodes.sort((a, b) => a._order - b._order).forEach(node => {
-        const nodeHeight = node._height;
-        node._y0 = y;
-        node._y1 = y + nodeHeight;
-        y += nodeHeight + spacerSize;
-
-        // apply the y scale on links
-        for (const link of node._sourceLinks) {
-          link._width = link._value * ky;
-        }
-      });
-      for (const {_sourceLinks, _targetLinks} of nodes) {
-        _sourceLinks.sort(this.linkSort);
-        _targetLinks.sort(this.linkSort);
-      }
-    })
-  );
+    );
+  }
 
   /**
    * If link spawns on multiple columns (both normal and circular) on each intermediate
@@ -328,8 +279,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
    * same source to same target node.
    * This approach reduces overlays in more complex graphs
    */
-  createVirtualNodes = map((graph: LayersContext) => {
-    const {data, columns} = graph;
+  createVirtualNodes(data, columns) {
     const columnsWithLinkPlaceholders = copy2DArray(columns);
     // start to operate on list of nodes and virtual ones
     const nodesAndPlaceholders = clone(data.nodes);
@@ -363,50 +313,94 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     }
 
     return {
-      ...graph,
       nodesAndPlaceholders,
       columnsWithLinkPlaceholders
     } as VirtualNodesContext;
-  });
+  }
 
   /**
-   * Once layout has been calculated we can safely delete placeholder nodes
+   * Same as parent method just ignoring circular links
    */
-  clearContext = map(({data}) => data);
+  computeNodeHeights(nodesAndPlaceholders) {
+    return tap(({nodeHeight: {min: {enabled, value}}, ky}) => {
+      const {value: valueAccessor} = this;
+      for (const node of nodesAndPlaceholders) {
+        if (enabled && value) {
+          node._height = Math.max(valueAccessor(node) * ky, value);
+        } else {
+          node._height = valueAccessor(node) * ky;
+        }
+      }
+    });
+  }
 
-  setVerticalLayoutParams = switchMap((graph: VerticalContext) => {
-      const {data, nodesAndPlaceholders, columnsWithLinkPlaceholders} = graph;
-      return combineLatest([
-        this.baseView.nodeHeight$,
-        this.vertical$
-      ]).pipe(
-        map(([nodeHeight, {height, y0, y1}]) => {
-            const {dy, py, dx, value} = this;
+  computeNodeBreadths(data, columns) {
+    throw new Error();
+  }
 
-            // normal calculation based on tallest column
-            let ky = min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value));
-            if (nodeHeight.max.enabled) {
-              const maxCurrentHeight = max(nodesAndPlaceholders, value) * ky;
-              if (nodeHeight.max.ratio) {
-                const maxScaling = dx * nodeHeight.max.ratio / maxCurrentHeight;
-                if (maxScaling < 1) {
-                  ky *= maxScaling;
-                }
+  layoutNodesWithinColumns(columns) {
+    return tap(({ky, y0, y1, height}) =>
+      columns.forEach(nodes => {
+        const {length} = nodes;
+        const nodesHeight = sum(nodes, ({_height}) => _height);
+        // do we want space above and below nodes or should it fill column till the edges?
+        const additionalSpacers = length === 1 || ((nodesHeight / height) < 0.75);
+        const freeSpace = height - nodesHeight;
+        const spacerSize = freeSpace / (additionalSpacers ? length + 1 : length - 1);
+        let y = additionalSpacers ? spacerSize + y0 : y0;
+        // nodes are placed in order from tree traversal
+        nodes.sort((a, b) => a._order - b._order).forEach(node => {
+          const nodeHeight = node._height;
+          node._y0 = y;
+          node._y1 = y + nodeHeight;
+          y += nodeHeight + spacerSize;
+
+          // apply the y scale on links
+          for (const link of node._sourceLinks) {
+            link._width = link._value * ky;
+          }
+        });
+        for (const {_sourceLinks, _targetLinks} of nodes) {
+          _sourceLinks.sort(this.linkSort);
+          _targetLinks.sort(this.linkSort);
+        }
+      })
+    );
+  }
+
+  getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders: NodeColumns) {
+    return combineLatest([
+      this.baseView.nodeHeight$,
+      this.vertical$
+    ]).pipe(
+      map(([nodeHeight, {height, y0, y1}]) => {
+          const {dy, py, dx, value} = this;
+
+          // normal calculation based on tallest column
+          let ky = min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value));
+          if (nodeHeight.max.enabled) {
+            const maxCurrentHeight = max(nodesAndPlaceholders, value) * ky;
+            if (nodeHeight.max.ratio) {
+              const maxScaling = dx * nodeHeight.max.ratio / maxCurrentHeight;
+              if (maxScaling < 1) {
+                ky *= maxScaling;
               }
             }
-            return {
-              ...graph,
-              ky, height, y0, y1, nodeHeight,
-              // readjust py for current context
-              py: Math.min(dy, height / (max(columnsWithLinkPlaceholders, (c: Array<any>) => c.length) - 1))
-            } as VerticalContext;
           }
-        )
-      );
-    }
-  );
-
-  private calculateLayout$;
+          return {
+            ky,
+            height,
+            y0,
+            y1,
+            nodeHeight,
+            // readjust py for current context
+            py: Math.min(dy, height / (max(columnsWithLinkPlaceholders, (c: Array<any>) => c.length) - 1))
+          } as VerticalContext;
+        }
+      ),
+      debug('setVerticalLayoutParams')
+    );
+  }
 
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
@@ -428,52 +422,107 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       this.computeNodeReversedDepths,
       debug('computeNodeReversedDepths'),
       // After this method data becomes wrapped in context {data, ...context}
-      this.computeNodeLayers,
-      debug('computeNodeLayers'),
-      // Calculate the nodes' values, based on the values of the incoming and outgoing links
-      this.assignValues,
-      debug('assignValues'),
-      this.createVirtualNodes,
-      debug('createVirtualNodes'),
-      this.setVerticalLayoutParams,
-      debug('setVerticalLayoutParams'),
-      this.computeNodeHeights,
-      debug('computeNodeHeights'),
-      // Calculate the nodes' and links' vertical position within their respective column
-      //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-      this.computeNodeBreadths,
-      debug('computeNodeBreadths'),
-      this.layoutNodesWithinColumns,
-      debug('layoutNodesWithinColumns'),
-      this.computeLinkBreadths,
-      debug('computeLinkBreadths'),
-      this.positionNodes,
-      debug('positionNodes'),
+      switchMap(data => {
+        const {columns, x} = this.computeNodeLayers(data);
+        // Calculate the nodes' values, based on the values of the incoming and outgoing links
+        return this.assignValues(data).pipe(
+          debug('assignValues'),
+          switchMap(() => {
+            const {nodesAndPlaceholders, columnsWithLinkPlaceholders} = this.createVirtualNodes(data, columns);
+            return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
+              this.computeNodeHeights(nodesAndPlaceholders),
+              debug('computeNodeHeights'),
+              // Calculate the nodes' and links' vertical position within their respective column
+              //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+              tap(() => this.computeNodeBreadths(data, columns)),
+              debug('computeNodeBreadths'),
+              this.layoutNodesWithinColumns(columns),
+              debug('layoutNodesWithinColumns'),
+              this.computeLinkBreadths(nodesAndPlaceholders),
+              debug('computeLinkBreadths'),
+            );
+          }),
+          map(verticalContext => data),
+          this.positionNodes(x),
+          debug('positionNodes'),
+        );
+      }),
       debug('calculateLayout'),
-      shareReplay(1)
+      // IMPORTANT!
+      // If refCount is true, the source will be unsubscribed from once the reference count drops to zero,
+      // i.e. the inner ReplaySubject will be unsubscribed. All new subscribers will receive value emissions
+      // from a new ReplaySubject which in turn will cause a new subscription to the source observable.
+      shareReplay({bufferSize: 1, refCount: true})
     );
   }
 
+  calculateSizeFromNodesPosition(nodes) {
+    // tslint:disable-next-line:one-variable-per-declaration
+    let x0, x1, y0, y1;
+    for (const {_x0, _x1, _y0, _y1} of nodes) {
+      if (x0 === undefined || _x0 < x0) {
+        x0 = _x0;
+      }
+      if (x1 === undefined || _x1 > x1) {
+        x1 = _x1;
+      }
+      if (y0 === undefined || _y0 < y0) {
+        y0 = _y0;
+      }
+      if (y1 === undefined || _y1 > y1) {
+        y1 = _y1;
+      }
+    }
+    return {
+      x0, x1, y0, y1,
+      width: x1 - x0,
+      height: y1 - y0
+    };
+  }
 
   adjustViewToViewport(view) {
-    return switchMap((graph: LayersContext) => this.extent$.pipe(
-      map(extent => {
-        const {width: currentWidth, height: currentHeight} = extent;
-        const {size: {width, height}} = view;
-        const horizontalAdjustment = (width ?? currentWidth) / currentWidth;
-        const verticalAdjustment = (height ?? currentHeight) / currentHeight;
+    return switchMap((data: NetworkTraceData<SankeyNode, SankeyLink>) => this.extent$.pipe(
+      // calculate width change ratio for repositioning of the nodes
+      startWith({} as any),
+      pairwise(),
+      map(([prevExtent, extent], callIndex) => {
+        if (callIndex === 0) {
+          // Absolute node positioning
+          const {width: currentWidth, height: currentHeight} = extent;
+          const graphSize = this.calculateSizeFromNodesPosition(data.nodes);
+          const width = Math.max(view.size.width, graphSize.width) ?? currentWidth;
+          const height = Math.max(view.size.height, graphSize.height) ?? currentHeight;
+          const horizontalAdjustment = currentWidth / width;
+          const verticalAdjustment = currentHeight / height;
 
-        if (horizontalAdjustment > verticalAdjustment) {
-          this.zoomAdjustment$.next(verticalAdjustment);
-          // if we zoom out to fit graph vertically then spread nodes on horizontal axis
-          this.repositionNodesHorizontaly({
-            ...graph,
-            ...extent,
-            widthChangeRatio: horizontalAdjustment
-          });
+          let x0 = -graphSize.x0 + this.dx;
+          let y0 = -graphSize.y0 + this.dy;
+
+          if (horizontalAdjustment > verticalAdjustment) {
+            this.zoomAdjustment$.next({
+              x0: x0 * horizontalAdjustment / verticalAdjustment, y0,
+              zoom: verticalAdjustment
+            });
+            // if we zoom out to fit graph vertically then spread nodes on horizontal axis
+            this.repositionNodesHorizontaly(
+              data,
+              extent,
+              horizontalAdjustment / verticalAdjustment
+            );
+          } else {
+            this.zoomAdjustment$.next({
+              x0, y0,
+              zoom: horizontalAdjustment
+            });
+          }
         } else {
-          this.zoomAdjustment$.next(horizontalAdjustment);
+          const prevWidth = prevExtent?.width ?? extent.width;
+          const widthChangeRatio = extent.width / prevWidth;
+          // Relative node positioning (to preserve draged node position)
+          console.count('relative node positioning');
+          this.repositionNodesHorizontaly(data, extent, widthChangeRatio);
         }
+        return data;
       })
     ));
   }
@@ -489,7 +538,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       this.adjustViewToViewport(view)
     );
   }
-
 
   applyPropertyObject(
     propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
