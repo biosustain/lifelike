@@ -228,7 +228,7 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
  * @param first set to filter
  * @param second set to check against
  */
-export function setOutersect<T>(first: Set<T>, second: Set<T|any>): T[] {
+export function setDifference<T>(first: Set<T>, second: Set<T|any>): T[] {
     return [...first].filter(i => !second.has(i));
 }
 
