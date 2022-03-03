@@ -435,7 +435,10 @@ def get_icons_data():
 def create_default_node(node):
     """
     Creates a param dict with all the parameters required to create a simple text node or
-    saving a baseline for more complex node - like map/note/link nodes
+    saving a baseline for more complex node - like map/note/link nodes'
+    NOTE: When working with styles dict, remember that user can unset property (by clicking
+    'default') which caused the key to have value of 'None'. This does NOT trigger the default case
+    of .get(..., x), so you need to use get() or x instead.
     :params:
     :param node: a dictionary containing the information about currently rendered node
     :return: baseline dict with Graphviz paramaters
@@ -465,7 +468,7 @@ def create_default_node(node):
             node['label'], {'color': 'black'}).get('color'),
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
-        'fillcolor': style.get('bgColor', 'white'),
+        'fillcolor': style.get('bgColor') or 'white',
         'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
