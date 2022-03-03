@@ -15,7 +15,7 @@ import {
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import {associatedMapsRegex} from 'app/shared/constants';
-import { setOutersect } from 'app/shared/utils';
+import { setDifference } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -279,8 +279,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getImageChanges() {
     const current = this.getCurrentImageSet();
-    const deletedImages = setOutersect(this.savedImageHashes, current);
-    const newImageHashes = setOutersect(current, this.savedImageHashes);
+    const deletedImages = setDifference(this.savedImageHashes, current);
+    const newImageHashes = setDifference(current, this.savedImageHashes);
     return {newImageHashes, deletedImages};
   }
 
