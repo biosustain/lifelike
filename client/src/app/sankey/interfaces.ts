@@ -229,10 +229,3 @@ export interface ViewSize {
   width: number;
   height: number;
 }
-
-export interface RenderableGraph {
-  width: number;
-  height: number;
-  // todo
-  data: any;
-}
