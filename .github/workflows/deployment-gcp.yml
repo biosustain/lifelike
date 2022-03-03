@@ -7,11 +7,6 @@ on:
         description: Environment nme (prod, staging, qa or demo)
         required: true
         type: string
-      build_angular_config:
-        description: Angular build configuration
-        required: true
-        default: production
-        type: string
       client_config:
         description: Client Runtime configuration preset
         required: true
@@ -38,7 +33,7 @@ jobs:
         include:
           - image: kg-webserver
             path: ./client
-            build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.build_angular_config }}
+            build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.client_config }}
 
           - image: kg-appserver
             path: ./appserver
