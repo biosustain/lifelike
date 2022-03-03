@@ -23,8 +23,12 @@
         <div class="btn-group ml-1">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Save" placement="bottom" container="body" (click)="save()">
-                <i class="fa fa-fw fa-save" *ngIf="!isSaving"></i>
-                <span class="spinner-border spinner-border-sm" role="status" *ngIf="isSaving"></span>
+                <i class="fa fa-fw fa-save" *ngIf="!isSaving; else spinner"></i>
+                <ng-template #spinner>
+                    <span class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Saving...</span>
+                    </span>
+               </ng-template>
             </button>
         </div>
 
