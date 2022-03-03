@@ -731,7 +731,7 @@ def create_relation_node(node, params):
     return params
 
 
-def set_node_href(node):
+def get_node_href(node):
     """
     Evaluates and sets the href for the node. If link parameter was not set previously, we are
     dealing with entity node (or icon node without any sources) - so we prioritize the
@@ -762,10 +762,11 @@ def set_node_href(node):
             else:
                 del node['data']['sources'][0]
             # And search again
-            href = set_node_href(node)
+            href = get_node_href(node)
         else:
             href = LIFELIKE_DOMAIN + current_link
-    return href
+    # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
+    return href.replace("'", '%27')
 
 
 def create_map_name_node():
@@ -818,7 +819,8 @@ def create_edge(edge, node_hash_type_dict):
         else '0.0',
         'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
-        'URL': url
+        # We need to encode ', or export will fail - LL-3924
+        'URL': url.replace("'", "%27")
     }
 
 
@@ -1054,7 +1056,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             if node['label'] in RELATION_NODES:
                 params = create_relation_node(node, params)
 
-            params['href'] = set_node_href(node)
+            params['href'] = get_node_href(node)
             graph.node(**params)
 
         min_x = min(x_values, default=0)
