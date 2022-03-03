@@ -1239,7 +1239,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         # to make sure that the graph.json is not copied as well.
         images_to_delete.append('graph')
         files_to_copy = [hash_id for hash_id in zip_file.namelist() if
-                         hash_id.split('/')[-1].split('.')[0] not in images_to_delete]
+                         path.basename(hash_id) not in images_to_delete]
         for filename in files_to_copy:
             new_zip.writestr(filename, zip_file.read(filename))
 
