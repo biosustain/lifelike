@@ -36,7 +36,7 @@ export class LineEdge extends PlacedEdge {
   readonly labelMaxY: number;
   readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
 
-  readonly visibleTextThreshold = 0.45;
+  readonly visibleTextThreshold = 0.4;
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
     super();
@@ -156,15 +156,25 @@ export class LineEdge extends PlacedEdge {
     }
   }
 
+  /**
+   * Draws textbox over the edge. As the edge labels were "getting too small too fast" (see LL-4172)
+   * We scale their size (by temporal increase of the font size), draw them, and restore the font.
+   * This ensures, that the label edge would be always at least as big, as it would be when
+   * visibleTextThreshold zoom-out level is reached.
+   * NOTE: This works, since we are not using line breaks in edge label (which as width based).
+   * @param transform current graph transform
+   */
   drawLayer2(transform: any) {
     if (this.textbox) {
-      const fontSize = +this.textbox.font.split('px').shift();
-      const visibleText = this.forceVisibleText || transform.k
-        >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
-
-      if (visibleText) {
-        this.textbox.drawCenteredAt(this.labelX, this.labelY);
+      const oldFont = this.textbox.font;
+      const fontSize = +oldFont.split('px').shift();
+      const visibleText = transform.k >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
+      if (!visibleText) {
+        this.textbox.font = ((defaultLabelFontSize * this.visibleTextThreshold) / transform.k)
+          + 'px' + this.textbox.font.split('px').pop();
       }
+      this.textbox.drawCenteredAt(this.labelX, this.labelY);
+      this.textbox.font = oldFont;
     }
 
   }

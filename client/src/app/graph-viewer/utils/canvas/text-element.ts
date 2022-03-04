@@ -32,7 +32,7 @@ export class TextElement {
   readonly maxHeight: number | undefined;
   readonly maxLines: number | undefined;
   readonly text: string;
-  readonly font: string;
+  font: string;
   readonly lineHeight: number = 1.2;
   readonly actualLineHeight: number;
   readonly fillStyle: string | undefined = '#000';
@@ -356,7 +356,7 @@ export class TextElement {
     minY += this.topInset;
 
     const effectiveWidth = this.getEffectiveWidth();
-
+    // console.log(this.font);
     this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
