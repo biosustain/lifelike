@@ -1,11 +1,10 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
-import { defaultLabelFontSize } from 'app/shared/constants';
 
 import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import {drawTextNotSmallerThanMin, noTextThreshold, visibleTextThreshold} from '../shared';
+import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
