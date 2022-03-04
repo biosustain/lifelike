@@ -300,9 +300,10 @@ class FilesystemBaseView(MethodView):
         # ========================================
         # Fetch and check
         # ========================================
-
+        # We need to fetch content as it is used in maps update.
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids)
+                                                   require_hash_ids=require_hash_ids,
+                                                   lazy_load_content=True)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
@@ -406,7 +407,7 @@ class FilesystemBaseView(MethodView):
 
                     # Get the provider
                     provider = file_type_service.get(file)
-
+                    buffer = provider.prepare_content(buffer, params, file)
                     try:
                         provider.validate_content(buffer)
                         buffer.seek(0)  # Must rewind

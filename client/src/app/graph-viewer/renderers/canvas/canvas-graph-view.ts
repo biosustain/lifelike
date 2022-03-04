@@ -1237,6 +1237,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.mouseDown = false;
     this.requestRender();
   }
+
 }
 
 interface CanvasSubject {

@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, of, Subscription, throwError, from, defer } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription, throwError, from } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -168,7 +168,7 @@ export class FilesystemService {
     return this.http.patch<ResultMapping<FilesystemObjectData>>(
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
-        hashIds,
+        hashIds
       }), this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
