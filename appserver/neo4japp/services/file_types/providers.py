@@ -5,7 +5,6 @@ import re
 import typing
 import zipfile
 import tempfile
-from collections import namedtuple
 
 from base64 import b64encode
 
@@ -548,6 +547,11 @@ def create_detail_node(node, params):
     """
     detail_text = node['data'].get('detail', '')
     if detail_text:
+        if node['data'].get('sources'):
+            # Check if the node was dragged from the pdf - if so, it will have a source link
+            if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
+                detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+                detail_text = detail_text.rstrip('\\')
         # Split lines to inspect their length and replace them with '\l' later
         # Use regex to split, otherwise \n (text, not new lines) are matched as well
         lines = re.split("\n", detail_text)
@@ -557,10 +561,7 @@ def create_detail_node(node, params):
         # '\l' is graphviz special new line, which placed at the end of the line will align it
         # to the left - we use that instead of \n (and add one at the end to align last line)
         detail_text = r"\l".join(lines) + r'\l'
-        if node['data'].get('sources'):
-            # Check if the node was dragged from the pdf - if so, it will have a source link
-            if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
-                detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+
     params['label'] = detail_text
     params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                      {'bgcolor': 'black'}
@@ -1082,7 +1083,6 @@ class MapTypeProvider(BaseFileTypeProvider):
             graph.edge(**edge_params)
 
         ext = f".{format}"
-
         content = io.BytesIO(graph.pipe())
 
         if format == 'svg':
@@ -1327,7 +1327,11 @@ def get_content_offsets(file):
         calculated) in pixels.
     """
     x_values, y_values = [], []
-    json_graph = json.loads(file.content.raw_file)
+    zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+    try:
+        json_graph = json.loads(zip_file.read('graph.json'))
+    except KeyError:
+        raise ValidationError
     for node in json_graph['nodes']:
         x_values.append(node['data']['x'])
         y_values.append(-node['data']['y'])
