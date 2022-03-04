@@ -8,7 +8,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_projects_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
 from neo4japp.models import (
@@ -247,7 +246,6 @@ class ProjectBaseView(MethodView):
 
 
 class ProjectListView(ProjectBaseView):
-    decorators = [auth.login_required]
 
     @use_args(ProjectListRequestSchema)
     @use_args(PaginatedRequestSchema)
@@ -306,7 +304,6 @@ class ProjectListView(ProjectBaseView):
 
 
 class ProjectSearchView(ProjectBaseView):
-    decorators = [auth.login_required]
 
     @use_args(ProjectSearchRequestSchema)
     @use_args(PaginatedRequestSchema)
@@ -332,7 +329,6 @@ class ProjectSearchView(ProjectBaseView):
 
 
 class ProjectDetailView(ProjectBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Endpoint to fetch a project by hash ID."""
@@ -348,7 +344,6 @@ class ProjectDetailView(ProjectBaseView):
 
 
 class ProjectCollaboratorsListView(ProjectBaseView):
-    decorators = [auth.login_required]
 
     def get_bulk_collaborator_response(self, hash_id, pagination: Pagination):
         """

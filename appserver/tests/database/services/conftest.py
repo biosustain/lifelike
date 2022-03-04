@@ -1,5 +1,3 @@
-from datetime import date
-
 import pytest
 
 from neo4japp.models import AppUser, Projects, Files, FileContent
@@ -14,7 +12,8 @@ def fix_owner(session) -> AppUser:
         email='admin@***ARANGO_DB_NAME***.bio',
         password_hash='password',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='admin@***ARANGO_DB_NAME***.bio',
     )
     session.add(user)
     session.flush()
@@ -29,7 +28,8 @@ def test_user(session) -> AppUser:
         email='test@***ARANGO_DB_NAME***.bio',
         password_hash='password',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='test@***ARANGO_DB_NAME***.bio',
     )
     session.add(user)
     session.flush()
