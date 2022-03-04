@@ -340,4 +340,4 @@ export enum SizeUnits {
   MiB = 2e20,
   GiB = 2e30,
   TiB = 2e40
-};
+}
