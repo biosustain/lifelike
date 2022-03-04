@@ -13,6 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
+import { MatTreeModule } from '@angular/material/tree';
+import { MatIconModule } from '@angular/material/icon';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -30,7 +32,7 @@ import { SankeySearchControlModule } from './components/search-control/sankey-se
   declarations: [
     SankeyViewComponent,
     SankeyAdvancedPanelComponent,
-    PathReportComponent,
+    PathReportComponent
   ],
   imports: [
     CommonModule,
@@ -53,7 +55,9 @@ import { SankeySearchControlModule } from './components/search-control/sankey-se
     SankeyDetailsPanelModule,
     SankeySearchPanelModule,
     SharedSankeyModule,
-    SankeySearchControlModule
+    SankeySearchControlModule,
+    MatTreeModule,
+    MatIconModule
   ],
   exports: [
     SankeyViewComponent
