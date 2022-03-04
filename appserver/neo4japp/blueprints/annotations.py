@@ -3,9 +3,8 @@ import hashlib
 import html
 import io
 import json
-import time
-
 import sqlalchemy as sa
+import time
 
 from datetime import datetime
 from flask import (
@@ -24,7 +23,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
 from webargs.flaskparser import use_args
 
-from .auth import auth
+from .auth import login_exempt
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
 
@@ -85,7 +84,6 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
     get_global_inclusions_query,
     get_global_inclusions_count_query,
-    get_delete_global_inclusion_query
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
@@ -96,7 +94,6 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 class FileAnnotationsView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Fetch annotations for a file.."""
@@ -136,7 +133,6 @@ class FileAnnotationsView(FilesystemBaseView):
 
 
 class EnrichmentAnnotationsView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Fetch annotations for enrichment table."""
@@ -156,7 +152,6 @@ class EnrichmentAnnotationsView(FilesystemBaseView):
 
 
 class FileCustomAnnotationsListView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(CustomAnnotationCreateSchema)
     def post(self, params, hash_id):
@@ -177,7 +172,6 @@ class FileCustomAnnotationsListView(FilesystemBaseView):
 
 
 class FileCustomAnnotationsDetailView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(CustomAnnotationDeleteSchema)
     def delete(self, params, hash_id, uuid):
@@ -198,7 +192,6 @@ class FileCustomAnnotationsDetailView(FilesystemBaseView):
 
 
 class FileAnnotationExclusionsListView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(AnnotationExclusionCreateSchema)
     def post(self, params, hash_id):
@@ -227,7 +220,6 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
 
 
 class FileAnnotationCountsView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get_rows(self, files):
         manual_annotations_service = get_manual_annotation_service()
@@ -303,7 +295,6 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
 
 class FileAnnotationSortedView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get_rows(self, files, annotation_service):
         values = annotation_service.get_annotations(files)
@@ -430,7 +421,6 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
 
 class FileAnnotationsGenerationView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: AnnotationGenerationRequestSchema())
@@ -771,7 +761,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
 
 class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(lambda request: BulkFileRequestSchema())
     def post(self, targets):
@@ -797,7 +786,7 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
 
 
 class GlobalAnnotationExportInclusions(MethodView):
-    decorators = [auth.login_required, requires_role('admin')]
+    decorators = [requires_role('admin')]
 
     def get(self):
         yield g.current_user
@@ -849,7 +838,7 @@ class GlobalAnnotationExportInclusions(MethodView):
 
 
 class GlobalAnnotationExportExclusions(MethodView):
-    decorators = [auth.login_required, requires_role('admin')]
+    decorators = [requires_role('admin')]
 
     def get(self):
         yield g.current_user
@@ -910,7 +899,7 @@ class GlobalAnnotationExportExclusions(MethodView):
 
 
 class GlobalAnnotationListView(MethodView):
-    decorators = [auth.login_required, requires_role('admin')]
+    decorators = [requires_role('admin')]
 
     @use_args(PaginatedRequestSchema())
     @use_args(GlobalAnnotationTableType())
@@ -1060,6 +1049,10 @@ class GlobalAnnotationListView(MethodView):
 
 
 @bp.route('/files/<int:file_id>', methods=['GET'])
+# TODO: This really shouldn't be exempt. We either need to update the pdfparser to use auth
+# credentials when pinging this endpoint, or we should block this endpoint via nginx and whitelist
+# the pdfparser on that endpoint.
+@login_exempt
 def get_pdf_to_annotate(file_id):
     """This endpoint is sent by the annotation pipeline to the
     pdfparse service, and acts as a resource pull.
