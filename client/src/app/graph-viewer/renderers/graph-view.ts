@@ -290,7 +290,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   // NOTE: This is actually called twice when opening a map in read-only mode - why?
   setGraph(graph: UniversalGraph): void {
-    // TODO: keep or nah?
+
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
