@@ -35,78 +35,98 @@ export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> {
+/**
+ * Common describtion of getSet behaviour
+ * (helps to keep it in sync)
+ */
+interface GetSet<ID, Value> {
   /**
    * Return key value if it exists in the map
    * otherwise use default value
    * @param key - used to identify value
    * @param value - default key value
    */
-  getSet(key: K, value: V): V {
+  getSet(id: ID, value: Value): Value;
+
+  /**
+   * Return key value if it exists in the map
+   * otherwise use default value accessor
+   * @param key - used to identify value
+   * @param valueAccessor - value or function to calculate it
+   */
+  getSetLazily(id: ID, valueAccessor: () => Value): Value;
+}
+
+export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implements GetSet<K, V> {
+  getSet(key, value) {
     if (this.has(key)) {
       return super.get(key);
     }
     super.set(key, value);
     return value;
   }
+
+  getSetLazily(key, valueAccessor) {
+    if (this.has(key)) {
+      return super.get(key);
+    }
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    super.set(key, loadedValue);
+    return loadedValue;
+  }
 }
 
-export class ExtendedMap<K, V> extends Map<K, V> {
+export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
+  getSet(key, value) {
+    if (this.has(key)) {
+      return super.get(key);
+    }
+    super.set(key, value);
+    return value;
+  }
+
+  getSetLazily(key, valueAccessor) {
+    if (this.has(key)) {
+      return super.get(key);
+    }
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    super.set(key, loadedValue);
+    return loadedValue;
+  }
+}
+
+export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {
+  at: (index: number) => V;
+
   /**
-   * Return key value if it exists in the map
+   * Return index value if it exists in the array
    * otherwise use default value
-   * @param key - used to identify value
-   * @param value - default key value
+   * (undefined is considered as not existing value
+   * @param index - used to access value
+   * @param value - default value
    */
-  getSet(key: K, value: V): V {
-    if (this.has(key)) {
-      return super.get(key);
+  getSet(index, value) {
+    const existingValue = this.at(index);
+    if (existingValue !== undefined) {
+      return existingValue;
     }
-    super.set(key, value);
+    this[index] = value;
     return value;
   }
-}
 
-
-/** Return key value, if it does not exist call value accessor
- * Added for clarity on purpose
- * https://github.com/SBRG/kg-prototypes/pull/1387#discussion_r756414705
- */
-export class LazyLoadedWeakMap<K extends object, V> extends WeakMap<K, V> {
   /**
-   * Return key value if it exists in the map
+   * Return index value if it exists in the array
    * otherwise use default value accessor
-   * @param key - used to identify value
-   * @param value - value or function to calculate it
+   * (undefined is considered as not existing value
+   * @param index - used to access value
+   * @param valueAccessor - default value or function to calculate it
    */
-  getSet(key: K, value: (() => V) | V): V {
-    if (this.has(key)) {
-      return super.get(key);
+  getSetLazily(index, valueAccessor) {
+    const existingValue = this.at(index);
+    if (existingValue !== undefined) {
+      return existingValue;
     }
-    const loadedValue = value instanceof Function ? value() : value;
-    super.set(key, loadedValue);
-    return loadedValue;
-  }
-}
-
-/** Return key value, if it does not exist call value accessor
- * Added for clarity on purpose
- * https://github.com/SBRG/kg-prototypes/pull/1387#discussion_r756414705
- */
-export class LazyLoadedMap<K, V> extends Map<K, V> {
-  /**
-   * Return key value if it exists in the map
-   * otherwise use default value accessor
-   * @param key - used to identify value
-   * @param value - value or function to calculate it
-   */
-  getSet(key: K, value: (() => V) | V): V {
-    if (this.has(key)) {
-      return super.get(key);
-    }
-    const loadedValue = value instanceof Function ? value() : value;
-    super.set(key, loadedValue);
-    return loadedValue;
+    return this[index] = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
   }
 }
 

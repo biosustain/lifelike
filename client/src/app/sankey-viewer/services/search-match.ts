@@ -17,7 +17,7 @@ import { omit, slice, transform, isObject, flatMapDeep } from 'lodash-es';
      "window is undefined"
      "alert is undefined"
 */
-import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
+import { ExtendedWeakMap, ExtendedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { SankeyTrace, SankeyLink, SankeyNode } from 'app/shared-sankey/pure_interfaces';
 
@@ -73,8 +73,8 @@ export class SankeySearch {
   ];
 
   private matchedTraces: ExtendedWeakMap<SankeyTrace & any, Match[]>;
-  private matchedNodes: LazyLoadedMap<SankeyNode['_id'], Generator<Match>>;
-  private matchedLink: LazyLoadedMap<SankeyLink['_id'], Generator<Match>>;
+  private matchedNodes: ExtendedMap<SankeyNode['_id'], Generator<Match>>;
+  private matchedLink: ExtendedMap<SankeyLink['_id'], Generator<Match>>;
   private nodeById: Map<string, SankeyNode>;
 
   _traceNetworksMapping;
@@ -83,8 +83,8 @@ export class SankeySearch {
 
   cleanCache() {
     this.matchedTraces = new ExtendedWeakMap();
-    this.matchedLink = new LazyLoadedMap();
-    this.matchedNodes = new LazyLoadedMap();
+    this.matchedLink = new ExtendedMap();
+    this.matchedNodes = new ExtendedMap();
   }
 
   getTraceNetworkMapping() {
@@ -147,7 +147,7 @@ export class SankeySearch {
   }
 
   matchNode(node: SankeyNode, _context): Generator<Match> {
-    return this.matchedNodes.getSet(
+    return this.matchedNodes.getSetLazily(
       node._id,
       () => this.matchObject(
         omit(node, this.nodePropertiesContainingEntities)
@@ -156,7 +156,7 @@ export class SankeySearch {
   }
 
   * matchLink(link: (SankeyLink & any), {layers}): Generator<Match> {
-    const matches = this.matchedLink.getSet(
+    const matches = this.matchedLink.getSetLazily(
       link._id,
       () => this.matchObject(
         omit(link, this.linkPropertiesContainingEntities)

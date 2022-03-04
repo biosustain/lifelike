@@ -14,7 +14,7 @@ export class PercentInputComponent {
   @Input() step: number | undefined;
 
   changed(event) {
-    const newValue = parseInt(event.target.value, 10) / 100;
+    const newValue = Math.round(parseInt(event.target.value, 10) / 100);
     if (newValue !== this.value) {
       this.value = newValue;
       this.valueChange.emit(this.value);
