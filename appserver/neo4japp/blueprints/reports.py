@@ -9,7 +9,7 @@ from neo4japp.constants import (
     COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
     LIFELIKE_EMAIL_ACCOUNT,
     MESSAGE_SENDER_IDENTITY,
-    SEND_GRID_API_CLIENT
+    SEND_GRID_API_CLIENT,
 )
 from neo4japp.database import db
 from neo4japp.models.reports import CopyrightInfringementRequest
@@ -17,8 +17,8 @@ from neo4japp.schemas.reports import CopyrightInfringementRequestSchema
 
 bp = Blueprint('reports', __name__, url_prefix='/reports')
 
-class CopyrightInfringementReportView(MethodView):
 
+class CopyrightInfringementReportView(MethodView):
     @use_args(CopyrightInfringementRequestSchema)
     def post(self, params: dict):
         copyright_infringement_report = CopyrightInfringementRequest(
@@ -38,7 +38,7 @@ class CopyrightInfringementReportView(MethodView):
             attestationCheck2=params['attestationCheck2'],
             attestationCheck3=params['attestationCheck3'],
             attestationCheck4=params['attestationCheck4'],
-            signature=params['signature']
+            signature=params['signature'],
         )
 
         try:
@@ -65,7 +65,7 @@ class CopyrightInfringementReportView(MethodView):
                 phone=params['phone'],
                 fax=params['fax'],
                 email=params['email'],
-            )
+            ),
         )
         message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
         try:
@@ -80,5 +80,11 @@ class CopyrightInfringementReportView(MethodView):
         return jsonify(dict(result=copyright_infringement_report.to_dict()))
 
 
-copyright_infringement_report_view = CopyrightInfringementReportView.as_view('accounts_api')
-bp.add_url_rule('/copyright-infringement-report', view_func=copyright_infringement_report_view, methods=['POST'])
+copyright_infringement_report_view = CopyrightInfringementReportView.as_view(
+    'accounts_api'
+)
+bp.add_url_rule(
+    '/copyright-infringement-report',
+    view_func=copyright_infringement_report_view,
+    methods=['POST'],
+)
