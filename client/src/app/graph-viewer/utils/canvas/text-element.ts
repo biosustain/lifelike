@@ -356,7 +356,6 @@ export class TextElement {
     minY += this.topInset;
 
     const effectiveWidth = this.getEffectiveWidth();
-    // console.log(this.font);
     this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
