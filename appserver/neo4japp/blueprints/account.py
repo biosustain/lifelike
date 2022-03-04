@@ -12,9 +12,9 @@ from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.auth import login_exempt
 from neo4japp.database import db, get_authorization_service
-from neo4japp.exceptions import ServerException, NotAuthorized
+from neo4japp.exceptions import RecordNotFound, ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
@@ -31,8 +31,8 @@ from neo4japp.constants import (
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
-    UserSearchSchema,
     UserProfileSchema,
+    UserSearchSchema,
     UserProfileListSchema,
     UserCreateSchema,
     UserUpdateSchema,
@@ -48,7 +48,6 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 
 class AccountView(MethodView):
-    decorators = [auth.login_required]
 
     def get_or_create_role(self, rolename: str) -> AppRole:
         retval = AppRole.query.filter_by(name=rolename).one_or_none()
@@ -140,6 +139,7 @@ class AccountView(MethodView):
             email=params['email'],
             first_name=params['first_name'],
             last_name=params['last_name'],
+            subject=params['email'],
             forced_password_reset=params['created_by_admin']
         )
         app_user.set_password(params['password'])
@@ -205,14 +205,40 @@ class AccountView(MethodView):
         pass
 
 
+class AccountSubjectView(MethodView):
+
+    def get(self, subject: str):
+        """Fetch a single user by their subject. Useful for retrieving users created via a
+        3rd-party auth provider, like Keycloak or Google Sign In."""
+        user = AppUser.query_by_subject(subject).one_or_none()
+        if user is None:
+            raise RecordNotFound(
+                title='User Not Found',
+                message='The requested user could not be found.',
+                code=404
+            )
+        return jsonify(UserProfileSchema().dump({
+            'hash_id': user.hash_id,
+            'email': user.email,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'id': user.id,
+            'reset_password': user.forced_password_reset,
+            'roles': [u.name for u in user.roles],
+        }))
+
+
 account_view = AccountView.as_view('accounts_api')
 bp.add_url_rule('/', view_func=account_view, defaults={'hash_id': None}, methods=['GET'])
 bp.add_url_rule('/', view_func=account_view, methods=['POST'])
 bp.add_url_rule('/<string:hash_id>', view_func=account_view, methods=['GET', 'PUT', 'DELETE'])
 
+account_subject_view = AccountSubjectView.as_view('account_subject_view')
+bp.add_url_rule('/subject/<string:subject>', view_func=account_subject_view, methods=['GET'])
+
 
 @bp.route('/<string:hash_id>/change-password', methods=['POST', 'PUT'])
-@auth.login_required
 @use_args(UserChangePasswordSchema)
 def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
@@ -243,10 +269,8 @@ def update_password(params: dict, hash_id):
     return jsonify(dict(result='')), 204
 
 
-bp.add_url_rule('/<string:email>', view_func=account_view, methods=['GET'])
-
-
 @bp.route('/<string:email>/reset-password', methods=['GET'])
+@login_exempt
 def reset_password(email: str):
     try:
         target = AppUser.query.filter_by(email=email).one()
@@ -302,7 +326,6 @@ def reset_password(email: str):
 
 
 @bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
-@auth.login_required
 def unlock_user(hash_id):
     if g.current_user.has_role('admin') is False:
         raise NotAuthorized(
@@ -321,7 +344,6 @@ def unlock_user(hash_id):
 
 
 class AccountSearchView(MethodView):
-    decorators = [auth.login_required]
 
     @use_args(UserSearchSchema)
     @use_args(PaginatedRequestSchema)

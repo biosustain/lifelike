@@ -28,7 +28,6 @@ Use the `UserEventLog` data class to add a *username* and *event type* into the 
 from neo4japp.constants import LogEventType
 
 @bp.route('/', methods=['POST'])
-@auth.login_required
 def add_projects():
     ...
     user = g.current_user
@@ -42,7 +41,7 @@ def add_projects():
 
 __Example 2__
 
-When you don't have the username information, another class `EventLog` can be used in place. Again, these classes are not necessary and can be easily replaced with a dictionary as follows: `{event_type='search'}`. 
+When you don't have the username information, another class `EventLog` can be used in place. Again, these classes are not necessary and can be easily replaced with a dictionary as follows: `{event_type='search'}`.
 
 ```python
 from neo4japp.constants import LogEventType

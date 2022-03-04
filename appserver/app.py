@@ -9,20 +9,18 @@ import logging
 import math
 import os
 import re
-import sentry_sdk
 import uuid
 import requests
 import zipfile
 
-from flask import g, request
-
-from marshmallow.exceptions import ValidationError
-
 from collections import namedtuple
+from flask import request
+from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from sqlalchemy.exc import IntegrityError
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
@@ -47,15 +45,35 @@ logger = logging.getLogger(__name__)
 
 @app.before_request
 def request_navigator_log():
-    with sentry_sdk.configure_scope() as scope:
-        scope.set_tag(
-            'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
 
+# `default_login_required` enforces login on all endpoints by default.
+# Credit here: https://stackoverflow.com/a/30761573
+
+# a dummy callable to execute the login_required logic
+login_required_dummy_view = auth.login_required(lambda: None)
+
+
+@app.before_request
+def default_login_required():
+    # exclude 404 errors and static routes
+    # uses split to handle blueprint static routes as well
+    if not request.endpoint or request.endpoint.rsplit('.', 1)[-1] == 'static':
+        return
+
+    view = app.view_functions[request.endpoint]
+
+    if getattr(view, 'login_exempt', False):
+        return
+
+    return login_required_dummy_view()
+
+
 @app.cli.command("seed")
-def seed():
+@click.argument('filename', type=click.Path(exists=True))
+def seed(filename):
     def find_existing_row(model, value):
         if isinstance(value, dict):
             f = value
@@ -65,7 +83,8 @@ def seed():
             }
         return db.session.query(model).filter_by(**f).one()
 
-    with open("fixtures/seed.json", "r") as f:
+    seed_file = click.format_filename(filename)
+    with open(seed_file, 'r') as f:
         fixtures = json.load(f)
         truncated_tables = []
 
@@ -178,6 +197,7 @@ def create_user(name, email):
         first_name=name,
         last_name=name,
         email=email,
+        subject=email,
     )
     # set default role
     account_service = get_account_service()

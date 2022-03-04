@@ -38,14 +38,6 @@ class ServerException(Exception):
     def version(self, version):
         self._version = version
 
-    @property
-    def transaction_id(self):
-        return self._transaction_id
-
-    @transaction_id.setter
-    def transaction_id(self, transaction_id):
-        self._transaction_id = transaction_id
-
     def __str__(self):
         return f'<Exception> {self.title}:{self.message}'
 
