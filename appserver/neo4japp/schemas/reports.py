@@ -8,9 +8,12 @@ from neo4japp.schemas.base import CamelCaseSchema
 # Requests
 # ========================================
 
+
 class CopyrightInfringementRequestSchema(CamelCaseSchema):
     url = fields.String(required=True)
-    description = fields.String(required=True, validate=[marshmallow.validate.Length(min=1, max=1000)])
+    description = fields.String(
+        required=True, validate=[marshmallow.validate.Length(min=1, max=1000)]
+    )
     name = fields.String(required=True)
     company = fields.String(required=True)
     address = fields.String(required=True)
