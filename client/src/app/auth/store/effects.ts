@@ -116,7 +116,6 @@ export class AuthEffects {
         modalRef.result.then(() => {
           const timeStamp = TERMS_OF_SERVICE.updateTimestamp;
           return AuthActions.successPasswordUpdate();
-
         }, () => {
           this.store$.dispatch(AuthActions.failedPasswordUpdate());
           return this.store$.dispatch(AuthActions.logout());
@@ -149,9 +148,9 @@ export class AuthEffects {
     exhaustMap(({userUpdateData, hashId}) => {
       const progressDialogRef = this.progressDialog.display({
         title: `Updating User`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({
           status: 'Updating user...',
-        })),
+        }))],
       });
       return this.accountService.updateUser(userUpdateData, hashId).pipe(
         map(() => {
@@ -191,9 +190,9 @@ export class AuthEffects {
     exhaustMap(({userUpdateData}) => {
       const progressDialogRef = this.progressDialog.display({
         title: `Updating User`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({
           status: 'Updating user...',
-        })),
+        }))],
       });
       return this.keycloakAccountService.updateCurrentUser(userUpdateData).pipe(
         map(() => {
