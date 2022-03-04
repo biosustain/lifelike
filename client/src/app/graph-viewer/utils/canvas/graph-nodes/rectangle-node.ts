@@ -5,6 +5,7 @@ import { defaultLabelFontSize } from 'app/shared/constants';
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
+import { visibleTextThreshold } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -25,9 +26,6 @@ export class RectangleNode extends BaseRectangleNode {
   readonly stroke: Line | undefined;
   readonly forceVisibleText = false;
 
-  readonly visibleTextThreshold = 0.45;
-
-
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
     super(ctx, options);
@@ -40,7 +38,7 @@ export class RectangleNode extends BaseRectangleNode {
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = +this.textbox.font.split('px').shift();
     const visibleText = this.forceVisibleText ||
-      transform.k >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
+      transform.k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
     // Node shape
     ctx.save();
