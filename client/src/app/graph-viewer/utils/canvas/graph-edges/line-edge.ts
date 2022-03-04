@@ -5,6 +5,7 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
+import {drawTextNotSmallerThanMin, noTextThreshold, visibleTextThreshold} from '../shared';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -36,7 +37,6 @@ export class LineEdge extends PlacedEdge {
   readonly labelMaxY: number;
   readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
 
-  readonly visibleTextThreshold = 0.4;
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
     super();
@@ -165,17 +165,8 @@ export class LineEdge extends PlacedEdge {
    * @param transform current graph transform
    */
   drawLayer2(transform: any) {
-    if (this.textbox) {
-      const oldFont = this.textbox.font;
-      const fontSize = +oldFont.split('px').shift();
-      const visibleText = transform.k >= this.visibleTextThreshold * (defaultLabelFontSize / fontSize);
-      if (!visibleText) {
-        this.textbox.font = ((defaultLabelFontSize * this.visibleTextThreshold) / transform.k)
-          + 'px' + this.textbox.font.split('px').pop();
-      }
-      this.textbox.drawCenteredAt(this.labelX, this.labelY);
-      this.textbox.font = oldFont;
+    if (this.textbox && transform.k > noTextThreshold) {
+      drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }
-
   }
 }
