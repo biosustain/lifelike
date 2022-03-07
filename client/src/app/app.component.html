@@ -1,4 +1,4 @@
-<div class="d-flex w-100 h-100">
+<div class="d-flex w-100 app">
   <!-- Left menu -->
   <div class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0">
     <!-- Top buttons -->
@@ -104,6 +104,21 @@
   <!-- Module content -->
   <div class="flex-fill overflow-auto">
     <router-outlet></router-outlet>
+    <div class="footer fixed-bottom">
+      <span>
+        This project uses code provided by
+        <img src="/favicon.ico" alt="Lifelike Logo" class="logo">
+        <a href="https://***ARANGO_DB_NAME***.bio" target="_blank" rel="noopener">
+          Lifelike.bio
+        </a>
+      </span>
+      <span class="repo">
+        <a href="https://github.com/SBRG/***ARANGO_DB_NAME***" class="github-button"
+          data-color-scheme="no-preference: light; light: light;" aria-label="Lifelike Open Source Git Repository">
+          View on GitHub
+        </a>
+      </span>
+    </div>
   </div>
   <!-- /Module content -->
 </div>
