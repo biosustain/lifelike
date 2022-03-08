@@ -82,7 +82,7 @@
             <a class="dropdown-item" (click)="downloadManual()" placement="right">
               User Guide
             </a>
-            <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
+            <a class="dropdown-item" [routerLink]="['/profile']" placement="right">
               Account
             </a>
             <a class="dropdown-item" (click)="logout()" placement="right">

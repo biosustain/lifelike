@@ -80,7 +80,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'users/:user',
+    path: 'profile',
     component: UserSettingsComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
