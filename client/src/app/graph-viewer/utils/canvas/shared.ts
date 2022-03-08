@@ -17,7 +17,7 @@ export const noTextThreshold = 0.15;
  */
 export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: number, y: number) {
   const oldFont = textbox.font;
-  const fontSize = +oldFont.split('px').shift();
+  const fontSize = parseFloat(oldFont);
   const visibleText = k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
   if (!visibleText) {
     textbox.font = ((defaultLabelFontSize * visibleTextThreshold) / k)
