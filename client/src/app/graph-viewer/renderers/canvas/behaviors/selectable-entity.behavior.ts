@@ -25,13 +25,29 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
 
   click(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     const entity = this.graphView.getEntityAtMouse();
-    if (entity == null) {
+    this.selectOrAddToSelection(entity, this.isRegionSelecting(event.event));
+    this.graphView.requestRender();
+    return BehaviorResult.Continue;
+  }
+
+  selectOrAddToSelection(entity: GraphEntity, shouldAppend: boolean) {
+    const isNull = entity == null;
+    if (shouldAppend) {
+      if (!isNull) {
+        this.amendSelection(entity);
+      }
+      return;
+    }
+    if (isNull) {
       this.graphView.selection.replace([]);
-    } else if (isCtrlOrMetaPressed(event.event) || isShiftPressed(event.event)) {
-      this.amendSelection(entity);
     } else {
       this.graphView.selection.replace([entity]);
     }
+  }
+
+  doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult {
+    const group = this.graphView.getGroupAtMouse();
+    this.selectOrAddToSelection(group, this.isRegionSelecting(event.event));
     this.graphView.requestRender();
     return BehaviorResult.Continue;
   }

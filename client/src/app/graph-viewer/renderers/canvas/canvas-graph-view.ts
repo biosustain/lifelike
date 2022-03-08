@@ -7,15 +7,11 @@ import {
   GraphEntityType,
   UniversalEdgeStyle,
   UniversalGraph,
-  UniversalGraphEdge, UniversalGraphEntity,
+  UniversalGraphEdge,
+  UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import {
-  EdgeRenderStyle,
-  NodeRenderStyle,
-  PlacedEdge,
-  PlacedNode,
-} from 'app/graph-viewer/styles/styles';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce } from 'app/shared/utils/types';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
@@ -23,6 +19,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
+import { BoundingBox } from '../../utils/behaviors/abstract-node-handle-behavior';
 
 
 export interface CanvasGraphViewOptions {
@@ -477,6 +474,22 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   getEntityAtMouse(): GraphEntity | undefined {
     const [x, y] = this.getLocationAtMouse();
     return this.getEntityAtPosition(x, y);
+  }
+
+  getGroupAtMouse(): GraphEntity | undefined {
+    const [x, y] = this.getLocationAtMouse();
+    for (const group of this.groups) {
+      // TODO: Refactor Bounding box into interface/class after deciding what to do
+      const { minX, minY, maxX, maxY } = this.getNodeBoundingBox(group.members, 10);
+      const bbox = new BoundingBox(minX, minY, maxX, maxY);
+      if (bbox.isPointIntersecting(x, y)) {
+        return {
+          entity: group,
+          type: GraphEntityType.Group
+        };
+      }
+    }
+    return null;
   }
 
   /**
@@ -1080,7 +1093,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
-    const entityAtMouse = this.getEntityAtPosition(graphX, graphY);
 
     this.hoverPosition = {x: graphX, y: graphY};
 
@@ -1240,7 +1252,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.mouseDown = false;
     this.requestRender();
   }
-
 }
 
 interface CanvasSubject {
