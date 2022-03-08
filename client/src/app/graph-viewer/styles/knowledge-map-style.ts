@@ -1,5 +1,5 @@
 import {
-  DETAIL_NODE_LABELS, Hyperlink, Source,
+  DETAIL_NODE_LABELS, Hyperlink, NodeGroup, Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -35,6 +35,7 @@ import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
 import { ResourceManager } from '../utils/resource/resource-manager';
 import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
+import { GroupNode } from '../utils/canvas/graph-nodes/group-node';
 
 
 /**
@@ -223,6 +224,35 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           ),
           textbox: labelTextbox
         });
+
+    } else if (d.label === 'group') {
+      // ---------------------------------
+      // Groups (they inherit from node)
+      // ---------------------------------
+      // TODO: Move to its own class?
+
+      // const group = d as NodeGroup;
+      // const bbox = getNodeBoundingBox(group.members);
+
+      const labelTextbox = new TextElement(ctx, {
+        text: d.display_name,
+        font: labelFont,
+        fillStyle: nullCoalesce(d.style ? d.style.fillColor : null, textColor),
+        horizontalAlign: TextAlignment.Center,
+      });
+
+      return new GroupNode(ctx, {
+        x: d.data.x,
+        y: d.data.y,
+        width: d.data.width,
+        height: d.data.height,
+        stroke: this.createLine(
+          nullCoalesce(styleData.lineType, 'blank'),
+          nullCoalesce(styleData.lineWidthScale, 0),
+          nullCoalesce(styleData.strokeColor, 'white'),
+        ),
+        textbox: labelTextbox
+      });
 
     } else {
       // ---------------------------------
@@ -441,4 +471,5 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       }, []),
     );
   }
+
 }

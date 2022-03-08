@@ -137,21 +137,13 @@ export interface Handle {
 }
 
 // TODO: Move?
-// TODO: Can it be a class?
-export class BoundingBox {
+export interface BoundingBox {
     minX: number;
     minY: number;
     maxX: number;
     maxY: number;
+}
 
-    constructor(minX: number, minY: number, maxX: number, maxY: number) {
-      this.minX = minX;
-      this.minY = minY;
-      this.maxX = maxX;
-      this.maxY = maxY;
-    }
-
-    isPointIntersecting(x: number, y: number): boolean {
-      return (this.minX <= x && this.maxX >= x && this.minY <= y && this.maxY >= y);
-    }
+export function isPointIntersecting(bbox: BoundingBox, x: number, y: number): boolean {
+  return (bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y);
 }
