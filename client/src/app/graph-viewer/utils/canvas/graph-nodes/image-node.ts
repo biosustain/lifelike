@@ -2,8 +2,9 @@ import { Subscription } from 'rxjs';
 
 import { ResourceManager, ResourceOwner } from '../../resource/resource-manager';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import {Line} from '../lines/lines';
-import {TextElement} from '../text-element';
+import { Line } from '../lines/lines';
+import { TextElement } from '../text-element';
+import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
 
 export interface ImageNodeOptions extends BaseRectangleNodeOptions {
   imageManager: ResourceManager<string, CanvasImageSource>;
@@ -85,9 +86,12 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
       this.ctx.fill();
       this.ctx.stroke();
     }
-    this.textbox.maxWidth = this.width;
-    this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
-      this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
+    if (transform.k > noTextThreshold) {
+      this.textbox.maxWidth = this.width;
+      drawTextNotSmallerThanMin(this.textbox, transform.k, this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
+        this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
+    }
+
     this.ctx.restore();
   }
 

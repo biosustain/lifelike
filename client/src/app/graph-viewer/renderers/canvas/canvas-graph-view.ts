@@ -981,7 +981,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
           lineCap: 'square',
         }),
-        forceHighDetailLevel: true,
+        forceVisibleText: true,
       })).draw(this.transform);
     } else {
       const lineWidth = strong ? 5 : 3;
@@ -1031,7 +1031,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),
-        forceHighDetailLevel: true,
+        forceVisibleText: true,
       })).draw(this.transform);
     } else {
       ctx.beginPath();
