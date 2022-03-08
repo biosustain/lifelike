@@ -1,13 +1,13 @@
-import { cloneDeep } from 'lodash-es';
+import {cloneDeep} from 'lodash-es';
 import * as d3 from 'd3';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils';
+import {GraphEntityType, NodeGroup, UniversalGraphNode} from 'app/drawing-tool/services/interfaces';
+import {GraphEntityUpdate} from 'app/graph-viewer/actions/graph';
+import {CompoundAction, GraphAction} from 'app/graph-viewer/actions/actions';
+import {isCtrlOrMetaPressed, isShiftPressed} from 'app/shared/utils';
 
-import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import {CanvasGraphView} from '../canvas-graph-view';
+import {AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent} from '../../behaviors';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -16,8 +16,8 @@ export class MovableNode extends AbstractCanvasBehavior {
    * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
    * so node center is the same the mouse position, and the jump is not what we want.
    */
-  private target: UniversalGraphNode | undefined;
-  private originalTarget: UniversalGraphNode | undefined;
+  private target: UniversalGraphNode | NodeGroup | undefined;
+  private originalTarget: UniversalGraphNode | NodeGroup | undefined;
   private startMousePosition: [number, number] = [0, 0];
   private originalNodePositions = new Map<UniversalGraphNode, [number, number]>();
 
@@ -36,6 +36,13 @@ export class MovableNode extends AbstractCanvasBehavior {
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
       this.target = node;
+      this.originalTarget = cloneDeep(this.target);
+    } else if (entity != null && entity.type === GraphEntityType.Group) {
+      const group = entity.entity as NodeGroup;
+
+      this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
+
+      this.target = group;
       this.originalTarget = cloneDeep(this.target);
     }
 
@@ -57,6 +64,11 @@ export class MovableNode extends AbstractCanvasBehavior {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
+        } else if (entity.type === GraphEntityType.Group) {
+          const group = entity.entity as NodeGroup;
+          for (const node of group.members) {
+            selectedNodes.add(node);
+          }
         }
       }
 
