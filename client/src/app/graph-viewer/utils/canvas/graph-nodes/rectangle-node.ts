@@ -36,7 +36,7 @@ export class RectangleNode extends BaseRectangleNode {
   draw(transform: any): void {
     const ctx = this.ctx;
     const zoomResetScale = 1 / transform.scale(1).k;
-    const fontSize = +this.textbox.font.split('px').shift();
+    const fontSize = parseFloat(this.textbox.font);
     const visibleText = this.forceVisibleText ||
       transform.k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
