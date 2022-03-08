@@ -19,7 +19,11 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import {FA_CUSTOM_ICONS, CustomIconColors, Unicodes} from 'app/shared/constants';
+import {
+  FA_CUSTOM_ICONS,
+  Unicodes,
+  defaultLabelFontSize
+} from 'app/shared/constants';
 import {getSupportedFileCodes} from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
@@ -59,8 +63,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
-    const labelFont = (16 * labelFontSizeScale) + 'px ' + this.font;
-    const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
+    const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
+    const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
 
     // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
@@ -108,7 +112,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
         shapeFillColor: styleData.bgColor ?? this.detailTypeBackgrounds.get(d.label),
-        forceHighDetailLevel,
+        forceVisibleText,
       });
 
     } else if (iconCode) {
@@ -192,7 +196,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         y: d.data.y,
         iconTextbox,
         labelTextbox,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
 
     } else if (d.image_id) {
@@ -252,7 +256,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           strokeColor,
         ),
         shapeFillColor: bgColor,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
     }
   }
@@ -299,7 +303,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     // Label textbox, if any
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
-      font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px ' + this.font,
+      font: (placementOptions.highlighted ? 'bold ' : '') + (defaultLabelFontSize * fontSizeScale) + 'px ' + this.font,
       fillStyle: '#444',
       strokeStyle: '#fff',
       strokeWidth: 3,
@@ -322,7 +326,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         lineWidth,
         strokeColor,
       ),
-      forceHighDetailLevel: placementOptions.selected || placementOptions.highlighted,
+      forceVisibleText: placementOptions.selected || placementOptions.highlighted,
     });
   }
 
