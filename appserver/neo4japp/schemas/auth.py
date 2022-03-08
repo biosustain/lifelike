@@ -3,7 +3,7 @@ from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.account import UserProfileSchema
 
 
-class JWTTokenSchema(CamelCaseSchema):
+class LifelikeJWTTokenSchema(CamelCaseSchema):
     sub = fields.String()
     iat = fields.DateTime()
     exp = fields.DateTime()
@@ -11,7 +11,7 @@ class JWTTokenSchema(CamelCaseSchema):
     token = fields.String()
 
 
-class JWTTokenResponse(CamelCaseSchema):
-    access_token = fields.Nested(JWTTokenSchema)
-    refresh_token = fields.Nested(JWTTokenSchema)
+class LifelikeJWTTokenResponse(CamelCaseSchema):
+    access_token = fields.Nested(LifelikeJWTTokenSchema)
+    refresh_token = fields.Nested(LifelikeJWTTokenSchema)
     user = fields.Nested(UserProfileSchema)

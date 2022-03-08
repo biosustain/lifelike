@@ -9,3 +9,4 @@ from .projects import Projects, projects_collaborator_role
 from .annotations import AnnotationStopWords, GlobalList
 from .entity_resources import DomainURLsMap, AnnotationStyle
 from .files import Files, FileContent, FileVersion, FileBackup, file_collaborator_role
+from .reports import CopyrightInfringementRequest

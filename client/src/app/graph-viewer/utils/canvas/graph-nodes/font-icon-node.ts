@@ -7,7 +7,7 @@ export interface IconNodeOptions {
   y: number;
   iconTextbox: TextElement;
   labelTextbox: TextElement;
-  forceHighDetailLevel?: boolean;
+  forceVisibleText?: boolean;
 }
 
 /**
@@ -21,7 +21,7 @@ export class FontIconNode extends PlacedNode {
   readonly y: number;
   readonly iconTextbox: TextElement;
   readonly labelTextbox: TextElement;
-  readonly forceHighDetailLevel = false;
+  readonly forceVisibleText = false;
 
   readonly minimumBBoxSize = 10;
 
@@ -85,7 +85,7 @@ export class FontIconNode extends PlacedNode {
 
   draw(transform: any): void {
     const ctx = this.ctx;
-    const highDetailLevel = transform.k >= 0.35 || this.forceHighDetailLevel;
+    const highDetailLevel = transform.k >= 0.35 || this.forceVisibleText;
 
     ctx.save();
     ctx.beginPath();

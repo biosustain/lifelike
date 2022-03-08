@@ -1,10 +1,11 @@
+import hashlib
 import json
-import hashlib
 import os
-import types
-import hashlib
 import pytest
+import types
+
 from datetime import datetime
+from flask.app import Flask
 
 from neo4japp.models import (
     AppRole,
@@ -244,6 +245,7 @@ def fix_admin_user(session, fix_admin_role, fix_superuser_role) -> AppUser:
         email='admin@lifelike.bio',
         first_name='Jim',
         last_name='Melancholy',
+        subject='admin@lifelike.bio',
     )
     user.set_password('password')
     user.roles.extend([fix_admin_role, fix_superuser_role])
@@ -259,7 +261,8 @@ def test_user(session, fix_user_role) -> AppUser:
         username='test',
         email='test@lifelike.bio',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='test@lifelike.bio',
     )
     user.set_password('password')
     user.roles.append(fix_user_role)
@@ -276,6 +279,7 @@ def test_user_2(session) -> AppUser:
         email='pleblife@hut.org',
         first_name='pleb',
         last_name='life',
+        subject='pleblife@hut.org',
     )
     user.set_password('password')
     user.roles.append(fix_user_role)
@@ -385,7 +389,7 @@ def login_as_user(self, email, password) -> AppUser:
 
 
 @pytest.fixture(scope='function')
-def client(app):
+def client(app: Flask):
     """Creates a HTTP client for REST actions for a test."""
     client = app.test_client()
     client.login_as_user = types.MethodType(login_as_user, client)
