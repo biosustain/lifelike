@@ -107,11 +107,16 @@
                                         (actionCreated)="graphCanvas.execute($event)">
                         </app-info-panel>
                     </div>
+                    <div class="row align-items-center" *ngIf="selected[0].length > 1">
+                        <button class="btn btn-light center mt-2" (click)="createGroup()">
+                            Create Group
+                        </button>
+                    </div>
                 </ng-container>
 
                 <ng-template #graphInfo>
                     <ng-container *ngIf="graphCanvas">
-                        <div class="d-flex flex-column h-100">
+                        <div class="d-flex flex-column h-80">
                             <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
                                 class="nav-tabs nav-sidebar-tabs">
                                 <li ngbNavItem="graph">
@@ -131,6 +136,7 @@
                                                     {{ graphCanvas.edges.length | number }}
                                                 </div>
                                             </div>
+
                                         </div>
                                     </ng-template>
                                 </li>

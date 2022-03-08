@@ -1,26 +1,29 @@
 import * as d3 from 'd3';
-import { Subject } from 'rxjs';
+import {Subject} from 'rxjs';
 import * as cola from 'webcola';
-import { InputNode, Layout } from 'webcola';
-import { Group, Link } from 'webcola/WebCola/src/layout';
+import {InputNode, Layout} from 'webcola';
+import {Link} from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
-  GraphEntityType, Hyperlink, Source,
+  GraphEntityType,
+  Hyperlink,
+  NodeGroup,
+  Source,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { emptyIfNull } from 'app/shared/utils/types';
-import { compileFind, FindOptions } from 'app/shared/utils/find';
+import {emptyIfNull} from 'app/shared/utils/types';
+import {compileFind, FindOptions} from 'app/shared/utils/find';
 import {associatedMapsRegex} from 'app/shared/constants';
 
-import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
-import { GraphAction, GraphActionReceiver } from '../actions/actions';
-import { Behavior, BehaviorList } from './behaviors';
-import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { RenderTree } from './render-tree';
+import {PlacedEdge, PlacedNode, PlacedObject} from '../styles/styles';
+import {GraphAction, GraphActionReceiver} from '../actions/actions';
+import {Behavior, BehaviorList} from './behaviors';
+import {CacheGuardedEntityList} from '../utils/cache-guarded-entity-list';
+import {RenderTree} from './render-tree';
 
 /**
  * A rendered view of a graph.
@@ -46,7 +49,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Collection of layout groups on the graph.
    */
-  layoutGroups: GraphLayoutGroup[] = [];
+  groups: NodeGroup[] = [];
 
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
@@ -260,6 +263,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
+    this.groups = [...graph.groups];
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
@@ -279,6 +283,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     return {
       nodes: this.nodes,
       edges: this.edges,
+      groups: this.groups,
     };
   }
 
@@ -400,6 +405,53 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   updateEdge(edge: UniversalGraphEdge): void {
     this.invalidateEdge(edge);
     this.requestRender();
+  }
+
+  // TODO: Delete?
+  createGroup() {
+    const members = this.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity] : []);
+    // this.execute(new GroupCreation('Create group', {
+    //     members,
+    //     label: null,
+    // }, true));
+  }
+
+  /**
+   * Create group of nodes
+   * @param group - data of the group
+   */
+  addGroup(group: NodeGroup) {
+    // TODO: Check if group hash is unique and stuff
+    // TODO: Populate group 'data' entry by calculating bbox, width, height, center
+    this.groups.push(group);
+  }
+
+  /**
+   * Ungroup nodes
+   * @param group - group to be removed
+   */
+  removeGroup(group: NodeGroup): boolean {
+    let foundNode = false;
+
+    for (let i = 0; i < this.groups.length; i++) {
+      const g = this.groups[i];
+      if (group.hash === g.hash) {
+        this.groups.splice(i, 1);
+        foundNode = true;
+        break;
+      }
+    }
+
+    // TODO: Invalidate group?
+
+    // TODO: Only adjust selection if needed
+    this.selection.replace([]);
+    this.dragging.replace([]);
+    this.highlighting.replace([]);
+
+    this.requestRender();
+
+    return foundNode;
   }
 
   /**
@@ -993,37 +1045,37 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       };
     });
 
-    // TODO: Remove test groups
-    const layoutGroups: GraphLayoutGroup[] = [
-      {
-        name: 'Bands',
-        color: '#740CAA',
-        leaves: [],
-        // groups: [],
-        padding: 10,
-      },
-      {
-        name: 'Things',
-        color: '#0CAA70',
-        leaves: [],
-        // groups: [],
-        padding: 10,
-      },
-    ];
-
-    for (const node of layoutNodes) {
-      const n = Math.floor(Math.random() * (layoutGroups.length + 2));
-      if (n < layoutGroups.length) {
-        layoutGroups[n].leaves.push(node);
-      }
-    }
-
-    this.layoutGroups = layoutGroups;
+    // // TODO: Remove test groups
+    // const layoutGroups: GraphLayoutGroup[] = [
+    //   {
+    //     name: 'Bands',
+    //     color: '#740CAA',
+    //     leaves: [],
+    //     // groups: [],
+    //     padding: 10,
+    //   },
+    //   {
+    //     name: 'Things',
+    //     color: '#0CAA70',
+    //     leaves: [],
+    //     // groups: [],
+    //     padding: 10,
+    //   },
+    // ];
+    //
+    // for (const node of layoutNodes) {
+    //   const n = Math.floor(Math.random() * (layoutGroups.length + 2));
+    //   if (n < layoutGroups.length) {
+    //     layoutGroups[n].leaves.push(node);
+    //   }
+    // }
+    //
+    // this.layoutGroups = layoutGroups;
 
     this.cola
       .nodes(layoutNodes)
       .links(layoutLinks)
-      .groups(layoutGroups)
+      // .groups(layoutGroups)
       .symmetricDiffLinkLengths(50)
       .handleDisconnected(false)
       .size([this.width, this.height])
@@ -1069,15 +1121,6 @@ interface GraphLayoutLink extends Link<GraphLayoutNode> {
   source: GraphLayoutNode;
   target: GraphLayoutNode;
   index?: number;
-}
-
-/**
- * Represents a grouping of nodes passed to the layout algorithm.
- */
-interface GraphLayoutGroup extends Group {
-  name: string;
-  color: string;
-  leaves?: GraphLayoutNode[];
 }
 
 enum referenceCheckingMode {

@@ -810,7 +810,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
-    yield* this.drawLayoutGroups(ctx);
+    // yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
     yield* this.drawHighlightBackground(ctx);
@@ -881,23 +881,26 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawLayoutGroups(ctx: CanvasRenderingContext2D) {
+  private* drawGroups(ctx: CanvasRenderingContext2D) {
     yield null;
 
-    // TODO: This is currently only for demo
-    for (const d of this.layoutGroups) {
-      if (d.leaves.length) {
-        ctx.beginPath();
-        const bbox = this.getNodeBoundingBox(d.leaves.map(entry => entry.reference), 10);
-        ctx.fillStyle = d.color;
-        ctx.strokeStyle = d.color;
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.globalAlpha = 0.1;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.stroke();
-      }
+    for (const group of this.groups) {
+      // group.draw();
     }
+    // // TODO: This is currently only for demo
+    // for (const d of this.layoutGroups) {
+    //   if (d.leaves.length) {
+    //     ctx.beginPath();
+    //     const bbox = this.getNodeBoundingBox(d.leaves.map(entry => entry.reference), 10);
+    //     ctx.fillStyle = d.color;
+    //     ctx.strokeStyle = d.color;
+    //     ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+    //     ctx.globalAlpha = 0.1;
+    //     ctx.fill();
+    //     ctx.globalAlpha = 1;
+    //     ctx.stroke();
+    //   }
+    // }
   }
 
   private* drawEdges(ctx: CanvasRenderingContext2D) {
@@ -1237,6 +1240,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.mouseDown = false;
     this.requestRender();
   }
+
 }
 
 interface CanvasSubject {
