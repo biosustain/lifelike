@@ -1,45 +1,45 @@
-import { GraphEntityType, UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, NodeGroup } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
 /**
  * Represents a new edge addition to the graph.
  */
-export class EdgeCreation implements GraphAction {
+export class GroupCreation implements GraphAction {
   constructor(public description: string,
-              public edge: UniversalGraphEdge,
+              public group: NodeGroup,
               public readonly select = false) {
   }
-
   apply(component: GraphActionReceiver) {
-    component.addEdge(this.edge);
+    component.addGroup(this.group);
     if (this.select) {
       component.selection.replace([{
-        type: GraphEntityType.Edge,
-        entity: this.edge,
+        type: GraphEntityType.Group,
+        entity: this.group,
       }]);
       component.focusEditorPanel();
     }
   }
-
   rollback(component: GraphActionReceiver) {
-    component.removeEdge(this.edge);
+    component.removeGroup(this.group);
   }
 }
 
 /**
  * Represents the deletion of a edge.
  */
-export class EdgeDeletion implements GraphAction {
+export class GroupDeletion implements GraphAction {
   constructor(public description: string,
-              public edge: UniversalGraphEdge) {
+              public group: NodeGroup) {
   }
 
   apply(component: GraphActionReceiver) {
-    component.removeEdge(this.edge);
+    component.removeGroup(this.group);
   }
 
   rollback(component: GraphActionReceiver) {
-    component.addEdge(this.edge);
+    component.addGroup(this.group);
   }
 }
+
+

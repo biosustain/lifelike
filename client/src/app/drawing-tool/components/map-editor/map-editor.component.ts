@@ -1,12 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
@@ -16,11 +8,7 @@ import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-mo
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import {
-  CompoundAction,
-  GraphAction,
-  GraphActionReceiver,
-} from 'app/graph-viewer/actions/actions';
+import { CompoundAction, GraphAction, GraphActionReceiver, } from 'app/graph-viewer/actions/actions';
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
@@ -30,10 +18,11 @@ import { MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
-import {ImageUploadBehavior} from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import {DragDropEntityBehavior} from 'app/graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
+import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
+import { GroupCreation } from 'app/graph-viewer/actions/groups';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 
-import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
+import { GraphEntityType, KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -379,6 +368,29 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   keyDown(event: MouseEvent) {
     this.lastActivityTime = window.performance.now();
   }
+
+  // TODO: Ensure if the selection is at least 2 nodes, not edges
+  createGroup() {
+    this.graphCanvas?.execute(new GroupCreation(
+      'Create group',
+      {
+        members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
+          [entity.entity as UniversalGraphNode] : []),
+        hash: uuidv4(),
+        display_name: '',
+        label: 'group',
+        sub_labels: [],
+        // This data depends on members, so we can't calculate it now
+        data: {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0
+        }
+      }, true
+    ));
+  }
+
 }
 
 class KnowledgeMapUpdate implements GraphAction {
