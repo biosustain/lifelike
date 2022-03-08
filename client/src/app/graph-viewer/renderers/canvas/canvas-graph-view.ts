@@ -4,7 +4,7 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 
 import {
   GraphEntity,
-  GraphEntityType,
+  GraphEntityType, NodeGroup,
   UniversalEdgeStyle,
   UniversalGraph,
   UniversalGraphEdge,
@@ -19,7 +19,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { BoundingBox } from '../../utils/behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isPointIntersecting } from '../../utils/behaviors/abstract-node-handle-behavior';
 
 
 export interface CanvasGraphViewOptions {
@@ -424,6 +424,23 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
+  placeGroup(d: NodeGroup): PlacedNode {
+    const placedGroup = this.renderTree.get(d) as PlacedNode;
+    if (placedGroup) {
+      return placedGroup;
+    } else {
+      const ctx = this.canvas.getContext('2d');
+
+      const newGroup = this.nodeRenderStyle.placeNode(d, ctx, {
+        selected: this.isAnySelected(d),
+        highlighted: this.isAnyHighlighted(d),
+      });
+
+      this.renderTree.set(d, newGroup);
+      return newGroup;
+    }
+  }
+
   invalidateAll(): void {
     this.renderTree.clear();
   }
@@ -480,9 +497,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const [x, y] = this.getLocationAtMouse();
     for (const group of this.groups) {
       // TODO: Refactor Bounding box into interface/class after deciding what to do
-      const { minX, minY, maxX, maxY } = this.getNodeBoundingBox(group.members, 10);
-      const bbox = new BoundingBox(minX, minY, maxX, maxY);
-      if (bbox.isPointIntersecting(x, y)) {
+      const bbox = this.getNodeBoundingBox(group.members, 10) as BoundingBox;
+      if (isPointIntersecting(bbox, x, y)) {
         return {
           entity: group,
           type: GraphEntityType.Group

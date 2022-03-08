@@ -384,8 +384,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         data: {
           x: 0,
           y: 0,
-          width: 0,
-          height: 0
+          width: 100,
+          height: 100
         }
       }, true
     ));

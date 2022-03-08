@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
-import {Subject} from 'rxjs';
+import { Subject } from 'rxjs';
 import * as cola from 'webcola';
-import {InputNode, Layout} from 'webcola';
-import {Link} from 'webcola/WebCola/src/layout';
+import { InputNode, Layout } from 'webcola';
+import { Link } from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
@@ -15,15 +15,15 @@ import {
   UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import {emptyIfNull} from 'app/shared/utils/types';
-import {compileFind, FindOptions} from 'app/shared/utils/find';
-import {associatedMapsRegex} from 'app/shared/constants';
+import { emptyIfNull } from 'app/shared/utils/types';
+import { compileFind, FindOptions } from 'app/shared/utils/find';
+import { associatedMapsRegex } from 'app/shared/constants';
 
-import {PlacedEdge, PlacedNode, PlacedObject} from '../styles/styles';
-import {GraphAction, GraphActionReceiver} from '../actions/actions';
-import {Behavior, BehaviorList} from './behaviors';
-import {CacheGuardedEntityList} from '../utils/cache-guarded-entity-list';
-import {RenderTree} from './render-tree';
+import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
+import { GraphAction, GraphActionReceiver } from '../actions/actions';
+import { Behavior, BehaviorList } from './behaviors';
+import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
+import { RenderTree } from './render-tree';
 
 /**
  * A rendered view of a graph.
@@ -800,6 +800,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
+  // TODO: Docs
+  abstract placeGroup(d: NodeGroup): PlacedNode;
+
   /**
    * Place the given entity onto the canvas, which involves calculating the
    * real size of the object as it would appear. Use the returning object
@@ -812,6 +815,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       return this.placeNode(d.entity as UniversalGraphNode);
     } else if (d.type === GraphEntityType.Edge) {
       return this.placeEdge(d.entity as UniversalGraphEdge);
+    } else if (d.type === GraphEntityType.Group) {
+      return this.placeGroup(d.entity as NodeGroup);
     } else {
       throw new Error('unknown type: ' + d.type);
     }
