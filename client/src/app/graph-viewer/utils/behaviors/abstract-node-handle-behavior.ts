@@ -127,10 +127,31 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
   }
 }
 
+// TODO: Refactor into using BBox interface?
 export interface Handle {
   minX: number;
   minY: number;
   maxX: number;
   maxY: number;
   displayColor?: string;
+}
+
+// TODO: Move?
+// TODO: Can it be a class?
+export class BoundingBox {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+
+    constructor(minX: number, minY: number, maxX: number, maxY: number) {
+      this.minX = minX;
+      this.minY = minY;
+      this.maxX = maxX;
+      this.maxY = maxY;
+    }
+
+    isPointIntersecting(x: number, y: number): boolean {
+      return (this.minX <= x && this.maxX >= x && this.minY <= y && this.maxY >= y);
+    }
 }
