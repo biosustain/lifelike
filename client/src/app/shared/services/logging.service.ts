@@ -10,7 +10,7 @@ const debounceDueTime = 1000;
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class LoggingService {
-  readonly baseUrl = '/api/logging';
+  readonly baseUrl = '/api/logging/';
 
   loggingSubject = new Subject<ErrorLog>();
 
