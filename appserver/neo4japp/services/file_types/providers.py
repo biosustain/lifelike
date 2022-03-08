@@ -1216,6 +1216,45 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.save(result_string)
         return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
 
+    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+        """
+        Evaluate the changes in the images and create a new blob to store in the content.
+        Since we cannot delete files from an archive, we need to copy everything (except for
+        graph.json) into a new one.
+        :params:
+        :param buffer: buffer containing request data
+        :param params: request parameters, containing info about images
+        :param file: file which content is being modified
+        """
+
+        images_to_delete = params.get('deleted_images') or []
+        new_images = params.get('new_images') or []
+        previous_content = file.content.raw_file
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(previous_content))
+        except zipfile.BadZipfile:
+            raise ValidationError('Previous content of the map is corrupted!')
+
+        new_content = io.BytesIO()
+        new_zip = zipfile.ZipFile(new_content, 'w')
+
+        # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
+        # to make sure that the graph.json is not copied as well.
+        images_to_delete.append('graph')
+        files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                         os.path.basename(hash_id) not in images_to_delete]
+        for filename in files_to_copy:
+            new_zip.writestr(filename, zip_file.read(filename))
+
+        for image in new_images:
+            new_zip.writestr('images/' + image.filename + '.png', image.read())
+        new_zip.writestr('graph.json', params['content_value'].read())
+        new_zip.close()
+
+        # Remember to always rewind when working with BufferedIOBase
+        new_content.seek(0)
+        return typing.cast(BufferedIOBase, new_content)
+
 
 class GraphTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_GRAPH

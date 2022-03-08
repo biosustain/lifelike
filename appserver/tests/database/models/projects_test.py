@@ -92,6 +92,7 @@ def test_can_set_user_role(session, role):
         password_hash='pw',
         first_name='test',
         last_name='tester',
+        subject='test@***ARANGO_DB_NAME***.bio',
     )
     session.add(test_user)
     session.flush()

@@ -1,7 +1,8 @@
 from flask import current_app, g, Blueprint, jsonify
 from webargs.flaskparser import use_args
-from neo4japp.utils.logger import ClientErrorLog
+
 from neo4japp.schemas.errors import ClientErrorSchema
+from neo4japp.utils.logger import ClientErrorLog
 
 
 bp = Blueprint('logging', __name__, url_prefix='/logging')
@@ -25,7 +26,6 @@ def client_logging(args):
         error_name=args['title'],
         expected=args.get('expected', False),
         event_type=args.get('label', 'Client Error'),
-        transaction_id=args['transaction_id'],
         username=current_user,
         url=args.get('url', 'not specified'),
     )

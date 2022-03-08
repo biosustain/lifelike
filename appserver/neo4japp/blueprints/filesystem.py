@@ -5,6 +5,7 @@ import json
 import typing
 import urllib.request
 import zipfile
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
@@ -15,13 +16,16 @@ from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from sqlalchemy.sql.expression import text
+from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
-from neo4japp.constants import SUPPORTED_MAP_MERGING_FORMATS, MAPS_RE, FILE_MIME_TYPE_MAP
-from neo4japp.blueprints.auth import auth
-from neo4japp.constants import LogEventType
+from neo4japp.constants import (
+    LogEventType,
+    MAPS_RE,
+    FILE_MIME_TYPE_MAP,
+    SUPPORTED_MAP_MERGING_FORMATS
+)
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
 from neo4japp.models import (
@@ -79,7 +83,6 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
 # TODO: Deprecate me after LL-3006
 @bp.route('/enrichment-tables', methods=['GET'])
-@auth.login_required
 def get_all_enrichment_tables():
     is_admin = g.current_user.has_role('admin')
     if is_admin is False:
@@ -300,9 +303,10 @@ class FilesystemBaseView(MethodView):
         # ========================================
         # Fetch and check
         # ========================================
-
+        # We need to fetch content as it is used in maps update.
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids)
+                                                   require_hash_ids=require_hash_ids,
+                                                   lazy_load_content=True)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
@@ -406,7 +410,7 @@ class FilesystemBaseView(MethodView):
 
                     # Get the provider
                     provider = file_type_service.get(file)
-
+                    buffer = provider.prepare_content(buffer, params, file)
                     try:
                         provider.validate_content(buffer)
                         buffer.seek(0)  # Must rewind
@@ -529,7 +533,6 @@ class FilesystemBaseView(MethodView):
 
 
 class FileHierarchyView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(FileHierarchyRequestSchema)
     def get(self, params: dict):
@@ -634,7 +637,6 @@ class FileHierarchyView(FilesystemBaseView):
 
 
 class FileListView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def post(self, params):
@@ -965,7 +967,6 @@ class FileListView(FilesystemBaseView):
 
 
 class FileSearchView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(FileSearchRequestSchema)
     @use_args(PaginatedRequestSchema)
@@ -1020,7 +1021,6 @@ class FileSearchView(FilesystemBaseView):
 
 
 class FileDetailView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Fetch a single file."""
@@ -1037,7 +1037,6 @@ class FileDetailView(FilesystemBaseView):
 
 
 class FileContentView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Fetch a single file's content."""
@@ -1064,7 +1063,6 @@ class FileContentView(FilesystemBaseView):
 
 
 class MapContentView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         """Fetch a content (graph.json) from a map."""
@@ -1095,7 +1093,6 @@ class MapContentView(FilesystemBaseView):
 
 
 class FileExportView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     # Move that to constants if accepted
 
@@ -1182,7 +1179,6 @@ class FileExportView(FilesystemBaseView):
 class FileBackupView(FilesystemBaseView):
     """Endpoint to manage 'backups' that are recorded for the user when they are editing a file
     so that they don't lose their work."""
-    decorators = [auth.login_required]
 
     @use_args(FileBackupCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def put(self, params: dict, hash_id: str):
@@ -1223,7 +1219,6 @@ class FileBackupView(FilesystemBaseView):
 
 class FileBackupContentView(FilesystemBaseView):
     """Endpoint to get the backup's content."""
-    decorators = [auth.login_required]
 
     def get(self, hash_id):
         """Get the backup stored for a file for a user."""
@@ -1261,7 +1256,6 @@ class FileBackupContentView(FilesystemBaseView):
 
 class FileVersionListView(FilesystemBaseView):
     """Endpoint to fetch the versions of a file."""
-    decorators = [auth.login_required]
 
     @use_args(PaginatedRequestSchema)
     def get(self, pagination: dict, hash_id: str):
@@ -1289,7 +1283,6 @@ class FileVersionListView(FilesystemBaseView):
 
 class FileVersionContentView(FilesystemBaseView):
     """Endpoint to fetch a file version."""
-    decorators = [auth.login_required]
 
     @use_args(PaginatedRequestSchema)
     def get(self, pagination: dict, hash_id: str):
@@ -1339,7 +1332,6 @@ class FileLockBaseView(FilesystemBaseView):
 
 class FileLockListView(FileLockBaseView):
     """Endpoint to get the locks for a file."""
-    decorators = [auth.login_required]
 
     def get(self, hash_id: str):
         return self.get_locks_response(hash_id)
@@ -1404,7 +1396,6 @@ class FileLockListView(FileLockBaseView):
 
 class FileAnnotationHistoryView(FilesystemBaseView):
     """Implements lookup of a file's annotation history."""
-    decorators = [auth.login_required]
 
     @use_args(PaginatedRequestSchema)
     def get(self, pagination: Dict, hash_id: str):

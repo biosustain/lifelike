@@ -48,6 +48,7 @@
         "first_name": "John",
         "last_name": "Doe",
         "failed_login_count": 0,
+        "subject": "admin@example.com",
         "roles": [
           {
             "name": "admin"
@@ -63,6 +64,7 @@
         "first_name": "Michelle",
         "last_name": "Doe",
         "failed_login_count": 3,
+        "subject": "user@example.com",
         "roles": [
           {
             "name": "user"

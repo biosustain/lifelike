@@ -1,12 +1,14 @@
 import pytest
 import os
 
+from flask import request as flask_request
+from flask.app import Flask
 from neo4j import GraphDatabase, Session, Transaction, basic_auth
 from neo4j.graph import Node, Relationship
 from pathlib import Path
 from typing import Optional
 
-from neo4japp.services.common import GraphBaseDao
+from neo4japp.blueprints.auth import auth
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
@@ -19,10 +21,7 @@ from neo4japp.data_transfer_objects.visualization import (
     VisNode,
 )
 from neo4japp.factory import create_app
-from neo4japp.models.neo4j import (
-    GraphNode,
-    GraphRelationship,
-)
+from neo4japp.models.neo4j import GraphNode, GraphRelationship
 from neo4japp.services import (
     AccountService,
     AuthService,
@@ -36,10 +35,34 @@ from neo4japp.util import (
 )
 
 
+def setup_before_request_callbacks(app: Flask):
+    login_required_dummy_view = auth.login_required(lambda: None)
+
+    @app.before_request
+    def default_login_required():
+        # exclude 404 errors and static routes
+        # uses split to handle blueprint static routes as well
+        if not flask_request.endpoint or flask_request.endpoint.rsplit('.', 1)[-1] == 'static':
+            return
+
+        view = app.view_functions[flask_request.endpoint]
+
+        if getattr(view, 'login_exempt', False):
+            return
+
+        return login_required_dummy_view()
+
+
+def setup_request_callbacks(app: Flask):
+    setup_before_request_callbacks(app)
+
+
 @pytest.fixture(scope='function')
-def app(request):
+def app(request) -> Flask:
     """Session-wide test Flask application."""
-    app = create_app('Functional Test Flask App', config='config.Testing')
+    app: Flask = create_app('Functional Test Flask App', config='config.Testing')
+
+    setup_request_callbacks(app)
 
     # Establish an application context before running the tests.
     ctx = app.app_context()
