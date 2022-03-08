@@ -18,6 +18,7 @@ import {
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { associatedMapsRegex } from 'app/shared/constants';
+import { setDifference } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -167,6 +168,13 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   readonly MIN_NODE_DISTANCE = 6.0;
 
+  /**
+   * Stores hashes of the images that were present when a map was created/saved. Used to keep track of
+   * image status on the server in order to send only new images
+   * @private
+   */
+  private savedImageHashes: Set<string>;
+
 
   constructor() {
     this.cola = cola
@@ -213,7 +221,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
-  // TODO: Move
   /**
    * Iterate through the link nodes of the GraphEntity and return hashes to linked documents/ET
    * @params links: list to check
@@ -255,15 +262,43 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Save current state of the images after load/save
+   */
+  saveImagesState() {
+    this.savedImageHashes = this.getCurrentImageSet();
+  }
+
+  /**
+   * Inspect current graph status and extract hashes of the images
+   */
+  getCurrentImageSet(): Set<string> {
+    return new Set(
+      this.nodes.flatMap(node => node.image_id !== undefined ? [node.image_id] : [])
+    );
+  }
+
+  /**
+   * Get blobs of new images and hashes of deleted images that will be sent to the server
+   */
+  getImageChanges() {
+    const current = this.getCurrentImageSet();
+    const deletedImages = setDifference(this.savedImageHashes, current);
+    const newImageHashes = setDifference(current, this.savedImageHashes);
+    return {newImageHashes, deletedImages};
+  }
+
+  /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
-  // NOTE: This is actually called twice when opening a map in read-only mode - is this anticipated?
+  // NOTE: This is actually called twice when opening a map in read-only mode - why?
   setGraph(graph: UniversalGraph): void {
-    // TODO: keep or nah?
+
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
+
+    this.saveImagesState();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(

@@ -21,7 +21,6 @@ class ErrorLog(UserEventLog, EventLog):
     """ Used to describe errors """
     error_name: str = attr.ib()
     expected: bool = attr.ib()
-    transaction_id: str = attr.ib()
 
 
 @attr.s(frozen=True)

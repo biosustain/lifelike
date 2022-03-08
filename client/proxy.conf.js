@@ -25,5 +25,14 @@ const PROXY_CONFIG = [
             "^/environment.css$": `/environments/${ENVIRONMENT_CONFIG}.css`
         },
     },
+    {
+        context: [
+            "/env.js"
+        ],
+        "target": "http://localhost:4200",
+        "pathRewrite": {
+            "^/env.js$": `/environments/${ENVIRONMENT_CONFIG}.js`
+        },
+    },
 ];
 module.exports = PROXY_CONFIG;

@@ -22,6 +22,7 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
+
 import { GraphEntityType, KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
@@ -293,9 +294,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         });
       });
     } else {
-      this.filesystemService.acquireLock(this.locator, {
-        own: true,
-      }).pipe(
+      this.filesystemService.acquireLock(this.locator).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
         catchError(error => {
           if (!(error instanceof LockError)) {

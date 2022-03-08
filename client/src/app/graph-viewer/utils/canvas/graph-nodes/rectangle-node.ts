@@ -1,14 +1,17 @@
 import 'canvas-plus';
 
+import { defaultLabelFontSize } from 'app/shared/constants';
+
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
+import { visibleTextThreshold } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
   shapeFillColor?: string;
   stroke?: Line;
-  forceHighDetailLevel?: boolean;
+  forceVisibleText?: boolean;
 }
 
 /**
@@ -21,7 +24,8 @@ export class RectangleNode extends BaseRectangleNode {
   readonly textbox: TextElement;
   readonly shapeFillColor: string;
   readonly stroke: Line | undefined;
-  readonly forceHighDetailLevel = false;
+  readonly forceVisibleText = false;
+
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
     super(ctx, options);
@@ -32,51 +36,33 @@ export class RectangleNode extends BaseRectangleNode {
   draw(transform: any): void {
     const ctx = this.ctx;
     const zoomResetScale = 1 / transform.scale(1).k;
-    const highDetailLevel = this.forceHighDetailLevel || transform.k >= 0.35;
+    const fontSize = parseFloat(this.textbox.font);
+    const visibleText = this.forceVisibleText ||
+      transform.k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
 
-    if (highDetailLevel) {
-      // Node shape
-      ctx.save();
-      (ctx as any).roundedRect(
-        this.nodeX,
-        this.nodeY,
-        this.nodeWidth,
-        this.nodeHeight,
-        5,
-      );
-      if (this.shapeFillColor) {
-        ctx.fillStyle = this.shapeFillColor;
-        ctx.fill();
-      }
-      if (this.stroke) {
-        this.stroke.setContext(ctx);
-        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-        ctx.stroke();
-      }
-      ctx.restore();
+    // Node shape
+    ctx.save();
+    (ctx as any).roundedRect(
+      this.nodeX,
+      this.nodeY,
+      this.nodeWidth,
+      this.nodeHeight,
+      visibleText ? 5 : 3,
+    );
+    if (this.shapeFillColor) {
+      ctx.fillStyle = this.shapeFillColor;
+      ctx.fill();
+    }
+    if (this.stroke) {
+      this.stroke.setContext(ctx);
+      ctx.lineWidth = zoomResetScale * ctx.lineWidth;
+      ctx.stroke();
+    }
+    ctx.restore();
 
-      // Node text
+    // Node text
+    if (visibleText) {
       this.textbox.drawCenteredAt(this.x, this.y);
-    } else {
-      // Node shape
-      ctx.save();
-      (ctx as any).roundedRect(
-        this.nodeX,
-        this.nodeY,
-        this.nodeWidth,
-        this.nodeHeight,
-        3,
-      );
-      if (this.shapeFillColor) {
-        ctx.fillStyle = this.shapeFillColor;
-        ctx.fill();
-      }
-      if (this.stroke) {
-        this.stroke.setContext(ctx);
-        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-        ctx.stroke();
-      }
-      ctx.restore();
     }
   }
 }
