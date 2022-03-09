@@ -23,9 +23,6 @@ import { MultiLaneBaseAdvancedPanelComponent } from './components/advanced-panel
 import { MultiLaneBaseControllerService } from './services/multi-lane-base-controller.service';
 import { MultiLaneLayoutService } from './services/multi-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
-import { SankeyLinkDetailsComponent } from '../../components/details-panel/link-details.component';
-import { SankeyMultiLaneLinkDetailsComponent } from './components/details-panel/link-details.component';
-import { LayoutService } from '../../services/layout.service';
 import { SankeyMultiLaneDetailsPanelModule } from './components/details-panel/sankey-multi-lane-details-panel.module';
 import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SankeyMultiLaneComponent } from './components/sankey/sankey.component';
@@ -38,11 +35,6 @@ import { SankeySelectionService } from '../../services/selection.service';
     {
       provide: BaseControllerService,
       useExisting: MultiLaneBaseControllerService
-    },
-    MultiLaneLayoutService,
-    {
-      provide: LayoutService,
-      useExisting: MultiLaneLayoutService
     },
     SankeySelectionService,
     ClipboardService,

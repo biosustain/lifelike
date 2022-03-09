@@ -43,7 +43,7 @@ import { BaseControllerService, DefaultBaseControllerService } from '../services
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
-import { LayoutService, DefaultLayoutService } from '../services/layout.service';
+import { DefaultLayoutService, LayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../error';
@@ -240,13 +240,15 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
           return componentRef;
         };
 
-        this.dynamicComponentRef.set('sankey', injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH));
+        const sankey = injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH);
+
+        this.dynamicComponentRef.set('sankey', sankey);
         this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
         this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
         return {
           baseView: moduleRef.injector.get(BaseControllerService),
-          layout: moduleRef.injector.get(LayoutService),
+          layout: sankey.instance.sankey,
           selection: moduleRef.injector.get(SankeySelectionService)
         };
       }),

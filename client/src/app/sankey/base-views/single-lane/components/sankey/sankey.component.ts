@@ -15,6 +15,7 @@ import { SingleLaneLayoutService } from '../../services/single-lane-layout.servi
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
+import { LayoutService } from 'app/sankey/services/layout.service';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -23,6 +24,13 @@ type SankeyEntity = SankeyNode | SankeyLink;
   templateUrl: '../../../../abstract/sankey.component.svg',
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [
+    SingleLaneLayoutService,
+    {
+      provide: LayoutService,
+      useExisting: SingleLaneLayoutService,
+    }
+  ],
 })
 export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySingleLaneOptions, SankeySingleLaneState>
   implements OnInit, AfterViewInit, OnDestroy {

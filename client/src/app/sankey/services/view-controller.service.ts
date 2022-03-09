@@ -136,7 +136,7 @@ export class ViewControllerService {
         first(),
         map(data => ({...data, _views}))
       )),
-      tap(() => this.common.patchState({viewName}))
+      switchMap(() => this.common.patchState({viewName}))
     );
   }
 

@@ -11,6 +11,7 @@ import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
 import { ErrorMessages } from 'app/sankey/error';
 import { d3EventCallback } from 'app/shared/utils/d3';
+import { LayoutService } from 'app/sankey/services/layout.service';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
@@ -25,6 +26,13 @@ import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
   templateUrl: '../../../../abstract/sankey.component.svg',
   styleUrls: ['./sankey.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [
+    MultiLaneLayoutService,
+    {
+      provide: LayoutService,
+      useExisting: MultiLaneLayoutService,
+    }
+  ]
 })
 export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
   implements OnInit, AfterViewInit, OnDestroy {
