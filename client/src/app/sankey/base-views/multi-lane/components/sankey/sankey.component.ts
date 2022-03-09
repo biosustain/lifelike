@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
-import { switchMap, map, filter } from 'rxjs/operators';
+import { switchMap, map, filter, startWith, pairwise } from 'rxjs/operators';
 import { isEmpty, flatMap } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -83,9 +83,24 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMult
 
   initFocus() {
     this.focusedEntity$.pipe(
-      filter(isNotEmpty)
-    ).subscribe(entity => {
-      this.panToEntity(entity);
+      startWith(null),
+      pairwise()
+    ).subscribe(([currentValue, previousValue]) => {
+      if (previousValue) {
+        this.applyEntity(
+          previousValue,
+          this.unFocusNode,
+          this.unFocusLink
+        );
+      }
+      if (currentValue) {
+        this.applyEntity(
+          currentValue,
+          this.focusNode,
+          this.focusLink
+        );
+        this.panToEntity(currentValue);
+      }
     });
   }
 

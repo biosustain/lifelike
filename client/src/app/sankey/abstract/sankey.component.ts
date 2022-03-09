@@ -210,6 +210,15 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     throw new NotImplemented();
   }
 
+  applyEntity({type, id}, nodeCallback, linkCallback) {
+    switch (type) {
+      case EntityType.Node:
+        return nodeCallback.call(this, id);
+      case EntityType.Link:
+        return linkCallback.call(this, id);
+    }
+  }
+
   panToEntity({data}) {
     if (data) {
       this.sankeySelection.transition().call(
@@ -217,7 +226,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         // x
         (data._x0 !== undefined) ?
           (data._x0 + data._x1) / 2 :
-          (data._sourcdata._x1 + data._target._x0) / 2,
+          (data._source._x1 + data._target._x0) / 2,
         // y
         (data._y0 + data._y1) / 2
       );
@@ -492,8 +501,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   searchLinks(linkIdxs: Set<SankeyLink['_id']>) {
     this.linkSelection
       .attr('searched', l => linkIdxs.has(l._id))
-      .filter(l => linkIdxs.has(l._id));
-    // .raise();
+      .filter(l => linkIdxs.has(l._id))
+      .raise();
   }
 
   stopSearchLinks() {
@@ -593,7 +602,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   unhighlightNode(element) {
     return this.sankey.nodeLabel$.pipe(
-      tap(({nodeLabelShort, nodeLabelShouldBeShorted}) => {
+      map(({nodeLabelShort, nodeLabelShouldBeShorted}) => {
         const selection = d3_select(element);
         selection.select('text')
           .filter(nodeLabelShouldBeShorted)
