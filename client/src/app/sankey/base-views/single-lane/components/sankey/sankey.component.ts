@@ -50,28 +50,28 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
     super.ngOnInit();
   }
 
-  initFocus() {
-    this.focusedEntity$.pipe(
-      startWith(null),
-      pairwise()
-    ).subscribe(([currentValue, previousValue]) => {
-      if (previousValue) {
-        this.applyEntity(
-          previousValue,
-          this.unFocusNode,
-          this.unFocusLink
-        );
-      }
-      if (currentValue) {
-        this.applyEntity(
-          currentValue,
-          this.focusNode,
-          this.focusLink
-        );
-        this.panToEntity(currentValue);
-      }
-    });
-  }
+  // initFocus() {
+  //   this.focusedEntity$.pipe(
+  //     startWith(null),
+  //     pairwise()
+  //   ).subscribe(([currentValue, previousValue]) => {
+  //     if (previousValue) {
+  //       this.applyEntity(
+  //         previousValue,
+  //         this.unFocusNodes,
+  //         this.unFocusLinks
+  //       );
+  //     }
+  //     if (currentValue) {
+  //       this.applyEntity(
+  //         currentValue,
+  //         this.focusNodes,
+  //         this.focusLinks
+  //       );
+  //       this.panToEntity(currentValue);
+  //     }
+  //   });
+  // }
 
   initSelection() {
     this.selection.selection$.subscribe(([selectedEntity]) => {

@@ -3,13 +3,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
-import { switchMap, map, filter, startWith, pairwise } from 'rxjs/operators';
+import { switchMap, map, pairwise } from 'rxjs/operators';
 import { isEmpty, flatMap } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { mapIterable, isNotEmpty } from 'app/shared/utils';
+import { mapIterable } from 'app/shared/utils';
 import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
-import { ErrorMessages } from 'app/sankey/error';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 
@@ -54,55 +53,36 @@ export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMult
     return super.linkSelection;
   }
 
-  focusedEntity$ = this.sankey.graph$.pipe(
-    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
-      map(({type, id}) => {
-        let data;
-        switch (type) {
-          case EntityType.Node:
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            data = nodes.find(({_id}) => _id == id);
-            break;
-          case EntityType.Link:
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            data = (links as SankeySingleLaneLink[]).find(({_originLinkId}) => _originLinkId == id);
-            break;
-          default:
-            this.sankey.baseView.warningController.warn(ErrorMessages.missingEntityType(type));
-        }
-        return {type, id, data};
-      })
-    ))
-  );
 
   ngOnInit() {
     super.ngOnInit();
   }
-
-  initFocus() {
-    this.focusedEntity$.pipe(
-      startWith(null),
-      pairwise()
-    ).subscribe(([currentValue, previousValue]) => {
-      if (previousValue) {
-        this.applyEntity(
-          previousValue,
-          this.unFocusNode,
-          this.unFocusLink
-        );
-      }
-      if (currentValue) {
-        this.applyEntity(
-          currentValue,
-          this.focusNode,
-          this.focusLink
-        );
-        this.panToEntity(currentValue);
-      }
-    });
-  }
+  //
+  // initFocus() {
+  //   this.focusedNode$.pipe(
+  //     pairwise(),
+  //   ).subscribe(([prevFocus, node]) => {
+  //     if (prevFocus) {
+  //       this.unFocusNodes(prevFocus);
+  //     }
+  //     if (node) {
+  //       this.focusNodes(node);
+  //       this.panToNodes(node);
+  //     }
+  //   });
+  //
+  //   this.focusedLink$.pipe(
+  //     pairwise(),
+  //   ).subscribe(([prevFocus, link]) => {
+  //     if (prevFocus) {
+  //       this.unFocusLink(prevFocus);
+  //     }
+  //     if (link) {
+  //       this.focusLink(link);
+  //       this.panToLink(link);
+  //     }
+  //   });
+  // }
 
   initSelection() {
     combineLatest([
