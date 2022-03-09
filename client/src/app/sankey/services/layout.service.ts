@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { merge, omit, isNil, clone } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Observable } from 'rxjs';
+import { combineLatest, iif, ReplaySubject, Observable, Subject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import {
@@ -52,19 +52,11 @@ const copy2DArray = (arr: any[][]) => arr.map(clone);
 type NodeColumns = SankeyNode[][];
 
 export interface LayersContext<Data extends NetworkTraceData = NetworkTraceData> {
-  data: Data;
   columns: Data['nodes'][];
   x: number;
 }
 
-interface XXXContext<Data extends NetworkTraceData = NetworkTraceData> {
-  normalizeLinks: boolean;
-  ky: number; // y scaling factor (_value * ky = height)
-  vertical: any;
-  horizontal: any;
-}
-
-interface VirtualNodesContext<Data extends NetworkTraceData = NetworkTraceData> extends LayersContext<Data> {
+interface VirtualNodesContext<Data extends NetworkTraceData = NetworkTraceData> {
   nodesAndPlaceholders: Data['nodes'];
   columnsWithLinkPlaceholders: Data['nodes'][];
 }
@@ -73,13 +65,14 @@ interface VerticalContext {
   y0: number;
   y1: number;
   ky: number;
+  py: number;
   height: number;
   nodeHeight: SankeyNodeHeight;
 }
 
 @Injectable()
 export class LayoutService<Options extends SankeyBaseOptions, State extends SankeyBaseState> extends SankeyAbstractLayoutService
-  implements ServiceOnInit {
+  implements ServiceOnInit, OnDestroy {
   constructor(
     readonly baseView: BaseControllerService<Options, State>,
     readonly truncatePipe: TruncatePipe,
@@ -101,6 +94,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     };
   }
 
+  destroyed$ = new Subject();
 
   linkPath$ = this.baseView.common.normalizeLinks$.pipe(
     map(normalizeLinks => {
@@ -140,6 +134,8 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   baseState$: Partial<SankeyBaseState>;
 
   graph$: Observable<NetworkTraceData<SankeyNode, SankeyLink>> = this.baseView.common.view$.pipe(
+    // ensure no calculation of view if base view changed
+    takeUntil(this.destroyed$),
     tap(view => console.log('view', view)),
     // todo temporary fixes needs to work but do not know how to make it better
     startWith(undefined),
@@ -169,6 +165,11 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   takeUntilViewChange = takeUntil(this.baseView.common.view$);
 
   private calculateLayout$;
+
+  ngOnDestroy() {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
 
   positionNodes(x) {
     return switchMap(data => this.horizontal$.pipe(
@@ -495,8 +496,8 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           const horizontalAdjustment = currentWidth / width;
           const verticalAdjustment = currentHeight / height;
 
-          let x0 = -graphSize.x0 + this.dx;
-          let y0 = -graphSize.y0 + this.dy;
+          const x0 = -graphSize.x0 + this.dx;
+          const y0 = -graphSize.y0 + this.dy;
 
           if (horizontalAdjustment > verticalAdjustment) {
             this.zoomAdjustment$.next({

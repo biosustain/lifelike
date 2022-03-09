@@ -23,7 +23,6 @@ import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-pa
 import { SingleLaneLayoutService } from './services/single-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SingleLaneBaseControllerService } from './services/single-lane-base-controller.service';
-import { LayoutService } from '../../services/layout.service';
 import { SankeySingleLaneComponent } from './components/sankey/sankey.component';
 import { SankeySingleLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SankeySingleLaneDetailsPanelModule } from './components/details-panel/sankey-single-lane-details-panel.module';
@@ -36,11 +35,6 @@ import { SankeySelectionService } from '../../services/selection.service';
     {
       provide: BaseControllerService,
       useExisting: SingleLaneBaseControllerService
-    },
-    SingleLaneLayoutService,
-    {
-      provide: LayoutService,
-      useExisting: SingleLaneLayoutService
     },
     SankeySelectionService,
     ClipboardService,
