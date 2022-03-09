@@ -4,13 +4,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import { map, switchMap, first, filter, tap, throttleTime, pairwise, startWith } from 'rxjs/operators';
+import { combineLatest, animationFrameScheduler } from 'rxjs';
 import { assign, partial } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
@@ -21,7 +21,8 @@ import { SankeySearchService } from '../services/search.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { EntityType } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
-import { ErrorMessages, NotImplemented } from '../error';
+import { NotImplemented } from '../error';
+import { SankeySingleLaneLink } from '../base-views/single-lane/interfaces';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
@@ -49,6 +50,82 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       });
   }
 
+  focusedNode$ = this.sankey.graph$.pipe(
+    switchMap(({nodes}) => this.search.searchFocus$.pipe(
+      map(({type, id}) =>
+        type === EntityType.Node &&
+        // allow string == number match interpolation ("58" == 58 -> true)
+        // tslint:disable-next-line:triple-equals
+        nodes.find(({_id}) => _id == id)
+      ),
+      startWith(undefined),
+      pairwise()
+    )),
+    map(prevNext => this.nodeSelection
+      .filter(node => prevNext.includes(node))
+      .each(link => {
+        const add = link === prevNext[1]; // qual new focus
+        const nodeSelection = d3_select(this);
+        nodeSelection
+          .attr('focused', add || undefined);
+        if (add) {
+          nodeSelection
+            .raise()
+            .select('g')
+            .call(textGroup => {
+              textGroup
+                .select('text')
+                .text(this.sankey.nodeLabel);
+            });
+        }
+      })
+      .call(affectedSelection =>
+
+      )
+    ),
+    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+
+    // postpone so the size is known
+    tap(selection =>
+      selection
+        .each(SankeyAbstractComponent.updateTextShadow)
+    )
+  );
+)
+);
+
+  focusedLinks$ = this.sankey.graph$.pipe(
+    switchMap(({links}) => this.search.searchFocus$.pipe(
+        map(({type, id}) =>
+          type === EntityType.Link &&
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id)
+        ),
+        startWith([]),
+        pairwise(),
+        map(([prev, next]) => ({
+          added: next.filter(link => !prev.includes(link)),
+          affected: prev.concat(next)
+        }))
+      )
+    ),
+    tap(({added, affected}) =>
+      this.linkSelection
+        .filter(link => affected.includes(link))
+        .each(link => {
+          const add = added.includes(link);
+          const linkSelection = d3_select(this);
+          linkSelection
+            .attr('focused', add || undefined);
+          if (add) {
+            linkSelection
+              .raise();
+          }
+        })
+    )
+  );
+
   get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
     // returns empty selection if DOM struct was not initialised
     return d3_select(this.nodes && this.nodes.nativeElement)
@@ -63,29 +140,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   readonly MARGIN = 10;
-
-  focusedEntity$ = this.sankey.graph$.pipe(
-    switchMap(({nodes, links}) => this.search.searchFocus$.pipe(
-      map(({type, id}) => {
-        let data;
-        switch (type) {
-          case EntityType.Node:
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            data = nodes.find(({_id}) => _id == id);
-            break;
-          case EntityType.Link:
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            data = links.find(({_id}) => _id == id);
-            break;
-          default:
-            this.sankey.baseView.warningController.warn(ErrorMessages.missingEntityType(type));
-        }
-        return {type, id, data};
-      })
-    ))
-  );
 
   margin = {
     top: this.MARGIN,
@@ -219,18 +273,24 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     }
   }
 
-  panToEntity({data}) {
-    if (data) {
-      this.sankeySelection.transition().call(
-        this.zoom.translateTo,
-        // x
-        (data._x0 !== undefined) ?
-          (data._x0 + data._x1) / 2 :
-          (data._source._x1 + data._target._x0) / 2,
-        // y
-        (data._y0 + data._y1) / 2
-      );
-    }
+  panToNode({_x0, _x1, _y0, _y1}) {
+    this.sankeySelection.transition().call(
+      this.zoom.translateTo,
+      // x
+      (_x0 + _x1) / 2,
+      // y
+      (_y0 + _y1) / 2
+    );
+  }
+
+  panToLink({_x0, _x1, _y0, _y1, _source, _target}) {
+    this.sankeySelection.transition().call(
+      this.zoom.translateTo,
+      // x
+      (_source._x1 + _target._x0) / 2,
+      // y
+      (_y0 + _y1) / 2
+    );
   }
 
   // endregion
@@ -513,64 +573,81 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   // endregion
 
   // region Focus
-  focusNode(nodeId: SankeyId) {
-    const {nodeLabel} = this.sankey;
-    const selection = this.nodeSelection
-      // tslint:disable-next-line:triple-equals
-      .filter(({_id}) => _id == nodeId)
+  focusNodes$ = this.focusedNodes$.pipe(
+    map(nodes => this.nodeSelection
+      .filter(node => nodes.includes(node))
       .raise()
       .attr('focused', true)
       .select('g')
       .call(textGroup => {
         textGroup
           .select('text')
-          .text(nodeLabel);
-      });
+          .text(this.sankey.nodeLabel);
+      })
+    ),
+    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
 
     // postpone so the size is known
-    requestAnimationFrame(_ =>
+    tap(selection =>
       selection
         .each(SankeyAbstractComponent.updateTextShadow)
-    );
-  }
+    )
+  );
 
-  unFocusNode(nodeId: SankeyNode['_id']) {
-    return this.sankey.nodeLabel$.pipe(
-      first(),
-      tap(({nodeLabelShort}) => {
-        const selection = this.nodeSelection
-          .attr('focused', undefined)
-          // tslint:disable-next-line:triple-equals
-          .filter(({_id}) => _id == nodeId)
-          .select('g')
-          .call(textGroup => {
-            textGroup
-              .select('text')
-              .text(nodeLabelShort);
-          });
-
-        // postpone so the size is known
-        requestAnimationFrame(_ =>
-          selection
-            .each(SankeyAbstractComponent.updateTextShadow)
-        );
-      })
-    ).toPromise();
-  }
-
-  focusLink(linkId: SankeyId) {
-    this.linkSelection
+  unFocusNodes$ = combineLatest(
+    this.focusedNodes$,
+    this.sankey.nodeLabel$
+  ).pipe(
+    map(([nodes, {nodeLabelShort}]) => this.nodeSelection
+      .attr('focused', undefined)
       // tslint:disable-next-line:triple-equals
-      .filter(({_id}) => _id == linkId)
-      .raise()
-      .attr('focused', true);
-  }
+      .filter(node => nodes.includes(node))
+      .select('g')
+      .call(textGroup => {
+        textGroup
+          .select('text')
+          .text(nodeLabelShort);
+      })
+    ),
+    // postpone so the size is known
+    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+    tap(selection =>
+      selection
+        .each(SankeyAbstractComponent.updateTextShadow)
+    )
+  );
+
+  focusLinks$ = this.focusedLinks$.pipe(
+    startWith([]),
+    pairwise(),
+    map(([prev, next]) => ({
+      added: next.filter(link => !prev.includes(link)),
+      removed: prev.filter(link => !next.includes(link))
+    })),
+    tap(({added, removed}) =>
+      this.linkSelection
+        .each(link => {
+          const add = added.includes(link);
+          const remove = removed.includes(link);
+          if (add || remove) {
+            const linkSelection = d3_select(this);
+            linkSelection
+              .attr('focused', add || undefined);
+            if (add) {
+              linkSelection
+                .raise();
+            }
+          }
+        })
+    )
+  );
 
   // noinspection JSUnusedLocalSymbols
-  unFocusLink(linkId: SankeyId) {
-    this.linkSelection
-      .attr('focused', undefined);
-  }
+  unFocusLinks$ = this.focusedLinks$.pipe(
+    tap(links => this.linkSelection
+      .attr('focused', undefined)
+    )
+  );
 
   // endregion
 
