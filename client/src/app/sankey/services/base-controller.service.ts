@@ -188,7 +188,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     this.nodeHeight$ = this.stateAccessor('nodeHeight');
   }
 
-  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId', 'predefinedValueAccessorId']);
+  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
 
   resolvePredefinedValueAccessor(defaultValue) {
     // whichever change was more recent
