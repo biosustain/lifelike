@@ -8,6 +8,7 @@ import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { d3EventCallback } from 'app/shared/utils/d3';
+import { LayoutService } from 'app/sankey/services/layout.service';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
@@ -15,7 +16,6 @@ import { SingleLaneLayoutService } from '../../services/single-lane-layout.servi
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
-import { LayoutService } from 'app/sankey/services/layout.service';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -93,14 +93,6 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
     });
   }
 
-  applyEntity({type, id}, nodeCallback, linkCallback) {
-    switch (type) {
-      case EntityType.Node:
-        return nodeCallback(id);
-      case EntityType.Link:
-        return linkCallback(id);
-    }
-  }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
