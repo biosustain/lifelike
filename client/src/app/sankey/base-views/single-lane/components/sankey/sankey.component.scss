@@ -55,6 +55,15 @@ app-sankey-single-lane {
         z-index: 1;
 
         g {
+          .text-shadow {
+            display: none;
+            fill: sankey.$node-label-shadow;
+            filter: blur(.1em);
+            mix-blend-mode: lighten;
+            stroke: none;
+            transform: scaleY(1.5);
+          }
+
           &[highlighted="false"],
           &[selected="false"] {
             > rect {
@@ -131,15 +140,6 @@ app-sankey-single-lane {
               fill: $black;
               font-size: 1em;
             }
-          }
-
-          .text-shadow {
-            display: none;
-            fill: sankey.$node-label-shadow;
-            filter: blur(.1em);
-            mix-blend-mode: lighten;
-            stroke: none;
-            transform: scaleY(1.5);
           }
 
           &:hover .text-shadow {
