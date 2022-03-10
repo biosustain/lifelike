@@ -195,16 +195,15 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     return rxjs_merge(
       this.delta$.pipe(
         map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
-        distinctUntilChanged(),
         // here we are sensing change of predefinedValueAccessorId
         // actual accessors are resolved based on options$
         switchMap(predefinedValueAccessorId => this.common.options$.pipe(
-            map(({predefinedValueAccessors}) => ({
-              predefinedValueAccessorId,
-              ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
-            }))
-          )),
-        distinctUntilChanged(isEqual),
+          first(),
+          map(({predefinedValueAccessors}) => ({
+            predefinedValueAccessorId,
+            ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
+          }))
+        )),
         debug<Partial<State>>('predefinedValueAccessorId change')
       ),
       this.delta$.pipe(
@@ -223,9 +222,10 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
             ))
           )
         ),
-        distinctUntilChanged(isEqual),
         debug<Partial<State>>('partialAccessors change')
       )
+    ).pipe(
+      distinctUntilChanged(isEqual)
     );
   }
 
@@ -270,16 +270,8 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     );
   }
 
-  selectPredefinedValueAccessor(predefinedValueAccessorId: string) {
-    return this.common.options$.pipe(
-      switchMap(options => this.patchState(
-        this.predefinedValueAccessorReducer(options, {predefinedValueAccessorId})
-      ))
-    );
-  }
-
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  })
+  });
 
 }

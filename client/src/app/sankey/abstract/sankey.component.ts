@@ -25,8 +25,6 @@ import { NotImplemented } from '../error';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-// Injectable - mark it as part of Angular DI, children does not need to rewrite contructor
-@Injectable()
 export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
   OnDestroy {
   constructor(
@@ -77,31 +75,35 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     )),
     switchMap(prevNext =>
       this.sankey.nodeLabel$.pipe(
-        tap(({nodeLabelShort}) => this.nodeSelection
-          .filter(node => prevNext.includes(node))
-          .each(function(node) {
-            const add = node === prevNext[1]; // equal to new focus
-            const nodeSelection = d3_select(this);
-            nodeSelection
-              .attr('focused', add || undefined)
-              .select('g')
-              .call(textGroup => {
-                textGroup
-                  .select('text')
-                  .text(add ? this.sankey.nodeLabel : nodeLabelShort);
-              });
-            if (add) {
-              nodeSelection
-                .raise();
-            }
-          })
-          .call(affectedSelection =>
-            // postpone so the size is known
-            requestAnimationFrame(() => {
-              affectedSelection
-                .each(SankeyAbstractComponent.updateTextShadow);
-            })
-          )
+        tap(({nodeLabelShort}) => {
+            const {nodeLabel} = this.sankey;
+            this.nodeSelection
+              .filter(node => prevNext.includes(node))
+              .each(function(node) {
+                const add = node === prevNext[1]; // equal to new focus
+                const nodeSelection = d3_select(this);
+                nodeSelection
+                  .attr('focused', add || undefined)
+                  .select('g')
+                  .call(textGroup => {
+                    textGroup
+                      .select('text')
+                      .text(add ? nodeLabel : nodeLabelShort);
+                  });
+                if (add) {
+                  nodeSelection
+                    .raise();
+                }
+              })
+              .call(affectedSelection =>
+                // postpone so the size is known
+                requestAnimationFrame(() => {
+                  affectedSelection
+                    .select('g')
+                    .each(SankeyAbstractComponent.updateTextShadow);
+                })
+              );
+          }
         ),
         map(() => prevNext[1])
       )
@@ -245,6 +247,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       (_y0 + _y1) / 2
     );
   }
+
   // endregion
 
   ngAfterViewInit() {
