@@ -173,15 +173,23 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   createObjectRequest(value): ObjectCreateRequest {
-    return {
+    console.log(value);
+    const object = {
       filename: value.filename,
       parentHashId: value.parent ? value.parent.hashId : null,
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs
     };
+    // Add annotation-relevant parameters only when needed
+    if (this.possiblyAnnotatable) {
+      return {
+        ...object,
+        fallbackOrganism: value?.organism,
+        annotationConfigs: value?.annotationConfigs
+      };
+    }
+    return object;
   }
 
   organismChanged(organism: OrganismAutocomplete | null) {
