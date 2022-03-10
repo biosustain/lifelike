@@ -24,7 +24,6 @@ export class NodeFormComponent implements AfterViewInit {
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
   @ViewChild('option') selectedOption: ElementRef;
 
-  // TODO: Remove that if we decide to add image to annotationTypes
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
     [null, {
