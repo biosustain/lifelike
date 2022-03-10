@@ -1,12 +1,10 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit } from '@angular/core';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
-import { switchMap, map, pairwise } from 'rxjs/operators';
+import { switchMap, map, pairwise, startWith, tap, takeUntil } from 'rxjs/operators';
 import { isEmpty, flatMap } from 'lodash-es';
 
-import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { mapIterable } from 'app/shared/utils';
 import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
 import { d3EventCallback } from 'app/shared/utils/d3';
@@ -15,8 +13,6 @@ import { LayoutService } from 'app/sankey/services/layout.service';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
-import { SankeySelectionService } from '../../../../services/selection.service';
-import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
 import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
 
@@ -33,62 +29,78 @@ import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
     }
   ]
 })
-export class SankeyMultiLaneComponent extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
+export class SankeyMultiLaneComponent
+  extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
   implements OnInit, AfterViewInit, OnDestroy {
-  constructor(
-    readonly clipboard: ClipboardService,
-    readonly snackBar: MatSnackBar,
-    readonly sankey: MultiLaneLayoutService,
-    readonly wrapper: ElementRef,
-    protected zone: NgZone,
-    protected selection: SankeySelectionService,
-    protected search: SankeySearchService
-  ) {
-    super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
-  }
-
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyMultiLaneLink, any, any> {
     // returns empty selection if DOM struct was not initialised
     return super.linkSelection;
   }
 
+  focusedLinks$ = this.sankey.graph$.pipe(
+    switchMap(({links}) => this.search.searchFocus$.pipe(
+        map(({type, id}) =>
+          type === EntityType.Link &&
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id)
+        ),
+        startWith([]),
+        pairwise(),
+        map(([prev, next]) => ({
+          added: next.filter(link => !prev.includes(link)),
+          affected: prev.concat(next)
+        }))
+      )
+    ),
+    tap(({added, affected}) =>
+      this.linkSelection
+        .filter(link => affected.includes(link))
+        .each(function(link) {
+          const add = added.includes(link);
+          const linkSelection = d3_select(this);
+          linkSelection
+            .attr('focused', add || undefined);
+          if (add) {
+            linkSelection
+              .raise();
+          }
+        })
+    ),
+    tap(({added}) => this.panToLinks(added))
+  );
+
+  panToLinks(links) {
+    const [sumX, sumY] = links.reduce(([x, y], {_source: {_x1}, _target: {_x0}, _y0, _y1}) => [
+      x + _x0 + _x1,
+      y + _y0 + _y1
+    ], [0, 0]);
+    this.sankeySelection.transition().call(
+      this.zoom.translateTo,
+      // average x
+      sumX / (2 * links.length),
+      // average y
+      sumY / (2 * links.length)
+    );
+  }
+
 
   ngOnInit() {
     super.ngOnInit();
   }
-  //
-  // initFocus() {
-  //   this.focusedNode$.pipe(
-  //     pairwise(),
-  //   ).subscribe(([prevFocus, node]) => {
-  //     if (prevFocus) {
-  //       this.unFocusNodes(prevFocus);
-  //     }
-  //     if (node) {
-  //       this.focusNodes(node);
-  //       this.panToNodes(node);
-  //     }
-  //   });
-  //
-  //   this.focusedLink$.pipe(
-  //     pairwise(),
-  //   ).subscribe(([prevFocus, link]) => {
-  //     if (prevFocus) {
-  //       this.unFocusLink(prevFocus);
-  //     }
-  //     if (link) {
-  //       this.focusLink(link);
-  //       this.panToLink(link);
-  //     }
-  //   });
-  // }
+
+  initFocus() {
+    this.focusedLinks$.subscribe();
+    this.focusedNode$.subscribe();
+  }
 
   initSelection() {
     combineLatest([
       this.selection.selectedNodes$,
       this.selection.selectedLinks$
     ]).pipe(
+      takeUntil(this.destroy$),
       map(([nodes, links]) => ({
         nodes: new Set(nodes),
         links: new Set(links)

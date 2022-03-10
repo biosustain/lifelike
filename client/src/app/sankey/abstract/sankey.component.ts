@@ -1,11 +1,11 @@
-import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, throttleTime, pairwise, startWith } from 'rxjs/operators';
-import { combineLatest, animationFrameScheduler } from 'rxjs';
+import { map, switchMap, first, filter, tap, pairwise, startWith } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
 import { assign, partial } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -22,11 +22,11 @@ import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { EntityType } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
 import { NotImplemented } from '../error';
-import { SankeySingleLaneLink } from '../base-views/single-lane/interfaces';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-
+// Injectable - mark it as part of Angular DI, children does not need to rewrite contructor
+@Injectable()
 export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
   OnDestroy {
   constructor(
@@ -50,81 +50,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       });
   }
 
-  focusedNode$ = this.sankey.graph$.pipe(
-    switchMap(({nodes}) => this.search.searchFocus$.pipe(
-      map(({type, id}) =>
-        type === EntityType.Node &&
-        // allow string == number match interpolation ("58" == 58 -> true)
-        // tslint:disable-next-line:triple-equals
-        nodes.find(({_id}) => _id == id)
-      ),
-      startWith(undefined),
-      pairwise()
-    )),
-    map(prevNext => this.nodeSelection
-      .filter(node => prevNext.includes(node))
-      .each(link => {
-        const add = link === prevNext[1]; // qual new focus
-        const nodeSelection = d3_select(this);
-        nodeSelection
-          .attr('focused', add || undefined);
-        if (add) {
-          nodeSelection
-            .raise()
-            .select('g')
-            .call(textGroup => {
-              textGroup
-                .select('text')
-                .text(this.sankey.nodeLabel);
-            });
-        }
-      })
-      .call(affectedSelection =>
-
-      )
-    ),
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
-
-    // postpone so the size is known
-    tap(selection =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    )
-  );
-)
-);
-
-  focusedLinks$ = this.sankey.graph$.pipe(
-    switchMap(({links}) => this.search.searchFocus$.pipe(
-        map(({type, id}) =>
-          type === EntityType.Link &&
-          // allow string == number match interpolation ("58" == 58 -> true)
-          // tslint:disable-next-line:triple-equals
-          (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id)
-        ),
-        startWith([]),
-        pairwise(),
-        map(([prev, next]) => ({
-          added: next.filter(link => !prev.includes(link)),
-          affected: prev.concat(next)
-        }))
-      )
-    ),
-    tap(({added, affected}) =>
-      this.linkSelection
-        .filter(link => affected.includes(link))
-        .each(link => {
-          const add = added.includes(link);
-          const linkSelection = d3_select(this);
-          linkSelection
-            .attr('focused', add || undefined);
-          if (add) {
-            linkSelection
-              .raise();
-          }
-        })
-    )
-  );
 
   get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
     // returns empty selection if DOM struct was not initialised
@@ -139,6 +64,51 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     return d3_select(this.svg && this.svg.nativeElement);
   }
 
+  focusedNode$ = this.sankey.graph$.pipe(
+    switchMap(({nodes}) => this.search.searchFocus$.pipe(
+      map(({type, id}) =>
+        type === EntityType.Node &&
+        // allow string == number match interpolation ("58" == 58 -> true)
+        // tslint:disable-next-line:triple-equals
+        nodes.find(({_id}) => _id == id)
+      ),
+      startWith(undefined),
+      pairwise()
+    )),
+    switchMap(prevNext =>
+      this.sankey.nodeLabel$.pipe(
+        tap(({nodeLabelShort}) => this.nodeSelection
+          .filter(node => prevNext.includes(node))
+          .each(function(node) {
+            const add = node === prevNext[1]; // equal to new focus
+            const nodeSelection = d3_select(this);
+            nodeSelection
+              .attr('focused', add || undefined)
+              .select('g')
+              .call(textGroup => {
+                textGroup
+                  .select('text')
+                  .text(add ? this.sankey.nodeLabel : nodeLabelShort);
+              });
+            if (add) {
+              nodeSelection
+                .raise();
+            }
+          })
+          .call(affectedSelection =>
+            // postpone so the size is known
+            requestAnimationFrame(() => {
+              affectedSelection
+                .each(SankeyAbstractComponent.updateTextShadow);
+            })
+          )
+        ),
+        map(() => prevNext[1])
+      )
+    ),
+    tap(node => this.panToNode(node)),
+  );
+
   readonly MARGIN = 10;
 
   margin = {
@@ -147,11 +117,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     bottom: this.MARGIN,
     left: this.MARGIN
   };
-  resizeObserver;
-  size;
-  zoom;
-  dragging = false;
+  zoom = d3_zoom().scaleExtent([0.1, 8]);
 
+  destroy$ = new Subject();
 
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
@@ -173,6 +141,12 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   );
 
   width: number;
+
+  // resize and listen to future resize events
+  resize$ = createResizeObservable(this.wrapper.nativeElement)
+    .subscribe(rect => this.onResize(rect));
+
+  // endregion
 
   static updateTextShadow(this: SVGElement, _) {
     // this contains ref to textGroup
@@ -227,10 +201,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr('font-size', fontSize);
   }
 
-  ngOnInit() {
-    this.zoom = d3_zoom()
-      .scaleExtent([0.1, 8]);
 
+  ngOnInit() {
     this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
       this.zoom.transform(
         this.sankeySelection,
@@ -243,6 +215,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     });
 
     this.initSelection();
+    this.initFocus();
 
     this.search.preprocessedMatches$.subscribe(entities => {
       if (isNotEmpty(entities)) {
@@ -253,7 +226,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         this.stopSearchLinks();
       }
     });
-    this.initFocus();
   }
 
   initFocus() {
@@ -262,15 +234,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   initSelection() {
     throw new NotImplemented();
-  }
-
-  applyEntity({type, id}, nodeCallback, linkCallback) {
-    switch (type) {
-      case EntityType.Node:
-        return nodeCallback.call(this, id);
-      case EntityType.Link:
-        return linkCallback.call(this, id);
-    }
   }
 
   panToNode({_x0, _x1, _y0, _y1}) {
@@ -282,17 +245,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       (_y0 + _y1) / 2
     );
   }
-
-  panToLink({_x0, _x1, _y0, _y1, _source, _target}) {
-    this.sankeySelection.transition().call(
-      this.zoom.translateTo,
-      // x
-      (_source._x1 + _target._x0) / 2,
-      // y
-      (_y0 + _y1) / 2
-    );
-  }
-
   // endregion
 
   ngAfterViewInit() {
@@ -311,20 +263,13 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         document.dispatchEvent(new MouseEvent('mouseup'));
       }
     });
-
-    this.attachResizeObserver();
-  }
-
-  attachResizeObserver() {
-    // resize and listen to future resize events
-    this.resizeObserver = createResizeObservable(this.wrapper.nativeElement)
-      .subscribe(rect => this.onResize(rect));
   }
 
   ngOnDestroy() {
-    if (this.resizeObserver) {
-      this.resizeObserver.unsubscribe();
-      delete this.resizeObserver;
+    this.destroy$.next();
+    if (this.resize$) {
+      this.resize$.unsubscribe();
+      delete this.resize$;
     }
   }
 
@@ -569,85 +514,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     return this.linkSelection
       .attr('searched', undefined);
   }
-
-  // endregion
-
-  // region Focus
-  focusNodes$ = this.focusedNodes$.pipe(
-    map(nodes => this.nodeSelection
-      .filter(node => nodes.includes(node))
-      .raise()
-      .attr('focused', true)
-      .select('g')
-      .call(textGroup => {
-        textGroup
-          .select('text')
-          .text(this.sankey.nodeLabel);
-      })
-    ),
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
-
-    // postpone so the size is known
-    tap(selection =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    )
-  );
-
-  unFocusNodes$ = combineLatest(
-    this.focusedNodes$,
-    this.sankey.nodeLabel$
-  ).pipe(
-    map(([nodes, {nodeLabelShort}]) => this.nodeSelection
-      .attr('focused', undefined)
-      // tslint:disable-next-line:triple-equals
-      .filter(node => nodes.includes(node))
-      .select('g')
-      .call(textGroup => {
-        textGroup
-          .select('text')
-          .text(nodeLabelShort);
-      })
-    ),
-    // postpone so the size is known
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
-    tap(selection =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    )
-  );
-
-  focusLinks$ = this.focusedLinks$.pipe(
-    startWith([]),
-    pairwise(),
-    map(([prev, next]) => ({
-      added: next.filter(link => !prev.includes(link)),
-      removed: prev.filter(link => !next.includes(link))
-    })),
-    tap(({added, removed}) =>
-      this.linkSelection
-        .each(link => {
-          const add = added.includes(link);
-          const remove = removed.includes(link);
-          if (add || remove) {
-            const linkSelection = d3_select(this);
-            linkSelection
-              .attr('focused', add || undefined);
-            if (add) {
-              linkSelection
-                .raise();
-            }
-          }
-        })
-    )
-  );
-
-  // noinspection JSUnusedLocalSymbols
-  unFocusLinks$ = this.focusedLinks$.pipe(
-    tap(links => this.linkSelection
-      .attr('focused', undefined)
-    )
-  );
 
   // endregion
 

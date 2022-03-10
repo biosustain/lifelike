@@ -16,9 +16,9 @@ import {
   tap
 } from 'rxjs/operators';
 
-import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphPredefinedSizing, GraphNode, GraphFile, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 import {
-  SankeyData,
+  SankeyFile,
   SankeyTraceNetwork,
   SankeyPathReportEntity,
   SankeyState,
@@ -88,7 +88,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  data$ = new ReplaySubject<SankeyData>(1);
+  data$ = new ReplaySubject<SankeyFile>(1);
   baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
 
   state$ = this.delta$.pipe(
@@ -405,7 +405,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     });
   }
 
-  loadData(data: SankeyData) {
+  loadData(data: SankeyFile) {
     this.preprocessData(data);
     this.data$.next(data);
     return of(true);
@@ -461,7 +461,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     }, []);
   }
 
-  computeData(): SankeyData {
+  computeData(): SankeyFile {
     throw new NotImplemented();
   }
 
@@ -562,18 +562,18 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   resetController() {
     return this.data$.pipe(
       first(),
-      switchMap(data => this.loadData(data as SankeyData))
+      switchMap(data => this.loadData(data as SankeyFile))
     ).toPromise();
   }
 
-  preprocessData(content: SankeyData) {
-    content.nodes.forEach(n => {
+  preprocessData(content: SankeyFile) {
+    content.nodes.forEach((n: GraphNode & { _id: SankeyId }) => {
       n._id = n.id;
     });
-    content.links.forEach((l, index) => {
+    content.links.forEach((l: GraphLink & { _id: SankeyId }, index) => {
       l._id = index;
     });
-    content.graph.trace_networks.forEach(tn => {
+    content.graph.trace_networks.forEach((tn: SankeyTraceNetwork) => {
       let maxVal = max(tn.traces.map(({group}) => group ?? -1));
       if (!isFinite(maxVal)) {
         maxVal = Math.random();
@@ -589,7 +589,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       } else {
         result[key] = cloneDeepWith(value, Object.freeze);
       }
-    }, {}) as SankeyData;
+    }, {}) as SankeyFile;
   }
 
   addIds(content) {
