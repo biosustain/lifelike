@@ -25,7 +25,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, SankeyURLLoadParam, ViewBase, SankeyData } from 'app/sankey/interfaces';
+import { SankeyState, SankeyURLLoadParam, ViewBase, SankeyFile } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -102,7 +102,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
         this.emitModuleProperties();
         this.currentFileId = object.hashId;
         if (this.sanityChecks(content)) {
-          return this.sankeyController.loadData(content as SankeyData);
+          return this.sankeyController.loadData(content as SankeyFile);
         }
       })
     ).subscribe(() => {
@@ -233,9 +233,9 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
         const moduleFactory = getModuleFactory(baseViewName);
         const moduleRef = moduleFactory.create(this.injector);
         const injectComponent = (container, token) => {
+          container.clear();
           const comp = moduleRef.injector.get(token);
           const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
-          container.clear();
           const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
           return componentRef;
         };

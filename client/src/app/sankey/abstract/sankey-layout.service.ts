@@ -61,7 +61,7 @@ import { map, tap, distinctUntilChanged } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyLink, SankeyId, SankeyData, NetworkTraceData } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyLink, SankeyId, SankeyFile, NetworkTraceData } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
@@ -227,34 +227,6 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
     }
   });
 
-  /**
-   * Calculate into which layer node has to be placed and assign x coordinates of this layer
-   * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
-   * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
-   */
-  computeNodeLayers(data) {
-    const {dx} = this;
-    const align = this.getAlign(data);
-    const {nodes} = data as SankeyData;
-    const x = max(nodes, d => d._depth) + 1;
-    // Don't use Array.fill([]) as it will just copy ref to the same []
-    const columns: SankeyNode[][] = new Array(x).fill(undefined).map(() => []);
-    for (const node of nodes) {
-      const i = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
-      node._layer = i;
-      columns[i].push(node);
-    }
-    if (this.nodeSort) {
-      for (const column of columns) {
-        column.sort(this.nodeSort);
-      }
-    }
-    return {
-      x,
-      columns
-    } as LayersContext;
-  }
-
   static ascendingSourceBreadth(a, b) {
     return SankeyAbstractLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
   }
@@ -290,6 +262,34 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
       throw Error(ErrorMessages.missingNode(id));
     }
     return node as SankeyNode;
+  }
+
+  /**
+   * Calculate into which layer node has to be placed and assign x coordinates of this layer
+   * - _layer: the depth (0, 1, 2, etc), as is relates to visual position from left to right
+   * - _x0, _x1: the x coordinates, as is relates to visual position from left to right
+   */
+  computeNodeLayers(data) {
+    const {dx} = this;
+    const align = this.getAlign(data);
+    const {nodes} = data as LayoutData;
+    const x = max(nodes, d => d._depth) + 1;
+    // Don't use Array.fill([]) as it will just copy ref to the same []
+    const columns: SankeyNode[][] = new Array(x).fill(undefined).map(() => []);
+    for (const node of nodes) {
+      const i = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
+      node._layer = i;
+      columns[i].push(node);
+    }
+    if (this.nodeSort) {
+      for (const column of columns) {
+        column.sort(this.nodeSort);
+      }
+    }
+    return {
+      x,
+      columns
+    } as LayersContext;
   }
 
   setExtent(extent: Extent) {

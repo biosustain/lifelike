@@ -17,10 +17,10 @@ export interface SankeyNode extends GraphNode {
   _index?: number | string;
   _sourceLinks?: Array<SankeyLink>;
   _targetLinks?: Array<SankeyLink>;
-  _y0?: number;
-  _y1?: number;
-  _x0?: number;
-  _x1?: number;
+  _y0: number;
+  _y1: number;
+  _x0: number;
+  _x1: number;
   _depth?: number;
   _reversedDepth?: number;
   _height?: number;
@@ -31,22 +31,19 @@ export interface SankeyNode extends GraphNode {
 }
 
 export interface SankeyLink extends GraphLink {
-  l: number[];
   _id: SankeyId;
-  _source?: SankeyNode;
-  _target?: SankeyNode;
-  _sourceLinks?: SankeyLink[];
-  _targetLinks?: SankeyLink[];
-  _width?: number;
-  _y0?: number;
-  _y1?: number;
+  _source: SankeyNode;
+  _target: SankeyNode;
+  _width: number;
+  _y0: number;
+  _y1: number;
   _multiple_values?: [number, number];
   _adjacent_divider?: number;
   _circularLinkID?: number;
   _circular?: boolean;
   _folded?: boolean;
   _value: number;
-  _order?: number;
+  _order: number;
   _color?: string;
 }
 
