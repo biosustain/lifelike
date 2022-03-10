@@ -257,22 +257,4 @@ public class ZipFileQueryHandler implements CustomTaskChange {
         return new ValidationErrors();
     }
 
-    public static void main(String[] args){
-        ZipFileQueryHandler handler = new ZipFileQueryHandler();
-        handler.setNeo4jCredentials("neo4j,rcai");
-        handler.setNeo4jHost("bolt://localhost");
-        handler.setNeo4jDatabase("test");
-        handler.setLocalSaveFileDir("/Users/rcai/data/processed");
-        handler.setZipFileName("jira-LL-3213-go-data.zip");
-//        handler.setFileName("jira-LL-3213-go-data.zip");
-        handler.setStartAt("1");
-        handler.setAzureStorageName("lifelike");
-        handler.setAzureStorageKey("u6Y6gGdsNv8dD1Y72q3M1g2aU3c/sQV1KNRUxLAizOM9HJnnpfyYmde2sUfym3/9V/NCoUuSWGmVtTSbpz41hw==");
-        try {
-            handler.execute(null);
-        }
-        catch(Exception ex) {
-            ex.printStackTrace();
-        }
-    }
 }
