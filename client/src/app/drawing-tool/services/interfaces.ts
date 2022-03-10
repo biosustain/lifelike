@@ -27,6 +27,7 @@ export interface UniversalNodeStyle {
 
 export interface NodeGroup extends UniversalGraphNode {
   members?: UniversalGraphNode[];
+  hashes?: string[];
 }
 
 export interface UniversalGraphNode {

@@ -86,7 +86,12 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
     const { newImageHashes, deletedImages } = this.graphCanvas.getImageChanges();
     const newImageBlobs = newImageHashes.map(hash => this.mapImageProviderService.getBlob(hash));
-    const graphString = JSON.stringify(this.graphCanvas.getGraph());
+    const graph = this.graphCanvas.getGraph();
+    graph.groups = graph.groups.map(group => {
+      group.hashes = group.members.map(node => node.hash);
+      return group;
+    });
+    const graphString = JSON.stringify(graph);
     const bytes = new TextEncoder().encode(graphString);
     const content = new Blob([bytes], {
       type: 'application/json;charset=utf-8'

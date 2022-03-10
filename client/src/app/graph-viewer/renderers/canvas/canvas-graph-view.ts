@@ -840,6 +840,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
     // yield* this.drawLayoutGroups(ctx);
+    yield* this.drawGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
     yield* this.drawHighlightBackground(ctx);
@@ -914,7 +915,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     yield null;
 
     for (const group of this.groups) {
-      // group.draw();
+      ctx.beginPath();
+      this.placeGroup(group).draw(this.transform);
     }
     // // TODO: This is currently only for demo
     // for (const d of this.layoutGroups) {

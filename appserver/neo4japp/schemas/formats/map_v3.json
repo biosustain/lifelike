@@ -454,15 +454,11 @@
         "additionalProperties": false,
         "required": [
           "hash",
-          "display_name",
           "label"
         ],
         "properties": {
           "hash": {
             "$ref": "#/definitions/hash"
-          },
-          "image_id": {
-            "type": "string"
           },
           "label": {
             "type": "string",
@@ -559,6 +555,16 @@
                 "$ref": "#/definitions/commonData"
               }
             ]
+          },
+          "members": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 1000
+          },
+          "hashes": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 1000
           }
         }
       }

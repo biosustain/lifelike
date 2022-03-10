@@ -6,6 +6,7 @@ import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { GroupDeletion } from 'app/graph-viewer/actions/groups';
 
 import { GraphEntity, GraphEntityType } from '../../services/interfaces';
 import { InfoPanel } from '../../models/info-panel';
@@ -30,6 +31,10 @@ export class InfoPanelComponent {
     return this.selected && this.selected.type === GraphEntityType.Edge;
   }
 
+  isSelectionGroup() {
+    return this.selected && this.selected.type === GraphEntityType.Group;
+  }
+
   save({originalData, updatedData}: { originalData: object, updatedData: object }) {
     this.actionCreated.emit(
       new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData),
@@ -42,6 +47,10 @@ export class InfoPanelComponent {
 
   deleteEdge(edge) {
     this.actionCreated.emit(new EdgeDeletion('Delete edge', edge));
+  }
+
+  deleteGroup(group) {
+    this.actionCreated.emit(new GroupDeletion('Delete group', group));
   }
 
   /**
