@@ -173,7 +173,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   createObjectRequest(value): ObjectCreateRequest {
-    console.log(value);
     const object = {
       filename: value.filename,
       parentHashId: value.parent ? value.parent.hashId : null,
