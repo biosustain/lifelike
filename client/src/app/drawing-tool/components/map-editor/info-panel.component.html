@@ -11,3 +11,10 @@
                (save)="save($event)"
                (delete)="deleteEdge(selected.entity)"
                (sourceOpen)="openSource($event)"></app-edge-form>
+
+<app-node-form *ngIf="isSelectionGroup()"
+               [infoPanel]="infoPanel"
+               [node]="selected.entity"
+               (save)="save($event)"
+               (delete)="deleteGroup(selected.entity)"
+               (sourceOpen)="openSource($event)"></app-node-form>

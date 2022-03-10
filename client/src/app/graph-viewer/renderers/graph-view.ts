@@ -298,6 +298,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
 
+    console.log(this.groups);
+
     this.saveImagesState();
 
     // We need O(1) lookup of nodes
@@ -458,7 +460,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   addGroup(group: NodeGroup) {
     // TODO: Check if group hash is unique and stuff
     // TODO: Populate group 'data' entry by calculating bbox, width, height, center
-    this.groups.push(group);
+    this.groups.push(this.recalculateGroup(group));
+  }
+
+  recalculateGroup(group: NodeGroup): NodeGroup {
+    const bbox = this.getNodeBoundingBox(group.members || []);
+    const { minX, minY, maxX, maxY } = bbox;
+    const width = Math.abs(maxX - minX);
+    const height = Math.abs(maxY - minY);
+    group.data.x = maxX - width / 2.0;
+    group.data.y = maxY - height / 2.0;
+    group.data.width = width;
+    group.data.height = height;
+    return group;
   }
 
   /**

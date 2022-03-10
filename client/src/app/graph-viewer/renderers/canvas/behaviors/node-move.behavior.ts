@@ -59,15 +59,19 @@ export class MovableNode extends AbstractCanvasBehavior {
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
 
       const selectedNodes = new Set<UniversalGraphNode>();
-
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
         } else if (entity.type === GraphEntityType.Group) {
+          console.log('group');
+          const node = entity.entity as UniversalGraphNode;
+          selectedNodes.add(node);
           const group = entity.entity as NodeGroup;
-          for (const node of group.members) {
-            selectedNodes.add(node);
+          selectedNodes.add(entity.entity as UniversalGraphNode);
+          for (const n of group.members) {
+            console.log('group node');
+            selectedNodes.add(n);
           }
         }
       }
@@ -78,6 +82,7 @@ export class MovableNode extends AbstractCanvasBehavior {
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
       if (!selectedNodes.has(this.target)) {
         // Case (a)
+        console.log('not selected node');
         if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
         }

@@ -38,13 +38,12 @@ export class GroupNode extends BaseRectangleNode {
 
       // Node shape
     ctx.save();
-    (ctx as any).roundedRect(
+    (ctx as any).rect(
         this.nodeX,
         this.nodeY,
         this.nodeWidth,
         this.nodeHeight,
-        5,
-      );
+    );
     if (this.shapeFillColor) {
         ctx.fillStyle = this.shapeFillColor;
         ctx.fill();

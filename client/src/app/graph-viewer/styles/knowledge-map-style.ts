@@ -255,7 +255,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           nullCoalesce(styleData.lineWidthScale, 0),
           nullCoalesce(styleData.strokeColor, 'white'),
         ),
-        textbox: labelTextbox
+        textbox: labelTextbox,
+        shapeFillColor: bgColor
       });
 
     } else {
