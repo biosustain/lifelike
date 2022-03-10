@@ -57,8 +57,6 @@ export const ORGANISM_SHORTLIST = new Map<string, string>([
   ['Escherichia coli K12 MG1655',	'511145'],
   ['Saccharomyces cerevisiae S288C',	'559292'],
   ['Pseudomonas aeruginosa PAO1',	'208964'],
-  ['Clostridium difficile	Strain 630',	'272563'],
-  ['Staphylococcus aureus USA300',	'367830'],
   ['Homo sapiens', '9606']
 ]);
 
