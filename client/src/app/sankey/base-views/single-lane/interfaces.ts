@@ -1,4 +1,4 @@
-import { SankeyData, SelectionType, SelectionEntity, SankeyNode, SankeyTrace, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
+import { SankeyFile, SelectionType, SelectionEntity, SankeyNode, SankeyTrace, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 
@@ -27,7 +27,7 @@ export interface SankeySingleLaneNode extends SankeyNode {
   _target: SankeySingleLaneLink;
 }
 
-export interface SankeySingleLaneData extends SankeyData {
+export interface SankeySingleLaneData extends SankeyFile {
   links: SankeySingleLaneLink[];
   nodes: SankeySingleLaneNode[];
 }

@@ -150,15 +150,14 @@ export interface SankeyViews {
   [viewName: string]: SankeyView;
 }
 
-export interface SankeyData extends GraphFile {
+export interface SankeyFile extends GraphFile {
+  _views: SankeyViews;
+}
+
+export interface SankeyData extends SankeyFile {
   graph: SankeyGraph;
   nodes: Array<SankeyNode>;
   links: Array<SankeyLink>;
-
-  sources?: Array<number>;
-  targets?: Array<number>;
-
-  _views: SankeyViews;
 }
 
 // endregion

@@ -1,21 +1,23 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, ElementRef, NgZone, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone } from '@angular/core';
 
 import { select as d3_select } from 'd3-selection';
-import { startWith, pairwise, map, tap } from 'rxjs/operators';
+import { startWith, pairwise, map, tap, switchMap, takeUntil, first, filter } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { last } from 'lodash-es';
 
 import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
-import { mapIterable } from 'app/shared/utils';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
-import { SankeySelectionService } from '../../../../services/selection.service';
-import { SankeySearchService } from '../../../../services/search.service';
 import { EntityType } from '../../../../utils/search/search-match';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SankeySelectionService } from 'app/sankey/services/selection.service';
+import { SankeySearchService } from 'app/sankey/services/search.service';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -32,7 +34,8 @@ type SankeyEntity = SankeyNode | SankeyLink;
     }
   ],
 })
-export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySingleLaneOptions, SankeySingleLaneState>
+export class SankeySingleLaneComponent
+  extends SankeyAbstractComponent<SankeySingleLaneOptions, SankeySingleLaneState>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
@@ -46,53 +49,90 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
   }
 
+  focusedLink$ = this.sankey.graph$.pipe(
+    switchMap(({links}) => this.search.searchFocus$.pipe(
+        map(({type, id}) =>
+          type === EntityType.Link &&
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          (links as SankeySingleLaneLink[]).find(({_id}) => _id == id)
+        ),
+        startWith(undefined),
+        pairwise()
+      )
+    ),
+    tap(prevNext =>
+      this.linkSelection
+        .filter(link => prevNext.includes(link))
+        .each(function(link) {
+          const add = link === prevNext[1]; // equal to new focus
+          const linkSelection = d3_select(this);
+          linkSelection
+            .attr('focused', add || undefined);
+          if (add) {
+            linkSelection
+              .raise();
+          }
+        })
+    )
+  );
+
+  // region Select
+
+  selectionUpdate$ = this.selection.selection$.pipe(
+    // this base view operates on sigular selection
+    map(selection => last(selection)),
+    tap(selection => {
+      if (selection) {
+        const {entity, type} = selection;
+        switch (type) {
+          case SelectionType.node:
+            this.linkSelection.attr('selected', false);
+            this.assignAttrAndRaise(this.nodeSelection, 'selected', ({_id}) => (entity as SankeyNode)._id === _id);
+            break;
+          case SelectionType.link:
+            this.nodeSelection.attr('selected', false);
+            this.assignAttrAndRaise(this.linkSelection, 'selected', ({_id}) => (entity as SankeyLink)._id === _id);
+            break;
+        }
+        this.calculateAndApplyTransitiveConnections(entity);
+      } else {
+        // delete selection attributes
+        this.nodeSelection
+          .attr('selected', undefined)
+          .attr('transitively-selected', undefined);
+        this.linkSelection
+          .attr('selected', undefined)
+          .attr('transitively-selected', undefined);
+      }
+    })
+  );
+
   ngOnInit() {
+    // If there is selection when opening the view, reduce it to last selected entity
+    // this baseview supports only single selection
+    this.selection.selection$.pipe(
+      first(),
+      filter(isNotEmpty),
+      tap(selection => this.selection.selection$.next([last(selection)]))
+    ).toPromise();
     super.ngOnInit();
   }
 
-  // initFocus() {
-  //   this.focusedEntity$.pipe(
-  //     startWith(null),
-  //     pairwise()
-  //   ).subscribe(([currentValue, previousValue]) => {
-  //     if (previousValue) {
-  //       this.applyEntity(
-  //         previousValue,
-  //         this.unFocusNodes,
-  //         this.unFocusLinks
-  //       );
-  //     }
-  //     if (currentValue) {
-  //       this.applyEntity(
-  //         currentValue,
-  //         this.focusNodes,
-  //         this.focusLinks
-  //       );
-  //       this.panToEntity(currentValue);
-  //     }
-  //   });
-  // }
-
   initSelection() {
-    this.selection.selection$.subscribe(([selectedEntity]) => {
-      const {type, entity} = selectedEntity ?? {};
-      switch (type) {
-        case SelectionType.node:
-          this.deselectLinks();
-          this.selectNode(entity);
-          break;
-        case SelectionType.link:
-          this.deselectNodes();
-          this.selectLink(entity);
-          break;
-        default:
-          this.deselectNodes();
-          this.deselectLinks();
-      }
-      this.calculateAndApplyTransitiveConnections(entity);
-    });
+    this.selectionUpdate$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
 
+  initFocus() {
+    forkJoin(
+      this.focusedLink$,
+      this.focusedNode$
+    ).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
@@ -100,6 +140,16 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
 
   ngOnDestroy() {
     super.ngOnDestroy();
+  }
+
+  panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
+    this.sankeySelection.transition().call(
+      this.zoom.translateTo,
+      // x
+      (_x1 + _x0) / 2,
+      // y
+      (_y0 + _y1) / 2
+    );
   }
 
   @d3EventCallback
@@ -112,7 +162,6 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
     this.unhighlightNodes();
     this.unhighlightLinks();
   }
-
 
   /**
    * Given the set of selected nodes and links, calculates the connected nodes/links and applies the `transitively-selected` attribute to
@@ -231,18 +280,6 @@ export class SankeySingleLaneComponent extends SankeyAbstractComponent<SankeySin
     this.unhighlightNodes();
     this.unhighlightLinks();
   }
-
-  // region Select
-
-  selectNode(selectedNode) {
-    this.assignAttrAndRaise(this.nodeSelection, 'selected', ({_id}) => _id === selectedNode._id);
-  }
-
-  selectLink(selectedLink) {
-    this.assignAttrAndRaise(this.linkSelection, 'selected', ({_id}) => _id === selectedLink._id);
-  }
-
-  // endregion
 
   // region Highlight
   highlightLink(element) {

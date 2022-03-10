@@ -4,9 +4,10 @@ import { ActivatedRoute } from '@angular/router';
 import * as CryptoJS from 'crypto-js';
 import { map } from 'rxjs/operators';
 
+import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
+
 import { parseForRendering } from '../utils/utils';
 import { ControllerService } from '../services/controller.service';
-import { SankeyNode } from '../interfaces';
 
 @Injectable()
 export class SankeyAbstractDetailsComponent {
@@ -39,7 +40,7 @@ export class SankeyAbstractDetailsComponent {
 
   getNodeById(nodeId) {
     return this.common.data$.pipe(
-      map(({nodes}) => nodes.find(({id}) => id === nodeId) ?? {} as SankeyNode)
+      map(({nodes}) => nodes.find(({id}) => id === nodeId) ?? {} as GraphNode)
     );
   }
 }

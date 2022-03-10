@@ -14,14 +14,10 @@ export function calculateInputCountSkippingCircularLinks(
   nextLinkValue: (nodeValue: number, nextLinks) => number
 ) {
   sortedNodes.forEach(n => {
-    if (dt.startNodes.includes(n.id)) {
-      n._value = 1;
-    } else {
-      n._value = 0;
-    }
+    n._value = dt.startNodes.includes(n.id) ? 1 : 0;
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
-    n._value = prevLinks.reduce((a, l) => a + l._value, n._value || 0);
+    n._value = prevLinks.reduce((a, l) => a + (l._value ?? 0), n._value);
     this.warningController.assert(
       // JS floats calculations has very limited precision which can lead to rounding error in here
       n._value.toPrecision(5) <= maxExpectedValue,
