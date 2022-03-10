@@ -43,7 +43,7 @@ import { BaseControllerService, DefaultBaseControllerService } from '../services
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
-import { DefaultLayoutService, LayoutService } from '../services/layout.service';
+import { DefaultLayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../error';
@@ -485,10 +485,14 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
     return this.baseView$.pipe(
-      first(),
       switchMap(baseView =>
-        baseView.selectPredefinedValueAccessor(predefinedValueAccessorId)
+        baseView.patchState({
+          predefinedValueAccessorId,
+          nodeValueAccessorId: null,
+          linkValueAccessorId: null
+        })
       ),
+      first()
     ).toPromise();
   }
 }

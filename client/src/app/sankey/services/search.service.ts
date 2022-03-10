@@ -1,7 +1,20 @@
 import { Injectable } from '@angular/core';
 
-import { ReplaySubject, iif, of, Subject, Observable } from 'rxjs';
-import { map, switchMap, tap, first, finalize, scan, shareReplay, distinctUntilChanged, throttleTime, filter } from 'rxjs/operators';
+import { ReplaySubject, iif, of, Subject, Observable, merge, BehaviorSubject } from 'rxjs';
+import {
+  map,
+  switchMap,
+  tap,
+  first,
+  finalize,
+  scan,
+  shareReplay,
+  distinctUntilChanged,
+  throttleTime,
+  filter,
+  pairwise,
+  skip
+} from 'rxjs/operators';
 import { size, isNil, isEmpty } from 'lodash-es';
 
 import { tokenizeQuery } from 'app/shared/utils/find';
@@ -16,17 +29,7 @@ export class SankeySearchService {
   constructor(
     readonly common: ControllerService
   ) {
-    this.currentSearch$.pipe(
-      switchMap(results$ => results$.pipe(
-        first()
-      ))
-    ).subscribe(() => {
-      this.focusIdx$.next(0);
-    });
   }
-
-  // index of the currently focused match
-  focusIdx$ = new ReplaySubject<number>(1);
 
   term$ = new ReplaySubject<string>(1);
 
@@ -106,6 +109,38 @@ export class SankeySearchService {
     shareReplay<Observable<Match[]>>(1)
   );
 
+  // index of the currently focused match
+  private _focusIdx$ = new BehaviorSubject<number | null>(null);
+  focusIdx$: Observable<number> = merge(
+    this._focusIdx$,
+    this.currentSearch$.pipe(
+      // when search starts
+      switchMap(() => this.preprocessedMatches$.pipe(
+        // only when search updates
+        skip(1),
+        switchMap(matches =>
+          this.searchFocus$.pipe(
+            // what was last known search focus before this update?
+            pairwise(),
+            // map to index in current search results
+            map(([prevSearchFocus]) => matches.indexOf(prevSearchFocus)),
+            // we are not interested in subsequnt updates especially that we are about to init them
+            first(),
+            switchMap(focusIdx => iif(
+              // does it map to current search results? (it should!)
+              () => focusIdx !== -1,
+              of(focusIdx)
+              // stop propagation if it doesn't
+            ))
+          )
+        )
+      ))
+    )
+  ).pipe(
+    debug('focus idx'),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
   matches$ = this.currentSearch$.pipe(
     switchMap(results$ => results$)
   );
@@ -120,7 +155,7 @@ export class SankeySearchService {
   searchFocus$ = this.preprocessedMatches$.pipe(
     switchMap(preprocessedMatches => this.focusIdx$.pipe(
         map(focusIdx => preprocessedMatches[focusIdx]),
-        filter(searchFocus => !!searchFocus),
+        filter(searchFocus => Boolean(searchFocus)),
         switchMap(searchFocus =>
           this.common.patchState({
             networkTraceIdx: searchFocus.networkTraceIdx
@@ -143,7 +178,7 @@ export class SankeySearchService {
       // modulo which works on negative numbers
       map(resultsCount => ((focusIdx % resultsCount) + resultsCount) % resultsCount),
       distinctUntilChanged(),
-      tap(idx => this.focusIdx$.next(idx))
+      tap(idx => this._focusIdx$.next(idx))
     );
   }
 
@@ -178,7 +213,13 @@ export class SankeySearchService {
   relativeFocusIdxChange(value: number) {
     return this.focusIdx$.pipe(
       first(),
-      map(focusIdx => isNil(focusIdx) ? value : focusIdx + value),
+      map(focusIdx =>
+        isNil(focusIdx) ?
+          // prev from no focus -> last (-1)
+          // next from no focus -> first (0)
+          (value < 0 ? value : 0) :
+          focusIdx + value
+      ),
       switchMap(focusIdx => this.setFocusIdx(focusIdx))
     );
   }
