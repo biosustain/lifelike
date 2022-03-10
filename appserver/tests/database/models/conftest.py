@@ -11,7 +11,8 @@ def test_user(session) -> AppUser:
         email='test@***ARANGO_DB_NAME***.bio',
         password_hash='password',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='test@***ARANGO_DB_NAME***.bio',
     )
     session.add(user)
     session.flush()

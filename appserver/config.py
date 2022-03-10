@@ -11,7 +11,10 @@ class Base():
     APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
     APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
 
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
+    JWKS_URL = os.environ.get('JWKS_URL', None)
+    JWT_SECRET = os.environ.get('JWT_SECRET', 'secrets')
+    JWT_AUDIENCE = os.environ.get('JWT_AUDIENCE', None)
+    JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
 
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
     POSTGRES_PORT = os.environ.get('POSTGRES_PORT')

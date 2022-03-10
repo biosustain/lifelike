@@ -435,7 +435,10 @@ def get_icons_data():
 def create_default_node(node):
     """
     Creates a param dict with all the parameters required to create a simple text node or
-    saving a baseline for more complex node - like map/note/link nodes
+    saving a baseline for more complex node - like map/note/link nodes'
+    NOTE: When working with styles dict, remember that user can unset property (by clicking
+    'default') which caused the key to have value of 'None'. This does NOT trigger the default case
+    of .get(..., x), so you need to use get() or x instead.
     :params:
     :param node: a dictionary containing the information about currently rendered node
     :return: baseline dict with Graphviz paramaters
@@ -465,7 +468,7 @@ def create_default_node(node):
             node['label'], {'color': 'black'}).get('color'),
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
-        'fillcolor': 'white',
+        'fillcolor': style.get('bgColor') or 'white',
         'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
@@ -563,9 +566,10 @@ def create_detail_node(node, params):
         detail_text = r"\l".join(lines) + r'\l'
 
     params['label'] = detail_text
-    params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                     {'bgcolor': 'black'}
-                                                     ).get('bgcolor')
+    if params['fillcolor'] == 'white':
+        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
+                                                         {'bgcolor': 'black'}
+                                                         ).get('bgcolor')
 
     doi_src = look_for_doi_link(node)
     if doi_src:
@@ -655,8 +659,9 @@ def create_icon_node(node, params):
     """
     style = node.get('style', {})
     label = escape(node['label'])
-    # remove border around icon label
+    # Remove border around icon label and background color
     params['penwidth'] = '0.0'
+    params['fillcolor'] = 'white'
     # Calculate the distance between icon and the label center
     distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
         * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
@@ -718,20 +723,15 @@ def create_relation_node(node, params):
     :returns: altered params dict
     """
     style = node.get('style', {})
-    default_color = ANNOTATION_STYLES_DICT.get(
-        node['label'],
-        {'color': 'black'})['color']
+    default_color = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
     params['color'] = style.get('strokeColor') or default_color
-    if style.get('fillColor'):
-        params['color'] = style.get('strokeColor') or DEFAULT_BORDER_COLOR
-    # Changing font color changes background to white
-    params['fillcolor'] = 'white' if style.get('fillColor') else default_color
+    params['fillcolor'] = style.get('bgColor') or default_color
     params['fontcolor'] = style.get('fillColor') or 'black'
     params['style'] += ',filled'
     return params
 
 
-def set_node_href(node):
+def get_node_href(node):
     """
     Evaluates and sets the href for the node. If link parameter was not set previously, we are
     dealing with entity node (or icon node without any sources) - so we prioritize the
@@ -762,10 +762,11 @@ def set_node_href(node):
             else:
                 del node['data']['sources'][0]
             # And search again
-            href = set_node_href(node)
+            href = get_node_href(node)
         else:
             href = LIFELIKE_DOMAIN + current_link
-    return href
+    # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
+    return href.replace("'", '%27')
 
 
 def create_map_name_node():
@@ -818,7 +819,8 @@ def create_edge(edge, node_hash_type_dict):
         else '0.0',
         'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
-        'URL': url
+        # We need to encode ', or export will fail - LL-3924
+        'URL': url.replace("'", "%27")
     }
 
 
@@ -1054,7 +1056,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             if node['label'] in RELATION_NODES:
                 params = create_relation_node(node, params)
 
-            params['href'] = set_node_href(node)
+            params['href'] = get_node_href(node)
             graph.node(**params)
 
         min_x = min(x_values, default=0)
@@ -1213,6 +1215,45 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.setLayout(layout2)
         doc.save(result_string)
         return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
+
+    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+        """
+        Evaluate the changes in the images and create a new blob to store in the content.
+        Since we cannot delete files from an archive, we need to copy everything (except for
+        graph.json) into a new one.
+        :params:
+        :param buffer: buffer containing request data
+        :param params: request parameters, containing info about images
+        :param file: file which content is being modified
+        """
+
+        images_to_delete = params.get('deleted_images') or []
+        new_images = params.get('new_images') or []
+        previous_content = file.content.raw_file
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(previous_content))
+        except zipfile.BadZipfile:
+            raise ValidationError('Previous content of the map is corrupted!')
+
+        new_content = io.BytesIO()
+        new_zip = zipfile.ZipFile(new_content, 'w')
+
+        # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
+        # to make sure that the graph.json is not copied as well.
+        images_to_delete.append('graph')
+        files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                         os.path.basename(hash_id) not in images_to_delete]
+        for filename in files_to_copy:
+            new_zip.writestr(filename, zip_file.read(filename))
+
+        for image in new_images:
+            new_zip.writestr('images/' + image.filename + '.png', image.read())
+        new_zip.writestr('graph.json', params['content_value'].read())
+        new_zip.close()
+
+        # Remember to always rewind when working with BufferedIOBase
+        new_content.seek(0)
+        return typing.cast(BufferedIOBase, new_content)
 
 
 class GraphTypeProvider(BaseFileTypeProvider):

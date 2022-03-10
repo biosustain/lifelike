@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { first, last } from 'lodash-es';
+import { first, last, range } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyData } from 'app/shared-sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 
 import { DirectedTraversal } from './directed-traversal';
 import { SankeyLayoutService } from '../components/sankey/sankey-layout.service';
@@ -444,33 +445,35 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
     graph._nodes = graph.nodes;
     // and start to operate on substitutes
     graph.nodes = [...graph.nodes];
-    const _virtualPaths = new Map();
+    const _virtualPaths = new ExtendedMap<string, ExtendedArray<SankeyNode>>();
 
     for (const link of graph.links) {
-      const totalToCreate = Math.abs(link._target._layer - link._source._layer);
-
-      // if the link spans more than 1 column, then replace it with virtual nodes and links
-      if (totalToCreate > 1) {
-        const startNode = link._circular ? link._target : link._source;
-
-        const id = link._source.id + ' ' + link._target.id;
-        const virtualPath = _virtualPaths.get(id) ?? [];
-        _virtualPaths.set(id, virtualPath);
-
-        let newNode;
-        for (let n = 1; n < totalToCreate; n++) {
-          newNode = virtualPath[n];
-          if (!newNode) {
-            newNode = {
-              _value: 0,
-              _layer: startNode._layer + n
-            } as SankeyNode;
-            virtualPath.push(newNode);
-            this.columnsWithLinkPlaceholders[newNode._layer].push(newNode);
-          }
-          newNode._value += link._value;
+      let virtualPathStartLayer;
+      let virtualPathEndLayer;
+      if (link._circular) {
+        virtualPathStartLayer = link._target._layer;
+        virtualPathEndLayer = link._source._layer;
+      } else {
+        // if the link spans more than 1 column, then replace it with virtual nodes and links
+        if (link._target._layer - link._source._layer > 1) {
+          virtualPathStartLayer = link._source._layer;
+          virtualPathEndLayer = link._target._layer;
+        } else {
+          continue;
         }
       }
+      const id = link._source.id + ' ' + link._target.id;
+      const virtualPath = _virtualPaths.getSet(id, new ExtendedArray());
+      range(virtualPathStartLayer, virtualPathEndLayer).forEach(_layer =>
+        virtualPath.getSetLazily(_layer, () => {
+          const newNode = {
+            _value: 0,
+            _layer
+          } as SankeyNode;
+          this.columnsWithLinkPlaceholders[_layer].push(newNode);
+          return newNode;
+        })._value += link._value
+      );
     }
   }
 

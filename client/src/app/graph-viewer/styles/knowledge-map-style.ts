@@ -19,7 +19,11 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import {FA_CUSTOM_ICONS, CustomIconColors, Unicodes} from 'app/shared/constants';
+import {
+  FA_CUSTOM_ICONS,
+  Unicodes,
+  defaultLabelFontSize
+} from 'app/shared/constants';
 import {getSupportedFileCodes} from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
@@ -59,45 +63,20 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
-    const labelFont = (16 * labelFontSizeScale) + 'px ' + this.font;
-    const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
-
-    let textColor = '#000';
-    let bgColor = '#fff';
-    let strokeColor = '#2B7CE9';
-    let iconCode = null;
+    const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
+    const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
 
     // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
 
-    if (annotationStyle) {
-      if (annotationStyle.iconCode) {
-        iconCode = annotationStyle.iconCode;
-      }
-    }
 
-    if (styleData.fillColor != null) {
-      textColor = styleData.fillColor;
-    } else if (annotationStyle) {
-      if (annotationStyle.color) {
-        textColor = annotationStyle.color;
-      }
-      if (annotationStyle.style) {
-        if (annotationStyle.style.background) {
-          bgColor = annotationStyle.style.background;
-        }
-        if (annotationStyle.style.color) {
-          textColor = annotationStyle.style.color;
-        }
-        if (annotationStyle.style.border) {
-          strokeColor = annotationStyle.style.border;
-        }
-      }
-    }
+    let iconCode: any = annotationStyle?.iconCode;
 
-    if (styleData.strokeColor != null) {
-      strokeColor = styleData.strokeColor;
-    }
+    // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
+    // Relation nodes have their font color stored elsewhere, so we need to check that first
+    const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || '#000'));
+    const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || '#fff');
+    const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || '#2B7CE9');
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
@@ -132,8 +111,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
           nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
-        shapeFillColor: this.detailTypeBackgrounds.get(d.label),
-        forceHighDetailLevel,
+        shapeFillColor: styleData.bgColor ?? this.detailTypeBackgrounds.get(d.label),
+        forceVisibleText,
       });
 
     } else if (iconCode) {
@@ -217,7 +196,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         y: d.data.y,
         iconTextbox,
         labelTextbox,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
 
     } else if (d.image_id) {
@@ -277,7 +256,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           strokeColor,
         ),
         shapeFillColor: bgColor,
-        forceHighDetailLevel,
+        forceVisibleText,
       });
     }
   }
@@ -324,7 +303,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     // Label textbox, if any
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
-      font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px ' + this.font,
+      font: (placementOptions.highlighted ? 'bold ' : '') + (defaultLabelFontSize * fontSizeScale) + 'px ' + this.font,
       fillStyle: '#444',
       strokeStyle: '#fff',
       strokeWidth: 3,
@@ -347,7 +326,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         lineWidth,
         strokeColor,
       ),
-      forceHighDetailLevel: placementOptions.selected || placementOptions.highlighted,
+      forceVisibleText: placementOptions.selected || placementOptions.highlighted,
     });
   }
 

@@ -241,6 +241,8 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     public = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
     hashes_of_linked = fields.List(fields.String, required=False)
+    new_images = fields.List(fields.Field, required=False)
+    deleted_images = fields.List(fields.String, required=False)
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):

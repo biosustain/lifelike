@@ -1,17 +1,19 @@
-from . import app
-
 from functools import partial
-
-from .services.rcache import redis_cached
 from webargs.flaskparser import use_args
+
+from .app import app
+from .auth import login_exempt
+from .services.rcache import redis_cached
 from .schemas import EnrichmentSchema
 from .services import get_enrichment_visualisation_service
 
 @app.route('/', methods=['GET','POST'])
+@login_exempt
 def enrich():
     raise Exception('No function provided!')
 
 @app.route('/healthz', methods=['GET','POST'])
+@login_exempt
 def healthz():
     return "I am OK!"
 
