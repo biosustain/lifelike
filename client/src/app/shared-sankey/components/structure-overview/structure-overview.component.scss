@@ -1,0 +1,18 @@
+app-sankey-structure-overview {
+  $padding: 1.25em;
+
+  i {
+    margin-left: -$padding;
+    text-align: center;
+    width: $padding;
+  }
+
+  cdk-nested-tree-node {
+    margin-left: $padding;
+    display: block;
+
+    [cdktreenodetoggle] {
+      cursor: pointer;
+    }
+  }
+}

@@ -1,7 +1,5 @@
 import pytest
 import json
-import jwt
-from datetime import datetime, timedelta
 from neo4japp.models import AppUser
 
 
@@ -11,6 +9,7 @@ def user_factory(uid):
         'firstName': f'firstname-{uid}',
         'lastName': f'lastname-{uid}',
         'email': f'appuser-{uid}@lifelike.bio',
+        'subject': f'appuser-{uid}@lifelike.bio',
         'roles': ['user'],
         'failedLoginCount': 0,
     }

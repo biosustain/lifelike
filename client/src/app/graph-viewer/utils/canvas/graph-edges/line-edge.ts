@@ -4,6 +4,7 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
+import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -12,7 +13,7 @@ export interface StandardEdgeOptions {
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
   stroke?: Line;
-  forceHighDetailLevel?: boolean;
+  forceVisibleText?: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ export class LineEdge extends PlacedEdge {
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;
   readonly stroke: Line | undefined;
-  readonly forceHighDetailLevel = false;
+  readonly forceVisibleText = false;
 
   readonly labelX: number;
   readonly labelY: number;
@@ -34,6 +35,7 @@ export class LineEdge extends PlacedEdge {
   readonly labelMinY: number;
   readonly labelMaxY: number;
   readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
     super();
@@ -153,14 +155,17 @@ export class LineEdge extends PlacedEdge {
     }
   }
 
+  /**
+   * Draws textbox over the edge. As the edge labels were "getting too small too fast" (see LL-4172)
+   * We scale their size (by temporal increase of the font size), draw them, and restore the font.
+   * This ensures, that the label edge would be always at least as big, as it would be when
+   * visibleTextThreshold zoom-out level is reached.
+   * NOTE: This works, since we are not using line breaks in edge label (which as width based).
+   * @param transform current graph transform
+   */
   drawLayer2(transform: any) {
-    if (this.textbox) {
-      const highDetailLevel = this.forceHighDetailLevel || transform.k >= 0.35;
-
-      if (highDetailLevel) {
-        this.textbox.drawCenteredAt(this.labelX, this.labelY);
-      }
+    if (this.textbox && transform.k > noTextThreshold) {
+      drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }
-
   }
 }

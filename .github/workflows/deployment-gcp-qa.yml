@@ -1,0 +1,19 @@
+name: GCP QA Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    tags: [qa]
+
+jobs:
+  call-deployment-gcp:
+    uses: ./.github/workflows/deployment-gcp.yml
+    with:
+      environment_name: qa
+      client_config: qa
+    secrets:
+      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+      CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
+      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}

@@ -1,3 +1,4 @@
+from azure.storage.blob import BlobType, BlobServiceClient, ContentSettings
 from flask import (
     Blueprint,
     g,
@@ -7,9 +8,8 @@ from flask import (
 )
 from flask.globals import current_app
 from flask.views import MethodView
+
 from neo4japp.exceptions import ServerException, NotAuthorized
-from neo4japp.blueprints.auth import auth
-from azure.storage.blob import BlobType, BlobServiceClient, ContentSettings
 
 
 bp = Blueprint('storage', __name__, url_prefix='/storage')
@@ -20,9 +20,6 @@ class UserManualAPI(MethodView):
     Uploads a user manual for how to use Lifelike. This API is Azure Cloud
     platform specific.
     """
-
-    decorators = [auth.login_required]
-
     USER_MANUAL_FILENAME = 'lifelike-user-manual'
 
     def get_blob_service(self):
