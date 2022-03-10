@@ -32,6 +32,7 @@ def project_owner_user(
         email=f'somebody@lifelike.bio',
         first_name='joe',
         last_name='taylor',
+        subject=f'somebody@lifelike.bio',
     )
     user.set_password(login_password)
     session.add(user)
@@ -82,6 +83,7 @@ def user_with_project_roles(
         email=f'somehow@lifelike.bio',
         first_name='erica',
         last_name='samuel',
+        subject=f'somehow@lifelike.bio',
     )
     user.set_password(login_password)
     user.roles.extend([account_user.get_or_create_role(role_name)

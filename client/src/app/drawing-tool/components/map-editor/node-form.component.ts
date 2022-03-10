@@ -11,7 +11,7 @@ import { SearchType } from 'app/search/shared';
 
 import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
-import { PALETTE_COLORS } from '../../services/palette';
+import { PALETTE_COLORS, BG_PALETTE_COLORS } from '../../services/palette';
 import { InfoPanel } from '../../models/info-panel';
 
 @Component({
@@ -33,6 +33,7 @@ export class NodeFormComponent implements AfterViewInit {
     ...LINE_TYPES.entries(),
   ];
   paletteChoices = [...PALETTE_COLORS];
+  bgPaletteChoices = [...BG_PALETTE_COLORS];
   private ASSUMED_PANEL_HEIGHT = 450;
 
   originalNode: UniversalGraphNode;
@@ -187,6 +188,7 @@ export class NodeFormComponent implements AfterViewInit {
           fontSizeScale: this.originalNode.style.fontSizeScale,
           fillColor: this.originalNode.style.fillColor,
           strokeColor: this.originalNode.style.strokeColor,
+          bgColor: this.originalNode.style.bgColor,
           lineType: this.originalNode.style.lineType,
           lineWidthScale: this.originalNode.style.lineWidthScale,
           showDetail: this.originalNode.style.showDetail,
@@ -205,6 +207,7 @@ export class NodeFormComponent implements AfterViewInit {
           fontSizeScale: this.updatedNode.style.fontSizeScale,
           fillColor: this.updatedNode.style.fillColor,
           strokeColor: this.updatedNode.style.strokeColor,
+          bgColor: this.updatedNode.style.bgColor,
           lineType: this.updatedNode.style.lineType,
           lineWidthScale: this.updatedNode.style.lineWidthScale,
           showDetail: this.updatedNode.style.showDetail,

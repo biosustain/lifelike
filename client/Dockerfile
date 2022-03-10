@@ -57,6 +57,18 @@ WORKDIR /usr/share/nginx/html
 # URL to proxy requests to /api
 ENV APPSERVER_UPSTREAM http://appserver:5000
 
+# Whether to run the app in prod mode
+ENV PRODUCTION_MODE true
+
+# Whether to run the app with oauth login
+ENV OAUTH_ENABLED false
+
+# OAuth issuer discovert URL
+ENV OAUTH_ISSUER ""
+
+# Client ID of the OAuth application
+ENV OAUTH_CLIENT_ID ""
+
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
 ENV GZIP_EXTRA_TYPES text/tsv vnd.lifelike.document/bioc vnd.lifelike.document/enrichment-table vnd.lifelike.document/graph vnd.lifelike.document/map

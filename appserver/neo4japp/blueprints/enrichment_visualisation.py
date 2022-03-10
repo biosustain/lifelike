@@ -3,11 +3,8 @@ import logging
 import os
 
 import requests
-from flask import (
-    Blueprint, request, Response
-)
+from flask import Blueprint, request, Response
 
-from neo4japp.blueprints.auth import auth
 from neo4japp.exceptions import StatisticalEnrichmentError
 from requests.exceptions import ConnectionError
 
@@ -66,6 +63,5 @@ def forward_request():
 
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
-@auth.login_required
 def enrich_go():
     return forward_request()
