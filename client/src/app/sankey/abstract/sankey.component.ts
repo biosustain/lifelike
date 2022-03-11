@@ -1,12 +1,12 @@
-import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Injectable } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, pairwise, startWith } from 'rxjs/operators';
+import { map, switchMap, first, filter, tap, publish, takeUntil } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
-import { assign, partial } from 'lodash-es';
+import { assign, partial, groupBy } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -22,6 +22,7 @@ import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { EntityType } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
 import { NotImplemented } from '../error';
+import { updateAttr, updateSingular } from '../utils/rxjs';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
@@ -41,7 +42,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   // region D3Selection
   get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
     // returns empty selection if DOM struct was not initialised
-    return d3_select(this.links && this.links.nativeElement)
+    return d3_select(this.links.nativeElement)
       .selectAll(function() {
         // by default there is recursive match, not desired in here
         return this.children;
@@ -51,7 +52,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
     // returns empty selection if DOM struct was not initialised
-    return d3_select(this.nodes && this.nodes.nativeElement)
+    return d3_select(this.nodes.nativeElement)
       .selectAll(function() {
         // by default there is recursive match, not desired in here
         return this.children;
@@ -63,53 +64,53 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   focusedNode$ = this.sankey.graph$.pipe(
-    switchMap(({nodes}) => this.search.searchFocus$.pipe(
-      map(({type, id}) =>
-        type === EntityType.Node &&
-        // allow string == number match interpolation ("58" == 58 -> true)
-        // tslint:disable-next-line:triple-equals
-        nodes.find(({_id}) => _id == id)
-      ),
-      startWith(undefined),
-      pairwise()
-    )),
-    switchMap(prevNext =>
+    switchMap(({nodes}) =>
       this.sankey.nodeLabel$.pipe(
-        tap(({nodeLabelShort}) => {
-            const {nodeLabel} = this.sankey;
-            this.nodeSelection
-              .filter(node => prevNext.includes(node))
-              .each(function(node) {
-                const add = node === prevNext[1]; // equal to new focus
-                const nodeSelection = d3_select(this);
-                nodeSelection
-                  .attr('focused', add || undefined)
+        switchMap(({nodeLabelShort}) => this.updateDOM$.pipe(
+            switchMap(({nodeSelection}) => this.search.searchFocus$.pipe(
+              map(({type, id}) =>
+                type === EntityType.Node &&
+                // allow string == number match interpolation ("58" == 58 -> true)
+                // tslint:disable-next-line:triple-equals
+                nodes.find(({_id}) => _id == id)
+              ),
+              updateSingular(nodeSelection, {
+                enter: s => s
+                  .attr('focused', true)
+                  .call(node => node
+                    .select('g')
+                    .call(textGroup => {
+                      textGroup
+                        .select('text')
+                        .text(this.sankey.nodeLabel);
+                      // postpone so the size is known
+                      requestAnimationFrame(() => {
+                        textGroup
+                          .each(SankeyAbstractComponent.updateTextShadow);
+                      });
+                    })
+                  )
+                  .raise(),
+                exit: s => s
+                  .attr('focused', false)
                   .select('g')
                   .call(textGroup => {
                     textGroup
                       .select('text')
-                      .text(add ? nodeLabel : nodeLabelShort);
-                  });
-                if (add) {
-                  nodeSelection
-                    .raise();
-                }
-              })
-              .call(affectedSelection =>
-                // postpone so the size is known
-                requestAnimationFrame(() => {
-                  affectedSelection
-                    .select('g')
-                    .each(SankeyAbstractComponent.updateTextShadow);
-                })
-              );
-          }
+                      .text(nodeLabelShort);
+                    // postpone so the size is known
+                    requestAnimationFrame(() => {
+                      textGroup
+                        .each(SankeyAbstractComponent.updateTextShadow);
+                    });
+                  })
+              }),
+            )),
+          )
         ),
-        map(() => prevNext[1])
+        tap(node => node && this.panToNode(node)),
       )
-    ),
-    tap(node => this.panToNode(node)),
-  );
+    ));
 
   readonly MARGIN = 10;
 
@@ -123,30 +124,197 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   destroy$ = new Subject();
 
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
-  @ViewChild('g', {static: false}) g!: ElementRef;
-  @ViewChild('nodes', {static: false}) nodes!: ElementRef;
-  @ViewChild('links', {static: false}) links!: ElementRef;
+  @ViewChild('svg', {static: true}) svg!: ElementRef;
+  @ViewChild('g', {static: true}) g!: ElementRef;
+  @ViewChild('nodes', {static: true}) nodes!: ElementRef;
+  @ViewChild('links', {static: true}) links!: ElementRef;
 
-  /**
-   * Run d3 lifecycle code to update DOM
-   * @param graph: { links, nodes } to be rendered
-   */
-  private updateDOM$ = this.sankey.graph$.pipe(
-    switchMap(({links, nodes}) => {
-      return combineLatest([
-        this.renderNodes(nodes),
-        this.renderLinks(links)
-      ]);
-    }),
-    debug('updateDOM')
-  );
 
   width: number;
 
   // resize and listen to future resize events
   resize$ = createResizeObservable(this.wrapper.nativeElement)
     .subscribe(rect => this.onResize(rect));
+
+  renderedLinks$ = combineLatest([
+    this.sankey.graph$,
+    this.sankey.linkPath$
+  ]).pipe(
+    map(([{links}, linkPath]) => {
+      const {
+        sankey: {
+          id,
+          linkTitle,
+          linkColor,
+          linkBorder,
+          circular
+        }
+      } = this;
+      const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
+      return this.linkSelection
+        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
+        .join(
+          enter => enter
+            .append('path')
+            .call(this.attachLinkEvents)
+            .attr('d', linkPath)
+            .classed('circular', circular)
+            .call(path =>
+              path.append('title')
+            ),
+          update => update
+            // todo: reenable when performance improves
+            // .transition().duration(RELAYOUT_DURATION)
+            // .attrTween('d', link => {
+            //   const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
+            //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
+            //   return t => {
+            //     const interpolatedParams = paramsInterpolator(t);
+            //     // save last params on each iteration so we can interpolate from last position upon
+            //     // animation interrupt/cancel
+            //     link._calculated_params = interpolatedParams;
+            //     return composeLinkPath(interpolatedParams);
+            //   };
+            // })
+            .attr('d', linkPath),
+          exit => exit.remove()
+        )
+        .style('fill', linkColor as any)
+        .style('stroke', linkBorder as any)
+        .attr('thickness', d => d._width || 0)
+        .call(join =>
+          join.select('title')
+            .text(linkTitle)
+        );
+    })
+  );
+
+  renderedNodes$ = combineLatest([
+    this.sankey.graph$,
+    this.sankey.fontSize$,
+    this.sankey.nodeLabel$
+  ]).pipe(
+    map(([{nodes}, fontSize, {nodeLabelShort}]) => {
+      const {
+        updateNodeRect,
+        sankey: {
+          id,
+          nodeColor,
+          nodeLabel
+        },
+        updateNodeText
+      } = this;
+      return this.nodeSelection
+        .data<SankeyNode>(
+          nodes.filter(
+            // should no longer be an issue but leaving as sanity check
+            // (if not satisfied visualisation brakes)
+            n => n._sourceLinks.length + n._targetLinks.length > 0
+          ),
+          id
+        )
+        .join(
+          enter => enter.append('g')
+            .call(enterNode => updateNodeRect(enterNode.append('rect')))
+            .call(this.attachNodeEvents)
+            .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`)
+            .call(enterNode =>
+              updateNodeText(
+                fontSize,
+                enterNode
+                  .append('g')
+                  .call(textGroup => {
+                    textGroup.append('rect')
+                      .classed('text-shadow', true);
+                    textGroup.append('text');
+                  })
+              )
+            )
+            .call(enterNode =>
+              enterNode.append('title')
+                .text(nodeLabel)
+            ),
+          // it was used in some very strage construct - hope it is not needed anymore
+          // .call(e => this.enter.emit(e)),
+          update => update
+            .call(enterNode => {
+              updateNodeRect(
+                enterNode.select('rect')
+                // todo: reenable when performance improves
+                // .transition().duration(RELAYOUT_DURATION)
+              );
+              updateNodeText(
+                fontSize,
+                enterNode.select('g')
+                  .attr('dy', '0.35em')
+                  .attr('text-anchor', 'end')
+                // todo: reenable when performance improves
+                // .transition().duration(RELAYOUT_DURATION)
+              );
+            })
+            // todo: reenable when performance improves
+            // .transition().duration(RELAYOUT_DURATION)
+            .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`),
+          exit => exit.remove()
+        )
+        .call(joined => {
+          updateNodeRect(
+            joined
+              .select('rect')
+              .style('fill', nodeColor as d3_ValueFn<any, SankeyNode, string>)
+          );
+          joined.select('g')
+            .call(textGroup => {
+              textGroup.select('text')
+                .text(nodeLabelShort);
+            });
+        });
+    })
+  );
+
+  /**
+   * Run d3 lifecycle code to update DOM
+   * @param graph: { links, nodes } to be rendered
+   */
+  updateDOM$ = combineLatest([
+    this.renderedLinks$,
+    this.renderedNodes$,
+  ]).pipe(
+    map(([linkSelection, nodeSelection]) => ({
+      linkSelection,
+      nodeSelection
+    })),
+    debug('updateDOM')
+  );
+
+  updateSearch$ = this.updateDOM$.pipe(
+    switchMap(({nodeSelection}) => this.search.preprocessedMatches$.pipe(
+        map(entities => groupBy(entities, 'type')),
+        publish(matches$ => combineLatest([
+          matches$.pipe(
+            map(({[EntityType.Node]: nodes = []}) => nodes.map(({id}) => id)),
+            updateAttr(nodeSelection, 'searched', {
+              // dont update other
+              otherOnStart: null,
+              // just delete property (don't set it to false)
+              exit: s => s.attr('searched', undefined),
+              accessor: (arr, {_id}) => arr.includes(_id),
+            })
+          ),
+          matches$.pipe(
+            map(({[EntityType.Link]: links = []}) => links.map(({id}) => id)),
+            updateAttr(nodeSelection, 'searched', {
+              // dont update other
+              otherOnStart: null,
+              // just delete property (don't set it to false)
+              exit: s => s.attr('searched', undefined),
+              accessor: (arr, {_id}) => arr.includes(_id),
+            })
+          )
+        ]))
+      )
+    )
+  );
 
   // endregion
 
@@ -203,6 +371,11 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr('font-size', fontSize);
   }
 
+  initSearch() {
+    this.updateSearch$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
 
   ngOnInit() {
     this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
@@ -218,17 +391,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
     this.initSelection();
     this.initFocus();
-
-    this.search.preprocessedMatches$.subscribe(entities => {
-      if (isNotEmpty(entities)) {
-        this.searchNodes(new Set(entities.filter(({type}) => EntityType.Node).map(({id}) => id)));
-        this.searchLinks(new Set(entities.filter(({type}) => EntityType.Link).map(({id}) => id)));
-      } else {
-        this.stopSearchNodes();
-        this.stopSearchLinks();
-      }
-    });
+    this.initSearch();
   }
+
 
   initFocus() {
     throw new NotImplemented();
@@ -440,11 +605,15 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr('transform', `translate(${d._x0},${d._y0})`);
     const relatedLinksIds = d._sourceLinks.concat(d._targetLinks).map(id);
     return linkPath$.pipe(
-      first(),
-      tap(linkPath => this.linkSelection
-        .filter((...args) => relatedLinksIds.includes(id(...args)))
-        .attr('d', linkPath)
-      )
+      switchMap(linkPath =>
+        this.renderedLinks$.pipe(
+          map(linkSelection => linkSelection
+            .filter((...args) => relatedLinksIds.includes(id(...args)))
+            .attr('d', linkPath)
+          )
+        )
+      ),
+      first()
     ).toPromise();
   }
 
@@ -467,22 +636,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr(attr, accessor)
       .filter(accessor)
       .call(e => e.raise());
-  }
-
-  /**
-   * Removes the `selected` property from all nodes on the canvas.
-   */
-  deselectNodes() {
-    this.nodeSelection
-      .attr('selected', undefined);
-  }
-
-  /**
-   * Removes the `selected` property from all links on the canvas.
-   */
-  deselectLinks() {
-    this.linkSelection
-      .attr('selected', undefined);
   }
 
   // region Search
@@ -587,142 +740,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
       .attr('width', ({_x1, _x0}) => _x1 - _x0)
       .attr('width', ({_x1, _x0}) => _x1 - _x0);
-  }
-
-  renderLinks(links) {
-    return this.sankey.linkPath$.pipe(
-      tap(linkPath => {
-        const {
-          sankey: {
-            id,
-            linkTitle,
-            linkColor,
-            linkBorder,
-            circular
-          }
-        } = this;
-        const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
-        this.linkSelection
-          .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
-          .join(
-            enter => enter
-              .append('path')
-              .call(this.attachLinkEvents)
-              .attr('d', linkPath)
-              .classed('circular', circular)
-              .call(path =>
-                path.append('title')
-              ),
-            update => update
-              // todo: reenable when performance improves
-              // .transition().duration(RELAYOUT_DURATION)
-              // .attrTween('d', link => {
-              //   const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
-              //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
-              //   return t => {
-              //     const interpolatedParams = paramsInterpolator(t);
-              //     // save last params on each iteration so we can interpolate from last position upon
-              //     // animation interrupt/cancel
-              //     link._calculated_params = interpolatedParams;
-              //     return composeLinkPath(interpolatedParams);
-              //   };
-              // })
-              .attr('d', linkPath),
-            exit => exit.remove()
-          )
-          .style('fill', linkColor as any)
-          .style('stroke', linkBorder as any)
-          .attr('thickness', d => d._width || 0)
-          .call(join =>
-            join.select('title')
-              .text(linkTitle)
-          );
-      })
-    );
-  }
-
-  renderNodes(nodes) {
-    return combineLatest([
-      this.sankey.fontSize$,
-      this.sankey.nodeLabel$
-    ]).pipe(
-      tap(([fontSize, {nodeLabelShort}]) => {
-        const {
-          updateNodeRect,
-          sankey: {
-            id,
-            nodeColor,
-            nodeLabel
-          },
-          updateNodeText
-        } = this;
-        this.nodeSelection
-          .data<SankeyNode>(
-            nodes.filter(
-              // should no longer be an issue but leaving as sanity check
-              // (if not satisfied visualisation brakes)
-              n => n._sourceLinks.length + n._targetLinks.length > 0
-            ),
-            id
-          )
-          .join(
-            enter => enter.append('g')
-              .call(enterNode => updateNodeRect(enterNode.append('rect')))
-              .call(this.attachNodeEvents)
-              .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`)
-              .call(enterNode =>
-                updateNodeText(
-                  fontSize,
-                  enterNode
-                    .append('g')
-                    .call(textGroup => {
-                      textGroup.append('rect')
-                        .classed('text-shadow', true);
-                      textGroup.append('text');
-                    })
-                )
-              )
-              .call(enterNode =>
-                enterNode.append('title')
-                  .text(nodeLabel)
-              ),
-            // it was used in some very strage construct - hope it is not needed anymore
-            // .call(e => this.enter.emit(e)),
-            update => update
-              .call(enterNode => {
-                updateNodeRect(
-                  enterNode.select('rect')
-                  // todo: reenable when performance improves
-                  // .transition().duration(RELAYOUT_DURATION)
-                );
-                updateNodeText(
-                  fontSize,
-                  enterNode.select('g')
-                    .attr('dy', '0.35em')
-                    .attr('text-anchor', 'end')
-                  // todo: reenable when performance improves
-                  // .transition().duration(RELAYOUT_DURATION)
-                );
-              })
-              // todo: reenable when performance improves
-              // .transition().duration(RELAYOUT_DURATION)
-              .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`),
-            exit => exit.remove()
-          )
-          .call(joined => {
-            updateNodeRect(
-              joined
-                .select('rect')
-                .style('fill', nodeColor as d3_ValueFn<any, SankeyNode, string>)
-            );
-            joined.select('g')
-              .call(textGroup => {
-                textGroup.select('text')
-                  .text(nodeLabelShort);
-              });
-          });
-      })
-    );
   }
 
   // endregion

@@ -59,6 +59,15 @@ app-sankey-multi-lane {
             transition: opacity 200ms;
           }
 
+          .text-shadow {
+            display: none;
+            fill: $node-label-shadow;
+            filter: blur(.1em);
+            mix-blend-mode: lighten;
+            stroke: none;
+            transform: scaleY(1.5);
+          }
+
           &[highlighted="false"],
           &[selected="false"],
           &[transitively-selected="false"] {
@@ -112,15 +121,6 @@ app-sankey-multi-lane {
               fill: $black;
               font-size: 1em;
             }
-          }
-
-          .text-shadow {
-            display: none;
-            fill: $node-label-shadow;
-            filter: blur(.1em);
-            mix-blend-mode: lighten;
-            stroke: none;
-            transform: scaleY(1.5);
           }
 
           &:hover .text-shadow {
