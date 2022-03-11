@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 
-import { merge, Observable, of, Subject } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators';
+import { iif, merge, Observable, of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
+import { isEmpty } from 'lodash';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import {
@@ -67,9 +68,11 @@ export class OrganismAutocompleteComponent implements OnInit {
         this.isFetching = true;
         this.organismPicked.emit(null);
       }),
-      switchMap(q => q === ''
-        ? of(this.organismShortlist)
-        : this.search.getOrganisms(q, 10).pipe(
+      switchMap(q =>
+        iif(
+          () => isEmpty(q),
+          of(this.organismShortlist),
+          this.search.getOrganisms(q, 10).pipe(
             catchError(() => {
               this.fetchFailed = true;
               return of([]);
@@ -83,6 +86,7 @@ export class OrganismAutocompleteComponent implements OnInit {
               ];
             }),
           )
+        )
       ),
       tap(() => this.isFetching = false)
     );
