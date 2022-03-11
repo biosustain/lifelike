@@ -3,22 +3,23 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { combineLatest } from 'rxjs';
-import { switchMap, map, pairwise, startWith, tap, takeUntil, filter } from 'rxjs/operators';
-import { isEmpty, flatMap } from 'lodash-es';
+import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
+import { flatMap, groupBy, uniq } from 'lodash-es';
 
-import { mapIterable, isNotEmpty } from 'app/shared/utils';
-import { SankeyId, SankeyTrace } from 'app/sankey/interfaces';
+import { SankeyTrace, SelectionType } from 'app/sankey/interfaces';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { EntityType } from '../../../../utils/search/search-match';
 import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { updateAttr, update, updateSingular, updateAttrSingular } from '../../../../utils/rxjs';
+import { isNotEmpty } from 'app/shared/utils';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -55,38 +56,65 @@ export class SankeyMultiLaneComponent
   }
 
   focusedLinks$ = this.sankey.graph$.pipe(
-    switchMap(({links}) => this.search.searchFocus$.pipe(
-        map(({type, id}) =>
-          type === EntityType.Link ?
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
-        ),
-        startWith([]),
-        pairwise(),
-        map(([prev, current]) => ({
-          added: current.filter(link => !prev.includes(link)),
-          affected: prev.concat(current),
-          current
-        }))
+    switchMap(({links}) =>
+      this.renderedLinks$.pipe(
+        switchMap(linkSelection =>
+          this.search.searchFocus$.pipe(
+            // map graph file link to sankey link
+            map(({type, id}) =>
+              type === EntityType.Link ?
+                // allow string == number match interpolation ("58" == 58 -> true)
+                // tslint:disable-next-line:triple-equals
+                (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
+            ),
+            updateAttr(linkSelection, 'focused')
+          )
+        )
       )
     ),
-    filter(({affected}) => isNotEmpty(affected)),
-    tap(({added, affected}) =>
-      this.linkSelection
-        .filter(link => affected.includes(link))
-        .each(function(link) {
-          const add = added.includes(link);
-          const linkSelection = d3_select(this);
-          linkSelection
-            .attr('focused', add || undefined);
-          if (add) {
-            linkSelection
-              .raise();
-          }
-        })
-    ),
-    tap(({current}) => this.panToLinks(current))
+    tap(current => isNotEmpty(current) && this.panToLinks(current))
+  );
+
+  selectionUpdate$ = this.updateDOM$.pipe(
+    switchMap(({nodeSelection, linkSelection}) => this.selection.selection$.pipe(
+        map(selection => groupBy(selection, 'type')),
+        publish(selection$ => combineLatest([
+          selection$.pipe(
+            map(({[SelectionType.node]: nodes = []}) => nodes.map(({entity}) => entity)),
+            updateAttr(nodeSelection, 'selected')
+          ),
+          selection$.pipe(
+            map(({[SelectionType.link]: links = []}) => links.map(({entity}) => entity)),
+            updateAttr(linkSelection, 'selected')
+          ),
+          selection$.pipe(
+            map(({[SelectionType.trace]: traces = []}) => traces),
+            // todo
+            tap(traces => console.log(traces))
+          )
+        ])),
+        tap(d => console.log('asdfasd', d)),
+        map(([nodes = [], links = [], _traces = []]) => uniq(
+            flatMap(
+              nodes as SankeyMultiLaneNode[],
+              ({_sourceLinks, _targetLinks}) => [..._sourceLinks, ..._targetLinks]
+            )
+              .concat(links as SankeyMultiLaneLink[])
+              .map(({_trace}) => _trace)
+              .concat(_traces as any as SankeyTrace[])
+          )
+        ),
+        publish(traces$ => combineLatest([
+          traces$.pipe(
+            map(traces => this.calculateNodeGroupFromTraces(traces)),
+            updateAttr(nodeSelection, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+          ),
+          traces$.pipe(
+            updateAttr(linkSelection, 'transitively-selected', {accessor: (arr, {_trace}) => arr.includes(_trace)})
+          )
+        ]))
+      )
+    )
   );
 
   panToLinks(links) {
@@ -94,12 +122,6 @@ export class SankeyMultiLaneComponent
       x + _x0 + _x1,
       y + _y0 + _y1
     ], [0, 0]);
-    console.log('translate to ',
-      // average x
-      sumX / (2 * links.length),
-      // average y
-      sumY / (2 * links.length)
-    );
     this.sankeySelection.transition().call(
       this.zoom.translateTo,
       // average x
@@ -108,7 +130,6 @@ export class SankeyMultiLaneComponent
       sumY / (2 * links.length)
     );
   }
-
 
   ngOnInit() {
     super.ngOnInit();
@@ -120,28 +141,9 @@ export class SankeyMultiLaneComponent
   }
 
   initSelection() {
-    combineLatest([
-      this.selection.selectedNodes$,
-      this.selection.selectedLinks$
-    ]).pipe(
-      takeUntil(this.destroy$),
-      map(([nodes, links]) => ({
-        nodes: new Set(nodes),
-        links: new Set(links)
-      }))
-    ).subscribe(({nodes, links}) => {
-      if (nodes.size) {
-        this.selectNodes(mapIterable(nodes, ({_id}) => _id));
-      } else {
-        this.deselectNodes();
-      }
-      if (links.size) {
-        this.selectLinks(mapIterable(links, ({_id}) => _id));
-      } else {
-        this.deselectLinks();
-      }
-      this.calculateAndApplyTransitiveConnections(nodes, links);
-    });
+    this.selectionUpdate$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
 
   // endregion
@@ -191,56 +193,6 @@ export class SankeyMultiLaneComponent
     // this.unhighlightLinks();
   }
 
-  // region Select
-  /**
-   * Adds the `selected` property to the given input nodes.
-   * @param nodesIds set of node data objects to use for selection
-   */
-  selectNodes(nodesIds: Set<SankeyId>) {
-    this.nodeSelection
-      .attr('selected', ({_id}) => nodesIds.has(_id));
-  }
-
-  /**
-   * Adds the `selected` property to the given input links.
-   * @param linksIds set of link data objects to use for selection
-   */
-  selectLinks(linksIds: Set<SankeyId>) {
-    return this.linkSelection
-      .attr('selected', ({_id}) => linksIds.has(_id));
-  }
-
-
-  /**
-   * Given the set of selected nodes and links, calculcates the connected nodes/links and applies the `transitively-selected` attribute to
-   * them.
-   * @param nodes the full set of currently selected nodes
-   * @param links the full set of currently selected links
-   */
-  calculateAndApplyTransitiveConnections(nodes: Set<SankeyMultiLaneNode>, links: Set<SankeyMultiLaneLink>) {
-    if (isEmpty(nodes) && isEmpty(links)) {
-      this.nodeSelection
-        .attr('transitively-selected', undefined);
-      this.linkSelection
-        .attr('transitively-selected', undefined);
-    } else {
-      const traces = new Set<SankeyTrace>(
-        flatMap(
-          [...nodes],
-          ({_sourceLinks, _targetLinks}) => [..._sourceLinks, ..._targetLinks]
-        )
-          .concat([...links])
-          .map(({_trace}) => _trace)
-      );
-      const nodeGroup = this.calculateNodeGroupFromTraces(traces);
-
-      this.nodeSelection
-        .attr('transitively-selected', ({id}) => nodeGroup.has(id));
-      this.linkSelection
-        .attr('transitively-selected', ({_trace}) => traces.has(_trace));
-    }
-  }
-
   // endregion
 
   // region Highlight
@@ -270,16 +222,15 @@ export class SankeyMultiLaneComponent
    * @param traces a set of trace objects
    * @returns a set of node ids representing all nodes in the given traces
    */
-  calculateNodeGroupFromTraces(traces: Set<any>) {
-    const nodeGroup = new Set<number>();
-    traces.forEach(
-      trace => trace.node_paths.forEach(
-        path => path.forEach(
-          nodeId => nodeGroup.add(nodeId)
+  calculateNodeGroupFromTraces(traces: SankeyTrace[]) {
+    return uniq(
+      flatMap(
+        traces,
+        trace => flatMap(
+          trace.node_paths
         )
       )
     );
-    return nodeGroup;
   }
 
   // endregion

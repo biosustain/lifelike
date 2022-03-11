@@ -1,7 +1,8 @@
 import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { startWith, pairwise, map, tap, switchMap, takeUntil, first, filter } from 'rxjs/operators';
+import { map, tap, switchMap, takeUntil, first, filter } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { last } from 'lodash-es';
 
@@ -9,15 +10,15 @@ import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
 import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { SankeySelectionService } from 'app/sankey/services/selection.service';
+import { SankeySearchService } from 'app/sankey/services/search.service';
+import { updateAttrSingular } from 'app/sankey/utils/rxjs';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../utils/search/search-match';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { SankeySelectionService } from 'app/sankey/services/selection.service';
-import { SankeySearchService } from 'app/sankey/services/search.service';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -50,62 +51,53 @@ export class SankeySingleLaneComponent
   }
 
   focusedLink$ = this.sankey.graph$.pipe(
-    switchMap(({links}) => this.search.searchFocus$.pipe(
-        map(({type, id}) =>
-          type === EntityType.Link &&
-          // allow string == number match interpolation ("58" == 58 -> true)
-          // tslint:disable-next-line:triple-equals
-          (links as SankeySingleLaneLink[]).find(({_id}) => _id == id)
-        ),
-        startWith(undefined),
-        pairwise()
+    switchMap(({links}) => this.renderedLinks$.pipe(
+        switchMap(linkSelection => this.search.searchFocus$.pipe(
+            map(({type, id}) =>
+              type === EntityType.Link &&
+              // allow string == number match interpolation ("58" == 58 -> true)
+              // tslint:disable-next-line:triple-equals
+              (links as SankeySingleLaneLink[]).find(({_id}) => _id == id)
+            ),
+            updateAttrSingular(linkSelection, 'focused')
+          )
+        )
       )
-    ),
-    tap(prevNext =>
-      this.linkSelection
-        .filter(link => prevNext.includes(link))
-        .each(function(link) {
-          const add = link === prevNext[1]; // equal to new focus
-          const linkSelection = d3_select(this);
-          linkSelection
-            .attr('focused', add || undefined);
-          if (add) {
-            linkSelection
-              .raise();
-          }
-        })
     )
   );
-
   // region Select
 
-  selectionUpdate$ = this.selection.selection$.pipe(
-    // this base view operates on sigular selection
-    map(selection => last(selection)),
-    tap(selection => {
-      if (selection) {
-        const {entity, type} = selection;
-        switch (type) {
-          case SelectionType.node:
-            this.linkSelection.attr('selected', false);
-            this.assignAttrAndRaise(this.nodeSelection, 'selected', ({_id}) => (entity as SankeyNode)._id === _id);
-            break;
-          case SelectionType.link:
-            this.nodeSelection.attr('selected', false);
-            this.assignAttrAndRaise(this.linkSelection, 'selected', ({_id}) => (entity as SankeyLink)._id === _id);
-            break;
-        }
-        this.calculateAndApplyTransitiveConnections(entity);
-      } else {
-        // delete selection attributes
-        this.nodeSelection
-          .attr('selected', undefined)
-          .attr('transitively-selected', undefined);
-        this.linkSelection
-          .attr('selected', undefined)
-          .attr('transitively-selected', undefined);
-      }
-    })
+  selectionUpdate$ = this.updateDOM$.pipe(
+    switchMap(({linkSelection, nodeSelection}) =>
+      this.selection.selection$.pipe(
+        // this base view operates on sigular selection
+        map(selection => last(selection)),
+        tap(selection => {
+          if (selection) {
+            const {entity, type} = selection;
+            switch (type) {
+              case SelectionType.node:
+                linkSelection.attr('selected', false);
+                this.assignAttrAndRaise(nodeSelection, 'selected', ({_id}) => (entity as SankeyNode)._id === _id);
+                break;
+              case SelectionType.link:
+                nodeSelection.attr('selected', false);
+                this.assignAttrAndRaise(linkSelection, 'selected', ({_id}) => (entity as SankeyLink)._id === _id);
+                break;
+            }
+            this.calculateAndApplyTransitiveConnections(entity);
+          } else {
+            // delete selection attributes
+            nodeSelection
+              .attr('selected', undefined)
+              .attr('transitively-selected', undefined);
+            linkSelection
+              .attr('selected', undefined)
+              .attr('transitively-selected', undefined);
+          }
+        })
+      )
+    )
   );
 
   ngOnInit() {

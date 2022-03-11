@@ -163,7 +163,8 @@ export class SankeySearchService {
             map(() => searchFocus)
           ))
       )
-    )
+    ),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   resultsCount$ = this.preprocessedMatches$.pipe(
