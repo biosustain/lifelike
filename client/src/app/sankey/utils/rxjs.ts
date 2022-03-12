@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { filter, map, distinctUntilChanged, startWith, pairwise, scan } from 'rxjs/operators';
-import { has, isArray, pick, isEqual, isEmpty, uniq, isNull } from 'lodash-es';
+import { has, isArray, pick, isEqual, isEmpty, uniq } from 'lodash-es';
 import { Selection as d3_Selection } from 'd3-selection';
 
 import { Many } from 'app/shared/schemas/common';
@@ -48,14 +48,16 @@ interface UpdateCycle<Selection extends d3_Selection<any, any, any, any> = d3_Se
  * Change from non-empty to empty value is considered as cycle 'end'.
  * On end of cycle, affected selection is cleared.
  * On flow level this operator behaves like 'distinctUntilChanged(isEqual)' operator.
- * example:
- * of([1, 2, 3], [2, 3, 4], [2, 3, 4], [], [1]).pipe(
- *  update([1, 2, 3, 4], {
+ * Example:
+ *
+ * const updateLog = update([1, 2, 3, 4], {
  *   otherOnStart: s => console.log('otherOnStart', s),
  *   enter: s => console.log('enter', s),
  *   exit: s => console.log('exit', s),
  *   affectedOnEnd: s => console.log('affectedOnEnd', s)
- *  })
+ *  });
+ * of([1, 2, 3], [2, 3, 4], [2, 3, 4], [], [1]).pipe(
+ *  updateLog
  * ).subscribe(console.log);
  * ```
  * otherOnStart [4]
@@ -70,6 +72,19 @@ interface UpdateCycle<Selection extends d3_Selection<any, any, any, any> = d3_Se
  * enter [1]
  * [1]
  * ```
+ * There is also no update on initial empty.
+ * Example:
+ * of([], [1, 2], [1, 2], [1]).pipe(
+ *  updateLog
+ * ).subscribe(console.log);
+ * ```
+ * otherOnStart [2]
+ * enter [1]
+ * [1, 2]
+ * exit [2]
+ * [1]
+ * ```
+ *
  * @param selection Array of d3 Selection
  * @param otherOnStart callback on elements that are not in initial selection
  * @param enter callback on elements that are added
@@ -92,7 +107,6 @@ export const update =
     distinctUntilChanged(isEqual),
     startWith([]),
     pairwise(),
-    filter(([prev, next]) => isNotEmpty(prev) || isNotEmpty(next)),
     scan(([affectedSoFar], [prev, next]) => {
       if (isEmpty(next)) {
         if (otherOnStart) {
@@ -113,7 +127,10 @@ export const update =
         enterSelection = selection.filter(d => accessor(next, d) && !accessor(prev, d));
       }
       enter?.(enterSelection);
-      return [uniq(affectedSoFar.concat(enterSelection.data())), next];
+      // if we affect all on start or there is no default to come back to (affectedOnEnd),
+      // we do not keep track of affected list (it is always all or is not used at the end)
+      const affectedSoFarNext = (otherOnStart || !affectedOnEnd) ? [] : uniq(affectedSoFar.concat(enterSelection.data()));
+      return [affectedSoFarNext, next];
     }, [[]]),
     map(([, next]) => next)
   );
@@ -125,7 +142,8 @@ export const updateSingular =
     {
       enter,
       exit,
-      comparator = (a: T, b: T) => a === b
+      // tslint:disable-next-line:triple-equals // null == undefined == 0 -> does not matter in here
+      comparator = (a: T, b: T) => a == b
     }: (Partial<UpdateCycle> & { comparator?: (a, b) => boolean })
   ) => (project: Observable<T>) => project.pipe(
     distinctUntilChanged(comparator),
@@ -160,6 +178,6 @@ export const updateAttr = (selection, attr, overwrites = {}) => update(selection
 
 export const updateAttrSingular = (selection, attr, overwrites = {}) => updateSingular(selection, {
   enter: s => s.attr(attr, true).raise(),
-  exit: s => s.attr(attr, false),
+  exit: s => s.attr(attr, undefined),
   ...overwrites
 });

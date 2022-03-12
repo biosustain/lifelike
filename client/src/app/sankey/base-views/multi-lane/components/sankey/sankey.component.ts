@@ -12,14 +12,14 @@ import { LayoutService } from 'app/sankey/services/layout.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { EntityType } from '../../../../utils/search/search-match';
 import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
-import { updateAttr, update, updateSingular, updateAttrSingular } from '../../../../utils/rxjs';
-import { isNotEmpty } from 'app/shared/utils';
+import { updateAttr, updateSingular, updateAttrSingular } from '../../../../utils/rxjs';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -47,6 +47,7 @@ export class SankeyMultiLaneComponent
     protected search: SankeySearchService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
+    selection.multiselect = true;
   }
 
   // region D3Selection
@@ -90,10 +91,8 @@ export class SankeyMultiLaneComponent
           selection$.pipe(
             map(({[SelectionType.trace]: traces = []}) => traces),
             // todo
-            tap(traces => console.log(traces))
           )
         ])),
-        tap(d => console.log('asdfasd', d)),
         map(([nodes = [], links = [], _traces = []]) => uniq(
             flatMap(
               nodes as SankeyMultiLaneNode[],

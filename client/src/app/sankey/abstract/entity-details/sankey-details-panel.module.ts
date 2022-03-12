@@ -16,15 +16,15 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { SankeyNodeDetailsComponent } from './node-details.component';
 import { SankeyTraceDetailsComponent } from './trace-details.component';
-import { ButtonWithSelectableTextComponent } from './button-with-selectable-text.component';
-import { SankeyDetailsPanelComponent } from './details-panel.component';
+import { ButtonWithSelectableTextComponent } from '../button-with-selectable-text/button-with-selectable-text.component';
+import { SankeyAbstractDetailsPanelComponent } from '../details-panel.component';
 
 @NgModule({
   declarations: [
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,
     ButtonWithSelectableTextComponent,
-    SankeyDetailsPanelComponent
+    SankeyAbstractDetailsPanelComponent
   ],
   imports: [
     CommonModule,
@@ -45,7 +45,7 @@ import { SankeyDetailsPanelComponent } from './details-panel.component';
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,
     ButtonWithSelectableTextComponent,
-    SankeyDetailsPanelComponent
+    SankeyAbstractDetailsPanelComponent
   ],
 })
 export class SankeyDetailsPanelModule {
