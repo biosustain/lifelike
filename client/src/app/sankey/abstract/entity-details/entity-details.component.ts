@@ -1,4 +1,4 @@
-import { Input, Injectable, } from '@angular/core';
+import { Input, Injectable, Component, Directive, } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
@@ -9,7 +9,7 @@ import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
 import { parseForRendering } from '../../utils/utils';
 import { ControllerService } from '../../services/controller.service';
 
-@Injectable()
+@Component({ template: '' })
 export class SankeyEntityDetailsComponent {
   constructor(
     private common: ControllerService,
