@@ -89,7 +89,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   data$ = new ReplaySubject<SankeyFile>(1);
-  baseView$: Observable<{ baseViewName: string, baseViewInitState: object }>;
 
   state$ = this.delta$.pipe(
     publish(delta$ =>

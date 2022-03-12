@@ -11,7 +11,9 @@ import { SankeyState, SankeyOptions } from '../../interfaces';
   templateUrl: './advanced-panel.component.html',
   styleUrls: ['./advanced-panel.component.scss'],
 })
-export class SankeyAdvancedPanelComponent extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState> implements OnInit, OnDestroy {
+export class SankeyAdvancedPanelComponent
+  extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState>
+  implements OnInit, OnDestroy {
   constructor(
     protected common: ControllerService,
     protected formBuilder: FormBuilder

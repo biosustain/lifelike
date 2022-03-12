@@ -1,5 +1,6 @@
-import { bind } from './decorators';
 import { isDevMode } from '@angular/core';
+
+import { bind } from './decorators';
 
 /**
  * Decorator for intercooperation of Typescript classes and D3 callbacks.
@@ -16,19 +17,24 @@ export const d3Callback = bind;
  * @param propertyKey Method name
  * @param descriptor Method descriptor
  */
-export function d3EventCallback<T extends object>(target: T, propertyKey: keyof T, {value, writable, get, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
+export function d3EventCallback<T extends object>(target: T, propertyKey: keyof T,
+                                                  {value, writable, get, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
   return {
     // we filter out `writable` and `value` since they cannot be defined along `get`
     ...descriptor,
-    get: function() {
+    get() {
       const instance = this as T;
-      isDevMode() && console.assert(instance, 'bind: instance is undefined');
+      if (isDevMode()) {
+        console.assert(instance, 'bind: instance is undefined');
+      }
       return function() {
-        isDevMode() && console.assert(this, 'd3Event does not have target reference');
+        if (isDevMode()) {
+          console.assert(this, 'd3Event does not have target reference');
+        }
         return (
           value ?? get.call(instance)
         ).call(instance, this, ...arguments);
-      }
+      };
     }
   };
 }
