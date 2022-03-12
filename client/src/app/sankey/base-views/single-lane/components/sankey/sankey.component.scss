@@ -183,7 +183,7 @@ app-sankey-single-lane {
         &[selected="true"],
         &[highlighted="true"] {
           stroke: sankey.$selection-accent-color;
-          stroke-opacity: 1;
+          opacity: 1;
           stroke-width: 3;
         }
 
