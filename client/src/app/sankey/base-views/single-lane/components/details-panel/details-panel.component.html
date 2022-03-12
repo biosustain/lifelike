@@ -1,4 +1,4 @@
-<ng-container *ngIf="details$ | async as detailView">
+<ng-container *ngIf="detailView">
     <app-sankey-node-details
             *ngIf="detailView.type === SelectionType.node"
             [entity]="detailView.entity"
