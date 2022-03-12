@@ -1,11 +1,9 @@
-import { Component, Input, } from '@angular/core';
+import { Component, } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { SankeyNode } from 'app/sankey/interfaces';
-
 import { SankeyEntityDetailsComponent } from './entity-details.component';
-import { ControllerService } from '../../services/controller.service';
-import { MultiLaneBaseControllerService } from '../../base-views/multi-lane/services/multi-lane-base-controller.service';
+import { BaseControllerService } from '../../services/base-controller.service';
+import { SankeyBaseOptions, SankeyBaseState } from '../../base-views/interfaces';
 
 
 @Component({
@@ -14,11 +12,10 @@ import { MultiLaneBaseControllerService } from '../../base-views/multi-lane/serv
 })
 export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   constructor(
-    protected common: ControllerService,
-    protected baseView: MultiLaneBaseControllerService,
+    protected baseView: BaseControllerService<SankeyBaseOptions, SankeyBaseState>,
     protected readonly route: ActivatedRoute
   ) {
-    super(common, route);
+    super(baseView.common, route);
   }
 
   nodeValueAccessors$ = this.common.nodeValueAccessors$;

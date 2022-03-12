@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, publish, takeUntil } from 'rxjs/operators';
+import { map, switchMap, first, filter, tap, publish, takeUntil, share, shareReplay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 import { assign, partial, groupBy } from 'lodash-es';
 
@@ -285,7 +285,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       linkSelection,
       nodeSelection
     })),
-    debug('updateDOM')
+    debug('updateDOM'),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   updateSearch$ = this.updateDOM$.pipe(
