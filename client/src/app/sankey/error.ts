@@ -1,5 +1,6 @@
 import { capitalize } from 'lodash';
 
+// tslint:disable-next-line:variable-name
 export const ErrorMessages = {
   missingNetworkTraces: 'File does not contain any network traces',
   missingNodes: 'File does not contain any nodes',
@@ -18,7 +19,8 @@ export const ErrorMessages = {
   incorrectLinkValueAccessor: predefinedProperties => this.incorrectValueAccessor('link', predefinedProperties),
   incorrectNodeValueAccessor: predefinedProperties => this.incorrectValueAccessor('node', predefinedProperties),
   exccedPaletteSize: (palette, size) =>
-    `Predefined palette has not enough colors. From palette [${Array.from(palette)}] (size: ${palette.location}), requested ${size} colors.`,
+    `Predefined palette has not enough colors. ` +
+    `From palette [${Array.from(palette)}] (size: ${palette.location}), requested ${size} colors.`,
   noColorMapping: label =>
     `There is no color mapping for label: ${label}`,
   wrongInOutDefinition: ids =>

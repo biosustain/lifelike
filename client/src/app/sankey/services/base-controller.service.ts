@@ -272,6 +272,5 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
 
   nodePropertyAcessor: (k) => ValueGenerator = k => ({
     preprocessing: nodeValues.byProperty(k)
-  });
-
+  })
 }

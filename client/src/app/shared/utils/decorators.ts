@@ -6,18 +6,23 @@
  */
 import { isDevMode } from '@angular/core';
 
-export function bind<T extends object>(target: T, propertyKey: keyof T, {value, get, writable, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
+export function bind
+<T extends object>(target: T, propertyKey: keyof T, {value, get, writable, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
   return {
     ...descriptor,
-    get: function() {
+    get() {
       const instance = this as T;
-      isDevMode() && console.assert(instance, 'bind: instance is undefined');
+      if (isDevMode()) {
+        console.assert(instance, 'bind: instance is undefined');
+      }
       return function() {
-        isDevMode() && this === instance && console.warn(`This equals bind - potentially missused decorator for ${target.constructor.name}.${propertyKey}.`);
+        if (isDevMode() && this === instance) {
+          console.warn(`This equals bind - potentially missused decorator for ${target.constructor.name}.${propertyKey}.`);
+        }
         return (
           value ?? get.call(instance)
         ).call(instance, ...arguments);
-      }
+      };
     }
   };
 }
