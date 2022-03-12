@@ -1,4 +1,4 @@
-import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
@@ -26,6 +26,7 @@ import { updateAttr, updateSingular } from '../utils/rxjs';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
+@Component({ templateUrl: './sankey.component.svg' })
 export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
   OnDestroy {
   constructor(
