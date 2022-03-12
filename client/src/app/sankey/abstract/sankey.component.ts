@@ -10,7 +10,7 @@ import { assign, partial, groupBy } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyLink, SankeyNode } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
@@ -19,7 +19,7 @@ import { representativePositiveNumber } from '../utils/utils';
 import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
-import { EntityType } from '../utils/search/search-match';
+import { EntityType, Match } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
 import { NotImplemented } from '../error';
 import { updateAttr, updateSingular } from '../utils/rxjs';
@@ -292,7 +292,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         map(entities => groupBy(entities, 'type')),
         publish(matches$ => combineLatest([
           matches$.pipe(
-            map(({[EntityType.Node]: nodes = []}) => nodes.map(({id}) => id)),
+            map(({[EntityType.Node]: nodes = []}) => (nodes as Match[]).map<SankeyId>(({id}) => id)),
             updateAttr(nodeSelection, 'searched', {
               // dont update other
               otherOnStart: null,
@@ -302,7 +302,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
             })
           ),
           matches$.pipe(
-            map(({[EntityType.Link]: links = []}) => links.map(({id}) => id)),
+            map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({id}) => id)),
             updateAttr(nodeSelection, 'searched', {
               // dont update other
               otherOnStart: null,
