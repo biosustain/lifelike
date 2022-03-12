@@ -18,7 +18,6 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { EntityType } from '../../../../utils/search/search-match';
-import { SankeySingleLaneLink } from '../../../single-lane/interfaces';
 import { updateAttr, updateSingular, updateAttrSingular } from '../../../../utils/rxjs';
 
 @Component({
@@ -66,7 +65,7 @@ export class SankeyMultiLaneComponent
               type === EntityType.Link ?
                 // allow string == number match interpolation ("58" == 58 -> true)
                 // tslint:disable-next-line:triple-equals
-                (links as SankeySingleLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
+                (links as SankeyMultiLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
             ),
             updateAttr(linkSelection, 'focused')
           )

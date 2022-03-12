@@ -8,8 +8,7 @@
         <ngb-accordion ngbAccordion activeIds="source target">
             <ngb-panel id="source">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
-                        <b title>Source</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Source">
                         {{ getNodeById(entity.source).id | async }}
                     </app-button-with-selectable-text>
                 </ng-template>
@@ -19,8 +18,7 @@
             </ngb-panel>
             <ngb-panel id="target">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
-                        <b title>Target</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Target">
                         {{ getNodeById(entity.target).id | async }}
                     </app-button-with-selectable-text>
                 </ng-template>
@@ -30,8 +28,7 @@
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
-                        <b title>Group</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Group">
                         {{ parseProperty(entity.group) }}
                     </app-button-with-selectable-text>
                 </ng-template>

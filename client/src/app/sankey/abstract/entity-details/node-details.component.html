@@ -11,16 +11,14 @@
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
-                        <b title>Value</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Value">
                         {{ parseProperty(entity._value) }}
                     </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
             <ngb-panel [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
-                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true">
-                        <b title>Label</b>
+                    <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Label">
                         {{ parseProperty(entity.label) }}
                     </app-button-with-selectable-text>
                 </ng-template>

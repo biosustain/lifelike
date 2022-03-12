@@ -223,7 +223,6 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
 
   ngOnInit() {
-
     /**
      * Load different base view components upom base view change
      */
@@ -386,8 +385,19 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   }
 
   resetView() {
+    this.sankeyController.data$.pipe(
+      first(),
+      tap(data => this.sankeyController.data$.next(data))
+    ).toPromise();
     this.sankeyController.delta$.next({});
-    this.sankey.resetZoom();
+    this.baseViewContext$.pipe(
+      first(),
+      tap(({baseView, layout, selection}) => {
+        baseView.delta$.next({});
+        selection.reset();
+      })
+    ).subscribe();
+    this.resetZoom();
   }
 
   // region Zoom

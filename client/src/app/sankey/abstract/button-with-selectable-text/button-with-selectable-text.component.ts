@@ -6,5 +6,6 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./button-with-selectable-text.component.scss']
 })
 export class ButtonWithSelectableTextComponent {
-  @Input() disabled;
+  @Input() disabled: boolean;
+  @Input() title!: string;
 }
