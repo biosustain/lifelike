@@ -13,7 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
 
-import { SankeyDetailsPanelModule } from 'app/sankey/components/details-panel/sankey-details-panel.module';
+import { SankeyDetailsPanelModule } from 'app/sankey/abstract/entity-details/sankey-details-panel.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 

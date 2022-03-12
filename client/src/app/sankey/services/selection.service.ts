@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { isEqual, uniqBy } from 'lodash-es';
-import { map, first, distinctUntilChanged, shareReplay } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { first } from 'lodash-es';
+import { map, first as rxjs_first, tap } from 'rxjs/operators';
 
-import { debug } from 'app/shared/rxjs/debug';
-
-import { SelectionType, SelectionEntity, SankeyNode, SankeyLink, SankeyTrace } from '../interfaces';
+import { SelectionType, SelectionEntity } from '../interfaces';
 import { ControllerService } from './controller.service';
 
 @Injectable()
@@ -16,72 +14,47 @@ export class SankeySelectionService {
   ) {
   }
 
-  selection$ = new BehaviorSubject<SelectionEntity[]>([]);
-  selectedNodes$ = this.selectionByType(SelectionType.node) as Observable<SankeyNode[]>;
-  selectedLinks$  = this.selectionByType(SelectionType.link) as Observable<SankeyLink[]>;
+  multiselect$ = new BehaviorSubject<boolean>(true);
 
-  selectedTraces$ = combineLatest([
-    this.selectedNodes$,
-    this.selectedLinks$
-  ]).pipe(
-    map(([nodes, links]) => this.sankeyController.getRelatedTraces({nodes, links})),
-    distinctUntilChanged(isEqual),
-    debug('selectedTraces$'),
-    shareReplay<SankeyTrace[]>(1)
-  );
-
-  selectionWithTraces$ = combineLatest([
-    this.selection$,
-    this.selectedTraces$
-  ]).pipe(
-    map(([selection, selectedTraces]) =>
-      selection
-        .concat(
-          selectedTraces
-            .map(entity => ({
-              type: SelectionType.trace,
-              entity
-            }))
-        )
-    ),
-    debug('selectionWithTraces$'),
-    shareReplay(1)
-  );
-
-  selectionByType(type: SelectionType) {
-    return this.selection$.pipe(
-      map(selection =>
-        selection
-          .filter(s => s.type === type)
-          .map(s => s.entity)
-      ),
-      map(n => uniqBy(n, '_id')),
-      distinctUntilChanged(isEqual),
-      debug(`selectionByType(${type})`),
-      shareReplay(1)
-    );
+  set multiselect(value: boolean) {
+    this.multiselect$.next(value);
   }
 
-  toggleSelect(entity, type: SelectionType) {
-    return this.selection$.pipe(
-      first(),
-      map(selection => {
-        const idxOfSelectedLink = selection.findIndex(
-          d => d.entity === entity
-        );
+  private _selection$ = new BehaviorSubject<SelectionEntity[]>([]);
+  selection$ = combineLatest([
+    this._selection$,
+    this.multiselect$
+  ]).pipe(
+    map(([selection, multiselect]) => multiselect ? selection : first(selection) || {} as SelectionEntity)
+  );
 
-        if (idxOfSelectedLink !== -1) {
-          selection.splice(idxOfSelectedLink, 1);
-        } else {
-          selection.unshift({
-            type,
-            entity
-          });
-        }
+  toggleSelect(entity, type: SelectionType): Promise<void>|void {
+    if (this.multiselect$.value) {
+      return this._selection$.pipe(
+        rxjs_first(),
+        map(selection => {
+          const idxOfSelectedLink = selection.findIndex(
+            d => d.entity === entity
+          );
 
-        this.selection$.next(selection);
-      })
-    );
+          if (idxOfSelectedLink !== -1) {
+            selection.splice(idxOfSelectedLink, 1);
+          } else {
+            selection.unshift({
+              type,
+              entity
+            });
+          }
+
+          this._selection$.next(selection);
+        })
+      ).toPromise();
+    } else {
+      this._selection$.next([{
+        type,
+        entity
+      }]);
+    }
   }
 
   toggleNode(node) {
@@ -92,7 +65,7 @@ export class SankeySelectionService {
     return this.toggleSelect(link, SelectionType.link);
   }
 
-  resetSelection() {
-    this.selection$.next([]);
+  reset() {
+    this._selection$.next([]);
   }
 }

@@ -2,18 +2,18 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, Element
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { map, tap, switchMap, takeUntil, first, filter } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
-import { last } from 'lodash-es';
+import { map, switchMap, takeUntil, publish } from 'rxjs/operators';
+import { forkJoin, combineLatest, Observable, merge, of } from 'rxjs';
 
-import { SankeyNode, SankeyLink, SelectionType } from 'app/sankey/interfaces';
-import { mapIterable, isNotEmpty } from 'app/shared/utils';
+import { SankeyNode, SankeyLink, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
+import { mapIterable } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
-import { updateAttrSingular } from 'app/sankey/utils/rxjs';
+import { updateAttrSingular, updateAttr } from 'app/sankey/utils/rxjs';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
@@ -48,6 +48,7 @@ export class SankeySingleLaneComponent
     protected search: SankeySearchService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
+    selection.multiselect = false;
   }
 
   focusedLink$ = this.sankey.graph$.pipe(
@@ -71,107 +72,60 @@ export class SankeySingleLaneComponent
     switchMap(({linkSelection, nodeSelection}) =>
       this.selection.selection$.pipe(
         // this base view operates on sigular selection
-        map(selection => last(selection)),
-        tap(selection => {
-          if (selection) {
-            const {entity, type} = selection;
-            switch (type) {
-              case SelectionType.node:
-                linkSelection.attr('selected', false);
-                this.assignAttrAndRaise(nodeSelection, 'selected', ({_id}) => (entity as SankeyNode)._id === _id);
-                break;
-              case SelectionType.link:
-                nodeSelection.attr('selected', false);
-                this.assignAttrAndRaise(linkSelection, 'selected', ({_id}) => (entity as SankeyLink)._id === _id);
-                break;
-            }
-            this.calculateAndApplyTransitiveConnections(entity);
-          } else {
-            // delete selection attributes
-            nodeSelection
-              .attr('selected', undefined)
-              .attr('transitively-selected', undefined);
-            linkSelection
-              .attr('selected', undefined)
-              .attr('transitively-selected', undefined);
-          }
-        })
+        publish((selection$: Observable<SelectionEntity>) => merge(
+          selection$.pipe(
+            map(({type, entity}) => type === SelectionType.node && entity),
+            updateAttrSingular(nodeSelection, 'selected', (entity, {_id}) => (entity as SankeyNode)._id === _id),
+            debug('nodeSelection')
+          ),
+          selection$.pipe(
+            map(({type, entity}) => type === SelectionType.link && entity),
+            updateAttrSingular(linkSelection, 'selected', (entity, {_id}) => (entity as SankeyLink)._id === _id),
+            debug('linkSelection')
+          )
+          // selection$.pipe(
+          //   map(({type, entity}) => type === SelectionType.trace && entity),
+          //   debug('traceSelection')
+          //   // todo
+          // )
+        )),
+        debug('eSelection'),
+        this.$getConnectedNodesAndLinks,
+        publish(connectedNodesAndLinks$ => combineLatest([
+          connectedNodesAndLinks$.pipe(
+            map(({nodesIds}) => nodesIds),
+            updateAttr(
+              nodeSelection,
+              'transitively-selected',
+              {
+                accessor: (nodesIds, {_id}) => nodesIds.has(_id),
+              }
+            ),
+            debug('transnodeSelection')
+          ),
+          connectedNodesAndLinks$.pipe(
+            map(({linksIds}) => linksIds),
+            updateAttr(
+              linkSelection,
+              'transitively-selected',
+              {
+                accessor: (linksIds, {_id}) => linksIds.has(_id),
+                enter: s => s
+                  .attr('transitively-selected', ({_graphRelativePosition}) => _graphRelativePosition ?? true)
+                  .raise()
+              }
+            ),
+            debug('translinkSelection')
+          )
+        ]))
       )
     )
   );
 
-  ngOnInit() {
-    // If there is selection when opening the view, reduce it to last selected entity
-    // this baseview supports only single selection
-    this.selection.selection$.pipe(
-      first(),
-      filter(isNotEmpty),
-      tap(selection => this.selection.selection$.next([last(selection)]))
-    ).toPromise();
-    super.ngOnInit();
-  }
-
-  initSelection() {
-    this.selectionUpdate$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe();
-  }
-
-  initFocus() {
-    forkJoin(
-      this.focusedLink$,
-      this.focusedNode$
-    ).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe();
-  }
-
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
-  }
-
-  ngOnDestroy() {
-    super.ngOnDestroy();
-  }
-
-  panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
-    this.sankeySelection.transition().call(
-      this.zoom.translateTo,
-      // x
-      (_x1 + _x0) / 2,
-      // y
-      (_y0 + _y1) / 2
-    );
-  }
-
-  @d3EventCallback
-  async pathMouseOver(element, data) {
-    this.highlightLink(element);
-  }
-
-  @d3EventCallback
-  async pathMouseOut(_element, _data) {
-    this.unhighlightNodes();
-    this.unhighlightLinks();
-  }
-
-  /**
-   * Given the set of selected nodes and links, calculates the connected nodes/links and applies the `transitively-selected` attribute to
-   * them.
-   * @param entity current selection
-   */
-  calculateAndApplyTransitiveConnections(entity) {
-    if (!entity) {
-      this.nodeSelection
-        .attr('transitively-selected', undefined);
-      this.linkSelection
-        .attr('transitively-selected', undefined);
-    } else {
-      this.assignAttrToRelativeLinksAndNodes(entity, 'transitively-selected');
+  $getConnectedNodesAndLinks = switchMap((data: SankeyEntity) => {
+    if (!data) {
+      return of({nodesIds: new Set(), linksIds: new Set()});
     }
-  }
-
-  getConnectedNodesAndLinks(data: SankeyEntity) {
     const traversalId = data._id;
     const leftNode = ((data as SankeyLink)._source ?? data) as SankeyNode;
     const rightNode = ((data as SankeyLink)._target ?? data) as SankeyNode;
@@ -240,30 +194,54 @@ export class SankeySingleLaneComponent
         };
       })
     );
+  });
+
+  ngOnInit() {
+    super.ngOnInit();
   }
 
-  assignAttrToRelativeLinksAndNodes(data, attr) {
-    return this.getConnectedNodesAndLinks(data).pipe(
-      tap(({nodesIds, linksIds}) => {
-        this.assignAttrAndRaise(
-          this.linkSelection,
-          attr,
-          (l) => {
-            const has = linksIds.has(l._id);
-            if (has && l._graphRelativePosition) {
-              return l._graphRelativePosition;
-            } else {
-              return has;
-            }
-          }
-        );
-        this.assignAttrAndRaise(
-          this.nodeSelection,
-          attr,
-          ({_id}) => nodesIds.has(_id)
-        );
-      })
-    ).toPromise();
+  initSelection() {
+    this.selectionUpdate$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  initFocus() {
+    forkJoin(
+      this.focusedLink$,
+      this.focusedNode$
+    ).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+  }
+
+  panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
+    this.sankeySelection.transition().call(
+      this.zoom.translateTo,
+      // x
+      (_x1 + _x0) / 2,
+      // y
+      (_y0 + _y1) / 2
+    );
+  }
+
+  @d3EventCallback
+  async pathMouseOver(element, data) {
+    this.highlightLink(element);
+  }
+
+  @d3EventCallback
+  async pathMouseOut(_element, _data) {
+    this.unhighlightNodes();
+    this.unhighlightLinks();
   }
 
   @d3EventCallback

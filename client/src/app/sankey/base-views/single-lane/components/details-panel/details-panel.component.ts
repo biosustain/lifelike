@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 
-import { SankeyDetailsPanelComponent } from '../../../../components/details-panel/details-panel.component';
+import { SankeyAbstractDetailsPanelComponent } from '../../../../abstract/details-panel.component';
 
 @Component({
   selector: 'app-sankey-single-lane-details-panel',
@@ -8,5 +8,5 @@ import { SankeyDetailsPanelComponent } from '../../../../components/details-pane
   styleUrls: ['./details-panel.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class SankeySingleLaneDetailsPanelComponent extends SankeyDetailsPanelComponent {
+export class SankeySingleLaneDetailsPanelComponent extends SankeyAbstractDetailsPanelComponent {
 }
