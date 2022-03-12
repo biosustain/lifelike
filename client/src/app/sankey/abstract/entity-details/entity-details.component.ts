@@ -12,7 +12,7 @@ import { ControllerService } from '../../services/controller.service';
 @Component({ template: '' })
 export class SankeyEntityDetailsComponent {
   constructor(
-    private common: ControllerService,
+    protected common: ControllerService,
     protected readonly route: ActivatedRoute
   ) {
   }
