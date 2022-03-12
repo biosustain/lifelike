@@ -61,7 +61,7 @@
                                  'd-flex': true,
                                  'flex-wrap': true,
                                  'justify-content-between': true,
-                                active: property.value === nodeValueAccessor$ | async
+                                active: property.value === (nodeValueAccessor$ | async)
                               }"
                         ><b>{{ property.value.description }}</b>{{parseProperty(entity[property.value.description])}}</li>
                     </ul>
