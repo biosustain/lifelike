@@ -5,9 +5,7 @@ import { SankeyEntityDetailsComponent } from './entity-details.component';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../../base-views/interfaces';
 
-@Component({
-  selector: 'app-sankey-link-details'
-})
+@Component({template: ''})
 export class SankeyAbstractLinkDetailsComponent extends SankeyEntityDetailsComponent {
   constructor(
     protected baseView: BaseControllerService<SankeyBaseOptions, SankeyBaseState>,

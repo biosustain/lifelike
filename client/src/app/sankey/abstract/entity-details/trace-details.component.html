@@ -9,21 +9,21 @@
             <ngb-panel id="source">
                 <ng-template disabled="true" ngbPanelHeader>
                     <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Source">
-                        {{ getNodeById(entity.source).id | async }}
+                        {{ entity.source }}
                     </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
-                    {{ getNodeById(entity.source).description | async }}
+                    {{ (getNodeById(entity.source) | async).description }}
                 </ng-template>
             </ngb-panel>
             <ngb-panel id="target">
                 <ng-template disabled="true" ngbPanelHeader>
                     <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Target">
-                        {{ getNodeById(entity.target).id | async }}
+                        {{ entity.target }}
                     </app-button-with-selectable-text>
                 </ng-template>
                 <ng-template ngbPanelContent>
-                    {{ getNodeById(entity.target).description | async }}
+                    {{ (getNodeById(entity.target) | async).description }}
                 </ng-template>
             </ngb-panel>
             <ngb-panel [disabled]="true">
