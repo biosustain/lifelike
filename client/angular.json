@@ -26,16 +26,20 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
+              "src/silent-refresh.html",
               {
                 "glob": "*.css",
+                "input": "src/environments/",
+                "output": "/environments/"
+              },
+              {
+                "glob": "*.js",
                 "input": "src/environments/",
                 "output": "/environments/"
               }
             ],
             "styles": [
-              "node_modules/tachyons/css/tachyons.css",
               "node_modules/qtip2/dist/jquery.qtip.min.css",
-              "node_modules/jquery-ui-dist/jquery-ui.css",
               "src/lifelike-theme.scss",
               "src/styles.scss",
               "src/scss/bootstrap.scss"
@@ -43,7 +47,6 @@
             "scripts": [
               "node_modules/vis-network/dist/vis-network.min.js",
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/jquery-ui-dist/jquery-ui.min.js",
               "node_modules/qtip2/dist/jquery.qtip.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js"
             ],
@@ -68,8 +71,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
+                  "maximumWarning": "32mb",
+                  "maximumError": "35mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -91,8 +94,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "27mb",
-                  "maximumError": "30mb"
+                  "maximumWarning": "32mb",
+                  "maximumError": "35mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -194,5 +197,8 @@
     "@schematics/angular:component": {
       "style": "scss"
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

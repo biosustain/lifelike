@@ -6,6 +6,38 @@ router-outlet + ::ng-deep * {
   height: 100%;
 }
 
+.app {
+  min-height: calc(100vh - 24px);
+}
+
 .button-divider {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+footer {
+  background: $gray-300;
+  border-top: 1px solid $gray-500;
+  box-shadow: 0px -2px 10px rgba(50, 50, 50, 0.15);
+  height: 24px;
+  line-height: 23px;
+  font-size: 12px;
+  text-align: right;
+
+  span {
+    display: inline-block;
+    height: 23px;
+    overflow: hidden;
+    padding-right: 1.5em;
+
+    &.repo {
+      margin-top: 2px;
+    }
+  }
+
+  img.logo {
+    height: 16px;
+    width: 16px;
+    opacity: 0.7;
+    vertical-align: text-bottom;
+  }
 }

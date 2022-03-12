@@ -1,0 +1,11 @@
+<cdk-tree [dataSource]="dataSource$" [treeControl]="treeControl">
+    <cdk-nested-tree-node *cdkTreeNodeDef="let treeNode">
+        {{ treeNode.label }}
+        <ng-container *ngIf="treeNode.hasOwnProperty('value')">: {{ treeNode.value }}</ng-container>
+    </cdk-nested-tree-node>
+    <cdk-nested-tree-node *cdkTreeNodeDef="let treeNode; when: hasChildren">
+        <a cdkTreeNodeToggle><i [ngClass]="getNodeIcon(treeNode)"></i>{{ treeNode.label }}</a>
+        <ng-container *ngIf="treeNode.hasOwnProperty('value')">: {{ treeNode.value }}</ng-container>
+        <div *ngIf="treeControl.isExpanded(treeNode)" cdkTreeNodeOutlet></div>
+    </cdk-nested-tree-node>
+</cdk-tree>

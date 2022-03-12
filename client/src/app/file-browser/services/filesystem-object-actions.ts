@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
-import { clone } from 'lodash-es';
+import { clone, first } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -141,6 +141,7 @@ export class FilesystemObjectActions {
     destination: FilesystemObject,
   }> {
     const dialogRef = this.modalService.open(ObjectSelectionDialogComponent);
+    dialogRef.componentInstance.hashId = first(targets).parent.hashId;
     dialogRef.componentInstance.title = `Move ${getObjectLabel(targets)}`;
     dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
     dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => o.isDirectory;

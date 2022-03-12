@@ -8,8 +8,8 @@ import { ObjectBrowserComponent } from 'app/file-browser/components/object-brows
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
-import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
+import { LifelikeAuthGuard } from 'app/auth/guards/auth-guard.service';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from 'app/kg-statistics.component';
@@ -23,19 +23,23 @@ import { BrowserComponent } from 'app/file-browser/components/browser/browser.co
 import { ContentSearchComponent } from 'app/search/components/content-search.component';
 import { ObjectNavigatorComponent } from 'app/file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from 'app/shortest-path/containers/shortest-path.component';
-import {EnrichmentTableViewerComponent} from 'app/enrichment/components/table/enrichment-table-viewer.component';
-import {EnrichmentVisualisationViewerComponent} from 'app/enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
+import { EnrichmentVisualisationViewerComponent } from 'app/enrichment/components/visualisation/enrichment-visualisation-viewer.component';
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 import { ObjectViewerComponent } from 'app/file-browser/components/object-viewer.component';
 import { SankeyViewComponent } from 'app/sankey/components/sankey-view.component';
 import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.component';
+import { CopyrightInfringementFormComponent } from 'app/reports/components/copyright-infringement-form.component';
+import { CookiePolicyComponent } from 'app/policies/components/cookie-policy.component';
+import { CopyrightInfringementPolicyComponent } from 'app/policies/components/copyright-infringement-policy.component';
+import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
+import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
 
-// TODO: Add an unprotected home page
+
 const routes: Routes = [
   {
     path: '',
     component: DashboardComponent,
-    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -44,7 +48,6 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -78,7 +81,7 @@ const routes: Routes = [
   {
     path: 'users/:user',
     component: UserSettingsComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Profile',
       fontAwesomeIcon: 'user-circle',
@@ -87,7 +90,7 @@ const routes: Routes = [
   {
     path: 'search/graph',
     component: GraphSearchComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Knowledge Graph',
       fontAwesomeIcon: 'fas fa-chart-network',
@@ -95,7 +98,7 @@ const routes: Routes = [
   },
   {
     path: 'search/content',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: ContentSearchComponent,
     data: {
       title: 'Search',
@@ -104,12 +107,12 @@ const routes: Routes = [
   },
   {
     path: 'pathway-browser-prototype',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: ShortestPathComponent,
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: EnrichmentTableViewerComponent,
     data: {
       title: 'Enrichment Table',
@@ -118,7 +121,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/enrichment-visualisation/:file_id',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: EnrichmentVisualisationViewerComponent,
     data: {
       title: 'Statistical Enrichment',
@@ -127,7 +130,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/sankey/:file_id',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
@@ -138,7 +141,7 @@ const routes: Routes = [
     // Left as legacy link support
     // for a while now base view is decided by file content or fragment params
     path: 'projects/:project_name/sankey-many-to-many/:file_id',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
@@ -147,7 +150,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/trace/:file_id/:trace_hash',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: TraceViewComponent,
     data: {
       title: 'Trace details',
@@ -156,18 +159,18 @@ const routes: Routes = [
   },
   {
     path: 'kg-visualizer',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     children: [
       {
         path: '',
         redirectTo: '/search',
         pathMatch: 'full',
-        canActivate: [AuthGuard],
+        canActivate: [LifelikeAuthGuard],
       },
       {
         path: 'graph',
         component: VisualizationComponent,
-        canActivate: [AuthGuard],
+        canActivate: [LifelikeAuthGuard],
         data: {
           title: 'Knowledge Graph',
           fontAwesomeIcon: 'fas fa-chart-network',
@@ -178,7 +181,7 @@ const routes: Routes = [
   {
     path: 'workspaces/:space_id',
     component: WorkspaceComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Workbench',
     },
@@ -187,7 +190,7 @@ const routes: Routes = [
   {
     path: 'community',
     component: CommunityBrowserComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Community Content',
       fontAwesomeIcon: 'globe',
@@ -196,7 +199,7 @@ const routes: Routes = [
   {
     path: 'projects',
     component: BrowserComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'File Browser',
       fontAwesomeIcon: 'layer-group',
@@ -205,7 +208,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name',
     component: ObjectBrowserComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Projects',
       fontAwesomeIcon: 'layer-group',
@@ -224,7 +227,7 @@ const routes: Routes = [
   {
     path: 'folders/:dir_id',
     component: ObjectBrowserComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Projects',
       fontAwesomeIcon: 'layer-group',
@@ -233,7 +236,7 @@ const routes: Routes = [
   {
     path: 'files/:hash_id',
     component: ObjectViewerComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'File',
       fontAwesomeIcon: 'file',
@@ -242,7 +245,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/files/:file_id',
     component: FileViewComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'PDF Viewer',
       fontAwesomeIcon: 'file-pdf',
@@ -251,7 +254,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/bioc/:file_id',
     component: BiocViewComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'BioC Viewer',
       fontAwesomeIcon: 'file-alt',
@@ -259,7 +262,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/maps/:hash_id',
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     component: MapViewComponent,
     data: {
       title: 'Map',
@@ -269,17 +272,27 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/maps/:hash_id/edit',
     component: MapEditorComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',
       fontAwesomeIcon: 'project-diagram',
     },
   },
+  /* TODO Refactor import
+  {
+    path: 'kg-import',
+    canActivate: [LifelikeAuthGuard],
+    children: [
+      {path: '', component: KgImportWizardComponent},
+      {path: 'genes', component: GeneImportWizardComponent},
+    ],
+  },
+  */
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       fontAwesomeIcon: 'fas fa-chart-bar',
     },
@@ -287,7 +300,7 @@ const routes: Routes = [
   {
     path: 'file-navigator/:project_name/:file_id',
     component: ObjectNavigatorComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
@@ -296,10 +309,51 @@ const routes: Routes = [
   {
     path: 'enrichment-visualisation/:project_name/:file_id',
     component: EnrichmentVisualisationViewerComponent,
-    canActivate: [AuthGuard],
+    canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Enrichment Visualisation',
       fontAwesomeIcon: 'fas chart-bar',
+    },
+  },
+  {
+    path: 'terms-and-conditions',
+    component: TermsAndConditionsComponent,
+    data: {
+      title: 'Terms and Conditions',
+      fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'privacy-policy',
+    component: PrivacyPolicyComponent,
+    data: {
+      title: 'Privacy Policy',
+      fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'cookie-policy',
+    component: CookiePolicyComponent,
+    data: {
+      title: 'Cookie Policy',
+      fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'copyright-infringement-policy',
+    component: CopyrightInfringementPolicyComponent,
+    data: {
+      title: 'Copyright Infringement Policy',
+      fontAwesomeIcon: 'fas fa-file-alt',
+    },
+  },
+  {
+    path: 'report/copyright-infringement/form',
+    component: CopyrightInfringementFormComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'Copyright Infringement Claim Request Form',
+      fontAwesomeIcon: 'fas fa-copyright',
     },
   },
   // Old links

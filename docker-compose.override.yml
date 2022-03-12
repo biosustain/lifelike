@@ -1,206 +1,206 @@
-version: '3.8'
+version: "3.8"
 
 services:
-    pgdatabase:
-        container_name: pgdatabase
-        image: postgres:11
-        command: postgres -c max_wal_size=2GB -c log_statement='all'
-        environment:
-            - POSTGRES_PASSWORD=postgres
-        ports:
-            - "5431:5432"
-        networks:
-            - backend
+  pgdatabase:
+    image: postgres:11
+    container_name: pgdatabase
+    command: postgres -c max_wal_size=2GB -c log_statement='all'
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5431:5432"
+    networks:
+      - backend
 
-    graphdatabase:
-        container_name: graphdatabase
-        build: ./graph-db/neo4j
-        environment:
-            - NEO4J_AUTH=neo4j/password
-        volumes:
-            - ./graph-db/neo4j/logs:/logs
-        ports:
-            - "7474:7474"
-            - "7687:7687"
-        networks:
-            - backend
+  graphdatabase:
+    container_name: graphdatabase
+    build: ./graph-db/neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - ./graph-db/neo4j/logs:/logs
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - backend
 
-    liquibase:
-        container_name: liquibase
-        user: root
-        build: ./graph-db
+  liquibase:
+    container_name: liquibase
+    user: root
+    build: ./graph-db
 
-    appserver:
-        container_name: appserver
-        build: ./appserver
-        ports:
-            - "5000:5000"
-        env_file:
-            # File found in Azure File Store
-            - azure-secrets.env
-        environment:
-            # Log Services
-            - FORMAT_AS_JSON=false
-            # Flask
-            - FLASK_APP=app
-            - FLASK_APP_CONFIG=Development
-            - FLASK_DEBUG=1
-            - FLASK_ENV=development
-            # Postgres
-            - POSTGRES_HOST=pgdatabase
-            - POSTGRES_PORT=5432
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
-            - POSTGRES_DB=postgres
-            # ElasticSearch
-            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-            - ELASTIC_FILE_INDEX_ID=file_dev
-            # Neo4j
-            - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=graphdatabase
-            - NEO4J_AUTH=neo4j/password
-            - NEO4J_PORT=7687
-            # Redis
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - REDIS_PASSWORD=password
-            - REDIS_SSL=false
-            # StatisticalEnrichment
-            - SE_HOST=statistical-enrichment
-            - SE_PORT=5010
-            # Other
-            - DOMAIN=http://localhost:4200
-            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-            - ASSETS_FOLDER=/home/n4j/assets/
-        # Allow debugging w/ IPython or pdb
-        stdin_open: true
-        tty: true
-        # End debugging section
-        volumes:
-            - ./appserver:/home/n4j
-        networks:
-            - frontend
-            - backend
-        depends_on:
-            - elasticsearch
-            - graphdatabase
-            - pgdatabase
-            - redis
-            - pdfparser
+  appserver:
+    container_name: appserver
+    build: ./appserver
+    ports:
+      - "5000:5000"
+    env_file:
+      # File found in Azure File Store
+      - azure-secrets.env
+    environment:
+      # Log Services
+      - FORMAT_AS_JSON=false
+      # Flask
+      - FLASK_APP=app
+      - FLASK_APP_CONFIG=Development
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+      # Postgres
+      - POSTGRES_HOST=pgdatabase
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      # ElasticSearch
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTIC_FILE_INDEX_ID=file_dev
+      # Neo4j
+      - NEO4J_SCHEME=bolt
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PORT=7687
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
+      # StatisticalEnrichment
+      - SE_HOST=statistical-enrichment
+      - SE_PORT=5010
+      # Other
+      - DOMAIN=http://localhost:4200
+      - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+      - ASSETS_FOLDER=/home/n4j/assets/
+    # Allow debugging w/ IPython or pdb
+    stdin_open: true
+    tty: true
+    # End debugging section
+    volumes:
+      - ./appserver:/home/n4j
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - elasticsearch
+      - graphdatabase
+      - pgdatabase
+      - redis
+      - pdfparser
 
-    statistical-enrichment:
-        container_name: statistical-enrichment
-        build: ./statistical-enrichment
-        ports:
-            - "5010:5010"
-        environment:
-            # Flask
-            - FLASK_APP=statistical_enrichment
-            - FLASK_APP_CONFIG=Development
-            - FLASK_DEBUG=1
-            - FLASK_ENV=development
-            # Neo4j
-            - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=graphdatabase
-            - NEO4J_AUTH=neo4j/password
-            - NEO4J_PORT=7687
-            # Redis
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - REDIS_PASSWORD=password
-            - REDIS_SSL=false
-        # Allow debugging w/ IPython or pdb
-        stdin_open: true
-        tty: true
-        # End debugging section
-        volumes:
-            - ./statistical-enrichment:/home/user
-        networks:
-            - backend
-        depends_on:
-            - graphdatabase
-            - redis
+  statistical-enrichment:
+    container_name: statistical-enrichment
+    build: ./statistical-enrichment
+    ports:
+      - "5010:5010"
+    environment:
+      # Flask
+      - FLASK_APP=statistical_enrichment
+      - FLASK_APP_CONFIG=Development
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+      # Neo4j
+      - NEO4J_SCHEME=bolt
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PORT=7687
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
+    # Allow debugging w/ IPython or pdb
+    stdin_open: true
+    tty: true
+    # End debugging section
+    volumes:
+      - ./statistical-enrichment:/home/user
+    networks:
+      - backend
+    depends_on:
+      - graphdatabase
+      - redis
 
-    cache-invalidator:
-        container_name: cache-invalidator
-        build: ./cache-invalidator
-        environment:
-            - LOG_LEVEL=debug
-            # Neo4j
-            - NEO4J_SCHEME=bolt
-            - NEO4J_HOST=graphdatabase
-            - NEO4J_AUTH=neo4j/password
-            - NEO4J_PORT=7687
-            # Redis
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - REDIS_PASSWORD=password
-            - REDIS_SSL=false
-        volumes:
-            - ./cache-invalidator:/app
-        networks:
-            - backend
-        depends_on:
-            - redis
-            - graphdatabase
+  cache-invalidator:
+    container_name: cache-invalidator
+    build: ./cache-invalidator
+    environment:
+      - LOG_LEVEL=debug
+      # Neo4j
+      - NEO4J_SCHEME=bolt
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PORT=7687
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
+    volumes:
+      - ./cache-invalidator:/app
+    networks:
+      - backend
+    depends_on:
+      - redis
+      - graphdatabase
 
-    client:
-        container_name: client
-        build:
-            context: ./client
-            dockerfile: Dockerfile
-#            target: angular-deps
-        command: yarn dev-start
-        volumes:
-            - ./client:/app
-            # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
-            # Helps not overwrite the node_modules with host
-            - /app/node_modules
-        ports:
-            - "4200:4200"
-        networks:
-            - frontend
+  client:
+    container_name: client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: angular-deps
+    command: yarn dev-start
+    volumes:
+      - ./client:/app
+      # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
+      # Helps not overwrite the node_modules with host
+      - /app/node_modules
+    ports:
+      - "4200:4200"
+    networks:
+      - frontend
 
-    redis:
-        image: redis:6.0.3-alpine
-        command: redis-server --requirepass password
-        networks:
-            - backend
+  redis:
+    image: redis:6.0.3-alpine
+    command: redis-server --requirepass password
+    networks:
+      - backend
 
-    pdfparser:
-        container_name: pdfparser
-        ports:
-            - "7600:7600"
-        # tty: true - this is a hack for grizzly as it expects input;
-        # without it, container will exit right away due to docker not accepting input by default
-        tty: true
-        networks:
-            - backend
+  pdfparser:
+    container_name: pdfparser
+    ports:
+      - "7600:7600"
+    # tty: true - this is a hack for grizzly as it expects input;
+    # without it, container will exit right away due to docker not accepting input by default
+    tty: true
+    networks:
+      - backend
 
-    elasticsearch:
-        container_name: elasticsearch
-        build:
-            dockerfile: Dockerfile
-            context: elasticsearch
-        environment:
-            - discovery.type=single-node
-            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
-            - bootstrap.memory_lock=true
-            - xpack.graph.enabled=false
-            - xpack.watcher.enabled=false
-            - xpack.license.self_generated.type=basic
-        ulimits:
-            memlock:
-                soft: -1
-                hard: -1
-        ports:
-            - "9200:9200"
-            - "9300:9300"
-        networks:
-            - backend
-            - elastic
+  elasticsearch:
+    container_name: elasticsearch
+    build:
+      dockerfile: Dockerfile
+      context: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
+      - bootstrap.memory_lock=true
+      - xpack.graph.enabled=false
+      - xpack.watcher.enabled=false
+      - xpack.license.self_generated.type=basic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - backend
+      - elastic
 
 networks:
-    frontend:
-    backend:
-    elastic:
+  frontend:
+  backend:
+  elastic:
