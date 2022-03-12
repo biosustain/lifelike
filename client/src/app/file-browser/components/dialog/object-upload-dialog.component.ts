@@ -77,7 +77,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
   async fileChanged(event) {
     const uploadLimit = this.maxFileCount - this.fileList.length;
-    for (let i = 0; (i < event.target.files.length) && (i <= uploadLimit); i++) {
+    for (let i = 0; (i < event.target.files.length) && (i < uploadLimit); i++) {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
       await this.extractDescription(targetFile, filename.split('.').pop()).then(description => {

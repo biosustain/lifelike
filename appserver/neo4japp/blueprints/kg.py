@@ -2,7 +2,6 @@ from enum import Enum
 
 from flask import Blueprint, request, jsonify
 
-from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_kg_service
 
 bp = Blueprint('kg-api', __name__, url_prefix='/knowledge-graph')
@@ -19,7 +18,6 @@ class Domain(Enum):
 
 
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
-@auth.login_required
 def get_ncbi_enrichment_domains():
     """ Find all domains matched to given node id, then return dictionary with all domains as
         result. All domains should have matching indices e.g. regulon[1] should be data from
@@ -58,7 +56,6 @@ def get_ncbi_enrichment_domains():
 
 
 @bp.route('/shortest-path-query/<int:query_id>', methods=['GET'])
-@auth.login_required
 def get_shortest_path_query_result(query_id):
     kg = get_kg_service()
     result = kg.get_shortest_path_data(query_id)
@@ -66,7 +63,6 @@ def get_shortest_path_query_result(query_id):
 
 
 @bp.route('/shortest-path-query-list', methods=['GET'])
-@auth.login_required
 def get_shortest_path_query_list():
     kg = get_kg_service()
     result = kg.get_shortest_path_query_list()

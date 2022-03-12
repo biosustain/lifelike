@@ -1,0 +1,13 @@
+[submodule "***ARANGO_DB_NAME***-oss"]
+	path = ***ARANGO_DB_NAME***-oss
+	url = https://github.com/SBRG/***ARANGO_DB_NAME***
+[submodule "keycloak"]
+	path = keycloak
+	url = https://github.com/SBRG/***ARANGO_DB_NAME***-keycloak
+[submodule "website"]
+	path = website
+	url = https://github.com/SBRG/***ARANGO_DB_NAME***-website
+[submodule "deployment"]
+	path = deployment
+	url = https://github.com/SBRG/***ARANGO_DB_NAME***-infra
+	branch = ansible

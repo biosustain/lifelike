@@ -43,8 +43,8 @@ export function filenameValidator(control: AbstractControl): ValidationErrors | 
 }
 
 
-export function noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
-  const forbidden = /\s/g.test(control.value);
+export function noStartOrEndWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
+  const forbidden = /^\s|\s$/.test(control.value);
   return forbidden ? {whitespaceError: {value: control.value}} : null;
 }
 

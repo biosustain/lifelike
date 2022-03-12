@@ -9,7 +9,7 @@
  */
 import { omit, slice, isObject, uniq, flatMap, pullAt } from 'lodash-es';
 
-import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
+import { ExtendedWeakMap, ExtendedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { GraphLink, GraphTrace, GraphNode } from 'app/shared/providers/graph-type/interfaces';
 
@@ -65,8 +65,8 @@ export class SankeySearch {
     this.data = data;
     this.matcher = prioritisedCompileFind(searchTokens, options);
     this.matchedTraces = new ExtendedWeakMap<SankeyTrace & any, Match[]>();
-    this.matchedLink = new LazyLoadedMap<SearchLink['_id'], Generator<Match>>();
-    this.matchedNodes = new LazyLoadedMap<SearchNode['_id'], Generator<Match>>();
+    this.matchedLink = new ExtendedMap<SearchLink['_id'], Generator<Match>>();
+    this.matchedNodes = new ExtendedMap<SearchNode['_id'], Generator<Match>>();
     this.nodeById = indexByProperty(data.nodes, '_id');
     this.networkTraceIdx = networkTraceIdx;
   }
@@ -75,8 +75,8 @@ export class SankeySearch {
   networkTraceIdx: number;
   matcher: (term: string) => MatchPriority | boolean;
   matchedTraces: ExtendedWeakMap<SankeyTrace & any, Match[]>;
-  matchedLink: LazyLoadedMap<SearchLink['_id'], Generator<Match>>;
-  matchedNodes: LazyLoadedMap<SearchNode['_id'], Generator<Match>>;
+  matchedLink: ExtendedMap<SearchLink['_id'], Generator<Match>>;
+  matchedNodes: ExtendedMap<SearchNode['_id'], Generator<Match>>;
   nodeById: Map<string, SearchNode>;
   potentialEntitiesWithAdditionalMatches: MatchGenerator[] = [];
 
@@ -118,7 +118,7 @@ export class SankeySearch {
   }
 
   matchNode(node: SearchNode): Generator<Match> {
-    return this.matchedNodes.getSet(
+    return this.matchedNodes.getSetLazily(
       node._id,
       () => this.matchObject(
         omit(node, this.ignoredNodeProperties)
@@ -127,7 +127,7 @@ export class SankeySearch {
   }
 
   * matchLink(link: SearchLink): Generator<Match> {
-    const matches = this.matchedLink.getSet(
+    const matches = this.matchedLink.getSetLazily(
       link._id,
       () => this.matchObject(
         omit(link, this.ignoredLinkProperties)

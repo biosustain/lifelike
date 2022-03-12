@@ -6,18 +6,18 @@
 # Run:
 #   docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.localhost.yml
 
-version: '3.8'
+version: "3.8"
 
 services:
-    webserver:
-        container_name: webserver
-        build:
-            context: ./client
-            dockerfile: Dockerfile
-            target: webserver
-        ports:
-            - "80:80"
-        networks:
-            - frontend
-        depends_on:
-            - appserver
+  webserver:
+    container_name: webserver
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: webserver
+    ports:
+      - "80:80"
+    networks:
+      - frontend
+    depends_on:
+      - appserver

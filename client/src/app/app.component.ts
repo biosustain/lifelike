@@ -15,6 +15,8 @@ import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
 
+import { environment } from '../environments/environment';
+
 /**
  * Root of the application that creates the left menu and the content section.
  */
@@ -65,7 +67,6 @@ export class AppComponent {
         this.fragment = urlParts[1];
       }
     });
-
   }
   /**
    * View Lifelike meta information
@@ -85,7 +86,8 @@ export class AppComponent {
    * Log the user out.
    */
   logout() {
-    this.store.dispatch(AuthActions.logout());
+    const logoutAction = environment.oauthEnabled ? AuthActions.oauthLogout() : AuthActions.logout();
+    this.store.dispatch(logoutAction);
   }
 
   downloadManual() {

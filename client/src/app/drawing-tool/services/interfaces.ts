@@ -19,6 +19,7 @@ export interface UniversalNodeStyle {
   fontSizeScale?: number;
   fillColor?: string;
   strokeColor?: string;
+  bgColor?: string;
   lineType?: string;
   lineWidthScale?: number;
   showDetail?: boolean;

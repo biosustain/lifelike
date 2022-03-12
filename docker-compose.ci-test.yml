@@ -1,86 +1,64 @@
-# local development overrides
-
-version: '3.5'
+# CI Test
+version: "3.8"
 
 services:
-    pgdatabase:
-        command: postgres -c max_wal_size=2GB -c log_statement='all'
-        container_name: pg-database
-        image: postgres:10.2
-        networks:
-            - backend
-        ports:
-            - "5431:5432"
-        volumes:
-            -  ./postgres/db:/var/lib/postgresql/data
+  appserver:
+    image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
+    environment:
+      - NEO4J_HOST=neo4j
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PORT=7687
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+      - FLASK_APP=app
+      - FLASK_APP_CONFIG=Development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTIC_FILE_INDEX_ID=file_ci
+      - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres
+      - elasticsearch
+      - neo4j
 
-    appserver:
-        container_name: appserver
-        image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
-        ports:
-            - "5000:5000"
-        environment:
-            - NEO4J_HOST=graphdatabase
-            - NEO4J_AUTH=neo4j/password
-            - NEO4J_SCHEME=bolt
-            - NEO4J_PORT=7687
-            - FLASK_DEBUG=1
-            - FLASK_ENV=development
-            - FLASK_APP=app
-            - FLASK_APP_CONFIG=Development
-            - POSTGRES_HOST=pgdatabase
-            # Postgres defaults
-            - POSTGRES_PORT=5432
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
-            - POSTGRES_DB=postgres
-            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-            - ELASTIC_FILE_INDEX_ID=file_ci
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - REDIS_PASSWORD=password
-            - REDIS_SSL=false
-            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-        networks:
-            - frontend
-            - backend
-        depends_on:
-            - graphdatabase
-            - pgdatabase
+  postgres:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5431:5432
 
-    graphdatabase:
-        container_name: graphdatabase
-        environment:
-            - NEO4J_AUTH=neo4j/password
-        image: neo4j:4.2-community
-        ports:
-            - "7474:7474"
-            - "7687:7687"
-        networks:
-            - backend
+  neo4j:
+    image: neo4j:4.4-community
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    ports:
+      - 7687:7687
+      - 7474:7474
 
-    elasticsearch:
-        container_name: elasticsearch
-        build:
-            dockerfile: Dockerfile
-            context: elasticsearch
-        environment:
-            - discovery.type=single-node
-            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
-            - bootstrap.memory_lock=true
-            - xpack.graph.enabled=false
-            - xpack.watcher.enabled=false
-            - xpack.license.self_generated.type=basic
-        ulimits:
-            memlock:
-                soft: -1
-                hard: -1
-        ports:
-            - "9200:9200"
-            - "9300:9300"
-        networks:
-            - backend
-
-networks:
-    frontend:
-    backend:
+  elasticsearch:
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - http.max_content_length=200mb
+      - bootstrap.memory_lock=true
+      - xpack.graph.enabled=false
+      - xpack.watcher.enabled=false
+      - xpack.license.self_generated.type=basic
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1

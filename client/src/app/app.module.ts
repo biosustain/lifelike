@@ -6,7 +6,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AdminModule } from 'app/admin/admin.module';
-import { AuthModule } from 'app/auth/auth.module';
+import { LifelikeAuthModule } from 'app/auth/auth.module';
 import { UserModule } from 'app/users/users.module';
 import { AppRoutingModule } from 'app/app-routing.module';
 import { AppComponent } from 'app/app.component';
@@ -32,6 +32,8 @@ import { EnrichmentVisualisationsModule } from 'app/enrichment/enrichment-visual
 import { BiocViewerLibModule } from 'app/bioc-viewer/bioc-viewer-lib.module';
 import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { FileTypesModule } from 'app/file-types/file-types.module';
+import { PoliciesModule } from 'app/policies/policies.module';
+import { ReportsModule } from 'app/reports/reports.module';
 import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
 
 @NgModule({
@@ -50,7 +52,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     BrowserModule,
     PdfViewerLibModule,
     AdminModule,
-    AuthModule,
+    LifelikeAuthModule.forRoot(),
     SharedModule,
     AppRoutingModule,
     FileTypesModule,
@@ -70,6 +72,8 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     EnrichmentVisualisationsModule,
     ShortestPathModule,
     EnrichmentTablesModule,
+    PoliciesModule,
+    ReportsModule,
   ],
   providers: [
     httpInterceptorProviders,
