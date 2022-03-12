@@ -95,7 +95,7 @@
                             <i class="fa fa-fw fa-text-height"></i>
                         </label>
                         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                                           [(value)]="node.style.fontSizeScale" (change)="doSave()"
+                                           [(ngModel)]="node.style.fontSizeScale" (change)="doSave()"
                                            default="100"
                                            inputId="font-size"
                                            [style.width]="'6rem'"></app-percent-input>
@@ -154,7 +154,7 @@
                             <i class="fa fa-fw fa-window-minimize"></i>
                         </label>
                         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                                           [(value)]="node.style.lineWidthScale" (change)="doSave()"
+                                           [(ngModel)]="node.style.lineWidthScale" (change)="doSave()"
                                            default="100"
                                            inputId="line-width-scale"
                                            [style.width]="'6rem'"></app-percent-input>
