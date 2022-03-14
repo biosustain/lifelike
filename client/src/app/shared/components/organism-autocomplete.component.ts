@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 
-import { iif, merge, Observable, of, Subject } from 'rxjs';
+import { iif, Observable, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
-import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { isEmpty } from 'lodash';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
@@ -11,7 +10,7 @@ import {
   OrganismsResult,
 } from 'app/interfaces';
 
-import { ORGANISM_SHORTLIST } from '../constants';
+import { ORGANISM_AUTOCOMPLETE_DEFAULTS } from '../constants';
 
 @Component({
   selector: 'app-organism-autocomplete',
@@ -23,90 +22,67 @@ export class OrganismAutocompleteComponent implements OnInit {
 
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete|null>();
 
-  focus$ = new Subject<string>();
+  inputText = '';
+  inputText$ = new Subject<string>();
+
+  searcher$: Observable<OrganismAutocomplete[]> = this.inputText$.pipe(
+    distinctUntilChanged((prev, curr) => prev.toLocaleLowerCase() === curr.toLocaleLowerCase()),
+    debounceTime(300),
+    tap(() => {
+      this.isFetching = true;
+      this.organism = null;
+      this.organismPicked.emit(null);
+    }),
+    switchMap(q =>
+      iif(
+        () => isEmpty(q),
+        of([]),
+        this.search.getOrganisms(q, 10).pipe(
+          catchError(() => {
+            this.fetchFailed = true;
+            return of([]);
+          }),
+          map((organisms: OrganismsResult) => {
+            this.fetchFailed = false;
+            return organisms.nodes;
+          }),
+        )
+      )
+    ),
+    tap(() => this.isFetching = false)
+  );
 
   fetchFailed = false;
   isFetching = false;
 
-  organismShortlist: OrganismAutocomplete[];
-  organismShortListSeparator: OrganismAutocomplete;
-
+  organismShortlist: OrganismAutocomplete[] = ORGANISM_AUTOCOMPLETE_DEFAULTS;
   organism: OrganismAutocomplete;
 
   constructor(private search: SharedSearchService) {}
 
   ngOnInit() {
-    this.organismShortlist = Array.from(ORGANISM_SHORTLIST.entries()).map(([organismName, organismTaxId]) => {
-      return {
-        organism_name: organismName,
-        synonym: organismName,
-        tax_id: organismTaxId
-      } as OrganismAutocomplete;
-    });
-    this.organismShortListSeparator = {
-      organism_name: '-'.repeat(50),
-      synonym: '',
-      tax_id: ''
-    };
-
     if (this.organismTaxId) {
       this.search.getOrganismFromTaxId(
         this.organismTaxId
       ).subscribe(
-        (response) => this.organism = response
+        (response) => {
+          this.inputText = response.organism_name;
+          this.organism = response;
+        }
       );
     }
   }
 
-  searcher = (text$: Observable<string>) => {
-    const distinctText$ = text$.pipe(distinctUntilChanged((prev, curr) => prev.toLocaleLowerCase() === curr.toLocaleLowerCase()));
-    const inputFocus$ = this.focus$;
-
-    return merge(distinctText$, inputFocus$).pipe(
-      debounceTime(300),
-      tap(() => {
-        this.isFetching = true;
-        this.organismPicked.emit(null);
-      }),
-      switchMap(q =>
-        iif(
-          () => isEmpty(q),
-          of(this.organismShortlist),
-          this.search.getOrganisms(q, 10).pipe(
-            catchError(() => {
-              this.fetchFailed = true;
-              return of([]);
-            }),
-            map((organisms: OrganismsResult) => {
-              this.fetchFailed = false;
-              return [
-                ...this.organismShortlist,
-                organisms.nodes.length ? this.organismShortListSeparator : [],
-                ...organisms.nodes
-              ];
-            }),
-          )
-        )
-      ),
-      tap(() => this.isFetching = false)
-    );
-  }
-
-  formatter = (organism: OrganismAutocomplete) => organism.organism_name;
-
-  notifySelection(event: NgbTypeaheadSelectItemEvent) {
-    if (event.item === this.organismShortListSeparator) {
-      // This prevents the ngbTypeahead from updating the model
-      event.preventDefault();
-      this.clear();
-      return;
-    }
-    this.organism = event.item;
-    this.organismPicked.emit(event.item);
+  selectOrganism(organism: OrganismAutocomplete) {
+    this.organism = organism;
+    this.inputText = organism.organism_name;
+    this.organismPicked.emit(organism);
   }
 
   clear() {
-    this.organism = undefined;
+    this.organism = null;
+    this.inputText = '';
+    this.inputText$.next(this.inputText); // Clear the result list
     this.organismPicked.emit(null);
   }
 }
