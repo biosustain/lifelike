@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+
 import { SankeyAbstractLinkDetailsComponent } from '../../../../abstract/entity-details/link-details.component';
 import { BaseControllerService } from '../../../../services/base-controller.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../../../interfaces';
