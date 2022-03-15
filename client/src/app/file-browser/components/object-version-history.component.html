@@ -16,7 +16,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let version of log.results.view"
+          <tr *ngFor="let version of log.results.view$ | async"
               [class.active]="log.results.isSelected(version)">
             <td (click)="log.results.toggle(version)">
               <ng-container *ngIf="showCheckboxes; else noCheckboxes">
@@ -47,16 +47,16 @@
 
         <div class="mt-4">
           <ngb-pagination
-            [page]="page"
-            [pageSize]="limit"
+            [page]="page$ | async"
+            [pageSize]="limit$ | async"
             [collectionSize]="log.collectionSize"
-            (pageChange)="goToPage($event)"></ngb-pagination>
+            (pageChange)="page$.next($event)"></ngb-pagination>
         </div>
       </div>
       <div class="split-view-right flex-fill d-flex flex-column">
-        <ng-container *ngIf="log.results.lastSelection">
-          <ng-container *ngIf="log.results.lastSelection.object; else previewLoading">
-            <app-object-preview [object]="log.results.lastSelection.object" [contentValue]="log.results.lastSelection.contentValue" class="flex-fill"></app-object-preview>
+        <ng-container *ngIf="(log.results.lastSelection$ | async) as lastSelection">
+          <ng-container *ngIf="lastSelection.object; else previewLoading">
+            <app-object-preview [object]="lastSelection.object" [contentValue]="lastSelection.contentValue" class="flex-fill"></app-object-preview>
           </ng-container>
           <ng-template #previewLoading>
             <div class="d-flex flex-fill align-items-center justify-content-center">

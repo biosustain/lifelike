@@ -1,7 +1,7 @@
-import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
-import {from, Observable, of} from 'rxjs';
-import {map} from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { MapComponent } from 'app/drawing-tool/components/map.component';
