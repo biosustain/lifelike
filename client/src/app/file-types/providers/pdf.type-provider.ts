@@ -4,7 +4,8 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
   Exporter,
 } from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription, forkJoin} from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
@@ -15,7 +15,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';

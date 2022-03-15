@@ -22,7 +22,6 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
-
 import { GraphEntityType, KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';

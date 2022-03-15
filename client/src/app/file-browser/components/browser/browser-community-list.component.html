@@ -39,7 +39,7 @@
     </ng-container>
 
     <ng-container *ngIf="status.resultsShown">
-      <ng-container *ngIf="list.results.view.length">
+      <ng-container *ngIf="(list.results.view$ | async).length">
         <div class="module-section">
           <div class="module-section-header">
             <h2 class="module-section-header-title">Community Content</h2>

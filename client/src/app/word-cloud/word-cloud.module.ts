@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
 
-import {SortingAlgorithmsComponent} from './sorting/sorting-algorithms.component';
+import { SortingAlgorithmsComponent } from './sorting/sorting-algorithms.component';
 import { WordCloudComponent } from './components/word-cloud.component';
 
 const components = [

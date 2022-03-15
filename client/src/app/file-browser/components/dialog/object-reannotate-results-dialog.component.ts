@@ -7,7 +7,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
 import { ResultMapping } from 'app/shared/schemas/common';
 
 import { FilesystemObject } from '../../models/filesystem-object';
-import {AnnotationGenerationResultData } from '../../schema';
+import { AnnotationGenerationResultData } from '../../schema';
 
 @Component({
   selector: 'app-object-reannotate-results-dialog',

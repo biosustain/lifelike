@@ -1,12 +1,12 @@
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import {catchError} from 'rxjs/operators';
-import {from, Observable, pipe, throwError} from 'rxjs';
-import {UnaryFunction} from 'rxjs/internal/types';
+import { catchError } from 'rxjs/operators';
+import { from, Observable, pipe, throwError } from 'rxjs';
+import { UnaryFunction } from 'rxjs/internal/types';
 
-import {OperatingSystems} from 'app/interfaces/shared.interface';
+import { OperatingSystems } from 'app/interfaces/shared.interface';
 
-import {FAClass, CustomIconColors, Unicodes} from './constants';
+import { FAClass, CustomIconColors, Unicodes } from './constants';
 
 
 /**
