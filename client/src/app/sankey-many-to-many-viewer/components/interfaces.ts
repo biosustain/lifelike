@@ -8,7 +8,6 @@ import {
   SelectionEntity,
   SankeyOptions
 } from 'app/shared-sankey/interfaces';
-import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 export interface SankeyManyToManyStateExtend {
   highlightCircular: boolean;

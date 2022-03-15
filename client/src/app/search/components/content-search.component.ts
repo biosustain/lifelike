@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flatten, isNil, uniqBy } from 'lodash-es';
+import { flatten, isNil } from 'lodash-es';
 import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
 
@@ -22,11 +22,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { uuidv4 } from 'app/shared/utils';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { FindOptions } from 'app/shared/utils/find';
-import {
-  deserializePaginatedParams,
-  getChoicesFromQuery,
-  serializePaginatedParams,
-} from 'app/shared/utils/params';
+import { getChoicesFromQuery } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
 

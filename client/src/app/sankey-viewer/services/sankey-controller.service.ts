@@ -18,7 +18,8 @@ import {
   LINK_VALUE_GENERATOR,
   NODE_VALUE_GENERATOR,
   PREDEFINED_VALUE,
-  ViewBase, ViewSize
+  ViewBase,
+  ViewSize
 } from 'app/shared-sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 

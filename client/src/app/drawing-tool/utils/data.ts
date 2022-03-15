@@ -1,5 +1,3 @@
-import { groupBy } from 'lodash-es';
-
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';

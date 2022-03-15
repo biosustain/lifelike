@@ -1,13 +1,11 @@
-import { Component, Input} from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
 
-import {
-  KnowledgeMap,
-} from '../services/interfaces';
+import { KnowledgeMap, } from '../services/interfaces';
 
 @Component({
   selector: 'app-map-restore-dialog',

@@ -1,32 +1,22 @@
-import { isNil } from 'lodash-es';
-import moment from 'moment';
+import { isNil, isEmpty, has } from 'lodash-es';
 
-import {
-  KnowledgeMap,
-  Source,
-  UniversalEntityData,
-  UniversalGraph,
-  UniversalGraphNode,
-} from 'app/drawing-tool/services/interfaces';
+import { KnowledgeMap, Source, UniversalEntityData, UniversalGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import {MimeTypes, Unicodes, FAClass, CustomIconColors} from 'app/shared/constants';
+import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
-import { nullCoalesce, RecursivePartial } from 'app/shared/utils/types';
-import {getSupportedFileCodes} from 'app/shared/utils';
+import { RecursivePartial } from 'app/shared/utils/types';
+import { getSupportedFileCodes } from 'app/shared/utils';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
-import {
-  FILESYSTEM_OBJECT_TRANSFER_TYPE,
-  FilesystemObjectTransferData,
-} from '../providers/filesystem-object-data.provider';
+import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData, } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
-import {createDragImage} from '../utils/drag';
+import { createDragImage } from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -125,8 +115,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   public: boolean;
   uploadUrl: string;
   annotationsDate: string;
-  creationDate: string;
-  modifiedDate: string;
+  readonly creationDate: string;
+  readonly modifiedDate: string;
+  protected updatedTimestamp: number;
   recyclingDate: string;
   project: ProjectImpl;
   parent: FilesystemObject;
@@ -466,9 +457,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   filterChildren(filter: string) {
     const normalizedFilter = this.normalizeFilter(filter);
-    this.children.filter = normalizedFilter.length ? (item: FilesystemObject) => {
-      return this.normalizeFilter(item.name).includes(normalizedFilter);
-    } : null;
+    this.children.setFilter(
+      isEmpty(normalizedFilter) ? null :
+        (item: FilesystemObject) => this.normalizeFilter(item.name).includes(normalizedFilter)
+    );
   }
 
   getCommands(forEditing = true): any[] {
@@ -591,32 +583,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
-    if (a.type === 'dir' && b.type !== 'dir') {
-      return -1;
-    } else if (a.type !== 'dir' && b.type === 'dir') {
-      return 1;
-    } else {
-      const aDate = nullCoalesce(a.modificationDate, a.creationDate);
-      const bDate = nullCoalesce(b.modificationDate, b.creationDate);
-
-      if (aDate != null && bDate != null) {
-        const aMoment = moment(aDate);
-        const bMoment = moment(bDate);
-        if (aMoment.isAfter(bMoment)) {
-          return -1;
-        } else if (aMoment.isBefore(bMoment)) {
-          return 1;
-        } else {
-          return a.name.localeCompare(b.name);
-        }
-      } else if (aDate != null) {
-        return -1;
-      } else if (bDate != null) {
-        return 1;
-      } else {
-        return a.name.localeCompare(b.name);
-      }
-    }
+    return (
+      // Sort directories first
+      Number(b.mimeType === MimeTypes.Directory) - Number(a.mimeType === MimeTypes.Directory) ||
+      // Sort files by timestamp
+      b.updatedTimestamp - a.updatedTimestamp ||
+      // Sort files by name
+      a.name.localeCompare(b.name)
+    );
   }
 
   update(data: RecursivePartial<FilesystemObjectData>): FilesystemObject {
@@ -632,6 +606,11 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       if (key in data) {
         this[key] = data[key];
       }
+    }
+    if (has(data, 'modifiedDate')) {
+      this.updatedTimestamp = Date.parse(data.modifiedDate);
+    } else if (has(data, 'creationDate')) {
+      this.updatedTimestamp = Date.parse(data.creationDate);
     }
     if ('project' in data) {
       this.project = data.project != null ? new ProjectImpl().update(data.project) : null;

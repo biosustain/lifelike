@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { first, last } from 'lodash-es';
-import {color} from 'd3-color';
+import { color } from 'd3-color';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { CustomisedSankeyLayoutService } from 'app/sankey-viewer/services/customised-sankey-layout.service';
