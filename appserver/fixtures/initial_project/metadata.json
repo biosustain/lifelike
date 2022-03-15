@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "3HP E coli map.map",
+      "mime_type": "vnd.lifelike.document/map"
+    },
+    {
+      "path": "E coli genes from 3HP paper.llenrichmenttable.json",
+      "mime_type": "vnd.lifelike.document/enrichment-table",
+      "description": "These genes were copied from the \"E coli 3HP from fatty acids\" paper.",
+      "organism_name": "Escherichia coli str. K-12 substr. MG1655",
+      "organism_synonym": "Escherichia coli str. K-12 substr. MG1655",
+      "organism_taxonomy_id": 511145,
+      "annotation_configs": {
+        "annotation_methods": {
+          "Gene": {
+            "nlp": false,
+            "rules_based": true
+          },
+          "Disease": {
+            "nlp": false,
+            "rules_based": true
+          },
+          "Chemical": {
+            "nlp": false,
+            "rules_based": true
+          }
+        },
+        "exclude_references": true
+      }
+    },
+    {
+      "path": "E coli 3HP from fatty acids.pdf",
+      "mime_type": "application/pdf",
+      "organism_name": "Escherichia coli str. K-12 substr. MG1655",
+      "organism_synonym": "Escherichia coli str. K-12 substr. MG1655",
+      "organism_taxonomy_id": 511145
+    }
+  ]
+}

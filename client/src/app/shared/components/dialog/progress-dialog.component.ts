@@ -4,7 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { asyncScheduler, Observable, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 
-import {Progress, ProgressMode} from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 
 
 /**

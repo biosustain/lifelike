@@ -75,7 +75,7 @@
                 </div>
 
                 <div class="search-results search-results-selectable">
-                  <div *ngFor="let result of results.view" class="search-results-item"
+                  <div *ngFor="let result of results.view$ | async" class="search-results-item"
                        (appTabSelectable)="results.select(result)"
                        [class.active]="results.isSelected(result)"
                        draggable="true" (dragstart)="itemDragStart($event, result.item)">
@@ -143,11 +143,13 @@
         </ng-template>
       </div>
       <div class="module-body-split-sidebar">
-        <ng-container *ngIf="results.selection.length">
-          <app-object-info [forEditing]="false"
-                           (highlightClick)="highlightClicked(results.selection[0].item, $event)"
-                           (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
-                           [object]="results.selection[0].item"
+        <ng-container *ngIf="results.selectionLength$ | async">
+          <app-object-info
+                  *ngIf="(results.firstSelection$ | async) as firstSelection"
+                  [forEditing]="false"
+                           (highlightClick)="highlightClicked(firstSelection.item, $event)"
+                           (highlightDisplayLimitChange)="highlightDisplayLimitChanged(firstSelection.item, $event)"
+                           [object]="firstSelection.item"
                            (objectOpen)="openObject($event)"
                            [highlightTerms]="highlightTerms"></app-object-info>
         </ng-container>

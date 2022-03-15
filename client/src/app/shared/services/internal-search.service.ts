@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 
 import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
 import { GraphSearchParameters } from 'app/search/graph-search';
-import { getGraphQueryParams, ContentSearchParameters, getContentSearchQueryParams } from 'app/search/utils/search';
+import { getGraphQueryParams, getContentSearchQueryParams } from 'app/search/utils/search';
 
 @Injectable()
 export class InternalSearchService {

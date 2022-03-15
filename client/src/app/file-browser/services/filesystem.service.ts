@@ -4,18 +4,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, of, Subscription, throwError, from } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, of, throwError, from } from 'rxjs';
+import { catchError, map, tap, switchMap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { serializePaginatedParams } from 'app/shared/utils/params';
-import {
-  PaginatedRequestOptions,
-  ResultList,
-  ResultMapping,
-  SingleResult,
-} from 'app/shared/schemas/common';
+import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 
@@ -43,7 +38,6 @@ import { RecentFilesService } from './recent-files.service';
  */
 @Injectable({providedIn: 'root'})
 export class FilesystemService {
-  protected lmdbsDates = new BehaviorSubject<object>({});
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -53,17 +47,12 @@ export class FilesystemService {
               protected readonly route: ActivatedRoute,
               protected readonly http: HttpClient,
               protected readonly recentFilesService: RecentFilesService) {
-    this.getLMDBsDates().subscribe(lmdbsDates => {
-      this.lmdbsDates.next(lmdbsDates);
-    });
   }
 
-  private getLMDBsDates(): Observable<object> {
-    // TODO: Type this method
-    return this.http.get<object>(
-      `/api/files/lmdbs_dates`,
-    );
-  }
+  // TODO: Type this method
+  protected lmdbsDates$ = this.http.get<object>(
+    `/api/files/lmdbs_dates`,
+  );
 
   search(options: ObjectSearchRequest): Observable<FilesystemObjectList> {
     return this.http.post<ResultList<FilesystemObjectData>>(
@@ -134,7 +123,7 @@ export class FilesystemService {
 
   // TODO: Deprecate after LL-3006
   getAllEnrichmentTables() {
-    return this.http.get<{result: string[]}>(
+    return this.http.get<{ result: string[] }>(
       `/api/filesystem/enrichment-tables`, {
         responseType: 'json',
       }
@@ -289,20 +278,24 @@ export class FilesystemService {
     );
   }
 
-  annotate(object: FilesystemObject): Subscription {
-    return this.lmdbsDates.subscribe(data => {
-      object.children.items.forEach((child: FilesystemObject) => {
-        if (child.type === 'file') {
-          const file = child.data as PdfFile;
-          child.annotationsTooltipContent = this.generateTooltipContent(file);
-        }
-      });
-    });
+  annotate(object: FilesystemObject) {
+    return this.lmdbsDates$.pipe(
+      switchMap(lmdbsDates => object.children.items$.pipe(
+        tap(items => {
+          items.forEach((child: FilesystemObject) => {
+            if (child.type === 'file') {
+              const file = child.data as PdfFile;
+              child.annotationsTooltipContent = this.generateTooltipContent(file);
+            }
+          });
+        })
+      ))
+    );
   }
 
   private generateTooltipContent(file: PdfFile): string {
     const outdated = Array
-      .from(Object.entries(this.lmdbsDates))
+      .from(Object.entries(this.lmdbsDates$))
       .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
     if (outdated.length === 0) {
       return '';

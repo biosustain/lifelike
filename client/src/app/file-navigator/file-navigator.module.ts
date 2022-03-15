@@ -9,7 +9,6 @@ import { ObjectNavigatorComponent } from './components/object-navigator.componen
 import { AssociatedMapsComponent } from './components/associated-maps.component';
 
 
-
 @NgModule({
   declarations: [
     ObjectNavigatorComponent,

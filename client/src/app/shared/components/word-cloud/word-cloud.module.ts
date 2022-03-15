@@ -1,9 +1,9 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import {SharedModule} from 'app/shared/shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
-import {WordCloudComponent} from './word-cloud.component';
+import { WordCloudComponent } from './word-cloud.component';
 
 const components = [
   WordCloudComponent
