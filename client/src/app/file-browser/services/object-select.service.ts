@@ -1,7 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
-import { from, Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { from, Observable, Subscription, ReplaySubject } from 'rxjs';
+import { map, shareReplay, switchMap } from 'rxjs/operators';
+
+import { PaginatedRequestOptions } from 'app/shared/schemas/common';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from './filesystem.service';
@@ -14,16 +16,20 @@ export class ObjectSelectService implements OnDestroy {
   objectFilter: (item: FilesystemObject) => boolean;
 
   hashId: string;
-  projectList$: Observable<ProjectList> = from([]);
   object$: Observable<FilesystemObject> = from([]);
-  projectList: ProjectList;
   object: FilesystemObject;
 
   private annotationSubscription: Subscription;
 
+  readonly pagingProjectList$ = new ReplaySubject<PaginatedRequestOptions>(1);
+
+  readonly projectList$: Observable<ProjectList> = this.pagingProjectList$.pipe(
+    switchMap(options => this.projectService.list(options)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
   constructor(private readonly projectService: ProjectsService,
               private readonly filesystemService: FilesystemService) {
-    this.load(null);
   }
 
   ngOnDestroy(): void {
@@ -42,15 +48,16 @@ export class ObjectSelectService implements OnDestroy {
 
   load(hashId: string): Observable<any> {
     this.hashId = hashId;
-    this.projectList$ = from([]);
     this.object$ = from([]);
-    this.projectList = null;
     this.object = null;
 
     if (hashId == null) {
-      const projectList$ = this.projectService.list();
-      this.projectList$ = projectList$;
-      return projectList$;
+      this.pagingProjectList$.next({
+        sort: 'name',
+        limit: 16,
+        page: 1,
+      });
+      return this.projectList$;
     } else {
       const object$ = this.filesystemService.get(hashId).pipe(map(object => {
         if (this.annotationSubscription) {

@@ -2,12 +2,10 @@ import { Platform } from '@angular/cdk/platform';
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpErrorResponse } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { catchError } from 'rxjs/operators';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
