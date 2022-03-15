@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnChanges } from '@angular/core';
 
 import { iif, Observable, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
@@ -17,7 +17,7 @@ import { ORGANISM_AUTOCOMPLETE_DEFAULTS } from '../constants';
   templateUrl: './organism-autocomplete.component.html',
   styleUrls: ['./organism-autocomplete.component.scss']
 })
-export class OrganismAutocompleteComponent implements OnInit {
+export class OrganismAutocompleteComponent implements OnChanges {
   @Input() organismTaxId: string;
 
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete|null>();
@@ -26,11 +26,11 @@ export class OrganismAutocompleteComponent implements OnInit {
   inputText$ = new Subject<string>();
 
   searcher$: Observable<OrganismAutocomplete[]> = this.inputText$.pipe(
-    distinctUntilChanged((prev, curr) => prev.toLocaleLowerCase() === curr.toLocaleLowerCase()),
+    distinctUntilChanged(),
     debounceTime(300),
     tap(() => {
       this.isFetching = true;
-      this.organism = null;
+      this.isOrganismSelected = false;
       this.organismPicked.emit(null);
     }),
     switchMap(q =>
@@ -54,33 +54,33 @@ export class OrganismAutocompleteComponent implements OnInit {
 
   fetchFailed = false;
   isFetching = false;
+  isOrganismSelected = false;
 
   organismShortlist: OrganismAutocomplete[] = ORGANISM_AUTOCOMPLETE_DEFAULTS;
-  organism: OrganismAutocomplete;
 
   constructor(private search: SharedSearchService) {}
 
-  ngOnInit() {
+  ngOnChanges(): void {
     if (this.organismTaxId) {
       this.search.getOrganismFromTaxId(
         this.organismTaxId
       ).subscribe(
         (response) => {
           this.inputText = response.organism_name;
-          this.organism = response;
+          this.isOrganismSelected = true;
         }
       );
     }
   }
 
   selectOrganism(organism: OrganismAutocomplete) {
-    this.organism = organism;
+    this.isOrganismSelected = true;
     this.inputText = organism.organism_name;
     this.organismPicked.emit(organism);
   }
 
   clear() {
-    this.organism = null;
+    this.isOrganismSelected = false;
     this.inputText = '';
     this.inputText$.next(this.inputText); // Clear the result list
     this.organismPicked.emit(null);
