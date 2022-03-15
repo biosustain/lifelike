@@ -9,10 +9,8 @@ import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { nullCoalesce } from 'app/shared/utils/types';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 
@@ -58,10 +56,6 @@ export class ObjectListComponent {
 
     // At this time, we don't support dragging multiple items
     this.objects.selectOnly(object);
-  }
-
-  getDateShown(object: DirectoryObject) {
-    return nullCoalesce(object.modificationDate, object.creationDate);
   }
 
   openParentEditDialog() {

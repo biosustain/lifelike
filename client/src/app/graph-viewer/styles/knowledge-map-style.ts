@@ -1,5 +1,7 @@
 import {
-  DETAIL_NODE_LABELS, Hyperlink, NodeGroup, Source,
+  DETAIL_NODE_LABELS,
+  Hyperlink,
+  Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -24,7 +26,7 @@ import {
   Unicodes,
   defaultLabelFontSize
 } from 'app/shared/constants';
-import {getSupportedFileCodes} from 'app/shared/utils';
+import { getSupportedFileCodes } from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';

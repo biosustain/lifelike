@@ -66,7 +66,7 @@ export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implemen
     return value;
   }
 
-  getSetLazily(key, valueAccessor) {
+  getSetLazily(key: K, valueAccessor: () => V) {
     if (this.has(key)) {
       return super.get(key);
     }

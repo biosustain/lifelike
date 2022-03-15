@@ -1,9 +1,15 @@
 import {
   AfterViewInit,
   ChangeDetectorRef,
-  Component, ElementRef, EventEmitter,
-  HostListener,
-  Input, NgZone, OnChanges, OnDestroy, OnInit, Output,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';

@@ -1,212 +1,177 @@
-import { Subject } from 'rxjs';
+import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
+import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { has, last, uniq, intersection, isEqual, first } from 'lodash-es';
+
+type Filter<T> = (item: T) => boolean;
+type Sort<T> = (a: T, b: T) => number;
 
 export class CollectionModel<T> {
-  multipleSelection = false;
-  _filter: (item: T) => boolean;
-  _sort: (a: T, b: T) => number;
-
-  private _items = new Set<T>();
-  private viewOutdated = true;
-  private _filteredItems = [];
-  private _selection = new Set<T>();
-  readonly itemChanges$ = new Subject<CollectionChange<T>>();
-  readonly selectionChanges$ = new Subject<CollectionChange<T>>();
-
   constructor(items: T[] = [], options: CollectionModalOptions<T> = {}) {
-    Object.assign(this, options);
+    if (has(options, 'multipleSelection')) {
+      this.multipleSelection = options.multipleSelection;
+    }
+    if (has(options, 'sort')) {
+      this.setSort(options.sort);
+    }
+    if (has(options, 'filter')) {
+      this.setFilter(options.filter);
+    }
     this.replace(items);
   }
 
-  get items(): readonly T[] {
-    return Object.freeze([...this._items]);
+  get length(): number {
+    return this._items$.value.length;
   }
 
-  get view(): T[] {
-    if (this.viewOutdated) {
-      let filteredItems = [...this._items];
+  multipleSelection = false;
+  filter$ = new BehaviorSubject<Filter<T>>(null);
+  sort$ = new BehaviorSubject<Sort<T>>(null);
+  private _items$ = new BehaviorSubject<Array<T>>([]);
+  items$: Observable<readonly T[]> = this._items$.pipe(
+    map(items => Object.freeze(items)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+  private _selection$ = new BehaviorSubject<Array<T>>([]);
+  selection$: Observable<readonly T[]> = combineLatest([
+    this.items$,
+    this._selection$,
+  ]).pipe(
+    map(([items, selection]) => selection.filter(item => items.includes(item))),
+    map(items => Object.freeze(items)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
 
-      if (this._filter != null) {
-        filteredItems = filteredItems.filter(this._filter);
+  selectionLength$ = this.selection$.pipe(
+    map(items => items.length),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  lastSelection$ = this.selection$.pipe(
+    // todo cosider populating selection in reverse order
+    map(selection => last(selection)),
+    distinctUntilChanged(),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  firstSelection$ = this.selection$.pipe(
+    map(selection => first(selection)),
+    distinctUntilChanged(),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  readonly selectionChanges$: Observable<CollectionChange<T>> = this.selection$.pipe(
+    startWith([]),
+    pairwise(),
+    map(([prev, curr]) => ({
+      source: this,
+      added: [...curr].filter(item => !prev.includes(item)),
+      removed: [...prev].filter(item => !curr.includes(item))
+    })),
+    distinctUntilChanged(isEqual),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  view$ = combineLatest([
+    this.items$,
+    this.filter$,
+    this.sort$,
+  ]).pipe(
+    map(([items, filter, sort]) => {
+      let filteredItems = [...items];
+      if (filter != null) {
+        filteredItems = filteredItems.filter(filter);
       }
-
-      if (this._sort != null) {
-        filteredItems.sort(this._sort);
+      if (sort != null) {
+        filteredItems.sort(sort);
       }
+      return filteredItems;
+    }),
+    // share results but not keep in memory if not used
+    shareReplay({bufferSize: 1, refCount: true})
+  );
 
-      this._filteredItems = filteredItems;
-      this.viewOutdated = false;
-    }
+  viewLength$ = this.view$.pipe(
+    map(({length}) => length),
+    distinctUntilChanged(),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
 
-    return this._filteredItems;
+  setFilter(filter: Filter<T>) {
+    this.filter$.next(filter);
   }
 
-  get selection(): readonly T[] {
-    return Object.freeze([...this._selection]);
+  setSort(sort: Sort<T>) {
+    this.sort$.next(sort);
   }
 
-  get filter(): ((item: T) => boolean) | undefined {
-    return this._filter;
-  }
+  // seems not used in any place
+  // push(item: T): void {
+  //   if (!this._items.has(item)) {
+  //     this._items.add(item);
+  //
+  //     this.viewOutdated = true;
+  //
+  //     this.itemChanges$.next({
+  //       source: this,
+  //       added: new Set<T>([item]),
+  //       removed: new Set<T>(),
+  //     });
+  //   }
+  // }
 
-  set filter(filter: ((item: T) => boolean) | undefined) {
-    this.viewOutdated = true;
-    this._filter = filter;
-  }
-
-  get sort(): ((a: T, b: T) => number) | undefined {
-    return this._sort;
-  }
-
-  set sort(sort: ((a: T, b: T) => number) | undefined) {
-    this.viewOutdated = true;
-    this._sort = sort;
-  }
-
-  push(item: T): void {
-    if (!this._items.has(item)) {
-      this._items.add(item);
-
-      this.viewOutdated = true;
-
-      this.itemChanges$.next({
-        source: this,
-        added: new Set<T>([item]),
-        removed: new Set<T>(),
-      });
-    }
-  }
-
-  delete(item: T) {
-    if (this._items.has(item)) {
-      this._items.delete(item);
-
-      if (this._selection.delete(item)) {
-        this.selectionChanges$.next({
-          source: this,
-          added: new Set<T>(),
-          removed: new Set<T>([item]),
-        });
-      }
-
-      this.viewOutdated = true;
-
-      this.itemChanges$.next({
-        source: this,
-        added: new Set<T>(),
-        removed: new Set<T>([item]),
-      });
-    }
-  }
+  // seems not used in any place
+  // delete(item: T) {
+  //   if (this._items.has(item)) {
+  //     this._items.delete(item);
+  //
+  //     if (this._selection.delete(item)) {
+  //       this.selectionChanges$.next({
+  //         source: this,
+  //         added: new Set<T>(),
+  //         removed: new Set<T>([item]),
+  //       });
+  //     }
+  //
+  //     this.viewOutdated = true;
+  //
+  //     this.itemChanges$.next({
+  //       source: this,
+  //       added: new Set<T>(),
+  //       removed: new Set<T>([item]),
+  //     });
+  //   }
+  // }
 
   replace(items: T[]): void {
-    const newSet = new Set<T>(items);
-    const oldSet = this._items;
-
-    const itemsAdded = new Set<T>();
-    const itemsRemoved = new Set<T>();
-    const selectionRemoved = new Set<T>();
-
-    for (const newItem of newSet) {
-      if (!oldSet.has(newItem)) {
-        itemsAdded.add(newItem);
-      }
-    }
-
-    for (const oldItem of oldSet) {
-      if (!newSet.has(oldItem)) {
-        itemsRemoved.add(oldItem);
-        if (this._selection.delete(oldItem)) {
-          selectionRemoved.add(oldItem);
-        }
-      }
-    }
-
-    if (itemsAdded.size || itemsRemoved.size) {
-      this._items = newSet;
-      this.viewOutdated = true;
-
-      this.itemChanges$.next({
-        source: this,
-        added: itemsAdded,
-        removed: itemsRemoved,
-      });
-
-      if (selectionRemoved.size) {
-        this.selectionChanges$.next({
-          source: this,
-          added: new Set<T>(),
-          removed: selectionRemoved,
-        });
-      }
-    }
+    this._items$.next(items);
   }
 
   select(...items: T[]): void {
-    const added = new Set<T>();
-    const removed = new Set<T>();
-
-    for (const item of items) {
-      if (!this._selection.has(item)) {
-        if (!this.multipleSelection) {
-          for (const existingItem of this._selection) {
-            removed.add(existingItem);
-            added.delete(existingItem);
-          }
-          this._selection.clear();
-        }
-        this._selection.add(item);
-        added.add(item);
-      }
-    }
-
-    if (added.size || removed.size) {
-      this.selectionChanges$.next({
-        source: this,
-        added,
-        removed,
-      });
+    const newSelection = this._selection$.value.concat(items);
+    if (this.multipleSelection) {
+      this._selection$.next(uniq(newSelection));
+    } else {
+      const toggleSelection = intersection(newSelection, items);
+      this._selection$.next(newSelection.filter(item => !toggleSelection.includes(item)));
     }
   }
 
   deselect(...items: T[]): void {
-    const removed = new Set<T>();
-
-    for (const item of items) {
-      if (this._selection.delete(item)) {
-        removed.add(item);
-      }
-    }
-
-    if (removed.size) {
-      this.selectionChanges$.next({
-        source: this,
-        added: new Set<T>(),
-        removed,
-      });
-    }
+    this._selection$.next(
+      this._selection$.value.filter(item => !items.includes(item))
+    );
   }
 
   selectOnly(item: T): void {
-    const deselect = new Set<T>();
-    for (const other of this._selection) {
-      if (item !== other) {
-        deselect.add(other);
-      }
-    }
-    if (deselect.size) {
-      this.deselect(...deselect.values());
-    }
-    if (!this._selection.has(item)) {
-      this.select(item);
-    }
+    this._selection$.next([item]);
   }
 
   selectAll(): void {
-    this.select(...this._items);
+    this.select(...this._items$.value);
   }
 
   deselectAll(): void {
-    this.deselect(...this._items);
+    this.deselect(...this._items$.value);
   }
 
   clear(): void {
@@ -230,35 +195,18 @@ export class CollectionModel<T> {
   }
 
   isAllSelected(): boolean {
-    return this._selection.size === this._items.size;
+    return this._selection$.value.length === this._items$.value.length;
   }
 
   isSelected(item: T) {
-    return this._selection.has(item);
-  }
-
-  get lastSelection(): T | undefined {
-    const selection = this.selection;
-    if (selection.length) {
-      return selection[selection.length - 1];
-    } else {
-      return null;
-    }
-  }
-
-  get length(): number {
-    return this._items.size;
-  }
-
-  get viewLength(): number {
-    return this.view.length;
+    return this._selection$.value.includes(item);
   }
 }
 
 export interface CollectionChange<T> {
   source: CollectionModel<T>;
-  added: Set<T>;
-  removed: Set<T>;
+  added: Array<T>;
+  removed: Array<T>;
 }
 
 export interface CollectionModalOptions<T> {

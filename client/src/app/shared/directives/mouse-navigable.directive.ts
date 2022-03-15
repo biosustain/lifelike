@@ -2,11 +2,14 @@ import {
   AfterViewInit,
   ContentChildren,
   Directive,
-  ElementRef, EventEmitter,
+  ElementRef,
+  EventEmitter,
   forwardRef,
   HostListener,
-  Inject, Input,
-  OnDestroy, Output,
+  Inject,
+  Input,
+  OnDestroy,
+  Output,
   QueryList,
 } from '@angular/core';
 

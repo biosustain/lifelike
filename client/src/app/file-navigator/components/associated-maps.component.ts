@@ -9,7 +9,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-list';
-import { FilesystemObject} from 'app/file-browser/models/filesystem-object';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { CreateActionOptions } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { MimeTypes } from 'app/shared/constants';
