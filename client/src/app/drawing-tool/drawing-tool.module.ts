@@ -18,7 +18,7 @@ import { InfoViewPanelComponent } from './components/info-view-panel.component';
 import { GraphEntityDataProvider } from './providers/graph-entity-data.provider';
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
 import { MapImageProviderService } from './services/map-image-provider.service';
-import { GroupFormComponent } from './components/map-editor/group-form/group-form.component';
+import { GroupFormComponent } from './components/map-editor/group-form.component';
 
 @NgModule({
   declarations: [
