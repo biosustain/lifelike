@@ -204,6 +204,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   showParentDialog() {
     const dialogRef = this.modalService.open(ObjectSelectionDialogComponent);
+    dialogRef.componentInstance.hashId = null;
     dialogRef.componentInstance.title = 'Select Location';
     dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
     dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => o.isDirectory;

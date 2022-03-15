@@ -1,13 +1,11 @@
 import html
 import re
-from typing import List, Optional
-
 
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
+from typing import List, Optional
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.projects import ProjectBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
@@ -18,10 +16,7 @@ from neo4japp.database import (
     get_file_type_service
 )
 from neo4japp.exceptions import ServerException
-from neo4japp.models import (
-    Files,
-    Projects,
-)
+from neo4japp.models import Files, Projects
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
     ContentSearchSchema,
@@ -31,11 +26,8 @@ from neo4japp.schemas.search import (
     SynonymSearchResponseSchema,
     VizSearchSchema,
 )
-from neo4japp.services.file_types.providers import (
-    DirectoryTypeProvider,
-)
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.util import jsonify_with_class, SuccessResponse
-
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -43,7 +35,6 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 
 
 @bp.route('/viz-search', methods=['POST'])
-@auth.login_required
 @use_kwargs(VizSearchSchema)
 def visualizer_search(
         query,
@@ -170,7 +161,6 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
 
 
 class ContentSearchView(ProjectBaseView, FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(ContentSearchSchema)
     @use_args(PaginatedRequestSchema)
@@ -315,7 +305,6 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
 
 
 class SynonymSearchView(FilesystemBaseView):
-    decorators = [auth.login_required]
 
     @use_args(SynonymSearchSchema)
     @use_args(PaginatedRequestSchema)
@@ -366,7 +355,6 @@ bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
-@auth.login_required
 @jsonify_with_class()
 def get_organism(organism_tax_id: str):
     search_dao = get_search_service_dao()
@@ -375,7 +363,6 @@ def get_organism(organism_tax_id: str):
 
 
 @bp.route('/organisms', methods=['POST'])
-@auth.login_required
 @use_kwargs(OrganismSearchSchema)
 def get_organisms(query, limit):
     search_dao = get_search_service_dao()

@@ -6,6 +6,7 @@ from flask import g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from jwt import PyJWKClient
 from neo4j import GraphDatabase, basic_auth
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
@@ -54,6 +55,9 @@ port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'
 username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
 graph = GraphDatabase.driver(url, auth=basic_auth(username, password))
+
+# Note that this client should only be used when JWKS_URL has been configured!
+jwt_client = PyJWKClient(os.environ.get('JWKS_URL', ''))
 
 
 # TODO: with the DatabaseConnection class

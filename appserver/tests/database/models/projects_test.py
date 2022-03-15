@@ -15,7 +15,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 @pytest.mark.parametrize('name', [
     ('!nva!d|'),
     ('i3cr3e@m>i4cr4e@m'),
-    ('s t y l e'),
+    ('   style    '),
 ])
 def test_flag_invalid_projects_name(session, name):
     with pytest.raises(ValueError):
@@ -27,7 +27,7 @@ def test_flag_invalid_projects_name(session, name):
 
 @pytest.mark.parametrize('name', [
     ('test-project'),
-    ('project1'),
+    ('p r o j e c t 1'),
     ('valid_underscore'),
     ('ö-german'),
     ('æØÅ_nordic#letters$are@valid')
@@ -92,6 +92,7 @@ def test_can_set_user_role(session, role):
         password_hash='pw',
         first_name='test',
         last_name='tester',
+        subject='test@lifelike.bio',
     )
     session.add(test_user)
     session.flush()

@@ -21,7 +21,7 @@
     This field cannot contain only whitespace characters.
   </div>
   <div *ngIf="control.hasError('whitespaceError')">
-    This field cannot contain any whitespace characters.
+    This field cannot contain leading or trailing whitespace characters.
   </div>
   <div *ngIf="control.hasError('filenameError')">
     The filename contains illegal char(s): {{control.getError('filenameError').value.join(' ')}}
