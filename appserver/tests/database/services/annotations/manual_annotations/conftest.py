@@ -28,7 +28,7 @@ class MockResponse():
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
-ParameterizedFile = namedtuple('FilesParam', (
+ParameterizedFile = namedtuple('ParameterizedFile', (
     'public', 'in_folder', 'user_roles_for_folder', 'user_roles_for_file',
     'recycled', 'folder_recycled', 'deleted', 'folder_deleted',
 ), defaults=(False, False, [], [], False, False, False, False))
@@ -41,6 +41,7 @@ def project_owner(request, session):
         email='somebody@lifelike.bio',
         first_name='joe',
         last_name='taylor',
+        subject='somebody@lifelike.bio',
     )
     user.set_password('password')
     session.add(user)

@@ -1,0 +1,13 @@
+[submodule "lifelike-oss"]
+	path = lifelike-oss
+	url = https://github.com/SBRG/lifelike
+[submodule "keycloak"]
+	path = keycloak
+	url = https://github.com/SBRG/lifelike-keycloak
+[submodule "website"]
+	path = website
+	url = https://github.com/SBRG/lifelike-website
+[submodule "deployment"]
+	path = deployment
+	url = https://github.com/SBRG/lifelike-infra
+	branch = ansible

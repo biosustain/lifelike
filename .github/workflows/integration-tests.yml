@@ -1,80 +1,86 @@
 name: Integration Checks
 
 on:
+  workflow_dispatch:
   pull_request:
-    types: [opened, synchronize]
+    branches: [master]
 
 jobs:
+  appserver:
+    name: Appserver Linting and Testing
+    runs-on: ubuntu-latest
 
-    appserver-integration-checks:
+    steps:
+      - name: Cancel Previous Runs
+        if: github.event_name != 'workflow_dispatch'
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
 
-        name: Pytest, Linting, Migration Integrity
-        runs-on: ubuntu-latest
+      - name: Checkout
+        uses: actions/checkout@v2
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+      - name: Build appserver image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: lifelike.azurecr.io
+          image_name: kg-appserver
+          image_tag: ${{ github.sha }},latest
+          context: ./appserver
+          dockerfile: ./Dockerfile
 
-            - name: Build appserver image
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: ${{ secrets.AZURE_CR_USERNAME }}
-                password: ${{ secrets.AZURE_CR_PASSWORD }}
-                registry: lifelike.azurecr.io
-                image_name: kg-appserver
-                image_tag: ${{ github.sha }},latest
-                context: ./appserver
-                dockerfile: ./Dockerfile
+      - name: Create environment variable to pass in GitHub hash for Docker Compose
+        run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
-            - name: Create environmental variable to pass in GitHub hash for Docker Compose
-              run: |-
-                echo "GITHUB_HASH=${{ github.sha }}" >> .env
+      - name: Bring up containers
+        run: |-
+          docker-compose -f docker-compose.ci-test.yml up -d
+          docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 500 bin/wait-for-flask
 
-            - name: Start docker
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml up -d
-                docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 300 bin/wait-for-flask
+      - name: Show Docker logs
+        if: ${{ failure() }}
+        run: docker-compose -f docker-compose.ci-test.yml logs
 
-            - name: Show docker logs
-              if: ${{ failure() }}
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml logs
+      - name: Linting
+        run: |-
+          docker-compose -f docker-compose.ci-test.yml exec -T appserver mypy .
+          docker-compose -f docker-compose.ci-test.yml exec -T appserver pycodestyle .
 
-            - name: Appserver Linting Checks
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml exec -T appserver mypy .
-                docker-compose -f docker-compose.ci-test.yml exec -T appserver pycodestyle .
+      - name: PyTest
+        run: docker-compose -f docker-compose.ci-test.yml exec -T appserver pytest tests -p no:warnings
 
-            - name: Pytests
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml exec -T appserver pytest tests -p no:warnings
+      - name: Migration Integrity Check
+        run: docker-compose -f docker-compose.ci-test.yml exec -T appserver ./bin/migration-integrity-check
 
-            - name: Migration Integrity Check
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml exec -T appserver ./bin/migration-integrity-check
 
-    client-integration-checks:
+  client:
+    name: Client Linting and Testing
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
 
-        name: Client Linting and Unit Tests
-        runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        strategy:
-            matrix:
-                os: [ubuntu-latest]
-                node-version: [13.x]
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: 'yarn'
+          cache-dependency-path: client/yarn.lock
 
-        steps:
-            - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
-              with:
-                node-version: ${{ matrix.node-version }}
+      - name: Build application
+        run: yarn build
 
-            - name: Client Linting & Test
-              run: |-
-                cd client
-                yarn install
-                yarn build
-                yarn lint-ci
-                yarn test
+      - name: Run linter
+        run: yarn lint-ci
+
+      - name: Run tests
+        run: yarn test

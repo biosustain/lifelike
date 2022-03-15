@@ -1,0 +1,19 @@
+name: GCP Staging Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [staging]
+    branches: [staging/**]
+
+jobs:
+  call-deployment-gcp:
+    uses: ./.github/workflows/deployment-gcp.yml
+    with:
+      environment_name: staging
+      client_config: staging
+    secrets:
+      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+      CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
+      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}

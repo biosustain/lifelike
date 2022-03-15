@@ -11,7 +11,8 @@ def test_user(session) -> AppUser:
         email='test@lifelike.bio',
         password_hash='password',
         first_name='Jim',
-        last_name='Melancholy'
+        last_name='Melancholy',
+        subject='test@lifelike.bio',
     )
     session.add(user)
     session.flush()
