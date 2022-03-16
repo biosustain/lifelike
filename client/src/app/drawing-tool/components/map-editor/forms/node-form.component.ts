@@ -8,11 +8,10 @@ import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
-
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from '../../services/interfaces';
-import { LINE_TYPES } from '../../services/line-types';
-import { PALETTE_COLORS, BG_PALETTE_COLORS } from '../../services/palette';
-import { InfoPanel } from '../../models/info-panel';
+import { InfoPanel } from 'app/drawing-tool/models/info-panel';
+import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
+import { PALETTE_COLORS, BG_PALETTE_COLORS } from 'app/drawing-tool/services/palette';
 
 @Component({
   selector: 'app-node-form',
