@@ -4,11 +4,11 @@ import { cloneDeep } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { NodeGroup, UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
+import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 
 import { NodeFormComponent } from './node-form.component';
-import { GraphEntity, NodeGroup, UniversalGraphEntity } from '../../services/interfaces';
-import { LINE_TYPES } from '../../services/line-types';
-import { BG_PALETTE_COLORS, PALETTE_COLORS } from '../../services/palette';
+
 
 @Component({
   selector: 'app-group-form',
