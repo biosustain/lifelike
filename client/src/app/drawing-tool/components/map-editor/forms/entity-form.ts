@@ -17,10 +17,9 @@ import { UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
-import { InfoPanel } from '../../../models/info-panel';
-
-export class BaseFormComponent implements AfterViewInit {
+export class EntityForm implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
   @ViewChild('option') selectedOption: ElementRef;
@@ -157,26 +156,7 @@ export class BaseFormComponent implements AfterViewInit {
     openPotentialInternalLink(this.workspaceManager, hyperlink);
   }
 
-  /**
-   * Create a blank hyperlink template to add to model
-   */
-  addHyperlink() {
-    if (isNil(this.entity.data.hyperlinks)) {
-      this.entity.data.hyperlinks = [];
-    }
 
-    const [domain, url] = ['', ''];
-    this.entity.data.hyperlinks.push({url, domain});
-  }
-
-  /**
-   * Remove hyperlink from specified index
-   * @param i - index of hyperlink to remove
-   */
-  removeHyperlink(i) {
-    this.entity.data.hyperlinks.splice(i, 1);
-    // this.doSave();
-  }
 
   /**
    * Bring user to original source of entity information
