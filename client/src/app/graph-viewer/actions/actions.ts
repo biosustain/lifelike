@@ -61,10 +61,13 @@ export interface GraphActionReceiver {
 
   removeGroup(group: NodeGroup): boolean;
 
+  updateGroup(group: NodeGroup): void;
+
   /**
    * Focus the selected entity (aka focus on the related sidebar for the selection).
    */
   focusEditorPanel(): void;
+
 }
 
 /**
