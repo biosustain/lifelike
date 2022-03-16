@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+
+import { cloneDeep } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 
 import { NodeFormComponent } from './node-form.component';
-import { NodeGroup } from '../../services/interfaces';
+import { GraphEntity, NodeGroup, UniversalGraphEntity } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from '../../services/palette';
 
@@ -14,24 +16,37 @@ import { BG_PALETTE_COLORS, PALETTE_COLORS } from '../../services/palette';
 })
 export class GroupFormComponent extends NodeFormComponent {
 
-  originalGroup: NodeGroup;
-  updatedGroup: NodeGroup;
    lineTypeChoices = [
     [null, {
       name: '(Default)',
     }],
     ...LINE_TYPES.entries(),
   ];
-  paletteChoices = [...PALETTE_COLORS];
-  bgPaletteChoices = [...BG_PALETTE_COLORS];
-  private ASSUMED_PANEL_HEIGHT = 450;
-
-
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
               protected readonly internalSearch: InternalSearchService) {
     super(workspaceManager, internalSearch);
   }
+
+  get group() {
+    return this.updatedNode;
+  }
+
+  @Input()
+  set group(group: UniversalGraphEntity) {
+    group = group as NodeGroup;
+    this.previousLabel = group.label;
+
+    this.originalNode = cloneDeep(group);
+    this.originalNode.style = this.originalNode.style || {};
+
+
+    this.updatedNode = cloneDeep(group);
+    this.updatedNode.data.sources = this.updatedNode.data.sources || [];
+    this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
+    this.updatedNode.style = this.updatedNode.style || {};
+  }
+
 
 
 }
