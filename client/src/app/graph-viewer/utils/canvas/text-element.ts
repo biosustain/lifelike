@@ -207,8 +207,9 @@ export class TextElement {
 
           if (lineHorizontalOverflow) {
             // If we can split on the previous, try to break the words on syllables
+            // If there is no match, return the entire string as array (will be marked as overflow)
             const splitTokens = line.match(
-              /[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
+              /[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi) || [line];
             for (const widthFitLine of this.getWidthFittedLines(splitTokens, effectiveWidth - this.hyphenWidth)) {
               const stillOverflow = widthFitLine.metrics.width > effectiveWidth;
               // If that did not help, we cannot do anything else
