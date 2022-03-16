@@ -5,12 +5,11 @@ import { cloneDeep, isNil } from 'lodash-es';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-
-import { UniversalGraphEdge } from '../../services/interfaces';
-import { LINE_HEAD_TYPES } from '../../services/line-head-types';
-import { LINE_TYPES } from '../../services/line-types';
-import { PALETTE_COLORS } from '../../services/palette';
-import { InfoPanel } from '../../models/info-panel';
+import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
+import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
+import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
+import { PALETTE_COLORS } from 'app/drawing-tool/services/palette';
+import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
 @Component({
   selector: 'app-edge-form',
