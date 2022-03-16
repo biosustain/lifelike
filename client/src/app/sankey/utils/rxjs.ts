@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { filter, map, distinctUntilChanged, startWith, pairwise, scan } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged, startWith, pairwise, scan, switchMap } from 'rxjs/operators';
 import { has, isArray, pick, isEqual, isEmpty, uniq } from 'lodash-es';
 import { Selection as d3_Selection } from 'd3-selection';
 
@@ -95,7 +95,7 @@ interface UpdateCycle<Selection extends d3_Selection<any, any, any, any> = d3_Se
 export const update =
   <Selection extends d3_Selection<any, any, any, any> = d3_Selection<any, any, any, any>, T = any>
   (
-    selection: Selection,
+    selectionObservable: Observable<Selection>,
     {
       otherOnStart,
       enter,
@@ -107,7 +107,10 @@ export const update =
     distinctUntilChanged(isEqual),
     startWith([]),
     pairwise(),
-    scan(([affectedSoFar], [prev, next]) => {
+    switchMap(prevNext => selectionObservable.pipe(
+      map(selection => prevNext.concat(selection)),
+    )),
+    scan(([affectedSoFar], [prev, next, selection]) => {
       if (isEmpty(next)) {
         if (otherOnStart) {
           affectedOnEnd?.(selection);
@@ -138,7 +141,7 @@ export const update =
 export const updateSingular =
   <Selection extends d3_Selection<any, any, any, any> = d3_Selection<any, any, any, any>, T = any>
   (
-    selection: Selection,
+    selectionObservable: Observable<Selection>,
     {
       enter,
       exit,
@@ -149,7 +152,10 @@ export const updateSingular =
     distinctUntilChanged(comparator),
     startWith(),
     pairwise(),
-    map(([prev, next]) => {
+    switchMap(prevNext => selectionObservable.pipe(
+      map(selection => prevNext.concat(selection)),
+    )),
+    map(([prev, next, selection]) => {
       if (prev) {
         exit?.(selection.filter(d => comparator(prev, d)));
       }
@@ -168,15 +174,18 @@ export const updateSingular =
  * @param attr attribute to set based on array of nodes
  * @param overwrites adjustment of method (check update() doc)
  */
-export const updateAttr = (selection, attr, overwrites = {}) => update(selection, {
-  otherOnStart: s => s.attr(attr, false),
-  enter: s => s.attr(attr, true).raise(),
-  exit: s => s.attr(attr, false),
-  affectedOnEnd: s => s.attr(attr, undefined),
-  ...overwrites
-});
+export const updateAttr = (selectionObservable, attr, overwrites = {}) => update(
+  selectionObservable,
+  {
+    otherOnStart: s => s.attr(attr, false),
+    enter: s => s.attr(attr, true).raise(),
+    exit: s => s.attr(attr, false),
+    affectedOnEnd: s => s.attr(attr, undefined),
+    ...overwrites
+  }
+);
 
-export const updateAttrSingular = (selection, attr, overwrites = {}) => updateSingular(selection, {
+export const updateAttrSingular = (selectionObservable, attr, overwrites = {}) => updateSingular(selectionObservable, {
   enter: s => s.attr(attr, true).raise(),
   exit: s => s.attr(attr, undefined),
   ...overwrites

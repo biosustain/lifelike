@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, publish, takeUntil, share, shareReplay } from 'rxjs/operators';
+import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 import { assign, partial, groupBy } from 'lodash-es';
 
@@ -26,7 +26,7 @@ import { updateAttr, updateSingular } from '../utils/rxjs';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-@Component({ templateUrl: './sankey.component.svg' })
+@Component({templateUrl: './sankey.component.svg'})
 export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
   OnDestroy {
   constructor(
@@ -50,7 +50,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       });
   }
 
-
   get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
     // returns empty selection if DOM struct was not initialised
     return d3_select(this.nodes.nativeElement)
@@ -67,48 +66,45 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   focusedNode$ = this.sankey.graph$.pipe(
     switchMap(({nodes}) =>
       this.sankey.nodeLabel$.pipe(
-        switchMap(({nodeLabelShort}) => this.updateDOM$.pipe(
-            switchMap(({nodeSelection}) => this.search.searchFocus$.pipe(
-              map(({type, id}) =>
-                type === EntityType.Node &&
-                // allow string == number match interpolation ("58" == 58 -> true)
-                // tslint:disable-next-line:triple-equals
-                nodes.find(({_id}) => _id == id)
-              ),
-              updateSingular(nodeSelection, {
-                enter: s => s
-                  .attr('focused', true)
-                  .call(node => node
-                    .select('g')
-                    .call(textGroup => {
-                      textGroup
-                        .select('text')
-                        .text(this.sankey.nodeLabel);
-                      // postpone so the size is known
-                      requestAnimationFrame(() => {
-                        textGroup
-                          .each(SankeyAbstractComponent.updateTextShadow);
-                      });
-                    })
-                  )
-                  .raise(),
-                exit: s => s
-                  .attr('focused', false)
-                  .select('g')
-                  .call(textGroup => {
+        switchMap(({nodeLabelShort}) => this.search.searchFocus$.pipe(
+          map(({type, id}) =>
+            type === EntityType.Node &&
+            // allow string == number match interpolation ("58" == 58 -> true)
+            // tslint:disable-next-line:triple-equals
+            nodes.find(({_id}) => _id == id)
+          ),
+          updateSingular(this.renderedNodes$, {
+            enter: s => s
+              .attr('focused', true)
+              .call(node => node
+                .select('g')
+                .call(textGroup => {
+                  textGroup
+                    .select('text')
+                    .text(this.sankey.nodeLabel);
+                  // postpone so the size is known
+                  requestAnimationFrame(() => {
                     textGroup
-                      .select('text')
-                      .text(nodeLabelShort);
-                    // postpone so the size is known
-                    requestAnimationFrame(() => {
-                      textGroup
-                        .each(SankeyAbstractComponent.updateTextShadow);
-                    });
-                  })
-              }),
-            )),
-          )
-        ),
+                      .each(SankeyAbstractComponent.updateTextShadow);
+                  });
+                })
+              )
+              .raise(),
+            exit: s => s
+              .attr('focused', false)
+              .select('g')
+              .call(textGroup => {
+                textGroup
+                  .select('text')
+                  .text(nodeLabelShort);
+                // postpone so the size is known
+                requestAnimationFrame(() => {
+                  textGroup
+                    .each(SankeyAbstractComponent.updateTextShadow);
+                });
+              })
+          }),
+        )),
         tap(node => node && this.panToNode(node)),
       )
     ));
@@ -187,7 +183,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
           join.select('title')
             .text(linkTitle)
         );
-    })
+    }),
+    tap(s => console.log('rendered links', s))
   );
 
   renderedNodes$ = combineLatest([
@@ -289,33 +286,30 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  updateSearch$ = this.updateDOM$.pipe(
-    switchMap(({nodeSelection}) => this.search.preprocessedMatches$.pipe(
-        map(entities => groupBy(entities, 'type')),
-        publish(matches$ => combineLatest([
-          matches$.pipe(
-            map(({[EntityType.Node]: nodes = []}) => (nodes as Match[]).map<SankeyId>(({id}) => id)),
-            updateAttr(nodeSelection, 'searched', {
-              // dont update other
-              otherOnStart: null,
-              // just delete property (don't set it to false)
-              exit: s => s.attr('searched', undefined),
-              accessor: (arr, {_id}) => arr.includes(_id),
-            })
-          ),
-          matches$.pipe(
-            map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({id}) => id)),
-            updateAttr(nodeSelection, 'searched', {
-              // dont update other
-              otherOnStart: null,
-              // just delete property (don't set it to false)
-              exit: s => s.attr('searched', undefined),
-              accessor: (arr, {_id}) => arr.includes(_id),
-            })
-          )
-        ]))
+  updateSearch$ = this.search.preprocessedMatches$.pipe(
+    map(entities => groupBy(entities, 'type')),
+    publish(matches$ => combineLatest([
+      matches$.pipe(
+        map(({[EntityType.Node]: nodes = []}) => (nodes as Match[]).map<SankeyId>(({id}) => id)),
+        updateAttr(this.renderedNodes$, 'searched', {
+          // dont update other
+          otherOnStart: null,
+          // just delete property (don't set it to false)
+          exit: s => s.attr('searched', undefined),
+          accessor: (arr, {_id}) => arr.includes(_id),
+        })
+      ),
+      matches$.pipe(
+        map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({id}) => id)),
+        updateAttr(this.renderedLinks$, 'searched', {
+          // dont update other
+          otherOnStart: null,
+          // just delete property (don't set it to false)
+          exit: s => s.attr('searched', undefined),
+          accessor: (arr, {_id}) => arr.includes(_id),
+        })
       )
-    )
+    ]))
   );
 
   // endregion
