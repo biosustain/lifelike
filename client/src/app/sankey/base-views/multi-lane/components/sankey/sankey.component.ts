@@ -18,7 +18,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { EntityType } from '../../../../utils/search/search-match';
-import { updateAttr, updateSingular, updateAttrSingular } from '../../../../utils/rxjs';
+import { updateAttr, updateAttrSingular } from '../../../../utils/rxjs';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -57,8 +57,6 @@ export class SankeyMultiLaneComponent
 
   focusedLinks$ = this.sankey.graph$.pipe(
     switchMap(({links}) =>
-      this.renderedLinks$.pipe(
-        switchMap(linkSelection =>
           this.search.searchFocus$.pipe(
             // map graph file link to sankey link
             map(({type, id}) =>
@@ -67,25 +65,22 @@ export class SankeyMultiLaneComponent
                 // tslint:disable-next-line:triple-equals
                 (links as SankeyMultiLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
             ),
-            updateAttr(linkSelection, 'focused')
+            updateAttr(this.renderedLinks$, 'focused')
           )
-        )
-      )
     ),
     tap(current => isNotEmpty(current) && this.panToLinks(current))
   );
 
-  selectionUpdate$ = this.updateDOM$.pipe(
-    switchMap(({nodeSelection, linkSelection}) => this.selection.selection$.pipe(
+  selectionUpdate$ = this.selection.selection$.pipe(
         map(selection => groupBy(selection, 'type')),
         publish(selection$ => combineLatest([
           selection$.pipe(
             map(({[SelectionType.node]: nodes = []}) => nodes.map(({entity}) => entity)),
-            updateAttr(nodeSelection, 'selected')
+            updateAttr(this.renderedNodes$, 'selected')
           ),
           selection$.pipe(
             map(({[SelectionType.link]: links = []}) => links.map(({entity}) => entity)),
-            updateAttr(linkSelection, 'selected')
+            updateAttr(this.renderedLinks$, 'selected')
           ),
           selection$.pipe(
             map(({[SelectionType.trace]: traces = []}) => traces),
@@ -105,14 +100,12 @@ export class SankeyMultiLaneComponent
         publish(traces$ => combineLatest([
           traces$.pipe(
             map(traces => this.calculateNodeGroupFromTraces(traces)),
-            updateAttr(nodeSelection, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+            updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
           ),
           traces$.pipe(
-            updateAttr(linkSelection, 'transitively-selected', {accessor: (arr, {_trace}) => arr.includes(_trace)})
+            updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {_trace}) => arr.includes(_trace)})
           )
         ]))
-      )
-    )
   );
 
   panToLinks(links) {
