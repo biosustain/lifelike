@@ -2,8 +2,9 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, Element
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { map, switchMap, takeUntil, publish } from 'rxjs/operators';
-import { forkJoin, combineLatest, Observable, merge, of } from 'rxjs';
+import { map, switchMap, takeUntil, publish, tap, finalize } from 'rxjs/operators';
+import { forkJoin, combineLatest, merge, of, Observable } from 'rxjs';
+import { first } from 'lodash-es';
 
 import { SankeyNode, SankeyLink, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
@@ -51,76 +52,25 @@ export class SankeySingleLaneComponent
     selection.multiselect = false;
   }
 
-  focusedLink$ = this.sankey.graph$.pipe(
-    switchMap(({links}) => this.renderedLinks$.pipe(
-        switchMap(linkSelection => this.search.searchFocus$.pipe(
-            map(({type, id}) =>
-              type === EntityType.Link &&
-              // allow string == number match interpolation ("58" == 58 -> true)
-              // tslint:disable-next-line:triple-equals
-              (links as SankeySingleLaneLink[]).find(({_id}) => _id == id)
-            ),
-            updateAttrSingular(linkSelection, 'focused')
-          )
-        )
-      )
+  focusedLink$ = this.search.searchFocus$.pipe(
+    tap(d => console.log('searchFocus', d)),
+    map(({type, id}) =>
+      type === EntityType.Link && id
+    ),
+    updateAttrSingular(
+      this.renderedLinks$,
+      'focused',
+      {
+        enter: s => s.attr('focused', true).raise().call(linkElement =>
+          linkElement.size() && this.panToLink(first(linkElement.data()))
+        ),
+        // allow string == number match interpolation ("58" == 58 -> true)
+        // tslint:disable-next-line:triple-equals
+        comparator: (id, {_id}) => id == _id
+      }
     )
   );
   // region Select
-
-  selectionUpdate$ = this.updateDOM$.pipe(
-    switchMap(({linkSelection, nodeSelection}) =>
-      this.selection.selection$.pipe(
-        // this base view operates on sigular selection
-        publish((selection$: Observable<SelectionEntity>) => merge(
-          selection$.pipe(
-            map(({type, entity}) => type === SelectionType.node && entity),
-            updateAttrSingular(nodeSelection, 'selected', (entity, {_id}) => (entity as SankeyNode)._id === _id),
-            debug('nodeSelection')
-          ),
-          selection$.pipe(
-            map(({type, entity}) => type === SelectionType.link && entity),
-            updateAttrSingular(linkSelection, 'selected', (entity, {_id}) => (entity as SankeyLink)._id === _id),
-            debug('linkSelection')
-          )
-          // selection$.pipe(
-          //   map(({type, entity}) => type === SelectionType.trace && entity),
-          //   debug('traceSelection')
-          //   // todo
-          // )
-        )),
-        debug('eSelection'),
-        this.$getConnectedNodesAndLinks,
-        publish(connectedNodesAndLinks$ => combineLatest([
-          connectedNodesAndLinks$.pipe(
-            map(({nodesIds}) => nodesIds),
-            updateAttr(
-              nodeSelection,
-              'transitively-selected',
-              {
-                accessor: (nodesIds, {_id}) => nodesIds.has(_id),
-              }
-            ),
-            debug('transnodeSelection')
-          ),
-          connectedNodesAndLinks$.pipe(
-            map(({linksIds}) => linksIds),
-            updateAttr(
-              linkSelection,
-              'transitively-selected',
-              {
-                accessor: (linksIds, {_id}) => linksIds.has(_id),
-                enter: s => s
-                  .attr('transitively-selected', ({_graphRelativePosition}) => _graphRelativePosition ?? true)
-                  .raise()
-              }
-            ),
-            debug('translinkSelection')
-          )
-        ]))
-      )
-    )
-  );
 
   $getConnectedNodesAndLinks = switchMap((data: SankeyEntity) => {
     if (!data) {
@@ -130,34 +80,33 @@ export class SankeySingleLaneComponent
     const leftNode = ((data as SankeyLink)._source ?? data) as SankeyNode;
     const rightNode = ((data as SankeyLink)._target ?? data) as SankeyNode;
 
-    const objects2traverse = new Set([
-      {
-        direction: 'left',
-        node: leftNode
-      },
-      {
-        direction: 'right',
-        node: rightNode
-      }
-    ]);
-    const helper = {
-      left: {
-        graphRelativePosition: 'left',
-        nextNode: '_source',
-        nextLinks: '_targetLinks',
-        traversedLinks: new Set<SankeySingleLaneLink>()
-      },
-      right: {
-        graphRelativePosition: 'right',
-        nextNode: '_target',
-        nextLinks: '_sourceLinks',
-        traversedLinks: new Set<SankeySingleLaneLink>()
-      }
-    };
-    const nodes = new Set([leftNode, rightNode]);
-
     return this.sankey.baseView.highlightCircular$.pipe(
       map(highlightCircular => {
+        const helper = {
+          left: {
+            graphRelativePosition: 'left',
+            nextNode: '_source',
+            nextLinks: '_targetLinks',
+            traversedLinks: new Set<SankeySingleLaneLink>()
+          },
+          right: {
+            graphRelativePosition: 'right',
+            nextNode: '_target',
+            nextLinks: '_sourceLinks',
+            traversedLinks: new Set<SankeySingleLaneLink>()
+          }
+        };
+        const nodes = new Set([leftNode, rightNode]);
+        const objects2traverse = new Set([
+          {
+            direction: 'left',
+            node: leftNode
+          },
+          {
+            direction: 'right',
+            node: rightNode
+          }
+        ]);
 
         for (const {direction, node} of objects2traverse) {
           const {
@@ -188,6 +137,7 @@ export class SankeySingleLaneComponent
         delete (data as SankeySingleLaneLink)._graphRelativePosition;
         links.add((data as SankeySingleLaneLink));
 
+        console.log('highlightCircular', highlightCircular, nodes, links);
         return {
           nodesIds: mapIterable(nodes, ({_id}) => _id),
           linksIds: mapIterable(links, ({_id}) => _id)
@@ -195,6 +145,61 @@ export class SankeySingleLaneComponent
       })
     );
   });
+
+  selectionUpdate$ = this.selection.selection$.pipe(
+    tap(s => console.log('selection', s)),
+    // this base view operates on sigular selection
+    publish((selection$: Observable<SelectionEntity>) => merge(
+      selection$.pipe(
+        map(({type, entity}) => type === SelectionType.node && entity),
+        updateAttrSingular(this.renderedNodes$, 'selected', (entity, {_id}) => (entity as SankeyNode)._id === _id),
+        debug('nodeSelection')
+      ),
+      selection$.pipe(
+        map(({type, entity}) => type === SelectionType.link && entity),
+        updateAttrSingular(this.renderedLinks$, 'selected', (entity, {_id}) => (entity as SankeyLink)._id === _id),
+        debug('linkSelection')
+      )
+      // selection$.pipe(
+      //   map(({type, entity}) => type === SelectionType.trace && entity),
+      //   debug('traceSelection')
+      //   // todo
+      // )
+    )),
+    debug('eSelection'),
+    this.$getConnectedNodesAndLinks,
+    publish(connectedNodesAndLinks$ => combineLatest([
+      connectedNodesAndLinks$.pipe(
+        map(({nodesIds}) => nodesIds),
+        updateAttr(
+          this.renderedNodes$,
+          'transitively-selected',
+          {
+            accessor: (nodesIds, {_id}) => nodesIds.has(_id),
+          }
+        ),
+        debug('transnodeSelection')
+      ),
+      connectedNodesAndLinks$.pipe(
+        map(({linksIds}) => linksIds),
+        updateAttr(
+          this.renderedLinks$,
+          'transitively-selected',
+          {
+            accessor: (linksIds, {_id}) => linksIds.has(_id),
+            enter: s => s
+              .attr('transitively-selected', ({_graphRelativePosition}) => _graphRelativePosition ?? true)
+              .raise()
+          }
+        ),
+        debug('translinkSelection')
+      )
+    ])),
+    debug('transSelection'),
+    finalize(() => {
+      console.log('selectionUpdate$ finalize');
+    })
+  );
 
   ngOnInit() {
     super.ngOnInit();
