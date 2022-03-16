@@ -503,6 +503,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     return foundNode;
   }
 
+  updateGroup(group: NodeGroup) {
+    this.invalidateGroup(group);
+  }
+
   /**
    * Invalidate the whole renderer cache.
    */
@@ -527,6 +531,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
      * @param d the edge
      */
   invalidateEdge(d: UniversalGraphEdge): void {
+  }
+
+  invalidateGroup(d: NodeGroup): void {
   }
 
   /**
