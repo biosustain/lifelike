@@ -2,26 +2,20 @@ from common.query_builder import *
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
 
-import configparser
+from config.config import read_config
 import logging
 import pandas as pd
-import os
-
-# reference to this directory
-directory = os.path.realpath(os.path.dirname(__file__))
 
 
-def get_database():
+def get_database(dbname: str):
     """
     Get database instance based on environment variables
     :return: database instance
     """
-    config = configparser.ConfigParser()
-    config.read(os.path.join(directory, 'properties.ini'))
-    uri = config.get('neo4j', 'neo4j_uri')
-    dbname = config.get('neo4j', 'neo4j_database')
-    username = config.get('neo4j', 'neo4j_username')
-    pwd = config.get('neo4j', 'neo4j_password')
+    config = read_config()
+    uri = config['neo4j']['uri']
+    username = config['neo4j']['user']
+    pwd = config['neo4j']['password']
     driver = GraphDatabase.driver(uri, auth=(username, pwd))
     return Database(driver, dbname)
 
@@ -49,7 +43,7 @@ class Database:
         :param constrain_name: the name for the constraint (optional)
         """
         if not constraint_name:
-            constraint_name = 'constraint_' + label.lower() + '_' + property_name
+            constraint_name = 'constraint_' + label + '_' + property_name
         query = get_create_constraint_query(label, property_name, constraint_name)
         self.logger.debug(query)
         with self.driver.session(database=self.dbname) as session:
@@ -98,7 +92,7 @@ class Database:
             except Neo4jError as ex:
                 self.logger.error(ex.message)
 
-    def get_data(self, query:str, params={}) -> pd.DataFrame:
+    def get_data(self, query:str, **params) -> pd.DataFrame:
         """
         Run query to get data as dataframe
         :param query: the query with parameter $dict (see query_builder.py)
@@ -131,7 +125,6 @@ class Database:
 
             if return_node_count:
                 return node_count, info.counters
-
             return info.counters
 
     def load_data_from_dataframe(self, query: str, data_frame: pd.DataFrame, chunksize=None):
@@ -154,7 +147,7 @@ class Database:
                 result = session.run(query, rows=rows).consume()
                 self.logger.info(result.counters)
 
-    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:list = None, usecols = None,
+    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:[]=None, usecols = None,
                       skiprows=None, chunksize=None, dtype=None):
         """
         load csv file to neo4j database
@@ -190,40 +183,3 @@ class Database:
                     # self.logger.info(result.counters)
                 self.logger.info("Rows processed: " + str(count))
 
-    def log_etl_load_start(self, domain: str, node_labels: list, node_version: str):
-        """Log an etl load start by creating an EtlLoad node.
-        :param domain: Name of the domain to be loaded, e.g. "BioCyc" or "NCBI".
-        :param nodel_labels: A list of labels applied to the nodes.
-        :param node_version: A string representing the node version.
-        :return: etl_load_id as uuid
-        """
-        query = (
-            "CREATE (n:EtlLoad { etl_load_id: apoc.create.uuid(), domain: '"
-            + domain
-            + "', node_labels: '"
-            + ",".join(node_labels)
-            + "', started_at: datetime(), version: '"
-            + node_version
-            + "'}) RETURN n.etl_load_id"
-        )
-        df = self.get_data(query)
-        etl_load_id = df.loc[0][0]
-        return etl_load_id
-
-    def log_etl_load_finished(self, etl_load_id: str, no_of_created_nodes : int = None, no_of_updated_nodes : int = None, no_of_created_relations: int = None, no_of_updated_relations : int = None):
-        """Log etl load finish by updating an EtlLoad node.
-        param etl_load_id: etl_load_id of the load to log as finished.
-        param no_of_created_nodes: number of nodes created by the load
-        param no_of_updated_nodes: number of nodes updated by the load
-        param no_of_created_relations: number of relations created by the load
-        param no_of_updated_relations: number of relations updated by the load
-        """
-        query = f"""
-        MATCH (n:EtlLoad) WHERE n.etl_load_id = '{etl_load_id}' 
-        SET n.finished_at = datetime()
-            , n.no_of_created_nodes = {no_of_created_nodes}
-            , n.no_of_updated_nodes = {no_of_updated_nodes}
-            , n.no_of_created_relations = {no_of_created_relations}
-            , n.no_of_updated_relations = {no_of_updated_relations}
-        """
-        self.run_query(query)

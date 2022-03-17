@@ -1,0 +1,29 @@
+directories:
+  dataDirectory: ../../data
+  downloadDirectory: ../../data/download
+  processedDirectory: ../../data/processed
+  changelogsDirectory: ../../data/changelogs
+
+neo4j:
+  uri: bolt://localhost:7687
+  user: neo4j
+  password: rcai
+
+biocycFiles:
+  EcoCyc: ecoli_25.5.tar.gz
+  HumanCyc: human.tar_25.5.gz
+  YeastCyc: yeastcyc_25.5.tar.gz
+  PseudomonasCyc: pput160488cyc_25.5.tar.gz
+  BsubCyc: bsub_47.tar.gz
+
+stringDB:
+  "4932": Saccharomyces cerevisiae
+  "9606": Homo sapiens
+  "100226": Streptomyces coelicolor - A3(2)
+  "208964": Pseudomonas aeruginosa PAO1
+  "224308": Bacillus subtilis subsp. subtilis str. 168
+  "511145": Escherichia coli str. K-12 substr. MG1655
+  "160488": Pseudomonas putida KT2440
+
+
+
