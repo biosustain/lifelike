@@ -26,8 +26,12 @@ export interface UniversalNodeStyle {
 }
 
 export interface NodeGroup extends UniversalGraphNode {
-  members?: UniversalGraphNode[];
-  hashes?: string[];
+  members: UniversalGraphNode[];
+}
+
+// Created for export purpose: do not duplicate the nodes on export
+export interface SimplifiedNodeGroup extends UniversalGraphNode {
+  hashes: string[];
 }
 
 export interface UniversalGraphNode {
@@ -75,10 +79,17 @@ export interface UniversalGraphEdge {
   style?: UniversalEdgeStyle;
 }
 
+
 export interface UniversalGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
   groups: NodeGroup[];
+}
+
+export interface ExportableGraph {
+  nodes: UniversalGraphNode[];
+  edges: UniversalGraphEdge[];
+  groups: SimplifiedNodeGroup[];
 }
 
 // TODO: Triple check that

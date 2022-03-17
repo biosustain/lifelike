@@ -3,6 +3,7 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { UniversalGraph } from 'app/drawing-tool/services/interfaces';
 
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
@@ -35,6 +36,15 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
       return null;
     }
     return JSON.parse(new TextDecoder(encoding).decode(data)) as T;
+  });
+}
+
+export function mapJsonToProperGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
+  return map((graph: UniversalGraph) => {
+    return {
+      ...graph,
+
+    };
   });
 }
 

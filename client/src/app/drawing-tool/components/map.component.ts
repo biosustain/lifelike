@@ -189,6 +189,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           this.errorHandler.create({ label: 'Parse map data' }),
         ).subscribe(
           graph => {
+            console.log(graph);
             this.graphCanvas.setGraph(graph);
             for (const node of this.graphCanvas.getGraph().nodes) {
               if (node.image_id !== undefined) {
