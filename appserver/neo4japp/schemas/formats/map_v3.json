@@ -450,12 +450,7 @@
       "minItems": 0,
       "maxItems": 1000,
       "items": {
-        "type": "array",
-        "minItems": 0,
-        "maxItems": 1000,
-        "items": {
-          "$ref": "#/definitions/hash"
-        }
+
       }
     }
   }
