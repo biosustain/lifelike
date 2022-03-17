@@ -11,7 +11,6 @@ import {
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
@@ -38,7 +37,6 @@ export class EntityForm implements AfterViewInit {
 
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
-    protected readonly internalSearch: InternalSearchService
   ) {
   }
 

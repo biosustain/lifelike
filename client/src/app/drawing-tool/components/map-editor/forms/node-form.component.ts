@@ -13,7 +13,7 @@ import { EntityForm } from './entity-form';
 
 @Component({
   selector: 'app-node-form',
-  styleUrls: ['./node-form.component.scss'],
+  styleUrls: ['./entity-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent extends EntityForm {
@@ -33,11 +33,9 @@ export class NodeFormComponent extends EntityForm {
 
   fixedType = false;
 
-  constructor(
-    protected readonly workspaceManager: WorkspaceManager,
-    protected readonly internalSearch: InternalSearchService
-  ) {
-    super(workspaceManager, internalSearch);
+  constructor(protected readonly workspaceManager: WorkspaceManager,
+              protected readonly internalSearch: InternalSearchService) {
+    super(workspaceManager);
   }
 
   get nodeSubtypeChoices() {

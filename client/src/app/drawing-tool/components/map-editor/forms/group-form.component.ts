@@ -1,51 +1,102 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { NodeGroup, UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
-import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
+import { NodeGroup } from 'app/drawing-tool/services/interfaces';
+import { RecursivePartial } from 'app/shared/utils/types';
 
-import { NodeFormComponent } from './node-form.component';
+import { EntityForm } from './entity-form';
 
 
 @Component({
   selector: 'app-group-form',
+  styleUrls: ['./entity-form.component.scss'],
   templateUrl: './group-form.component.html'
 })
-export class GroupFormComponent  {
+export class GroupFormComponent extends EntityForm  {
 
-   lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
-    ...LINE_TYPES.entries(),
-  ];
+
+  originalGroup: NodeGroup;
+  updatedGroup: NodeGroup;
+
+  @Output() save = new EventEmitter<{
+    originalData: RecursivePartial<NodeGroup>,
+    updatedData: RecursivePartial<NodeGroup>,
+  }>();
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
               protected readonly internalSearch: InternalSearchService) {
+    super(workspaceManager);
   }
 
-  // get group() {
-  //   return this.updatedNode;
-  // }
-  //
-  // @Input()
-  // set group(group: UniversalGraphEntity) {
-  //   group = group as NodeGroup;
-  //   this.previousLabel = group.label;
-  //
-  //   this.originalNode = cloneDeep(group);
-  //   this.originalNode.style = this.originalNode.style || {};
-  //
-  //
-  //   this.updatedNode = cloneDeep(group);
-  //   this.updatedNode.data.sources = this.updatedNode.data.sources || [];
-  //   this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
-  //   this.updatedNode.style = this.updatedNode.style || {};
-  // }
+  get hyperlinks() {
+    return this.group.data?.hyperlinks ?? [];
+  }
 
+  get group() {
+    return this.updatedGroup;
+  }
 
+  @Input()
+  set group(group) {
+    this.originalGroup = cloneDeep(group);
+    this.originalGroup.style = this.originalGroup.style || {};
+
+    this.updatedGroup = cloneDeep(group);
+    this.updatedGroup.data.sources = this.updatedGroup.data.sources || [];
+    this.updatedGroup.data.hyperlinks = this.updatedGroup.data.hyperlinks || [];
+    this.updatedGroup.style = this.updatedGroup.style || {};
+  }
+
+  doSave() {
+    this.save.next({
+      originalData: {
+        data: {
+          sources: this.originalGroup.data.sources,
+          hyperlinks: this.originalGroup.data.hyperlinks,
+          detail: this.originalGroup.data.detail,
+          subtype: this.originalGroup.data.subtype,
+        },
+        display_name: this.originalGroup.display_name,
+        label: this.originalGroup.label,
+        style: {
+          fontSizeScale: this.originalGroup.style.fontSizeScale,
+          fillColor: this.originalGroup.style.fillColor,
+          strokeColor: this.originalGroup.style.strokeColor,
+          bgColor: this.originalGroup.style.bgColor,
+          lineType: this.originalGroup.style.lineType,
+          lineWidthScale: this.originalGroup.style.lineWidthScale,
+          showDetail: this.originalGroup.style.showDetail,
+        },
+        members: this.originalGroup.members
+      },
+      updatedData: {
+        data: {
+          sources: this.updatedGroup.data.sources,
+          hyperlinks: this.updatedGroup.data.hyperlinks,
+          detail: this.updatedGroup.data.detail,
+          subtype: this.updatedGroup.data.subtype,
+        },
+        display_name: this.updatedGroup.display_name,
+        label: this.updatedGroup.label,
+        style: {
+          fontSizeScale: this.updatedGroup.style.fontSizeScale,
+          fillColor: this.updatedGroup.style.fillColor,
+          strokeColor: this.updatedGroup.style.strokeColor,
+          bgColor: this.updatedGroup.style.bgColor,
+          lineType: this.updatedGroup.style.lineType,
+          lineWidthScale: this.updatedGroup.style.lineWidthScale,
+          showDetail: this.updatedGroup.style.showDetail,
+        },
+        // TODO: Actually allow to modify a group
+        members: this.updatedGroup.members
+      },
+    });
+    this.originalGroup = cloneDeep(this.updatedGroup);
+  }
+
+  // TODO: Search related stuff?
 
 }
