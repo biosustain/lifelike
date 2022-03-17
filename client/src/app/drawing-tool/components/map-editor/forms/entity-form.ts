@@ -28,7 +28,7 @@ export class EntityForm implements AfterViewInit {
 
   paletteChoices = [...PALETTE_COLORS];
   bgPaletteChoices = [...BG_PALETTE_COLORS];
-  private ASSUMED_PANEL_HEIGHT = 450;
+  ASSUMED_PANEL_HEIGHT = 450;
 
   @Input() infoPanel: InfoPanel;
   @Output() delete = new EventEmitter<object>();
