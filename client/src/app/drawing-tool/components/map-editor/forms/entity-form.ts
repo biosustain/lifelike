@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  Component,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -9,11 +8,8 @@ import {
   ViewChild
 } from '@angular/core';
 
-import { cloneDeep, isNil } from 'lodash-es';
-
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
-import { UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
@@ -22,7 +18,6 @@ import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 export class EntityForm implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
-  @ViewChild('option') selectedOption: ElementRef;
 
   lineTypeChoices = [
     [null, {
@@ -35,18 +30,9 @@ export class EntityForm implements AfterViewInit {
   bgPaletteChoices = [...BG_PALETTE_COLORS];
   private ASSUMED_PANEL_HEIGHT = 450;
 
-  originalEntity: UniversalGraphEntity;
-  updatedEntity: UniversalGraphEntity;
-
   @Input() infoPanel: InfoPanel;
-  // @Output() save = new EventEmitter<{
-  //   originalData: RecursivePartial<UniversalGraphNode>,
-  //   updatedData: RecursivePartial<UniversalGraphNode>,
-  // }>();
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
-
-  previousLabel: string;
 
   overflow = false;
 
@@ -83,65 +69,6 @@ export class EntityForm implements AfterViewInit {
     setTimeout(() => this.onResize(), 0);
   }
 
-  get entity() {
-    return this.updatedEntity;
-  }
-
-  @Input()
-  set entity(entity) {
-    this.previousLabel = entity.label;
-
-    this.originalEntity = cloneDeep(entity);
-    this.originalEntity.style = this.originalEntity.style || {};
-
-
-    this.updatedEntity = cloneDeep(entity);
-    this.updatedEntity.data.sources = this.updatedEntity.data.sources || [];
-    this.updatedEntity.data.hyperlinks = this.updatedEntity.data.hyperlinks || [];
-    this.updatedEntity.style = this.updatedEntity.style || {};
-  }
-
-  get hyperlinks() {
-    return this.entity.data?.hyperlinks ?? [];
-  }
-
-  // Note: this is just SHARED data, needs to be updated with individual ata
-  getSaveData() {
-    this.originalEntity = cloneDeep(this.updatedEntity);
-    return {
-      originalData: {
-        data: {
-          sources: this.originalEntity.data.sources,
-          hyperlinks: this.originalEntity.data.hyperlinks,
-          detail: this.originalEntity.data.detail,
-          subtype: this.originalEntity.data.subtype,
-        },
-        label: this.originalEntity.label,
-        style: {
-          fontSizeScale: this.originalEntity.style.fontSizeScale,
-          strokeColor: this.originalEntity.style.strokeColor,
-          lineType: this.originalEntity.style.lineType,
-          lineWidthScale: this.originalEntity.style.lineWidthScale,
-        },
-      },
-      updatedData: {
-        data: {
-          sources: this.updatedEntity.data.sources,
-          hyperlinks: this.updatedEntity.data.hyperlinks,
-          detail: this.updatedEntity.data.detail,
-          subtype: this.updatedEntity.data.subtype,
-        },
-        label: this.updatedEntity.label,
-        style: {
-          fontSizeScale: this.updatedEntity.style.fontSizeScale,
-          strokeColor: this.updatedEntity.style.strokeColor,
-          lineType: this.updatedEntity.style.lineType,
-          lineWidthScale: this.updatedEntity.style.lineWidthScale,
-        },
-      },
-    };
-  }
-
   /**
    * Delete the current entity.
    */
@@ -172,6 +99,4 @@ export class EntityForm implements AfterViewInit {
       element.select();
     }
   }
-
-
 }

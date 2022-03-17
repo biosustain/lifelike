@@ -14,7 +14,7 @@ import { NodeFormComponent } from './node-form.component';
   selector: 'app-group-form',
   templateUrl: './group-form.component.html'
 })
-export class GroupFormComponent extends NodeFormComponent {
+export class GroupFormComponent  {
 
    lineTypeChoices = [
     [null, {
@@ -25,27 +25,26 @@ export class GroupFormComponent extends NodeFormComponent {
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
               protected readonly internalSearch: InternalSearchService) {
-    super(workspaceManager, internalSearch);
   }
 
-  get group() {
-    return this.updatedNode;
-  }
-
-  @Input()
-  set group(group: UniversalGraphEntity) {
-    group = group as NodeGroup;
-    this.previousLabel = group.label;
-
-    this.originalNode = cloneDeep(group);
-    this.originalNode.style = this.originalNode.style || {};
-
-
-    this.updatedNode = cloneDeep(group);
-    this.updatedNode.data.sources = this.updatedNode.data.sources || [];
-    this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
-    this.updatedNode.style = this.updatedNode.style || {};
-  }
+  // get group() {
+  //   return this.updatedNode;
+  // }
+  //
+  // @Input()
+  // set group(group: UniversalGraphEntity) {
+  //   group = group as NodeGroup;
+  //   this.previousLabel = group.label;
+  //
+  //   this.originalNode = cloneDeep(group);
+  //   this.originalNode.style = this.originalNode.style || {};
+  //
+  //
+  //   this.updatedNode = cloneDeep(group);
+  //   this.updatedNode.data.sources = this.updatedNode.data.sources || [];
+  //   this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
+  //   this.updatedNode.style = this.updatedNode.style || {};
+  // }
 
 
 
