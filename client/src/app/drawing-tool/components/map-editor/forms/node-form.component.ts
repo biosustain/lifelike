@@ -1,53 +1,35 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, HostListener, } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
-import { cloneDeep, isNil, startCase } from 'lodash-es';
+import { cloneDeep, startCase } from 'lodash-es';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
 import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
-import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
-import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
-import { PALETTE_COLORS, BG_PALETTE_COLORS } from 'app/drawing-tool/services/palette';
+
+import { EntityForm } from './entity-form';
 
 @Component({
   selector: 'app-node-form',
   styleUrls: ['./node-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent implements AfterViewInit {
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
-  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+export class NodeFormComponent extends EntityForm {
   @ViewChild('option') selectedOption: ElementRef;
 
   nodeTypeChoices = annotationTypes;
-  lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
-    ...LINE_TYPES.entries(),
-  ];
-  paletteChoices = [...PALETTE_COLORS];
-  bgPaletteChoices = [...BG_PALETTE_COLORS];
-  private ASSUMED_PANEL_HEIGHT = 450;
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
 
-  @Input() infoPanel: InfoPanel;
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>,
     updatedData: RecursivePartial<UniversalGraphNode>,
   }>();
-  @Output() delete = new EventEmitter<object>();
-  @Output() sourceOpen = new EventEmitter<string>();
 
   previousLabel: string;
-
-  overflow = false;
 
   fixedType = false;
 
@@ -55,33 +37,7 @@ export class NodeFormComponent implements AfterViewInit {
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly internalSearch: InternalSearchService
   ) {
-  }
-
-  changeOverflow(newValue) {
-    if (this.overflow !== newValue) {
-      // stops overflowing
-      if (!newValue && this.infoPanel.activeTab === 'search') {
-        this.infoPanel.activeTab = 'properties';
-      }
-      this.overflow = newValue;
-    }
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    const {
-      scrollWrapper: {
-        nativeElement: {
-          offsetHeight
-        }
-      },
-      ASSUMED_PANEL_HEIGHT
-    } = this;
-    this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => this.onResize(), 0);
+    super(workspaceManager, internalSearch);
   }
 
   get nodeSubtypeChoices() {
@@ -93,15 +49,14 @@ export class NodeFormComponent implements AfterViewInit {
     }
   }
 
+  get hyperlinks() {
+    return this.node.data?.hyperlinks ?? [];
+  }
+
   get node() {
     return this.updatedNode;
   }
 
-  get hyperlinks() {
-    return isNil(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
-  }
-
-  // tslint:disable-next-line: adjacent-overload-signatures
   @Input()
   set node(node) {
     this.previousLabel = node.label;
@@ -117,6 +72,7 @@ export class NodeFormComponent implements AfterViewInit {
     this.updatedNode.style = this.updatedNode.style || {};
   }
 
+  // TODO: Inspect and possibly clean this mess.
   handleTypeChange() {
     const fromDetailNode = DETAIL_NODE_LABELS.has(this.previousLabel);
     const toDetailNode = DETAIL_NODE_LABELS.has(this.node.label);
@@ -216,57 +172,16 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   /**
-   * Delete the current node.
-   */
-  doDelete(): void {
-    this.delete.next();
-  }
-
-  /**
-   * Allow user to navigate to a link in a new tab
-   */
-  goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
-  }
-
-  /**
    * Create a blank hyperlink template to add to model
    */
   addHyperlink() {
-    if (isNil(this.node.data.hyperlinks)) {
-      this.node.data.hyperlinks = [];
-    }
-
+    this.node.data.hyperlinks = this.node.data?.hyperlinks ?? [];
     const [domain, url] = ['', ''];
     this.node.data.hyperlinks.push({url, domain});
   }
 
-  /**
-   * Remove hyperlink from specified index
-   * @param i - index of hyperlink to remove
-   */
-  removeHyperlink(i) {
-    this.node.data.hyperlinks.splice(i, 1);
-    this.doSave();
-  }
-
-  /**
-   * Bring user to original source of node information
-   */
-  goToSource(url): void {
-    this.sourceOpen.next(url);
-  }
-
   mayShowDetailText() {
     return this.node.label === 'note' || this.node.label === 'link';
-  }
-
-  focus() {
-    if (this.displayNameRef != null) {
-      const element = this.displayNameRef.nativeElement;
-      element.focus();
-      element.select();
-    }
   }
 
   searchMapNodeInVisualizer(node) {
