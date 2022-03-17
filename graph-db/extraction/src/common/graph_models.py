@@ -63,6 +63,9 @@ class Item(object):
             return self.attributes.get(key)
         return ''
 
+    def get_id_attribute(self):
+        return self.attributes.get(self.id_attr)
+
     def get_label(self):
         if self.label:
             return self.label
