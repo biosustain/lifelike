@@ -23,43 +23,6 @@
                     </div>
                 </div>
 
-                <div class="form-group" *ngIf="mayShowDetailText()">
-                    <div class="custom-control custom-checkbox">
-                        <input class="custom-control-input" type="checkbox" id="show-detail" value="1"
-                               [(ngModel)]="group.style.showDetail" (change)="doSave()">
-                        <label class="custom-control-label" for="show-detail">
-                            Show detail text instead of the label
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="type" ngbTooltip="Group type" container="body">
-                        Type:
-                    </label>
-                    <div class="d-flex flex-column flex-fill">
-                        <select [(ngModel)]="group.label" (change)="doSave()" class="custom-select w-100"
-                                id="type"
-                                (ngModelChange)="handleTypeChange()" [disabled]="fixedType">
-                            <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
-                                {{choice.label | titlecase}}
-                            </option>
-                        </select>
-                        <div class="mt-2" *ngIf="nodeSubtypeChoices.length">
-                            <label for="subtype" ngbTooltip="Node subtype" container="body">
-                                Type:
-                            </label>
-                            <select [(ngModel)]="node.data.subtype" (change)="doSave()"
-                                    class="custom-select flex-fill"
-                                    id="subtype">
-                                <option *ngFor="let choice of nodeSubtypeChoices" [value]="choice">
-                                    {{choice | titlecase}}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="mb-4">
                     <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
                                      [(ngModel)]="group.data.sources"
@@ -207,7 +170,7 @@
 <ng-template #delete>
     <div class="mb-4">
         <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
-            Delete
+            Ungroup
         </button>
     </div>
 </ng-template>
