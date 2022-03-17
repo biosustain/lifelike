@@ -1,4 +1,4 @@
-from biocyc.base_data_file_parser import BaseDataFileParser
+from biocyc.data_file_parser import DataFileParser
 from common.graph_models import *
 from biocyc.utils import cleanhtml
 
@@ -17,19 +17,16 @@ REL_NAMES = {
     'DBLINKS': RelationshipType(REL_DBLINKS, 'to', NODE_DBLINK, PROP_REF_ID),
 }
 
-## format: key: source db name, value: (KEY-Index, KEY_with_DB_PREFIX), e.g. if KEY_with_DB_PREFIX == True, key will be like 'CHEBI:1234', otherwise, '1234'.
-DB_LINK_SOURCES = {'CHEBI':True}
+# True indicate that the dblink id has prefix, eg. CHEBI:1234.  In ***ARANGO_DB_NAME***, we only use the id, no prefix
+DB_LINK_SOURCES = {'CHEBI':False}
 
-class CompoundParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir, db_name, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+class CompoundParser(DataFileParser):
+    def __init__(self, biocyc_dbname, tarfile):
+        DataFileParser.__init__(self, biocyc_dbname, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
 
-    def create_synonym_rels(self) -> bool:
-        return True
-
     def parse_data_file(self):
-        nodes = BaseDataFileParser.parse_data_file(self)
+        nodes = DataFileParser.parse_data_file(self)
         for node in nodes:
             name = node.get_attribute(PROP_NAME)
             if name:

@@ -1,7 +1,7 @@
-from biocyc.base_data_file_parser import BaseDataFileParser
+from biocyc.data_file_parser import DataFileParser
 from common.constants import *
 from common.graph_models import *
-
+import pandas as pd
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
@@ -20,19 +20,17 @@ REL_NAMES = {
     'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_PROTEIN, PROP_BIOCYC_ID)
 }
 
-DB_LINK_SOURCES = {DB_GO: True}
+# True indicate that the dblink id has prefix, eg. GO:1234.  In ***ARANGO_DB_NAME***, we only use the id, no prefix
+DB_LINK_SOURCES = {DB_GO: False}
 
 POLYPEPTIDES = 'Polypeptides'
 MODIFIED_PROTEINS = 'Modified-Proteins'
 COMPLEXES = 'Complexes'
 
-class ProteinParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+class ProteinParser(DataFileParser):
+    def __init__(self, db_name, tarfile):
+        DataFileParser.__init__(self, db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD, PROP_PI]
-
-    def create_synonym_rels(self) -> bool:
-        return True
 
     def parse_data_file(self):
         """
@@ -41,9 +39,9 @@ class ProteinParser(BaseDataFileParser):
         (e.g. polyperptide, modified protein, complex) were removed since we don't have a use case to use them now and
         it made the relationships more complicated.  Those can be added later if needed by deleting the code for edge removing.
         """
-        nodes = BaseDataFileParser.parse_data_file(self)
+        nodes = DataFileParser.parse_data_file(self)
         self.datafile = 'protligandcplxes.dat'
-        nodes2 = BaseDataFileParser.parse_data_file(self)
+        nodes2 = DataFileParser.parse_data_file(self)
         if nodes2:
             nodes = nodes + nodes2
         for node in nodes:
@@ -69,5 +67,20 @@ class ProteinParser(BaseDataFileParser):
                         node.edges.remove(edge)
         return nodes
 
-
+    def extrace_synonyms(self, df:pd.DataFrame):
+        """
+        extract synonyms from 'synonyms' column, combine with name, return dataframe for id-synonym (columns[ID, NAME])
+        """
+        if PROP_ABBREV_NAME in df.columns:
+            df_syn = df[[PROP_ID, PROP_SYNONYMS]].dropna()
+            df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
+            df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
+            df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:, [PROP_ID, PROP_NAME]]
+            df_name = df[[PROP_ID, PROP_NAME]]
+            df_symbol = df[[PROP_ID, PROP_ABBREV_NAME]].dropna()
+            df_symbol.columns = [PROP_ID, PROP_NAME]
+            df_syn = pd.concat([df_name, df_symbol, df_syn]).drop_duplicates()
+            df_syn = df_syn[df_syn[PROP_NAME].str.len() > 1]
+            return df_syn
+        return DataFileParser.extrace_synonyms(self, df)
 

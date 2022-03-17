@@ -1,4 +1,4 @@
-from biocyc.base_data_file_parser import *
+from biocyc.data_file_parser import *
 from common.graph_models import *
 
 
@@ -30,14 +30,11 @@ CHEM_REACTIONS = 'Chemical-Reactions'
 SMALL_MOL_REACTIONS = 'Small-Molecule-Reactions'
 
 
-class ReactionParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'reactions.dat',
+class ReactionParser(DataFileParser):
+    def __init__(self, db_name, tarfile):
+        DataFileParser.__init__(self, db_name, tarfile, 'reactions.dat',
                                     NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_DIRECTION, PROP_LOCATION]
-
-    def create_synonym_rels(self) -> bool:
-        return True
 
     def parse_data_file(self):
         """
@@ -45,7 +42,7 @@ class ReactionParser(BaseDataFileParser):
         because we don't need those information, and the additional relationshps made the node expanding more complicated.
         Reation property EC_number need to be treated as relationships to Enzyme nodes.
         """
-        nodes = BaseDataFileParser.parse_data_file(self)
+        nodes = DataFileParser.parse_data_file(self)
         for node in nodes:
             edges = set(node.edges)
             for edge in edges:
