@@ -254,7 +254,7 @@ export const mapIterable = <O, R>(itrable, mapping, mappedObjectConstructor?) =>
  * We want to use it so we are not running into issue of differentiate between
  * passed undefined and not provided parameter.
  */
-const notDefined = Symbol('notDefined');
+export const notDefined = Symbol('notDefined');
 
 /**
  * Helper reducer function, that works not only with arrays, but also with objects, sets, maps etc.

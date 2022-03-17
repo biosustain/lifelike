@@ -409,13 +409,13 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   zoomIn() {
     if (this.sankeySlot) {
-      this.sankey.scaleZoom(1.25);
+      this.sankey.zoom.scaleBy(1.25);
     }
   }
 
   zoomOut() {
     if (this.sankeySlot) {
-      this.sankey.scaleZoom(.8);
+      this.sankey.zoom.scaleBy(.8);
     }
   }
 
