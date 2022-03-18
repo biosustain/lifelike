@@ -6,8 +6,10 @@
  */
 import { isDevMode } from '@angular/core';
 
-export function bind
-<T extends object>(target: T, propertyKey: keyof T, {value, get, writable, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
+import { isBoolean } from 'lodash-es';
+
+export function bind<T extends object>(target: T, propertyKey: keyof T,
+                                       {value, get, writable, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
   return {
     ...descriptor,
     get() {
@@ -25,4 +27,26 @@ export function bind
       };
     }
   };
+}
+
+/**
+ * Make class property enumerable
+ *
+ * Example usage:
+ * ```
+ *   @enumerable - make property enumerable
+ *   @enumerable() - make property enumerable
+ *   @enumerable(true) - make property enumerable
+ *   @enumerable(false) - make property not enumerable
+ * ```
+ */
+export function enumerable(valueOrTarget: any, propertyKey: string, descriptor: PropertyDescriptor);
+export function enumerable(valueOrTarget: boolean = true, propertyKey?: string, descriptor?: PropertyDescriptor) {
+  if (isBoolean(valueOrTarget)) {
+    // tslint:disable-next-line:only-arrow-functions
+    return function(_target: any, _propertyKey: string, _descriptor: PropertyDescriptor) {
+      _descriptor.enumerable = valueOrTarget;
+    };
+  }
+  descriptor.enumerable = true;
 }
