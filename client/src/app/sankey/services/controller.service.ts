@@ -233,8 +233,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         }))
     )),
     debug('partialNetworkTraceData$'),
-    shareReplay(1),
-    tap(d => console.log('zsdfzs', d))
+    shareReplay(1)
   );
 
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);

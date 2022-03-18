@@ -53,10 +53,10 @@ export class SankeySingleLaneComponent
   }
 
   focusedLink$ = this.search.searchFocus$.pipe(
-    tap(d => console.log('searchFocus', d)),
     map(({type, id}) =>
       type === EntityType.Link && id
     ),
+    debug('focusedLink$'),
     updateAttrSingular(
       this.renderedLinks$,
       'focused',
@@ -137,7 +137,6 @@ export class SankeySingleLaneComponent
         delete (data as SankeySingleLaneLink)._graphRelativePosition;
         links.add((data as SankeySingleLaneLink));
 
-        console.log('highlightCircular', highlightCircular, nodes, links);
         return {
           nodesIds: mapIterable(nodes, ({_id}) => _id),
           linksIds: mapIterable(links, ({_id}) => _id)
@@ -147,7 +146,6 @@ export class SankeySingleLaneComponent
   });
 
   selectionUpdate$ = this.selection.selection$.pipe(
-    tap(s => console.log('selection', s)),
     // this base view operates on sigular selection
     publish((selection$: Observable<SelectionEntity>) => merge(
       selection$.pipe(
@@ -166,7 +164,7 @@ export class SankeySingleLaneComponent
       //   // todo
       // )
     )),
-    debug('eSelection'),
+    debug('selectionUpdate$'),
     this.$getConnectedNodesAndLinks,
     publish(connectedNodesAndLinks$ => combineLatest([
       connectedNodesAndLinks$.pipe(
@@ -195,10 +193,7 @@ export class SankeySingleLaneComponent
         debug('translinkSelection')
       )
     ])),
-    debug('transSelection'),
-    finalize(() => {
-      console.log('selectionUpdate$ finalize');
-    })
+    debug('transSelection')
   );
 
   ngOnInit() {
