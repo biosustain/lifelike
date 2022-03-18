@@ -1,12 +1,12 @@
 import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 import { assign, partial, groupBy } from 'lodash-es';
+import { zoomIdentity } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -24,7 +24,6 @@ import { LayoutService } from '../services/layout.service';
 import { NotImplemented } from '../error';
 import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
-import { zoomIdentity } from 'd3';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
@@ -127,7 +126,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   @ViewChild('nodes', {static: true}) nodes!: ElementRef;
   @ViewChild('links', {static: true}) links!: ElementRef;
 
-  zoom = new Zoom(this.svg, {scaleExtent: [0.1, 8]});
+  zoom: Zoom<SVGElement, number>;
 
   width: number;
 
@@ -376,6 +375,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   ngOnInit() {
+    this.zoom = new Zoom(this.svg, {scaleExtent: [0.1, 8]});
     this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
       this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
     });
@@ -399,13 +399,13 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   panToNode({_x0, _x1, _y0, _y1}) {
-      this.zoom.translateTo(
+    this.zoom.translateTo(
       // x
       (_x0 + _x1) / 2,
       // y
       (_y0 + _y1) / 2,
-        [0, 0],
-        true
+      [0, 0],
+      true
     );
   }
 
