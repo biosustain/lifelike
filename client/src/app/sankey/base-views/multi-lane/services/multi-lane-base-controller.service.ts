@@ -75,7 +75,6 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
     switchMap(({links, nodes, traces, nodeById, ...rest}) => this.palette$.pipe(
-      tap(d => console.log('palette$', d)),
       map(({palette}) => {
         const traceColorPaletteMap = createMapToColor(
           traces.map(({_group}) => _group),
