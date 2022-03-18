@@ -164,22 +164,22 @@ export class StructureOverviewComponent {
 
   dataSource$ = this.common.data$.pipe(
     map(parseGraphFile),
-    shareReplay(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
-  getNodeById$ = this.common.data$.pipe(
-    map(({nodes}) => new Map<SankeyId, GraphNode>(nodes.map(node => [node.id, node]))),
-    shareReplay(1)
+  getNodeById$ = this.common.dataWithUtils$.pipe(
+    map(({nodeById}) => nodeById),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   links$ = this.common.data$.pipe(
     map(({links}) => links),
-    shareReplay(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   nodeSets$ = this.common.data$.pipe(
     map(({graph: {node_sets}}) => node_sets),
-    shareReplay(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   treeControl = new NestedTreeControl<TreeNode>(this.getChildren.bind(this));

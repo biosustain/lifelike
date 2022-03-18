@@ -89,6 +89,13 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   data$ = new ReplaySubject<SankeyFile>(1);
+  dataWithUtils$ = this.data$.pipe(
+    map(data => ({
+      ...data,
+      nodeById: this.getNodeById(data.nodes)
+    })),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
   state$ = this.delta$.pipe(
     publish(delta$ =>
@@ -215,16 +222,15 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
-    switchMap(({sources, targets, traces}) => this.data$.pipe(
-      map(({links, nodes, graph: {node_sets}}) => {
-        return ({
+    switchMap(({sources, targets, traces}) => this.dataWithUtils$.pipe(
+      map(({links, nodes, graph: {node_sets}, nodeById}) => ({
           links,
           nodes,
           traces,
+          nodeById,
           sources: node_sets[sources],
           targets: node_sets[targets]
-        });
-      })
+        }))
     )),
     debug('partialNetworkTraceData$'),
     shareReplay(1),
@@ -235,16 +241,17 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
 
-  pathReports$ = this.data$.pipe(
-    map(({nodes, links, graph: {trace_networks}}) =>
+  pathReports$ = this.dataWithUtils$.pipe(
+    map(({nodes, nodeById, links, graph: {trace_networks}}) =>
       transform(
         trace_networks,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
-          const traceNodes = this.getNetworkTraceNodes(traceLinks, nodes).map(clone);
+          const traceNodes = this.getNetworkTraceNodes(traceLinks, nodeById).map(clone);
+          const traceNodesById =  this.getNodeById(traceNodes);
 
-          const source = traceNodes.find(n => n._id === String(trace.source));
-          const target = traceNodes.find(n => n._id === String(trace.target));
+          const source = traceNodesById.get(trace.source);
+          const target = traceNodesById.get(trace.target);
 
           const report: SankeyPathReportEntity[] = [];
           const traversed = new WeakSet();
@@ -265,7 +272,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
                 type: 'spacer'
               });
               column++;
-              node._sourceLinks.forEach(sl => {
+              traceLinks.filter(l => l.source === node._id).forEach(sl => {
                 if (traversed.has(sl)) {
                   report.push({
                     row,
@@ -290,13 +297,14 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
                     type: 'spacer'
                   });
                   column++;
+                  const targetNode = traceNodesById.get(sl.target);
                   report.push({
                     row,
                     column,
-                    label: sl._target.label,
+                    label: targetNode.label,
                     type: 'node'
                   });
-                  row = traverse(sl._target, row + 1, column);
+                  row = traverse(targetNode, row + 1, column);
                 }
               });
             }
@@ -309,7 +317,10 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         }),
         {}
       )
-    )
+    ),
+    debug('pathReports$'),
+    // It's very heavy to compute (all posibilities - usually over 1000 results), keep it hot till dataWithUtils$ is destroyed
+    shareReplay(1)
   );
 
   predefinedValueAccessors$ = this.options$.pipe(
@@ -432,7 +443,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   /**
    * Helper to create Map for fast lookup
    */
-  getNodeById<T extends { _id: SankeyId }>(nodes: T[]) {
+  private getNodeById<T extends { _id: SankeyId }>(nodes: T[]) {
     return indexByProperty(nodes, '_id');
   }
 
@@ -442,10 +453,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
    */
   getNetworkTraceNodes(
     networkTraceLinks,
-    nodes: ReadonlyArray<Readonly<GraphNode>>
+    nodeById: Map<SankeyId, Readonly<GraphNode>>
   ) {
-    const nodeById = this.getNodeById(nodes.map(n => clone(n) as SankeyNode));
-
     return uniq(
       flatMap(networkTraceLinks, ({source, target}) => [source, target])
     ).reduce((ns, id) => {
@@ -565,7 +574,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     ).toPromise();
   }
 
-  preprocessData(content: SankeyFile) {
+  preprocessData(content: SankeyFile): SankeyFile {
     content.nodes.forEach((n: GraphNode & { _id: SankeyId }) => {
       n._id = n.id;
     });

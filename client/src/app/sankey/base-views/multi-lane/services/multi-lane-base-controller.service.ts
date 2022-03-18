@@ -74,8 +74,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
   palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
-    tap(d => console.log('networkTraceData$', d)),
-    switchMap(({links, nodes, traces, ...rest}) => this.palette$.pipe(
+    switchMap(({links, nodes, traces, nodeById, ...rest}) => this.palette$.pipe(
       tap(d => console.log('palette$', d)),
       map(({palette}) => {
         const traceColorPaletteMap = createMapToColor(
@@ -84,11 +83,12 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
           palette
         );
         const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links, traceColorPaletteMap);
-        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodes);
+        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
         this.colorNodes(networkTraceNodes);
         return {
           nodes: networkTraceNodes,
           links: networkTraceLinks,
+          nodeById,
           ...rest
         };
       })
