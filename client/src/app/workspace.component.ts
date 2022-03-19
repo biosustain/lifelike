@@ -8,14 +8,16 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
 
-import { Observable } from 'rxjs';
+import { isNil } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Observable } from 'rxjs';
 
-import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
-import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
+import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
+import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { SplitComponent } from 'angular-split';
 
@@ -29,6 +31,8 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
   @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
+
+  lastTabDragTarget: Element = null;
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
               protected readonly modalService: NgbModal,
@@ -173,6 +177,42 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     } else {
       return false;
     }
+  }
+
+  cdkDragMoved($event: CdkDragMove) {
+    const dragTarget = document.elementFromPoint($event.pointerPosition.x, $event.pointerPosition.y);
+    if (dragTarget !== this.lastTabDragTarget) {
+      if (!isNil(this.lastTabDragTarget)) {
+        const synthDragLeaveEvent = new DragEvent('dragleave');
+        this.lastTabDragTarget.dispatchEvent(synthDragLeaveEvent);
+      }
+      const synthDragEnterEvent = new DragEvent('dragenter');
+      dragTarget.dispatchEvent(synthDragEnterEvent);
+      this.lastTabDragTarget = dragTarget;
+    }
+  }
+
+  cdkDragReleased($event: CdkDragRelease<Tab>) {
+    const tab: Tab = $event.source.data;
+    const dropRect = document.getElementsByClassName('cdk-drag-preview')[0].getBoundingClientRect();
+    const dropTarget = document.elementFromPoint(dropRect.x + (dropRect.width / 2), dropRect.y + (dropRect.height / 2));
+    const synthDropEvent = new DragEvent('drop', {dataTransfer: new DataTransfer()});
+    synthDropEvent.dataTransfer.effectAllowed = 'all';
+    synthDropEvent.dataTransfer.setData('text/plain', 'This text came from a tab!');
+    synthDropEvent.dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: tab.title,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        sources: [
+          {
+            domain: tab.title,
+            url: tab.url
+          }
+        ]
+      }
+    } as Partial<UniversalGraphNode>));
+    dropTarget.dispatchEvent(synthDropEvent);
   }
 
   @HostListener('window:beforeunload', ['$event'])

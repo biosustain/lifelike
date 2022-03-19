@@ -11,7 +11,11 @@
                    [cdkDropListData]="pane">
                 <div class="nav-item d-flex text-truncate" [class.active]="pane.activeTab === tab"
                      *ngFor="let tab of pane.tabs; index as i"
-                     cdkDrag style="max-width: 250px; width: 30%; min-width: 15%"
+                     style="max-width: 250px; width: 30%; min-width: 15%"
+                     cdkDrag
+                     [cdkDragData]="tab"
+                     (cdkDragMoved)="cdkDragMoved($event)"
+                     (cdkDragReleased)="cdkDragReleased($event)"
                      appContextMenu>
                   <div class="nav-link d-flex text-truncate" [class.active]="pane.activeTab === tab"
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
