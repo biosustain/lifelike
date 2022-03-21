@@ -4,7 +4,7 @@
     </app-modal-header>
 
     <app-modal-body>
-        <ng-container *ngIf="objectSelect.hashId != null; else projectList">
+    <ng-container *ngIf="(objectSelect.hashId$ | async) != null; else projectList">
             <ng-container *ngIf="(objectSelect.object$ | addStatus | async) as result">
                 <ng-template [ngIf]="result.error">
                     <app-module-error [error]="result.error" class="d-block p-4">
@@ -47,7 +47,7 @@
             </ng-container>
         </ng-container>
         <ng-template #projectList>
-            <ng-container *ngIf="(objectSelect.projectList$ | addStatus | async) as result">
+      <ng-container *ngIf="(objectSelect.object$ | addStatus | async) as result">
                 <ng-template [ngIf]="result.error">
                     <app-module-error [error]="result.error" class="d-block p-4">
                     </app-module-error>
@@ -59,7 +59,7 @@
 
                 <ng-template [ngIf]="result.value">
                     <div class="tile-deck tile-deck-sm">
-                        <div *ngFor="let p of result.value.results.view" class="tile tile-sm d-flex flex-column">
+            <div *ngFor="let p of result.value.results.view$ | async" class="tile tile-sm d-flex flex-column">
                             <div class="flex-fill d-flex justify-content-center align-items-center my-2">
                                 <a (click)="openProject(p); $event.preventDefault()" href="#" class="text-muted">
                                     <i class="fas fa-layer-group fa-4x"></i>

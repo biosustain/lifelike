@@ -5,7 +5,7 @@ import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { isNil } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
-import {TreeNode, FlatNode} from 'app/shared/schemas/common';
+import { TreeNode, FlatNode } from 'app/shared/schemas/common';
 
 export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   protected _treeData: TreeNode<T>[] = [];

@@ -1,3 +1,5 @@
+import { OrganismAutocomplete } from 'app/interfaces';
+
 export const NODE_EXPANSION_LIMIT = 500;
 export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
 export const SNIPPET_RESULT_LIMIT = 10000;
@@ -57,10 +59,15 @@ export const ORGANISM_SHORTLIST = new Map<string, string>([
   ['Escherichia coli K12 MG1655',	'511145'],
   ['Saccharomyces cerevisiae S288C',	'559292'],
   ['Pseudomonas aeruginosa PAO1',	'208964'],
-  ['Clostridium difficile	Strain 630',	'272563'],
-  ['Staphylococcus aureus USA300',	'367830'],
   ['Homo sapiens', '9606']
 ]);
+export const ORGANISM_AUTOCOMPLETE_DEFAULTS = Array.from(ORGANISM_SHORTLIST.entries()).map(([organismName, organismTaxId]) => {
+  return {
+    organism_name: organismName,
+    synonym: organismName,
+    tax_id: organismTaxId
+  } as OrganismAutocomplete;
+});
 
 export const KG_VIZ_FILTER_TYPES = [
   'Biological Process',

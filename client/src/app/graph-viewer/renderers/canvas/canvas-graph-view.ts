@@ -7,7 +7,8 @@ import {
   GraphEntityType,
   UniversalEdgeStyle,
   UniversalGraph,
-  UniversalGraphEdge, UniversalGraphEntity,
+  UniversalGraphEdge,
+  UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import {

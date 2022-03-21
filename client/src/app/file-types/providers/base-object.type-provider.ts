@@ -1,4 +1,4 @@
-import { ComponentRef, Injectable, InjectionToken, Injector, NgZone } from '@angular/core';
+import { ComponentRef, Injectable, InjectionToken, NgZone } from '@angular/core';
 
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
