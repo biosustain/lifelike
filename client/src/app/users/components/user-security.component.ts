@@ -11,7 +11,7 @@ import {
 
 import { Store } from '@ngrx/store';
 
-import { AppUser} from 'app/interfaces';
+import { AppUser } from 'app/interfaces';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { State } from 'app/***ARANGO_USERNAME***-store';

@@ -6,7 +6,9 @@ import { Group, Link } from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
-  GraphEntityType, Hyperlink, Source,
+  GraphEntityType,
+  Hyperlink,
+  Source,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
@@ -14,7 +16,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
-import {associatedMapsRegex} from 'app/shared/constants';
+import { associatedMapsRegex } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';

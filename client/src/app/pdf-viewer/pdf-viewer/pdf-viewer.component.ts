@@ -26,7 +26,6 @@ import { createEventBus } from '../utils/event-bus-utils';
 import { FindState, RenderTextMode } from '../utils/constants';
 
 
-
 const PDFJS = pdfjsLib;
 let pdfjsViewer;
 const DEFAULT_DOCUMENT_INIT_PARAMETERS: DocumentInitParameters = {};

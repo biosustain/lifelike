@@ -1,9 +1,8 @@
-
 import 'canvas-plus';
 
 import { DragImage } from 'app/shared/utils/drag';
 import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
-import {FA_CUSTOM_ICONS, Unicodes} from 'app/shared/constants';
+import { FA_CUSTOM_ICONS, Unicodes } from 'app/shared/constants';
 
 
 export function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
