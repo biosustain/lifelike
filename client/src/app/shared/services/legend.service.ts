@@ -3,9 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
 
-import {
-    NodeLegend,
-} from 'app/interfaces';
+import { NodeLegend, } from 'app/interfaces';
 
 
 @Injectable({providedIn: 'root'})

@@ -25,7 +25,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, SankeyURLLoadParam, ViewBase, SankeyFile } from 'app/sankey/interfaces';
+import { SankeyState, ViewBase, SankeyFile } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -42,11 +42,12 @@ import { ControllerService } from '../services/controller.service';
 import { BaseControllerService, DefaultBaseControllerService } from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
-import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../DI';
+import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../constants/DI';
 import { DefaultLayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
-import { ErrorMessages } from '../error';
+import { ErrorMessages } from '../constants/error';
+import { SankeyURLLoadParam } from '../interfaces/url';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
