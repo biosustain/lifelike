@@ -125,7 +125,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   clearWorkbench() {
-    for (const pane of this.workspaceManager.panes.panes) {
+    for (const pane of this.workspaceManager.paneManager.panes) {
       this.closeAllTabs(pane);
     }
   }
@@ -141,7 +141,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
 
   splitterDragEnded(result) {
     result.sizes.forEach((size, index) => {
-      this.workspaceManager.panes.panes[index].size = size;
+      this.workspaceManager.paneManager.panes[index].size = size;
     });
     this.workspaceManager.save();
   }
@@ -156,16 +156,16 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   canAddPane() {
-    return this.workspaceManager.panes.panes.length === 1;
+    return this.workspaceManager.paneManager.panes.length === 1;
   }
 
   addPane() {
-    this.workspaceManager.panes.getOrCreate('right');
+    this.workspaceManager.paneManager.getOrCreate('right');
     this.workspaceManager.save();
   }
 
   closeRightPane() {
-    this.workspaceManager.panes.delete(this.workspaceManager.panes.get('right'));
+    this.workspaceManager.paneManager.delete(this.workspaceManager.paneManager.get('right'));
     this.workspaceManager.save();
   }
 
