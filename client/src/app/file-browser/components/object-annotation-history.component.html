@@ -17,7 +17,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let change of log.results.view">
+      <tr *ngFor="let change of log.results.view$ | async">
         <td class="text-truncate">
           {{ change.date | date: 'short' }}
         </td>

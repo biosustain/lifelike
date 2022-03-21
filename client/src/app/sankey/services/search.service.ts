@@ -20,9 +20,9 @@ import { size, isNil, isEmpty } from 'lodash-es';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { debug } from 'app/shared/rxjs/debug';
 
-import { WorkerOutputActions } from '../utils/search/search-worker-actions';
+import { WorkerOutputActions } from '../interfaces/search-worker-actions';
 import { ControllerService } from './controller.service';
-import { Match } from '../utils/search/search-match';
+import { Match } from '../interfaces/search';
 
 @Injectable()
 export class SankeySearchService {

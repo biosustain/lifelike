@@ -88,7 +88,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let collaborator of result.value.results.view">
+          <tr *ngFor="let collaborator of result.value.results.view$ | async">
             <td class="align-middle">
               <app-user [user]="collaborator.user"></app-user>
             </td>

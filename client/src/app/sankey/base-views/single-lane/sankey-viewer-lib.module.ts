@@ -16,11 +16,10 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
-import { SANKEY_ADVANCED, SANKEY_GRAPH, SANKEY_DETAILS } from 'app/sankey/DI';
+import { SANKEY_ADVANCED, SANKEY_GRAPH, SANKEY_DETAILS } from 'app/sankey/constants/DI';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
-import { SingleLaneLayoutService } from './services/single-lane-layout.service';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { SingleLaneBaseControllerService } from './services/single-lane-base-controller.service';
 import { SankeySingleLaneComponent } from './components/sankey/sankey.component';

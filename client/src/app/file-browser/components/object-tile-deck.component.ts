@@ -11,8 +11,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ObjectListComponent } from './object-list.component';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { FilesystemService } from '../services/filesystem.service';
-import { element } from 'protractor';
-import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-object-tile-deck',
