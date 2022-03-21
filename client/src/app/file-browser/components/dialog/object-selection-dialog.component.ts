@@ -1,6 +1,9 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { isEmpty } from 'lodash-es';
+import { first, map, switchMap } from 'rxjs/operators';
+import { iif, of } from 'rxjs';
 
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -48,24 +51,29 @@ export class ObjectSelectionDialogComponent
     this.hashId = project.***ARANGO_USERNAME***.hashId;
   }
 
-  getValue(): readonly FilesystemObject[] {
-    if (this.objectSelect.object.children.selection.length) {
-      return this.objectSelect.object.children.selection;
-    } else {
-      return [this.objectSelect.object];
-    }
+  getValue(): Promise<readonly FilesystemObject[]> {
+    return this.objectSelect.object$.pipe(
+      switchMap((object: FilesystemObject) => object.children.selection$.pipe(
+        map(items => isEmpty(items) ? [object] : items)
+      )),
+      first(),
+    ).toPromise();
   }
 
-  submit(): void {
-    if (this.objectSelect.object != null) {
-      super.submit();
-    } else {
-      this.messageDialog.display({
-        title: 'No Selection',
-        message: 'You need to select a project first.',
-        type: MessageType.Error,
-      } as MessageArguments);
-    }
+  submit() {
+    return this.objectSelect.object$.pipe(
+      switchMap(object =>
+        iif(
+          () => object != null,
+          of(super.submit()),
+          this.messageDialog.display({
+            title: 'No Selection',
+            message: 'You need to select a project first.',
+            type: MessageType.Error,
+          } as MessageArguments)
+        )
+      ),
+      first()
+    ).toPromise();
   }
-
 }

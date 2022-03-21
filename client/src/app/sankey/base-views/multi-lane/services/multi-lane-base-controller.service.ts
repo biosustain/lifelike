@@ -4,13 +4,14 @@ import { switchMap, map, distinctUntilChanged, shareReplay, tap } from 'rxjs/ope
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
-import { SankeyTraceNetwork, SankeyLink, LINK_VALUE_GENERATOR, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
+import { SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
+import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';

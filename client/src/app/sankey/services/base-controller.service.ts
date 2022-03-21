@@ -5,15 +5,7 @@ import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/o
 import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
 
 import { isNotEmpty } from 'app/shared/utils';
-import {
-  ValueGenerator,
-  NODE_VALUE_GENERATOR,
-  LINK_VALUE_GENERATOR,
-  LINK_PROPERTY_GENERATORS,
-  NetworkTraceData,
-  SankeyView,
-  MultiValueAccessor
-} from 'app/sankey/interfaces';
+import { NetworkTraceData, } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -26,7 +18,16 @@ import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { getBaseState } from '../utils/stateLevels';
-import { ErrorMessages, NotImplemented } from '../error';
+import { ErrorMessages } from '../constants/error';
+import { NotImplemented } from '../utils/error';
+import {
+  ValueGenerator,
+  MultiValueAccessor,
+  LINK_VALUE_GENERATOR,
+  LINK_PROPERTY_GENERATORS,
+  NODE_VALUE_GENERATOR
+} from '../interfaces/valueAccessors';
+import { SankeyView } from '../interfaces/view';
 
 export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
 

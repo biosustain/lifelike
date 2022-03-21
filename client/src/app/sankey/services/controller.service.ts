@@ -20,50 +20,45 @@ import { GraphPredefinedSizing, GraphNode, GraphFile, GraphLink } from 'app/shar
 import {
   SankeyFile,
   SankeyTraceNetwork,
-  SankeyPathReportEntity,
   SankeyState,
-  LINK_VALUE_GENERATOR,
-  NODE_VALUE_GENERATOR,
-  PREDEFINED_VALUE,
   SankeyFileOptions,
-  SankeyView,
   SankeyStaticOptions,
   ViewBase,
-  Prescaler,
-  LINK_PROPERTY_GENERATORS,
-  SankeyViews,
   SankeyLink,
   SankeyId,
   SankeyTrace,
   SankeyNode,
-  SankeyOptions,
-  MultiValueAccessor
+  SankeyOptions
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 
-import { prescalers, PRESCALER_ID } from '../algorithms/prescalers';
-import { isPositiveNumber, indexByProperty } from '../utils/utils';
+import { prescalers } from '../constants/prescalers';
+import { aligns } from '../constants/aligns';
+import { isPositiveNumber, indexByProperty } from '../utils';
 import { LayoutService } from './layout.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { getBaseState, getCommonState } from '../utils/stateLevels';
-import { ErrorMessages, NotImplemented } from '../error';
+import { ErrorMessages } from '../constants/error';
+import { PRESCALER_ID, Prescaler } from '../interfaces/prescalers';
+import { NotImplemented } from '../utils/error';
+import {
+  MultiValueAccessor,
+  PREDEFINED_VALUE,
+  LINK_VALUE_GENERATOR,
+  NODE_VALUE_GENERATOR,
+  LINK_PROPERTY_GENERATORS
+} from '../interfaces/valueAccessors';
+import { SankeyViews, SankeyView } from '../interfaces/view';
+import { SankeyPathReportEntity } from '../interfaces/report';
+import { Align, ALIGN_ID } from '../interfaces/align';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
 export const customisedMultiValueAccessor = {
   description: customisedMultiValueAccessorId
 } as MultiValueAccessor;
-
-enum SankeyActionType {
-  selectNetworkTrace
-}
-
-interface SankeyAction {
-  type: SankeyActionType;
-  payload: any;
-}
 
 /**
  * Reducer pipe
@@ -111,6 +106,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         }),
         delta$,
         this.resolveNetworkTraceAndBaseView(delta$),
+        this.resolveNodeAlign(delta$),
         this.resolveView(delta$)
       ])
     ),
@@ -172,6 +168,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
    * Predefined options for Sankey visualisation which are not based on loaded data not user input
    */
   readonly staticOptions: SankeyStaticOptions = Object.freeze({
+    aligns,
     predefinedValueAccessors: {
       [PREDEFINED_VALUE.fixed_height]: {
         description: PREDEFINED_VALUE.fixed_height,
@@ -239,6 +236,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', '_id']);
 
   prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
+  align$ = this.optionStateAccessor<Align>('aligns', 'alignId');
 
   pathReports$ = this.dataWithUtils$.pipe(
     map(({nodes, nodeById, links, graph: {trace_networks}}) =>
@@ -349,6 +347,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
+  aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
   linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
   linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
   nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
@@ -373,6 +372,29 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
               return {
                 networkTraceIdx,
                 baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+              };
+            })
+          )
+        )
+      )
+    );
+  }
+
+  resolveNodeAlign(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
+    return delta$.pipe(
+      map(delta => pick(delta, ['networkTraceIdx', 'alignId'])),
+      distinctUntilChanged(isEqual),
+      switchMap(({networkTraceIdx = defaultNetworkTraceIdx, alignId}) =>
+        iif(
+          () => alignId,
+          of({alignId}),
+          this.data$.pipe(
+            map(({graph: {trace_networks, node_sets}}) => {
+              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
+              const sources = node_sets[sourcesSetId];
+              const targets = node_sets[targetsNameId];
+              return {
+                alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left
               };
             })
           )

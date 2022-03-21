@@ -1,9 +1,9 @@
 import { sum } from 'd3-array';
 
-import { ValueProcessingStep } from 'app/sankey/interfaces';
 
-import { representativePositiveNumber } from '../utils/utils';
+import { representativePositiveNumber } from '../utils';
 import { DefaultLayoutService } from '../services/layout.service';
+import { ValueProcessingStep } from '../interfaces/valueAccessors';
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>

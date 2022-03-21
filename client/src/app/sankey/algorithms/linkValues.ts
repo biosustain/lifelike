@@ -1,10 +1,10 @@
 import * as d3Sankey from 'd3-sankey-circular';
 
-import { ValueProcessingStep } from 'app/sankey/interfaces';
 import { isNotEmpty } from 'app/shared/utils';
 
-import { representativePositiveNumber } from '../utils/utils';
+import { representativePositiveNumber } from '../utils';
 import { DefaultLayoutService } from '../services/layout.service';
+import { ValueProcessingStep } from '../interfaces/valueAccessors';
 
 export const fixedValue: (value: number) => ValueProcessingStep =
   value =>

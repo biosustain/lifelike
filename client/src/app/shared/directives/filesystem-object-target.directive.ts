@@ -10,7 +10,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject } from 'rxjs';
-import { finalize, tap } from 'rxjs/operators';
+import { finalize, tap, first, map } from 'rxjs/operators';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -65,9 +65,9 @@ export class FilesystemObjectTargetDirective {
   }
 
   @HostListener('body:***ARANGO_DB_NAME***objectupdate', ['$event'])
-  ***ARANGO_DB_NAME***ObjectUpdate(event) {
+  async ***ARANGO_DB_NAME***ObjectUpdate(event) {
     if (this.appFSObjectTarget) {
-      if (this.isAffectedObject(event.detail.hashId)) {
+      if (await this.isAffectedObject(event.detail.hashId)) {
         this.refreshRequest.emit();
       }
     }
@@ -145,16 +145,14 @@ export class FilesystemObjectTargetDirective {
     }
   }
 
-  isAffectedObject(hashId: string) {
+  isAffectedObject(hashId: string): Promise<boolean>|boolean {
     if (hashId === this.appFSObjectTarget.hashId) {
       return true;
     }
-    for (const child of this.appFSObjectTarget.children.items) {
-      if (child.hashId === hashId) {
-        return true;
-      }
-    }
-    return false;
+    return this.appFSObjectTarget.children.items$.pipe(
+      first(),
+      map(items => items.some(item => item.hashId === hashId)),
+    ).toPromise();
   }
 
   canAcceptDrop(event: DragEvent): boolean {

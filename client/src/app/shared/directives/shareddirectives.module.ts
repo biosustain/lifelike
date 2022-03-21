@@ -11,7 +11,8 @@ import { ContextMenuBodyDirective, ContextMenuDirective } from './context-menu.d
 import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
 import { DataTransferDataDirective } from './data-transfer-data.directive';
 import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
-import { TextTruncateDirective } from './text-truncate.directive';
+import { TextTruncateToTooltipDirective } from './text-truncate-to-tooltip.directive';
+import { ElementObserverDirective } from './element-observer.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -29,7 +30,8 @@ const directives = [
   MouseNavigableItemDirective,
   DataTransferDataDirective,
   FilesystemObjectTargetDirective,
-  TextTruncateDirective
+  TextTruncateToTooltipDirective,
+  ElementObserverDirective
 ];
 
 @NgModule({

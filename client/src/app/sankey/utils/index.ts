@@ -101,3 +101,11 @@ export function symmetricDifference(setA, setB, accessor) {
 export const indexByProperty = <D extends object>(data: Array<D>, property: keyof D) =>
   transform(data, (acc, n) => acc.set(n[property], n), new Map());
 
+export function extractDescriptionFromSankey(text: string): string {
+  try {
+    const content = JSON.parse(text);
+    return content.graph.description || '';
+  } catch (e) {
+    return '';
+  }
+}

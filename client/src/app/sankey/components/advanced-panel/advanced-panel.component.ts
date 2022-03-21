@@ -22,6 +22,7 @@ export class SankeyAdvancedPanelComponent
   }
 
   form = this.formBuilder.group({
+    alignId: [undefined, []],
     normalizeLinks: ['', []],
     fontSizeScale: [1, []],
     labelEllipsis: this.formBuilder.group({
@@ -32,14 +33,17 @@ export class SankeyAdvancedPanelComponent
   });
 
   prescalers$ = this.common.prescalers$;
+  aligns$ = this.common.aligns$;
 
   ngOnInit() {
     super.ngOnInit();
     this.common.viewName$.subscribe(viewName => {
       if (viewName) {
         this.form.get('prescalerId').disable();
+        this.form.get('alignId').disable();
       } else {
         this.form.get('prescalerId').enable();
+        this.form.get('alignId').enable();
       }
     });
   }

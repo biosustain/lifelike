@@ -160,8 +160,8 @@ export class ObjectCreationService {
     }
     dialogRef.componentInstance.accept = ((requests: ObjectCreateRequest[]) => {
       const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
-        organism: request.fallbackOrganism,
-        annotationConfigs: request.annotationConfigs
+        organism: request?.fallbackOrganism,
+        annotationConfigs: request?.annotationConfigs
       }));
       return this.executePutWithProgressDialog(requests, annotationOptions);
     });

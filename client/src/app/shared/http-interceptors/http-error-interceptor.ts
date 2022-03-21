@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store';
 
 import { State } from 'app/***ARANGO_USERNAME***-store/state';
 import { SnackbarActions } from 'app/shared/store';
-import { ErrorHandler} from 'app/shared/services/error-handler.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response

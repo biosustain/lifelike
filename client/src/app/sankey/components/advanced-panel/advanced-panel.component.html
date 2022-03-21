@@ -1,4 +1,12 @@
 <form [formGroup]="form">
+    <div class="form-group" ngbRadioGroup formControlName="alignId" title="Align">
+        <div class="mb-1">Align:</div>
+        <label ngbButtonLabel *ngFor="let align of aligns$ | async | keyvalue"
+               [title]="align.value.description"
+               class="mb-0">
+            <input ngbButton type="radio" [value]="align.key"> {{align.value.name}}
+        </label>
+    </div>
     <div>
         <label ngbButtonLabel>
             <input formControlName="normalizeLinks"
