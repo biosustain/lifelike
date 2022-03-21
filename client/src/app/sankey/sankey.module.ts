@@ -30,9 +30,6 @@ import { SankeyViewCreateComponent } from './components/view/create/view-create.
 import { SankeyViewDropdownComponent } from './components/view/dropdown/view-dropdown.component';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
-import { BaseViewsModule } from './base-views/base-views.module';
-import { SankeyAbstractDetailsPanelComponent } from './abstract/details-panel.component';
-import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
 

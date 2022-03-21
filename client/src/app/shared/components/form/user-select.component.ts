@@ -48,7 +48,8 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
             query: request.query,
             excludeSelf: this.excludeSelf,
           }).pipe(
-            map(list => [request, list.results.items]),
+            switchMap(list => list.results.items$),
+            map(items => [request, items])
           );
         } else {
           return of([request, []]);

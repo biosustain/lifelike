@@ -24,11 +24,7 @@ export const ErrorMessages = {
   noColorMapping: label =>
     `There is no color mapping for label: ${label}`,
   wrongInOutDefinition: ids =>
-    `Nodes set to be both graph sources and targets [${Array.from(ids)}]`
+    `Nodes set to be both graph sources and targets [${Array.from(ids)}]`,
+  notImplemented: 'Not implemented'
 };
 
-export class NotImplemented extends Error {
-  constructor() {
-    super('Not implemented');
-  }
-}

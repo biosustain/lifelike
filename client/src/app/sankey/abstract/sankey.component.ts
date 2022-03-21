@@ -15,18 +15,18 @@ import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
 
-import { representativePositiveNumber } from '../utils/utils';
+import { representativePositiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
-import { EntityType, Match } from '../utils/search/search-match';
 import { LayoutService } from '../services/layout.service';
-import { NotImplemented } from '../error';
 import { updateAttr, updateSingular } from '../utils/rxjs';
+import { NotImplemented } from '../utils/error';
+import { Match, EntityType } from '../interfaces/search';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-@Component({templateUrl: './sankey.component.svg'})
+@Component({ templateUrl: './sankey.component.svg' })
 export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
   OnDestroy {
   constructor(

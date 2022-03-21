@@ -3,7 +3,6 @@ import { ValueFn } from 'd3-selection';
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
-
 export class AttributeAccessors {
   constructor(readonly truncatePipe: TruncatePipe) {
   }

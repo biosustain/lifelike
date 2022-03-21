@@ -30,5 +30,6 @@ export class MessageDialog {
     modalRef.componentInstance.stacktrace = args.stacktrace;
     modalRef.componentInstance.type = args.type;
     modalRef.componentInstance.transactionId = args.transactionId;
+    return modalRef.result;
   }
 }

@@ -9,7 +9,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
-import { extractDescriptionFromSankey } from 'app/sankey/constants';
+import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';
 import { ObjectCreateRequest } from '../../schema';

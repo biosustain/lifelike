@@ -5,16 +5,16 @@ import { of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 import {
-    GetClusterSnippetsResult,
-    GetEdgeSnippetsResult,
-    GetReferenceTableDataResult,
-    Neo4jResults,
-    NewClusterSnippetsPageRequest,
-    NewEdgeSnippetsPageRequest,
-    ReferenceTableDataRequest,
-    AssociatedTypeSnippetCountRequest,
-    GetAssociatedTypeResult,
-    GetNodePairSnippetsResult,
+  GetClusterSnippetsResult,
+  GetEdgeSnippetsResult,
+  GetReferenceTableDataResult,
+  Neo4jResults,
+  NewClusterSnippetsPageRequest,
+  NewEdgeSnippetsPageRequest,
+  ReferenceTableDataRequest,
+  AssociatedTypeSnippetCountRequest,
+  GetAssociatedTypeResult,
+  GetNodePairSnippetsResult,
 } from 'app/interfaces';
 
 @Injectable()

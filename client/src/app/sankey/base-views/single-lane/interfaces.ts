@@ -1,6 +1,8 @@
-import { SankeyFile, SelectionType, SelectionEntity, SankeyNode, SankeyTrace, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyTrace, SankeyNode, SankeyFile, NetworkTraceData } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
+import { SelectionEntity, SelectionType } from '../../interfaces/selection';
+
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
@@ -47,3 +49,9 @@ export type BaseOptions = SankeySingleLaneOptions;
 export type BaseState = SankeySingleLaneState;
 
 export type SingleLaneNetworkTraceData = NetworkTraceData<SankeySingleLaneNode, SankeySingleLaneLink>;
+
+export interface Palette {
+  name: string;
+  palette: (size: number, params: object) => (i: number) => string | object;
+  help?: string;
+}
