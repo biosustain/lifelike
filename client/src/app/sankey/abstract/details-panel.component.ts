@@ -1,7 +1,7 @@
-import { Component, ViewEncapsulation, Injectable } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { SankeySelectionService } from '../services/selection.service';
-import { SelectionType } from '../interfaces';
+import { SelectionType } from '../interfaces/selection';
 
 @Component({ template: '' })
 export class SankeyAbstractDetailsPanelComponent {

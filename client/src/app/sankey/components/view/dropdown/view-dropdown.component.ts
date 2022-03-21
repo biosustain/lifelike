@@ -8,7 +8,7 @@ import { map, switchMap, first } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { viewBaseToNameMapping } from 'app/sankey/constants';
+import { viewBaseToNameMapping } from 'app/sankey/constants/view-base';
 
 import { ViewBase } from '../../../interfaces';
 import { SankeyViewConfirmComponent } from '../confirm.component';

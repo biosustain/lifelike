@@ -4,16 +4,17 @@ import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
 import { switchMap, map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { of, Observable, combineLatest } from 'rxjs';
 
-import { LINK_VALUE_GENERATOR, SankeyTraceNetwork, SankeyLink, ViewBase, PREDEFINED_VALUE } from 'app/sankey/interfaces';
+import { SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
-import { ErrorMessages } from 'app/sankey/error';
+import { ErrorMessages } from 'app/sankey/constants/error';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
+import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { inputCount } from '../algorithms/linkValues';
 import {

@@ -6,16 +6,7 @@ import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUnti
 import { combineLatest, iif, ReplaySubject, Observable, Subject } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import {
-  SankeyState,
-  SankeyNodesOverwrites,
-  SankeyLinksOverwrites,
-  NetworkTraceData,
-  SankeyNode,
-  SankeyLink,
-  ValueGenerator,
-  Prescaler
-} from 'app/sankey/interfaces';
+import { SankeyState, NetworkTraceData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -23,9 +14,12 @@ import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 
 import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
-import { symmetricDifference, normalizeGenerator } from '../utils/utils';
-import { SankeyAbstractLayoutService } from '../abstract/sankey-layout.service';
-import { ErrorMessages } from '../error';
+import { symmetricDifference, normalizeGenerator } from '../utils';
+import { SankeyAbstractLayoutService, LayoutData } from '../abstract/sankey-layout.service';
+import { ErrorMessages } from '../constants/error';
+import { ValueGenerator } from '../interfaces/valueAccessors';
+import { Prescaler } from '../interfaces/prescalers';
+import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -406,6 +400,31 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     );
   }
 
+  computeNodeLayers(data) {
+    return this.baseView.common.align$.pipe(
+      map(align => {
+        const {dx} = this;
+        const {nodes} = data as LayoutData;
+        const x = max(nodes, d => d._depth) + 1; // Don't use Array.fill([]) as it will just copy ref to the same []
+        const columns: SankeyNode[][] = new Array(x).fill(undefined).map(() => []);
+        for (const node of nodes) {
+          const i = Math.max(0, Math.min(x - 1, Math.floor(align.fn.call(null, node, x))));
+          node._layer = i;
+          columns[i].push(node);
+        }
+        if (this.nodeSort) {
+          for (const column of columns) {
+            column.sort(this.nodeSort);
+          }
+        }
+        return {
+          x,
+          columns
+        } as LayersContext;
+      })
+    );
+  }
+
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
       tap(d => console.log('networkTraceData$', d)),
@@ -426,31 +445,32 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       this.computeNodeReversedDepths,
       debug('computeNodeReversedDepths'),
       // After this method data becomes wrapped in context {data, ...context}
-      switchMap(data => {
-        const {columns, x} = this.computeNodeLayers(data);
-        // Calculate the nodes' values, based on the values of the incoming and outgoing links
-        return this.assignValues(data).pipe(
-          debug('assignValues'),
-          switchMap(() => {
-            const {nodesAndPlaceholders, columnsWithLinkPlaceholders} = this.createVirtualNodes(data, columns);
-            return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
-              this.computeNodeHeights(nodesAndPlaceholders),
-              debug('computeNodeHeights'),
-              // Calculate the nodes' and links' vertical position within their respective column
-              //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-              tap(() => this.computeNodeBreadths(data, columns)),
-              debug('computeNodeBreadths'),
-              this.layoutNodesWithinColumns(columns),
-              debug('layoutNodesWithinColumns'),
-              this.computeLinkBreadths(nodesAndPlaceholders),
-              debug('computeLinkBreadths'),
-            );
-          }),
-          map(verticalContext => data),
-          this.positionNodes(x),
-          debug('positionNodes'),
-        );
-      }),
+      switchMap(data => this.computeNodeLayers(data).pipe(
+        switchMap(({columns, x}) =>
+          // Calculate the nodes' values, based on the values of the incoming and outgoing links
+          this.assignValues(data).pipe(
+            debug('assignValues'),
+            switchMap(() => {
+              const {nodesAndPlaceholders, columnsWithLinkPlaceholders} = this.createVirtualNodes(data, columns);
+              return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
+                this.computeNodeHeights(nodesAndPlaceholders),
+                debug('computeNodeHeights'),
+                // Calculate the nodes' and links' vertical position within their respective column
+                //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+                tap(() => this.computeNodeBreadths(data, columns)),
+                debug('computeNodeBreadths'),
+                this.layoutNodesWithinColumns(columns),
+                debug('layoutNodesWithinColumns'),
+                this.computeLinkBreadths(nodesAndPlaceholders),
+                debug('computeLinkBreadths'),
+              );
+            }),
+            map(verticalContext => data),
+            this.positionNodes(x),
+            debug('positionNodes'),
+          )
+        )
+      )),
       debug('calculateLayout'),
       // IMPORTANT!
       // If refCount is true, the source will be unsubscribed from once the reference count drops to zero,

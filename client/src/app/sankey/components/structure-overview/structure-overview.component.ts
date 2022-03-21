@@ -1,10 +1,10 @@
 import { Component, ViewEncapsulation, isDevMode, } from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { isObject, isBoolean, isArray, has, isNil, isString, isNumber, isUndefined, first } from 'lodash-es';
 
-import { SankeyNode, SankeyId } from 'app/sankey/interfaces';
+import { SankeyId } from 'app/sankey/interfaces';
 import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
 
 import { ControllerService } from '../../services/controller.service';
