@@ -1,7 +1,7 @@
 import { partition, sumBy, mean } from 'lodash-es';
 
 import { ExtendedWeakMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyFile, SankeyTrace, SankeyData } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyTrace, SankeyData } from 'app/sankey/interfaces';
 import {
   initInputCountCalculation,
   calculateInputCountSkippingCircularLinksA,

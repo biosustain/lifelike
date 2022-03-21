@@ -13,6 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
+import { MatTreeModule } from '@angular/material/tree';
+import { MatIconModule } from '@angular/material/icon';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -28,9 +30,8 @@ import { SankeyViewCreateComponent } from './components/view/create/view-create.
 import { SankeyViewDropdownComponent } from './components/view/dropdown/view-dropdown.component';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
-import { BaseViewsModule } from './base-views/base-views.module';
-import { SankeyAbstractDetailsPanelComponent } from './abstract/details-panel.component';
-import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
+import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
+import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
     SankeyViewConfirmComponent,
     SankeyViewCreateComponent,
     SankeyViewDropdownComponent,
-    SankeyAdvancedPanelComponent
+    SankeyAdvancedPanelComponent,
+    StructureOverviewComponent
   ],
   imports: [
     CommonModule,
@@ -62,7 +64,9 @@ import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from './DI';
     FileBrowserModule,
     RouterModule.forRoot([]),
     SankeySearchPanelModule,
-    // BaseViewsModule
+    SankeySearchControlModule,
+    MatTreeModule,
+    MatIconModule
   ],
   exports: [
     SankeyViewComponent

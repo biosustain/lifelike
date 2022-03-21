@@ -30,24 +30,49 @@ import { min } from 'd3-array';
 
 import { isNotEmpty } from 'app/shared/utils';
 
+import { ALIGNS, ALIGN_ID } from '../interfaces/align';
+
 function targetDepth(d) {
   return d._target._depth;
 }
 
-export function left(node) {
+function left(node) {
   return node._depth;
 }
 
-export function right(node, n) {
+function right(node, n) {
   return n - 1 - node._reversedDepth;
 }
 
-export function justify(node, n) {
+function justify(node, n) {
   return isNotEmpty(node._sourceLinks) ? node._depth : n - 1;
 }
 
-export function center(node) {
+function center(node) {
   return isNotEmpty(node._targetLinks) ? node._depth
-      : isNotEmpty(node._sourceLinks) ? (min(node._sourceLinks, targetDepth) as any) - 1
+    : isNotEmpty(node._sourceLinks) ? (min(node._sourceLinks, targetDepth) as any) - 1
       : 0;
 }
+
+export const aligns: ALIGNS = {
+  [ALIGN_ID.left]: {
+    name: 'left',
+    description: 'Align nodes to the left',
+    fn: left,
+  },
+  [ALIGN_ID.right]: {
+    name: 'right',
+    description: 'Align nodes to the right',
+    fn: right,
+  },
+  [ALIGN_ID.center]: {
+    name: 'center',
+    description: 'Align nodes to the center',
+    fn: center,
+  },
+  [ALIGN_ID.justify]: {
+    name: 'justify',
+    description: 'Justify nodes',
+    fn: justify,
+  },
+};

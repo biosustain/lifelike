@@ -4,11 +4,12 @@ import { combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map, tap, switchMap, first } from 'rxjs/operators';
 import { omit, transform, pick, assign } from 'lodash-es';
 
-import { SankeyView, SankeyNode, SankeyLink, SankeyNodesOverwrites, SankeyLinksOverwrites, ViewBase } from 'app/sankey/interfaces';
+import { ViewBase, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
+import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -93,7 +94,7 @@ export class ViewControllerService {
     });
   }
 
-  createView(viewName) {
+  createView(viewName: string) {
     return combineLatest([
       // todo
       // new implementation allows delta but to reduce changes do it same as before refractoring

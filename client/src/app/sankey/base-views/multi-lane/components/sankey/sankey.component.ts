@@ -6,19 +6,20 @@ import { combineLatest } from 'rxjs';
 import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
 import { flatMap, groupBy, uniq } from 'lodash-es';
 
-import { SankeyTrace, SelectionType } from 'app/sankey/interfaces';
+import { SankeyTrace } from 'app/sankey/interfaces';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
+import { SelectionType } from 'app/sankey/interfaces/selection';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
-import { EntityType } from '../../../../utils/search/search-match';
-import { updateAttr, updateAttrSingular } from '../../../../utils/rxjs';
+import { updateAttr } from '../../../../utils/rxjs';
+import { EntityType } from '../../../../interfaces/search';
 
 @Component({
   selector: 'app-sankey-multi-lane',

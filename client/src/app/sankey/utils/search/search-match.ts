@@ -11,24 +11,7 @@ import { omit, slice, isObject, uniq, flatMap, pullAt } from 'lodash-es';
 
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
-import { GraphLink, GraphTrace, GraphNode } from 'app/shared/providers/graph-type/interfaces';
-
-import { SankeyTrace, SankeyId } from '../../pure_interfaces';
-import { indexByProperty } from '../utils';
-
-interface SearchLink extends GraphLink {
-  _id: SankeyId;
-}
-
-interface SearchNode extends GraphNode {
-  _id: SankeyId;
-}
-
-export enum EntityType {
-  Link = 'link',
-  Node = 'node',
-  Trace = 'trace',
-}
+import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
 /* NOTE:
     Be very carefull with those imports as they cannot have any DOM references
@@ -38,22 +21,10 @@ export enum EntityType {
      "window is undefined"
      "alert is undefined"
 */
+import { SankeyTrace } from '../../interfaces';
+import { indexByProperty } from '..';
+import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../../interfaces/search';
 
-export interface Match {
-  idx?: number;
-  type: EntityType;
-  id: SankeyId;
-  path: string[];
-  term: string | number;
-  priority: MatchPriority;
-  networkTraceIdx?: number;
-}
-
-export interface MatchGenerator {
-  type: EntityType;
-  id: SankeyId;
-  matchGenerator: Generator<Match>;
-}
 
 export class SankeySearch {
   constructor({
