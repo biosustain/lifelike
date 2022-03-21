@@ -2,10 +2,10 @@ import { isDevMode } from '@angular/core';
 
 import { cubehelix } from 'd3-color';
 
-import { Palette } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 
-import { ErrorMessages } from '../../error';
+import { ErrorMessages } from '../../constants/error';
+import { Palette } from '../single-lane/interfaces';
 
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;

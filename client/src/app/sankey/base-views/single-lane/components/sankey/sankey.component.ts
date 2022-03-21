@@ -6,7 +6,7 @@ import { map, switchMap, takeUntil, publish, tap, finalize } from 'rxjs/operator
 import { forkJoin, combineLatest, merge, of, Observable } from 'rxjs';
 import { first } from 'lodash-es';
 
-import { SankeyNode, SankeyLink, SelectionType, SelectionEntity } from 'app/sankey/interfaces';
+import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
@@ -15,11 +15,12 @@ import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
 import { updateAttrSingular, updateAttr } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
+import { SelectionEntity, SelectionType } from 'app/sankey/interfaces/selection';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
-import { EntityType } from '../../../../utils/search/search-match';
+import { EntityType } from '../../../../interfaces/search';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -137,7 +138,6 @@ export class SankeySingleLaneComponent
         delete (data as SankeySingleLaneLink)._graphRelativePosition;
         links.add((data as SankeySingleLaneLink));
 
-        console.log('highlightCircular', highlightCircular, nodes, links);
         return {
           nodesIds: mapIterable(nodes, ({_id}) => _id),
           linksIds: mapIterable(links, ({_id}) => _id)

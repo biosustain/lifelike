@@ -8,7 +8,7 @@
      "window is undefined"
      "alert is undefined"
 */
-import { WorkerOutputActions } from './search-worker-actions';
+import { WorkerOutputActions } from '../../interfaces/search-worker-actions';
 import { SankeySearch } from './search-match';
 
 addEventListener('message', async ({data}) => {

@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { first } from 'lodash-es';
-import { map, first as rxjs_first, tap } from 'rxjs/operators';
+import { map, first as rxjs_first } from 'rxjs/operators';
 
-import { SelectionType, SelectionEntity } from '../interfaces';
 import { ControllerService } from './controller.service';
+import { SelectionEntity, SelectionType } from '../interfaces/selection';
 
 @Injectable()
 export class SankeySelectionService {
