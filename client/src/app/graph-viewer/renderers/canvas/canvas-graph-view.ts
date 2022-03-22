@@ -451,6 +451,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * @param d the node
    */
   invalidateNode(d: UniversalGraphNode): void {
+
     this.renderTree.delete(d);
     for (const edge of this.edges) {
       if (edge.from === d.hash || edge.to === d.hash) {
