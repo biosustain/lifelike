@@ -1,0 +1,29 @@
+.side-pane-close-text {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    max-width: 50px;
+    overflow: hidden;
+  }
+
+.workspace-hidden-tab-content {
+    position: absolute;
+    left: -10000px;
+    top: -10000px;
+
+    .modal, .modal-backdrop {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+.workspace-tab-content-container {
+    position: relative;
+}
+
+.workspace-tab-content-inner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
