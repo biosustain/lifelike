@@ -3,7 +3,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { merge, omit, isNil, clone, range } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Observable, Subject } from 'rxjs';
+import { combineLatest, iif, ReplaySubject, Observable, Subject, defer } from 'rxjs';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyState, NetworkTraceData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
@@ -164,8 +164,8 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     this.destroyed$.complete();
   }
 
-  positionNodes(x) {
-    return switchMap(data => this.horizontal$.pipe(
+  positionNodes(x, data) {
+    return this.horizontal$.pipe(
       // calculate width change ratio for repositioning of the nodes
       startWith({} as any),
       pairwise(),
@@ -182,7 +182,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
         }
         return data;
       })
-    ));
+    );
   }
 
   computeLinkBreadths(nodesAndPlaceholders) {
@@ -446,26 +446,29 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           // Calculate the nodes' values, based on the values of the incoming and outgoing links
           this.assignValues(data).pipe(
             debug('assignValues'),
-            switchMap(() => {
-              const {nodesAndPlaceholders, columnsWithLinkPlaceholders} = this.createVirtualNodes(data, columns);
-              return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
-                this.computeNodeHeights(nodesAndPlaceholders),
-                debug('computeNodeHeights'),
-                // Calculate the nodes' and links' vertical position within their respective column
-                //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-                tap(() => this.computeNodeBreadths(data, columns)),
-                debug('computeNodeBreadths'),
-                this.layoutNodesWithinColumns(columns),
-                debug('layoutNodesWithinColumns'),
-                this.computeLinkBreadths(nodesAndPlaceholders),
-                debug('computeLinkBreadths'),
-              );
-            }),
-            map(verticalContext => data),
-            this.positionNodes(x),
-            debug('positionNodes'),
+            switchMap(() => combineLatest([
+                defer(() => {
+                  const {nodesAndPlaceholders, columnsWithLinkPlaceholders} = this.createVirtualNodes(data, columns);
+                  return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
+                    this.computeNodeHeights(nodesAndPlaceholders),
+                    debug('computeNodeHeights'),
+                    // Calculate the nodes' and links' vertical position within their respective column
+                    //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+                    tap(() => this.computeNodeBreadths(data, columns)),
+                    debug('computeNodeBreadths'),
+                    this.layoutNodesWithinColumns(columns),
+                    debug('layoutNodesWithinColumns'),
+                    this.computeLinkBreadths(nodesAndPlaceholders),
+                    debug('computeLinkBreadths'),
+                  );
+                }),
+                this.positionNodes(x, data).pipe(
+                  debug('positionNodes')
+                )
+              ]))
           )
-        )
+        ),
+        map(() => data)
       )),
       debug('calculateLayout'),
       // IMPORTANT!
