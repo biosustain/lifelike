@@ -45,8 +45,9 @@ export class WorkspaceTabComponent implements OnInit {
     modalRef.componentInstance.url = 'Generating link...';
     const urlSubscription = this.viewService.getShareableLink(
       this.tab.getComponent(), this.tab.url
-    ).subscribe(({href}) => {
-      modalRef.componentInstance.url = href;
+    ).subscribe((url) => {
+      this.tab.url = url.pathname + url.search + url.hash;
+      modalRef.componentInstance.url = url.href;
     });
     // todo: use hidden after update of ng-bootstrap >= 8.0.0
     // https://ng-bootstrap.github.io/#/components/modal/api#NgbModalRef
@@ -71,26 +72,31 @@ export class WorkspaceTabComponent implements OnInit {
   }
 
   cdkDragReleased($event: CdkDragRelease<Tab>) {
-    const tab: Tab = $event.source.data;
     const dropRect = document.getElementsByClassName('cdk-drag-preview')[0].getBoundingClientRect();
     const dropTarget = document.elementFromPoint(dropRect.x + (dropRect.width / 2), dropRect.y + (dropRect.height / 2));
     const synthDropEvent = new DragEvent('drop', {dataTransfer: new DataTransfer()});
-    synthDropEvent.dataTransfer.effectAllowed = 'all';
-    synthDropEvent.dataTransfer.setData('text/plain', 'This text came from a tab!');
-    synthDropEvent.dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: tab.title,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        sources: [
-          {
-            domain: tab.title,
-            url: tab.url
-          }
-        ]
-      }
-    } as Partial<UniversalGraphNode>));
-    dropTarget.dispatchEvent(synthDropEvent);
+
+    this.viewService.getShareableLink(
+      this.tab.getComponent(), this.tab.url
+    ).subscribe((url) => {
+      this.tab.url = url.pathname + url.search + url.hash;
+      synthDropEvent.dataTransfer.effectAllowed = 'all';
+      synthDropEvent.dataTransfer.setData('text/plain', 'This text came from a tab!');
+      synthDropEvent.dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+        display_name: this.tab.title,
+        label: 'link',
+        sub_labels: [],
+        data: {
+          sources: [
+            {
+              domain: this.tab.title,
+              url: this.tab.url
+            }
+          ]
+        }
+      } as Partial<UniversalGraphNode>));
+      dropTarget.dispatchEvent(synthDropEvent);
+    });
   }
 
   calculateFontAwesomeIcon(s: string) {
