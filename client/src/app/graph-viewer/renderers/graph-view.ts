@@ -59,6 +59,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   protected nodeHashMap: Map<string, UniversalGraphNode> = new Map();
 
   /**
+   * Maps node's hashes to nodes for O(1) lookup, essential to the speed
+   * of most of this graph code.
+   */
+  protected groupHashMap: Map<string, NodeGroup> = new Map();
+
+  /**
    * Keep track of fixed X/Y positions that come from dragging nodes. These
    * values are passed to the automatic layout routines .
    */
@@ -298,13 +304,22 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
 
-    console.log(this.groups);
 
     this.saveImagesState();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
       (map, node) => map.set(node.hash, node),
+      new Map(),
+    );
+
+    this.groupHashMap = graph.groups.reduce(
+      (map, group) => {
+        group.members.forEach((member) => {
+          map.set(member.hash, group);
+        });
+        return map;
+      },
       new Map(),
     );
 
@@ -389,6 +404,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
+    if (this.groupHashMap.has(node.hash)) {
+      this.updateGroup(this.groupHashMap.get(node.hash));
+    }
   }
 
   /**
@@ -444,15 +462,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
-  // TODO: Delete?
-  createGroup() {
-    const members = this.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity] : []);
-    // this.execute(new GroupCreation('Create group', {
-    //     members,
-    //     label: null,
-    // }, true));
-  }
-
   /**
    * Create group of nodes
    * @param group - data of the group
@@ -460,11 +469,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   addGroup(group: NodeGroup) {
     // TODO: Check if group hash is unique and stuff
     // TODO: Populate group 'data' entry by calculating bbox, width, height, center
+    group.members.forEach((member) => this.groupHashMap.set(member.hash, group));
     this.groups.push(this.recalculateGroup(group));
   }
 
   recalculateGroup(group: NodeGroup): NodeGroup {
+    console.log('recalculating group');
+    console.log(group.members);
     const bbox = this.getNodeBoundingBox(group.members || []);
+    console.log(bbox);
     const { minX, minY, maxX, maxY } = bbox;
     const width = Math.abs(maxX - minX);
     const height = Math.abs(maxY - minY);
@@ -504,7 +517,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   updateGroup(group: NodeGroup) {
+    // TODO: Maybe do that only on move of a member, not on every update
     this.invalidateGroup(group);
+    this.recalculateGroup(group);
+    this.invalidateGroup(group);
+    this.requestRender();
   }
 
   /**
