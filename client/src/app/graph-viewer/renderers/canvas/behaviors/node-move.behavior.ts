@@ -64,13 +64,11 @@ export class MovableNode extends AbstractCanvasBehavior {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
         } else if (entity.type === GraphEntityType.Group) {
-          console.log('group');
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
           const group = entity.entity as NodeGroup;
           selectedNodes.add(entity.entity as UniversalGraphNode);
           for (const n of group.members) {
-            console.log('group node');
             selectedNodes.add(n);
           }
         }
@@ -82,7 +80,6 @@ export class MovableNode extends AbstractCanvasBehavior {
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
       if (!selectedNodes.has(this.target)) {
         // Case (a)
-        console.log('not selected node');
         if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
         }
