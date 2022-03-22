@@ -8,7 +8,6 @@ import { combineLatest, Observable } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 import { ExtendedMap } from 'app/shared/utils/types';
-import { enumerable } from 'app/shared/utils/decorators';
 
 type ZoomParams<ZoomRefElement extends ZoomedElementBaseType, Datum> = {
   [key in keyof Zoom<ZoomRefElement, Datum>]?: Zoom<ZoomRefElement, Datum>[key]
@@ -28,7 +27,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     this.bind();
   }
 
-  @enumerable
   set initialTransform(initialTransform) {
     this._initialTransform = initialTransform;
     this.reset();
@@ -38,7 +36,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this._initialTransform;
   }
 
-  @enumerable
   set clickDistance(value: number) {
     this.zoom.clickDistance(value);
   }
@@ -47,7 +44,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.clickDistance();
   }
 
-  @enumerable
   set constrain(constraint) {
     this.zoom.constrain(constraint);
   }
@@ -56,7 +52,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.constrain();
   }
 
-  @enumerable
   set duration(duration: number) {
     this.zoom.duration(duration);
   }
@@ -65,7 +60,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.duration();
   }
 
-  @enumerable
   set extent(extent: [[number, number], [number, number]]) {
     this.zoom.extent(extent);
   }
@@ -74,7 +68,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.extent() as any as [[number, number], [number, number]];
   }
 
-  @enumerable
   set filter(filterFn) {
     this.zoom.filter(filterFn);
   }
@@ -83,7 +76,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.filter();
   }
 
-  @enumerable
   set interpolate(interpolatorFactory) {
     this.zoom.interpolate(interpolatorFactory);
   }
@@ -92,7 +84,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.interpolate();
   }
 
-  @enumerable
   set scaleExtent(extent) {
     this.zoom.scaleExtent(extent);
   }
@@ -101,7 +92,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.scaleExtent();
   }
 
-  @enumerable
   set touchable(touchable) {
     this.zoom.touchable(touchable);
   }
@@ -110,7 +100,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.touchable();
   }
 
-  @enumerable
   set translateExtent(extent) {
     this.zoom.translateExtent(extent);
   }
@@ -119,7 +108,6 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.translateExtent();
   }
 
-  @enumerable
   set wheelDelta(delta: ValueFn<Element, {}, number>) {
     this.zoom.wheelDelta(delta);
   }
