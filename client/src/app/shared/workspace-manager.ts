@@ -561,18 +561,16 @@ export class WorkspaceManager {
   }
 
   closeTab(pane: Pane, tab: Tab) {
-    const performClose = () => {
-      pane.deleteTab(tab);
-      this.save();
-      this.emitEvents();
-    };
-    if (this.shouldConfirmTabUnload(tab)) {
-      if (confirm('Close tab? Changes you made may not be saved.')) {
-        performClose();
+    const needConfirmation = this.shouldConfirmTabUnload(tab);
+    return Promise.resolve(
+      !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
+    ).then(shouldDeleteTab => {
+      if (shouldDeleteTab) {
+        pane.deleteTab(tab);
+        this.save();
+        this.emitEvents();
       }
-    } else {
-      performClose();
-    }
+    });
   }
 
   closeTabs(pane: Pane, tabs: Tab[]) {
