@@ -1,0 +1,24 @@
+<div class="h-100 w-100 d-flex overflow-hidden" #container>
+  <ng-container *ngIf="(panes$ | async) as panes">
+      <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup #splitComponent
+                (dragEnd)="splitterDragEnded($event)">
+        <as-split-area *ngFor="let pane of panes" [size]="pane.size">
+          <app-workspace-pane
+            [data]="pane"
+            [hasSiblings]="panes.length > 1"
+          ></app-workspace-pane>
+        </as-split-area>
+      </as-split>
+      <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()">
+        <div class="d-flex flex-column align-items-center">
+          <div>
+            <i class="fa fa-caret-left"></i>
+          </div>
+          <div class="side-pane-open-text">Open Side Pane</div>
+          <div>
+            <i class="fa fa-caret-left"></i>
+          </div>
+        </div>
+      </div>
+  </ng-container>
+</div>
