@@ -1,4 +1,4 @@
-import { GraphTraceNetwork, GraphGraph, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork, GraphGraph, GraphFile, GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 
 import { SankeyTrace, SankeyNode, SankeyLink, SankeyId } from './pure';
 import { PRESCALERS } from './prescalers';
@@ -57,7 +57,15 @@ export interface SankeyGraph extends GraphGraph {
   trace_networks: Array<SankeyTraceNetwork>;
 }
 
-export interface SankeyFile extends GraphFile {
+export interface SankeyFile<
+  Graph extends GraphGraph = SankeyGraph,
+  Node extends GraphNode = SankeyNode,
+  Link extends GraphLink = SankeyLink
+> extends GraphFile {
+  graph: Graph;
+  links: Array<Link>;
+  nodes: Array<Node>;
+
   _views: SankeyViews;
 }
 

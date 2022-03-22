@@ -381,7 +381,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   openPathReport() {
     const modalRef = this.open(PathReportComponent);
     this.sankeyController.pathReports$.subscribe(pathReports => {
-      modalRef.componentInstance.pathReports = pathReports;
+      modalRef.componentInstance.pathReport = pathReports;
     });
   }
 

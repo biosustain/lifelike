@@ -40,6 +40,7 @@ export interface GraphLink {
   description: string;
   source: number;
   target: number;
+  label: string;
 
   key?: number;
   inedge?: GraphLinkEdge;
