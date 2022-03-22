@@ -468,6 +468,10 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.renderTree.delete(d);
   }
 
+  invalidateGroup(d: NodeGroup): void {
+    this.renderTree.delete(d);
+  }
+
   /**
    * Invalidate any cache entries for the given entity. Helper method
    * that calls the correct invalidation method.
