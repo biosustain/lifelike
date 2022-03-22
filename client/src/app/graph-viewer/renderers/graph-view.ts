@@ -382,6 +382,13 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         break;
       }
     }
+    // Terminate early
+    if (!foundNode) {
+      return {
+        found: false,
+        removedEdges: [],
+      };
+    }
 
     let j = this.edges.length;
     while (j--) {
@@ -394,6 +401,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
 
     this.nodeHashMap.delete(node.hash);
+    if (this.groupHashMap.has(node.hash)) {
+      this.removeNodeFromGroup(node.hash);
+    }
     this.invalidateNode(node);
 
     // TODO: Only adjust selection if needed
@@ -484,10 +494,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   recalculateGroup(group: NodeGroup): NodeGroup {
-    console.log('recalculating group');
-    console.log(group.members);
     const bbox = this.getNodeBoundingBox(group.members || []);
-    console.log(bbox);
     const { minX, minY, maxX, maxY } = bbox;
     const width = Math.abs(maxX - minX);
     const height = Math.abs(maxY - minY);
@@ -496,6 +503,29 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     group.data.width = width;
     group.data.height = height;
     return group;
+  }
+
+  /**
+   * Remove node from the group
+   * @param hash - hash of node to be removed
+   */
+  // TODO: Accept node ref instead of string?
+  removeNodeFromGroup(hash: string) {
+    const group = this.groupHashMap.get(hash);
+
+    // TODO: Throw error instead?
+    if (group == null) {
+      console.log('Trying to remove group from node without group!\nThis is bad!');
+      return;
+    }
+    this.groupHashMap.delete(hash);
+    group.members = group.members.filter(node => node.hash !== hash);
+    // TODO: Keep? Group of 1 member seems meh
+    if (group.members.length > 1) {
+      this.updateGroup(group);
+    } else {
+      this.removeGroup(group);
+    }
   }
 
   /**
@@ -514,7 +544,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }
     }
 
-    // TODO: Invalidate group?
+    group.members.forEach(node => this.groupHashMap.delete(node.hash));
+    this.invalidateGroup(group);
 
     // TODO: Only adjust selection if needed
     this.selection.replace([]);
@@ -528,7 +559,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   updateGroup(group: NodeGroup) {
     // TODO: Maybe do that only on move of a member, not on every update
-    this.invalidateGroup(group);
     this.recalculateGroup(group);
     this.invalidateGroup(group);
     this.requestRender();
@@ -546,12 +576,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param d the node
    */
   invalidateNode(d: UniversalGraphNode): void {
-    for (const edge of this.edges) {
-      if (edge.from === d.hash || edge.to === d.hash) {
-        this.invalidateEdge(edge);
-      }
-    }
   }
+
     /**
      * Invalidate any cache entries for the given edge. If changes are made
      * that might affect how the edge is rendered, this method must be called.
