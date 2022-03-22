@@ -560,6 +560,33 @@ export class WorkspaceManager {
     this.emitEvents();
   }
 
+  closeTab(pane: Pane, tab: Tab) {
+    const performClose = () => {
+      pane.deleteTab(tab);
+      this.save();
+      this.emitEvents();
+    };
+    if (this.shouldConfirmTabUnload(tab)) {
+      if (confirm('Close tab? Changes you made may not be saved.')) {
+        performClose();
+      }
+    } else {
+      performClose();
+    }
+  }
+
+  closeTabs(pane: Pane, tabs: Tab[]) {
+    for (const tab of tabs) {
+      this.closeTab(pane, tab);
+    }
+  }
+
+  clearWorkbench() {
+    for (const pane of this.paneManager.panes) {
+      this.closeTabs(pane, pane.tabs.slice());
+    }
+  }
+
   openTabByUrl(pane: Pane | string,
                url: string | UrlTree,
                extras?: NavigationExtras & WorkspaceNavigationExtras,

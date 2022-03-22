@@ -1,0 +1,39 @@
+<div class="nav-item d-flex text-truncate" [class.active]="active"
+     appContextMenu
+     cdkDrag
+     [cdkDragData]="data"
+     (cdkDragMoved)="cdkDragMoved($event)"
+     (cdkDragReleased)="cdkDragReleased($event)">
+  <div class="nav-link d-flex text-truncate" [class.active]="active" (click)="tabClick.emit()">
+    <div class="d-block d-flex align-items-center text-truncate mr-2">
+      <span class="d-block text-truncate" [appTextTruncateToTooltip]="data.title" [scroll$]="scroll$">
+        <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="data.loading; else notLoading"></i>
+        <ng-template #notLoading>
+          <i [class]="fontAwesomeIconClass"></i>
+        </ng-template>
+        {{ data.title }}
+      </span>
+      <span class="badge badge-danger badge-pill ml-1" *ngIf="data.badge != null && data.badge !== '*'">
+        {{ data.badge }}
+      </span>
+      <span class="badge badge-danger badge-pill ml-1" *ngIf="data.badge === '*'" ngbTooltip="Has unsaved changes" container="body">
+        <i class="fa fa-pencil-alt"></i>
+      </span>
+    </div>
+    <a href="#" (click)="tabClose.emit(); $event.preventDefault()" class="ml-auto text-muted">
+      <i class="fa fa-fw fa-times"></i>
+    </a>
+  </div>
+  <div appContextMenuBody>
+    <a class="dropdown-item" href="#" (click)="duplicate.emit(); $event.preventDefault()">Duplicate</a>
+    <a class="dropdown-item" href="#" (click)="openCopyLinkDialog(); $event.preventDefault()">Copy link...</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="#" (click)="tabClose.emit(); $event.preventDefault()">Close</a>
+    <a class="dropdown-item"
+       href="#"
+       [class.disabled]="!hasSiblings"
+       (click)="closeOtherTabs.emit(); $event.preventDefault()">Close other tabs</a>
+    <a class="dropdown-item" href="#" (click)="closeAllTabs.emit(); $event.preventDefault()">Close all tabs</a>
+    <a class="dropdown-item" href="#" (click)="clearWorkbench.emit(); $event.preventDefault()">Clear workbench</a>
+  </div>
+</div>
