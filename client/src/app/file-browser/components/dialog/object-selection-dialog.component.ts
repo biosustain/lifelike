@@ -3,7 +3,7 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { isEmpty } from 'lodash-es';
 import { first, map, switchMap } from 'rxjs/operators';
-import { iif, of } from 'rxjs';
+import { iif, of, defer } from 'rxjs';
 
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -18,8 +18,7 @@ import { ObjectSelectService } from '../../services/object-select.service';
   providers: [ObjectSelectService],
 })
 export class ObjectSelectionDialogComponent
-  extends CommonDialogComponent<readonly FilesystemObject[]>
-  implements OnDestroy {
+  extends CommonDialogComponent<readonly FilesystemObject[]> {
   @Input() title = 'Select File';
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
 
@@ -27,9 +26,6 @@ export class ObjectSelectionDialogComponent
               messageDialog: MessageDialog,
               readonly objectSelect: ObjectSelectService) {
     super(modal, messageDialog);
-  }
-
-  ngOnDestroy(): void {
   }
 
   @Input()
@@ -62,15 +58,15 @@ export class ObjectSelectionDialogComponent
 
   submit() {
     return this.objectSelect.object$.pipe(
-      switchMap(object =>
+      switchMap((object: FilesystemObject) =>
         iif(
-          () => object != null,
+          () => object?.hashId != null,
           of(super.submit()),
-          this.messageDialog.display({
+          defer(() => this.messageDialog.display({
             title: 'No Selection',
             message: 'You need to select a project first.',
             type: MessageType.Error,
-          } as MessageArguments)
+          } as MessageArguments))
         )
       ),
       first()
