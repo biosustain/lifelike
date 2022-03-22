@@ -24,7 +24,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { mapBufferToJson, readBlobAsBuffer, mapJsonToGraph } from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -186,12 +186,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
         this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
           mapBufferToJson<UniversalGraph>(),
+          mapJsonToGraph(),
           this.errorHandler.create({ label: 'Parse map data' }),
         ).subscribe(
           graph => {
-            console.log(graph);
             this.graphCanvas.setGraph(graph);
-            for (const node of this.graphCanvas.getGraph().nodes) {
+            for (const node of graph.nodes) {
               if (node.image_id !== undefined) {
                 // put image nodes back into renderTree, doesn't seem to make a difference though
                 this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
