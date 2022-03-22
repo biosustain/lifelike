@@ -17,7 +17,7 @@ import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-
 })
 export class WorkspaceTabComponent implements OnInit {
   @Input() active: boolean;
-  @Input() data: Tab;
+  @Input() tab: Tab;
   @Input() hasSiblings = false;
   @Input() scroll$: Observable<any>;
   @Output() clearWorkbench: EventEmitter<any> = new EventEmitter();
@@ -36,15 +36,15 @@ export class WorkspaceTabComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Need this.data to be available, hence why we wait until onInit to calculate this.
-    this.fontAwesomeIconClass = 'fa-fw ' + (this.calculateFontAwesomeIcon(this.data.fontAwesomeIcon) || 'fa window-maximize');
+    // Need this.tab to be available, hence why we wait until onInit to calculate this.
+    this.fontAwesomeIconClass = 'fa-fw ' + (this.calculateFontAwesomeIcon(this.tab.fontAwesomeIcon) || 'fa window-maximize');
   }
 
   openCopyLinkDialog() {
     const modalRef = this.modalService.open(CopyLinkDialogComponent);
     modalRef.componentInstance.url = 'Generating link...';
     const urlSubscription = this.viewService.getShareableLink(
-      this.data.getComponent(), this.data.url
+      this.tab.getComponent(), this.tab.url
     ).subscribe(({href}) => {
       modalRef.componentInstance.url = href;
     });
