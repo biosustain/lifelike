@@ -225,8 +225,7 @@ export class SankeySingleLaneComponent
   }
 
   panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
-    this.sankeySelection.transition().call(
-      this.zoom.translateTo,
+      this.zoom.translateTo(
       // x
       (_x1 + _x0) / 2,
       // y
