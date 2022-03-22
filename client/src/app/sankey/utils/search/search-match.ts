@@ -21,7 +21,7 @@ import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
      "window is undefined"
      "alert is undefined"
 */
-import { SankeyTrace } from '../../interfaces';
+import { SankeyTrace } from '../../interfaces/pure';
 import { indexByProperty } from '..';
 import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../../interfaces/search';
 

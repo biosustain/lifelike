@@ -143,13 +143,13 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
    * this function resets these lists and repopulates them
    * based on list of links.
    */
-  computeNodeLinks = tap(({nodes, links}) => {
+  computeNodeLinks = tap(({nodes, links, nodeById}) => {
     for (const [i, node] of nodes.entries()) {
       node._index = i;
       node._sourceLinks = [];
       node._targetLinks = [];
     }
-    this.registerLinks({links, nodes});
+    this.registerLinks({links, nodeById});
   });
 
   /**
@@ -297,11 +297,9 @@ export class SankeyAbstractLayoutService extends AttributeAccessors {
    * Given list of links resolve their source/target node id to actual object
    * and register this link to input/output link list in node.
    */
-  registerLinks({links, nodes}) {
-    const {id} = this;
+  registerLinks({links, nodeById}) {
     const {find} = SankeyAbstractLayoutService;
 
-    const nodeById = new Map(nodes.map((d, i) => [id(d, i, nodes), d]));
     for (const [i, link] of links.entries()) {
       link._index = i;
       const {source, target} = link;

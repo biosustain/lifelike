@@ -130,7 +130,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   graph$: Observable<NetworkTraceData<SankeyNode, SankeyLink>> = this.baseView.common.view$.pipe(
     // ensure no calculation of view if base view changed
     takeUntil(this.destroyed$),
-    tap(view => console.log('view', view)),
     // todo temporary fixes needs to work but do not know how to make it better
     startWith(undefined),
     pairwise(),
@@ -141,7 +140,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
       }
       return view;
     }),
-    tap(view => console.log('view', view)),
     // temporary fixes end
     switchMap(view =>
       iif(
@@ -179,7 +177,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           const widthChangeRatio = horizontal.width / prevWidth;
 
           // Relative node positioning (to preserve draged node position)
-          console.count('relative node positioning');
           this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
         }
         return data;
@@ -424,7 +421,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
-      tap(d => console.log('networkTraceData$', d)),
       // Calculate layout and address possible circular links
       // Associate the nodes with their respective links, and vice versa
       this.computeNodeLinks,
@@ -540,7 +536,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           const prevWidth = prevExtent?.width ?? extent.width;
           const widthChangeRatio = extent.width / prevWidth;
           // Relative node positioning (to preserve draged node position)
-          console.count('relative node positioning');
           this.repositionNodesHorizontaly(data, extent, widthChangeRatio);
         }
         return data;

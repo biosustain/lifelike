@@ -1,4 +1,4 @@
-import { SankeyFile, SankeyNode, SankeyTrace, SankeyLink, NetworkTraceData } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyTrace, SankeyNode, SankeyFile, NetworkTraceData } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 import { SelectionEntity, SelectionType } from '../../interfaces/selection';
