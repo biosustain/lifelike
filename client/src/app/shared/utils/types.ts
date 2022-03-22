@@ -85,7 +85,7 @@ export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
     return value;
   }
 
-  getSetLazily(key, valueAccessor) {
+  getSetLazily(key: K, valueAccessor: () => V): V {
     if (this.has(key)) {
       return super.get(key);
     }

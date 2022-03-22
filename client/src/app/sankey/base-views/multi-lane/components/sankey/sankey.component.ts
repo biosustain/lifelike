@@ -14,12 +14,12 @@ import { SankeySearchService } from 'app/sankey/services/search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
 import { SelectionType } from 'app/sankey/interfaces/selection';
+import { EntityType } from 'app/sankey/interfaces/search';
 
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { updateAttr } from '../../../../utils/rxjs';
-import { EntityType } from '../../../../interfaces/search';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -58,55 +58,55 @@ export class SankeyMultiLaneComponent
 
   focusedLinks$ = this.sankey.graph$.pipe(
     switchMap(({links}) =>
-          this.search.searchFocus$.pipe(
-            // map graph file link to sankey link
-            map(({type, id}) =>
-              type === EntityType.Link ?
-                // allow string == number match interpolation ("58" == 58 -> true)
-                // tslint:disable-next-line:triple-equals
-                (links as SankeyMultiLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
-            ),
-            updateAttr(this.renderedLinks$, 'focused')
-          )
+      this.search.searchFocus$.pipe(
+        // map graph file link to sankey link
+        map(({type, id}) =>
+          type === EntityType.Link ?
+            // allow string == number match interpolation ("58" == 58 -> true)
+            // tslint:disable-next-line:triple-equals
+            (links as SankeyMultiLaneLink[]).filter(({_originLinkId}) => _originLinkId == id) : []
+        ),
+        updateAttr(this.renderedLinks$, 'focused')
+      )
     ),
     tap(current => isNotEmpty(current) && this.panToLinks(current))
   );
 
   selectionUpdate$ = this.selection.selection$.pipe(
-        map(selection => groupBy(selection, 'type')),
-        publish(selection$ => combineLatest([
-          selection$.pipe(
-            map(({[SelectionType.node]: nodes = []}) => nodes.map(({entity}) => entity)),
-            updateAttr(this.renderedNodes$, 'selected')
-          ),
-          selection$.pipe(
-            map(({[SelectionType.link]: links = []}) => links.map(({entity}) => entity)),
-            updateAttr(this.renderedLinks$, 'selected')
-          ),
-          selection$.pipe(
-            map(({[SelectionType.trace]: traces = []}) => traces),
-            // todo
-          )
-        ])),
-        map(([nodes = [], links = [], _traces = []]) => uniq(
-            flatMap(
-              nodes as SankeyMultiLaneNode[],
-              ({_sourceLinks, _targetLinks}) => [..._sourceLinks, ..._targetLinks]
-            )
-              .concat(links as SankeyMultiLaneLink[])
-              .map(({_trace}) => _trace)
-              .concat(_traces as any as SankeyTrace[])
-          )
-        ),
-        publish(traces$ => combineLatest([
-          traces$.pipe(
-            map(traces => this.calculateNodeGroupFromTraces(traces)),
-            updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
-          ),
-          traces$.pipe(
-            updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {_trace}) => arr.includes(_trace)})
-          )
-        ]))
+    map(selection => groupBy(selection, 'type')),
+    publish(selection$ => combineLatest([
+      selection$.pipe(
+        map(({[SelectionType.node]: nodes = []}) => nodes.map(({entity}) => entity)),
+        updateAttr(this.renderedNodes$, 'selected')
+      ),
+      selection$.pipe(
+        map(({[SelectionType.link]: links = []}) => links.map(({entity}) => entity)),
+        updateAttr(this.renderedLinks$, 'selected')
+      ),
+      selection$.pipe(
+        map(({[SelectionType.trace]: traces = []}) => traces),
+        // todo
+      )
+    ])),
+    map(([nodes = [], links = [], _traces = []]) => uniq(
+        flatMap(
+          nodes as SankeyMultiLaneNode[],
+          ({_sourceLinks, _targetLinks}) => [..._sourceLinks, ..._targetLinks]
+        )
+          .concat(links as SankeyMultiLaneLink[])
+          .map(({_trace}) => _trace)
+          .concat(_traces as any as SankeyTrace[])
+      )
+    ),
+    publish(traces$ => combineLatest([
+      traces$.pipe(
+        map(traces => this.calculateNodeGroupFromTraces(traces)),
+        updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+      ),
+      traces$.pipe(
+        updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {_trace}) => arr.includes(_trace)})
+      )
+    ]))
   );
 
   panToLinks(links) {
@@ -114,8 +114,7 @@ export class SankeyMultiLaneComponent
       x + _x0 + _x1,
       y + _y0 + _y1
     ], [0, 0]);
-    this.sankeySelection.transition().call(
-      this.zoom.translateTo,
+    this.zoom.translateTo(
       // average x
       sumX / (2 * links.length),
       // average y

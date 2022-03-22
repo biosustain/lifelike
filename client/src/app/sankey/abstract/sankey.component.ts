@@ -1,12 +1,12 @@
 import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 import { assign, partial, groupBy } from 'lodash-es';
+import { zoomIdentity } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -21,6 +21,7 @@ import { SankeySearchService } from '../services/search.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { LayoutService } from '../services/layout.service';
 import { updateAttr, updateSingular } from '../utils/rxjs';
+import { Zoom } from '../utils/zoom';
 import { NotImplemented } from '../utils/error';
 import { Match, EntityType } from '../interfaces/search';
 
@@ -117,7 +118,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     bottom: this.MARGIN,
     left: this.MARGIN
   };
-  zoom = d3_zoom().scaleExtent([0.1, 8]);
 
   destroy$ = new Subject();
 
@@ -126,6 +126,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   @ViewChild('nodes', {static: true}) nodes!: ElementRef;
   @ViewChild('links', {static: true}) links!: ElementRef;
 
+  zoom: Zoom<SVGElement, number>;
 
   width: number;
 
@@ -373,11 +374,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   ngOnInit() {
+    this.zoom = new Zoom(this.svg, {scaleExtent: [0.1, 8]});
     this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
-      this.zoom.transform(
-        this.sankeySelection,
-        d3_zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0)
-      );
+      this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
     });
 
     this.updateDOM$.subscribe(() => {});
@@ -397,12 +396,13 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   panToNode({_x0, _x1, _y0, _y1}) {
-    this.sankeySelection.transition().call(
-      this.zoom.translateTo,
+    this.zoom.translateTo(
       // x
       (_x0 + _x1) / 2,
       // y
-      (_y0 + _y1) / 2
+      (_y0 + _y1) / 2,
+      [0, 0],
+      true
     );
   }
 
@@ -412,7 +412,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     // attach zoom behaviour
     const {g, zoom} = this;
     const zoomContainer = d3_select(g.nativeElement);
-    zoom.on('zoom', () => zoomContainer.attr('transform', d3_event.transform));
+    this.zoom.on$('zoom').subscribe(() => zoomContainer.attr('transform', d3_event.transform));
 
     this.sankeySelection.on('click', () => {
       const e = d3_event;
@@ -437,18 +437,15 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   // region Graph sizing
   onResize({width, height}) {
     this.width = width;
-    const {zoom, margin} = this;
+    const {margin} = this;
     const extentX = width - margin.right;
     const extentY = height - margin.bottom;
 
+    this.zoom.extent = [[0, 0], [width, height]];
     // Get the svg element and update
     this.sankeySelection
       .attr('width', width)
-      .attr('height', height)
-      .call(
-        zoom
-          .extent([[0, 0], [width, height]])
-      );
+      .attr('height', height);
 
     this.sankey.setExtent({
       x0: margin.left,
@@ -565,16 +562,6 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   @d3EventCallback
   async nodeMouseOut(element, data) {
     throw new NotImplemented();
-  }
-
-  scaleZoom(scaleBy) {
-    return this.sankeySelection.transition().call(this.zoom.scaleBy, scaleBy);
-  }
-
-  // noinspection JSUnusedGlobalSymbols
-  resetZoom() {
-    // it is used by its parent
-    return this.sankeySelection.call(this.zoom.transform, d3_zoomIdentity);
   }
 
   // the function for moving the nodes
