@@ -5,13 +5,13 @@
          cdkDropList
          cdkDropListOrientation="horizontal"
          (cdkDropListDropped)="tabDropped($event)"
-         [cdkDropListData]="data">
+         [cdkDropListData]="pane">
       <app-workspace-tab
-          *ngFor="let tab of data.tabs"
+          *ngFor="let tab of pane.tabs"
           style="max-width: 250px; width: 30%; min-width: 15%"
-          [active]="data.activeTab === tab"
-          [data]="tab"
-          [hasSiblings]="data.tabs.length > 1"
+          [active]="pane.activeTab === tab"
+          [tab]="tab"
+          [hasSiblings]="pane.tabs.length > 1"
           [scroll$]="tabBar.scroll$"
           (clearWorkbench)="clearWorkbench()"
           (closeAllTabs)="closeAllTabs(tab)"
@@ -43,17 +43,17 @@
   </div>
 
   <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
-    <div *ngFor="let tab of data.tabs"
+    <div *ngFor="let tab of pane.tabs"
          class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
-         [class.workspace-hidden-tab-content]="data.activeTab !== tab"
+         [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
          appDataTransferData [uriData]="[{title: tab.title, uri: tab.absoluteUrl}]">
-      <app-workspace-outlet [name]="data.id"
+      <app-workspace-outlet [name]="pane.id"
                             [container]="tab.container"
                             (outletFocus)="setFocus()"
-                            [active]="data.activeTab === tab">
+                            [active]="pane.activeTab === tab">
       </app-workspace-outlet>
     </div>
-    <ng-container *ngIf="!data.tabs.length">
+    <ng-container *ngIf="!pane.tabs.length">
       <div class="w-100 h-100 d-flex align-items-center">
         <div class="d-flex align-items-center justify-content-center m-auto">
           <div class="m-4 text-center text-muted" [style.max-width]="'400px'">
@@ -71,7 +71,7 @@
             </ng-template>
           </div>
         </div>
-        <div class="mx-2" *ngIf="data.id === 'right'">
+        <div class="mx-2" *ngIf="pane.id === 'right'">
           <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
             <div class="d-flex flex-column align-items-center">
               <div>

@@ -4,7 +4,7 @@
                 (dragEnd)="splitterDragEnded($event)">
         <as-split-area *ngFor="let pane of panes" [size]="pane.size">
           <app-workspace-pane
-            [data]="pane"
+            [pane]="pane"
             [hasSiblings]="panes.length > 1"
           ></app-workspace-pane>
         </as-split-area>

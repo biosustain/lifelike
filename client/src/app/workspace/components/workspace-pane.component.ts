@@ -9,7 +9,7 @@ import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
   styleUrls: ['./workspace-pane.component.scss']
 })
 export class WorkspacePaneComponent {
-  @Input() data: Pane;
+  @Input() pane: Pane;
   @Input() hasSiblings = false;
 
   constructor(
@@ -22,7 +22,7 @@ export class WorkspacePaneComponent {
   }
 
   setFocus() {
-    this.workspaceManager.focusedPane = this.data;
+    this.workspaceManager.focusedPane = this.pane;
   }
 
   tabDropped(event: CdkDragDrop<Pane>) {
@@ -32,11 +32,11 @@ export class WorkspacePaneComponent {
   }
 
   addTab(url: string) {
-    this.workspaceManager.openTabByUrl(this.data, url);
+    this.workspaceManager.openTabByUrl(this.pane, url);
   }
 
   setActiveTab(tab: Tab) {
-    this.data.activeTab = tab;
+    this.pane.activeTab = tab;
     this.workspaceManager.save();
   }
 
@@ -48,15 +48,15 @@ export class WorkspacePaneComponent {
   }
 
   closeTab(tab: Tab) {
-    this.workspaceManager.closeTab(this.data, tab);
+    this.workspaceManager.closeTab(this.pane, tab);
   }
 
   closeOtherTabs(tab: Tab) {
-    this.workspaceManager.closeTabs(this.data, this.data.tabs.filter(o => o !== tab));
+    this.workspaceManager.closeTabs(this.pane, this.pane.tabs.filter(o => o !== tab));
   }
 
   closeAllTabs() {
-    this.workspaceManager.closeTabs(this.data, this.data.tabs.slice());
+    this.workspaceManager.closeTabs(this.pane, this.pane.tabs.slice());
   }
 
   clearWorkbench() {
