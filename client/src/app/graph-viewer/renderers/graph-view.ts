@@ -299,11 +299,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   // NOTE: This is actually called twice when opening a map in read-only mode - why?
   setGraph(graph: UniversalGraph): void {
-
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
-
 
     this.saveImagesState();
 
@@ -336,6 +334,18 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       nodes: this.nodes,
       edges: this.edges,
       groups: this.groups,
+    };
+  }
+
+  /**
+   * Return a copy of the graph that is suited to the export. Filters out the nodes with group out of the
+   * export map, since they are passed in group.members list - no need to duplicate.
+   */
+  getExportableGraph(): UniversalGraph {
+    return {
+      nodes: this.nodes.filter(node => !this.groupHashMap.has(node.hash)),
+      edges: this.edges,
+      groups: this.groups
     };
   }
 
