@@ -380,9 +380,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       );
     });
 
-    this.updateDOM$.subscribe(() => {
-      console.log('updateDOM');
-    });
+    this.updateDOM$.subscribe(() => {});
 
     this.initSelection();
     this.initFocus();

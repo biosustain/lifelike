@@ -91,10 +91,10 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   }));
 
   networkTraceData$: Observable<SingleLaneNetworkTraceData> = this.common.partialNetworkTraceData$.pipe(
-    switchMap(({links, nodes, sources, targets, traces}) => this.stateAccessor('colorLinkByType').pipe(
+    switchMap(({links, nodes, nodeById, sources, targets, traces}) => this.stateAccessor('colorLinkByType').pipe(
       map(colorLinkByType => {
         const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodes);
+        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
         if (colorLinkByType) {
           this.colorLinkByType(networkTraceLinks);
         }
@@ -102,6 +102,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
         return {
           nodes: networkTraceNodes,
           links: networkTraceLinks,
+          nodeById,
           sources,
           targets
         };

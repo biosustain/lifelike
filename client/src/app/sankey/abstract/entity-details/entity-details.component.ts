@@ -39,8 +39,8 @@ export class SankeyEntityDetailsComponent {
   }
 
   getNodeById(nodeId) {
-    return this.common.data$.pipe(
-      map(({nodes}) => nodes.find(({id}) => id === nodeId) ?? {} as GraphNode)
+    return this.common.dataWithUtils$.pipe(
+      map(({nodeById}) => nodeById.get(nodeId) ?? {} as GraphNode)
     );
   }
 }
