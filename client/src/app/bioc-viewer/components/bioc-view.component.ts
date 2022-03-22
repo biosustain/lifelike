@@ -23,8 +23,6 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 
-declare var jQuery: any;
-
 @Component({
   selector: 'app-bioc-viewer',
   templateUrl: './bioc-view.component.html',

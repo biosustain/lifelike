@@ -39,8 +39,6 @@ import { FindState, RenderTextMode } from './utils/constants';
 import { PDFSource, PDFProgressData, PDFPageRenderEvent, PDFPageView, TextLayerBuilder, ScrollDestination } from './pdf-viewer/interfaces';
 import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
 
-declare var jQuery: any;
-
 @Component({
   // tslint:disable-next-line:component-selector
   selector: 'lib-pdf-viewer-lib',
