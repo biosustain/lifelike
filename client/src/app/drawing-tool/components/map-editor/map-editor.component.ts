@@ -176,7 +176,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     if (this.map) {
       const observable = this.filesystemService.putBackup({
         hashId: this.locator,
-        contentValue: new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+        contentValue: new Blob([JSON.stringify(this.graphCanvas.getExportableGraph())], {
           type: MimeTypes.Map,
         }),
       });

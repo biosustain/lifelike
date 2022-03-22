@@ -39,6 +39,18 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
   });
 }
 
+/**
+ * Maps the graph stored in export
+ */
+export function mapJsonToGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
+  return map( graph => {
+    graph.groups.forEach(group => {
+      graph.nodes = graph.nodes.concat(group.members);
+    });
+    return graph;
+  });
+}
+
 export function mapJsonToProperGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
   return map((graph: UniversalGraph) => {
     return {
