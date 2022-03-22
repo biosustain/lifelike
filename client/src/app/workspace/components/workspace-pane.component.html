@@ -15,6 +15,7 @@
           [scroll$]="tabBar.scroll$"
           (clearWorkbench)="clearWorkbench()"
           (closeAllTabs)="closeAllTabs(tab)"
+          (closeOtherTabs)="closeOtherTabs(tab)"
           (duplicate)="duplicateTab(tab)"
           (tabClick)="setActiveTab(tab)"
           (tabClose)="closeTab(tab)"
@@ -45,6 +46,7 @@
   <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
     <div *ngFor="let tab of pane.tabs"
          class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
+         [class.workspace-active-tab-content]="pane.activeTab === tab"
          [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
          appDataTransferData [uriData]="[{title: tab.title, uri: tab.absoluteUrl}]">
       <app-workspace-outlet [name]="pane.id"
