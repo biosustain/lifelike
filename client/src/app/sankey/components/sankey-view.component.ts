@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FormBuilder } from '@angular/forms';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
@@ -48,6 +49,7 @@ import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
+import { ExtendedMap } from 'app/shared/utils/types';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -77,14 +79,14 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     readonly router: Router,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly warningController: WarningControllerService,
-    readonly sankeySearch: SankeySearchService,
     readonly viewService: ViewService,
     private componentFactoryResolver: ComponentFactoryResolver,
     public sankeyController: ControllerService,
     private injector: Injector,
     private zone: NgZone,
     private viewController: ViewControllerService,
-    private search: SankeySearchService
+    private search: SankeySearchService,
+    protected formBuilder: FormBuilder
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -212,7 +214,11 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   _entitySearchListIdx$ = new ReplaySubject<number>(1);
 
 
-  networkTraces$ = this.sankeyController.networkTraces$;
+  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
+    map(networkTraces => new ExtendedMap(
+      networkTraces.map((networkTrace, index) => [index, networkTrace])
+    )),
+  );
 
 
   data$ = this.sankeyController.data$;
@@ -222,6 +228,15 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   detailsPanel$ = new BehaviorSubject(false);
 
+  form = this.formBuilder.group({
+    baseView: [undefined, []],
+    networkTraceId: [0, []],
+    prescalerId: [undefined, []]
+  });
+
+  traceNameAccessor({name, description}) {
+    return name || description || 'Trace Description Unknown';
+  }
 
   ngOnInit() {
     /**

@@ -22,14 +22,13 @@ import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { LayoutService } from '../services/layout.service';
 import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
-import { NotImplemented } from '../utils/error';
 import { Match, EntityType } from '../interfaces/search';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-@Component({ templateUrl: './sankey.component.svg' })
-export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
-  OnDestroy {
+@Component({templateUrl: './sankey.component.svg'})
+export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState>
+  implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -379,7 +378,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
     });
 
-    this.updateDOM$.subscribe(() => {});
+    this.updateDOM$.subscribe(() => {
+    });
 
     this.initSelection();
     this.initFocus();
@@ -387,13 +387,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
 
-  initFocus() {
-    throw new NotImplemented();
-  }
+  abstract initFocus();
 
-  initSelection() {
-    throw new NotImplemented();
-  }
+  abstract initSelection();
 
   panToNode({_x0, _x1, _y0, _y1}) {
     this.zoom.translateTo(
@@ -528,20 +524,16 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
-  @d3EventCallback
-  async pathMouseOver(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async pathMouseOver(element, data);
 
   /**
    * Callback that undims all nodes/links.
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
-  @d3EventCallback
-  async pathMouseOut(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async pathMouseOut(element, data);
 
   /**
    * Callback that dims any nodes/links not connected through the hovered node.
@@ -549,7 +541,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param element the svg element being hovered over
    * @param data object representing the node data
    */
-  @d3EventCallback
+  // @d3EventCallback
   async nodeMouseOver(element, data) {
     this.highlightNode(element);
   }
@@ -559,10 +551,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param element the svg element being hovered over
    * @param data object representing the node data
    */
-  @d3EventCallback
-  async nodeMouseOut(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async nodeMouseOut(element, data);
 
   // the function for moving the nodes
   dragmove(element, d) {
@@ -675,9 +665,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   // endregion
 
-  highlightNode(element) {
-    throw new NotImplemented();
-  }
+  abstract highlightNode(element);
 
   unhighlightNode(element) {
     return this.sankey.nodeLabel$.pipe(
