@@ -1,4 +1,12 @@
 <form [formGroup]="form">
+    <div class="form-group" formGroupName="traceGroups" title="Align">
+        <div class="mb-1">Visible trace groups:</div>
+        <label ngbButtonLabel *ngFor="let traceGroupControl of traceGroupsControls | keyvalue"
+               [title]="traceGroupControl.key"
+               class="mb-0 d-block">
+            <input [formControl]="traceGroupControl.value" ngbButton type="checkbox"> {{traceGroupControl.key}}
+        </label>
+    </div>
     <div class="form-group" ngbRadioGroup formControlName="alignId" title="Align">
         <div class="mb-1">Align:</div>
         <label ngbButtonLabel *ngFor="let align of aligns$ | async | keyvalue"

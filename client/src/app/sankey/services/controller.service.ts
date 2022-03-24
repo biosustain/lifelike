@@ -1,20 +1,8 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
-import {
-  switchMap,
-  map,
-  filter,
-  catchError,
-  first,
-  shareReplay,
-  distinctUntilChanged,
-  publish,
-  startWith,
-  pairwise,
-  tap
-} from 'rxjs/operators';
+import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit, isEmpty } from 'lodash-es';
+import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -27,7 +15,6 @@ import {
   SankeyLink,
   SankeyId,
   SankeyTrace,
-  SankeyNode,
   SankeyOptions
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -89,7 +76,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       ...data,
       nodeById: this.getNodeById(data.nodes)
     })),
-    shareReplay({ bufferSize: 1, refCount: true })
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   state$ = this.delta$.pipe(
@@ -219,15 +206,20 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
+    switchMap(({sources, targets, traces}) => this.stateAccessor('traceGroups').pipe(
+      map(traceGroups => ({
+        sources, targets, traces: isEmpty(traceGroups) ? traces : traces.filter(({group}) => traceGroups[group] ?? true)
+      }))
+    )),
     switchMap(({sources, targets, traces}) => this.dataWithUtils$.pipe(
       map(({links, nodes, graph: {node_sets}, nodeById}) => ({
-          links,
-          nodes,
-          traces,
-          nodeById,
-          sources: node_sets[sources],
-          targets: node_sets[targets]
-        }))
+        links,
+        nodes,
+        traces,
+        nodeById,
+        sources: node_sets[sources],
+        targets: node_sets[targets]
+      }))
     )),
     debug('partialNetworkTraceData$'),
     shareReplay(1)
@@ -245,7 +237,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodeById).map(clone);
-          const traceNodesById =  this.getNodeById(traceNodes);
+          const traceNodesById = this.getNodeById(traceNodes);
 
           const source = traceNodesById.get(trace.source);
           const target = traceNodesById.get(trace.target);
@@ -563,9 +555,17 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     );
   }
 
+  private extractTraceGroups({trace_networks}: { trace_networks: Array<SankeyTraceNetwork> }) {
+    return flatMap(
+      trace_networks,
+      ({traces}) => traces.map(({group}) => String(group))
+    );
+  }
+
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
       networkTraces: graph.trace_networks,
+      traceGroups: this.extractTraceGroups(graph),
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph})

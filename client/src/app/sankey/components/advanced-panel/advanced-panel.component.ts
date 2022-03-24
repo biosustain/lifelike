@@ -1,5 +1,8 @@
 import { Component, OnDestroy, OnInit, } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, FormControl, FormGroup } from '@angular/forms';
+
+import { map } from 'rxjs/operators';
+import { partition, keys } from 'lodash-es';
 
 import { ControllerService } from 'app/sankey/services/controller.service';
 
@@ -22,6 +25,7 @@ export class SankeyAdvancedPanelComponent
   }
 
   form = this.formBuilder.group({
+    traceGroups: this.formBuilder.group({}),
     alignId: [undefined, []],
     normalizeLinks: ['', []],
     fontSizeScale: [1, []],
@@ -34,6 +38,15 @@ export class SankeyAdvancedPanelComponent
 
   prescalers$ = this.common.prescalers$;
   aligns$ = this.common.aligns$;
+  traceGroups$ = this.common.options$.pipe(
+    map(options => options.traceGroups),
+    // distinctUntilChanged(isEqual),
+    // shareReplay({ bufferSize: 1, refCount: true })
+  );
+
+  get traceGroupsControls() {
+    return (this.form.get('traceGroups') as FormGroup).controls;
+  }
 
   ngOnInit() {
     super.ngOnInit();
@@ -45,6 +58,21 @@ export class SankeyAdvancedPanelComponent
         this.form.get('prescalerId').enable();
         this.form.get('alignId').enable();
       }
+    });
+
+    this.traceGroups$.subscribe(traceGroups => {
+      const traceGroupsFormGroup = this.form.get('traceGroups') as FormGroup;
+      const currentTraceGroups = keys(traceGroupsFormGroup.controls);
+      const [dropedTraceGroups, newTraceGroups] = partition(
+        traceGroups,
+        traceGroup => currentTraceGroups.includes(traceGroup)
+      );
+      newTraceGroups.forEach(traceGroup => {
+        traceGroupsFormGroup.addControl(traceGroup, new FormControl(true));
+      });
+      dropedTraceGroups.forEach(traceGroup => {
+        traceGroupsFormGroup.removeControl(traceGroup);
+      });
     });
   }
 
