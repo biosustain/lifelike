@@ -229,7 +229,9 @@ export class SankeySingleLaneComponent
       // x
       (_x1 + _x0) / 2,
       // y
-      (_y0 + _y1) / 2
+      (_y0 + _y1) / 2,
+        undefined,
+        true
     );
   }
 

@@ -42,7 +42,6 @@ import { StateControlAbstractService } from '../abstract/state-control.service';
 import { getBaseState, getCommonState } from '../utils/stateLevels';
 import { ErrorMessages } from '../constants/error';
 import { PRESCALER_ID, Prescaler } from '../interfaces/prescalers';
-import { NotImplemented } from '../utils/error';
 import {
   MultiValueAccessor,
   PREDEFINED_VALUE,
@@ -447,19 +446,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   // Trace logic
-  /**
-   * Extract links which relates to certain trace network and
-   * assign _color property based on their trace.
-   * Also creates duplicates if given link is used in multiple traces.
-   * Should return copy of link Objects (do not mutate links!)
-   */
-  getAndColorNetworkTraceLinks(
-    networkTrace: SankeyTraceNetwork,
-    links: ReadonlyArray<Readonly<SankeyLink>>,
-    colorMap?
-  ) {
-    throw new NotImplemented();
-  }
 
   /**
    * Helper to create Map for fast lookup
@@ -488,10 +474,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       }
       return ns;
     }, []);
-  }
-
-  computeData(): SankeyFile {
-    throw new NotImplemented();
   }
 
   // region Extract options

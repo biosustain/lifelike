@@ -118,7 +118,9 @@ export class SankeyMultiLaneComponent
       // average x
       sumX / (2 * links.length),
       // average y
-      sumY / (2 * links.length)
+      sumY / (2 * links.length),
+        undefined,
+        true
     );
   }
 
