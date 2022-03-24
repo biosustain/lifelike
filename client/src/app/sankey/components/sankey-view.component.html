@@ -131,18 +131,14 @@
                     <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                 </button>
                 <div ngbDropdownMenu>
+                    <!-- add class dropdown-menu to avoid relayout-->
                     <app-searchable-dropdown-menu
                             [appConstrainToViewport]="viewport.size$"
-                            class="d-flex flex-column"
+                            class="d-flex flex-column dropdown-menu"
                             [items]="networkTracesMap$ | async"
                             [optionTextAccessor]="traceNameAccessor"
                     ></app-searchable-dropdown-menu>
                 </div>
-                <!--                 add class dropdown-menu to avoid relayout-->
-                <!--                <div ngbDropdownMenu class="dropdown-menu">-->
-                <!--                    <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces$ | async; let i = index"-->
-                <!--                            ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>-->
-                <!--                </div>-->
             </div>
             <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options"
                  *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor">
