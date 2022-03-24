@@ -388,7 +388,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   resetView() {
     this.sankeyController.data$.pipe(
       first(),
-      tap(data => this.sankeyController.data$.next(data))
+      tap(data => this.sankeyController.data = data)
     ).toPromise();
     this.sankeyController.delta$.next({});
     this.baseViewContext$.pipe(
