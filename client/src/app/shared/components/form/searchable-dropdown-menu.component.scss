@@ -8,7 +8,6 @@ app-searchable-dropdown-menu {
   }
 
   .filtrable-list {
-    max-height: 50vh;
-    overflow-y: auto;
+    overflow: auto;
   }
 }

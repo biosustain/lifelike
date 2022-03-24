@@ -13,6 +13,7 @@ import { DataTransferDataDirective } from './data-transfer-data.directive';
 import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
 import { TextTruncateToTooltipDirective } from './text-truncate-to-tooltip.directive';
 import { ElementObserverDirective } from './element-observer.directive';
+import { ConstrainToViewportDirective } from './constrain-to-viewport.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -31,6 +32,7 @@ const directives = [
   DataTransferDataDirective,
   FilesystemObjectTargetDirective,
   TextTruncateToTooltipDirective,
+    ConstrainToViewportDirective,
   ElementObserverDirective
 ];
 

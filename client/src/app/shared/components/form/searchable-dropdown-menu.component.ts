@@ -77,7 +77,7 @@ import { defer } from 'lodash-es';
     )
   ]
 })
-export class SearchableDropdownMenuComponent<Id, Item> implements ControlValueAccessor, OnChanges, AfterViewInit {
+export class SearchableDropdownMenuComponent<Id, Item> implements ControlValueAccessor, OnChanges {
   @HostBinding('@blockInitialRenderAnimation') blockInitialRenderAnimation = true;
   value$ = new ReplaySubject<Id>(1);
   items$ = new ReplaySubject<ExtendedMap<Id, Item>>(1);
@@ -93,7 +93,6 @@ export class SearchableDropdownMenuComponent<Id, Item> implements ControlValueAc
   public onTouched: any;
   public onChange: any;
   @Input() public items: Map<Id, Item>;
-  @Input() isOpen = false;
   @ContentChild('item', {static: true}) itemTemplateRef: TemplateRef<any>;
   @ViewChild(NgbDropdownMenu, {static: true}) dropdownMenu: NgbDropdownMenu;
   @ViewChild('search', {static: true}) searchInput;
@@ -103,15 +102,6 @@ export class SearchableDropdownMenuComponent<Id, Item> implements ControlValueAc
     if (items) {
       this.items$.next(items.currentValue instanceof ExtendedMap ? items.currentValue : new ExtendedMap(items.currentValue));
     }
-    if (isOpen?.currentValue) {
-      defer(this.searchInput.nativeElement.focus);
-      defer(this.searchInput.nativeElement.select);
-    }
-  }
-
-  ngAfterViewInit() {
-    defer(this.searchInput.nativeElement.focus);
-    defer(this.searchInput.nativeElement.select);
   }
 
   searchChangeCallback(event: Event) {
