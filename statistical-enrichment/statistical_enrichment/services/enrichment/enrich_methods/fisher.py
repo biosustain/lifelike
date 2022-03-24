@@ -22,15 +22,20 @@ def fisher(geneNames, GOterms, related_go_terms_count):
     Run standard fisher's exact tests for each annotation term.
     """
     df = pd.DataFrame(GOterms)
+
+    if df.empty:
+        return df.to_json(orient='records')
+
     query = pd.unique(geneNames)
-    M = df["geneNames"].explode().nunique()
+
+    M = df['geneNames'].explode().nunique()
     N = len(query)
 
     def f(go):
-        matching_gene_names = list(set(go["geneNames"]).intersection(query))
-        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go["geneNames"]), N)
+        matching_gene_names = list(set(go['geneNames']).intersection(query))
+        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go['geneNames']), N)
         go['gene'] = f"{go['goTerm']} ({go['goId']})"
-        go["geneNames"] = matching_gene_names
+        go['geneNames'] = matching_gene_names
         return go
 
     df = df.apply(f, axis=1).sort_values(by='p-value')

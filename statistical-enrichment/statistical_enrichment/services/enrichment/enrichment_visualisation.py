@@ -1,4 +1,5 @@
 import json
+from flask import current_app
 from functools import partial
 from typing import List
 
@@ -47,9 +48,8 @@ class EnrichmentVisualisationService():
                         ).data()
                 )
         )
-        # raise if empty - should never happen so fail fast
         if not r:
-            raise Exception(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
         return r
 
     def get_go_terms(self, organism, gene_names):
@@ -74,9 +74,8 @@ class EnrichmentVisualisationService():
                         )
                 )
         )
-        # raise if empty - should never happen so fail fast
         if not r:
-            raise Exception(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
         return r[0]['go_count']
 
     def get_go_term_count(self, organism):
