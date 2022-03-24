@@ -39,8 +39,7 @@ export class ObjectSelectService {
             limit: 16,
             page: 1,
           })),
-          switchMap(() => this.projectService.list()
-          )
+          switchMap(() => this.projectList$)
         ),
         this.filesystemService.get(hashId).pipe(
           tap(object => this.applyInput(object))
