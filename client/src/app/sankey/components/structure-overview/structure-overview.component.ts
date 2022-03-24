@@ -4,10 +4,8 @@ import { NestedTreeControl } from '@angular/cdk/tree';
 import { map, shareReplay } from 'rxjs/operators';
 import { isObject, isBoolean, isArray, has, isNil, isString, isNumber, isUndefined, first } from 'lodash-es';
 
-import { SankeyId } from 'app/sankey/interfaces';
-import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
-
 import { ControllerService } from '../../services/controller.service';
+import { NotImplemented } from '../../utils/error';
 
 
 enum OverviewEntityType {
@@ -201,7 +199,7 @@ export class StructureOverviewComponent {
       default:
         return treeNode?.accessor?.();
     }
-    throw new Error('Not implemented');
+    throw new NotImplemented();
   }
 
   hasChildren(index: number, node: TreeNode): boolean {

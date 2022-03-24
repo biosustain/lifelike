@@ -6,7 +6,7 @@ import { BaseControllerService } from '../../services/base-controller.service';
 import { SankeyBaseOptions, SankeyBaseState } from '../../base-views/interfaces';
 
 @Component({template: ''})
-export class SankeyAbstractLinkDetailsComponent extends SankeyEntityDetailsComponent {
+export abstract class SankeyAbstractLinkDetailsComponent extends SankeyEntityDetailsComponent {
   constructor(
     protected baseView: BaseControllerService<SankeyBaseOptions, SankeyBaseState>,
     protected readonly route: ActivatedRoute

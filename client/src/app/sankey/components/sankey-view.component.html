@@ -1,4 +1,4 @@
-<div class="module">
+<div class="module" #viewport="appElementObserver" appElementObserver>
     <ng-container *ngIf="(loadTask?.status$ | async) as status">
         <app-module-progress *ngIf="status.running">
             Downloading file...
@@ -73,7 +73,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                            <app-sankey-structure-overview></app-sankey-structure-overview>
+                        <app-sankey-structure-overview></app-sankey-structure-overview>
                     </div>
                 </ng-template>
             </button>
@@ -122,17 +122,22 @@
         </div>
         <div class="btn-group-toggle flex-wrap" [ngClass.gt-sm]="'btn-group ml-auto'"
              [ngStyle.lt-md]="'display: contents'">
-            <div class="btn-group d-inline-block" ngbDropdown title="Select Trace Network">
+            <div class="btn-group d-inline-block" ngbDropdown #networkTraceDropdown="ngbDropdown"
+                 title="Select Trace Network">
                 <button class="btn btn-primary" ngbDropdownToggle>
                     <ng-container
                             *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">{{
                         networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}</ng-container>
                     <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                 </button>
-                <!-- add class dropdown-menu to avoid relayout -->
-                <div ngbDropdownMenu class="dropdown-menu">
-                    <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces$ | async; let i = index"
-                            ngbDropdownItem>{{ trace?.name || trace?.description || 'Trace Description Unknown' }}</button>
+                <div ngbDropdownMenu>
+                    <!-- add class dropdown-menu to avoid relayout-->
+                    <app-searchable-dropdown-menu
+                            [appConstrainToViewport]="viewport.size$"
+                            class="d-flex flex-column dropdown-menu"
+                            [items]="networkTracesMap$ | async"
+                            [optionTextAccessor]="traceNameAccessor"
+                    ></app-searchable-dropdown-menu>
                 </div>
             </div>
             <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options"
