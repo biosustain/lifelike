@@ -7,7 +7,7 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, isObject, uniq, flatMap, pullAt, first } from 'lodash-es';
+import { omit, slice, isObject, uniq, flatMap, pullAt } from 'lodash-es';
 
 import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
@@ -74,9 +74,7 @@ export class SankeySearch {
       }
     } else if (isObject(obj)) {
       for (const [key, term] of Object.entries(obj)) {
-        if (first(key) !== '_') {
-          yield* this.matchKeyObject(term, key);
-        }
+        yield* this.matchKeyObject(term, key);
       }
     } else {
       const match = this.matcher(obj);
