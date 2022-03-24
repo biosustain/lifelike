@@ -523,9 +523,17 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return max(nodes, ({label = ''}) => label.length);
   }
 
+  private extractTraceGroups({trace_networks}: { trace_networks: Array<SankeyTraceNetwork> }) {
+    return flatMap(
+      trace_networks,
+      ({traces}) => traces.map(({group}) => String(group))
+    );
+  }
+
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
       networkTraces: graph.traceNetworks,
+      traceGroups: this.extractTraceGroups(graph),
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph}),
