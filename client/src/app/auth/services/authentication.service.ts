@@ -39,8 +39,7 @@ export class AuthenticationService implements OnDestroy {
     const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
     const source = of(expirationTime).pipe(mergeMap((expiresAt) => {
       const now = new Date().getTime();
-      const refreshAt = expiresAt - (1000 * 60);
-      return timer(Math.max(1, refreshAt - now)).pipe(
+      return timer(Math.max(1, expiresAt - now)).pipe(
         mergeMap(() => this.refresh()));
     }));
 
