@@ -2,19 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
 import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
-import {
-  switchMap,
-  map,
-  filter,
-  catchError,
-  first,
-  shareReplay,
-  distinctUntilChanged,
-  publish,
-  startWith,
-  pairwise,
-  tap
-} from 'rxjs/operators';
+import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -24,14 +12,13 @@ import {
   SankeyFileOptions,
   SankeyStaticOptions,
   ViewBase,
-  SankeyLink,
   SankeyId,
   SankeyTrace,
-  SankeyNode,
   SankeyOptions
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
+import { $freezeInDev } from 'app/shared/rxjs/development';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -67,6 +54,10 @@ export function patchReducer(patch, callback) {
   return switchMap(stateDelta => callback(stateDelta, patch) ?? of(stateDelta));
 }
 
+interface Utils<Nodes> {
+  nodeById;
+}
+
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
  * It is responsible for holding Sankey data and view options (including selected networks trace)
@@ -82,13 +73,35 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  data$ = new ReplaySubject<SankeyFile>(1);
+  private _data$ = new ReplaySubject<SankeyFile>(1);
+  data$ = this._data$.pipe(
+    $freezeInDev,
+  );
+
+  // Using setter on private property to ensure that nobody subscribes to raw data
+  set data(data: SankeyFile) {
+    this._data$.next(data);
+  }
+
+  $addDataUtils = map((data: SankeyFile) => ({
+    ...data,
+    nodeById: this.getNodeById(data.nodes)
+  }));
+
   dataWithUtils$ = this.data$.pipe(
-    map(data => ({
-      ...data,
-      nodeById: this.getNodeById(data.nodes)
+    this.$addDataUtils,
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  renderDataWithUtils$ = this.data$.pipe(
+    map(({links, nodes, ...rest}) => ({
+      ...rest,
+      // shallow copy so we can add new properties for rendering
+      links: links.map(clone),
+      nodes: nodes.map(clone),
     })),
-    shareReplay({ bufferSize: 1, refCount: true })
+    this.$addDataUtils,
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   state$ = this.delta$.pipe(
@@ -217,16 +230,17 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     ))
   );
 
+
   partialNetworkTraceData$ = this.networkTrace$.pipe(
-    switchMap(({sources, targets, traces}) => this.dataWithUtils$.pipe(
+    switchMap(({sources, targets, traces}) => this.renderDataWithUtils$.pipe(
       map(({links, nodes, graph: {node_sets}, nodeById}) => ({
-          links,
-          nodes,
-          traces,
-          nodeById,
-          sources: node_sets[sources],
-          targets: node_sets[targets]
-        }))
+        links,
+        nodes,
+        traces,
+        nodeById,
+        sources: node_sets[sources],
+        targets: node_sets[targets]
+      }))
     )),
     debug('partialNetworkTraceData$'),
     shareReplay(1)
@@ -244,7 +258,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodeById).map(clone);
-          const traceNodesById =  this.getNodeById(traceNodes);
+          const traceNodesById = this.getNodeById(traceNodes);
 
           const source = traceNodesById.get(trace.source);
           const target = traceNodesById.get(trace.target);
@@ -437,7 +451,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   loadData(data: SankeyFile) {
     this.preprocessData(data);
-    this.data$.next(data);
+    this.data = data;
     return of(true);
   }
 

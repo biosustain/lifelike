@@ -3,6 +3,8 @@ import { isDevMode } from '@angular/core';
 
 import { tap, finalize } from 'rxjs/operators';
 
+import { skipStep } from './skipStep';
+
 const statusMessage = ({level, label, id, bgColor, color}) => (...args) => console[level](
   `%c%s%c %s${args.length ? ':' : ''}%c`,
   `background-color: ${bgColor}; color: ${color}; padding: 2px 4px;`,
@@ -47,4 +49,4 @@ export const debug: <T>(id) => ReturnType<tap<T>> = id => isDevMode() ?
       ),
       finalize(unsubscribed({id}))
     ) as Observable<T>;
-  } : (source: T) => source;
+  } : skipStep;
