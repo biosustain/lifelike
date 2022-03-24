@@ -401,7 +401,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       (_x0 + _x1) / 2,
       // y
       (_y0 + _y1) / 2,
-      [0, 0],
+      undefined,
       true
     );
   }
