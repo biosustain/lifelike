@@ -20,7 +20,7 @@ import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { associatedMapsRegex } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
 
-import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
+import { PlacedEdge, PlacedGroup, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
@@ -910,7 +910,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
   // TODO: Docs
-  abstract placeGroup(d: NodeGroup): PlacedNode;
+  abstract placeGroup(d: NodeGroup): PlacedGroup;
 
   /**
    * Place the given entity onto the canvas, which involves calculating the
