@@ -378,13 +378,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.lastActivityTime = window.performance.now();
   }
 
-  // TODO: Ensure if the selection is at least 2 nodes, not edges
   createGroup() {
     this.graphCanvas?.execute(new GroupCreation(
       'Create group',
       {
         members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
           [entity.entity as UniversalGraphNode] : []),
+        margin: 10,
         hash: uuidv4(),
         display_name: '',
         label: 'group',
