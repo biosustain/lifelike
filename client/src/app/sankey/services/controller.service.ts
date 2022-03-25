@@ -76,7 +76,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   private _data$ = new ReplaySubject<SankeyFile>(1);
   data$ = this._data$.pipe(
     $freezeInDev,
-    shareReplay({bufferSize: 1, refCount: true})
   );
 
   // Using setter on private property to ensure that nobody subscribes to raw data
@@ -91,7 +90,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   dataWithUtils$ = this.data$.pipe(
     this.$addDataUtils,
-    debug('dataWithUtils$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
@@ -103,7 +101,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       nodes: nodes.map(clone),
     })),
     this.$addDataUtils,
-    debug('renderDataWithUtils$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
