@@ -69,8 +69,8 @@ export class ViewControllerService {
     switchMap(layout => layout.graph$)
   );
 
-  extent$ = this.layout$.pipe(
-    switchMap(layout => layout.extent$)
+  graphViewport$ = this.layout$.pipe(
+    switchMap(layout => layout.graphViewport$)
   );
 
   selectView(viewName) {
@@ -122,7 +122,7 @@ export class ViewControllerService {
           links: this.mapToPropertyObject(links, this.linkViewProperties)
         }))
       )),
-      switchMap(partialView => this.extent$.pipe(
+      switchMap(partialView => this.graphViewport$.pipe(
         first(),
         map(({width, height}) => ({
           ...partialView,
