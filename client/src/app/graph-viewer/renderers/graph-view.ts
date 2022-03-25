@@ -487,12 +487,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param group - data of the group
    */
   addGroup(group: NodeGroup) {
-    // TODO: Check if group hash is unique and stuff
-    // TODO: Populate group 'data' entry by calculating bbox, width, height, center
-    group.members.forEach((member) => this.groupHashMap.set(member.hash, group));
+    group.members.forEach((member) => {
+      if (this.groupHashMap.has(member.hash)) {
+        this.removeNodeFromGroup(member.hash);
+      }
+      this.groupHashMap.set(member.hash, group);
+    });
     this.groups.push(this.recalculateGroup(group));
   }
 
+  /**
+   * As groups don't have their size, we need to recalculate them when members change position
+   * @param group to recalculate
+   */
   recalculateGroup(group: NodeGroup): NodeGroup {
     const bbox = this.getNodeBoundingBox(group.members || []);
     const { minX, minY, maxX, maxY } = bbox;
@@ -559,6 +566,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   updateGroup(group: NodeGroup) {
     // TODO: Maybe do that only on move of a member, not on every update
+    // TODO: This breaks dragging
     this.recalculateGroup(group);
     this.invalidateGroup(group);
     this.requestRender();

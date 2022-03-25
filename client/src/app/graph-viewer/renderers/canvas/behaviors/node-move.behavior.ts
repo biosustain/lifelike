@@ -30,14 +30,14 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const entity = event.entity;
 
-    if (entity != null && entity.type === GraphEntityType.Node) {
+    if (entity?.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
       this.target = node;
       this.originalTarget = cloneDeep(this.target);
-    } else if (entity != null && entity.type === GraphEntityType.Group) {
+    } else if (entity?.type === GraphEntityType.Group) {
       const group = entity.entity as NodeGroup;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
@@ -58,14 +58,13 @@ export class MovableNode extends AbstractCanvasBehavior {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
 
-      const selectedNodes = new Set<UniversalGraphNode>();
+      const selectedNodes = new Set<UniversalGraphNode | NodeGroup>();
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
         } else if (entity.type === GraphEntityType.Group) {
-          const node = entity.entity as UniversalGraphNode;
-          selectedNodes.add(node);
+          // const node = entity.entity as UniversalGraphNode;
           const group = entity.entity as NodeGroup;
           selectedNodes.add(entity.entity as UniversalGraphNode);
           for (const n of group.members) {

@@ -111,11 +111,11 @@
                                         (actionCreated)="graphCanvas.execute($event)">
                         </app-info-panel>
                     </div>
-                    <div class="row align-items-center" *ngIf="selected[0].length > 1">
-                        <button class="btn btn-light center mt-2" (click)="createGroup()">
-                            Create Group
-                        </button>
-                    </div>
+                    <button *ngIf="canCreateGroupFromSelection()"
+                            class="btn btn-light center mt-2 ml-2"
+                            (click)="createGroup()">
+                        Create Group
+                    </button>
                 </ng-container>
 
                 <ng-template #graphInfo>
@@ -138,6 +138,13 @@
                                                 <div class="col-sm-6">Edge Count:</div>
                                                 <div class="col-sm-6 text-right">
                                                     {{ graphCanvas.edges.length | number }}
+                                                </div>
+                                            </div>
+
+                                            <div class="row align-items-center">
+                                                <div class="col-sm-6">Group Count:</div>
+                                                <div class="col-sm-6 text-right">
+                                                    {{ graphCanvas.groups.length | number }}
                                                 </div>
                                             </div>
 

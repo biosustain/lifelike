@@ -206,6 +206,17 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     });
   }
 
+  /**
+   * Checks if current selection allows to create a group. For that, we need at least 2 nodes.
+   */
+  canCreateGroupFromSelection() {
+    const selection = this.graphCanvas?.selection.get();
+    if (selection) {
+      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 1;
+    }
+    return false;
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {
     if (this.shouldConfirmUnload()) {
