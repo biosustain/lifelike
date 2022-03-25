@@ -1,6 +1,6 @@
 import { Observable, animationFrameScheduler } from 'rxjs';
-import { throttleTime, distinctUntilChanged, filter, share } from 'rxjs/operators';
-import { isEqual } from 'lodash-es';
+import { throttleTime, distinctUntilChanged, filter, share, map, tap } from 'rxjs/operators';
+import { isEqual, partialRight, mapValues } from 'lodash-es';
 
 /**
  * Returns observable of native element size (might be constant event if window resizes)
@@ -18,8 +18,8 @@ export function createResizeObservable(element: HTMLElement): Observable<DOMRect
     const ro = new ResizeObserver(([{contentRect}]: ResizeObserverEntry[]) => {
       subscriber.next(contentRect);
       const updatedSize = element.getBoundingClientRect();
-      if (contentRect.width !== updatedSize.width) {
-        // If the container size shrank during resize, let's assume
+      if (Math.abs(contentRect.width - updatedSize.width) > 1) {
+        // If the container size significantly shrank during resize, let's assume
         // scrollbar appeared. So we resize again with the scrollbar visible -
         // potentially making container smaller and the scrollbar hidden again.
         subscriber.next(updatedSize);
