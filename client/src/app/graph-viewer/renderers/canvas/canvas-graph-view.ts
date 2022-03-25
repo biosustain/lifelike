@@ -489,6 +489,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       this.invalidateNode(entity.entity as UniversalGraphNode);
     } else if (entity.type === GraphEntityType.Edge) {
       this.invalidateEdge(entity.entity as UniversalGraphEdge);
+    } else if (entity.type === GraphEntityType.Group) {
+      this.invalidateGroup(entity.entity as NodeGroup);
     }
   }
 

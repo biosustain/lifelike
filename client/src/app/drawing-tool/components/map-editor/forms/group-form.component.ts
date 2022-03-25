@@ -70,7 +70,6 @@ export class GroupFormComponent extends EntityForm  {
           lineWidthScale: this.originalGroup.style.lineWidthScale,
           showDetail: this.originalGroup.style.showDetail,
         },
-        members: this.originalGroup.members
       },
       updatedData: {
         data: {
@@ -91,7 +90,6 @@ export class GroupFormComponent extends EntityForm  {
           showDetail: this.updatedGroup.style.showDetail,
         },
         // TODO: Actually allow to modify a group
-        members: this.updatedGroup.members
       },
     });
     this.originalGroup = cloneDeep(this.updatedGroup);
