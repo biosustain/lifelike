@@ -27,6 +27,7 @@ export interface UniversalNodeStyle {
 
 export interface NodeGroup extends UniversalGraphNode {
   members: UniversalGraphNode[];
+  margin: number;
 }
 
 // Created for export purpose: do not duplicate the nodes on export

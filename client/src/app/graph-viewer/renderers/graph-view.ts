@@ -500,8 +500,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * As groups don't have their size, we need to recalculate them when members change position
    * @param group to recalculate
    */
+  // TODO: Change the margin component from % to px
   recalculateGroup(group: NodeGroup): NodeGroup {
-    const bbox = this.getNodeBoundingBox(group.members || []);
+    const bbox = this.getNodeBoundingBox(group.members || [], group.margin);
     const { minX, minY, maxX, maxY } = bbox;
     const width = Math.abs(maxX - minX);
     const height = Math.abs(maxY - minY);
