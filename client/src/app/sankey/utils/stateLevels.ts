@@ -19,6 +19,7 @@ const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'fontSizeScale',
   'viewName',
   'baseViewName',
+  'alignId'
 ];
 
 export const getCommonState = state => pick(state, SANKEY_STATE_KEYS);
