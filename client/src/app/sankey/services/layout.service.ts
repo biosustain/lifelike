@@ -155,6 +155,18 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
 
+  graphViewport$ = combineLatest([
+    this.extent$,
+    this.zoomAdjustment$.pipe(
+      startWith({zoom: 1}),
+    ),
+  ]).pipe(
+    map(([{width, height}, {zoom}]) => ({
+      width: width / zoom,
+      height: height / zoom
+    }))
+  );
+
   takeUntilViewChange = takeUntil(this.baseView.common.view$);
 
   private calculateLayout$;
@@ -515,26 +527,24 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
           const horizontalAdjustment = currentWidth / width;
           const verticalAdjustment = currentHeight / height;
 
-          const x0 = -graphSize.x0 + this.dx;
-          const y0 = -graphSize.y0 + this.dy;
-
-          if (horizontalAdjustment > verticalAdjustment) {
-            this.zoomAdjustment$.next({
-              x0: x0 * horizontalAdjustment / verticalAdjustment, y0,
-              zoom: verticalAdjustment
-            });
-            // if we zoom out to fit graph vertically then spread nodes on horizontal axis
-            this.repositionNodesHorizontaly(
-              data,
-              extent,
-              horizontalAdjustment / verticalAdjustment
-            );
-          } else {
-            this.zoomAdjustment$.next({
-              x0, y0,
-              zoom: horizontalAdjustment
-            });
+          let x0 = 0;
+          let y0 = 0;
+          if (graphSize.x0 < 0) {
+            x0 -= graphSize.x0 - this.dx;
           }
+          if (graphSize.y0 < 0) {
+            y0 -= graphSize.y0 - this.dy;
+          }
+
+          this.repositionNodesHorizontaly(
+            data,
+            extent,
+            horizontalAdjustment / verticalAdjustment
+          );
+          this.zoomAdjustment$.next({
+            x0, y0,
+            zoom: verticalAdjustment
+          });
         } else {
           const prevWidth = prevExtent?.width ?? extent.width;
           const widthChangeRatio = extent.width / prevWidth;
