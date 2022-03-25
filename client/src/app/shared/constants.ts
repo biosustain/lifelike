@@ -146,6 +146,9 @@ export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9
 
 export const handleBlue = '#97C2FC';
 
+export const whiteColor = '#fff';
+export const blackColor = '#000';
+
 export const COUNTRY_NAME_LIST = [
   'Afghanistan',
   'Albania',
@@ -348,5 +351,3 @@ export enum SizeUnits {
   GiB = 2e30,
   TiB = 2e40
 }
-
-export const defaultLabelFontSize = 16;

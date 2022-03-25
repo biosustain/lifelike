@@ -1,12 +1,21 @@
-import { defaultLabelFontSize } from 'app/shared/constants';
-
 import { TextElement } from './text-element';
 
+// ---------------------------------
+// Constants
+// ---------------------------------
 
 // First threshold - we want start to modify the fonts to increase visibility/remove text from nodes
 export const visibleTextThreshold = 0.4;
 // Second threshold - we remove all text from the graph
 export const noTextThreshold = 0.15;
+
+// Knowledge-map styles
+export const defaultLabelFontSize = 16;
+export const borderBlue = '#2B7CE9';
+
+// ---------------------------------
+// Shared functions
+// ---------------------------------
 
 /**
  * Draw textbox, ensuring that the font appear at least as big, as at visibleTextThreshold.
