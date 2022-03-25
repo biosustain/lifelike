@@ -128,6 +128,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
         edgeRenderStyle: style,
+        groupRenderStyle: style,
       });
 
       this.registerGraphBehaviors();
