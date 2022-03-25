@@ -139,16 +139,11 @@ class TokenService:
 @auth.verify_token
 def verify_token(token):
     """ Verify JTW """
-    try:
-        token_service = TokenService(
-            current_app.config['JWT_SECRET'],
-            current_app.config['JWT_ALGORITHM']
-        )
-        decoded = token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
-    except JWTTokenException:
-        raise ServerException(
-            title='Failed to Authenticate',
-            message='There was a problem authenticating, please try again.')
+    token_service = TokenService(
+        current_app.config['JWT_SECRET'],
+        current_app.config['JWT_ALGORITHM']
+    )
+    decoded = token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
 
     try:
         user = AppUser.query_by_subject(decoded['sub']).one()
