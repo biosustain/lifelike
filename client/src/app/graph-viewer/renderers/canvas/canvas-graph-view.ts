@@ -11,7 +11,7 @@ import {
   UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, } from 'app/graph-viewer/styles/styles';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce } from 'app/shared/utils/types';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
@@ -424,14 +424,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  placeGroup(d: NodeGroup): PlacedNode {
-    const placedGroup = this.renderTree.get(d) as PlacedNode;
+  placeGroup(d: NodeGroup): PlacedGroup {
+    const placedGroup = this.renderTree.get(d) as PlacedGroup;
     if (placedGroup) {
       return placedGroup;
     } else {
       const ctx = this.canvas.getContext('2d');
 
-      const newGroup = this.nodeRenderStyle.placeNode(d, ctx, {
+      const newGroup = this.nodeRenderStyle.placeGroup(d, ctx, {
         selected: this.isAnySelected(d),
         highlighted: this.isAnyHighlighted(d),
       });

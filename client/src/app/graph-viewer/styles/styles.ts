@@ -1,4 +1,4 @@
-import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { NodeGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 /**
  * A style of node rendering, used to render different shapes of nodes.
@@ -38,6 +38,19 @@ export interface EdgeRenderStyle {
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             options: PlacementOptions): PlacedEdge;
+}
+
+export interface GroupRenderStyle {
+  /**
+   * Place the group within the provided context and return an object
+   * that provides metrics and can render the object.
+   * @param d the edge
+   * @param ctx the context
+   * @param options extra options for placement
+   */
+  placeGroup(d: NodeGroup,
+             ctx: CanvasRenderingContext2D,
+             options: PlacementOptions): PlacedGroup;
 }
 
 /**
@@ -177,4 +190,8 @@ export abstract class PlacedEdge extends PlacedObject {
    * @param transform the zoom and pan transform
    */
   abstract drawLayer2(transform: any): void;
+}
+
+export abstract class PlacedGroup extends PlacedObject {
+
 }

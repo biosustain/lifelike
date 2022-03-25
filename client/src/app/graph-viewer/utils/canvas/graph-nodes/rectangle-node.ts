@@ -1,11 +1,9 @@
 import 'canvas-plus';
 
-import { defaultLabelFontSize } from 'app/shared/constants';
-
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import { visibleTextThreshold } from '../shared';
+import { defaultLabelFontSize, visibleTextThreshold } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
