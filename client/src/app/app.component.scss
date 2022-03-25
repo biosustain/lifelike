@@ -6,12 +6,12 @@ router-outlet + ::ng-deep * {
   height: 100%;
 }
 
-.app {
-  min-height: calc(100vh - 24px);
-}
-
 .button-divider {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.vertical-nav {
+  z-index: 1045;
 }
 
 footer {
