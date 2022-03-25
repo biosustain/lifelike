@@ -21,10 +21,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
-import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { SEARCH_LINKS } from 'app/shared/links';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { toValidLink } from 'app/shared/utils/browser';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
@@ -522,7 +520,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @HostListener('document:selectionchange', ['$event'])
   selectionChange(event: Event) {
-    if(this.selecting) {
+    if (this.selecting) {
       const selection = window.getSelection();
       const ranges = this.getValidSelectionRanges(selection);
       if (ranges.length) {
@@ -577,7 +575,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    *  after selection start.
    */
   selectionEnd(event: Event) {
-    if(this.firstAnnotationRange) {
+    if (this.firstAnnotationRange) {
       if (IS_MAC) {
         const textLayer = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
         // if it is not multiple page selection (not-supported - still would work just without behaviour adjustment for mac)
