@@ -1,12 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -79,58 +71,52 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   openEditDialog(target: FilesystemObject) {
-    return this.actions.openEditDialog(target).then(() => {
-      this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {
-        duration: 5000,
-      });
-      this.objectUpdate.emit(target);
-    }, () => {
-    });
+    return this.actions.openEditDialog(target)
+      .then(() => this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {duration: 5000}))
+      .then(() => this.objectUpdate.emit(target));
   }
 
   openCloneDialog(target: FilesystemObject) {
     const newTarget: FilesystemObject = cloneDeep(target);
     newTarget.public = false;
-    return this.actions.openCloneDialog(newTarget).then(clone => {
-      this.snackBar.open(`Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`, 'Close', {
-        duration: 5000,
-      });
-      this.refreshRequest.next();
-    }, () => {
-    });
+    return this.actions.openCloneDialog(newTarget)
+      .then(clone =>
+        this.snackBar.open(
+          `Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`,
+          'Close',
+          {duration: 5000}
+        )
+      )
+      .then(() => this.refreshRequest.emit());
   }
 
   openMoveDialog(targets: FilesystemObject[]) {
-    return this.actions.openMoveDialog(targets).then(({destination}) => {
-      this.snackBar.open(
-        `Moved ${getObjectLabel(targets)} to ${getObjectLabel(destination)}.`,
-        'Close', {
-          duration: 5000,
-        });
-      this.refreshRequest.next();
-    }, () => {
-    });
+    return this.actions.openMoveDialog(targets)
+      .then(({destination}) =>
+        this.snackBar.open(
+          `Moved ${getObjectLabel(targets)} to ${getObjectLabel(destination)}.`,
+          'Close', {duration: 5000}
+        )
+      )
+      .then(() => this.refreshRequest.emit());
   }
 
   openDeleteDialog(targets: FilesystemObject[]) {
-    return this.actions.openDeleteDialog(targets).then(() => {
-      this.snackBar.open(`Deleted ${getObjectLabel(targets)}.`, 'Close', {
-        duration: 5000,
-      });
-      this.refreshRequest.next();
-    }, () => {
-    });
+    return this.actions.openDeleteDialog(targets)
+      .then(() =>
+        this.snackBar.open(
+          `Deleted ${getObjectLabel(targets)}.`,
+          'Close', {duration: 5000}
+        )
+      )
+      .then(() => this.refreshRequest.emit());
   }
 
   reannotate(targets: FilesystemObject[]) {
-    return this.actions.reannotate(targets).then(() => {
-      this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {
-        duration: 5000,
-      });
-      this.refreshRequest.next();
-      this.objectRefresh.next();
-    }, () => {
-    });
+    return this.actions.reannotate(targets)
+      .then(() => this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {duration: 5000}))
+      .then(() => this.refreshRequest.emit())
+      .then(() => this.objectRefresh.emit());
   }
 
   openVersionHistoryDialog(target: FilesystemObject) {
@@ -139,7 +125,7 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
 
   openVersionRestoreDialog(target: FilesystemObject) {
     return this.actions.openVersionRestoreDialog(target).then(version => {
-      this.objectRestore.next(version);
+      this.objectRestore.emit(version);
     }, () => {
     });
   }

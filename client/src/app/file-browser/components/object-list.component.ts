@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ContentChild, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -68,7 +68,7 @@ export class ObjectListComponent {
   }
 
   openObject(target: FilesystemObject) {
-    this.objectOpen.next(target);
+    this.objectOpen.emit(target);
 
     if (this.appLinks) {
       if (target.isOpenable) {
