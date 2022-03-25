@@ -44,8 +44,7 @@
               "src/scss/bootstrap.scss"
             ],
             "scripts": [
-              "node_modules/vis-network/dist/vis-network.min.js",
-              "node_modules/bootstrap/dist/js/bootstrap.min.js"
+              "node_modules/vis-network/dist/vis-network.min.js"
             ],
             "webWorkerTsConfig": "tsconfig.worker.json"
           },

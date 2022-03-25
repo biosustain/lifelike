@@ -2,10 +2,11 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { escape, uniqueId } from 'lodash-es';
 
-import { Annotation } from '../../annotation-type';
-import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { ENTITY_TYPE_MAP, DatabaseLink, EntityType } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
+
+import { Annotation } from '../../annotation-type';
+import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 
 @Component({
   selector: 'app-page-annotations',
@@ -13,13 +14,12 @@ import { SEARCH_LINKS } from 'app/shared/links';
   styleUrls: ['./page-annotations.component.scss']
 })
 export class PageAnnotationsComponent {
-  @Input() annotattions: Array<any>;
+  @Input() annotations: Array<any>;
   @Input() highlight;
   @Input() pageViewport: PageViewport;
   @Output() dragStart: EventEmitter<any> = new EventEmitter();
 
   opacity = 0.3;
-  uuid = uniqueId('pdf-tooltip-collapse-target');
 
   openExclusionPanel(annotation: Annotation) {
     // TODO
@@ -34,10 +34,7 @@ export class PageAnnotationsComponent {
         rect
       }
     });
-    event.stopPropagation();
   }
-
-  SEARCH_LINKS = SEARCH_LINKS;
 
   normalizeTopCoordinate(top: number, an: Annotation): number {
     if (an && an.meta && an.meta.isCustom) {
@@ -62,12 +59,8 @@ export class PageAnnotationsComponent {
     //  TODO
   }
 
-  toggleWithContext(tooltip, context) {
-    if (tooltip.isOpen()) {
-      tooltip.close();
-    } else {
-      tooltip.open(context);
-    }
+  removeAnnotationExclusion(annotation) {
+    // TODO
   }
 
   style(annotation, rect) {
@@ -87,23 +80,9 @@ export class PageAnnotationsComponent {
       top: top + 'px',
       width: width + 'px',
       height: height + 'px',
-      cursor: 'move'
+      cursor: 'move',
+      zIndex: '1'
     };
   }
 
-  idLink(annotation) {
-    let idLink: DatabaseLink = null;
-
-    if (ENTITY_TYPE_MAP.hasOwnProperty(annotation.meta.type)) {
-      const source = ENTITY_TYPE_MAP[annotation.meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === annotation.meta.idType)[0];
-    }
-
-    return idLink;
-  }
-
-  annoId(an) {
-    const id = an.meta.id.indexOf(':') !== -1 ? an.meta.id.split(':')[1] : an.meta.id;
-    return id?.indexOf('NULL') === -1 ? id : null;
-  }
 }

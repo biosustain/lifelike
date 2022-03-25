@@ -1042,12 +1042,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   /**
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
-  pageRendered({pageNumber, source}: PDFPageRenderEvent) {
+  pageRendered({pageNumber, source, ...rest}: PDFPageRenderEvent) {
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = pageNumber;
     const textLayoutOutlet = this.createTextLayerPortalOutlet(source.textLayer);
-    const pageAnnotations = new ComponentPortal(PageAnnotationsComponent);
-    textLayoutOutlet.attach(pageAnnotations);
+    const pageAnnotations = textLayoutOutlet.attach(new ComponentPortal(PageAnnotationsComponent));
+    pageAnnotations.instance.pageViewport = source.viewport;
     this.processAnnotations(pageNumber, source, pageAnnotations);
   }
 

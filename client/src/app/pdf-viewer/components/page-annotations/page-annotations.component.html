@@ -1,102 +1,28 @@
-<ng-container *ngFor="let annotation of annotattions">
+<ng-container *ngFor="let annotation of annotations">
     <div *ngFor="let rect of annotation.rects"
-         class="system-annotation"
          [class.annotation-highlight]="highlight === annotation.meta.id"
          [draggable]="true"
-         (dragstart)="_dragStart(event$, annotation, rect)"
+         (dragstart)="_dragStart($event, annotation, rect)"
          [ngStyle]="style(annotation, rect)"
          #tooltip="ngbTooltip"
          [ngbTooltip]="tooltipContent"
          triggers="manual"
-         (mouseover)="tooltip.open()"
-         (mouseleave)="tooltip.close()"
+         autoClose="outside"
+         (click)="tooltip.open({
+             annotation: annotation,
+             removeAnnotationExclusion: removeAnnotationExclusion
+         })"
+         (blur)="tooltip.close()"
     >
-
     </div>
 </ng-container>
-<ng-template #tooltipContent let-annotation="annotation">
-    Type: {{annotation.meta.type}}<br>
-    <!--    null/undefined because a data source did not match-->
-    <!--    e.g we use "Custom" for phenotype-->
-    Id: TODO<br>
-    Data Source: {{ annotation.meta.idType ?? 'None' }}<br>
-    {{ an.meta.isCustom ? 'User generated annotation' : '' }}
-    <div *ngIf="annotation.meta.idHyperlinks as sourcelinks">
-        <a>Source Links: <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
-        <div>
-            <a *ngFor="let sourcelink of sourcelinks"
-               target="_blank"
-               rel="noopener noreferrer"
-            >
-                TODO
-                <!--                {{ sourcelink.name }}-->
-            </a>
-        </div>
-    </div>
-    <div>
-        <div
-                class="tooltip-collapse-control collapsed"
-                role="button"
-                data-toggle="collapse"
-                [data-target]="uuid"
-                aria-expanded="false"
-                [aria-controls]="uuid"
-        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
-        <div class="collapse" [id]="uuid">
-            <!--  links should be sorted in the order that they appear in SEARCH_LINKS-->
-            <div *ngFor="let link of SEARCH_LINKS">
-                <a target="_blank">
-                    TODO
-                </a>
-            </div>
-        </div>
-    </div>
-    <div>
-        <div
-                class="tooltip-collapse-control collapsed"
-                role="button"
-                data-toggle="collapse"
-                data-target="#${searchInternalLinkCollapseTargetId}"
-                aria-expanded="false"
-                aria-controls="${searchInternalLinkCollapseTargetId}"
-        >Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
-        <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
-            TODO
-        </div>
-    </div>
-    <div class="mt-1" *ngIf="annotation.meta.isCustom; else notCustom">
-        <button
-                type="button"
-                class="btn btn-primary btn-block"
-                (click)="removeCustomAnnotation(annotation)             ">
-            <i class="fas fa-fw fa-trash"></i>
-            <span>Delete Annotation</span>
-        </button>
-    </div>
-    <ng-template #notCustom *ngIf="!annotation.meta.isExcluded; else excluded">
-        <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" (click)="openExclusionPanel(annotation)">
-                <i class="fas fa-fw fa-minus-circle"></i>
-                <span>Mark for Exclusion</span>
-            </button>
-        </div>
-    </ng-template>
-    <ng-template #excluded>
-        <div class="mt-2">
-            <div style="display: flex; flex-direction: column">
-                <span style="line-height: 16px">Manually excluded</span>
-                <span style="line-height: 16px"><i>reason: </i>{{annotation.meta.exclusionReason}}</span>
-                <span *ngIf="annotation.meta.exclusionComment" style="line-height: 16px">
-                    <i>comment: </i> {{ annotation.meta.exclusionComment}}
-                </span>
-            </div>
-            <div class="mt-1">
-                <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(
-        JSON.stringify(annExclusion))})">
-                    <i class="fas fa-fw fa-undo"></i>
-                    <span>Unmark Exclusion</span>
-                </button>
-            </div>
-        </div>
-    </ng-template>
+<ng-template #tooltipContent
+             let-annotation="annotation"
+             let-removeAnnotationExclusion="removeAnnotationExclusion"
+>
+    <app-annotation-details
+            (click)="$event.stopPropagation()"
+            [annotation]="annotation"
+            (removeAnnotationExclusion)="removeAnnotationExclusion"
+    ></app-annotation-details>
 </ng-template>

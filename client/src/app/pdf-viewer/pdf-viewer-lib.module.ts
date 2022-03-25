@@ -24,6 +24,7 @@ import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 import { FileViewComponent } from './components/file-view.component';
 import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
 import { PageAnnotationsComponent } from './components/page-annotations/page-annotations.component';
+import { AnnotationDetailsComponent } from './components/annotation-details/annotation-details.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { PageAnnotationsComponent } from './components/page-annotations/page-ann
     FileViewComponent,
     AnnotationToolbarComponent,
     PageAnnotationsComponent,
+    AnnotationDetailsComponent,
   ],
   imports: [
     PdfViewerModule,
