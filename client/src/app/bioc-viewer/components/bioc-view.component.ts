@@ -257,46 +257,48 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   scrollInOffset(params: BiocAnnotationLocation) {
-    if (!isNaN(Number(params.offset))) {
-      const query = `span[offset='${params.offset}']`;
-      const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
-      if (annotationElem) {
-        annotationElem.scrollIntoView({ block: 'center' });
-        jQuery(annotationElem).css('border', '2px solid #D62728');
-        jQuery(annotationElem).animate({
-          borderLeftColor: 'white',
-          borderTopColor: 'white',
-          borderRightColor: 'white',
-          borderBottomColor: 'white',
-        }, 1000);
-      }
-    }
-    // if start and end exists then
-    // then it is frictionless drag and drop
-    if (params.start && params.len) {
-      const query = `span[position='${params.offset}']`;
-      const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
-      const range = document.createRange();
-      range.setStart(annotationElem.firstChild, Number(params.start));
-      range.setEnd(annotationElem.firstChild, Number(params.start) + Number(params.len));
-      const newNode = document.createElement('span');
-      newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
-      jQuery(newNode).css('border', '2px solid #D62728');
-      range.surroundContents(newNode);
-      this.createdNode = newNode;
-      if (newNode) {
-        newNode.scrollIntoView({ block: 'center' });
-        jQuery(newNode).animate({
-          borderLeftColor: 'white',
-          borderTopColor: 'white',
-          borderRightColor: 'white',
-          borderBottomColor: 'white',
-        }, 1000);
-        setTimeout(() => {
-          this.removeFrictionlessNode();
-        }, 800);
-      }
-    }
+    console.log('scrollInOffset', params);
+    // todo
+    // if (!isNaN(Number(params.offset))) {
+    //   const query = `span[offset='${params.offset}']`;
+    //   const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
+    //   if (annotationElem) {
+    //     annotationElem.scrollIntoView({ block: 'center' });
+    //     jQuery(annotationElem).css('border', '2px solid #D62728');
+    //     jQuery(annotationElem).animate({
+    //       borderLeftColor: 'white',
+    //       borderTopColor: 'white',
+    //       borderRightColor: 'white',
+    //       borderBottomColor: 'white',
+    //     }, 1000);
+    //   }
+    // }
+    // // if start and end exists then
+    // // then it is frictionless drag and drop
+    // if (params.start && params.len) {
+    //   const query = `span[position='${params.offset}']`;
+    //   const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
+    //   const range = document.createRange();
+    //   range.setStart(annotationElem.firstChild, Number(params.start));
+    //   range.setEnd(annotationElem.firstChild, Number(params.start) + Number(params.len));
+    //   const newNode = document.createElement('span');
+    //   newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
+    //   jQuery(newNode).css('border', '2px solid #D62728');
+    //   range.surroundContents(newNode);
+    //   this.createdNode = newNode;
+    //   if (newNode) {
+    //     newNode.scrollIntoView({ block: 'center' });
+    //     jQuery(newNode).animate({
+    //       borderLeftColor: 'white',
+    //       borderTopColor: 'white',
+    //       borderRightColor: 'white',
+    //       borderBottomColor: 'white',
+    //     }, 1000);
+    //     setTimeout(() => {
+    //       this.removeFrictionlessNode();
+    //     }, 800);
+    //   }
+    // }
   }
 
   setAllEntityTypesVisibility(state: boolean) {
@@ -453,14 +455,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   removeFrictionlessNode() {
+    // todo
     // I will replace this code
-    if (this.createdNode && this.createdNode.parentNode) {
-      const wholeText = this.createdNode.parentNode.textContent;
-      const parent = this.createdNode.parentNode;
-      this.createdNode.parentNode.replaceChild(document.createTextNode(this.selectedText), this.createdNode);
-      this.createdNode = null;
-      jQuery(parent).text(wholeText);
-    }
+    // if (this.createdNode && this.createdNode.parentNode) {
+    //   const wholeText = this.createdNode.parentNode.textContent;
+    //   const parent = this.createdNode.parentNode;
+    //   this.createdNode.parentNode.replaceChild(document.createTextNode(this.selectedText), this.createdNode);
+    //   this.createdNode = null;
+    //   jQuery(parent).text(wholeText);
+    // }
   }
 
   @HostListener('document:mouseup', ['$event'])
@@ -488,13 +491,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         window.getSelection().empty();
       }
 
-      const ann = jQuery(this.createdNode).parent();
-      const offset = jQuery(ann).attr('position');
-      const parentText: string = ann.text();
-      const createdText = jQuery(this.createdNode).text();
-      const innerIndex = parentText.indexOf(createdText);
-      jQuery(this.createdNode).attr('start', innerIndex);
-      jQuery(this.createdNode).attr('len', createdText.length);
+      console.log(this.createdNode);
+      // todo
+      // const ann = jQuery(this.createdNode).parent();
+      // const offset = jQuery(ann).attr('position');
+      // const parentText: string = ann.text();
+      // const createdText = jQuery(this.createdNode).text();
+      // const innerIndex = parentText.indexOf(createdText);
+      // jQuery(this.createdNode).attr('start', innerIndex);
+      // jQuery(this.createdNode).attr('len', createdText.length);
       return false;
     }
   }
@@ -532,20 +537,22 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       url: pmcidFomDoc[1]
     });
     if (!clazz || clazz.value === '') {
-      const node = jQuery((event as any).path[1]);
-      const position = jQuery(node).parent().attr('position');
-      const startIndex = jQuery(node).attr('start');
-      const len = jQuery(node).attr('len');
-      let source = ['/projects', encodeURIComponent(this.object.project.name),
+      console.log('no class');
+      // todo
+      // const node = jQuery((event as any).path[1]);
+      // const position = jQuery(node).parent().attr('position');
+      // const startIndex = jQuery(node).attr('start');
+      // const len = jQuery(node).attr('len');
+      const source = ['/projects', encodeURIComponent(this.object.project.name),
         'bioc', encodeURIComponent(this.object.hashId)].join('/');
-      if (position) {
-        source += '#';
-        source += new URLSearchParams({
-          offset: position,
-          start: startIndex,
-          len
-        });
-      }
+      // if (position) {
+      //   source += '#';
+      //   source += new URLSearchParams({
+      //     offset: position,
+      //     start: startIndex,
+      //     len
+      //   });
+      // }
       const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
       dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
