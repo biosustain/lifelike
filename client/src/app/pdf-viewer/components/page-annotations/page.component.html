@@ -1,0 +1,31 @@
+<ng-container *ngFor="let annotation of annotations">
+    <div (focusout)="blur($event, tooltip)" *ngFor="let rect of annotation.rects">
+        <div
+             [class.annotation-highlight]="highlight === annotation.meta.id"
+             [draggable]="true"
+             (dragstart)="_dragStart($event, annotation, rect)"
+             [ngStyle]="style(annotation, rect)"
+             #tooltip="ngbTooltip"
+             [ngbTooltip]="tooltipContent"
+             triggers="manual"
+             [autoClose]="'outside'"
+             (click)="tooltip.open({
+                 annotation: annotation,
+                 removeAnnotationExclusion: removeAnnotationExclusion
+             })"
+        >
+        </div>
+    </div>
+</ng-container>
+<ng-template #tooltipContent
+             let-annotation="annotation"
+             let-removeAnnotationExclusion="removeAnnotationExclusion"
+>
+    <app-annotation-details
+            (click)="$event.stopPropagation()"
+            [annotation]="annotation"
+            (removeAnnotationExclusion)="removeAnnotationExclusion"
+    ></app-annotation-details>
+</ng-template>
+<app-annotation-toolbar *ngIf="annotationToolbarPosition" [position]="annotationToolbarPosition">
+</app-annotation-toolbar>

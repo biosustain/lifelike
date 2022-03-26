@@ -1,9 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-import { escape, uniqueId } from 'lodash-es';
+import { escape } from 'lodash-es';
 
-import { ENTITY_TYPE_MAP, DatabaseLink, EntityType } from 'app/shared/annotation-types';
-import { SEARCH_LINKS } from 'app/shared/links';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 import { Annotation } from '../../annotation-type';
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
@@ -13,13 +12,19 @@ import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
   templateUrl: './page-annotations.component.html',
   styleUrls: ['./page-annotations.component.scss']
 })
-export class PageAnnotationsComponent {
+export class PageComponent {
   @Input() annotations: Array<any>;
   @Input() highlight;
   @Input() pageViewport: PageViewport;
+  @Input() annotationToolbarPosition;
   @Output() dragStart: EventEmitter<any> = new EventEmitter();
+  @Output() openAnnotationPanel: EventEmitter<any> = new EventEmitter();
 
   opacity = 0.3;
+
+  blur(event, tooltip) {
+    console.log('blur', tooltip, event);
+  }
 
   openExclusionPanel(annotation: Annotation) {
     // TODO

@@ -66,31 +66,6 @@ export class AnnotationToolbarComponent {
     return null;
   }
 
-  openAnnotationPanel(event) {
-    event.preventDefault();
-    const selection = window.getSelection();
-    const text = selection.toString().trim();
-    const ranges = this.getValidSelectionRanges(selection);
-    const currentPage = this.detectPageFromRanges(ranges);
-
-    if (ranges.length && currentPage != null) {
-      const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
-      dialogRef.componentInstance.allText = text;
-      dialogRef.componentInstance.keywords = [text];
-      dialogRef.componentInstance.coords = this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()));
-      dialogRef.componentInstance.pageNumber = currentPage;
-      dialogRef.result.then(annotation => {
-        this.annotationCreated.emit(annotation);
-        window.getSelection().empty();
-      }, () => {
-        // reselect text if canceled
-        ranges.forEach(r => window.getSelection().addRange(r));
-      });
-    } else {
-      this.errorHandler.showError(new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer'));
-    }
-  }
-
   private toPDFRelativeRects(pageNumber: number, rects: (ClientRect | DOMRect)[]): Rect[] {
     const pdfPageView = this.pageRef[pageNumber];
     const viewport = pdfPageView.viewport;

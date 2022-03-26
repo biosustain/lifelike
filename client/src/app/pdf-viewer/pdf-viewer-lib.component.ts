@@ -12,20 +12,21 @@ import {
   ViewEncapsulation,
   ComponentFactoryResolver,
   ApplicationRef,
-  Injector,
+  Injector, ComponentRef,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { escape, isNil, uniqueId, defer, forEach, isEqual } from 'lodash-es';
+import { Observable, Subject, Subscription, ReplaySubject } from 'rxjs';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { ExtendedMap } from 'app/shared/utils/types';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -36,7 +37,14 @@ import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
 import { PDFSource, PDFProgressData, PDFPageRenderEvent, PDFPageView, TextLayerBuilder, ScrollDestination } from './pdf-viewer/interfaces';
 import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
-import { PageAnnotationsComponent } from './components/page-annotations/page-annotations.component';
+import { PageComponent } from './components/page-annotations/page.component';
+import { distinctUntilChanged, tap } from 'rxjs/operators';
+
+interface AttachedPortal<T> {
+  component: ComponentRef<T>;
+  outlet: DomPortalOutlet;
+  portal: ComponentPortal<T>;
+}
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -262,7 +270,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.searchChangedSub.unsubscribe();
     }
 
-    this.textLayerPortalOutlets.forEach(p => p.dispose());
+    this.pagePortals.forEach(p => p.outlet.dispose());
 
     delete this.pdfViewerRef[this.pdfViewerId];
   }
@@ -412,9 +420,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.pageRef[pageNum] = pdfPageView;
     const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
     pageAnnotations.instance.annotations = filteredAnnotations;
-    // for (const an of filteredAnnotations) {
-    //   this.addAnnotation(an, pageNum);
-    // }
   }
 
   private _focusedTextLayer;
@@ -434,7 +439,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return this._focusedTextLayer;
   };
 
-  @HostListener('window:mousedown', ['$event'])
+  // @HostListener('window:mousedown', ['$event'])
   mouseDown(event: MouseEvent) {
     let target = event.target as any;
     let parent = this.getClosestTextLayer(target);
@@ -454,7 +459,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
+  // @HostListener('window:mouseup', ['$event'])
   mouseUp(event) {
     this.focusedTextLayer = null;
     if (this.selecting) {
@@ -483,7 +488,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('document:selectstart', ['$event'])
+  // @HostListener('document:selectstart', ['$event'])
   selectstart(event: Event) {
     this.deselect();
     this.selection = null;
@@ -493,14 +498,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // not selecting outside pdf viewer
     if (pageNumber > -1) {
       this.selecting = true;
-      const textLayerPortalOutlet = this.textLayerPortalOutlets.get(pageNumber);
-      this.usedTextLayerPortalOutlet = textLayerPortalOutlet;
-      this.annotationToolbarRef = textLayerPortalOutlet.attach(this.annotationToolbarPortal);
-      this.annotationToolbarRef.instance.pageRef = this.pageRef;
-      this.annotationToolbarRef.instance.containerRef = this.containerRef;
-      this.annotationToolbarRef.instance.annotationCreated.subscribe(val => {
-        this.annotationCreated.next(val);
-      });
+      // const textLayerPortalOutlet = this.pagePortals.get(pageNumber);
+      // this.usedTextLayerPortalOutlet = textLayerPortalOutlet;
+      // this.annotationToolbarRef = textLayerPortalOutlet.attach(this.annotationToolbarPortal);
+      // this.annotationToolbarRef.instance.pageRef = this.pageRef;
+      // this.annotationToolbarRef.instance.containerRef = this.containerRef;
+      // this.annotationToolbarRef.instance.annotationCreated.subscribe(val => {
+      //   this.annotationCreated.next(val);
+      // });
     }
   }
 
@@ -518,7 +523,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('document:selectionchange', ['$event'])
+  // @HostListener('document:selectionchange', ['$event'])
   selectionChange(event: Event) {
     if (this.selecting) {
       const selection = window.getSelection();
@@ -612,7 +617,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     defer(() => draggedElementRef.classList.remove('dragged'));
   }
 
-  @HostListener('dragstart', ['$event'])
+  // @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
     const {selection, ranges} = this;
     this.setDragImage(this.selectionDragContainer, event);
@@ -634,7 +639,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('dragend', ['$event'])
+  // @HostListener('dragend', ['$event'])
   dragEnd(event: DragEvent) {
     let page = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
     page.classList.remove('dragged');
@@ -722,6 +727,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    */
   getClosestPage(node: Node) {
     return this.getClosest(node, '.page');
+  }
+
+  getClosestPageComponent(node: Node) {
+    return this.pagePortals.get(this.getClosestPage(node)).component;
   }
 
   /**
@@ -1026,17 +1035,25 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // }, 3000);
   }
 
-  textLayerPortalOutlets: Map<number, DomPortalOutlet> = new Map();
+  pagePortals: ExtendedMap<number, AttachedPortal<PageComponent>> = new ExtendedMap();
 
-  createTextLayerPortalOutlet({pageNumber, textLayerDiv}: TextLayerBuilder) {
-    const portalOutlet = new DomPortalOutlet(
+  attachPageComponentBasedOnTextLayerBuilder({pageNumber, textLayerDiv}: TextLayerBuilder) {
+    return this.pagePortals.getSet(pageNumber, this.attachPageComponent(pageNumber, textLayerDiv));
+  }
+
+  attachPageComponent(page: number, textLayerDiv: Element) {
+    const outlet = new DomPortalOutlet(
       textLayerDiv,
       this.cfr,
       this.appRef,
       this.injector
     );
-    this.textLayerPortalOutlets.set(pageNumber, portalOutlet);
-    return portalOutlet;
+    const portal = new ComponentPortal(PageComponent);
+    return {
+      portal,
+      outlet,
+      componentRef: outlet.attachComponentPortal(portal),
+    };
   }
 
   /**
@@ -1045,10 +1062,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   pageRendered({pageNumber, source, ...rest}: PDFPageRenderEvent) {
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = pageNumber;
-    const textLayoutOutlet = this.createTextLayerPortalOutlet(source.textLayer);
-    const pageAnnotations = textLayoutOutlet.attach(new ComponentPortal(PageAnnotationsComponent));
-    pageAnnotations.instance.pageViewport = source.viewport;
-    this.processAnnotations(pageNumber, source, pageAnnotations);
+    const {containerRef} = this.attachPageComponentBasedOnTextLayerBuilder(source.textLayer);
+    containerRef.instance.pageViewport = source.viewport;
+    this.processAnnotations(pageNumber, source, containerRef);
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
@@ -1077,8 +1093,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('keydown.control.c')
-  @HostListener('keydown.meta.c')
+  // @HostListener('keydown.control.c')
+  // @HostListener('keydown.meta.c')
   copySelectedText() {
     let listener = (e: ClipboardEvent) => {
       let clipboard = e.clipboardData || window['clipboardData'];
