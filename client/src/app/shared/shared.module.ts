@@ -85,9 +85,11 @@ import { WarningPillComponent } from './components/warning-pill/warning-pill.com
 import { BaseControlComponent } from './components/base-control.component';
 import { InternalSearchService } from './services/internal-search.service';
 import { PasswordInputComponent } from './components/form/password-input.component';
+import { SearchableDropdownMenuComponent } from './components/form/searchable-dropdown-menu.component';
 
 const components = [
   VisJsNetworkComponent,
+  SearchableDropdownMenuComponent,
   PlotlySankeyDiagramComponent,
   AnnotationFilterComponent,
   WordCloudAnnotationFilterComponent,

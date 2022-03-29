@@ -3,7 +3,7 @@ import { throttleTime, distinctUntilChanged, share } from 'rxjs/operators';
 
 import { ExtendedWeakMap } from '../utils/types';
 
-const globalObservables = new ExtendedWeakMap<GlobalEventHandlers, Observable<Event>>();
+const globalScrollObservables = new ExtendedWeakMap<GlobalEventHandlers, Observable<Event>>();
 
 const SCROLL_PARAMS = ['offsetTop', 'scrollTop', 'offsetLeft', 'scrollLeft'];
 
@@ -26,7 +26,7 @@ export function createScrollObservable(...elements: GlobalEventHandlers[]) {
     ...elements.map(element =>
 
       // unless we already have it and it is not garbage collected
-      globalObservables.getSetLazily(element, () =>
+      globalScrollObservables.getSetLazily(element, () =>
 
         // actual creation code
         new Observable<Event>(subscriber => {

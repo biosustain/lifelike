@@ -3,6 +3,7 @@ import { throttleTime, distinctUntilChanged, filter, share, map, tap } from 'rxj
 import { isEqual, partialRight, mapValues } from 'lodash-es';
 
 import { debug } from './debug';
+import { ExtendedWeakMap } from '../utils/types';
 
 /**
  * Returns observable of native element size (might be constant even if window resizes)
@@ -17,10 +18,11 @@ import { debug } from './debug';
 export function createResizeObservable(element: HTMLElement): Observable<DOMRectReadOnly> {
   return new Observable<DOMRectReadOnly>(subscriber => {
     // @ts-ignore there is not type definition for ResizeObserver in Angular
-    const ro = new ResizeObserver(([{contentRect}]: ResizeObserverEntry[]) => {
-      subscriber.next(contentRect);
+    const ro = new ResizeObserver(() => {
+      const size = element.getBoundingClientRect();
+      subscriber.next(size);
       const updatedSize = element.getBoundingClientRect();
-      if (Math.abs(contentRect.width - updatedSize.width) > 1) {
+      if (Math.abs(size.width - updatedSize.width) > 1) {
         // If the container size significantly shrank during resize, let's assume
         // scrollbar appeared. So we resize again with the scrollbar visible -
         // potentially making container smaller and the scrollbar hidden again.
@@ -44,3 +46,38 @@ export function createResizeObservable(element: HTMLElement): Observable<DOMRect
     share()
   );
 }
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+export function createWindowResizeObservable(options?: boolean | AddEventListenerOptions): Observable<Size> {
+  return new Observable<Size>(subscriber => {
+    const listener: Parameters<EventTarget['addEventListener']> = [
+      'resize',
+      () => subscriber.next({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    ];
+    if (options) {
+      listener.push(options);
+    }
+    window.addEventListener(...listener);
+    return function unsubscribe() {
+      window.removeEventListener(...listener);
+    };
+  }).pipe(
+    // Do not return value more often than once per frame
+    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+    // Only actual change
+    distinctUntilChanged(isEqual),
+    debug('window-resize-observable'),
+    // Do no resize if not displayed
+    filter<Size>(({width, height}) => width !== 0 && height !== 0),
+    share()
+  );
+}
+
+export const windowResizeObservable = createWindowResizeObservable();
