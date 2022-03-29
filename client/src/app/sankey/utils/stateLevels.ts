@@ -1,4 +1,4 @@
-import { omit, transform } from 'lodash-es';
+import { omit, transform, pick } from 'lodash-es';
 
 import { SankeyState } from '../interfaces';
 
