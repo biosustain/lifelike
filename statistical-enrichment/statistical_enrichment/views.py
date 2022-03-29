@@ -1,4 +1,5 @@
 from functools import partial
+from json import dumps
 from webargs.flaskparser import use_args
 
 from .app import app
@@ -26,5 +27,5 @@ def enrich_go(args):
     cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
     enrichment_visualisation = get_enrichment_visualisation_service()
     return redis_cached(
-            cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
+            cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism), dump=dumps
     ), dict(mimetype='application/json')
