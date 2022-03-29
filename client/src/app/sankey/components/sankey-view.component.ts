@@ -33,6 +33,7 @@ import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
+import { ExtendedMap } from 'app/shared/utils/types';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -49,7 +50,6 @@ import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
-import { ExtendedMap } from 'app/shared/utils/types';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;

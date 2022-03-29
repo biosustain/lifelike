@@ -16,6 +16,8 @@ import { RouterModule } from '@angular/router';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -32,7 +34,6 @@ import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanc
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
