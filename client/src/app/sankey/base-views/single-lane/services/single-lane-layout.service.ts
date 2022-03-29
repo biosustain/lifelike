@@ -30,16 +30,6 @@ export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseStat
     super.ngOnDestroy();
   }
 
-  get linkBorder() {
-    return ({_color}) => _color ? color(_color).darker(0.5) : _color;
-  }
-
-  get nodeColor() {
-    return ({_color}: SankeyNode) => {
-      return _color;
-    };
-  }
-
   /**
    * Similar to parent method however we are not having graph relaxation
    * node order is calculated by tree structure and this decision is final
