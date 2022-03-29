@@ -7,13 +7,13 @@ import { Observable } from 'rxjs';
 import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
 
 import { State } from 'app/root-store';
-import { downloader } from 'app/shared/utils';
 import { StorageService } from 'app/shared/services/storage.service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
 import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
+import { downloader } from 'app/shared/DOMutils';
 
 import { environment } from '../environments/environment';
 
