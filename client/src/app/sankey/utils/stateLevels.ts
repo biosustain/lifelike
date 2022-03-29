@@ -1,4 +1,4 @@
-import { pick, omit } from 'lodash-es';
+import { omit, transform } from 'lodash-es';
 
 import { SankeyState } from '../interfaces';
 
@@ -22,5 +22,14 @@ const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'alignId'
 ];
 
-export const getCommonState = state => pick(state, SANKEY_STATE_KEYS);
+// Have had problem with lodash pick in here, so used object transformation instead
+export const getCommonState = state => transform(
+  state,
+  (result, value, key: keyof SankeyState) => {
+    if (SANKEY_STATE_KEYS.includes(key)) {
+      result[key] = value;
+    }
+  },
+  {}
+);
 export const getBaseState = state => omit(state, SANKEY_STATE_KEYS);
