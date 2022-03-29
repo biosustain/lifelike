@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone, isDevMode } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { map, switchMap, takeUntil, publish, tap, finalize } from 'rxjs/operators';
+import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
 import { forkJoin, combineLatest, merge, of, Observable } from 'rxjs';
 import { first } from 'lodash-es';
+import { color as d3_color } from 'd3-color';
 
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
@@ -16,11 +17,14 @@ import { SankeySearchService } from 'app/sankey/services/search.service';
 import { updateAttrSingular, updateAttr } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { SelectionEntity, SelectionType } from 'app/sankey/interfaces/selection';
+import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../interfaces/search';
+import { ErrorMessages } from '../../../../constants/error';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -47,7 +51,8 @@ export class SankeySingleLaneComponent
     readonly wrapper: ElementRef,
     protected zone: NgZone,
     protected selection: SankeySelectionService,
-    protected search: SankeySearchService
+    protected search: SankeySearchService,
+    readonly warningController: WarningControllerService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
     selection.multiselect = false;
@@ -203,7 +208,41 @@ export class SankeySingleLaneComponent
 
   initSelection() {
     this.selectionUpdate$.pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroyed$)
+    ).subscribe();
+  }
+
+  initStateUpdate() {
+    const {warningController} = this;
+    this.sankey.baseView.colorLinkByType$.pipe(
+      takeUntil(this.destroyed$),
+      switchMap(colorLinkByType =>
+        this.renderedLinks$.pipe(
+          // if fresh start update all, if re-render update only new
+          map((linkSelection, iterationCount) => iterationCount === 0 ? linkSelection : linkSelection.enter()),
+          tap(linksSelection => {
+              if (colorLinkByType) {
+                linksSelection
+                  .each(function({label}) {
+                    const color = EdgeColorCodes[label.toLowerCase()];
+                    const stroke = color ? d3_color(color).darker(0.5) : color;
+                    if (isDevMode()) {
+                      // This warning should not appear in prod "by design", yet it might be important for debugging
+                      warningController.assert(color, ErrorMessages.noColorMapping(label));
+                    }
+                    return d3_select(this)
+                      .style('stroke', stroke)
+                      .style('fill', color);
+                  });
+              } else {
+                linksSelection
+                  .style('stroke', undefined)
+                  .style('fill', undefined);
+              }
+            }
+          )
+        )
+      )
     ).subscribe();
   }
 
@@ -212,7 +251,7 @@ export class SankeySingleLaneComponent
       this.focusedLink$,
       this.focusedNode$
     ).pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroyed$)
     ).subscribe();
   }
 
@@ -225,13 +264,13 @@ export class SankeySingleLaneComponent
   }
 
   panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
-      this.zoom.translateTo(
+    this.zoom.translateTo(
       // x
       (_x1 + _x0) / 2,
       // y
       (_y0 + _y1) / 2,
-        undefined,
-        true
+      undefined,
+      true
     );
   }
 
