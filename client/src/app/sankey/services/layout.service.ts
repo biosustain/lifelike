@@ -76,19 +76,6 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     super(truncatePipe);
   }
 
-  get nodeColor() {
-    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
-      // check if any trace is finishing or starting here
-      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
-      // if there is only one trace start/end then color node with its color
-      if (difference.size === 1) {
-        return difference.values().next().value._trace._color;
-      } else {
-        return _color;
-      }
-    };
-  }
-
   destroyed$ = new Subject();
 
   linkPath$ = this.baseView.common.normalizeLinks$.pipe(

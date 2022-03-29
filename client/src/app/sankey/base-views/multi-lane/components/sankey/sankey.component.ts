@@ -119,8 +119,8 @@ export class SankeyMultiLaneComponent
       sumX / (2 * links.length),
       // average y
       sumY / (2 * links.length),
-        undefined,
-        true
+      undefined,
+      true
     );
   }
 
@@ -135,8 +135,27 @@ export class SankeyMultiLaneComponent
 
   initSelection() {
     this.selectionUpdate$.pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroyed$)
     ).subscribe();
+  }
+
+  initStateUpdate() {
+    const {
+      sankey: {
+        id,
+        linkTitle,
+        linkColor,
+        linkBorder,
+        circular
+      }
+    } = this;
+    this.renderedLinks$.pipe(
+      takeUntil(this.destroyed$)
+    ).subscribe(links => {
+      links
+        .style('fill', linkColor as any)
+        .style('stroke', linkBorder as any);
+    });
   }
 
   // endregion

@@ -10,6 +10,8 @@ import { LayoutService, groupByTraceGroupWithAccumulation, LayersContext } from 
 import { DirectedTraversal } from '../../../utils/directed-traversal';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
 import { BaseOptions, BaseState, MultiLaneNetworkTraceData } from '../interfaces';
+import { SankeyNode } from '../../../interfaces';
+import { symmetricDifference } from '../../../utils';
 
 type MultilaneDataWithContext = LayersContext<MultiLaneNetworkTraceData>;
 
@@ -22,6 +24,19 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
   ) {
     super(baseView, truncatePipe, warningController);
     this.onInit();
+  }
+
+  get nodeColor() {
+    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      // if there is only one trace start/end then color node with its color
+      if (difference.size === 1) {
+        return difference.values().next().value._trace._color;
+      } else {
+        return _color;
+      }
+    };
   }
 
   ngOnDestroy() {

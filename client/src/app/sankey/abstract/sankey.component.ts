@@ -22,14 +22,13 @@ import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { LayoutService } from '../services/layout.service';
 import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
-import { NotImplemented } from '../utils/error';
 import { Match, EntityType } from '../interfaces/search';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
-@Component({ templateUrl: './sankey.component.svg' })
-export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState> implements OnInit, AfterViewInit,
-  OnDestroy {
+@Component({templateUrl: './sankey.component.svg'})
+export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState>
+  implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
     readonly snackBar: MatSnackBar,
@@ -119,7 +118,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
     left: this.MARGIN
   };
 
-  destroy$ = new Subject();
+  destroyed$ = new Subject();
 
   @ViewChild('svg', {static: true}) svg!: ElementRef;
   @ViewChild('g', {static: true}) g!: ElementRef;
@@ -132,6 +131,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   // resize and listen to future resize events
   resize$ = createResizeObservable(this.wrapper.nativeElement)
+    .pipe(takeUntil(this.destroyed$))
     .subscribe(rect => this.onResize(rect));
 
   renderedLinks$ = combineLatest([
@@ -143,14 +143,16 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         sankey: {
           id,
           linkTitle,
-          linkColor,
-          linkBorder,
           circular
         }
       } = this;
       const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
-      return this.linkSelection
-        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
+
+      // save selection in this point so we can forward d3 lifecycle groups
+      const selection = this.linkSelection
+        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id);
+
+      selection
         .join(
           enter => enter
             .append('path')
@@ -177,13 +179,13 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
             .attr('d', linkPath),
           exit => exit.remove()
         )
-        .style('fill', linkColor as any)
-        .style('stroke', linkBorder as any)
         .attr('thickness', d => d._width || 0)
         .call(join =>
           join.select('title')
             .text(linkTitle)
         );
+
+      return selection;
     })
   );
 
@@ -202,7 +204,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
         },
         updateNodeText
       } = this;
-      return this.nodeSelection
+
+      const selection = this.nodeSelection
         .data<SankeyNode>(
           nodes.filter(
             // should no longer be an issue but leaving as sanity check
@@ -210,7 +213,9 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
             n => n._sourceLinks.length + n._targetLinks.length > 0
           ),
           id
-        )
+        );
+
+      selection
         .join(
           enter => enter.append('g')
             .call(enterNode => updateNodeRect(enterNode.append('rect')))
@@ -267,6 +272,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
                 .text(nodeLabelShort);
             });
         });
+
+      return selection;
     })
   );
 
@@ -369,7 +376,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   initSearch() {
     this.updateSearch$.pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroyed$)
     ).subscribe();
   }
 
@@ -379,21 +386,24 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
       this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
     });
 
-    this.updateDOM$.subscribe(() => {});
+    this.updateDOM$.subscribe(() => {
+    });
 
     this.initSelection();
     this.initFocus();
     this.initSearch();
+    this.initStateUpdate();
   }
 
 
-  initFocus() {
-    throw new NotImplemented();
+  abstract initFocus();
+
+  abstract initSelection();
+
+  // Optional
+  initStateUpdate() {
   }
 
-  initSelection() {
-    throw new NotImplemented();
-  }
 
   panToNode({_x0, _x1, _y0, _y1}) {
     this.zoom.translateTo(
@@ -427,11 +437,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    if (this.resize$) {
-      this.resize$.unsubscribe();
-      delete this.resize$;
-    }
+    this.destroyed$.next();
   }
 
   // region Graph sizing
@@ -528,20 +534,16 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
-  @d3EventCallback
-  async pathMouseOver(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async pathMouseOver(element, data);
 
   /**
    * Callback that undims all nodes/links.
    * @param element the svg element being hovered over
    * @param data object representing the link data
    */
-  @d3EventCallback
-  async pathMouseOut(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async pathMouseOut(element, data);
 
   /**
    * Callback that dims any nodes/links not connected through the hovered node.
@@ -559,10 +561,8 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
    * @param element the svg element being hovered over
    * @param data object representing the node data
    */
-  @d3EventCallback
-  async nodeMouseOut(element, data) {
-    throw new NotImplemented();
-  }
+  // @d3EventCallback
+  abstract async nodeMouseOut(element, data);
 
   // the function for moving the nodes
   dragmove(element, d) {
@@ -675,9 +675,7 @@ export class SankeyAbstractComponent<Options extends SankeyBaseOptions, State ex
 
   // endregion
 
-  highlightNode(element) {
-    throw new NotImplemented();
-  }
+  abstract highlightNode(element);
 
   unhighlightNode(element) {
     return this.sankey.nodeLabel$.pipe(

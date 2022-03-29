@@ -90,24 +90,23 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
     colorLinkTypes: EdgeColorCodes
   }));
 
+  colorLinkByType$ = this.stateAccessor('colorLinkByType');
+
   networkTraceData$: Observable<SingleLaneNetworkTraceData> = this.common.partialNetworkTraceData$.pipe(
-    switchMap(({links, nodes, nodeById, sources, targets, traces}) => this.stateAccessor('colorLinkByType').pipe(
-      map(colorLinkByType => {
-        const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
-        if (colorLinkByType) {
-          this.colorLinkByType(networkTraceLinks);
-        }
-        this.colorNodes(networkTraceNodes, sources, targets);
-        return {
-          nodes: networkTraceNodes,
-          links: networkTraceLinks,
-          nodeById,
-          sources,
-          targets
-        };
-      })
-    )),
+    map(({links, nodes, nodeById, sources, targets, traces}) => {
+      const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
+      const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
+
+      // move this to run in pararell with positioning
+      this.colorNodes(networkTraceNodes, sources, targets);
+      return {
+        nodes: networkTraceNodes,
+        links: networkTraceLinks,
+        nodeById,
+        sources,
+        targets
+      };
+    }),
     debug('SingleLaneBaseControllerService.networkTraceData$'),
     shareReplay<SingleLaneNetworkTraceData>(1)
   );
@@ -132,20 +131,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
       ...links[linkIdx],
       _traces: wrappedTraces.map(({trace}) => trace)
     }));
-  }
-
-  colorLinkByType(links) {
-    links.forEach(link => {
-      const {label} = link;
-      if (label) {
-        const color = EdgeColorCodes[label.toLowerCase()];
-        if (color) {
-          link._color = color;
-        } else {
-          this.warningController.warn(ErrorMessages.noColorMapping(label));
-        }
-      }
-    });
   }
 
   /**
