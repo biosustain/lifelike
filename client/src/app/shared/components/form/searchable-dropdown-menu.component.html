@@ -2,9 +2,9 @@
        (click)="$event.stopPropagation()" #search/>
 <div class="filtrable-list">
     <ng-container
-            *ngFor="let item of filteredItems$ | async | keyvalue"
+            *ngFor="let item of filteredItems$ | async | keyvalue; let i = index"
             [ngTemplateOutlet]="itemTemplateRef || defaultItemTemplateRef"
-            [ngTemplateOutletContext]="{ $implicit: item.value, key: item.key, index: index, search: search$ | async }">
+            [ngTemplateOutletContext]="{ $implicit: item.value, key: item.key, index: i, search: search$ | async }">
     </ng-container>
     <ng-template #defaultItemTemplateRef let-item let-key="key" let-index="index" let-search="search">
         <button
