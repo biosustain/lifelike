@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { SankeyEntityDetailsComponent } from './entity-details.component';
+import { SankeyEntityDetailsComponent } from '../../abstract/entity-details/entity-details.component';
 
 
 @Component({

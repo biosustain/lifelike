@@ -4,7 +4,7 @@ import { SankeySelectionService } from '../services/selection.service';
 import { SelectionType } from '../interfaces/selection';
 
 @Component({ template: '' })
-export class SankeyAbstractDetailsPanelComponent {
+export abstract class SankeyAbstractDetailsPanelComponent {
   constructor(
     protected selectionService: SankeySelectionService
   ) {

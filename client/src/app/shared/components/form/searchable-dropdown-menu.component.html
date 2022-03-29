@@ -1,0 +1,18 @@
+<input type="text" class="form-control search" (input)="searchChangeCallback($event)" placeholder="Search"
+       (click)="$event.stopPropagation()" #search/>
+<div class="filtrable-list">
+    <ng-container
+            *ngFor="let item of filteredItems$ | async | keyvalue"
+            [ngTemplateOutlet]="itemTemplateRef || defaultItemTemplateRef"
+            [ngTemplateOutletContext]="{ $implicit: item.value, key: item.key, index: index, search: search$ | async }">
+    </ng-container>
+    <ng-template #defaultItemTemplateRef let-item let-key="key" let-index="index" let-search="search">
+        <button
+                @collapseAnimation
+                class="dropdown-item"
+                ngbDropdownItem
+                (click)="changeValue.emit(key)">
+            <ngb-highlight [result]="optionTextAccessor(item)" [term]="search"></ngb-highlight>
+        </button>
+    </ng-template>
+</div>

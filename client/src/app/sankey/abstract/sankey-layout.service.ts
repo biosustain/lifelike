@@ -52,8 +52,6 @@
 // SOFTWARE.
 // endregion
 
-import { Injectable } from '@angular/core';
-
 import findCircuits from 'elementary-circuits-directed-graph';
 import { ReplaySubject, Subject, Observable } from 'rxjs';
 import { map, tap, distinctUntilChanged } from 'rxjs/operators';
@@ -95,8 +93,7 @@ export interface LayoutData {
   targets: SankeyId[];
 }
 
-@Injectable()
-export class SankeyAbstractLayoutService extends AttributeAccessors {
+export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
   constructor(
     readonly truncatePipe: TruncatePipe
   ) {

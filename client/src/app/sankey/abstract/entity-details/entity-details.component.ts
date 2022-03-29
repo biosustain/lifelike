@@ -10,7 +10,7 @@ import { parseForRendering } from '../../utils';
 import { ControllerService } from '../../services/controller.service';
 
 @Component({ template: '' })
-export class SankeyEntityDetailsComponent {
+export abstract class SankeyEntityDetailsComponent {
   constructor(
     protected common: ControllerService,
     protected readonly route: ActivatedRoute

@@ -1,5 +1,3 @@
-import { Injectable } from '@angular/core';
-
 import { Observable, ReplaySubject, Subject, of, iif } from 'rxjs';
 import { merge, omitBy, isNil, partial } from 'lodash-es';
 import { switchMap, map, shareReplay, first, tap } from 'rxjs/operators';
@@ -9,8 +7,7 @@ import { debug } from 'app/shared/rxjs/debug';
 
 import { unifiedAccessor } from '../utils/rxjs';
 
-@Injectable()
-export class StateControlAbstractService<Options extends object, State extends object> {
+export abstract class StateControlAbstractService<Options extends object, State extends object> {
   delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
   state$: Observable<State>;
   options$: Observable<Options>;
