@@ -17,11 +17,11 @@ import { Meta } from 'app/pdf-viewer/annotation-type';
 
 import { DropdownController } from '../../utils/dom/dropdown-controller';
 import { GenericDataProvider } from '../data-transfer-data/generic-data.provider';
-import { isCtrlOrMetaPressed } from '../../utils';
 import { SEARCH_LINKS } from '../../links';
 import { annotationTypesMap } from '../../annotation-styles';
 import { TagHandler } from '../../services/highlight-text.service';
 import { InternalSearchService } from '../../services/internal-search.service';
+import { isCtrlOrMetaPressed } from '../../DOMutils';
 
 @Injectable()
 export class AnnotationTagHandler extends TagHandler {

@@ -2,8 +2,10 @@ import { Observable, animationFrameScheduler } from 'rxjs';
 import { throttleTime, distinctUntilChanged, filter, share } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
+import { debug } from './debug';
+
 /**
- * Returns observable of native element size (might be constant event if window resizes)
+ * Returns observable of native element size (might be constant even if window resizes)
  *
  * The sizing value is:
  * + throttled with animation frames
@@ -25,7 +27,6 @@ export function createResizeObservable(element: HTMLElement): Observable<DOMRect
         subscriber.next(updatedSize);
       }
     });
-
     // Observe one or multiple elements
     ro.observe(element);
     return function unsubscribe() {
@@ -37,8 +38,9 @@ export function createResizeObservable(element: HTMLElement): Observable<DOMRect
     throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
     // Only actual change
     distinctUntilChanged(isEqual),
+    debug('resize-observable'),
     // Do no resize if not displayed
-    filter(({width, height}) => width !== 0 && height !== 0),
+    filter<DOMRect>(({width, height}) => width !== 0 && height !== 0),
     share()
   );
 }

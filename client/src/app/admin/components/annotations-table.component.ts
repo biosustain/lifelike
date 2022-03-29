@@ -11,7 +11,6 @@ import { GlobalAnnotationService } from 'app/shared/services/global-annotation-s
 import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
-import { downloader } from 'app/shared/utils';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -23,6 +22,7 @@ import {
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
+import { downloader } from 'app/shared/DOMutils';
 
 @Component({
     selector: 'app-annotations-table',
