@@ -13,7 +13,7 @@ import { StateControlAbstractService } from './state-control.service';
 export type DefaultAbstractAdvancedPanelComponent = SankeyAbstractAdvancedPanelComponent<object, object>;
 
 @Component({ template: '' })
-export class SankeyAbstractAdvancedPanelComponent<Options extends object, State extends object> implements OnInit, OnDestroy {
+export abstract class SankeyAbstractAdvancedPanelComponent<Options extends object, State extends object> implements OnInit, OnDestroy {
   constructor(
     protected stateController: StateControlAbstractService<Options, State>,
     protected formBuilder: FormBuilder

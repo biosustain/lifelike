@@ -32,6 +32,7 @@ import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanc
 import { SankeyViewConfirmComponent } from './components/view/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { StructureOverviewComponent } from './components/structure-overview/stru
     SankeySearchPanelModule,
     SankeySearchControlModule,
     MatTreeModule,
-    MatIconModule
+    MatIconModule,
+    NgbDropdownModule
   ],
   exports: [
     SankeyViewComponent
