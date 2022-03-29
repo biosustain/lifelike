@@ -24,7 +24,7 @@ def fisher(geneNames, GOterms, related_go_terms_count):
     df = pd.DataFrame(GOterms)
 
     if df.empty:
-        return df.to_json(orient='records')
+        return df.to_dict(orient='records')
 
     query = pd.unique(geneNames)
 
@@ -41,4 +41,4 @@ def fisher(geneNames, GOterms, related_go_terms_count):
     df = df.apply(f, axis=1).sort_values(by='p-value')
 
     add_q_value(df, related_go_terms_count)
-    return df.to_json(orient='records')
+    return df.to_dict(orient='records')
