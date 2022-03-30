@@ -1,0 +1,36 @@
+<div class="nav-item d-flex text-truncate" [class.active]="active"
+     appContextMenu
+     cdkDrag
+     [cdkDragData]="tab"
+     (cdkDragMoved)="cdkDragMoved($event)"
+     (cdkDragReleased)="cdkDragReleased($event)">
+  <div class="nav-link d-flex text-truncate" [class.active]="active" (click)="tabClick.emit()">
+    <div class="d-block d-flex align-items-center text-truncate mr-2">
+      <span class="d-block text-truncate" [appTextTruncateToTooltip]="tab.title" [scroll$]="scroll$">
+        <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="tab.loading; else notLoading"></i>
+        <ng-template #notLoading>
+          <i [class]="fontAwesomeIconClass"></i>
+        </ng-template>
+        {{ tab.title }}
+      </span>
+      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge != null && tab.badge !== '*'">
+        {{ tab.badge }}
+      </span>
+      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'" ngbTooltip="Has unsaved changes" container="body">
+        <i class="fa fa-pencil-alt"></i>
+      </span>
+    </div>
+    <a href="#" (click)="tabClose.emit(); $event.preventDefault()" class="ml-auto text-muted">
+      <i class="fa fa-fw fa-times"></i>
+    </a>
+  </div>
+  <div appContextMenuBody>
+    <a appContextMenuItem (click)="duplicate.emit()">Duplicate</a>
+    <a appContextMenuItem (click)="openCopyLinkDialog()">Copy link...</a>
+    <div class="dropdown-divider"></div>
+    <a appContextMenuItem (click)="tabClose.emit()">Close</a>
+    <a appContextMenuItem (click)="closeOtherTabs.emit()" [class.disabled]="!hasSiblings">Close other tabs</a>
+    <a appContextMenuItem (click)="closeAllTabs.emit()">Close all tabs</a>
+    <a appContextMenuItem (click)="clearWorkbench.emit()">Clear workbench</a>
+  </div>
+</div>

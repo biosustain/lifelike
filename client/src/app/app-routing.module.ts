@@ -14,7 +14,7 @@ import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from 'app/kg-statistics.component';
 import { TermsOfServiceComponent } from 'app/users/components/terms-of-service.component';
-import { WorkspaceComponent } from 'app/workspace.component';
+import { WorkspaceComponent } from 'app/workspace/components/workspace.component';
 import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.guard';
 import { MapEditorComponent } from 'app/drawing-tool/components/map-editor/map-editor.component';
 import { MapViewComponent } from 'app/drawing-tool/components/map-view.component';

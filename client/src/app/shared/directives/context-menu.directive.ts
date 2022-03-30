@@ -19,6 +19,17 @@ import { map } from 'rxjs/operators';
 
 import { DropdownController } from '../utils/dom/dropdown-controller';
 
+@Directive({
+  selector: '[appContextMenuItem]',
+})
+export class ContextMenuItemDirective {
+  @HostBinding('class.dropdown-item') _dropdownItemClass = true;
+  @HostBinding('attr.href') _dropdownItemHref = '#';
+  @HostListener('click', ['$event']) click(clickEvent: Event) {
+    clickEvent.preventDefault();
+  }
+}
+
 /**
  * Directive that marks the body of a context menu.
  */
