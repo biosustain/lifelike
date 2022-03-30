@@ -12,6 +12,7 @@ export const fixedValue: (value: number) => ValueProcessingStep =
     function(this: DefaultLayoutService, {links}) {
       links.forEach(l => {
         l._value = value;
+        delete l._multiple_values;
       });
       return {
         links,
@@ -87,11 +88,13 @@ export const byProperty: (property: string) => ValueProcessingStep =
     function(this: DefaultLayoutService, {links}) {
       links.forEach(l => {
         l._value = representativePositiveNumber(l[property]);
+        delete l._multiple_values;
       });
       return {
         _sets: {
           link: {
-            _value: true
+            _value: true,
+            _multiple_values: false
           }
         },
         _requires: {

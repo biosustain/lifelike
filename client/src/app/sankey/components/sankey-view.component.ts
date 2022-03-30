@@ -189,6 +189,9 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   graph$: Observable<object>;
 
   predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
+  readonlyView$ = this.sankeyController.view$.pipe(
+    tap(v => console.log('view', v))
+  );
 
 
   private dynamicComponentRef = new Map();
