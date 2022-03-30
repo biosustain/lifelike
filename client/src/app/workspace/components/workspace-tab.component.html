@@ -25,15 +25,12 @@
     </a>
   </div>
   <div appContextMenuBody>
-    <a class="dropdown-item" href="#" (click)="duplicate.emit(); $event.preventDefault()">Duplicate</a>
-    <a class="dropdown-item" href="#" (click)="openCopyLinkDialog(); $event.preventDefault()">Copy link...</a>
+    <a appContextMenuItem (click)="duplicate.emit()">Duplicate</a>
+    <a appContextMenuItem (click)="openCopyLinkDialog()">Copy link...</a>
     <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="#" (click)="tabClose.emit(); $event.preventDefault()">Close</a>
-    <a class="dropdown-item"
-       href="#"
-       [class.disabled]="!hasSiblings"
-       (click)="closeOtherTabs.emit(); $event.preventDefault()">Close other tabs</a>
-    <a class="dropdown-item" href="#" (click)="closeAllTabs.emit(); $event.preventDefault()">Close all tabs</a>
-    <a class="dropdown-item" href="#" (click)="clearWorkbench.emit(); $event.preventDefault()">Clear workbench</a>
+    <a appContextMenuItem (click)="tabClose.emit()">Close</a>
+    <a appContextMenuItem (click)="closeOtherTabs.emit()" [class.disabled]="!hasSiblings">Close other tabs</a>
+    <a appContextMenuItem (click)="closeAllTabs.emit()">Close all tabs</a>
+    <a appContextMenuItem (click)="clearWorkbench.emit()">Clear workbench</a>
   </div>
 </div>
