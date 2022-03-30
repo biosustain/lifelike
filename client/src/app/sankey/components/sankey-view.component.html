@@ -149,7 +149,7 @@
             </div>
             <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options"
                  *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor">
-                <button class="btn btn-primary" ngbDropdownToggle>
+                <button class="btn btn-primary" ngbDropdownToggle [disabled]="readonlyView$ | async">
                     {{ predefinedValueAccessor?.description !== 'None' ?
                     predefinedValueAccessor.description :
                     'Select Predefined Value Accessor' }}

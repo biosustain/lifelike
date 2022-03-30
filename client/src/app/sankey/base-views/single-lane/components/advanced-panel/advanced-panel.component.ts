@@ -50,17 +50,13 @@ export class SankeySingleLaneAdvancedPanelComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.baseView.common.viewName$.subscribe(viewName => {
-      if (viewName) {
-        this.form.get('nodeHeight').disable();
-        this.form.get('linkValueAccessorId').disable();
-        this.form.get('nodeValueAccessorId').disable();
-      } else {
-        this.form.get('nodeHeight').enable();
-        this.form.get('linkValueAccessorId').enable();
-        this.form.get('nodeValueAccessorId').enable();
-      }
-    });
+    this.baseView.common.viewName$.subscribe(viewName =>
+      this.setDisableControlsState(viewName, [
+        'nodeHeight',
+        'linkValueAccessorId',
+        'nodeValueAccessorId',
+      ])
+    );
   }
 
   ngOnDestroy() {

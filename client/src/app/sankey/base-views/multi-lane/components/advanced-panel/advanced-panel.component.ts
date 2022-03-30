@@ -24,6 +24,7 @@ export class MultiLaneBaseAdvancedPanelComponent
   ) {
     super(baseView, formBuilder);
   }
+
   form = this.formBuilder.group({
     nodeHeight: this.formBuilder.group({
       min: this.formBuilder.group({
@@ -51,17 +52,13 @@ export class MultiLaneBaseAdvancedPanelComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.baseView.common.viewName$.subscribe(viewName => {
-      if (viewName) {
-        this.form.get('nodeHeight').disable();
-        this.form.get('linkValueAccessorId').disable();
-        this.form.get('nodeValueAccessorId').disable();
-      } else {
-        this.form.get('nodeHeight').enable();
-        this.form.get('linkValueAccessorId').enable();
-        this.form.get('nodeValueAccessorId').enable();
-      }
-    });
+    this.baseView.common.viewName$.subscribe(viewName =>
+      this.setDisableControlsState(viewName, [
+        'nodeHeight',
+        'linkValueAccessorId',
+        'nodeValueAccessorId',
+      ])
+    );
   }
 
   ngOnDestroy() {

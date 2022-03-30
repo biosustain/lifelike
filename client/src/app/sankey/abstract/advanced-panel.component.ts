@@ -2,10 +2,11 @@ import { OnDestroy, OnInit, Component, } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { omit, forEach, isEmpty } from 'lodash-es';
-import { startWith, pairwise, map, filter, switchMap, tap, publish } from 'rxjs/operators';
-import { Subscription, ConnectableObservable } from 'rxjs';
+import { startWith, pairwise, map, filter, switchMap, tap, skip } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 import { uuidv4, deepDiff } from 'app/shared/utils';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { StateControlAbstractService } from './state-control.service';
 
@@ -26,7 +27,9 @@ export abstract class SankeyAbstractAdvancedPanelComponent<Options extends objec
   formStateSync$ = this.stateController.state$.pipe(
     tap(state => this.form.patchValue(state, {emitEvent: false})),
     map(() => this.form.value),
+    debug('formStateSync$'),
     switchMap(prevValue => this.form.valueChanges.pipe(
+      debug('form.valueChanges'),
       startWith(prevValue), // initial prev value
       pairwise(),
       map(deepDiff),
@@ -34,6 +37,10 @@ export abstract class SankeyAbstractAdvancedPanelComponent<Options extends objec
       switchMap(changes => this.stateController.patchState(changes as any))
     ))
   );
+
+  setDisableControlsState(state: boolean, controlsIds: string[], opts = {emitEvent: false}) {
+    return controlsIds.map(controlId => this.form.get(controlId)[state ? 'disable' : 'enable']?.(opts));
+  }
 
   ngOnInit() {
     // make the connection hot
