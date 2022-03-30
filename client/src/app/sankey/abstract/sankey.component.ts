@@ -23,6 +23,7 @@ import { LayoutService } from '../services/layout.service';
 import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
 import { Match, EntityType } from '../interfaces/search';
+import { SankeyUpdateService } from '../services/sankey-update.service';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
 
@@ -30,13 +31,14 @@ export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseO
 export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
-    readonly clipboard: ClipboardService,
-    readonly snackBar: MatSnackBar,
-    readonly sankey: LayoutService<Options, State>,
-    readonly wrapper: ElementRef,
-    protected zone: NgZone,
-    protected selection: SankeySelectionService,
-    protected search: SankeySearchService
+    protected readonly clipboard: ClipboardService,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly sankey: LayoutService<Options, State>,
+    protected readonly wrapper: ElementRef,
+    protected readonly zone: NgZone,
+    protected readonly selection: SankeySelectionService,
+    protected readonly search: SankeySearchService,
+    protected readonly updateController: SankeyUpdateService
   ) {
   }
 
@@ -490,6 +492,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
     // d3v5 does not include implementation for this
     if (Math.hypot(dx, dy) < 10) {
       return this.nodeClick(element, data);
+    } else {
+      this.updateController.modified(element, data);
     }
   }
 
@@ -590,6 +594,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           map(linkSelection => linkSelection
             .filter((...args) => relatedLinksIds.includes(id(...args)))
             .attr('d', linkPath)
+            .raise()
           )
         )
       ),

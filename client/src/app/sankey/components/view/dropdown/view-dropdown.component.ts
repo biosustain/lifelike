@@ -11,7 +11,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { viewBaseToNameMapping } from 'app/sankey/constants/view-base';
 
 import { ViewBase } from '../../../interfaces';
-import { SankeyViewConfirmComponent } from '../confirm.component';
+import { SankeyConfirmComponent } from '../../confirm.component';
 import { SankeyViewCreateComponent } from '../create/view-create.component';
 import { ViewControllerService } from '../../../services/view-controller.service';
 
@@ -45,7 +45,7 @@ export class SankeyViewDropdownComponent {
 
   confirm({header, body}): Promise<any> {
     const modal = this.modalService.open(
-      SankeyViewConfirmComponent,
+      SankeyConfirmComponent,
       {ariaLabelledBy: 'modal-basic-title'}
     );
     modal.componentInstance.header = header;

@@ -54,7 +54,7 @@
 
 import findCircuits from 'elementary-circuits-directed-graph';
 import { ReplaySubject, Subject, Observable } from 'rxjs';
-import { map, tap, distinctUntilChanged } from 'rxjs/operators';
+import { map, tap, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -95,7 +95,7 @@ export interface LayoutData {
 
 export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
   constructor(
-    readonly truncatePipe: TruncatePipe
+    protected readonly truncatePipe: TruncatePipe
   ) {
     super(truncatePipe);
   }
@@ -115,16 +115,19 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
       y0, y1, height: y1 - y0
     })),
     distinctUntilChanged(isEqual),
+    shareReplay(1),
     debug<ProcessedExtent>('extent$')
   );
   horizontal$: Observable<Horizontal> = this.extent$.pipe(
     map(({x0, x1, width}) => ({x0, x1, width})),
     distinctUntilChanged(isEqual),
+    shareReplay(1),
     debug('horizontal$')
   );
   vertical$: Observable<Vertical> = this.extent$.pipe(
     map(({y0, y1, height}) => ({y0, y1, height})),
     distinctUntilChanged(isEqual),
+    shareReplay(1),
     debug('vertical$')
   );
 
