@@ -50,6 +50,7 @@ import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
+import { SankeyUpdateService } from '../services/sankey-update.service';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -65,7 +66,8 @@ interface BaseViewContext {
     WarningControllerService,
     SankeySearchService,
     ControllerService,
-    ViewControllerService
+    ViewControllerService,
+    SankeyUpdateService
   ]
 })
 export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareComponent, AfterViewInit {
@@ -86,7 +88,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     private zone: NgZone,
     private viewController: ViewControllerService,
     private search: SankeySearchService,
-    protected formBuilder: FormBuilder
+    public update: SankeyUpdateService,
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -502,7 +504,6 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       },
     }));
   }
-
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
     return this.baseView$.pipe(

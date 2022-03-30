@@ -20,6 +20,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { updateAttr } from '../../../../utils/rxjs';
+import { SankeyUpdateService } from '../../../../services/sankey-update.service';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -38,15 +39,16 @@ export class SankeyMultiLaneComponent
   extends SankeyAbstractComponent<SankeyMultiLaneOptions, SankeyMultiLaneState>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
-    readonly clipboard: ClipboardService,
-    readonly snackBar: MatSnackBar,
-    readonly sankey: MultiLaneLayoutService,
-    readonly wrapper: ElementRef,
-    protected zone: NgZone,
-    protected selection: SankeySelectionService,
-    protected search: SankeySearchService
+    protected readonly clipboard: ClipboardService,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly sankey: MultiLaneLayoutService,
+    protected readonly wrapper: ElementRef,
+    protected readonly zone: NgZone,
+    protected readonly selection: SankeySelectionService,
+    protected readonly search: SankeySearchService,
+    protected readonly updateController: SankeyUpdateService
   ) {
-    super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
+    super(clipboard, snackBar, sankey, wrapper, zone, selection, search, updateController);
     selection.multiselect = true;
   }
 

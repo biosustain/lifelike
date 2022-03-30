@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-sankey-view-confirm',
+  selector: 'app-sankey-confirm',
   template: `
   <div class="modal-header">
     <h4 class="modal-title" id="modal-title">{{ header }}</h4>
@@ -20,7 +20,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   </div>
   `
 })
-export class SankeyViewConfirmComponent {
+export class SankeyConfirmComponent {
   constructor(public modal: NgbActiveModal) {}
 
   @Input() header;

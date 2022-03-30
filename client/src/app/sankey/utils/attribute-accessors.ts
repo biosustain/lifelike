@@ -4,7 +4,7 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
 export abstract class AttributeAccessors {
-  constructor(readonly truncatePipe: TruncatePipe) {
+  constructor(protected readonly truncatePipe: TruncatePipe) {
   }
 
   get id(): ValueFn<any, SankeyNode | SankeyLink, number | string> {
