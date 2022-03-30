@@ -321,7 +321,6 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     return pass;
   }
 
-
   saveFile(data: GraphFile) {
     const contentValue = new Blob(
       [JSON.stringify(data)],
