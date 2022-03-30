@@ -107,9 +107,10 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
               })
           }),
         )),
-        tap(node => node && this.panToNode(node)),
-      )
-    ));
+        tap((node: SankeyNode) => node && this.panToNode(node)),
+      )),
+    debug('focusedNode$')
+  );
 
   readonly MARGIN = 10;
 
@@ -151,10 +152,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
 
       // save selection in this point so we can forward d3 lifecycle groups
-      const selection = this.linkSelection
-        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id);
-
-      selection
+      return this.linkSelection
+        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
         .join(
           enter => enter
             .append('path')
@@ -186,9 +185,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           join.select('title')
             .text(linkTitle)
         );
-
-      return selection;
-    })
+    }),
+    shareReplay(1)
   );
 
   renderedNodes$ = combineLatest([
@@ -207,7 +205,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
         updateNodeText
       } = this;
 
-      const selection = this.nodeSelection
+      return this.nodeSelection
         .data<SankeyNode>(
           nodes.filter(
             // should no longer be an issue but leaving as sanity check
@@ -215,9 +213,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
             n => n._sourceLinks.length + n._targetLinks.length > 0
           ),
           id
-        );
-
-      selection
+        )
         .join(
           enter => enter.append('g')
             .call(enterNode => updateNodeRect(enterNode.append('rect')))
@@ -274,9 +270,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
                 .text(nodeLabelShort);
             });
         });
-
-      return selection;
-    })
+    }),
+    shareReplay(1)
   );
 
   /**
@@ -296,6 +291,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
   );
 
   updateSearch$ = this.search.preprocessedMatches$.pipe(
+    takeUntil(this.destroyed$),
     map(entities => groupBy(entities, 'type')),
     publish(matches$ => combineLatest([
       matches$.pipe(
@@ -303,6 +299,19 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
         updateAttr(this.renderedNodes$, 'searched', {
           // dont update other
           otherOnStart: null,
+          enter: s => s
+            .attr('searched', true)
+            .call(node => node
+              .select('g')
+              .call(textGroup => {
+                // postpone so the size is known
+                requestAnimationFrame(() => {
+                  textGroup
+                    .each(SankeyAbstractComponent.updateTextShadow);
+                });
+              })
+            )
+            .raise(),
           // just delete property (don't set it to false)
           exit: s => s.attr('searched', undefined),
           accessor: (arr, {_id}) => arr.includes(_id),
@@ -318,7 +327,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           accessor: (arr, {_id}) => arr.includes(_id),
         })
       )
-    ]))
+    ])),
+    debug('updateSearch')
   );
 
   // endregion
@@ -388,13 +398,13 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
     });
 
-    this.updateDOM$.subscribe(() => {
-    });
-
     this.initSelection();
     this.initFocus();
     this.initSearch();
     this.initStateUpdate();
+
+    this.updateDOM$.subscribe(() => {
+    });
   }
 
 
@@ -622,41 +632,6 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       .filter(accessor)
       .call(e => e.raise());
   }
-
-  // region Search
-  searchNodes(nodeIdxs: Set<string | number>) {
-    const selection = this.nodeSelection
-      .attr('searched', n => nodeIdxs.has(n._id))
-      .filter(n => nodeIdxs.has(n._id))
-      // .raise()
-      .select('g');
-
-    // postpone so the size is known
-    requestAnimationFrame(_ =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    );
-  }
-
-  stopSearchNodes() {
-    // tslint:disable-next-line:no-unused-expression
-    this.nodeSelection
-      .attr('searched', undefined);
-  }
-
-  searchLinks(linkIdxs: Set<SankeyLink['_id']>) {
-    this.linkSelection
-      .attr('searched', l => linkIdxs.has(l._id))
-      .filter(l => linkIdxs.has(l._id))
-      .raise();
-  }
-
-  stopSearchLinks() {
-    return this.linkSelection
-      .attr('searched', undefined);
-  }
-
-  // endregion
 
   // region Highlight
   highlightTraces(traces: Set<object>) {
