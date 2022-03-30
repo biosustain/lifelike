@@ -150,7 +150,7 @@ export const updateSingular =
     }: (Partial<UpdateCycle> & { comparator?: (a, b) => boolean })
   ) => (project: Observable<T>) => project.pipe(
     distinctUntilChanged(comparator),
-    startWith(),
+    startWith(NaN),
     pairwise(),
     switchMap(prevNext => selectionObservable.pipe(
       map(selection => prevNext.concat(selection)),
