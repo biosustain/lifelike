@@ -17,8 +17,6 @@ import { httpInterceptorProviders } from 'app/shared/http-interceptors';
 import { VisualizationModule } from 'app/visualization/visualization.module';
 import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { WorkspaceComponent } from 'app/workspace.component';
-import { WorkspaceOutletComponent } from 'app/workspace-outlet.component';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from 'app/dashboard.component';
@@ -35,12 +33,11 @@ import { FileTypesModule } from 'app/file-types/file-types.module';
 import { PoliciesModule } from 'app/policies/policies.module';
 import { ReportsModule } from 'app/reports/reports.module';
 import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
+import { WorkspaceModule } from 'app/workspace/workspace.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    WorkspaceComponent,
-    WorkspaceOutletComponent,
     AppVersionDialogComponent,
     DashboardComponent,
     KgStatisticsComponent,
@@ -74,6 +71,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     EnrichmentTablesModule,
     PoliciesModule,
     ReportsModule,
+    WorkspaceModule
   ],
   providers: [
     httpInterceptorProviders,
