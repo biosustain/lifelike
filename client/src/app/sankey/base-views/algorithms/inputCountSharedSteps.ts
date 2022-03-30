@@ -29,6 +29,7 @@ export function calculateInputCountSkippingCircularLinks(
       if (!l._circular) {
         l._value = outFrac;
       }
+      delete l._multiple_values;
     });
   });
 }

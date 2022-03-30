@@ -46,6 +46,7 @@ export function inputCount(
     });
     circularLinks.forEach(circularLink => {
       circularLink._value = mean(perLayerLinkEstimation.get(circularLink));
+      delete circularLink._multiple_values;
       this.warningController.assert(circularLink._value <= maxExpectedValue,
         'Input count algorithm fail - node value exceeds input node count');
     });
@@ -59,7 +60,8 @@ export function inputCount(
     links: data.links,
     _sets: {
       link: {
-        _value: true
+        _value: true,
+        _multiple_values: false
       }
     }
   };

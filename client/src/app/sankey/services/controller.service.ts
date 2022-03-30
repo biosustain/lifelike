@@ -26,7 +26,7 @@ import { isPositiveNumber, indexByProperty } from '../utils';
 import { LayoutService } from './layout.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { StateControlAbstractService } from '../abstract/state-control.service';
-import { getBaseState, getCommonState } from '../utils/stateLevels';
+import { getCommonState } from '../utils/stateLevels';
 import { ErrorMessages } from '../constants/error';
 import { PRESCALER_ID, Prescaler } from '../interfaces/prescalers';
 import {
@@ -431,10 +431,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           this.views$.pipe(
             map((views, index) => views[delta.viewName]),
             map(view => merge(
-              {
-                baseViewName: view.base,
-                baseViewInitState: getBaseState(view.state),
-              },
+              {baseViewName: view.base},
               getCommonState(view.state),
               // if there was no change of view name allow for the view to be updated
               (previousDelta.viewName === delta.viewName ? omit(delta, 'baseViewName') : {})
