@@ -142,7 +142,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
               iconCode = Unicodes.Map;
               break;
-            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//)) {
+            } else if (
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//) ||
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey-many-to-many\//)
+            ) {
               iconCode = Unicodes.Graph;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
