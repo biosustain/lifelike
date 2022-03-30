@@ -1,5 +1,5 @@
 import { CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { isNil } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -15,7 +15,7 @@ import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-
   templateUrl: './workspace-tab.component.html',
   styleUrls: ['./workspace-tab.component.scss']
 })
-export class WorkspaceTabComponent implements OnInit {
+export class WorkspaceTabComponent implements OnChanges {
   @Input() active: boolean;
   @Input() tab: Tab;
   @Input() hasSiblings = false;
@@ -35,9 +35,10 @@ export class WorkspaceTabComponent implements OnInit {
     protected readonly viewService: ViewService,
   ) {}
 
-  ngOnInit() {
-    // Need this.tab to be available, hence why we wait until onInit to calculate this.
-    this.fontAwesomeIconClass = 'fa-fw ' + (this.calculateFontAwesomeIcon(this.tab.fontAwesomeIcon) || 'fa window-maximize');
+  ngOnChanges({tab}: SimpleChanges) {
+    if (tab) {
+      this.fontAwesomeIconClass = this.calculateFontAwesomeIcon((tab.currentValue as Tab).fontAwesomeIcon);
+    }
   }
 
   openCopyLinkDialog() {
@@ -81,7 +82,6 @@ export class WorkspaceTabComponent implements OnInit {
     ).subscribe((url) => {
       this.tab.url = url.pathname + url.search + url.hash;
       synthDropEvent.dataTransfer.effectAllowed = 'all';
-      synthDropEvent.dataTransfer.setData('text/plain', 'This text came from a tab!');
       synthDropEvent.dataTransfer.setData('application/lifelike-node', JSON.stringify({
         display_name: this.tab.title,
         label: 'link',
