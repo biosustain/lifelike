@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 
 import { sum } from 'd3-array';
 import { first, last, clone } from 'lodash-es';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -12,6 +13,7 @@ import { MultiLaneBaseControllerService } from './multi-lane-base-controller.ser
 import { BaseOptions, BaseState, MultiLaneNetworkTraceData } from '../interfaces';
 import { SankeyNode } from '../../../interfaces';
 import { symmetricDifference } from '../../../utils';
+import { SankeyUpdateService } from '../../../services/sankey-update.service';
 
 type MultilaneDataWithContext = LayersContext<MultiLaneNetworkTraceData>;
 
@@ -19,10 +21,12 @@ type MultilaneDataWithContext = LayersContext<MultiLaneNetworkTraceData>;
 export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState> implements OnDestroy {
   constructor(
     readonly baseView: MultiLaneBaseControllerService,
-    readonly truncatePipe: TruncatePipe,
-    readonly warningController: WarningControllerService
+    protected readonly truncatePipe: TruncatePipe,
+    readonly warningController: WarningControllerService,
+    protected readonly modalService: NgbModal,
+    protected readonly update: SankeyUpdateService
   ) {
-    super(baseView, truncatePipe, warningController);
+    super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();
   }
 

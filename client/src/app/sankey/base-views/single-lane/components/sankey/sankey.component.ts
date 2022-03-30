@@ -25,6 +25,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../interfaces/search';
 import { ErrorMessages } from '../../../../constants/error';
+import { SankeyUpdateService } from '../../../../services/sankey-update.service';
 
 type SankeyEntity = SankeyNode | SankeyLink;
 
@@ -52,9 +53,10 @@ export class SankeySingleLaneComponent
     protected zone: NgZone,
     protected selection: SankeySelectionService,
     protected search: SankeySearchService,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    protected readonly updateController: SankeyUpdateService
   ) {
-    super(clipboard, snackBar, sankey, wrapper, zone, selection, search);
+    super(clipboard, snackBar, sankey, wrapper, zone, selection, search, updateController);
     selection.multiselect = false;
   }
 

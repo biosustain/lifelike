@@ -1,15 +1,17 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone } from 'lodash-es';
-import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Observable, Subject } from 'rxjs';
+import { merge, omit, isNil, clone, range } from 'lodash-es';
+import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil, catchError } from 'rxjs/operators';
+import { combineLatest, iif, ReplaySubject, Observable, Subject, EMPTY } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyState, NetworkTraceData, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
+import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 
 import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
@@ -19,6 +21,7 @@ import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
 import { Prescaler } from '../interfaces/prescalers';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
+import { SankeyUpdateService } from './sankey-update.service';
 
 export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
@@ -69,8 +72,10 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   implements ServiceOnInit, OnDestroy {
   constructor(
     readonly baseView: BaseControllerService<Options, State>,
-    readonly truncatePipe: TruncatePipe,
-    readonly warningController: WarningControllerService
+    protected readonly truncatePipe: TruncatePipe,
+    readonly warningController: WarningControllerService,
+    protected readonly modalService: NgbModal,
+    protected readonly update: SankeyUpdateService
   ) {
     super(truncatePipe);
   }
@@ -156,6 +161,10 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
   takeUntilViewChange = takeUntil(this.baseView.common.view$);
 
   private calculateLayout$;
+
+  resetDirty() {
+    this.update.reset();
+  }
 
   ngOnDestroy() {
     this.destroyed$.next();
@@ -274,33 +283,35 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
     const columnsWithLinkPlaceholders = copy2DArray(columns);
     // start to operate on list of nodes and virtual ones
     const nodesAndPlaceholders = clone(data.nodes);
-    const _virtualPaths = new Map();
+    const _virtualPaths = new ExtendedMap<string, ExtendedArray<SankeyNode>>();
 
     for (const link of data.links) {
-      const totalToCreate = Math.abs(link._target._layer - link._source._layer);
-
-      // if the link spans more than 1 column, then replace it with virtual nodes and links
-      if (totalToCreate > 1) {
-        const startNode = link._circular ? link._target : link._source;
-
-        const id = link._source.id + ' ' + link._target.id;
-        const virtualPath = _virtualPaths.get(id) ?? [];
-        _virtualPaths.set(id, virtualPath);
-
-        let newNode;
-        for (let n = 1; n < totalToCreate; n++) {
-          newNode = virtualPath[n];
-          if (!newNode) {
-            newNode = {
-              _value: 0,
-              _layer: startNode._layer + n
-            } as SankeyNode;
-            virtualPath.push(newNode);
-            columnsWithLinkPlaceholders[newNode._layer].push(newNode);
-          }
-          newNode._value += link._value;
+      let virtualPathStartLayer;
+      let virtualPathEndLayer;
+      if (link._circular) {
+        virtualPathStartLayer = link._target._layer;
+        virtualPathEndLayer = link._source._layer;
+      } else {
+        // if the link spans more than 1 column, then replace it with virtual nodes and links
+        if (link._target._layer - link._source._layer > 1) {
+          virtualPathStartLayer = link._source._layer;
+          virtualPathEndLayer = link._target._layer;
+        } else {
+          continue;
         }
       }
+      const id = link._source.id + ' ' + link._target.id;
+      const virtualPath = _virtualPaths.getSet(id, new ExtendedArray());
+      range(virtualPathStartLayer, virtualPathEndLayer).forEach(_layer =>
+        virtualPath.getSetLazily(_layer, () => {
+          const newNode = {
+            _value: 0,
+            _layer
+          } as SankeyNode;
+          columnsWithLinkPlaceholders[_layer].push(newNode);
+          return newNode;
+        })._value += link._value
+      );
     }
 
     return {
@@ -420,6 +431,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
+      tap(() => this.update.reset()),
       // Calculate layout and address possible circular links
       // Associate the nodes with their respective links, and vice versa
       this.computeNodeLinks,
@@ -447,10 +459,13 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
               return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
                 this.computeNodeHeights(nodesAndPlaceholders),
                 debug('computeNodeHeights'),
+                this.update.waitForUpdateWindow,
                 // Calculate the nodes' and links' vertical position within their respective column
                 //     Also readjusts sankeyCircular size if circular links are needed, and node x's
                 tap(() => this.computeNodeBreadths(data, columns)),
                 debug('computeNodeBreadths'),
+                this.update.waitForUpdateWindow,
+                catchError(() => EMPTY),
                 this.layoutNodesWithinColumns(columns),
                 debug('layoutNodesWithinColumns'),
                 this.computeLinkBreadths(nodesAndPlaceholders),
@@ -542,6 +557,7 @@ export class LayoutService<Options extends SankeyBaseOptions, State extends Sank
 
   recreateLayout(view) {
     return this.baseView.networkTraceData$.pipe(
+      tap(() => this.update.reset()),
       tap((data: NetworkTraceData) => {
         this.applyPropertyObject(view.nodes, data.nodes);
         this.applyPropertyObject(view.links, data.links);
