@@ -54,14 +54,14 @@
                     <legend>Group Style</legend>
 
                     <div class="form-group d-flex align-items-center">
-                        <label class="my-0 mr-2" ngbTooltip="Margin" container="body">
-                            <i class="fa fa-fw fa-arrows-left-right"></i>
+                        <label class="my-0 mr-2" ngbTooltip="Margin size" container="body">
+                            <i class="fa fa-fw fa-arrows-alt-h"></i>
                         </label>
-                        <app-percent-input min="0" max="10000" step="20" class="mr-1"
-                                           [(value)]="group.margin" (change)="doSave()"
-                                           inputId="margin"
-                                           [style.width]="'6rem'"></app-percent-input>
-                        %
+                        <input type="number" [value]="group.margin"
+                               class="form-control mr-1"
+                                [min]="0" [max]="100" [step]="2" (change)="updateMargin($event)"
+                                [style.width]="'6rem'">
+                        px
                     </div>
                 </fieldset>
                 <fieldset class="fieldset-properties">
