@@ -3,6 +3,7 @@ import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { BoundingBox } from '../../../utils/behaviors/abstract-node-handle-behavior';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 
@@ -97,12 +98,12 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
     this.regionEnd = regionStart;
   }
 
-  private getBoundingBox() {
+  private getBoundingBox(): BoundingBox {
     const minX = Math.min(this.regionStart[0], this.regionEnd[0]);
     const maxX = Math.max(this.regionStart[0], this.regionEnd[0]);
     const minY = Math.min(this.regionStart[1], this.regionEnd[1]);
     const maxY = Math.max(this.regionStart[1], this.regionEnd[1]);
-    return [minX, minY, maxX, maxY];
+    return {minX, minY, maxX, maxY};
   }
 
   drag(event: DragBehaviorEvent): BehaviorResult {
@@ -113,8 +114,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
     this.regionEnd = this.graphView.getLocationAtMouse();
-    const [minX, minY, maxX, maxY] = this.getBoundingBox();
-    const selected = this.graphView.getEntitiesWithinBBox(minX, minY, maxX, maxY);
+    const selected = this.graphView.getEntitiesWithinBBox(this.getBoundingBox());
     if (this.additive) {
       this.graphView.selection.add(selected);
     } else {
@@ -125,7 +125,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
   }
 
   draw(ctx: CanvasRenderingContext2D, transform: any) {
-    const [minX, minY, maxX, maxY] = this.getBoundingBox();
+    const {minX, minY, maxX, maxY} = this.getBoundingBox();
     const width = maxX - minX;
     const height = maxY - minY;
 
