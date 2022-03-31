@@ -96,6 +96,15 @@ export class GroupFormComponent extends EntityForm  {
     this.originalGroup = cloneDeep(this.updatedGroup);
   }
 
+
+  // TODO: Refactor it into its own component?
+  updateMargin(event: any) {
+    this.updatedGroup.margin = +event.target.value;
+    this.doSave();
+  }
+
   // TODO: Search related stuff?
+
+
 
 }
