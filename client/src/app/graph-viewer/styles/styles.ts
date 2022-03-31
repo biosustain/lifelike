@@ -1,5 +1,7 @@
 import { NodeGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
+import { BoundingBox } from '../utils/behaviors/abstract-node-handle-behavior';
+
 /**
  * A style of node rendering, used to render different shapes of nodes.
  */
@@ -91,12 +93,7 @@ export abstract class PlacedObject {
   /**
    * Get the bounding box.
    */
-  abstract getBoundingBox(): {
-    minX: number,
-    minY: number,
-    maxX: number,
-    maxY: number,
-  };
+  abstract getBoundingBox(): BoundingBox;
 
   /**
    * Check to see if the given coordinates intersects with the object.
@@ -112,7 +109,7 @@ export abstract class PlacedObject {
    * @param x1 bottom right
    * @param y1 bottom right
    */
-  abstract isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean;
+  abstract isBBoxEnclosing(bbox: BoundingBox): boolean;
 
   /**
    * Render the object on the canvas.

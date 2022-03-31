@@ -25,6 +25,7 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
+import { BoundingBox } from '../utils/behaviors/abstract-node-handle-behavior';
 
 /**
  * A rendered view of a graph.
@@ -675,7 +676,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param boundingBoxes bounding boxes to check
    * @param padding padding around all the bounding boxes
    */
-  getGroupBoundingBox(boundingBoxes: { minX: number, maxX: number, minY: number, maxY: number }[],
+  getGroupBoundingBox(boundingBoxes: BoundingBox[],
                       padding = 0) {
     let minX = null;
     let minY = null;
@@ -683,25 +684,25 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     let maxY = null;
 
     for (const bbox of boundingBoxes) {
-      if (minX === null || minX > bbox.minX + padding) {
-        minX = bbox.minX - padding;
+      if (minX === null || minX > bbox.minX) {
+        minX = bbox.minX;
       }
-      if (minY === null || minY > bbox.minY + padding) {
-        minY = bbox.minY - padding;
+      if (minY === null || minY > bbox.minY) {
+        minY = bbox.minY;
       }
-      if (maxX === null || maxX < bbox.maxX + padding) {
-        maxX = bbox.maxX + padding;
+      if (maxX === null || maxX < bbox.maxX) {
+        maxX = bbox.maxX;
       }
-      if (maxY === null || maxY < bbox.maxY + padding) {
-        maxY = bbox.maxY + padding;
+      if (maxY === null || maxY < bbox.maxY) {
+        maxY = bbox.maxY;
       }
     }
 
     return {
-      minX,
-      minY,
-      maxX,
-      maxY,
+      minX: minX - padding,
+      minY: minY - padding,
+      maxX: maxX + padding,
+      maxY: maxY + padding,
     };
   }
 
@@ -798,18 +799,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find all the nodes fully enclosed by the bounding box.
    * @param nodes list of nodes to search through
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
-  getNodesWithinBBox(nodes: UniversalGraphNode[], x0: number, y0: number, x1: number, y1: number): UniversalGraphNode[] {
+  getNodesWithinBBox(nodes: UniversalGraphNode[], bbox: BoundingBox): UniversalGraphNode[] {
     const results = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isBBoxEnclosingNode', placedNode, x0, y0, x1, y1);
-      if ((hookResult !== undefined && hookResult) || placedNode.isBBoxEnclosing(x0, y0, x1, y1)) {
+      const hookResult = this.behaviors.call('isBBoxEnclosingNode', placedNode, bbox);
+      if ((hookResult !== undefined && hookResult) || placedNode.isBBoxEnclosing(bbox)) {
         results.push(d);
       }
     }
@@ -819,18 +817,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find all the edges fully enclosed by the bounding box.
    * @param edges list of edges to search through
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
-  getEdgesWithinBBox(edges: UniversalGraphEdge[], x0: number, y0: number, x1: number, y1: number): UniversalGraphEdge[] {
+  getEdgesWithinBBox(edges: UniversalGraphEdge[], bbox: BoundingBox): UniversalGraphEdge[] {
     const results = [];
     for (let i = edges.length - 1; i >= 0; --i) {
       const d = edges[i];
       const placedEdge = this.placeEdge(d);
-      const hookResult = this.behaviors.call('isBBoxEnclosingEdge', placedEdge, x0, y0, x1, y1);
-      if ((hookResult !== undefined && hookResult) || placedEdge.isBBoxEnclosing(x0, y0, x1, y1)) {
+      const hookResult = this.behaviors.call('isBBoxEnclosingEdge', placedEdge, bbox);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isBBoxEnclosing(bbox)) {
         results.push(d);
       }
     }
@@ -839,18 +834,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
   /**
    * Find all the entities fully enclosed by the bounding box.
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box
    */
-  getEntitiesWithinBBox(x0: number, y0: number, x1: number, y1: number): GraphEntity[] {
+  getEntitiesWithinBBox(bbox: BoundingBox): GraphEntity[] {
     return [
-      ...this.getNodesWithinBBox(this.nodes, x0, y0, x1, y1).map(entity => ({
+      ...this.getNodesWithinBBox(this.nodes, bbox).map(entity => ({
         type: GraphEntityType.Node,
         entity,
       })),
-      ...this.getEdgesWithinBBox(this.edges, x0, y0, x1, y1).map(entity => ({
+      ...this.getEdgesWithinBBox(this.edges, bbox).map(entity => ({
         type: GraphEntityType.Edge,
         entity,
       })),

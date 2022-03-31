@@ -510,7 +510,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const [x, y] = this.getLocationAtMouse();
     for (const group of this.groups) {
       // TODO: Refactor Bounding box into interface/class after deciding what to do
-      const bbox = this.getNodeBoundingBox(group.members, 10) as BoundingBox;
+      const bbox = this.getNodeBoundingBox(group.members, group.margin) as BoundingBox;
       if (isPointIntersecting(bbox, x, y)) {
         return {
           entity: group,

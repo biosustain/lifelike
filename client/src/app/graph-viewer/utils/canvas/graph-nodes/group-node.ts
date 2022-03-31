@@ -27,9 +27,6 @@ export class GroupNode extends BaseRectangleNode {
 
   constructor(ctx: CanvasRenderingContext2D, options: GroupNodeOptions) {
     super(ctx, options);
-    // TODO: Calculate bbox based on childrens?
-    // this.nodeWidth = (this.width != null ? this.width : this.textbox.actualWidth) + this.padding;
-    // this.nodeHeight = (this.height != null ? this.height : this.textbox.actualHeight) + this.padding;
   }
 
   draw(transform: any): void {
@@ -55,8 +52,8 @@ export class GroupNode extends BaseRectangleNode {
       }
     ctx.restore();
 
-    // Node text
-    this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
-      this.textbox.actualHeightWithInsets / 2.0 + zoomResetScale * ctx.lineWidth);
+    // Group label - above the group
+    this.textbox.drawCenteredAt(this.x, this.y - (this.nodeHeight / 2) - this.LABEL_OFFSET -
+      this.textbox.actualHeightWithInsets / 2.0 - zoomResetScale * ctx.lineWidth);
   }
 }
