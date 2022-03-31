@@ -402,9 +402,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
 
     this.nodeHashMap.delete(node.hash);
-    if (this.groupHashMap.has(node.hash)) {
-      this.removeNodeFromGroup(node.hash);
-    }
+    this.tryRemoveNodeFromGroup(node.hash);
     this.invalidateNode(node);
 
     // TODO: Only adjust selection if needed
@@ -489,9 +487,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   addGroup(group: NodeGroup) {
     group.members.forEach((member) => {
-      if (this.groupHashMap.has(member.hash)) {
-        this.removeNodeFromGroup(member.hash);
-      }
+      this.tryRemoveNodeFromGroup(member.hash);
       this.groupHashMap.set(member.hash, group);
     });
     this.groups.push(this.recalculateGroup(group));
@@ -515,25 +511,21 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Remove node from the group
+   * Remove node from the group - if node has a group.
    * @param hash - hash of node to be removed
    */
   // TODO: Accept node ref instead of string?
-  removeNodeFromGroup(hash: string) {
+  tryRemoveNodeFromGroup(hash: string) {
     const group = this.groupHashMap.get(hash);
 
-    // TODO: Throw error instead?
-    if (group == null) {
-      console.log('Trying to remove group from node without group!\nThis is bad!');
-      return;
-    }
-    this.groupHashMap.delete(hash);
-    group.members = group.members.filter(node => node.hash !== hash);
-    // TODO: Keep? Group of 1 member seems meh
-    if (group.members.length > 1) {
-      this.updateGroup(group);
-    } else {
-      this.removeGroup(group);
+    if (group) {
+      this.groupHashMap.delete(hash);
+      group.members = group.members.filter(node => node.hash !== hash);
+      if (group.members.length > 1) {
+        this.updateGroup(group);
+      } else {
+        this.removeGroup(group);
+      }
     }
   }
 
@@ -572,6 +564,32 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.recalculateGroup(group);
     this.invalidateGroup(group);
     this.requestRender();
+  }
+
+  /**
+   * Append new members to a group.
+   * @param newMembers New nodes to be added
+   * @param group Group to extend
+   */
+  addToGroup(newMembers: UniversalGraphNode[], group: NodeGroup) {
+    for (const node of newMembers) {
+      this.tryRemoveNodeFromGroup(node.hash);
+      group.members.push(node);
+      this.groupHashMap.set(node.hash, group);
+    }
+    this.updateGroup(group);
+  }
+
+
+  /**
+   * Reverse the actions of addToGroup. No need to update the group, TryRemove does that
+   * @param newMembers nodes to delete
+   * @param group group to delete from
+   */
+  removeFromGroup(newMembers: UniversalGraphNode[], group: NodeGroup) {
+    for (const node of newMembers) {
+      this.tryRemoveNodeFromGroup(node.hash);
+    }
   }
 
   /**

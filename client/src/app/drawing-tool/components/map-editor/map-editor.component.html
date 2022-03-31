@@ -116,6 +116,11 @@
                             (click)="createGroup()">
                         Create Group
                     </button>
+                    <button *ngIf="canExtendsGroupFromSelection()"
+                            class="btn btn-light center mt-2 ml-2"
+                            (click)="addToGroup()">
+                        Add To Group
+                    </button>
                 </ng-container>
 
                 <ng-template #graphInfo>
