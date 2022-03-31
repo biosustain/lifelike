@@ -1,6 +1,8 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
+import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
 import { TextElement } from '../text-element';
+
 
 export interface IconNodeOptions {
   x: number;
@@ -74,8 +76,8 @@ export class FontIconNode extends PlacedNode {
     );
   }
 
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
-    return x0 <= this.bbox.minX && y0 <= this.bbox.minY && x1 >= this.bbox.maxX && y1 >= this.bbox.maxY;
+  isBBoxEnclosing(bbox: BoundingBox): boolean {
+    return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
   lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
