@@ -1,9 +1,9 @@
-import { GraphEntityType, NodeGroup } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
 /**
- * Represents a new edge addition to the graph.
+ * Represents a new group addition to the graph.
  */
 export class GroupCreation implements GraphAction {
   constructor(public description: string,
@@ -26,7 +26,7 @@ export class GroupCreation implements GraphAction {
 }
 
 /**
- * Represents the deletion of a edge.
+ * Represents the deletion of a group.
  */
 export class GroupDeletion implements GraphAction {
   constructor(public description: string,
@@ -39,6 +39,24 @@ export class GroupDeletion implements GraphAction {
 
   rollback(component: GraphActionReceiver) {
     component.addGroup(this.group);
+  }
+}
+
+/**
+ * Represents the addition of a new member(s) to the group.
+ */
+export class GroupExtension implements GraphAction {
+  constructor(public description: string,
+              public group: NodeGroup,
+              public newMembers: UniversalGraphNode[]) {
+  }
+
+  apply(component: GraphActionReceiver) {
+    component.addToGroup(this.newMembers, this.group);
+  }
+
+  rollback(component: GraphActionReceiver) {
+    component.removeFromGroup(this.newMembers, this.group);
   }
 }
 

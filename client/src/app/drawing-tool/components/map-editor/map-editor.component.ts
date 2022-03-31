@@ -19,10 +19,10 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import { GroupCreation } from 'app/graph-viewer/actions/groups';
+import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
-import { GraphEntityType, KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
+import { GraphEntityType, KnowledgeMap, NodeGroup, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -212,7 +212,17 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   canCreateGroupFromSelection() {
     const selection = this.graphCanvas?.selection.get();
     if (selection) {
-      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 1;
+      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 1 &&
+        selection.filter(entity => entity.type === GraphEntityType.Group).length === 0;
+    }
+    return false;
+  }
+
+  canExtendsGroupFromSelection() {
+    const selection = this.graphCanvas?.selection.get();
+    if (selection) {
+      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 0 &&
+        selection.filter(entity => entity.type === GraphEntityType.Group).length === 1;
     }
     return false;
   }
@@ -397,6 +407,19 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
           height: 100
         }
       }, true
+    ));
+  }
+
+  addToGroup() {
+    const selection = this.graphCanvas?.selection.get();
+    // TODO: Error on 0 or 2?
+    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as NodeGroup;
+
+    const newMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []);
+    this.graphCanvas?.execute(new GroupExtension(
+      'Add new members to group',
+      group,
+      newMembers
     ));
   }
 
