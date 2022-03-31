@@ -5,6 +5,7 @@ import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
 import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
+import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -34,7 +35,7 @@ export class LineEdge extends PlacedEdge {
   readonly labelMaxX: number;
   readonly labelMinY: number;
   readonly labelMaxY: number;
-  readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+  readonly boundingBox: BoundingBox;
 
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
@@ -74,7 +75,7 @@ export class LineEdge extends PlacedEdge {
     };
   }
 
-  getBoundingBox(): { minX: number; minY: number; maxX: number; maxY: number } {
+  getBoundingBox(): BoundingBox {
     return this.boundingBox;
   }
 
@@ -117,9 +118,8 @@ export class LineEdge extends PlacedEdge {
     return distanceUnsq(x, y, this.source.x + t * dx, this.source.y + t * dy);
   }
 
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
-    return x0 <= this.boundingBox.minX && y0 <= this.boundingBox.minY
-      && x1 >= this.boundingBox.maxX && y1 >= this.boundingBox.maxY;
+  isBBoxEnclosing(bbox: BoundingBox): boolean {
+    return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
   draw(transform: any): void {

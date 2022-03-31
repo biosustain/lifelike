@@ -1,6 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { pointOnRect } from '../../geometry';
+import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
 
 export interface BaseRectangleNodeOptions {
   x: number;
@@ -39,7 +40,7 @@ export abstract class BaseRectangleNode extends PlacedNode {
     this.nodeY2 = this.nodeY + this.nodeHeight;
   }
 
-  getBoundingBox() {
+  getBoundingBox(): BoundingBox {
     return {
       minX: this.nodeX,
       minY: this.nodeY,
@@ -52,8 +53,8 @@ export abstract class BaseRectangleNode extends PlacedNode {
     return x >= this.nodeX && x <= this.nodeX2 && y >= this.nodeY && y <= this.nodeY2;
   }
 
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
-    return x0 <= this.nodeX && y0 <= this.nodeY && x1 >= this.nodeX2 && y1 >= this.nodeY2;
+  isBBoxEnclosing(bbox: BoundingBox): boolean {
+    return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
   lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
