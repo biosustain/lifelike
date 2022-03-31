@@ -63,6 +63,11 @@ export interface GraphActionReceiver {
 
   updateGroup(group: NodeGroup): void;
 
+  addToGroup(newMembers: UniversalGraphNode[], group: NodeGroup): void;
+
+  removeFromGroup(newMembers: UniversalGraphNode[], group: NodeGroup): void;
+
+
   /**
    * Focus the selected entity (aka focus on the related sidebar for the selection).
    */
