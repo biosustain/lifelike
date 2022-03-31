@@ -104,10 +104,7 @@ export abstract class PlacedObject {
 
   /**
    * Check to see if the given bbox encloses the object.
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
   abstract isBBoxEnclosing(bbox: BoundingBox): boolean;
 
