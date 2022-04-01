@@ -1,4 +1,5 @@
 import { TextElement } from './text-element';
+import { Line } from './lines/lines';
 
 // ---------------------------------
 // Constants
@@ -34,4 +35,19 @@ export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: nu
   }
   textbox.drawCenteredAt(x, y);
   textbox.font = oldFont;
+}
+
+export function drawStrokeAndFill(ctx: CanvasRenderingContext2D, shapeFillColor: string) {
+  if (shapeFillColor) {
+    ctx.fillStyle = shapeFillColor;
+    ctx.fill();
+  }
+}
+
+export function drawStroke(ctx: CanvasRenderingContext2D, stroke: Line, zoomResetScale: number) {
+  if (stroke) {
+    stroke.setContext(ctx);
+    ctx.lineWidth = zoomResetScale * ctx.lineWidth;
+    ctx.stroke();
+  }
 }

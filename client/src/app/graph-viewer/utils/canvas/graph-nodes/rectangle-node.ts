@@ -3,7 +3,7 @@ import 'canvas-plus';
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import { defaultLabelFontSize, visibleTextThreshold } from '../shared';
+import { defaultLabelFontSize, drawStroke, drawStrokeAndFill, visibleTextThreshold } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -24,11 +24,14 @@ export class RectangleNode extends BaseRectangleNode {
   readonly stroke: Line | undefined;
   readonly forceVisibleText = false;
 
+  // This controls how 'rounded' the rect is
+  readonly arcSize = 5;
+
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
     super(ctx, options);
-    this.nodeWidth = (this.width != null ? this.width : this.textbox.actualWidth) + this.padding;
-    this.nodeHeight = (this.height != null ? this.height : this.textbox.actualHeight) + this.padding;
+    this.nodeWidth = (this.width ?? this.textbox.actualWidth) + this.padding;
+    this.nodeHeight = (this.height ?? this.textbox.actualHeight) + this.padding;
   }
 
   draw(transform: any): void {
@@ -45,17 +48,12 @@ export class RectangleNode extends BaseRectangleNode {
       this.nodeY,
       this.nodeWidth,
       this.nodeHeight,
-      visibleText ? 5 : 3,
+      this.arcSize,
     );
-    if (this.shapeFillColor) {
-      ctx.fillStyle = this.shapeFillColor;
-      ctx.fill();
-    }
-    if (this.stroke) {
-      this.stroke.setContext(ctx);
-      ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-      ctx.stroke();
-    }
+
+    drawStrokeAndFill(ctx, this.shapeFillColor);
+    drawStroke(ctx, this.stroke, zoomResetScale);
+
     ctx.restore();
 
     // Node text

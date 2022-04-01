@@ -150,10 +150,19 @@ export abstract class PlacedObject {
   }
 }
 
+// ---------------------------------
+// Placed Entities
+// ---------------------------------
+// Placed Entities are map objects that are translated into class responsible for
+// drawing them based on selected properties. They are stored in RenderTree and need
+// to be recalculated on every change in the corresponding map entity
+
 /**
  * A placed node.
  */
 export abstract class PlacedNode extends PlacedObject {
+  // Those are responsible for controlling whether a node has particular set of handles
+  // drawn upon selection
   resizable: boolean;
   uniformlyResizable: boolean;
 
@@ -186,6 +195,9 @@ export abstract class PlacedEdge extends PlacedObject {
   abstract drawLayer2(transform: any): void;
 }
 
+/**
+ * Placed group.
+ */
 export abstract class PlacedGroup extends PlacedObject {
 
 }

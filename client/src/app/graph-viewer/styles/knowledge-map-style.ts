@@ -40,7 +40,7 @@ import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
 import { ResourceManager } from '../utils/resource/resource-manager';
 import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
-import { GroupNode } from '../utils/canvas/graph-nodes/group-node';
+import { GroupNode } from '../utils/canvas/graph-groups/group-node';
 import { borderBlue, defaultLabelFontSize } from '../utils/canvas/shared';
 
 

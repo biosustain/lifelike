@@ -15,7 +15,7 @@ export abstract class BaseRectangleNode extends PlacedNode {
 
   protected defaultWidth = 100;
   protected defaultHeight = 100;
-  readonly padding: number = 10;
+  protected padding = 10;
 
   readonly x: number;
   readonly y: number;
@@ -32,8 +32,8 @@ export abstract class BaseRectangleNode extends PlacedNode {
     super();
     Object.assign(this, options);
 
-    this.nodeWidth = (this.width != null ? this.width : this.defaultWidth) + this.padding;
-    this.nodeHeight = (this.height != null ? this.height : this.defaultHeight) + this.padding;
+    this.nodeWidth = (this.width ?? this.defaultWidth) + this.padding;
+    this.nodeHeight = ( this.height ?? this.defaultHeight) + this.padding;
     this.nodeX = this.x - this.nodeWidth / 2;
     this.nodeY = this.y - this.nodeHeight / 2;
     this.nodeX2 = this.nodeX + this.nodeWidth;
