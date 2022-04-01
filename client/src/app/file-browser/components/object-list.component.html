@@ -1,6 +1,6 @@
 <div class="module-body-split module-body-browser-split">
     <div class="module-body-split-main" [appFSObjectTarget]="parent"
-         (refreshRequest)="this.refreshRequest.emit()">
+         (refreshRequest)="refreshRequest.emit()">
         <ng-container
                 *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
             <div class="border-bottom p-4 text-muted d-flex align-items-start">
@@ -191,17 +191,18 @@
 
                     <td>
                         <div class="d-flex align-items-end" *ngIf="objectControls">
-                            <button class="btn btn-sm" [matMenuTriggerFor]="fileObjectMenu">
+                            <button class="btn btn-sm"
+                                    [matMenuTriggerFor]="fileObjectMenu">
                                 <i class="fas fa-cog fa-fw"></i>
                                 <i class="fas fa-caret-down fa-fw"></i>
                             </button>
-                            <mat-menu #fileObjectMenu="matMenu" xPosition="after" yPosition="below">
-                                <ng-template matMenuContent>
-                                    <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="true"
-                                                     (objectOpen)="this.openObject($event)"
-                                                     (refreshRequest)="this.refreshRequest.next($event)">
-                                    </app-object-menu>
-                                </ng-template>
+                            <mat-menu #fileObjectMenu="matMenu"
+                                      xPosition="after"
+                                      yPosition="below">
+                                <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="true"
+                                                 (objectOpen)="openObject($event)"
+                                                 (refreshRequest)="refreshRequest.emit($event)">
+                                </app-object-menu>
                             </mat-menu>
                         </div>
                     </td>
@@ -219,8 +220,8 @@
 
     <div class="d-none d-cbp-lg-block module-body-split-sidebar">
         <app-object-info [object]="objects.lastSelection$ | async" [forEditing]="forEditing" [showDelete]="true"
-                         (objectOpen)="this.openObject($event)"
-                         (refreshRequest)="this.refreshRequest.next($event)"
+                         (objectOpen)="openObject($event)"
+                         (refreshRequest)="refreshRequest.emit($event)"
                          *ngIf="objects != null && objects.selectionLength$ | async"></app-object-info>
     </div>
 </div>

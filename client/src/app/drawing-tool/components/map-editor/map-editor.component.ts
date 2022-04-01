@@ -70,8 +70,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     });
 
     this.ngZone.runOutsideAngular(() => {
+      // TODO: Does this ever fire? We don't drag the canvas...
       this.canvasChild.nativeElement.addEventListener('dragend', e => {
         this.dragEnd(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('dragenter', e => {
+        this.dragEnter(e);
       });
 
       this.canvasChild.nativeElement.addEventListener('dragleave', e => {
@@ -240,6 +245,12 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     });
   }
 
+  dragEnter(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = true;
+    });
+  }
+
   dragLeave(event: DragEvent) {
     this.ngZone.run(() => {
       this.dropTargeted = false;
@@ -247,14 +258,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   dragOver(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = true;
+    });
+
     if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
-      if (!this.dropTargeted) {
-        this.ngZone.run(() => {
-          this.dropTargeted = true;
-        });
-      }
     }
   }
 

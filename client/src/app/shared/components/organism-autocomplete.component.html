@@ -1,5 +1,5 @@
 <ng-template #organismResult let-organism="organism" let-term="term">
-  <button class="dropdown-item" placement="right" (click)="selectOrganism(organism)">
+  <button class="dropdown-item" type="button" placement="right" (click)="selectOrganism(organism)">
     <ngb-highlight [result]="organism.organism_name" [term]="term"></ngb-highlight>
   </button>
 </ng-template>
