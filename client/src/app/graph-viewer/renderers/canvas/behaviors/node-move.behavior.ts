@@ -1,10 +1,10 @@
 import {cloneDeep} from 'lodash-es';
 import * as d3 from 'd3';
 
-import {GraphEntityType, NodeGroup, UniversalGraphNode} from 'app/drawing-tool/services/interfaces';
-import {GraphEntityUpdate} from 'app/graph-viewer/actions/graph';
-import {CompoundAction, GraphAction} from 'app/graph-viewer/actions/actions';
-import {isCtrlOrMetaPressed, isShiftPressed} from 'app/shared/utils';
+import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
+import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
+import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
 
 import {CanvasGraphView} from '../canvas-graph-view';
 import {AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent} from '../../behaviors';
