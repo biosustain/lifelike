@@ -9,16 +9,16 @@ import { of } from 'rxjs';
 import { DataSet } from 'vis-data';
 
 import {
-    ExpandNodeRequest,
-    GraphNode,
-    GraphRelationship,
-    Neo4jResults,
-    VisEdge,
-    VisNode,
-    NewEdgeSnippetsPageRequest,
-    EdgeConnectionData,
-    NewClusterSnippetsPageRequest,
-    DuplicateEdgeConnectionData,
+  ExpandNodeRequest,
+  GraphNode,
+  GraphRelationship,
+  Neo4jResults,
+  VisEdge,
+  VisNode,
+  NewEdgeSnippetsPageRequest,
+  EdgeConnectionData,
+  NewClusterSnippetsPageRequest,
+  DuplicateEdgeConnectionData,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { GraphSearchFormComponent } from 'app/search/components/graph-search-form.component';

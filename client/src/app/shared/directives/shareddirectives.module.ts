@@ -7,11 +7,12 @@ import { FormInputDirective } from './form-input.directive';
 import { AutoFocusDirective } from './auto-focus.directive';
 import { ContainerBreakpointsDirective } from './container-breakpoints.directive';
 import { TabSelectableDirective } from './tab-selectable.directive';
-import { ContextMenuBodyDirective, ContextMenuDirective } from './context-menu.directive';
+import { ContextMenuBodyDirective, ContextMenuDirective, ContextMenuItemDirective } from './context-menu.directive';
 import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
 import { DataTransferDataDirective } from './data-transfer-data.directive';
 import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
-import { TextTruncateDirective } from './text-truncate.directive';
+import { TextTruncateToTooltipDirective } from './text-truncate-to-tooltip.directive';
+import { ElementObserverDirective } from './element-observer.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -25,11 +26,13 @@ const directives = [
   TabSelectableDirective,
   ContextMenuDirective,
   ContextMenuBodyDirective,
+  ContextMenuItemDirective,
   MouseNavigableDirective,
   MouseNavigableItemDirective,
   DataTransferDataDirective,
   FilesystemObjectTargetDirective,
-  TextTruncateDirective
+  TextTruncateToTooltipDirective,
+  ElementObserverDirective
 ];
 
 @NgModule({

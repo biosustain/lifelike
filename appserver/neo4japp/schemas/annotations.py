@@ -40,7 +40,7 @@ class AnnotationConfigurations(CamelCaseSchema):
 class AnnotationGenerationRequestSchema(CamelCaseSchema):
     """Request for initial annotation or re-annotation."""
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
-    annotation_configs = fields.Nested(AnnotationConfigurations)
+    annotation_configs = fields.Nested(AnnotationConfigurations, allow_none=True)
 
 
 # Responses

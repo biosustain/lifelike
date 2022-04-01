@@ -16,9 +16,11 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { MimeTypes } from 'app/shared/constants';
 
 import {
-  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
   CreateActionOptions,
-  CreateDialogAction, PreviewOptions,
+  CreateDialogAction,
+  PreviewOptions,
 } from './base-object.type-provider';
 
 

@@ -107,7 +107,7 @@ export interface SearchRecord {
 
 export interface OrganismsResult {
   limit: number;
-  nodes: OrganismAutocomplete;
+  nodes: OrganismAutocomplete[];
   query: string;
   total: number;
 }

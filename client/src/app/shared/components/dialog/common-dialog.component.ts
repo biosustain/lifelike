@@ -26,7 +26,7 @@ export abstract class CommonDialogComponent<T = any, V = T> {
   /**
    * Get the return value for submission.
    */
-  abstract getValue(): T;
+  abstract getValue(): Promise<T>|T;
 
   applyValue(value: V) {
   }
@@ -35,11 +35,14 @@ export abstract class CommonDialogComponent<T = any, V = T> {
     this.modal.dismiss();
   }
 
-  submit(): void {
-    this.accept(this.getValue()).then(result => {
-      this.applyValue(result);
-      this.modal.close(result);
-    }, () => {
-    });
+  submit(): Promise<void>|void {
+    return Promise.resolve(this.getValue())
+      .then(value => this.accept(value))
+      .then(
+        result => {
+          this.applyValue(result);
+          this.modal.close(result);
+        }
+      );
   }
 }

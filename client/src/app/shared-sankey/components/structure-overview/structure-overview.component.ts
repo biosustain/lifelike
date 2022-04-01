@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, isDevMode, } from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { isObject, isBoolean, isArray, has, isNil, isString, isNumber, isUndefined, first } from 'lodash-es';
 
 import { SankeyId, SankeyNode } from 'app/shared-sankey/interfaces';

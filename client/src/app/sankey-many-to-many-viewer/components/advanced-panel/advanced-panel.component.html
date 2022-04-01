@@ -27,7 +27,7 @@
         <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
             Font Size
         </label>
-        <app-percent-input [(value)]="state.fontSizeScale"
+        <app-percent-input [(ngModel)]="state.fontSizeScale"
                            default="100"
                            min="20"
                            max="1000"

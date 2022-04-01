@@ -3,6 +3,7 @@ function isObject(item) {
   return (item && typeof item === 'object' && !Array.isArray(item));
 }
 
+// todo: same as lodash merge?
 export function mergeDeep(target, ...sources) {
   if (!sources.length) {
     return target;
