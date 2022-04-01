@@ -4,7 +4,8 @@ import os
 
 class Config:
     def __init__(self):
-        self.config_dir = os.path.abspath(os.path.dirname(__file__))
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        self.config_dir = os.path.join(cwd, '')
         self.content = self._read_config()
         self.data_dir = self._get_data_dir()
 
@@ -56,6 +57,9 @@ class Config:
 
     def get_biocyc_cyphers(self):
         return self.read_yaml(os.path.join(self.get_cypher_dir(), 'biocyc-cypher.yml'))
+
+    def get_string_cyphers(self):
+        return self.read_yaml(os.path.join(self.get_cypher_dir(), 'string-cypher.yml'))
 
 
 

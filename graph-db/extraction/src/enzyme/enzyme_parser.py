@@ -1,24 +1,15 @@
+from common.constants import *
+from common.base_parser import *
 import pandas as pd
-import logging
-import re
+import logging, re
 import os
 
-from common.base_parser import BaseParser
-from common.constants import *
-from common.query_builder import (
-    get_create_relationships_query,
-    get_create_synonym_relationships_query,
-    get_create_update_nodes_query
-)
-
-
-ENZYME_FILE = 'enzyme.tsv'
-ENZYME_SYNONYM_FILE = 'enzyme_synonym.tsv'
-ENZYME_REL_FILE = 'enzyme_rels.tsv'
-
 SEP = '[ ]{2,}'
+PROP_CODE = 'code'
+PROP_ACTIVITIES = 'activities'
+PROP_COFACTORS = 'cofactors'
 
-class Enzyme:
+class Enzyme(object):
     def __init__(self, code, name=''):
         self.ec_number = ''
         self.code = code
@@ -82,20 +73,21 @@ class Enzyme:
         children = []
         for c in self.children:
             children.append({
-                PROP_PARENT_ID: self.ec_number,
-                PROP_ID: c.ec_number
+                PROP_FROM_ID: c.ec_number,
+                PROP_TO_ID: self.ec_number,
+                REL_RELATIONSHIP: REL_PARENT
             })
         return children
 
 
 class EnzymeParser(BaseParser):
-    def __init__(self, prefix: str, base_dir=None):
-        BaseParser.__init__(self, prefix, DB_ENZYME.lower(), base_dir)
+    def __init__(self, base_dir=None):
+        BaseParser.__init__(self, DB_ENZYME.lower(), base_dir)
         self.class_file = 'enzclass.txt'
         self.data_file = 'enzyme.dat'
         self.logger = logging.getLogger(__name__)
 
-    def parse_classes(self) -> dict:
+    def parse_classes(self)->dict:
         ec_classes = dict()
         with open(os.path.join(self.download_dir, self.class_file), 'r') as f:
             start = False
@@ -111,7 +103,7 @@ class EnzymeParser(BaseParser):
         self.logger.info(f'enzyme classes: {len(ec_classes)}')
         return ec_classes
 
-    def parse_data_files(self) -> list:
+    def parse_data_files(self)->list:
         """
         Parse both data files and return list of enzyme nodes
         """
@@ -120,7 +112,7 @@ class EnzymeParser(BaseParser):
         nodes.update(enz_nodes)
         self.build_tree(nodes)
         return list(nodes.values())
-
+        
     def parse_enz_data_file(self)->dict:
         """
         Parse enzyme data file, return dictionary with enzyme code as key, Enzyme object as value. The enzyme data file
@@ -128,6 +120,7 @@ class EnzymeParser(BaseParser):
         :return: code-node dict
         """
         enzymes = dict()
+        sep = '[ ]{2,}'
         with open(os.path.join(self.download_dir, self.data_file), 'r') as f:
             enzyme = None
             for line in f:
@@ -178,7 +171,7 @@ class EnzymeParser(BaseParser):
                 return '.'.join(tokens)
         return None
 
-    def build_tree(self, enzyme_dict: dict):
+    def build_tree(self, enzyme_dict: dict) -> []:
         """
         Build enzyme hierachy using enzyme code. Adding children for enzyme nodes
         :param enzyme_dict
@@ -190,48 +183,35 @@ class EnzymeParser(BaseParser):
                 parent = enzyme_dict[parent_code]
                 parent.add_child(enz)
 
-    def load_data_to_neo4j(self):
+    def parse_and_write_data_files(self, zip_outfile):
+        outfiles = []
         enzymes = self.parse_data_files()
-        self.logger.info('load enzyme nodes')
+        self.logger.info('write enzyme nodes')
         data = [enzyme.get_enzyme_dict() for enzyme in enzymes]
-        self.logger.info(f'total enzymes: {len(data)}')
+        self.logger.info(f"total enzymes: {len(data)}")
         df = pd.DataFrame.from_records(data)
-        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID,
-            [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER])
-        print(query)
-        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_FILE)
-        df.to_csv(outfile, index=False, sep='\t')
+        df.to_csv(os.path.join(self.output_dir, 'enzyme.tsv'), index=False, sep='\t')
+        outfiles.append('enzyme.tsv')
 
-        self.logger.info('load enzyme synonyms')
+        self.logger.info('write enzyme synonyms')
         enzyme2syns = []
         for enzyme in enzymes:
             enzyme2syns += enzyme.get_enzyme_synonyms()
         df = pd.DataFrame.from_records(enzyme2syns)
-        self.logger.info(f'enzyme synonyms: {len(df)}')
-        query = get_create_synonym_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, PROP_NAME)
-        print(query)
-        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_SYNONYM_FILE)
-        df.to_csv(outfile, index=False, sep='\t')
+        self.logger.info(f"enzyme synonyms: {len(df)}")
+        df.to_csv(os.path.join(self.output_dir, 'enzyme-synonyms.tsv'), index=False, sep='\t')
+        outfiles.append('enzyme-synonyms.tsv')
 
-        self.logger.info('load enzyme parent-child relationships')
+        self.logger.info('write enzyme parent-child relationships')
         parent2child_list = []
         for enzyme in enzymes:
             parent2child_list += enzyme.get_parent2child()
         df = pd.DataFrame.from_records(parent2child_list)
-        self.logger.info(f'parent-child rels:{len(df)}')
-        query = get_create_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, NODE_ENZYME, PROP_ID, PROP_PARENT_ID, REL_PARENT)
-        print(query)
-        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_REL_FILE)
-        df.to_csv(outfile, index=False, sep='\t')
+        df.to_csv(os.path.join(self.output_dir, 'enzyme-rels.tsv'), index=False, sep='\t')
+        outfiles.append('enzyme-rels.tsv')
+        self.zip_output_files(outfiles, zip_outfile)
 
 
-def main(args):
-    parser = EnzymeParser(args.prefix)
-    parser.load_data_to_neo4j()
-
-    for filename in [ENZYME_FILE, ENZYME_SYNONYM_FILE, ENZYME_REL_FILE]:
-        parser.upload_azure_file(filename, args.prefix)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    parser = EnzymeParser()
+    parser.parse_and_write_data_files('enzyme-data-220321.zip')

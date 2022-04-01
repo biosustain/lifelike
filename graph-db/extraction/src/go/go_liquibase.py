@@ -27,7 +27,9 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
                 namespaces = df[PROP_NAMESPACE].drop_duplicates()
                 for namespace in namespaces:
                     entity_label = namespace.title().replace('_', '')
-                    node_changeset = self.get_node_changeset(df, filename, entity_label, NODE_GO, PROP_NAMESPACE, namespace)
+                    node_changeset = self.get_node_changeset(df, filename, entity_label, NODE_GO,
+                                                             row_filter_col=PROP_NAMESPACE,
+                                                             row_filter_val=namespace)
                     self.change_sets.append(node_changeset)
 
     def add_synonym_changesets(self):
@@ -51,7 +53,7 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
 
 
 def main():
-    task = GoChangeLogsGenerator('rcai', "go-data-220221.zip")
+    task = GoChangeLogsGenerator('rcai', "go-data-220320.zip")
     task.add_all_change_sets()
     task.generate_changelog_file('go_changelog.xml')
 
