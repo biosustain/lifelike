@@ -20,7 +20,7 @@ import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, flatMap } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from './modules';
 import {
@@ -465,7 +465,7 @@ export class PaneManager {
   providedIn: 'root',
 })
 export class WorkspaceManager {
-  panes: PaneManager;
+  paneManager: PaneManager;
   readonly workspaceUrl = '/workspaces/local';
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
@@ -475,7 +475,7 @@ export class WorkspaceManager {
   constructor(private readonly router: Router,
               private readonly injector: Injector,
               private readonly sessionService: WorkspaceSessionService) {
-    this.panes = new PaneManager(injector);
+    this.paneManager = new PaneManager(injector);
     this.hookRouter();
     this.emitEvents();
   }
@@ -501,15 +501,16 @@ export class WorkspaceManager {
           } else {
             // TODO: Support nested routes
             const routeSnapshot: ActivatedRouteSnapshot = this.getDeepestChild(event.state.root);
+            const queryParams = routeSnapshot.queryParams;
 
-            const pane = this.focusedPane || this.panes.getFirstOrCreate();
+            const pane = this.focusedPane || this.paneManager.getFirstOrCreate();
             const tab = pane.getActiveTabOrCreate();
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
             // from the URL -- this part is a little hacky
             // @ts-ignore
             const activatedRoute = new ActivatedRoute(new BehaviorSubject(routeSnapshot.url),
-              new BehaviorSubject(routeSnapshot.params), new BehaviorSubject(routeSnapshot.queryParams),
+              new BehaviorSubject(routeSnapshot.params), new BehaviorSubject(queryParams),
               new BehaviorSubject(routeSnapshot.fragment), new BehaviorSubject(routeSnapshot.data),
               routeSnapshot.outlet, routeSnapshot.component, routeSnapshot);
             activatedRoute.snapshot = routeSnapshot;
@@ -521,10 +522,12 @@ export class WorkspaceManager {
             } else {
               tab.defaultsSet = false;
             }
-            tab.url = '/' +
-              routeSnapshot.pathFromRoot.map(child => child.url.map(segment => segment.toString()).join('/')).join('/') +
-              (routeSnapshot.queryParams ? `?${getQueryString(routeSnapshot.queryParams)}` : '') +
-              (routeSnapshot.fragment ? `#${routeSnapshot.fragment}` : '');
+
+            const tabSegment = flatMap(routeSnapshot.pathFromRoot, ({url}) => url).join('/');
+            const urlTree = this.router.parseUrl(tabSegment);
+            urlTree.queryParams = routeSnapshot.queryParams;
+            urlTree.fragment = routeSnapshot.fragment;
+            tab.url = urlTree.toString();
             // TODO: Component may be a string
             tab.replaceComponent(routeSnapshot.component as Type<any>, [{
               // Provide our custom ActivatedRoute with the params
@@ -557,12 +560,37 @@ export class WorkspaceManager {
     this.emitEvents();
   }
 
+  closeTab(pane: Pane, tab: Tab) {
+    const needConfirmation = this.shouldConfirmTabUnload(tab);
+    return Promise.resolve(
+      !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
+    ).then(shouldDeleteTab => {
+      if (shouldDeleteTab) {
+        pane.deleteTab(tab);
+        this.save();
+        this.emitEvents();
+      }
+    });
+  }
+
+  closeTabs(pane: Pane, tabs: Tab[]) {
+    for (const tab of tabs) {
+      this.closeTab(pane, tab);
+    }
+  }
+
+  clearWorkbench() {
+    for (const pane of this.paneManager.panes) {
+      this.closeTabs(pane, pane.tabs.slice());
+    }
+  }
+
   openTabByUrl(pane: Pane | string,
                url: string | UrlTree,
                extras?: NavigationExtras & WorkspaceNavigationExtras,
                tabDefaults?: TabDefaults): Promise<boolean> {
     if (typeof pane === 'string') {
-      pane = this.panes.getOrCreate(pane);
+      pane = this.paneManager.getOrCreate(pane);
     }
     this.focusedPane = pane;
     const tab = pane.createTab();
@@ -580,12 +608,12 @@ export class WorkspaceManager {
     const withinWorkspace = this.isWithinWorkspace();
 
     if (withinWorkspace) {
-      let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
+      let targetPane = this.focusedPane || this.paneManager.getFirstOrCreate();
 
       if (extras.newTab) {
         if (extras.sideBySide) {
           let sideBySidePane = null;
-          for (const otherPane of this.panes.panes) {
+          for (const otherPane of this.paneManager.panes) {
             if (targetPane.id !== otherPane.id) {
               sideBySidePane = otherPane;
               break;
@@ -594,9 +622,9 @@ export class WorkspaceManager {
 
           if (sideBySidePane == null) {
             if (targetPane.id === 'left') {
-              targetPane = this.panes.create('right');
+              targetPane = this.paneManager.create('right');
             } else {
-              targetPane = this.panes.create('left');
+              targetPane = this.paneManager.create('left');
             }
           } else {
             targetPane = sideBySidePane;
@@ -604,7 +632,7 @@ export class WorkspaceManager {
         }
 
         if (extras.preferPane) {
-          const preferredPane = this.panes.get(extras.preferPane);
+          const preferredPane = this.paneManager.get(extras.preferPane);
           if (preferredPane) {
             targetPane = preferredPane;
           }
@@ -711,7 +739,7 @@ export class WorkspaceManager {
     if (this.sessionService.load(new class implements WorkspaceSessionLoader {
       createPane(id: string, options): void {
         tasks.push(() => {
-          const pane = parent.panes.create(id);
+          const pane = parent.paneManager.create(id);
           pane.size = options.size;
         });
       }
@@ -727,7 +755,7 @@ export class WorkspaceManager {
 
       setPaneActiveTabHistory(id: string, indices: number[]): void {
         tasks.push(() => {
-          const pane = parent.panes.get(id);
+          const pane = parent.paneManager.get(id);
           const activeTabHistory = pane.activeTabHistory;
           activeTabHistory.clear();
           indices.forEach(index => {
@@ -736,23 +764,23 @@ export class WorkspaceManager {
         });
       }
     }())) {
-      this.panes.clear();
+      this.paneManager.clear();
       tasks.reduce((previousTask, task) => {
         return previousTask.then(task);
       }, Promise.resolve());
     } else {
-      const leftPane = this.panes.create('left');
-      this.panes.create('right');
+      const leftPane = this.paneManager.create('left');
+      this.paneManager.create('right');
       this.openTabByUrl(leftPane, '/projects');
     }
   }
 
   save() {
-    this.sessionService.save(this.panes.panes);
+    this.sessionService.save(this.paneManager.panes);
   }
 
   shouldConfirmUnload(): { pane: Pane, tab: Tab } | undefined {
-    for (const {pane, tab} of this.panes.allTabs()) {
+    for (const {pane, tab} of this.paneManager.allTabs()) {
       if (this.shouldConfirmTabUnload(tab)) {
         return {pane, tab};
       }
@@ -766,11 +794,11 @@ export class WorkspaceManager {
   }
 
   applyPendingChanges() {
-    this.panes.applyPendingChanges();
+    this.paneManager.applyPendingChanges();
   }
 
   private buildPanesSnapshot(): Pane[] {
-    return this.panes.panes;
+    return this.paneManager.panes;
   }
 
   private getDeepestChild(snapshot: ActivatedRouteSnapshot) {

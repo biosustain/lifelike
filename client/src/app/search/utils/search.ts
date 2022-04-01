@@ -1,4 +1,4 @@
-import { omitBy, isNil } from 'lodash-es';
+import { compact, isNil, omitBy, split } from 'lodash-es';
 
 import { VIZ_SEARCH_LIMIT } from 'app/shared/constants';
 import { PaginatedRequestOptions, SearchableRequestOptions } from 'app/shared/schemas/common';
@@ -20,15 +20,15 @@ export const getGraphQueryParams: (params: Partial<GraphSearchParameters>) => Gr
     q: query,
     domains: domains?.join(';'),
     entities: entities?.join(';'),
-    page: '' + page,
+    page: `${page || 1}`,
     ...rest
   });
 
 export const createGraphSearchParamsFromQuery: (params: GraphQueryParameters) => GraphSearchParameters =
   ({q, domains, entities, page, ...rest}) => ({
     query: q,
-    domains: domains?.split(';') ?? [],
-    entities: entities?.split(';') ?? [],
+    domains: compact(split(domains, ';')),
+    entities: compact(split(entities, ';')),
     page: parseInt(page, 10) || 1,
     limit: VIZ_SEARCH_LIMIT,
     ...rest
@@ -65,7 +65,7 @@ export const getContentSearchQueryParams = ({q = '', ...params}, restartPaginati
 const createContentSearchAdvancedParamsFromQuery =
   ({types, folders, phrase, wildcards}: ContentSearchQueryParameters, searchTypesMap: Map<string, SearchType>) => omitBy({
     types: types ? getChoicesFromQuery({types}, 'types', searchTypesMap) : [],
-    folders: folders?.split(';') ?? [],
+    folders: compact(split(folders, ';')),
     phrase,
     wildcards
   }, isNil);

@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { isCtrlOrMetaPressed } from 'app/shared/utils';
+import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
