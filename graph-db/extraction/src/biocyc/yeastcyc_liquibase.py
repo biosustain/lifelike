@@ -1,4 +1,3 @@
-from config.config import *
 from common.liquibase_changelog_generator import *
 from common.query_builder import *
 from common.constants import *

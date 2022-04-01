@@ -29,7 +29,7 @@ class GoOboParser(OboParser):
 
 def main():
     parser = GoOboParser('go.obo')
-    parser.parse_and_write_data_files('go-data-220221.zip')
+    parser.parse_and_write_data_files('go-data-220320.zip')
 
 
 if __name__ == "__main__":

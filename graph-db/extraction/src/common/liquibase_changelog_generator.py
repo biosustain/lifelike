@@ -32,7 +32,7 @@ class ChangeLogFileGenerator(object):
     Expected File names in zip file as EntityName.tsv, EntityName-synonyms.tsv, EntityName-rels.tsv
 
     """
-    def __init__(self, author, zipfile:str, db_source:str, entity_label:str, initial_load = False, basedir=None):
+    def __init__(self, author, zipfile:str, db_source:str, entity_label:str, initial_load=True, basedir=None):
         """
         author: user name for changelog comment
         zipfile: zipfile name for the data files in tsv format. It should be located in processed_data_dir

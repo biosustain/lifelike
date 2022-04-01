@@ -15,8 +15,7 @@ match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
 def generate_changelog_files(zip_datafile, biocyc_dbname):
     proc = BioCycChangeLogsGenerator('rcai', biocyc_dbname, zip_datafile, True)
     proc.add_all_change_sets()
-    changelog_file = f"{proc.biocyc_dbname}-init-changelog.xml"
-    proc.generate_changelog_file(changelog_file)
+    proc.generate_init_changelog_file()
 
     proc = BioCycCypherChangeLogsGenerator('rcai', biocyc_dbname, gene_link_cypher)
     proc.generate_post_load_changlog_file()
