@@ -4,14 +4,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { configureTestSuite } from 'ng-bullet';
 
 import {
-    AssociationSnippet,
-    NewClusterSnippetsPageRequest,
-    NewEdgeSnippetsPageRequest,
-    Publication,
-    Reference,
-    SidenavSnippetData,
+  AssociationSnippet,
+  NewClusterSnippetsPageRequest,
+  NewEdgeSnippetsPageRequest,
+  Publication,
+  Reference,
+  SidenavSnippetData,
 } from 'app/interfaces';
-import { getPubtatorSearchUrl} from 'app/shared/constants';
+import { getPubtatorSearchUrl } from 'app/shared/constants';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 

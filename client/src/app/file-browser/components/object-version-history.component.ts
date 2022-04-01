@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, ReplaySubject, forkJoin, iif, of, BehaviorSubject, combineLatest } from 'rxjs';
+import { map, tap, switchMap, distinctUntilChanged, first } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
-import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
+import { ObjectVersionHistory } from '../models/object-version';
 import { FilesystemService } from '../services/filesystem.service';
 
 @Component({
@@ -24,66 +24,70 @@ import { FilesystemService } from '../services/filesystem.service';
 })
 export class ObjectVersionHistoryComponent implements ControlValueAccessor {
 
-  _object: FilesystemObject;
-  page = 1;
-  @Input() limit = 20;
+  page$ = new BehaviorSubject<number>(1);
+  _limit$ = new BehaviorSubject<number>(20);
+  limit$ = this._limit$.pipe(distinctUntilChanged());
+
+  @Input() set limit(limit: number) {
+    this._limit$.next(limit);
+  }
+
   @Input() showCheckboxes = true;
-  log$: Observable<ObjectVersionHistory> = from([]);
   private changeCallback: any;
   private touchCallback: any;
-  _history: ObjectVersionHistory;
 
   constructor(protected readonly filesystemService: FilesystemService,
               protected readonly errorHandler: ErrorHandler) {
   }
 
-  @Input()
-  set object(value: FilesystemObject | undefined) {
-    this._object = value;
-    this.refresh();
+  _object$ = new ReplaySubject<FilesystemObject>(1);
+  object$ = this._object$.pipe(distinctUntilChanged());
+
+  @Input() set object(object: FilesystemObject | undefined) {
+    this._object$.next(object);
   }
 
-  get object() {
-    return this._object;
-  }
+  history$: Observable<ObjectVersionHistory> = combineLatest([
+    this.object$,
+    this.page$,
+    this.limit$
+  ]).pipe(
+    switchMap(([{hashId}, page, limit]) =>
+      this.filesystemService.getVersionHistory(hashId, {page, limit})
+    ),
+    tap(({results}) => {
+      results.multipleSelection = false;
+    })
+  );
 
-  refresh() {
-    this.log$ = this.object ? this.filesystemService.getVersionHistory(this.object.hashId, {
-      page: this.page,
-      limit: this.limit,
-    }).pipe(
-      map(history => {
-        this._history = history;
-        history.results.multipleSelection = false;
-        history.results.selectionChanges$.subscribe(change => {
-          for (const version of change.added) {
-            if (!version.contentValue) {
-              this.filesystemService.getVersionContent(version.hashId)
-                .pipe(
-                  this.errorHandler.create({label: 'Get object version content'}),
-                )
-                .subscribe(content => {
-                  version.contentValue = content;
-                });
-            }
-          }
-          if (this.changeCallback) {
-            this.changeCallback(history.results.lastSelection);
-          }
-          if (this.touchCallback) {
-            this.touchCallback();
-          }
-        });
-        return history;
-      }),
-      this.errorHandler.create({label: 'Get object version history'}),
-    ) : from([]);
-  }
-
-  goToPage(page: number) {
-    this.page = page;
-    this.refresh();
-  }
+  log$: Observable<ObjectVersionHistory> = this.history$.pipe(
+    switchMap(history =>
+      history.results.selectionChanges$.pipe(
+        switchMap(({added}) =>
+          forkJoin(
+            [...added].filter(({contentValue}) => !contentValue).map(version =>
+              this.filesystemService.getVersionContent(version.hashId).pipe(
+                this.errorHandler.create({label: 'Get object version content'}),
+                tap(content => version.contentValue = content)
+              )
+            )
+          )
+        ),
+        switchMap(() =>
+          iif(
+            () => this.changeCallback,
+            history.results.lastSelection$.pipe(
+              tap(lastSelection => this.changeCallback(lastSelection))
+            ),
+            of()
+          )
+        ),
+        tap(() => this.touchCallback?.()),
+        map(() => history)
+      )
+    ),
+    this.errorHandler.create({label: 'Get object version history'})
+  );
 
   registerOnChange(fn): void {
     this.changeCallback = fn;
@@ -94,13 +98,15 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
   }
 
   writeValue(value): void {
-    if (this._history) {
-      if (value != null) {
-        this._history.results.select(value);
-      } else {
-        this._history.results.select();
-      }
-    }
+    this.history$.pipe(
+      tap(history => {
+        if (value != null) {
+          history.results.select(value);
+        } else {
+          history.results.select();
+        }
+      }),
+      first(),
+    ).toPromise();
   }
-
 }

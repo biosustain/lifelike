@@ -72,7 +72,7 @@ export class GenericDataProvider implements DataTransferDataProvider {
 
   extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
     const results: DataTransferData<any>[] = [];
-    let text: string | undefined;
+    let text = '';
 
     if (dataTransfer.types.includes('text/plain')) {
       text = dataTransfer.getData('text/plain');

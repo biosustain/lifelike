@@ -1,15 +1,20 @@
+import json
+import logging
 import random
 import re
 import secrets
 import string
+from pathlib import Path
+from uuid import uuid4
 
 from flask import Blueprint, g, jsonify, current_app
 from flask.views import MethodView
+from sendgrid.helpers.mail import Mail
 from sqlalchemy import func, literal_column, or_
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.dialects.postgresql import aggregate_order_by
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
-from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import login_exempt
@@ -28,6 +33,9 @@ from neo4japp.constants import (
     RESET_PASSWORD_EMAIL_TITLE,
     LogEventType
 )
+from neo4japp.database import db, get_authorization_service, get_projects_service
+from neo4japp.exceptions import ServerException, NotAuthorized
+from neo4japp.models import AppUser, AppRole, Projects, Files, FileContent
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
@@ -39,12 +47,12 @@ from neo4japp.schemas.account import (
     UserChangePasswordSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
-from neo4japp.utils.request import Pagination
 from neo4japp.utils.logger import EventLog, UserEventLog
-
-from sendgrid.helpers.mail import Mail
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
+
+INITIAL_PROJECT_PATH = Path('fixtures/initial_project')
 
 
 class AccountView(MethodView):
@@ -77,7 +85,7 @@ class AccountView(MethodView):
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
             t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
-            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
+                     .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
@@ -113,6 +121,55 @@ class AccountView(MethodView):
             'total': len(results),
             'results': results,
         }))
+
+    def create_initial_project(self, user: AppUser):
+        """
+        Create a initial project for the user.
+        This method is designed to fail siletly if the project name already exists
+        or if initial project template does not exist.
+        :param user: user to create initial project for
+        """
+        project = Projects()
+        project.name = f'{user.username}-example'
+        project.description = f'Initial project for {user.username}'
+
+        project_service = get_projects_service()
+
+        try:
+            db.session.begin_nested()
+            project_service.create_project_uncommitted(user, project)
+            db.session.commit()
+            db.session.flush()
+        except IntegrityError:
+            db.session.rollback()
+            logging.exception('Failed to create initial project with default naming for user %s',
+                              user.username)
+            project.name += '-' + uuid4().hex[:8]
+            try:
+                db.session.begin_nested()
+                project_service.create_project_uncommitted(user, project)
+                db.session.commit()
+                db.session.flush()
+            except IntegrityError:
+                db.session.rollback()
+                logging.exception('Failed to create initial project for user %s', user.username)
+                return
+
+        with open(INITIAL_PROJECT_PATH / "metadata.json", "r") as metadata_json:
+            metadata = json.load(metadata_json)
+
+            for file_metadata in metadata['files']:
+                file = Files()
+                for key, value in file_metadata.items():
+                    if key != 'path':
+                        setattr(file, key, value)
+                content_path = INITIAL_PROJECT_PATH / file_metadata['path']
+                file.filename = file.filename or content_path.stem
+                with open(content_path, "rb") as file_content:
+                    file.content_id = FileContent().get_or_create(file_content)
+                file.user_id = user.id
+                file.parent = project.***ARANGO_USERNAME***
+                db.session.add(file)
 
     @use_args(UserCreateSchema)
     def post(self, params: dict):
@@ -150,6 +207,7 @@ class AccountView(MethodView):
             for role in params['roles']:
                 app_user.roles.append(self.get_or_create_role(role))
         try:
+            self.create_initial_project(app_user)
             db.session.add(app_user)
             db.session.commit()
         except SQLAlchemyError:

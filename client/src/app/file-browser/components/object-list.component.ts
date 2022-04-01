@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ContentChild, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -9,10 +9,8 @@ import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { nullCoalesce } from 'app/shared/utils/types';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 
@@ -60,10 +58,6 @@ export class ObjectListComponent {
     this.objects.selectOnly(object);
   }
 
-  getDateShown(object: DirectoryObject) {
-    return nullCoalesce(object.modificationDate, object.creationDate);
-  }
-
   openParentEditDialog() {
     return this.actions.openEditDialog(this.parent).then(() => {
       this.snackBar.open(`Saved changes to ${getObjectLabel(this.parent)}.`, 'Close', {
@@ -74,7 +68,7 @@ export class ObjectListComponent {
   }
 
   openObject(target: FilesystemObject) {
-    this.objectOpen.next(target);
+    this.objectOpen.emit(target);
 
     if (this.appLinks) {
       if (target.isOpenable) {

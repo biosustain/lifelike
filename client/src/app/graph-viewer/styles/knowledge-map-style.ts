@@ -1,5 +1,7 @@
 import {
-  DETAIL_NODE_LABELS, Hyperlink, Source,
+  DETAIL_NODE_LABELS,
+  Hyperlink,
+  Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -24,7 +26,7 @@ import {
   Unicodes,
   defaultLabelFontSize
 } from 'app/shared/constants';
-import {getSupportedFileCodes} from 'app/shared/utils';
+import { getSupportedFileCodes } from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
@@ -140,7 +142,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
               iconCode = Unicodes.Map;
               break;
-            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//)) {
+            } else if (
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//) ||
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey-many-to-many\//)
+            ) {
               iconCode = Unicodes.Graph;
               break;
             } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {

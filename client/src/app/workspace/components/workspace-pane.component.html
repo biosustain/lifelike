@@ -1,0 +1,94 @@
+<div class="h-100 d-flex flex-column">
+  <div class="nav-workspace-tabs flex-shrink-0 align-items-start" appElementObserver
+       #tabBar="appElementObserver">
+    <div class="nav flex-fill"
+         cdkDropList
+         cdkDropListOrientation="horizontal"
+         (cdkDropListDropped)="tabDropped($event)"
+         [cdkDropListData]="pane">
+      <app-workspace-tab
+          *ngFor="let tab of pane.tabs"
+          style="max-width: 250px; width: 30%; min-width: 15%"
+          [active]="pane.activeTab === tab"
+          [tab]="tab"
+          [hasSiblings]="pane.tabs.length > 1"
+          [scroll$]="tabBar.scroll$"
+          (clearWorkbench)="clearWorkbench()"
+          (closeAllTabs)="closeAllTabs()"
+          (closeOtherTabs)="closeOtherTabs(tab)"
+          (duplicate)="duplicateTab(tab)"
+          (tabClick)="setActiveTab(tab)"
+          (tabClose)="closeTab(tab)"
+      ></app-workspace-tab>
+      <div class="ml-2 mt-1 d-flex align-items-start">
+        <div ngbDropdown container="body">
+          <button type="button" class="btn btn-secondary btn-sm dropdown-no-arrow"
+                  ngbDropdownToggle ngbTooltip="New Tab"
+                  container="body">
+            <i class="fa fa-fw fa-plus"></i>
+          </button>
+          <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">
+            <button class="dropdown-item" (click)="addTab('/projects')">
+              File Browser
+            </button>
+            <button class="dropdown-item" (click)="addTab('/search/graph')">
+              Knowledge Graph
+            </button>
+            <button class="dropdown-item" (click)="addTab('/search/content')">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
+    <div *ngFor="let tab of pane.tabs"
+         class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
+         [class.workspace-active-tab-content]="pane.activeTab === tab"
+         [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
+         appDataTransferData [uriData]="[{title: tab.title, uri: tab.absoluteUrl}]">
+      <app-workspace-outlet [name]="pane.id"
+                            [container]="tab.container"
+                            (outletFocus)="setFocus()"
+                            [active]="pane.activeTab === tab">
+      </app-workspace-outlet>
+    </div>
+    <ng-container *ngIf="!pane.tabs.length">
+      <div class="w-100 h-100 d-flex align-items-center">
+        <div class="d-flex align-items-center justify-content-center m-auto">
+          <div class="m-4 text-center text-muted" [style.max-width]="'400px'">
+            <ng-container *ngIf="hasSiblings; else singleEmptyPane">
+              <div>
+                Use the <i class="fa fa-plus"></i>
+                button at the top to open a new tab in this area.
+              </div>
+            </ng-container>
+            <ng-template #singleEmptyPane>
+              <div>
+                Use the vertical toolbar or the <i class="fa fa-plus"></i>
+                button at the top to open a new tab in this area.
+              </div>
+            </ng-template>
+          </div>
+        </div>
+        <div class="mx-2" *ngIf="pane.id === 'right'">
+          <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
+            <div class="d-flex flex-column align-items-center">
+              <div>
+                <i class="fa fa-caret-right"></i>
+              </div>
+              <div class="side-pane-close-text">
+                Hide Side Pane
+              </div>
+              <div>
+                <i class="fa fa-caret-right"></i>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

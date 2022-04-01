@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable} from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -10,12 +10,11 @@ import { ProjectData } from 'app/file-browser/schema';
 import {
   AnnotationRequestOptions,
   AnnotationResponse,
-  ContentSearchRequest,
   ContentSearchResponse,
   ContentSearchResponseData,
   SynonymSearchResponse,
 } from '../schema';
-import { ContentSearchParameters, ContentSearchQueryParameters } from '../utils/search';
+import { ContentSearchQueryParameters } from '../utils/search';
 
 
 @Injectable()
