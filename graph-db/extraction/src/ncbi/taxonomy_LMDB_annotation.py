@@ -1,6 +1,6 @@
-from ncbi.ncbi_taxonomy_parser import TaxonomyParser, Taxonomy
+from ncbi.ncbi_taxonomy_parser import TaxonomyParser
 from common.database import *
-from common.utils import get_data_dir
+from config.config import get_data_dir
 import os
 
 # default strain for their species for organism searching

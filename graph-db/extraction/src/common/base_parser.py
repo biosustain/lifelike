@@ -1,6 +1,4 @@
 import os, gzip
-import shutil
-
 from config.config import Config
 from common.constants import *
 from zipfile import ZipFile
@@ -10,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
 """
-Parsers read the downloaded file from download directory, parse and format data, write into tsv files.
+Parsers read the downloaded file from download directory, parse and format data, write into tsv files.  
 Then zip the output tsv files into a zip file
 """
 class BaseParser:
@@ -63,12 +61,6 @@ class BaseParser:
         with ZipFile(zip_file, 'w') as zipfile:
             for f in output_files:
                 zipfile.write(f)
-
-    @classmethod
-    def gzip_file(cls, inputfile, gzfile):
-        with open(inputfile, 'rb') as f_in:
-            with gzip.open(gzfile, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
 
     def parse_and_write_data_files(self):
         pass

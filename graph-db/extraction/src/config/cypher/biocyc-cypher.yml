@@ -1,3 +1,11 @@
+set_gene_link:
+  type: db-link
+  description: link genes to NCBI gene
+  query: >
+    match(n:Gene:db_BioCyc) where size(n.accession)>0
+    with n match (g:Gene) where g.locus_tag = n.accession
+    merge (n)-[:IS]->(g);
+
 set_displayName:
   type: post-modification
   description: set biocyc node display name
@@ -9,12 +17,6 @@ set_displayName:
             when n.mode='+' then t.eid + ' (+)'
             when n.mode='-' then t.eid + ' (-)'
             else t.eid
-        end as displayName
-        set n.displayName = displayName;
-        match(n:Reaction:db_BioCyc) with n,
-        case
-            when exists (n.ec_number) then n.ec_number
-            else n.eid
         end as displayName
         set n.displayName = displayName;
         match (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene) with n, collect(g.name) as genes
@@ -47,10 +49,10 @@ set_node_description:
         else ' => ' end as symbol
         set n.detail = apoc.text.join(c1, ' + ') + symbol + apoc.text.join(c2, ' + ');
 
-set_reaction_name:
+set_reaction_enzyme_name:
   type: post-modification
-  description: set up reaction node name as biocyc_id if there is no name property
-  query: match(n:Reaction:db_BioCyc) where not exists(n.name) set n.name = n.biocyc_id;
+  description: set reaction enzyme_name property based on its connection with Enzyme
+  query: match(n:Reaction)-[:ENZYME_LINK]-(e) with n, collect(e.name) as enzyme_name set n.enzyme_name = enzyme_name;
 
 set_gene_pathways:
   type: enrichment
@@ -61,12 +63,47 @@ set_gene_pathways:
         match path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:${db_name})
         with n, collect(p.name) as pathways set n.pathways = pathways
 
+set_entity_type:
+  type: post-modification
+  description: set entity type for common entities since a node could have many labels
+  query: >
+    match(n:Gene:db_BioCyc) set n.entityType='Gene';
+        match(n:Compound) set n.entityType='Chemical';
+        match(n:Protein:db_BioCyc) set n.entityType='Protein';
+        match(n:Reaction) set n.entityType='Reaction';
+        match(n:Pathway) set n.entityType='Pathway';
+        match(n:RNA) set n.entityType='RNA';
+        match(n:Promoter) set n.entityType='Promoter';
+        match(n:TranscriptionUnit) set n.entityType='TranscriptionUnit';
+        MATCH (n:Terminator) set n.entityType = 'Terminator';
+
+set reaction_display_name:
+  type: GDS
+  description: set displayName as the first enzyme name in the enzyme_name property
+  query: >
+    match(n:Reaction) set n.displayName = '';
+        match(n:Reaction) where exists(n.name) set n.displayName = n.name;
+        match(n:Reaction) where exists(n.enzyme_name) and n.displayName = ''
+        set n.displayName = n.enzyme_name[0];
+        match (e:EnzReaction)-[:CATALYZES]->(n:Reaction) where n.displayName='' and exists (e.name)
+        set n.displayName = e.name;
+        match(n:Reaction) where n.displayName <> '' set n.displayName = n.displayName + '-RXN';
+        match(n:Reaction) where n.displayName='' set n.displayName = n.eid;
+
+remove constraint:
+  type: GDS
+  description: remove constrain so that reversed reactions can be created
+  query: DROP CONSTRAINT constraint_db_BioCyc_eid IF EXISTS;
+
 correct_reaction_direction:
   type: GDS
   description: correct the input and out directions for reactions, create reversed reaction for each reversible reaction
   query: >
     match (n:Reaction:db_BioCyc) where n.direction ends with 'RIGHT-TO-LEFT' and not exists(n.reversed) with n
-        match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2) merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n) set n.reversed=True delete r1 delete r2;
+        match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2)
+        merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n)
+        set n.reversed=True delete r1 delete r2;
+
         match(n:Reaction:db_BioCyc) where n.direction = 'REVERSIBLE' with n
         match (n)-[:PRODUCES]-(p), (n)-[:CONSUMED_BY]-(c) where id(p) = id(c)
         with collect(distinct n) as undirectReactions
@@ -75,11 +112,16 @@ correct_reaction_direction:
         with collect(n) as inputNodes
         call apoc.refactor.cloneNodesWithRelationships(inputNodes) yield input, output
         return count(*);
+
         match(n:Reaction:db_BioCyc) with n.eid as id, collect(n) as nodes where size(nodes) > 1
         with nodes[0] as n
         match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2)
         set n.eid = n.biocyc_id + '_r' merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n) delete r1 delete r2;
 
+recreate_constraint:
+  type: GDS
+  description: recreate constrain for eid
+  query: CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
 
 reverse_Gene_TransUnit_relationship:
   type: GDS
@@ -117,8 +159,13 @@ remove_TYPEOF_relationship:
 
 remove_orphan_Class_nodes:
   type: GDS
-  description: remove phone BioCycClass nodes.
+  description: remove orphan BioCycClass nodes.
   query: match(n:BioCycClass) where not (n)-[]-() delete n;
+
+remove_Enzyme_nodes:
+  type: GDS
+  description: remove Enzyme nodes.
+  query: match(n:db_Enzyme) detach delete n;
 
 remove_synonym_nodes:
   type: GDS
@@ -136,27 +183,14 @@ label_currency_metabolites:
          'GTP', 'FAD', 'NADH-P-OR-NOP', 'NAD-P-OR-NOP', 'AMMONIUM', 'NA+']
        set n:CurrencyMetabolite;
 
-set_entity_type:
-  type: post-modification
-  description: set entity type for common entities since a node could have many labels
+set_detail_property:
+  type: GDS
+  description: change description property to detail since description is used by sankey for other purpose
   query: >
-    match(n:Gene:db_BioCyc) set n.entityType='Gene';
-        match(n:Compound) set n.entityType='Chemical';
-        match(n:Protein:db_BioCyc) set n.entityType='Protein';
-        match(n:Reaction) set n.entityType='Reaction';
-        match(n:Pathway) set n.entityType='Pathway';
-        match(n:RNA) set n.entityType='RNA';
-        match(n:Promoter) set n.entityType='Promoter';
-        match(n:TranscriptionUnit) set n.entityType='TranscriptionUnit';
-        MATCH (n:Terminator) set n.entityType = 'Terminator';
+    match(n) where exists(n.description) set n.detail = n.description remove n.description;
 
-set_gene_link:
-  type: db-link
-  description: link genes to NCBI gene
-  query: >
-    match(n:Gene:db_BioCyc) where size(n.accession)>0
-    with n match (g:Gene) where g.locus_tag = n.accession
-    merge (n)-[:IS]->(g);
+
+
 
 
 

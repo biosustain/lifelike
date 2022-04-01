@@ -8,6 +8,7 @@ ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
     'COMMON-NAME': (PROP_NAME, 'str'),
     'ACCESSION-1': (PROP_ACCESSION, 'str'),
+    'ACCESSION-2': (PROP_ACCESSION2, 'str'),
     'LEFT-END-POSITION': (PROP_POS_LEFT, 'str'),
     'RIGHT-END-POSITION': (PROP_POS_RIGHT, 'str'),
     'TRANSCRIPTION-DIRECTION':(PROP_STRAND, 'str'),
@@ -17,7 +18,7 @@ ATTR_NAMES = {
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):
         DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, dict())
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_ACCESSION2, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
         self.logger = logging.getLogger(__name__)
 
     def extrace_synonyms(self, df:pd.DataFrame):
