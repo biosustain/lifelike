@@ -1,14 +1,19 @@
-<ng-template #rt let-r="result" let-t="term">
-  <ngb-highlight [result]="r.organism_name" [term]="t"></ngb-highlight>
+<ng-template #organismResult let-organism="organism" let-term="term">
+  <button class="dropdown-item" type="button" placement="right" (click)="selectOrganism(organism)">
+    <ngb-highlight [result]="organism.organism_name" [term]="term"></ngb-highlight>
+  </button>
 </ng-template>
 
-<div class="input-group input-border rounded">
-  <input type="text" class="form-control border-0"
-    [class.is-invalid]="fetchFailed" [(ngModel)]="organism"
-    [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
-    (selectItem)="notifySelection($event)"
-  >
-  <div *ngIf="organism" class="input-group-append">
+<div ngbDropdown class="input-group input-border rounded" placement="bottom-left" container="body">
+  <input id="organism-dropdown"
+         class="form-control border-0"
+         type="text"
+         container="body"
+         ngbDropdownToggle
+         [(ngModel)]="inputText"
+         (ngModelChange)="inputText$.next($event)"/>
+
+  <div *ngIf="isOrganismSelected" class="input-group-append">
     <button type="button"
             class="form-control border-0"
             (click)="clear()">
@@ -19,4 +24,18 @@
     <span class="input-group-text">Searching...</span>
   </div>
   <div class="invalid-feedback" *ngIf="fetchFailed">Sorry, suggestions could not be loaded.</div>
+
+  <div ngbDropdownMenu aria-labelledby="organism-dropdown">
+    <ng-container *ngFor="let curatedOrganism of organismShortlist">
+      <ng-container *ngTemplateOutlet="organismResult; context: {organism: curatedOrganism, term: inputText}"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="searcher$ | async as searchResults">
+      <ng-container *ngIf="searchResults.length">
+        <div class="dropdown-divider"></div>
+        <ng-container *ngFor="let result of searchResults">
+          <ng-container *ngTemplateOutlet="organismResult; context: {organism: result, term: inputText}"></ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
 </div>

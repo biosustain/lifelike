@@ -70,8 +70,8 @@
         </button>
         <div ngbDropdownMenu>
           <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="showDelete"
-                           (objectOpen)="this.objectOpen.next($event)"
-                           (refreshRequest)="this.refreshRequest.next($event)">
+                           (objectOpen)="objectOpen.emit($event)"
+                           (refreshRequest)="refreshRequest.emit($event)">
           </app-object-menu>
         </div>
       </div>

@@ -1,15 +1,20 @@
 import { Observable, animationFrameScheduler } from 'rxjs';
-import { throttleTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { throttleTime, distinctUntilChanged, filter, share } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
-/**Returns observable of native element size
+import { debug } from './debug';
+
+/**
+ * Returns observable of native element size (might be constant even if window resizes)
+ *
  * The sizing value is:
  * + throttled with animation frames
  * + updates only upon change
  * + skips updates when `display: none;`
+ *
  * @param element - DOM element to observe
  */
-export function createResizeObservable(element: HTMLElement) {
+export function createResizeObservable(element: HTMLElement): Observable<DOMRectReadOnly> {
   return new Observable<DOMRectReadOnly>(subscriber => {
     // @ts-ignore there is not type definition for ResizeObserver in Angular
     const ro = new ResizeObserver(([{contentRect}]: ResizeObserverEntry[]) => {
@@ -22,7 +27,6 @@ export function createResizeObservable(element: HTMLElement) {
         subscriber.next(updatedSize);
       }
     });
-
     // Observe one or multiple elements
     ro.observe(element);
     return function unsubscribe() {
@@ -34,7 +38,9 @@ export function createResizeObservable(element: HTMLElement) {
     throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
     // Only actual change
     distinctUntilChanged(isEqual),
+    debug('resize-observable'),
     // Do no resize if not displayed
-    filter(({width, height}) => width !== 0 && height !== 0)
+    filter<DOMRect>(({width, height}) => width !== 0 && height !== 0),
+    share()
   );
 }

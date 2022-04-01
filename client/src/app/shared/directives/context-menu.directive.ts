@@ -2,13 +2,15 @@ import {
   AfterViewInit,
   ContentChild,
   Directive,
-  ElementRef, EventEmitter,
+  ElementRef,
+  EventEmitter,
   forwardRef,
   HostBinding,
   HostListener,
   Inject,
   NgZone,
-  OnDestroy, Output,
+  OnDestroy,
+  Output,
   Renderer2,
 } from '@angular/core';
 
@@ -16,6 +18,17 @@ import { fromEvent, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { DropdownController } from '../utils/dom/dropdown-controller';
+
+@Directive({
+  selector: '[appContextMenuItem]',
+})
+export class ContextMenuItemDirective {
+  @HostBinding('class.dropdown-item') _dropdownItemClass = true;
+  @HostBinding('attr.href') _dropdownItemHref = '#';
+  @HostListener('click', ['$event']) click(clickEvent: Event) {
+    clickEvent.preventDefault();
+  }
+}
 
 /**
  * Directive that marks the body of a context menu.

@@ -1,11 +1,11 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { from, Observable, Subscription, throwError } from 'rxjs';
+import { Subscription, throwError, iif, of, ReplaySubject, merge } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { map } from 'rxjs/operators';
+import { map, switchMap, tap, first } from 'rxjs/operators';
 
 import { CreateActionOptions, CreateDialogAction } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
@@ -26,15 +26,7 @@ import { ProjectsService } from '../services/projects.service';
   selector: 'app-object-browser',
   templateUrl: './object-browser.component.html',
 })
-export class ObjectBrowserComponent implements OnInit, OnDestroy {
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  protected hashId: string;
-  protected subscriptions = new Subscription();
-  protected annotationSubscription: Subscription;
-  object$: Observable<FilesystemObject> = from([]);
-  createActions$: Observable<CreateDialogAction[]> = from([]);
-
+export class ObjectBrowserComponent {
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -46,68 +38,74 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
               protected readonly filesystemService: FilesystemService,
               protected readonly actions: FilesystemObjectActions,
               protected readonly objectTypeService: ObjectTypeService) {
-    this.createActions$ = this.objectTypeService.all().pipe(
-      map(providers => {
-        const createActions: RankedItem<CreateDialogAction>[] = [].concat(
-          ...providers.map(provider => provider.getCreateDialogOptions()),
-        );
-        createActions.sort((a, b) => a.rank > b.rank ? -1 : (a.rank < b.rank ? 1 : 0));
-        return createActions.map(item => item.item);
-      }),
-    );
   }
 
-  ngOnInit() {
-    this.subscriptions.add(this.route.params.subscribe(params => {
-      if (params.dir_id) {
-        this.load(params.dir_id);
-      } else {
-        // Legacy URLs use the project name (which we are deprecating) so
-        // we need to figure out what that requested project is
-        this.projectService.search({
-          name: params.project_name,
-        }).pipe(
-          this.errorHandler.create({label: 'Load project from name for legacy URL'}),
-        ).subscribe(list => {
-          if (list.results.length) {
-            this.load(list.results.items[0].root.hashId);
-          } else {
-            this.object$ = throwError(new HttpErrorResponse({
-              status: 404,
-            }));
-          }
-        });
-      }
-    }));
-  }
+  createActions$ = this.objectTypeService.all().pipe(
+    map(providers => {
+      const createActions: RankedItem<CreateDialogAction>[] = [].concat(
+        ...providers.map(provider => provider.getCreateDialogOptions()),
+      );
+      createActions.sort((a, b) => a.rank > b.rank ? -1 : (a.rank < b.rank ? 1 : 0));
+      return createActions.map(item => item.item);
+    }),
+  );
 
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  load(hashId: string): Observable<any> {
-    this.hashId = hashId;
-    const object$ = this.filesystemService.get(hashId).pipe(map(object => {
-      if (this.annotationSubscription) {
-        this.subscriptions.remove(this.annotationSubscription);
-        this.annotationSubscription.unsubscribe();
-        this.annotationSubscription = null;
-      }
-      this.annotationSubscription = this.filesystemService.annotate(object);
-      this.subscriptions.add(this.annotationSubscription);
-      this.modulePropertiesChange.emit({
-        title: object.isDirectory && !object.parent ? object.project.name
-          : `${object.project.name} - ${object.filename}`,
-        fontAwesomeIcon: 'folder',
-      });
-      return object;
-    }));
-    this.object$ = object$;
-    return object$;
+  protected _hashId$ = new ReplaySubject<string>(1);
+  protected hashId$ = merge(
+    this._hashId$,
+    this.route.params.pipe(
+      switchMap(({dir_id, project_name}) =>
+        iif(
+          () => dir_id,
+          of(dir_id),
+          // Legacy URLs use the project name (which we are deprecating) so
+          // we need to figure out what that requested project is
+          this.projectService.search({
+            name: project_name,
+          }).pipe(
+            this.errorHandler.create({label: 'Load project from name for legacy URL'}),
+            switchMap(({results}) =>
+              iif(
+                () => Boolean(results.length),
+                results.items$.pipe(
+                  map(([item]) => item.root.hashId)
+                ),
+                throwError(new HttpErrorResponse({
+                  status: 404,
+                }))
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+
+  protected subscriptions = new Subscription();
+  protected annotationSubscription: Subscription;
+
+  object$ = this.hashId$.pipe(
+    switchMap(hashId => this.filesystemService.get(hashId).pipe(
+      tap(object =>
+        this.modulePropertiesChange.emit({
+          title: object.isDirectory && !object.parent ? object.project.name
+            : `${object.project.name} - ${object.filename}`,
+          fontAwesomeIcon: 'folder',
+        })
+      ))
+    )
+  );
+  load(hashId: string) {
+    this._hashId$.next(hashId);
   }
 
   refresh() {
-    this.load(this.hashId);
+    return this.hashId$.pipe(
+      first(),
+      tap(hashId => this._hashId$.next(hashId))
+    ).toPromise();
   }
 
   applyFilter(object: FilesystemObject, filter: string) {
@@ -155,16 +153,12 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`${getObjectLabel(object)} successfully uploaded.`, 'Close', {
         duration: 5000,
       });
-      this.load(this.hashId);
-    }, () => {
+      return this.refresh();
     });
   }
 
   reannotate(targets: FilesystemObject[]) {
-    this.actions.reannotate(targets).then(() => {
-      this.load(this.hashId);
-    }, () => {
-    });
+    return this.actions.reannotate(targets).then(() => this.refresh());
   }
 
   openMoveDialog(targets: FilesystemObject[]) {
@@ -178,8 +172,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
         'Close', {
           duration: 5000,
         });
-      this.load(this.hashId);
-    }, () => {
+      return this.refresh();
     });
   }
 
@@ -192,7 +185,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`Deletion successful.`, 'Close', {
         duration: 5000,
       });
-      this.load(this.hashId);
+      this.refresh();
     }, () => {
     });
   }
@@ -209,7 +202,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
-      this.load(this.hashId);
+      this.refresh();
       if (action.openSuggested) {
         this.workspaceManager.navigate(object.getCommands(), {
           newTab: true,

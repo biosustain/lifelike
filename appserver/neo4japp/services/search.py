@@ -1,8 +1,8 @@
 import re
+from typing import Any, Dict, List
 
 from flask import current_app
 from neo4j import Record as N4jRecord, Transaction as Neo4jTx
-from typing import Any, Dict, List
 
 from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import (
@@ -151,8 +151,10 @@ class SearchService(GraphBaseDao):
 
         # If the domain list or entity list provided by the user is empty, then assume ALL
         # domains/entities should be used.
-        result_domains = result_domains if len(result_domains) > 0 else [val for val in domains_map.values()]  # noqa
-        result_entities = result_entities if len(result_entities) > 0 else [val for val in entities_map.values()]  # noqa
+        result_domains = result_domains if len(result_domains) > 0 else [val for val in
+            domains_map.values()]  # noqa
+        result_entities = result_entities if len(result_entities) > 0 else [val for val in
+            entities_map.values()]  # noqa
 
         return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
 
@@ -210,6 +212,8 @@ class SearchService(GraphBaseDao):
 
         records = self._visualizer_search_result_formatter(result)
 
+        # Wow, this seems barbarian. Fetch 1000 results just to count them?
+        # TODO: Counting should not fetch nor pre-process results!
         total_results = len(
             self.graph.read_transaction(
                 self.visualizer_search_query,
@@ -339,7 +343,8 @@ class SearchService(GraphBaseDao):
                 SKIP $amount
                 LIMIT $limit
                 """,
-                search_term=search_term, organism=organism, amount=amount, limit=limit
+                search_term=f'{search_term} OR {search_term}*',
+                organism=organism, amount=amount, limit=limit
             )
             # IMPORTANT: We do NOT use `data` here, because if we did we would lose some metadata
             # attached to the `node` return value. We need this metadata to deterimine node labels.
