@@ -3,6 +3,7 @@ from common.base_parser import *
 import pandas as pd
 import logging, re
 import os
+from datetime import datetime
 
 SEP = '[ ]{2,}'
 PROP_CODE = 'code'
@@ -112,7 +113,7 @@ class EnzymeParser(BaseParser):
         nodes.update(enz_nodes)
         self.build_tree(nodes)
         return list(nodes.values())
-        
+
     def parse_enz_data_file(self)->dict:
         """
         Parse enzyme data file, return dictionary with enzyme code as key, Enzyme object as value. The enzyme data file
@@ -212,6 +213,14 @@ class EnzymeParser(BaseParser):
         self.zip_output_files(outfiles, zip_outfile)
 
 
-if __name__ == "__main__":
+def main():
     parser = EnzymeParser()
-    parser.parse_and_write_data_files('enzyme-data-220321.zip')
+    date_tag = datetime.today().strftime('%m%d%Y')
+    outfile = f"enzyme-data-{date_tag}.zip"
+    print(outfile)
+    parser.parse_and_write_data_files(outfile)
+
+
+if __name__ == "__main__":
+   main()
+

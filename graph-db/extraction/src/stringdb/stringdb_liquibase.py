@@ -46,7 +46,7 @@ class StringChangeLogsGenerator(ChangeLogFileGenerator):
 def generate_string_changelogs(data_zip_file):
     task = StringChangeLogsGenerator('rcai', data_zip_file)
     task.add_all_change_sets()
-    task.generate_changelog_file(f"string_changelog_{task.date_tag.replace('/', '-')}.xml")
+    task.generate_changelog_file(f"string_changelog_{task.date_tag.replace('/', '')}.xml")
 
 
 if __name__ == '__main__':
