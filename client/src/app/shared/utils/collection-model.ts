@@ -147,12 +147,12 @@ export class CollectionModel<T> {
   }
 
   select(...items: T[]): void {
-    const newSelection = this._selection$.value.concat(items);
-    if (this.multipleSelection) {
-      this._selection$.next(uniq(newSelection));
-    } else {
-      const toggleSelection = intersection(newSelection, items);
-      this._selection$.next(newSelection.filter(item => !toggleSelection.includes(item)));
+    if (items.length) {
+      if (this.multipleSelection) {
+        this._selection$.next(uniq(this._selection$.value.concat(items)));
+      } else {
+        this._selection$.next(items.slice(0, 1));
+      }
     }
   }
 
