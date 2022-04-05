@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="Create CHEBI constraints and indexes" author="rcai">
+    <comment>Create constraints and indexes for CHEBI nodes, created on 04/05/2022</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_db_CHEBI_eid IF NOT EXISTS ON (n:db_CHEBI) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_Chemical_eid IF NOT EXISTS ON (n:Chemical) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_Synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+CREATE INDEX index_Synonym_lowercase_name IF NOT EXISTS FOR (n:Synonym) ON (n.lowercase_name);
+CREATE INDEX index_db_CHEBI_name IF NOT EXISTS FOR (n:db_CHEBI) ON (n.name);
+CREATE INDEX index_Chemical_name IF NOT EXISTS FOR (n:Chemical) ON (n.name);
+    </sql>
+  </changeSet>
+
+  <changeSet id="load Chemical from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        load CHEBI chebi.tsv from chebi-data-04052022.zip, 159840 rows
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+MERGE (n:db_CHEBI {eid: row.eid})
+SET n:Chemical,n.name=row.name,n.definition=row.definition,n.formula=row.formula,n.charge=row.charge,n.inchi_key=row.inchi_key,n.inchi=row.inchi,n.smiles=row.smiles,n.mass=row.mass,n.alt_id=row.alt_id,n.data_source='CHEBI'
+      "
+      fileName="chebi.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load db_CHEBI synonyms from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI chebi-synonyms.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+MERGE (a:Synonym {name: row.name}) SET a.lowercase_name=toLower(row.name)
+WITH row, a MATCH (b:db_CHEBI {eid: row.eid})
+MERGE (b)-[r:HAS_SYNONYM]->(a)
+      "
+      fileName="chebi-synonyms.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_A relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_A relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_A'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_A]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_CONJUGATE_BASE_OF relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_CONJUGATE_BASE_OF relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_CONJUGATE_BASE_OF'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_CONJUGATE_BASE_OF]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load HAS_PART relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI HAS_PART relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='HAS_PART'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:HAS_PART]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load HAS_ROLE relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI HAS_ROLE relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='HAS_ROLE'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:HAS_ROLE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load HAS_PARENT_HYDRIDE relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI HAS_PARENT_HYDRIDE relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='HAS_PARENT_HYDRIDE'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:HAS_PARENT_HYDRIDE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_ENANTIOMER_OF relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_ENANTIOMER_OF relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_ENANTIOMER_OF'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_ENANTIOMER_OF]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load HAS_FUNCTIONAL_PARENT relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI HAS_FUNCTIONAL_PARENT relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='HAS_FUNCTIONAL_PARENT'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:HAS_FUNCTIONAL_PARENT]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_CONJUGATE_ACID_OF relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_CONJUGATE_ACID_OF relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_CONJUGATE_ACID_OF'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_CONJUGATE_ACID_OF]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_TAUTOMER_OF relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_TAUTOMER_OF relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_TAUTOMER_OF'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_TAUTOMER_OF]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_SUBSTITUENT_GROUP_FROM relationship in chebi-rels.tsv from chebi-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load CHEBI IS_SUBSTITUENT_GROUP_FROM relationships, chebi-rels.tsv from chebi-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_SUBSTITUENT_GROUP_FROM'
+MATCH (a:db_CHEBI {eid: row.from_id}), (b:db_CHEBI {eid: row.to_id})
+MERGE (a)-[r:IS_SUBSTITUENT_GROUP_FROM]->(b)
+RETURN COUNT(*)
+      "
+      fileName="chebi-rels.tsv"
+      zipFileName="chebi-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+</databaseChangeLog>

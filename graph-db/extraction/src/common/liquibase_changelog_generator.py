@@ -49,8 +49,11 @@ class ChangeLogFileGenerator(object):
         if not basedir:
             basedir = Config().data_dir
         self.basedir = basedir
-        self.processed_data_dir = os.path.join(self.basedir, 'processed', db_source.lower())
-        self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
+        if db_source:
+            self.processed_data_dir = os.path.join(self.basedir, 'processed', db_source.lower())
+            self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
+        else:
+            self.output_dir = os.path.join(self.basedir, 'changelogs')
         os.makedirs(self.output_dir, 0o777, True)
 
         self.date_tag = datetime.today().strftime('%m/%d/%Y')
