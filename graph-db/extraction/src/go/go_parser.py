@@ -1,6 +1,7 @@
 from common.obo_parser import OboParser
 from common.graph_models import RelationshipType
 from common.constants import *
+from datetime import datetime
 
 attribute_map = {
             'id': (PROP_ID, 'str'),
@@ -29,7 +30,10 @@ class GoOboParser(OboParser):
 
 def main():
     parser = GoOboParser('go.obo')
-    parser.parse_and_write_data_files('go-data-220320.zip')
+    date_tag = datetime.today().strftime('%m%d%Y')
+    outfile = f"go-data-{date_tag}.zip"
+    print(outfile)
+    parser.parse_and_write_data_files(outfile)
 
 
 if __name__ == "__main__":

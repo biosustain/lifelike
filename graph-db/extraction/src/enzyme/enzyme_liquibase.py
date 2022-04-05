@@ -14,7 +14,6 @@ class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
         self.index_quieries.append(get_create_constraint_query(NODE_ENZYME, PROP_ID))
         self.index_quieries.append(get_create_constraint_query(NODE_EC_NUMBER, PROP_ID))
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
         self.index_quieries.append(get_create_index_query(NODE_ENZYME, PROP_NAME))
         self.index_quieries.append(get_create_index_query(NODE_EC_NUMBER, PROP_NAME))
         return self.index_quieries
@@ -46,9 +45,9 @@ class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
 
 
 def main():
-    task = EnzymeChangeLogsGenerator('rcai', "enzyme-data-220321.zip")
+    task = EnzymeChangeLogsGenerator('rcai', "enzyme-data-04052022.zip")
     task.add_all_change_sets()
-    task.generate_changelog_file('enzyme_changelog.xml')
+    task.generate_changelog_file(f"enzyme_changelog_{task.date_tag.replace('/', '')}.xml")
 
 
 if __name__ == '__main__':

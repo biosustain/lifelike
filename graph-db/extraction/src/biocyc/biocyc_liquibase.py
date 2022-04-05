@@ -31,7 +31,6 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_BIOCYC_ID))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_NAME))
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
 
     def add_entity_index_queries(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -103,7 +102,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
 
     def generate_init_changelog_file(self):
         self.add_all_change_sets()
-        changelog_file = f"{self.biocyc_dbname}-init-changelog_{self.date_tag.replace('/', '-')}.xml"
+        changelog_file = f"{self.biocyc_dbname}-init-changelog_{self.date_tag.replace('/', '')}.xml"
         self.generate_changelog_file(changelog_file)
 
 

@@ -1,8 +1,8 @@
 from common.constants import *
 from common.graph_models import RelationshipType
 from common.obo_parser import OboParser
+from datetime import datetime
 import logging
-import os
 
 attribute_map = {
             'id': (PROP_ID, 'str'),
@@ -34,8 +34,11 @@ class ChebiOboParser(OboParser):
 
 
 def main():
-    parser = ChebiOboParser('chebi.obo')
-    parser.parse_and_write_data_files('chebi-data-220222.zip')
+    parser = ChebiOboParser('chebi.obo.gz')
+    date_tag = datetime.today().strftime('%m%d%Y')
+    outfile = f"chebi-data-{date_tag}.zip"
+    print(outfile)
+    parser.parse_and_write_data_files(outfile)
 
 
 if __name__ == "__main__":

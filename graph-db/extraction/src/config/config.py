@@ -61,6 +61,9 @@ class Config:
     def get_string_cyphers(self):
         return self.read_yaml(os.path.join(self.get_cypher_dir(), 'string-cypher.yml'))
 
+    def get_synonym_cyphers(self):
+        return self.read_yaml(os.path.join(self.get_cypher_dir(), 'synonym-cypher.yml'))
+
 
 
 

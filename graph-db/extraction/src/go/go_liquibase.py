@@ -14,7 +14,6 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
     def get_create_index_queries(self):
         self.index_quieries.append(get_create_constraint_query(NODE_GO, PROP_ID))
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
         self.index_quieries.append(get_create_index_query(NODE_GO, PROP_NAME))
         return self.index_quieries
 
@@ -53,9 +52,9 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
 
 
 def main():
-    task = GoChangeLogsGenerator('rcai', "go-data-220320.zip")
+    task = GoChangeLogsGenerator('rcai', "go-data-04052022.zip")
     task.add_all_change_sets()
-    task.generate_changelog_file('go_changelog.xml')
+    task.generate_changelog_file(f"go_changelog_{task.date_tag.replace('/', '')}.xml")
 
 
 if __name__ == '__main__':
