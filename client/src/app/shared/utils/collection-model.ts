@@ -151,7 +151,7 @@ export class CollectionModel<T> {
       if (this.multipleSelection) {
         this._selection$.next(uniq(this._selection$.value.concat(items)));
       } else {
-        this._selection$.next(items.slice(0, 1));
+        this._selection$.next([items.pop()]);
       }
     }
   }
