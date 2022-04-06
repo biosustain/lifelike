@@ -1,5 +1,5 @@
 import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
-import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { map, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
 import { has, last, uniq, intersection, isEqual, first } from 'lodash-es';
 
 type Filter<T> = (item: T) => boolean;
@@ -147,12 +147,11 @@ export class CollectionModel<T> {
   }
 
   select(...items: T[]): void {
-    const newSelection = this._selection$.value.concat(items);
     if (this.multipleSelection) {
-      this._selection$.next(uniq(newSelection));
+      this._selection$.next(uniq(this._selection$.value.concat(items)));
     } else {
-      const toggleSelection = intersection(newSelection, items);
-      this._selection$.next(newSelection.filter(item => !toggleSelection.includes(item)));
+      // Only one can be selected, so we go with the first one
+      this._selection$.next([items.pop()]);
     }
   }
 
