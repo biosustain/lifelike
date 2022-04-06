@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { Observable, ReplaySubject, forkJoin, iif, of, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, tap, switchMap, distinctUntilChanged, first } from 'rxjs/operators';
+import { map, tap, switchMap, distinctUntilChanged, first, defaultIfEmpty } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
@@ -62,17 +62,22 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
 
   log$: Observable<ObjectVersionHistory> = this.history$.pipe(
     switchMap(history =>
+      // Subscribes to change of selections in the versions list, in order to lazy load the content of selected entry.
       history.results.selectionChanges$.pipe(
         switchMap(({added}) =>
           forkJoin(
+            // If the new selection does not have it's content loaded, query its content and update with tap.
             [...added].filter(({contentValue}) => !contentValue).map(version =>
               this.filesystemService.getVersionContent(version.hashId).pipe(
                 this.errorHandler.create({label: 'Get object version content'}),
                 tap(content => version.contentValue = content)
               )
             )
-          )
+          // This pipe will be blocked until the first selectionChanges fires - which cannot happen without executing the pipe at least oce
+          // Therefore we need to fire a default value first
+          ).pipe(defaultIfEmpty(null))
         ),
+        // Call change callback if present
         switchMap(() =>
           iif(
             () => this.changeCallback,
@@ -82,7 +87,9 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
             of()
           )
         ),
+        // Call touch callback if present
         tap(() => this.touchCallback?.()),
+        // Finally, return the history object
         map(() => history)
       )
     ),

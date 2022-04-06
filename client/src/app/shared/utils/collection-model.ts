@@ -1,5 +1,5 @@
 import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
-import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { map, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
 import { has, last, uniq, intersection, isEqual, first } from 'lodash-es';
 
 type Filter<T> = (item: T) => boolean;
@@ -60,6 +60,8 @@ export class CollectionModel<T> {
   );
 
   readonly selectionChanges$: Observable<CollectionChange<T>> = this.selection$.pipe(
+    tap(console.log),
+    tap(x => console.log('selection changes')),
     startWith([]),
     pairwise(),
     map(([prev, curr]) => ({
@@ -147,12 +149,17 @@ export class CollectionModel<T> {
   }
 
   select(...items: T[]): void {
-    const newSelection = this._selection$.value.concat(items);
     if (this.multipleSelection) {
-      this._selection$.next(uniq(newSelection));
+      this._selection$.next(uniq(this._selection$.value.concat(items)));
     } else {
-      const toggleSelection = intersection(newSelection, items);
-      this._selection$.next(newSelection.filter(item => !toggleSelection.includes(item)));
+      // Only one can be selected, so we go with the first one
+      const item = items.pop();
+      if ([item] === this._selection$.value) {
+        // Deselect on double select - toggle
+        this._selection$.next([]);
+      } else {
+        this._selection$.next([item]);
+      }
     }
   }
 
@@ -179,11 +186,13 @@ export class CollectionModel<T> {
   }
 
   toggle(item: T): void {
+    console.log(item);
     if (this.isSelected(item)) {
       this.deselect(item);
     } else {
       this.select(item);
     }
+    console.log(this.isSelected(item));
   }
 
   toggleAll(): void {
