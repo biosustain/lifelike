@@ -108,7 +108,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         .subscribe(() => {
           this.graphCanvas.saveImagesState();
           this.isSaving = false;
-          this.emitModuleProperties(); // TODO: what does this do?
+          this.emitModuleProperties();
           this.snackBar.open('Map saved.', null, {
             duration: 2000,
           });
