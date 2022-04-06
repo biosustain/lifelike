@@ -1,6 +1,6 @@
 import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
 import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
-import { has, last, uniq, intersection, isEqual, first } from 'lodash-es';
+import { has, last, uniq, isEqual, first } from 'lodash-es';
 
 type Filter<T> = (item: T) => boolean;
 type Sort<T> = (a: T, b: T) => number;

@@ -29,6 +29,7 @@ export class ObjectSelectService {
 
   hashId$ = new BehaviorSubject<string>(null);
 
+  object: FilesystemObject;
   object$ = this.hashId$.pipe(
     switchMap(hashId =>
       iif(
@@ -42,7 +43,10 @@ export class ObjectSelectService {
           switchMap(() => this.projectList$)
         ),
         this.filesystemService.get(hashId).pipe(
-          tap(object => this.applyInput(object))
+          tap(object => {
+            this.applyInput(object);
+            this.object = object;
+          })
         )
       )
     )
