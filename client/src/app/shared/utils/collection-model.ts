@@ -151,13 +151,7 @@ export class CollectionModel<T> {
       this._selection$.next(uniq(this._selection$.value.concat(items)));
     } else {
       // Only one can be selected, so we go with the first one
-      const item = items.pop();
-      if ([item] === this._selection$.value) {
-        // Deselect on double select - toggle
-        this._selection$.next([]);
-      } else {
-        this._selection$.next([item]);
-      }
+      this._selection$.next([items.pop()]);
     }
   }
 
