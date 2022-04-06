@@ -2,20 +2,23 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone,
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
-import { combineLatest } from 'rxjs';
-import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
 import { flatMap, groupBy, uniq } from 'lodash-es';
+import { combineLatest, forkJoin } from 'rxjs';
+import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
 
 import { SankeyTrace } from 'app/sankey/interfaces';
-import { d3EventCallback } from 'app/shared/utils/d3';
+import { EntityType } from 'app/sankey/interfaces/search';
+import { SelectionType } from 'app/sankey/interfaces/selection';
 import { LayoutService } from 'app/sankey/services/layout.service';
-import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
+import { SankeySelectionService } from 'app/sankey/services/selection.service';
+import { symmetricDifference } from 'app/sankey/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
-import { SelectionType } from 'app/sankey/interfaces/selection';
-import { EntityType } from 'app/sankey/interfaces/search';
+import { d3EventCallback } from 'app/shared/utils/d3';
 
+
+import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../../color-palette';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SankeyMultiLaneLink, SankeyMultiLaneNode, SankeyMultiLaneOptions, SankeyMultiLaneState } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
@@ -131,8 +134,12 @@ export class SankeyMultiLaneComponent
   }
 
   initFocus() {
-    this.focusedLinks$.subscribe();
-    this.focusedNode$.subscribe();
+    forkJoin(
+      this.focusedLinks$,
+      this.focusedNode$
+    ).pipe(
+      takeUntil(this.destroyed$)
+    ).subscribe();
   }
 
   initSelection() {
@@ -144,20 +151,44 @@ export class SankeyMultiLaneComponent
   initStateUpdate() {
     const {
       sankey: {
-        id,
-        linkTitle,
-        linkColor,
         linkBorder,
-        circular
       }
     } = this;
-    this.renderedLinks$.pipe(
-      takeUntil(this.destroyed$)
-    ).subscribe(links => {
-      links
-        .style('fill', linkColor as any)
-        .style('stroke', linkBorder as any);
-    });
+
+    this.sankey.baseView.palette$.pipe(
+      takeUntil(this.destroyed$),
+      switchMap((palette: any) =>
+        combineLatest([
+          this.renderedLinks$,
+          this.renderedNodes$,
+        ]).pipe(
+          tap(([linksSelection, nodesSelection]) => {
+            const traceColorPaletteMap = createMapToColor(
+              uniq(linksSelection.data().map(({ _trace: { _group }}: SankeyMultiLaneLink) => _group)).sort((a: number, b: number) => a - b),
+              {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
+              palette.palette
+            );
+            linksSelection
+              .style('fill', (d: SankeyMultiLaneLink) => traceColorPaletteMap.get(d._trace._group))
+              .style('stroke', linkBorder as any);
+
+            nodesSelection
+              .select('rect')
+              .style('fill', ({_sourceLinks, _targetLinks, _color}: SankeyMultiLaneNode) => {
+                  // check if any trace is finishing or starting here
+                  const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+                  // if there is only one trace start/end then color node with its color
+                  if (difference.size === 1) {
+                    const color = traceColorPaletteMap.get(difference.values().next().value._trace._group);
+                    return color;
+                  } else {
+                    return _color;
+                  }
+              });
+          }),
+        )
+      )
+    ).subscribe();
   }
 
   // endregion
