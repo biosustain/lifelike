@@ -4,7 +4,7 @@ import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
-import { BoundingBox } from '../../../utils/behaviors/abstract-node-handle-behavior';
+import { BoundingBox } from '../../../utils/behaviors/abstract-object-handle-behavior';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 

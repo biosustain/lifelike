@@ -19,7 +19,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { BoundingBox, isPointIntersecting } from '../../utils/behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isPointIntersecting } from '../../utils/behaviors/abstract-object-handle-behavior';
 
 
 export interface CanvasGraphViewOptions {

@@ -5,7 +5,7 @@ import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
 import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
-import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };

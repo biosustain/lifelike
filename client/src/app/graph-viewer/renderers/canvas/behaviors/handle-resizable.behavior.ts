@@ -1,10 +1,10 @@
 import { cloneDeep } from 'lodash-es';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { AbstractNodeHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
-import { handleBlue } from 'app/shared/constants';
+import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { blackColor, handleBlue } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -29,7 +29,7 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
       if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node &&
         this.graphView.placeNode(newSelection[0].entity as UniversalGraphNode).resizable) {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
-        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveResize(this.graphView, newSelection[0].entity as UniversalGraphNode), 100);
+        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveResize(this.graphView, newSelection[0]), 100);
       } else {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
       }
@@ -40,60 +40,13 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
 /**
  * Holds the state of an active resize.
  */
-export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
-  private originalData: { width: number, height: number, x: number, y: number } | undefined;
-  private dragStartPosition: Point = {x: 0, y: 0};
-  private originalTarget: UniversalGraphNode;
+export class ActiveResize extends AbstractObjectHandleBehavior<DragHandle> {
 
-
-  constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode,
-              private size = 10) {
-    super(graphView, target);
-    this.originalTarget = cloneDeep(this.target);
-  }
-
-  isPointIntersectingNode(placedNode: PlacedNode, point: Point): boolean {
-    // Consider ourselves still intersecting if we have a handle
-    return (!!this.handle || !!this.getHandleIntersected(placedNode, point)) ? true : undefined;
-  }
-
-  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
-    this.originalData = {x: this.target.data.x, y: this.target.data.y, ...this.getCurrentNodeSize()};
-    this.dragStartPosition = graphPosition;
-  }
-
-  protected activeDrag(event: MouseEvent, graphPosition: Point) {
-    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
-    this.graphView.invalidateNode(this.target);
-    this.graphView.requestRender();
-  }
-
-  protected activeDragEnd(event: MouseEvent) {
-    if (this.target.data.width !== this.originalTarget.data.width ||
-      this.target.data.height !== this.originalTarget.data.height) {
-      this.graphView.execute(new GraphEntityUpdate('Resize node', {
-        type: GraphEntityType.Node,
-        entity: this.target,
-      }, {
-        data: {
-          width: this.target.data.width,
-          height: this.target.data.height,
-        },
-      } as Partial<UniversalGraphNode>, {
-        data: {
-          width: this.originalTarget.data.width,
-          height: this.originalTarget.data.height,
-        },
-      } as Partial<UniversalGraphNode>));
-      this.originalTarget = cloneDeep(this.target);
-    }
-  }
 
   getHandleBoundingBoxes(placedObject: PlacedObject): DragHandle[] {
     const bbox = placedObject.getBoundingBox();
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
-    const size = this.size * noZoomScale;
+    const size = handleSize * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
     // const [x, y] = [placedObject.x, placedObject.y];
@@ -106,7 +59,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       minY: posY - halfSize,
       maxX: posX + halfSize,
       maxY: posY + halfSize,
-      displayColor: '#000000'
+      displayColor: blackColor
     });
     const handles = [
       // Right - one-dim scaling
@@ -166,9 +119,83 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
   }
 }
 
+export class ActiveResize extends AbstractObjectHandleBehavior<DragHandle> {
+  private originalData: { width: number, height: number, x: number, y: number } | undefined;
+  private dragStartPosition: Point = {x: 0, y: 0};
+  private originalTarget: UniversalGraphNode | NodeGroup;
+
+
+  constructor(graphView: CanvasGraphView,
+              target: UniversalGraphNode | NodeGroup) {
+    super(graphView, target);
+    this.originalTarget = cloneDeep(this.target);
+  }
+
+  isPointIntersectingNode(placedObject: PlacedObject, point: Point): boolean {
+    // Consider ourselves still intersecting if we have a handle
+    return (!!this.handle || !!this.getHandleIntersected(placedObject, point)) ? true : undefined;
+  }
+
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
+    this.originalData = {x: this.target.data.x, y: this.target.data.y, ...this.getCurrentNodeSize()};
+    this.dragStartPosition = graphPosition;
+  }
+
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
+    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
+    this.graphView.invalidateNode(this.target);
+    this.graphView.requestRender();
+  }
+
+  protected activeDragEnd(event: MouseEvent) {
+    if (this.target.data.width !== this.originalTarget.data.width ||
+      this.target.data.height !== this.originalTarget.data.height) {
+      this.graphView.execute(new GraphEntityUpdate('Resize node', {
+        type: GraphEntityType.Node,
+        entity: this.target,
+      }, {
+        data: {
+          width: this.target.data.width,
+          height: this.target.data.height,
+        },
+      } as Partial<UniversalGraphNode>, {
+        data: {
+          width: this.originalTarget.data.width,
+          height: this.originalTarget.data.height,
+        },
+      } as Partial<UniversalGraphNode>));
+      this.originalTarget = cloneDeep(this.target);
+    }
+  }
+}
+
+
+// export class ActiveGroupResize extends AbstractObjectHandleBehavior<DragHandle> {
+//   private originalData: { width: number, height: number, x: number, y: number } | undefined;
+//   private dragStartPosition: Point = {x: 0, y: 0};
+//   private originalTarget: NodeGroup;
+//
+//   constructor(graphView: CanvasGraphView,
+//               target: NodeGroup) {
+//     super(graphView, target);
+//     this.originalTarget = cloneDeep(this.target);
+//
+//     getHandleBoundingBoxes(placedObject: PlacedObject): DragHandle[] {
+//
+//   }
+//
+//
+//
+// }
+
+
+
 interface DragHandle extends Handle {
   execute: (target: UniversalGraphNode,
             originalData: { width: number, height: number, x: number, y: number },
             dragStartPosition: Point,
             graphPosition: Point) => void;
 }
+
+
+export const handleSize = 10;

@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractNodeHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { handleBlue } from 'app/shared/constants';
 
@@ -40,7 +40,7 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   }
 }
 
-class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
+class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
   protected topOffset = 0;
   protected leftOffset = 0;
   protected size = 20;
