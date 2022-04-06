@@ -1,7 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { pointOnRect } from '../../geometry';
-import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-node-handle-behavior';
 
 export interface BaseRectangleNodeOptions {
   x: number;
@@ -49,7 +49,7 @@ export abstract class BaseRectangleNode extends PlacedNode {
     };
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
+  isPointIntersecting({x, y}: Point): boolean {
     return x >= this.nodeX && x <= this.nodeX2 && y >= this.nodeY && y <= this.nodeY2;
   }
 

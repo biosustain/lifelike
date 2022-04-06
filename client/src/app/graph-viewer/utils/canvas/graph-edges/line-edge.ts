@@ -5,7 +5,7 @@ import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
 import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
-import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-node-handle-behavior';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -79,7 +79,7 @@ export class LineEdge extends PlacedEdge {
     return this.boundingBox;
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
+  isPointIntersecting({x, y}: Point): boolean {
     if (this.isPointIntersectingTextbox(x, y)) {
       return true;
     }

@@ -755,8 +755,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, x, y);
-      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(x, y)) {
+      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, {x, y});
+      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting({x, y})) {
         const distance = Math.hypot(x - d.data.x, y - d.data.y);
         // Node is so close, that we are sure it is it. Terminate early.
         if (distance <= this.MIN_NODE_DISTANCE) {
@@ -792,7 +792,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       const placedEdge = this.placeEdge(d);
 
       const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, x, y);
-      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(x, y)) {
+      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting({x, y})) {
         return d;
       }
 

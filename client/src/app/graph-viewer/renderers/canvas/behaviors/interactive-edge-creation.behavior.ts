@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { AbstractNodeHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { handleBlue } from 'app/shared/constants';
 
@@ -50,7 +50,7 @@ class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
     super(graphView, target);
   }
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
     if (subject != null && subject.type === GraphEntityType.Node) {
       this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
       this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
