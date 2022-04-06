@@ -255,11 +255,14 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
     @property
     def fallback_organism(self):
-        return {
-            'organism_name': self.organism_name,
-            'synonym': self.organism_synonym,
-            'tax_id': self.organism_taxonomy_id,
-        }
+        if self.organism_name and self.organism_synonym and self.organism_taxonomy_id:
+            return {
+                'organism_name': self.organism_name,
+                'synonym': self.organism_synonym,
+                'tax_id': self.organism_taxonomy_id,
+            }
+        else:
+            return None
 
     @property
     def parent_deleted(self):
