@@ -60,8 +60,6 @@ export class CollectionModel<T> {
   );
 
   readonly selectionChanges$: Observable<CollectionChange<T>> = this.selection$.pipe(
-    tap(console.log),
-    tap(x => console.log('selection changes')),
     startWith([]),
     pairwise(),
     map(([prev, curr]) => ({
@@ -186,13 +184,11 @@ export class CollectionModel<T> {
   }
 
   toggle(item: T): void {
-    console.log(item);
     if (this.isSelected(item)) {
       this.deselect(item);
     } else {
       this.select(item);
     }
-    console.log(this.isSelected(item));
   }
 
   toggleAll(): void {
