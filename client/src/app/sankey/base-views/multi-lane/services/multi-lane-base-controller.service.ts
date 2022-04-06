@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged, shareReplay, tap } from 'rxjs/operators';
+import { switchMap, map, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
@@ -13,7 +13,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
-import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
+import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
 import { BaseState, BaseOptions, MultiLaneNetworkTraceData, SankeyMultiLaneState } from '../interfaces';
 
@@ -75,24 +75,17 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
   palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
 
   networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
-    switchMap(({links, nodes, traces, nodeById, ...rest}) => this.palette$.pipe(
-      map(({palette}) => {
-        const traceColorPaletteMap = createMapToColor(
-          traces.map(({_group}) => _group),
-          {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
-          palette
-        );
-        const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links, traceColorPaletteMap);
+    switchMap(({links, nodes, traces, nodeById, ...rest}) => {
+        const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
         const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
         this.colorNodes(networkTraceNodes);
-        return {
+        return of({
           nodes: networkTraceNodes,
           links: networkTraceLinks,
           nodeById,
           ...rest
-        };
-      })
-    )),
+        });
+    }),
     debug('MultiLaneBaseControllerService.networkTraceData$'),
     shareReplay<MultiLaneNetworkTraceData>(1)
   );
