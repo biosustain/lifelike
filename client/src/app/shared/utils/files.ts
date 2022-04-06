@@ -40,7 +40,8 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
 }
 
 /**
- * Maps the graph stored in export
+ * Maps the graph stored in export to the graph suitable for further manipulation.
+ * As nodes are stored groups, we add them to the 'nodes' collection - so we would have them all in one place.
  */
 export function mapJsonToGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
   return map( graph => {

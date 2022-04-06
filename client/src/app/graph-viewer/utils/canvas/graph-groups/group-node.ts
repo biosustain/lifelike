@@ -77,7 +77,7 @@ export class GroupNode extends PlacedGroup {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
+  isPointIntersecting({x, y}: Point): boolean {
     return x >= this.boundingBox.minX &&
            x <= this.boundingBox.maxX &&
            y >= this.boundingBox.minY &&

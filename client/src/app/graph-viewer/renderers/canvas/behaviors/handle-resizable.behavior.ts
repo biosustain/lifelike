@@ -1,9 +1,9 @@
 import { cloneDeep } from 'lodash-es';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { PlacedNode } from 'app/graph-viewer/styles/styles';
+import { PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { AbstractNodeHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
 import { handleBlue } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -42,7 +42,7 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
  */
 export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
   private originalData: { width: number, height: number, x: number, y: number } | undefined;
-  private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
+  private dragStartPosition: Point = {x: 0, y: 0};
   private originalTarget: UniversalGraphNode;
 
 
@@ -53,18 +53,18 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     this.originalTarget = cloneDeep(this.target);
   }
 
-  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
+  isPointIntersectingNode(placedNode: PlacedNode, point: Point): boolean {
     // Consider ourselves still intersecting if we have a handle
-    return (!!this.handle || !!this.getHandleIntersected(placedNode, x, y)) ? true : undefined;
+    return (!!this.handle || !!this.getHandleIntersected(placedNode, point)) ? true : undefined;
   }
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
     this.originalData = {x: this.target.data.x, y: this.target.data.y, ...this.getCurrentNodeSize()};
-    this.dragStartPosition = {x: graphX, y: graphY};
+    this.dragStartPosition = graphPosition;
   }
 
-  protected activeDrag(event: MouseEvent, graphX: number, graphY: number) {
-    this.handle.execute(this.target, this.originalData, this.dragStartPosition, {x: graphX, y: graphY});
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
+    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
     this.graphView.invalidateNode(this.target);
     this.graphView.requestRender();
   }
@@ -90,13 +90,13 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     }
   }
 
-  getHandleBoundingBoxes(placedNode: PlacedNode): DragHandle[] {
-    const bbox = placedNode.getBoundingBox();
+  getHandleBoundingBoxes(placedObject: PlacedObject): DragHandle[] {
+    const bbox = placedObject.getBoundingBox();
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
     const size = this.size * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
-    // const [x, y] = [placedNode.x, placedNode.y];
+    // const [x, y] = [placedObject.x, placedObject.y];
     // or
     const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
     // There is no handle on top: edge creation button is there.
@@ -139,7 +139,7 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
       // Top left
     ];
     // If node (currently: images) can be scaled uniformly, add those handles.
-    if (placedNode.uniformlyResizable) {
+    if (placedObject.uniformlyResizable) {
       const execute = (target, originalSize, dragStartPosition, graphPosition) => {
         const ratio = this.originalData.width / this.originalData.height;
         const sizingVecLen = Math.hypot(graphPosition.x - x, graphPosition.y - y) - handleDiagonal / 2;
@@ -169,6 +169,6 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
 interface DragHandle extends Handle {
   execute: (target: UniversalGraphNode,
             originalData: { width: number, height: number, x: number, y: number },
-            dragStartPosition: { x: number, y: number },
-            graphPosition: { x: number, y: number }) => void;
+            dragStartPosition: Point,
+            graphPosition: Point) => void;
 }

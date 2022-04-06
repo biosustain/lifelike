@@ -1,6 +1,6 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
-import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-node-handle-behavior';
 import { TextElement } from '../text-element';
 
 
@@ -56,7 +56,7 @@ export class FontIconNode extends PlacedNode {
     return this.bbox;
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
+  isPointIntersecting({x, y}: Point): boolean {
     // What if the text doesn't render or it's too small? Then the user
     // can't select this node anymore, which is bad
     const clickableIconTextWidth = Math.max(this.iconTextbox.actualWidth, 50);
