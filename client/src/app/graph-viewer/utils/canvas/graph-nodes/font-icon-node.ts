@@ -1,6 +1,6 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
-import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-node-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 import { TextElement } from '../text-element';
 
 

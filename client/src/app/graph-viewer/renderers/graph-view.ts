@@ -25,7 +25,7 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
-import { BoundingBox } from '../utils/behaviors/abstract-node-handle-behavior';
+import { BoundingBox } from '../utils/behaviors/abstract-object-handle-behavior';
 
 /**
  * A rendered view of a graph.

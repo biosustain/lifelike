@@ -7,7 +7,7 @@ import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../.
 import { PlacedObject } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
 
-export abstract class AbstractNodeHandleBehavior<T extends Handle> extends AbstractCanvasBehavior {
+export abstract class AbstractObjectHandleBehavior<T extends Handle> extends AbstractCanvasBehavior {
   protected handle: T | undefined;
 
   protected constructor(protected readonly graphView: CanvasGraphView,
