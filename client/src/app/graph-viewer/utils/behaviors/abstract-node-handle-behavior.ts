@@ -1,26 +1,17 @@
-// @ts-ignore
-import * as d3 from 'd3';
+import * as d3 from 'd3'; // TODO: Maybe limit that import
 
-import {
-  GraphEntity,
-  GraphEntityType,
-  UniversalGraphNode,
-} from 'app/drawing-tool/services/interfaces';
-import {nullCoalesce} from 'app/shared/utils/types';
+import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { nullCoalesce } from 'app/shared/utils/types';
 
-import {
-  AbstractCanvasBehavior,
-  BehaviorResult,
-  DragBehaviorEvent,
-} from '../../renderers/behaviors';
-import { PlacedNode } from '../../styles/styles';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../../renderers/behaviors';
+import { PlacedObject } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
 
 export abstract class AbstractNodeHandleBehavior<T extends Handle> extends AbstractCanvasBehavior {
   protected handle: T | undefined;
 
-  constructor(protected readonly graphView: CanvasGraphView,
-              protected readonly target: UniversalGraphNode) {
+  protected constructor(protected readonly graphView: CanvasGraphView,
+                        protected readonly target: UniversalGraphNode | NodeGroup) {
     super();
   }
 
@@ -31,10 +22,17 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     const graphY = transform.invertY(mouseY);
     const subject = event.entity;
 
-    if (subject != null && subject.type === GraphEntityType.Node) {
-      this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
+    const point: Point = {x: graphX, y: graphY};
+
+    if (subject?.type === GraphEntityType.Node) {
+      this.handle = this.getHandleIntersected(this.graphView.placeNode(subject.entity as UniversalGraphNode), point);
       if (this.handle != null) {
-        this.activeDragStart(event.event, graphX, graphY, subject);
+        this.activeDragStart(event.event, point, subject);
+      }
+    } else if (subject?.type === GraphEntityType.Group) {
+      this.handle = this.getHandleIntersected(this.graphView.placeGroup(subject.entity as NodeGroup), point);
+      if (this.handle != null) {
+        this.activeDragStart(event.event, point, subject);
       }
     }
 
@@ -45,9 +43,7 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     if (this.handle) {
       const transform = this.graphView.transform;
       const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
-      const graphX = transform.invertX(mouseX);
-      const graphY = transform.invertY(mouseY);
-      this.activeDrag(event.event, graphX, graphY);
+      this.activeDrag(event.event, {x: transform.invertX(mouseX), y: transform.invertY(mouseY)});
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
@@ -79,12 +75,12 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     return {width, height};
   }
 
-  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
-    return this.getHandleIntersected(placedNode, x, y) ? true : undefined;
+  isPointIntersectingNode(placedObject: PlacedObject, {x, y}: Point): boolean {
+    return this.getHandleIntersected(placedObject, {x, y}) ? true : undefined;
   }
 
-  getHandleIntersected(placedNode: PlacedNode, x: number, y: number): T | undefined {
-    for (const handle of this.getHandleBoundingBoxes(placedNode)) {
+  getHandleIntersected(placedObject: PlacedObject, {x, y}: Point): T | undefined {
+    for (const handle of this.getHandleBoundingBoxes(placedObject)) {
       if (x >= handle.minX && x <= handle.maxX && y >= handle.minY && y <= handle.maxY) {
         return handle;
       }
@@ -115,12 +111,12 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
 
   }
 
-  abstract getHandleBoundingBoxes(placedNode: PlacedNode): T[];
+  abstract getHandleBoundingBoxes(placedObject: PlacedObject): T[];
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
   }
 
-  protected activeDrag(event: MouseEvent, graphX: number, graphY: number) {
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
   }
 
   protected activeDragEnd(event: MouseEvent) {
@@ -144,6 +140,10 @@ export interface BoundingBox {
     maxY: number;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
 
 /**
  * Check if one (child) bbox is cointained in full by the other (parent) bbox.
@@ -158,6 +158,6 @@ export function isBBoxEnclosing(parent: BoundingBox, child: BoundingBox): boolea
       && child.maxY <= parent.maxY;
 }
 
-export function isPointIntersecting(bbox: BoundingBox, x: number, y: number): boolean {
+export function isPointIntersecting(bbox: BoundingBox, {x, y}: Point): boolean {
   return (bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y);
 }
