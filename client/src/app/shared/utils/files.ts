@@ -44,6 +44,8 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
  */
 export function mapJsonToGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
   return map( graph => {
+    // TODO: This allows to handle the transition without data migration. Not sure if we want to do that though - maybe migration is better?
+    graph.groups = graph.groups ?? [];
     graph.groups.forEach(group => {
       graph.nodes = graph.nodes.concat(group.members);
     });
