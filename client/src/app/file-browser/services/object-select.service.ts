@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { iif, BehaviorSubject, of, Observable, ReplaySubject } from 'rxjs';
 import { switchMap, tap, first, shareReplay } from 'rxjs/operators';
@@ -29,6 +29,7 @@ export class ObjectSelectService {
 
   hashId$ = new BehaviorSubject<string>(null);
 
+  object: FilesystemObject;
   object$ = this.hashId$.pipe(
     switchMap(hashId =>
       iif(
@@ -42,7 +43,10 @@ export class ObjectSelectService {
           switchMap(() => this.projectList$)
         ),
         this.filesystemService.get(hashId).pipe(
-          tap(object => this.applyInput(object))
+          tap(object => {
+            this.applyInput(object);
+            this.object = object;
+          })
         )
       )
     )
@@ -52,7 +56,7 @@ export class ObjectSelectService {
     this.hashId$.next(hashId);
   }
 
-  private applyInput(object) {
+  private applyInput(object: FilesystemObject) {
     if (object != null) {
       object.children.multipleSelection = this.multipleSelection;
       object.children.setFilter(this.objectFilter);

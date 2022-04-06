@@ -1,6 +1,6 @@
 import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
-import { map, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
-import { has, last, uniq, intersection, isEqual, first } from 'lodash-es';
+import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { has, last, uniq, isEqual, first } from 'lodash-es';
 
 type Filter<T> = (item: T) => boolean;
 type Sort<T> = (a: T, b: T) => number;
@@ -147,11 +147,12 @@ export class CollectionModel<T> {
   }
 
   select(...items: T[]): void {
-    if (this.multipleSelection) {
-      this._selection$.next(uniq(this._selection$.value.concat(items)));
-    } else {
-      // Only one can be selected, so we go with the first one
-      this._selection$.next([items.pop()]);
+    if (items.length) {
+      if (this.multipleSelection) {
+        this._selection$.next(uniq(this._selection$.value.concat(items)));
+      } else {
+        this._selection$.next([items.pop()]);
+      }
     }
   }
 
