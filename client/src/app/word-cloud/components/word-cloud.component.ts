@@ -317,7 +317,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
         .style('display', 'block')
         .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
-        .style('top', (coordsOfText.y - coordsOfCloud.y) + 'px');
+        .style('top', (coordsOfText.y - 100) + 'px');
     };
 
     // Get the word elements
