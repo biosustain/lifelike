@@ -615,6 +615,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   invalidateGroup(d: NodeGroup): void {
+    for (const node of d.members) {
+      this.invalidateNode(node);
+    }
   }
 
   /**
