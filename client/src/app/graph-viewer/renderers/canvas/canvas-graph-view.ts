@@ -476,6 +476,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   invalidateGroup(d: NodeGroup): void {
+    for (const node of d.members) {
+      this.invalidateNode(node);
+    }
     this.renderTree.delete(d);
   }
 
@@ -509,7 +512,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   getGroupAtPosition(point: Point): NodeGroup | undefined {
     for (const group of this.groups) {
       // TODO: Refactor Bounding box into interface/class after deciding what to do
-      const bbox = this.getNodeBoundingBox(group.members, group.margin) as BoundingBox;
+      const bbox = this.placeGroup(group).getBoundingBox();
       if (isPointIntersecting(bbox, point)) {
         return group;
       }

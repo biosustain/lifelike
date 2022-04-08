@@ -31,7 +31,6 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
       }
     } else if (subject?.type === GraphEntityType.Group) {
       this.handle = this.getHandleIntersected(this.graphView.placeGroup(subject.entity as NodeGroup), point);
-      console.log(this.handle);
       if (this.handle != null) {
         this.activeDragStart(event.event, point, subject);
       }
@@ -59,11 +58,15 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
   }
 
   getCurrentNodeSize(): { width: number, height: number } {
-    let width = this.target.data.width;
-    let height = this.target.data.height;
+    return this.getNodeSize(this.target);
+  }
+
+  protected getNodeSize(node: UniversalGraphNode): { width: number, height: number } {
+    let width = node.data.width;
+    let height = node.data.height;
 
     if (width == null || height == null) {
-      const bbox = this.graphView.placeNode(this.target).getBoundingBox();
+      const bbox = this.graphView.placeNode(node).getBoundingBox();
 
       if (width == null) {
         width = bbox.maxX - bbox.minX + 1;
