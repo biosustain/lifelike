@@ -1236,7 +1236,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ValidationError('Previous content of the map is corrupted!')
 
         new_content = io.BytesIO()
-        new_zip = zipfile.ZipFile(new_content, 'w')
+        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
 
         # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
         # to make sure that the graph.json is not copied as well.
