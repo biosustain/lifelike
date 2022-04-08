@@ -79,8 +79,8 @@ export abstract class PlacedObject {
   private placedObjectRenderer: PlacedObjectRenderer;
   protected children: PlacedObject[] = [];
 
-  resizable = false;
-  uniformlyResizable = false;
+  // resizable = false;
+  // uniformlyResizable = false;
 
   /**
    * Binds an object to a context.
@@ -186,10 +186,9 @@ export abstract class PlacedNode extends PlacedObject {
 export abstract class PlacedEdge extends PlacedObject {
   /**
    * Get the shortest distance (unsquared) between the given point and this object.
-   * @param x the X coordinate to check
-   * @param y the Y coordinate to check
+   * @param point - point to which distance we calculate
    */
-  abstract getPointDistanceUnsq(x: number, y: number): number;
+  abstract getPointDistanceUnsq(point: Point): number;
 
   /**
    * Render additional things that need to be placed on a layer above render();

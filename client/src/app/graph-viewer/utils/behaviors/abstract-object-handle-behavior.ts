@@ -31,6 +31,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
       }
     } else if (subject?.type === GraphEntityType.Group) {
       this.handle = this.getHandleIntersected(this.graphView.placeGroup(subject.entity as NodeGroup), point);
+      console.log(this.handle);
       if (this.handle != null) {
         this.activeDragStart(event.event, point, subject);
       }

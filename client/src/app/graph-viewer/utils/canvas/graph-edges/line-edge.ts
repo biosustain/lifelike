@@ -80,7 +80,7 @@ export class LineEdge extends PlacedEdge {
   }
 
   isPointIntersecting({x, y}: Point): boolean {
-    if (this.isPointIntersectingTextbox(x, y)) {
+    if (this.isPointIntersectingTextbox({x, y})) {
       return true;
     }
 
@@ -91,7 +91,7 @@ export class LineEdge extends PlacedEdge {
     return getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) <= 2;
   }
 
-  private isPointIntersectingTextbox(x: number, y: number): boolean {
+  private isPointIntersectingTextbox({x, y}: Point): boolean {
     if (!this.textbox) {
       return false;
     }
@@ -99,23 +99,25 @@ export class LineEdge extends PlacedEdge {
     return x >= this.labelMinX && x <= this.labelMaxX && y >= this.labelMinY && y <= this.labelMaxY;
   }
 
-  getPointDistanceUnsq(x: number, y: number): number {
-    if (this.isPointIntersectingTextbox(x, y)) {
+  getPointDistanceUnsq(point: Point): number {
+    if (this.isPointIntersectingTextbox(point)) {
       return 0;
     }
 
+
+    // TODO: WHAT
     const dx = this.target.x - this.source.x;
     const dy = this.target.y - this.source.y;
     const l2 = dx * dx + dy * dy;
 
     if (l2 === 0) {
-      return distanceUnsq(x, y, this.source.x, this.source.y);
+      return distanceUnsq(point, {x: this.source.x, y: this.source.y});
     }
 
-    let t = ((x - this.source.x) * dx + (y - this.source.y) * dy) / l2;
+    let t = ((point.x - this.source.x) * dx + (point.y - this.source.y) * dy) / l2;
     t = Math.max(0, Math.min(1, t));
 
-    return distanceUnsq(x, y, this.source.x + t * dx, this.source.y + t * dy);
+    return distanceUnsq(point, {x: this.source.x + t * dx, y: this.source.y + t * dy});
   }
 
   isBBoxEnclosing(bbox: BoundingBox): boolean {
