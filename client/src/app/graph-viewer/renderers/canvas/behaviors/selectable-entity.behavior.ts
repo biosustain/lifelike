@@ -4,7 +4,7 @@ import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
-import { BoundingBox } from '../../../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, Point } from '../../../utils/behaviors/abstract-object-handle-behavior';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 
@@ -48,18 +48,18 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
   }
 
   doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult {
-    const group = this.graphView.getGroupAtMouse();
-    this.selectOrAddToSelection(group, this.isRegionSelecting(event.event));
-    this.graphView.requestRender();
+    // const group = this.graphView.getGroupAtMouse();
+    // this.selectOrAddToSelection(group, this.isRegionSelecting(event.event));
+    // this.graphView.requestRender();
     return BehaviorResult.Continue;
   }
 
   dragStart(event: DragBehaviorEvent): BehaviorResult {
     if (this.isRegionSelecting(event.event)) {
-      const [x, y] = this.graphView.getLocationAtMouse();
+      const mousePosition = this.graphView.getLocationAtMouse();
       this.graphView.behaviors.delete(REGION_SELECTION_BEHAVIOR_KEY);
       this.graphView.behaviors.add(REGION_SELECTION_BEHAVIOR_KEY,
-        new ActiveRegionSelection(this.graphView, [x, y], this.isRegionSelectionAdditive(event.event)), 2);
+        new ActiveRegionSelection(this.graphView, mousePosition, this.isRegionSelectionAdditive(event.event)), 2);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
@@ -90,20 +90,20 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
 
 class ActiveRegionSelection extends AbstractCanvasBehavior {
 
-  private regionEnd: [number, number];
+  private regionEnd: Point;
 
   constructor(private readonly graphView: CanvasGraphView,
-              private readonly regionStart: [number, number],
+              private readonly regionStart: Point,
               private readonly additive: boolean) {
     super();
     this.regionEnd = regionStart;
   }
 
   private getBoundingBox(): BoundingBox {
-    const minX = Math.min(this.regionStart[0], this.regionEnd[0]);
-    const maxX = Math.max(this.regionStart[0], this.regionEnd[0]);
-    const minY = Math.min(this.regionStart[1], this.regionEnd[1]);
-    const maxY = Math.max(this.regionStart[1], this.regionEnd[1]);
+    const minX = Math.min(this.regionStart.x, this.regionEnd.x);
+    const maxX = Math.max(this.regionStart.x, this.regionEnd.x);
+    const minY = Math.min(this.regionStart.y, this.regionEnd.y);
+    const maxY = Math.max(this.regionStart.y, this.regionEnd.y);
     return {minX, minY, maxX, maxY};
   }
 
