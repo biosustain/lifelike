@@ -19,7 +19,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { BoundingBox, isPointIntersecting } from '../../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, isPointIntersecting, Point } from '../../utils/behaviors/abstract-object-handle-behavior';
 
 
 export interface CanvasGraphViewOptions {
@@ -494,28 +494,24 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  getLocationAtMouse(): [number, number] {
+  getLocationAtMouse(): Point {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
-    return [x, y];
+    return {x, y};
   }
 
   getEntityAtMouse(): GraphEntity | undefined {
-    const [x, y] = this.getLocationAtMouse();
-    return this.getEntityAtPosition(x, y);
+    const position = this.getLocationAtMouse();
+    return this.getEntityAtPosition(position);
   }
 
-  getGroupAtMouse(): GraphEntity | undefined {
-    const [x, y] = this.getLocationAtMouse();
+  getGroupAtPosition(point: Point): NodeGroup | undefined {
     for (const group of this.groups) {
       // TODO: Refactor Bounding box into interface/class after deciding what to do
       const bbox = this.getNodeBoundingBox(group.members, group.margin) as BoundingBox;
-      if (isPointIntersecting(bbox, {x, y})) {
-        return {
-          entity: group,
-          type: GraphEntityType.Group
-        };
+      if (isPointIntersecting(bbox, point)) {
+        return group;
       }
     }
     return null;
@@ -524,12 +520,22 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   /**
    * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
    * we need to evaluate the click according to the display order:
-   * Nodes > Edges > Images
-   * @param x - x position
-   * @param y - y position
+   * Groups > Nodes (if group is already selected or absent) > Edges > Images (if group is already selected or absent)
+   * @param point - {x, y} of mouse click
    */
-  getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
-    const node = this.getNodeAtPosition(this.nodes, x, y);
+  getEntityAtPosition(point: Point): GraphEntity | undefined {
+    const group = this.getGroupAtPosition(point);
+
+
+    if (group) {
+    // if (group && !this.selection.get().includes(group)) {
+      return {
+          type: GraphEntityType.Group,
+          entity: group
+        };
+    }
+
+    const node = this.getNodeAtPosition(this.nodes, point);
     // If the node is NOT an image, we return it
     if (node && node.label !== 'image') {
       return {
@@ -537,7 +543,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         entity: node,
       };
     }
-    const edge = this.getEdgeAtPosition(this.edges, x, y);
+
+    // Check and return edge first
+    const edge = this.getEdgeAtPosition(this.edges, point);
     if (edge) {
       return {
         type: GraphEntityType.Edge,
@@ -545,7 +553,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       };
     }
     // This node could only be image - as it is rendered below the edges, we need to
-    // Check and return edge first
     if (node) {
       return {
         type: GraphEntityType.Node,

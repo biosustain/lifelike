@@ -25,7 +25,7 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
-import { BoundingBox } from '../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, Point } from '../utils/behaviors/abstract-object-handle-behavior';
 
 /**
  * A rendered view of a graph.
@@ -747,17 +747,16 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find the best matching node at the given position.
    * @param nodes list of nodes to search through
-   * @param x graph X location
-   * @param y graph Y location
+   * @param position - {x, y} of the position
    */
-  getNodeAtPosition(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
+  getNodeAtPosition(nodes: UniversalGraphNode[], position: Point): UniversalGraphNode | undefined {
     const possibleNodes = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, {x, y});
-      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting({x, y})) {
-        const distance = Math.hypot(x - d.data.x, y - d.data.y);
+      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, position);
+      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(position)) {
+        const distance = Math.hypot(position.x - d.data.x, position.y - d.data.y);
         // Node is so close, that we are sure it is it. Terminate early.
         if (distance <= this.MIN_NODE_DISTANCE) {
           return d;
@@ -781,22 +780,21 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find the best matching edge at the given position.
    * @param edges list of edges to search through
-   * @param x graph X location
-   * @param y graph Y location
+   * @param position - {x, y} coordinated of the position
    */
-  getEdgeAtPosition(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
+  getEdgeAtPosition(edges: UniversalGraphEdge[], position: Point): UniversalGraphEdge | undefined {
     let bestCandidate: { edge: UniversalGraphEdge, distanceUnsq: number } = null;
     const distanceUnsqThreshold = 5 * 5;
 
     for (const d of edges) {
       const placedEdge = this.placeEdge(d);
 
-      const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, x, y);
-      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting({x, y})) {
+      const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, position);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(position)) {
         return d;
       }
 
-      const distanceUnsq = placedEdge.getPointDistanceUnsq(x, y);
+      const distanceUnsq = placedEdge.getPointDistanceUnsq(position);
       if (distanceUnsq <= distanceUnsqThreshold) {
         if (bestCandidate == null || bestCandidate.distanceUnsq >= distanceUnsq) {
           bestCandidate = {
