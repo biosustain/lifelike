@@ -2,9 +2,9 @@ import 'canvas-plus';
 
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
-import {  BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
+import { BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
 import { PlacedGroup } from '../../../styles/styles';
-import { BoundingBox, isBBoxEnclosing } from '../../behaviors/abstract-object-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 import { drawStroke, drawStrokeAndFill } from '../shared';
 
 export interface GroupNodeOptions extends BaseRectangleNodeOptions {
