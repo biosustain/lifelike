@@ -135,8 +135,66 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     }
 
     if (data && this.svg) {
+      this._data.links.sort((a: any, b: any) => a._index - b._index);
+      data.previousValue.links.sort((a, b) => a._index - b._index);
+
+      let m = 0;
+      for (const link of data.previousValue.links) {
+        this._data.links[m]._y0 = link._y0;
+        this._data.links[m]._y1 = link._y1;
+        this._data.links[m]._width = link._width;
+        this._data.links[m]._value = link._value;
+        this._data.links[m]._circular = link._circular;
+        this._data.links[m]._order = link._order;
+        m++;
+      }
+
+      this._data.nodes.sort((a: any, b: any) => a._index - b._index);
+      data.previousValue.nodes.sort((a, b) => a._index - b._index);
       // using this.data instead of current value so we use copy made by setter
-      this.updateLayout(this.data).then(d => this.updateDOM(d));
+      // this.updateLayout(this.data).then((d: any) => {
+      for (let i = 0; i < data.previousValue.nodes.length; i++) {
+        const prevNode = data.previousValue.nodes[i];
+        const dataNode = this._data.nodes[i];
+
+        dataNode._value = prevNode._value;
+        dataNode._x0 = prevNode._x0;
+        dataNode._x1 = prevNode._x1;
+        dataNode._y0 = prevNode._y0;
+        dataNode._y1 = prevNode._y1;
+        dataNode._order = prevNode._order;
+
+        // source[i]=data.links[source[i]._index];
+        for (let j = 0; j < prevNode._sourceLinks.length; j++) {
+         dataNode._sourceLinks[j] = data.currentValue.links[dataNode._sourceLinks[j]._index];
+        }
+
+        for (let k = 0; k < prevNode._targetLinks.length; k++) {
+          dataNode._targetLinks[k] = data.currentValue.links[dataNode._targetLinks[k]._index];
+        }
+      }
+
+      for (let n = 0; n < this.data.nodes.length; n++) {
+        this.data.nodes[n]._sourceLinks.sort(
+          (a, b) => (
+              // sort by order given in tree traversal
+              (a._source._order - b._source._order) ||
+              (a._target._order - b._target._order) ||
+              (a._order - b._order)
+            )
+        );
+
+        this.data.nodes[n]._targetLinks.sort(
+          (a, b) => (
+              // sort by order given in tree traversal
+              (a._source._order - b._source._order) ||
+              (a._target._order - b._target._order) ||
+              (a._order - b._order)
+            )
+        );
+      }
+
+      this.updateLayout(this.data, true).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
@@ -748,10 +806,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * and adjustments from outer scope
    * @param data graph declaration
    */
-  updateLayout(data) {
+  updateLayout(data, kludge = false) {
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
-          this.sankey.calcLayout(data);
+          this.sankey.calcLayout(data, kludge);
         }
         if (isObject(data._precomputedLayout)) {
           const [currentWidth, currentHeight] = this.sankey.size;
