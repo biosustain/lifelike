@@ -27,6 +27,14 @@ import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
 
+const nodeSorter = (a, b) => {
+  // sort by order given in tree traversal
+  return (
+    a._source._order - b._source._order ||
+    a._target._order - b._target._order ||
+    a._order - b._order
+  );
+};
 
 @Component({
   selector: 'app-sankey',
@@ -175,23 +183,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
 
       for (let n = 0; n < this.data.nodes.length; n++) {
-        this.data.nodes[n]._sourceLinks.sort(
-          (a, b) => (
-              // sort by order given in tree traversal
-              (a._source._order - b._source._order) ||
-              (a._target._order - b._target._order) ||
-              (a._order - b._order)
-            )
-        );
-
-        this.data.nodes[n]._targetLinks.sort(
-          (a, b) => (
-              // sort by order given in tree traversal
-              (a._source._order - b._source._order) ||
-              (a._target._order - b._target._order) ||
-              (a._order - b._order)
-            )
-        );
+        this.data.nodes[n]._sourceLinks.sort(nodeSorter);
+        this.data.nodes[n]._targetLinks.sort(nodeSorter);
       }
 
       this.updateLayout(this.data, true).then(d => this.updateDOM(d));
