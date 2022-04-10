@@ -182,6 +182,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         }
       }
 
+      /* tslint:disable:prefer-for-of */
       for (let n = 0; n < this.data.nodes.length; n++) {
         this.data.nodes[n]._sourceLinks.sort(nodeSorter);
         this.data.nodes[n]._targetLinks.sort(nodeSorter);
