@@ -357,9 +357,24 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       // nodes are placed in order from tree traversal
       nodes.sort((a, b) => a._order - b._order).forEach(node => {
         const nodeHeight = node._height;
-        node._y0 = y;
-        node._y1 = y + nodeHeight;
-        y += nodeHeight + spacerSize;
+
+        if (isNaN(node._y1)) {
+          node._y0 = y;
+          node._y1 = y + nodeHeight;
+          y += nodeHeight + spacerSize;
+        } else {
+          node._y0 = node._y1 - nodeHeight;
+        }
+
+        if (node._y0 < 0) {
+          node._y1 -= node._y0;
+          node._y0 = 0;
+        }
+
+        if (node._y1 > height) {
+          node._y0 -= (node._y1 - height);
+          node._y1 = height;
+        }
 
         // apply the y scale on links
         for (const link of node._sourceLinks) {
@@ -498,13 +513,15 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   /**
    * Calculate layout and address possible circular links
    */
-  calcLayout(graph) {
-    // Associate the nodes with their respective links, and vice versa
-    this.computeNodeLinks(graph);
-    // Determine which links result in a circular path in the graph
-    this.identifyCircles(graph);
-    // Calculate the nodes' values, based on the values of the incoming and outgoing links
-    this.computeNodeValues(graph);
+   calcLayout(graph, kludge = false) {
+    if (!kludge) {
+      // Associate the nodes with their respective links, and vice versa
+      this.computeNodeLinks(graph);
+      // Determine which links result in a circular path in the graph
+      this.identifyCircles(graph);
+      // Calculate the nodes' values, based on the values of the incoming and outgoing links
+      this.computeNodeValues(graph);
+    }
     // Calculate the nodes' depth based on the incoming and outgoing links
     //     Sets the nodes':
     //     - depth:  the depth in the graph
