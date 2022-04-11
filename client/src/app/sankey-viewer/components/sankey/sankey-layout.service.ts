@@ -56,6 +56,7 @@ import { Injectable } from '@angular/core';
 
 import findCircuits from 'elementary-circuits-directed-graph';
 import { max, min, sum } from 'd3-array';
+import { isNil } from 'lodash';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyData, SankeyNode, SankeyLink } from 'app/shared-sankey/interfaces';
@@ -333,8 +334,12 @@ export class SankeyLayoutService extends AttributeAccessors {
     for (const node of nodes) {
       const i = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
       node._layer = i;
-      node._x0 = x0 + i * kx;
-      node._x1 = node._x0 + dx;
+
+      if ((isNil(node._x0) || isNaN(node._x0)) || (isNil(node._x1) || isNaN(node._x1))) {
+        node._x0 = x0 + i * kx;
+        node._x1 = node._x0 + dx;
+      }
+
       if (columns[i]) {
         columns[i].push(node);
       } else {
@@ -578,7 +583,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  calcLayout(graph) {
+  calcLayout(graph, kludge = false) {
     // Process the graph's nodes and links, setting their positions
 
     // Associate the nodes with their respective links, and vice versa
