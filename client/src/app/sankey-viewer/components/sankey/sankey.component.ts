@@ -17,7 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { zoom as d3_zoom, zoomIdentity as d3_zoomIdentity } from 'd3-zoom';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { compact, isObject } from 'lodash-es';
+import { compact, isNil, isObject } from 'lodash-es';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -27,6 +27,14 @@ import { representativePositiveNumber } from '../utils';
 import * as aligns from './aligin';
 import { SankeyLayoutService } from './sankey-layout.service';
 
+const nodeSorter = (a, b) => {
+  // sort by order given in tree traversal
+  return (
+    a._source._order - b._source._order ||
+    a._target._order - b._target._order ||
+    a._order - b._order
+  );
+};
 
 @Component({
   selector: 'app-sankey',
@@ -135,8 +143,87 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     }
 
     if (data && this.svg) {
+      this._data.links.sort((a: any, b: any) => a._index - b._index);
+      data.previousValue.links.sort((a, b) => a._index - b._index);
+
+      let m = 0;
+      for (const link of data.previousValue.links) {
+        this._data.links[m]._y0 = link._y0;
+        this._data.links[m]._y1 = link._y1;
+        this._data.links[m]._width = link._width;
+        this._data.links[m]._value = link._value;
+        this._data.links[m]._circular = link._circular;
+        this._data.links[m]._index = link._index;
+        this._data.links[m]._order = link._order;
+        if (isNil(this._data.links[m]._order)) {
+          this._data.links[m]._order = 0;
+        }
+        m++;
+      }
+
+      this._data.nodes.sort((a: any, b: any) => a._index - b._index);
+      data.previousValue.nodes.sort((a, b) => a._index - b._index);
       // using this.data instead of current value so we use copy made by setter
-      this.updateLayout(this.data).then(d => this.updateDOM(d));
+      // this.updateLayout(this.data).then((d: any) => {
+      for (let i = 0; i < data.previousValue.nodes.length; i++) {
+        const prevNode = data.previousValue.nodes[i];
+        const dataNode = this._data.nodes[i];
+
+        dataNode._value = prevNode._value;
+        dataNode._x0 = prevNode._x0;
+        dataNode._x1 = prevNode._x1;
+        dataNode._y0 = prevNode._y0;
+        dataNode._y1 = prevNode._y1;
+        if (isNil(prevNode._order)) {
+          dataNode._order = 0;
+        } else {
+          dataNode._order = prevNode._order;
+        }
+
+        if (isNil(dataNode._sourceLinks)) {
+          dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this._data.links[link._index]);
+        } else {
+          for (let j = 0; j < prevNode._sourceLinks.length; j++) {
+            dataNode._sourceLinks[j] = this._data.links[dataNode._sourceLinks[j]._index];
+          }
+        }
+
+        if (isNil(dataNode._targetLinks)) {
+          dataNode._targetLinks = prevNode._targetLinks.map((link) => this._data.links[link._index]);
+        } else {
+          for (let k = 0; k < prevNode._targetLinks.length; k++) {
+            dataNode._targetLinks[k] = this._data.links[dataNode._targetLinks[k]._index];
+          }
+        }
+      }
+
+      /* tslint:disable:prefer-for-of */
+      for (let n = 0; n < this.data.nodes.length; n++) {
+        for (let i = 0; i < this.data.nodes[n]._sourceLinks.length; i++) {
+          this.data.nodes[n]._sourceLinks[i]._source = this.data.nodes[n];
+        }
+
+        for (let j = 0; j < this.data.nodes[n]._targetLinks.length; j++) {
+          this.data.nodes[n]._targetLinks[j]._target = this.data.nodes[n];
+        }
+      }
+
+
+      /* tslint:disable:prefer-for-of */
+      for (let n = 0; n < this.data.nodes.length; n++) {
+        if (!isNil(this.data.nodes[n]._sourceLinks)) {
+          try {
+            this.data.nodes[n]._sourceLinks.sort(nodeSorter);
+          } catch {
+            console.log(this.data.nodes[n]);
+          }
+        }
+        if (!isNil(this.data.nodes[n]._targetLinks)) {
+          this.data.nodes[n]._targetLinks.sort(nodeSorter);
+        }
+      }
+
+      this.updateLayout(this.data, true).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
@@ -748,10 +835,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * and adjustments from outer scope
    * @param data graph declaration
    */
-  updateLayout(data) {
+  updateLayout(data, kludge = false) {
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
-          this.sankey.calcLayout(data);
+          this.sankey.calcLayout(data, kludge);
         }
         if (isObject(data._precomputedLayout)) {
           const [currentWidth, currentHeight] = this.sankey.size;
