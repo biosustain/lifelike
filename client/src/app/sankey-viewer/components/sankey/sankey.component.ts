@@ -83,7 +83,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   dragging = false;
 
   // shallow copy of input data
-  private _data: SankeyData = {} as SankeyData;
+  public _data: SankeyData = {} as SankeyData;
 
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
@@ -132,6 +132,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // region Life cycle
   ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+    console.log('change');
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
