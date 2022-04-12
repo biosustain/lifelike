@@ -364,9 +364,27 @@ export class SankeyLayoutService extends AttributeAccessors {
     for (const nodes of columns) {
       let y = y0;
       for (const node of nodes) {
-        node._y0 = y;
-        node._y1 = y + node._value * ky;
-        y = node._y1 + py;
+        // const nodeHeight = node.height;
+        // node._y0 = y;
+        // node._y1 = y + node._value * ky;
+        // y = node._y1 + py;
+        if (isNaN(node._y1)) {
+          node._y0 = y;
+          node._y1 = y + node._value * ky;
+          y += node._y1 + py;
+        } else {
+          node._y0 = node._y1 - node._value * ky;
+        }
+
+        if (node._y0 < 0) {
+          node._y1 -= node._y0;
+          node._y0 = 0;
+        }
+
+        if (node._y1 > y1) {
+          node._y0 -= (node._y1 - y1);
+          node._y1 = y1;
+        }
         for (const link of node._sourceLinks) {
           link._width = link._value * ky;
         }
