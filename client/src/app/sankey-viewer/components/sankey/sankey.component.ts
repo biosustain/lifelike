@@ -83,7 +83,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   dragging = false;
 
   // shallow copy of input data
-  private _data: SankeyData = {} as SankeyData;
+  public _data: SankeyData = {} as SankeyData;
 
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
