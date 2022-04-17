@@ -506,7 +506,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   getEntityAtMouse(): GraphEntity | undefined {
     const position = this.getLocationAtMouse();
-    console.log(position);
     return this.getEntityAtPosition(position);
   }
 
@@ -1120,7 +1119,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasClicked() {
-    console.log('canvas clicked');
     const behaviorEvent = {
       event: d3.event,
     };
