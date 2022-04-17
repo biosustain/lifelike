@@ -509,8 +509,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.getEntityAtPosition(position);
   }
 
-  getGroupAtPosition(point: Point): NodeGroup | undefined {
-    for (const group of this.groups) {
+  getGroupAtPosition(groups: NodeGroup[], point: Point): NodeGroup | undefined {
+    for (const group of groups) {
       // TODO: Refactor Bounding box into interface/class after deciding what to do
       const bbox = this.placeGroup(group).getBoundingBox();
       if (isPointIntersecting(bbox, point)) {
@@ -527,17 +527,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * @param point - {x, y} of mouse click
    */
   getEntityAtPosition(point: Point): GraphEntity | undefined {
-    const group = this.getGroupAtPosition(point);
-
-    // If group is not selected, select. Otherwise, prefer inside nodes, but return group eventually if none found.
-    // TODO: Smarter check for selection
-    if (group && this.selection.get().filter(entity => entity.entity as NodeGroup === group).length === 0) {
-      return {
-          type: GraphEntityType.Group,
-          entity: group
-        };
-    }
-
     const node = this.getNodeAtPosition(this.nodes, point);
     // If the node is NOT an image, we return it
     if (node && node.label !== 'image') {
@@ -562,6 +551,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         entity: node,
       };
     }
+
+    const group = this.getGroupAtPosition(this.groups, point);
     if (group) {
       return {
           type: GraphEntityType.Group,
