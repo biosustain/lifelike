@@ -1,4 +1,4 @@
-import {cloneDeep} from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import * as d3 from 'd3';
 
 import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
@@ -6,8 +6,8 @@ import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
 
-import {CanvasGraphView} from '../canvas-graph-view';
-import {AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent} from '../../behaviors';
+import { CanvasGraphView } from '../canvas-graph-view';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -72,12 +72,19 @@ export class MovableNode extends AbstractCanvasBehavior {
           }
         }
       }
+      if (this.target.label === 'group') {
+        const group = this.target as NodeGroup;
+        for (const n of group.members) {
+        selectedNodes.add(n);
+        }
+      }
 
       // If the user is moving a node that isn't selected, then we either (a) want to
       // deselect everything, select just the target node, and then move only the target
       // node, or (b) if the user is holding down the multiple selection modifier key
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
-      if (!selectedNodes.has(this.target)) {
+      // (c) it is a group, and we want to move only members
+      if (!selectedNodes.has(this.target) && this.target.label !== 'group') {
         // Case (a)
         if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
@@ -99,9 +106,18 @@ export class MovableNode extends AbstractCanvasBehavior {
         const [originalX, originalY] = this.originalNodePositions.get(node);
         node.data.x = originalX + shiftX;
         node.data.y = originalY + shiftY;
-        this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+        // this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
         this.graphView.invalidateNode(node);
         // TODO: Store this in history as ONE object
+      }
+
+      if (this.target.label === 'group') {
+
+        const originalData = this.originalTarget.data;
+        this.target.data.x = originalData.x + shiftX;
+        this.target.data.y = originalData.y + shiftY;
+        // this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+        this.graphView.invalidateGroup(this.target as NodeGroup);
       }
     }
 
@@ -131,6 +147,24 @@ export class MovableNode extends AbstractCanvasBehavior {
             },
           } as Partial<UniversalGraphNode>));
         }
+
+        if (this.target.label === 'group') {
+          actions.push(new GraphEntityUpdate('Group move', {
+            type: GraphEntityType.Group,
+            entity: this.target,
+          }, {
+            data: {
+              x: this.target.data.x,
+              y: this.target.data.y,
+            },
+          } as Partial<NodeGroup>, {
+            data: {
+              x: this.originalTarget.data.x,
+              y: this.originalTarget.data.y,
+            },
+          } as Partial<NodeGroup>));
+        }
+
 
         this.graphView.execute(new CompoundAction('Node move', actions));
 
