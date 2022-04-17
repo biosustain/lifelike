@@ -190,6 +190,8 @@ export class ActiveNodeResize extends ActiveResize {
 
 }
 
+// TODO: Update the width parameters of all the nodes so they would not be recalculated?
+// TODO: Update Actions that allow rollbacks
 export class ActiveGroupResize extends ActiveResize {
   private originalGroup: NodeGroup;
   private targetGroup: NodeGroup;
@@ -217,15 +219,14 @@ export class ActiveGroupResize extends ActiveResize {
         halfSize,
         (target, originalData, dragStartPosition, graphPosition) => {
           const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
-          const ratio = distance / this.originalGroup.data.width;
-          for (let i = 0; i < this.targetGroup.members.length; i++) {
-            // const direction = this.targetGroup.members[i].data.x > this.originalData.x ? -1 : 1;
-            const change = + this.originalGroup.members[i].data.width * ratio;
-            this.targetGroup.members[i].data.width = Math.abs(this.originalGroup.members[i].data.width + change);
-            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x + (change / 2.0);
-          }
           this.targetGroup.data.width = Math.abs(this.originalGroup.data.width + distance);
           this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.width = Math.abs((this.originalGroup.members[i].data.width ||
+              this.getNodeSize(this.originalGroup.members[i]).width) + distance);
+            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x + distance / 2.0;
+          }
+
         }),
       // Left - one-dim scaling
       this.sideHandleMaker(
@@ -234,12 +235,14 @@ export class ActiveGroupResize extends ActiveResize {
         halfSize,
         (target, originalData, dragStartPosition, graphPosition) => {
           const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
-          for (let i = 0; i < this.targetGroup.members.length; i++) {
-            this.targetGroup.members[i].data.width = Math.abs(this.originalGroup.members[i].data.width + distance);
-            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x - distance / 2.0;
-          }
           this.targetGroup.data.width = Math.abs(this.originalGroup.data.width - distance);
           this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.width = Math.abs((this.originalGroup.members[i].data.width ||
+              this.getNodeSize(this.originalGroup.members[i]).width) - distance);
+            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x + distance / 2.0;
+          }
+
         }),
       // Bottom - one-dim scaling
       this.sideHandleMaker(
@@ -248,14 +251,29 @@ export class ActiveGroupResize extends ActiveResize {
         halfSize,
         (target, originalData, dragStartPosition, graphPosition) => {
           const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
-          for (let i = 0; i < this.targetGroup.members.length; i++) {
-            this.targetGroup.members[i].data.height = Math.abs(this.originalGroup.members[i].data.height + distance);
-            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
-          }
           this.targetGroup.data.height = Math.abs(this.originalGroup.data.height + distance);
           this.targetGroup.data.y = this.originalGroup.data.y + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.height = Math.abs((this.originalGroup.members[i].data.height ||
+              this.getNodeSize(this.originalGroup.members[i]).height) + distance);
+            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
+          }
         }),
-      // Top left
+      // Top - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX + (bbox.maxX - bbox.minX) / 2,
+        bbox.minY,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
+          this.targetGroup.data.height = Math.abs(this.originalGroup.data.height - distance);
+          this.targetGroup.data.y = this.originalGroup.data.y + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.height = Math.abs((this.originalGroup.members[i].data.height ||
+              this.getNodeSize(this.originalGroup.members[i]).height) - distance);
+            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
+          }
+        }),
     ];
     const cornerHandleMaker = (posX, posY) => ({
       execute,
@@ -273,8 +291,6 @@ export class ActiveGroupResize extends ActiveResize {
 
       target.data.width = 2 * normY * ratio;
       target.data.height = 2 * normY;
-      // const xDiff = originalData.width - target.data.width;
-      // const yDiff = originalData.height - target.data.height;
       const finalRatio = target.data.height / originalData.height;
       for (let i = 0; i < this.originalGroup.members.length; i++) {
         const xOriginDistance = Math.abs(originalData.x - this.originalGroup.members[i].data.x);
@@ -285,11 +301,8 @@ export class ActiveGroupResize extends ActiveResize {
         const yDirection = this.originalGroup.members[i].data.y > this.originalGroup.data.y ? 1 : -1;
         const baseWidth = this.originalGroup.members[i].data.width || this.getNodeSize(this.originalGroup.members[i]).width;
         const baseHeight = this.originalGroup.members[i].data.height || this.getNodeSize(this.originalGroup.members[i]).height;
-        this.targetGroup.members[i].data.width = baseWidth * finalRatio;
-        this.targetGroup.members[i].data.height = baseHeight * finalRatio;
-        const xDiff = baseWidth * finalRatio - baseWidth;
-        const yDiff = baseHeight * finalRatio - baseHeight;
-        // TODO: Maybe include self growth
+        this.targetGroup.members[i].data.width = Math.abs(baseWidth * finalRatio);
+        this.targetGroup.members[i].data.height = Math.abs(baseHeight * finalRatio);
         this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x +
           (xOriginDistance * finalRatio - xOriginDistance ) * xDirection;
         this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y +
