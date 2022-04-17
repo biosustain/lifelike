@@ -66,7 +66,7 @@ export class MovableNode extends AbstractCanvasBehavior {
         } else if (entity.type === GraphEntityType.Group) {
           // const node = entity.entity as UniversalGraphNode;
           const group = entity.entity as NodeGroup;
-          selectedNodes.add(entity.entity as UniversalGraphNode);
+          // selectedNodes.add(entity.entity as UniversalGraphNode);
           for (const n of group.members) {
             selectedNodes.add(n);
           }
