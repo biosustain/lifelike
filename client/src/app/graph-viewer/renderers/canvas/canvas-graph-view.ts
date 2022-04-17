@@ -506,6 +506,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   getEntityAtMouse(): GraphEntity | undefined {
     const position = this.getLocationAtMouse();
+    console.log(position);
     return this.getEntityAtPosition(position);
   }
 
@@ -529,9 +530,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   getEntityAtPosition(point: Point): GraphEntity | undefined {
     const group = this.getGroupAtPosition(point);
 
-
-    if (group) {
-    // if (group && !this.selection.get().includes(group)) {
+    // If group is not selected, select. Otherwise, prefer inside nodes, but return group eventually if none found.
+    // TODO: Smarter check for selection
+    if (group && this.selection.get().filter(entity => entity.entity as NodeGroup === group).length === 0) {
       return {
           type: GraphEntityType.Group,
           entity: group
@@ -561,6 +562,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         type: GraphEntityType.Node,
         entity: node,
       };
+    }
+    if (group) {
+      return {
+          type: GraphEntityType.Group,
+          entity: group
+        };
     }
     return undefined;
   }
@@ -1113,6 +1120,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasClicked() {
+    console.log('canvas clicked');
     const behaviorEvent = {
       event: d3.event,
     };
