@@ -4,10 +4,11 @@ import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphNode } from 'app
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
-import { BLACK_COLOR, HANDLE_BLUE_COLOR } from 'app/shared/constants';
+import { BLACK_COLOR, GROUP_LABEL, HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { CompoundAction, GraphAction } from '../../../actions/actions';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 
@@ -195,7 +196,7 @@ export class ActiveNodeResize extends ActiveResize {
 // TODO: Update Actions that allow rollbacks
 export class ActiveGroupResize extends ActiveResize {
   private originalGroup: NodeGroup;
-  private targetGroup: NodeGroup;
+  private readonly targetGroup: NodeGroup;
 
   constructor(graphView: CanvasGraphView,
               target: UniversalGraphNode | NodeGroup) {
@@ -326,17 +327,47 @@ export class ActiveGroupResize extends ActiveResize {
     this.graphView.requestRender();
   }
 
-
+  /**
+   * Once active drag is ended, update group and members in bulk.
+   * We spread entire data entry here as x and y parameters are affected as well
+   * @param event - event information. Not used.
+   * @protected
+   */
   protected activeDragEnd(event: MouseEvent) {
-    this.graphView.execute(new GraphEntityUpdate('Resize Group', {
+    const actions: GraphAction[] = [];
+
+    for (let i = 0; i < this.originalGroup.members.length; i++) {
+      const node = this.targetGroup.members[i];
+      actions.push(new GraphEntityUpdate('Node resize from group resize', {
+        type: GraphEntityType.Node,
+        entity: node,
+      }, {
+        data: {
+          ...node.data
+        },
+      } as Partial<UniversalGraphNode>, {
+        data: {
+          // TODO: This is not really that precise - the groups are larger. Fix that.
+          ...this.getNodeSize(this.originalGroup.members[i]),
+          ...this.originalGroup.members[i].data,
+        },
+      } as Partial<UniversalGraphNode>));
+    }
+
+    actions.push(new GraphEntityUpdate('Group resize', {
       type: GraphEntityType.Group,
-      entity: this.target,
+      entity: this.targetGroup,
     }, {
-      members: this.targetGroup.members,
-    } as Partial<UniversalGraphNode>, {
-      members: this.originalGroup.members,
-    } as Partial<UniversalGraphNode>));
-    this.originalTarget = cloneDeep(this.target);
+      data: {
+        ...this.targetGroup.data
+      },
+    } as Partial<NodeGroup>, {
+      data: {
+        ...this.originalGroup.data
+      },
+    } as Partial<NodeGroup>));
+
+    this.graphView.execute(new CompoundAction('Group resize', actions));
   }
 
 }
