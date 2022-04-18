@@ -15,11 +15,12 @@ import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedG
 import { nullCoalesce } from 'app/shared/utils/types';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
+import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { BoundingBox, isPointIntersecting, Point } from '../../utils/behaviors/abstract-object-handle-behavior';
+import { isPointIntersecting, Point } from '../../utils/behaviors/abstract-object-handle-behavior';
 
 
 export interface CanvasGraphViewOptions {
@@ -487,7 +488,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * @param d node or group casted to node.
    */
   invalidateNodelike(d: UniversalGraphNode): void {
-    if (d.label === 'group') {
+    if (d.label === GROUP_LABEL) {
       this.invalidateGroup(d as NodeGroup);
     } else {
       this.invalidateNode(d);
@@ -541,7 +542,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   getEntityAtPosition(point: Point): GraphEntity | undefined {
     const node = this.getNodeAtPosition(this.nodes, point);
     // If the node is NOT an image, we return it
-    if (node && node.label !== 'image') {
+    if (node && node.label !== IMAGE_LABEL) {
       return {
         type: GraphEntityType.Node,
         entity: node,

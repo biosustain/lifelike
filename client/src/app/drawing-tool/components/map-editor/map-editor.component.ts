@@ -14,7 +14,7 @@ import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { LockError } from 'app/file-browser/services/filesystem.service';
 import { ObjectLock } from 'app/file-browser/models/object-lock';
-import { MimeTypes } from 'app/shared/constants';
+import { GROUP_LABEL, MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
@@ -407,7 +407,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         margin: 10,
         hash: uuidv4(),
         display_name: '',
-        label: 'group',
+        label: GROUP_LABEL,
         sub_labels: [],
         // This data depends on members, so we can't calculate it now
         data: {

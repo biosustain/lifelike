@@ -5,6 +5,7 @@ import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
+import { GROUP_LABEL } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
@@ -65,7 +66,7 @@ export class MovableNode extends AbstractCanvasBehavior {
           selectedNodes.add(node);
         }
       }
-      if (this.target.label === 'group') {
+      if (this.target.label === GROUP_LABEL) {
         const group = this.target as NodeGroup;
         for (const n of group.members) {
         selectedNodes.add(n);
@@ -77,7 +78,7 @@ export class MovableNode extends AbstractCanvasBehavior {
       // node, or (b) if the user is holding down the multiple selection modifier key
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
       // (c) it is a group, and we want to move only members
-      if (!selectedNodes.has(this.target) && this.target.label !== 'group') {
+      if (!selectedNodes.has(this.target) && this.target.label !== GROUP_LABEL) {
         // Case (a)
         if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
@@ -104,7 +105,7 @@ export class MovableNode extends AbstractCanvasBehavior {
         // TODO: Store this in history as ONE object
       }
 
-      if (this.target.label === 'group') {
+      if (this.target.label === GROUP_LABEL) {
 
         const originalData = this.originalTarget.data;
         this.target.data.x = originalData.x + shiftX;
@@ -140,7 +141,7 @@ export class MovableNode extends AbstractCanvasBehavior {
           } as Partial<UniversalGraphNode>));
         }
 
-        if (this.target.label === 'group') {
+        if (this.target.label === GROUP_LABEL) {
           actions.push(new GraphEntityUpdate('Group move', {
             type: GraphEntityType.Group,
             entity: this.target,

@@ -8,6 +8,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
 import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { IMAGE_LABEL } from 'app/shared/constants';
 
 import { EntityForm } from './entity-form';
 
@@ -58,7 +59,7 @@ export class NodeFormComponent extends EntityForm {
   @Input()
   set node(node) {
     this.previousLabel = node.label;
-    this.fixedType = node.label === 'image';
+    this.fixedType = node.label === IMAGE_LABEL;
 
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
