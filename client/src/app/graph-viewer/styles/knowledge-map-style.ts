@@ -24,7 +24,7 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import { blackColor, FA_CUSTOM_ICONS, Unicodes, whiteColor } from 'app/shared/constants';
+import { BLACK_COLOR, FA_CUSTOM_ICONS, Unicodes, WHITE_COLOR } from 'app/shared/constants';
 import { getSupportedFileCodes } from 'app/shared/utils';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
@@ -79,8 +79,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
     // Relation nodes have their font color stored elsewhere, so we need to check that first
-    const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || blackColor));
-    const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || whiteColor);
+    const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || BLACK_COLOR));
+    const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || WHITE_COLOR);
     const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || borderBlue);
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
@@ -95,7 +95,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         maxHeight: !d.data.height ? this.maxHeightIfUnsized : null,
         text: d.data.detail != null ? d.data.detail : '',
         font: labelFont,
-        fillStyle: styleData.fillColor ?? blackColor,
+        fillStyle: styleData.fillColor ?? BLACK_COLOR,
         horizontalAlign: TextAlignment.Start,
         verticalAlign: TextAlignment.Start,
         topInset: 5,
@@ -195,7 +195,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
           stroke: this.createLine(
             styleData.lineType ?? this.noBorder,
             styleData.lineWidthScale ?? 1,
-            styleData.strokeColor ?? whiteColor,
+            styleData.strokeColor ?? WHITE_COLOR,
           ),
           textbox: labelTextbox
         });
@@ -275,7 +275,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       text: d.label,
       font: (placementOptions.highlighted ? 'bold ' : '') + (defaultLabelFontSize * fontSizeScale) + 'px ' + this.font,
       fillStyle: '#444',
-      strokeStyle: whiteColor,
+      strokeStyle: WHITE_COLOR,
       strokeWidth: 3,
     }) : null;
 
@@ -312,7 +312,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     const labelTextbox = new TextElement(ctx, {
       text: d.display_name,
       font: labelFont,
-      fillStyle: d.style?.fillColor ?? blackColor,
+      fillStyle: d.style?.fillColor ?? BLACK_COLOR,
       horizontalAlign: TextAlignment.Center,
     });
 
@@ -324,11 +324,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       stroke: this.createLine(
         styleData.lineType ?? this.noBorder,
         styleData.lineWidthScale ?? 0,
-        nullCoalesce(styleData.strokeColor, whiteColor),
+        nullCoalesce(styleData.strokeColor, WHITE_COLOR),
       ),
       textbox: labelTextbox,
       // TODO: This might get change, maybe some default background for groups?
-      shapeFillColor: styleData.bgColor ?? whiteColor,
+      shapeFillColor: styleData.bgColor ?? WHITE_COLOR,
     });
   }
 

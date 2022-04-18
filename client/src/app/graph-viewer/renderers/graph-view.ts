@@ -17,7 +17,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
-import { associatedMapsRegex } from 'app/shared/constants';
+import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedGroup, PlacedNode, PlacedObject } from '../styles/styles';
@@ -236,10 +236,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // Filter in links that point to desired files
     return links.filter((source) => {
-      return associatedMapsRegex.test(source.url);
+      return ASSOCIATED_MAPS_REGEX.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
-      return associatedMapsRegex.exec(source.url)[1];
+      return ASSOCIATED_MAPS_REGEX.exec(source.url)[1];
     });
   }
 

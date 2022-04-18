@@ -5,7 +5,7 @@ import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { handleBlue } from 'app/shared/constants';
+import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
@@ -71,7 +71,7 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
     ctx.arc(xHandle, yHandle, nodeRadiusHandle, 0, 2 * Math.PI);
     ctx.strokeStyle = '#2B7CE9';
     ctx.stroke();
-    ctx.fillStyle = handleBlue;
+    ctx.fillStyle = HANDLE_BLUE_COLOR;
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
@@ -187,7 +187,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
       ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
       ctx.strokeStyle = '#2B7CE9';
       ctx.stroke();
-      ctx.fillStyle = handleBlue;
+      ctx.fillStyle = HANDLE_BLUE_COLOR;
       ctx.fill();
     }
   }
