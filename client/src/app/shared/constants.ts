@@ -142,12 +142,15 @@ export enum CustomIconColors {
 export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint, Unicodes.Cytoscape];
 
 // Regex used to check if a map link is pointing to a file that can be looking for associated maps
-export const associatedMapsRegex = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
+export const ASSOCIATED_MAPS_REGEX = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
 
-export const handleBlue = '#97C2FC';
+export const HANDLE_BLUE_COLOR = '#97C2FC';
 
-export const whiteColor = '#fff';
-export const blackColor = '#000';
+export const WHITE_COLOR = '#fff';
+export const BLACK_COLOR = '#000';
+
+export const IMAGE_LABEL = 'image';
+export const GROUP_LABEL = 'group';
 
 export const COUNTRY_NAME_LIST = [
   'Afghanistan',

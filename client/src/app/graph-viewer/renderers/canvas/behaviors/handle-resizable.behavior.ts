@@ -4,7 +4,7 @@ import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphNode } from 'app
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
-import { blackColor, handleBlue } from 'app/shared/constants';
+import { BLACK_COLOR, HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -55,7 +55,7 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
       minY: posY - halfSize,
       maxX: posX + halfSize,
       maxY: posY + halfSize,
-      displayColor: blackColor
+      displayColor: BLACK_COLOR
     })
 
   constructor(graphView: CanvasGraphView,
@@ -137,7 +137,7 @@ export class ActiveNodeResize extends ActiveResize {
         minY: posY - halfSize,
         maxX: posX + halfSize,
         maxY: posY + halfSize,
-        displayColor: handleBlue
+        displayColor: HANDLE_BLUE_COLOR
       });
 
       const execute = (target, originalData: OriginalData, dragStartPosition, graphPosition) => {
@@ -281,7 +281,7 @@ export class ActiveGroupResize extends ActiveResize {
       minY: posY - halfSize,
       maxX: posX + halfSize,
       maxY: posY + halfSize,
-      displayColor: handleBlue
+      displayColor: HANDLE_BLUE_COLOR
     });
 
     const execute = (target, originalData: OriginalData, dragStartPosition, graphPosition) => {
