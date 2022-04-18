@@ -65,6 +65,7 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
   }
 
   // TODO: Why this is here? Its not related to the handle, at least the usage
+  // TODO: Change the name as this makes sure that you click handles, not node
   isPointIntersectingNode(placedObject: PlacedObject, point: Point): boolean {
     // Consider ourselves still intersecting if we have a handle
     return (!!this.handle || !!this.getHandleIntersected(placedObject, point)) ? true : undefined;
@@ -209,7 +210,6 @@ export class ActiveGroupResize extends ActiveResize {
     const size = handleSize * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
-    const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
 
     const handles = [
       // Right - one-dim scaling
