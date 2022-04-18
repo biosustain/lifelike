@@ -25,7 +25,7 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
-import { BoundingBox, Point } from '../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, isPointIntersecting, Point } from '../utils/behaviors/abstract-object-handle-behavior';
 
 /**
  * A rendered view of a graph.
@@ -813,6 +813,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
 
     return undefined;
+  }
+
+  // TODO: docs
+  getGroupAtPosition(groups: NodeGroup[], point: Point): NodeGroup | undefined {
+    for (const group of groups) {
+      const placedGroup = this.placeGroup(group);
+      const bbox = placedGroup.getBoundingBox();
+      const hookResult = this.behaviors.call('isPointIntersectingNode', placedGroup, point);
+      if ((hookResult !== undefined && hookResult) || isPointIntersecting(bbox, point)) {
+        return group;
+      }
+    }
+    return null;
   }
 
   /**

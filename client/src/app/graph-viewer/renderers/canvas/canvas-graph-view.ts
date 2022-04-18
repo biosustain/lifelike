@@ -522,17 +522,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.getEntityAtPosition(position);
   }
 
-  getGroupAtPosition(groups: NodeGroup[], point: Point): NodeGroup | undefined {
-    for (const group of groups) {
-      // TODO: Refactor Bounding box into interface/class after deciding what to do
-      const bbox = this.placeGroup(group).getBoundingBox();
-      if (isPointIntersecting(bbox, point)) {
-        return group;
-      }
-    }
-    return null;
-  }
-
   /**
    * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
    * we need to evaluate the click according to the display order:
