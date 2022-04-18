@@ -865,6 +865,22 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Find all the groups fully enclosed by the bounding box.
+   * @param groups - list of groups to check
+   * @param bbox bounding box to check
+   */
+  getGroupsWithinBBox(groups: NodeGroup[], bbox: BoundingBox): NodeGroup[] {
+    const results = [];
+    for (let i = groups.length - 1; i >= 0; --i) {
+      const group = groups[i];
+      if (this.placeGroup(group).isBBoxEnclosing(bbox)) {
+        results.push(group);
+      }
+    }
+    return results;
+  }
+
+  /**
    * Find all the entities fully enclosed by the bounding box.
    * @param bbox bounding box
    */
@@ -876,6 +892,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       })),
       ...this.getEdgesWithinBBox(this.edges, bbox).map(entity => ({
         type: GraphEntityType.Edge,
+        entity,
+      })),
+      ...this.getGroupsWithinBBox(this.groups, bbox).map(entity => ({
+        type: GraphEntityType.Group,
         entity,
       })),
     ];
