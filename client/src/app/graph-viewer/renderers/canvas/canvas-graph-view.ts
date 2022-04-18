@@ -483,6 +483,18 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   /**
+   * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
+   * @param d node or group casted to node.
+   */
+  invalidateNodelike(d: UniversalGraphNode): void {
+    if (d.label === 'group') {
+      this.invalidateGroup(d as NodeGroup);
+    } else {
+      this.invalidateNode(d);
+    }
+  }
+
+  /**
    * Invalidate any cache entries for the given entity. Helper method
    * that calls the correct invalidation method.
    * @param entity the entity
