@@ -169,6 +169,7 @@
                     <app-sankey-many-to-many #sankey
                                              *ngIf="renderData"
                                              [data]="renderData"
+                                             [networkTraceIdx]="selectedNetworkTraceIdx"
                                              (linkClicked)="selectLink($event)"
                                              (nodeClicked)="selectNode($event)"
                                              (backgroundClicked)="closeDetailsPanel();resetSelection()"
