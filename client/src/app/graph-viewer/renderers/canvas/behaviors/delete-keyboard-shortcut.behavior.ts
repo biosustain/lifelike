@@ -1,14 +1,11 @@
-import {
-  GraphEntityType,
-  UniversalGraphEdge,
-  UniversalGraphNode,
-} from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, NodeGroup, UniversalGraphEdge, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { EdgeDeletion } from 'app/graph-viewer/actions/edges';
 import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
+import { GroupDeletion } from '../../../actions/groups';
 
 
 /**
@@ -20,7 +17,6 @@ export class DeleteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   }
 
   keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
-  // keyDown(event: KeyboardEvent): BehaviorResult {
     if (event.event.key === 'Delete') {
       const actions0: GraphAction[] = [];
       const actions1: GraphAction[] = [];
@@ -29,6 +25,8 @@ export class DeleteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
           actions1.push(new NodeDeletion('Delete node', entity.entity as UniversalGraphNode));
         } else if (entity.type === GraphEntityType.Edge) {
           actions0.push(new EdgeDeletion('Delete edge', entity.entity as UniversalGraphEdge));
+        } else if (entity.type === GraphEntityType.Group) {
+          actions0.push(new GroupDeletion('Delete group', entity.entity as NodeGroup));
         }
       }
       this.graphView.execute(...actions0);
