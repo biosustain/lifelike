@@ -63,13 +63,6 @@ export class MovableNode extends AbstractCanvasBehavior {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
-        } else if (entity.type === GraphEntityType.Group) {
-          // const node = entity.entity as UniversalGraphNode;
-          const group = entity.entity as NodeGroup;
-          // selectedNodes.add(entity.entity as UniversalGraphNode);
-          for (const n of group.members) {
-            selectedNodes.add(n);
-          }
         }
       }
       if (this.target.label === 'group') {
@@ -116,7 +109,6 @@ export class MovableNode extends AbstractCanvasBehavior {
         const originalData = this.originalTarget.data;
         this.target.data.x = originalData.x + shiftX;
         this.target.data.y = originalData.y + shiftY;
-        // this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
         this.graphView.invalidateGroup(this.target as NodeGroup);
       }
     }
