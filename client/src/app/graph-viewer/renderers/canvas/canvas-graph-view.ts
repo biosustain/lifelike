@@ -510,6 +510,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
+  /**
+   * Allows checking if node has a group without exposing groupHashMap for modification
+   * @param node - node to check
+   */
+  getNodeGroup(node: UniversalGraphNode): NodeGroup | undefined {
+    return this.groupHashMap.get(node.hash);
+  }
+
   getLocationAtMouse(): Point {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
