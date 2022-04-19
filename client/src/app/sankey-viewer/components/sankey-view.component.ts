@@ -167,6 +167,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return this.sankeyController.selectedNetworkTrace;
   }
 
+  get selectedNetworkTraceIdx() {
+    return this.sankeyController.selectedNetworkTraceIdx;
+  }
+
   get predefinedValueAccessor() {
     return this.sankeyController.predefinedValueAccessor;
   }
