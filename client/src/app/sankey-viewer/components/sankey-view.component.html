@@ -172,6 +172,7 @@
                     <app-sankey #sankey
                                 *ngIf="renderData"
                                 [data]="renderData"
+                                [networkTraceIdx]="selectedNetworkTraceIdx"
                                 (linkClicked)="selectLink($event)"
                                 (nodeClicked)="selectNode($event)"
                                 (backgroundClicked)="closeDetailsPanel();resetSelection()"

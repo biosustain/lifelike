@@ -103,6 +103,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() focusedNode;
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
+  @Input() networkTraceIdx: number;
 
   @Input() set data(data) {
     this._data = {...data} as SankeyData;
@@ -131,7 +132,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign}: SimpleChanges) {
+  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign, networkTraceIdx}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -142,88 +143,94 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
     }
 
+    let kludge = false;
     if (data && this.svg) {
-      this._data.links.sort((a: any, b: any) => a._index - b._index);
-      data.previousValue.links.sort((a, b) => a._index - b._index);
+      // If there was no change in the network trace, do the kludgy copying. Otherwise we proceed normally. In other words, whenever the
+      // network trace is changed, we do a hard reset.
+      if (isNil(networkTraceIdx)) {
+        kludge = true;
 
-      let m = 0;
-      for (const link of data.previousValue.links) {
-        this._data.links[m]._y0 = link._y0;
-        this._data.links[m]._y1 = link._y1;
-        this._data.links[m]._width = link._width;
-        this._data.links[m]._value = link._value;
-        this._data.links[m]._circular = link._circular;
-        this._data.links[m]._index = link._index;
-        this._data.links[m]._order = link._order;
-        if (isNil(this._data.links[m]._order)) {
-          this._data.links[m]._order = 0;
-        }
-        m++;
-      }
+        this._data.links.sort((a: any, b: any) => a._index - b._index);
+        data.previousValue.links.sort((a, b) => a._index - b._index);
 
-      this._data.nodes.sort((a: any, b: any) => a._index - b._index);
-      data.previousValue.nodes.sort((a, b) => a._index - b._index);
-      // using this.data instead of current value so we use copy made by setter
-      // this.updateLayout(this.data).then((d: any) => {
-      for (let i = 0; i < data.previousValue.nodes.length; i++) {
-        const prevNode = data.previousValue.nodes[i];
-        const dataNode = this._data.nodes[i];
-
-        dataNode._value = prevNode._value;
-        dataNode._x0 = prevNode._x0;
-        dataNode._x1 = prevNode._x1;
-        dataNode._y0 = prevNode._y0;
-        dataNode._y1 = prevNode._y1;
-        if (isNil(prevNode._order)) {
-          dataNode._order = 0;
-        } else {
-          dataNode._order = prevNode._order;
+        let m = 0;
+        for (const link of data.previousValue.links) {
+          this._data.links[m]._y0 = link._y0;
+          this._data.links[m]._y1 = link._y1;
+          this._data.links[m]._width = link._width;
+          this._data.links[m]._value = link._value;
+          this._data.links[m]._circular = link._circular;
+          this._data.links[m]._index = link._index;
+          this._data.links[m]._order = link._order;
+          if (isNil(this._data.links[m]._order)) {
+            this._data.links[m]._order = 0;
+          }
+          m++;
         }
 
-        if (isNil(dataNode._sourceLinks)) {
-          dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this._data.links[link._index]);
-        } else {
-          for (let j = 0; j < prevNode._sourceLinks.length; j++) {
-            dataNode._sourceLinks[j] = this._data.links[dataNode._sourceLinks[j]._index];
+        this._data.nodes.sort((a: any, b: any) => a._index - b._index);
+        data.previousValue.nodes.sort((a, b) => a._index - b._index);
+        // using this.data instead of current value so we use copy made by setter
+        // this.updateLayout(this.data).then((d: any) => {
+        for (let i = 0; i < data.previousValue.nodes.length; i++) {
+          const prevNode = data.previousValue.nodes[i];
+          const dataNode = this._data.nodes[i];
+
+          dataNode._value = prevNode._value;
+          dataNode._x0 = prevNode._x0;
+          dataNode._x1 = prevNode._x1;
+          dataNode._y0 = prevNode._y0;
+          dataNode._y1 = prevNode._y1;
+          if (isNil(prevNode._order)) {
+            dataNode._order = 0;
+          } else {
+            dataNode._order = prevNode._order;
+          }
+
+          if (isNil(dataNode._sourceLinks)) {
+            dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this._data.links[link._index]);
+          } else {
+            for (let j = 0; j < prevNode._sourceLinks.length; j++) {
+              dataNode._sourceLinks[j] = this._data.links[dataNode._sourceLinks[j]._index];
+            }
+          }
+
+          if (isNil(dataNode._targetLinks)) {
+            dataNode._targetLinks = prevNode._targetLinks.map((link) => this._data.links[link._index]);
+          } else {
+            for (let k = 0; k < prevNode._targetLinks.length; k++) {
+              dataNode._targetLinks[k] = this._data.links[dataNode._targetLinks[k]._index];
+            }
           }
         }
 
-        if (isNil(dataNode._targetLinks)) {
-          dataNode._targetLinks = prevNode._targetLinks.map((link) => this._data.links[link._index]);
-        } else {
-          for (let k = 0; k < prevNode._targetLinks.length; k++) {
-            dataNode._targetLinks[k] = this._data.links[dataNode._targetLinks[k]._index];
+        /* tslint:disable:prefer-for-of */
+        for (let n = 0; n < this.data.nodes.length; n++) {
+          for (let i = 0; i < this.data.nodes[n]._sourceLinks.length; i++) {
+            this.data.nodes[n]._sourceLinks[i]._source = this.data.nodes[n];
+          }
+
+          for (let j = 0; j < this.data.nodes[n]._targetLinks.length; j++) {
+            this.data.nodes[n]._targetLinks[j]._target = this.data.nodes[n];
+          }
+        }
+
+
+        /* tslint:disable:prefer-for-of */
+        for (let n = 0; n < this.data.nodes.length; n++) {
+          if (!isNil(this.data.nodes[n]._sourceLinks)) {
+            try {
+              this.data.nodes[n]._sourceLinks.sort(nodeSorter);
+            } catch {
+              console.log(this.data.nodes[n]);
+            }
+          }
+          if (!isNil(this.data.nodes[n]._targetLinks)) {
+            this.data.nodes[n]._targetLinks.sort(nodeSorter);
           }
         }
       }
-
-      /* tslint:disable:prefer-for-of */
-      for (let n = 0; n < this.data.nodes.length; n++) {
-        for (let i = 0; i < this.data.nodes[n]._sourceLinks.length; i++) {
-          this.data.nodes[n]._sourceLinks[i]._source = this.data.nodes[n];
-        }
-
-        for (let j = 0; j < this.data.nodes[n]._targetLinks.length; j++) {
-          this.data.nodes[n]._targetLinks[j]._target = this.data.nodes[n];
-        }
-      }
-
-
-      /* tslint:disable:prefer-for-of */
-      for (let n = 0; n < this.data.nodes.length; n++) {
-        if (!isNil(this.data.nodes[n]._sourceLinks)) {
-          try {
-            this.data.nodes[n]._sourceLinks.sort(nodeSorter);
-          } catch {
-            console.log(this.data.nodes[n]);
-          }
-        }
-        if (!isNil(this.data.nodes[n]._targetLinks)) {
-          this.data.nodes[n]._targetLinks.sort(nodeSorter);
-        }
-      }
-
-      this.updateLayout(this.data, true).then(d => this.updateDOM(d));
+      this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
