@@ -104,6 +104,9 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() selectedLinks = new Set<object>();
   @Input() nodeAlign: 'left' | 'right' | 'justify' | ((a: SankeyNode, b?: number) => number);
   @Input() networkTraceIdx: number;
+  @Input() activeViewName: string;
+
+  viewChanged = false;
 
   @Input() set data(data) {
     this._data = {...data} as SankeyData;
@@ -132,7 +135,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   // endregion
 
   // region Life cycle
-  ngOnChanges({selectedNodes, selectedLinks, searchedEntities, focusedNode, data, nodeAlign, networkTraceIdx}: SimpleChanges) {
+  ngOnChanges({
+      selectedNodes,
+      selectedLinks,
+      searchedEntities,
+      focusedNode,
+      data,
+      nodeAlign,
+      networkTraceIdx,
+      activeViewName}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -143,11 +154,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
     }
 
+    if (!isNil(activeViewName)) {
+      this.viewChanged = true;
+    }
+
     let kludge = false;
     if (data && this.svg) {
-      // If there was no change in the network trace, do the kludgy copying. Otherwise we proceed normally. In other words, whenever the
-      // network trace is changed, we do a hard reset.
-      if (isNil(networkTraceIdx)) {
+      // If there was no change in the network trace or the view, do the kludgy copying. Otherwise we proceed normally. In other words,
+      // whenever the network trace or view is changed, we do a hard reset.
+      if (isNil(networkTraceIdx) && !this.viewChanged) {
         kludge = true;
 
         this._data.links.sort((a: any, b: any) => a._index - b._index);
@@ -170,8 +185,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
         this._data.nodes.sort((a: any, b: any) => a._index - b._index);
         data.previousValue.nodes.sort((a, b) => a._index - b._index);
-        // using this.data instead of current value so we use copy made by setter
-        // this.updateLayout(this.data).then((d: any) => {
+
         for (let i = 0; i < data.previousValue.nodes.length; i++) {
           const prevNode = data.previousValue.nodes[i];
           const dataNode = this._data.nodes[i];
@@ -219,17 +233,14 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         /* tslint:disable:prefer-for-of */
         for (let n = 0; n < this.data.nodes.length; n++) {
           if (!isNil(this.data.nodes[n]._sourceLinks)) {
-            try {
-              this.data.nodes[n]._sourceLinks.sort(nodeSorter);
-            } catch {
-              console.log(this.data.nodes[n]);
-            }
+            this.data.nodes[n]._sourceLinks.sort(nodeSorter);
           }
           if (!isNil(this.data.nodes[n]._targetLinks)) {
             this.data.nodes[n]._targetLinks.sort(nodeSorter);
           }
         }
       }
+      this.viewChanged = false;
       this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
     }
 
