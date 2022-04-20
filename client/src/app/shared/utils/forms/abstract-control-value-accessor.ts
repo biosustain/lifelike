@@ -8,7 +8,7 @@ export abstract class AbstractControlValueAccessor<T> implements ControlValueAcc
   _value: T;
 
   get value() {
-    return this._value || this.getDefaultValue();
+    return this._value ?? this.getDefaultValue();
   }
 
   set value(value) {
