@@ -106,7 +106,8 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() networkTraceIdx: number;
   @Input() activeViewName: string;
 
-  viewChanged = false;
+  // When the component initially loads, the view name has changed, so set this to true
+  viewChanged = true;
 
   @Input() set data(data) {
     this._data = {...data} as SankeyData;
@@ -154,7 +155,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       }
     }
 
-    if (!isNil(activeViewName)) {
+    if (!isNil(activeViewName) && !activeViewName.firstChange) {
       this.viewChanged = true;
     }
 
