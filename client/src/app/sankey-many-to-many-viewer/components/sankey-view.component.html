@@ -170,6 +170,7 @@
                                              *ngIf="renderData"
                                              [data]="renderData"
                                              [networkTraceIdx]="selectedNetworkTraceIdx"
+                                             [activeViewName]="activeViewName"
                                              (linkClicked)="selectLink($event)"
                                              (nodeClicked)="selectNode($event)"
                                              (backgroundClicked)="closeDetailsPanel();resetSelection()"
