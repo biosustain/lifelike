@@ -48,6 +48,20 @@ import {
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchParameters,
   RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
+  @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+
+  private readonly DEFAULT_LIMIT = 20;
+  readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
+
+  results = new CollectionModel<RankedItem<FilesystemObject>>([], { multipleSelection: false });
+  fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  highlightTerms: string[] = [];
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
+  searchTypes: SearchType[];
+  searchTypesMap: Map<string, SearchType>;
+
+  queryString = '';
 
   get emptyParams(): boolean {
     if (isNil(this.params)) {
@@ -74,26 +88,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
     });
   }
-  @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  private readonly defaultLimit = 20;
-  readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
-
-  results = new CollectionModel<RankedItem<FilesystemObject>>([], {
-    multipleSelection: false,
-  });
-  fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
-  highlightTerms: string[] = [];
-  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
-  searchTypes: SearchType[];
-  searchTypesMap: Map<string, SearchType>;
-
-  queryString = '';
-
-  getBreadCrumbsTitle(object: FilesystemObject): string {
-    return getPath(object).map(item => item.effectiveName).join(' > ');
-  }
 
   ngOnInit() {
     super.ngOnInit();
@@ -103,6 +97,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     ).subscribe(params => {
       this.queryString = this.getQueryStringFromParams(params);
     }));
+  }
+
+  getBreadCrumbsTitle(object: FilesystemObject): string {
+    return getPath(object).map(item => item.effectiveName).join(' > ');
   }
 
   valueChanged(value: ContentSearchOptions) {
@@ -137,7 +135,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   getDefaultParams() {
     return {
-      limit: this.defaultLimit,
+      limit: this.DEFAULT_LIMIT,
       page: 1,
       sort: '+name',
       q: '',
@@ -159,7 +157,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   deserializeParams(params: ContentSearchQueryParameters): Observable<ContentSearchParameters> {
     return of(createContentSearchParamsFromQuery(params, {
-      defaultLimit: this.defaultLimit,
+      defaultLimit: this.DEFAULT_LIMIT,
       searchTypesMap: this.searchTypesMap,
     }));
   }
@@ -272,7 +270,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * complicated parser, the current implementation simply opts to not extract the options from the query string, in favor of the user
    * re-selecting them by hand.
    */
-   extractAdvancedParamsFromString(q: string) {
+  extractAdvancedParamsFromString(q: string) {
     const advancedParams: ContentSearchOptions = {};
 
     // Remove 'types' from q and add to the types option of the advancedParams
@@ -309,7 +307,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       size: 'md',
     });
     // Get the starting options from the content search form query
-    modalRef.componentInstance.params = { q: this.queryString } as ContentSearchOptions;
+    modalRef.componentInstance.params = { q: this.queryString, folders: this.params.folders } as ContentSearchOptions;
     modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
       // Advanced search was triggered
@@ -325,7 +323,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   /**
    * Opens the synonym search dialog. Users can search for synonyms of a term and add them to the current query.
    */
-   openSynonymSearch() {
+  openSynonymSearch() {
     const modalRef = this.modalService.open(SynonymSearchComponent, {
       size: 'lg',
     });
@@ -342,7 +340,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   /**
    * Opens the rejected options dialog. This will show the user any erroneous search inputs, if any.
    */
-   openRejectedOptions(rejectedFolders: string[]) {
+  openRejectedOptions(rejectedFolders: string[]) {
     const modalRef = this.modalService.open(RejectedOptionsDialogComponent, {
       size: 'md',
     });
