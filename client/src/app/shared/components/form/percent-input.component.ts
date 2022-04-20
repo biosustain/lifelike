@@ -19,6 +19,16 @@ export class PercentInputComponent extends AbstractControlValueAccessor<number> 
   @Input() max: number;
   @Input() step: number;
 
+  _value: number;
+
+  get value() {
+    return this._value || this.getDefaultValue();
+  }
+
+  set value(value) {
+    this._value = value;
+  }
+
 
   getDefaultValue(): number {
     return 1;

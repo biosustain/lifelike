@@ -1,10 +1,9 @@
 <input type="number"
-       [ngModel]="value * 100 || getDefaultValue() * 100"
+       [ngModel]="value * 100"
        (ngModelChange)="change($event / 100)"
        class="form-control mr-1"
        [id]="id"
        [min]="min"
        [max]="max"
        [step]="step"
-       [defaultValue]="getDefaultValue() * 100"
 />
