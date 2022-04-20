@@ -51,8 +51,7 @@
               </label>
               <app-percent-input min="20" max="1000" step="20" class="mr-1"
                                  [(ngModel)]="edge.style.fontSizeScale" (change)="doSave()"
-                                 default="100"
-                                 inputId="font-size"
+                                 id="font-size"
                                  [style.width]="'6rem'"></app-percent-input>
               %
             </div>
@@ -91,8 +90,7 @@
               </label>
               <app-percent-input min="20" max="1000" step="20" class="mr-1"
                                  [(ngModel)]="edge.style.lineWidthScale" (change)="doSave()"
-                                 default="100"
-                                 inputId="line-width-scale"
+                                 id="line-width-scale"
                                  [style.width]="'6rem'"></app-percent-input>
               %
             </div>
