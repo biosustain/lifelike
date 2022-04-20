@@ -43,7 +43,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       }
     }
 
-    if (!isNil(activeViewName)) {
+    if (!isNil(activeViewName) && !activeViewName.firstChange) {
       this.viewChanged = true;
     }
 
