@@ -11,11 +11,10 @@
             Font Size
         </label>
         <app-percent-input [(ngModel)]="state.fontSizeScale"
-                           default="100"
                            min="20"
                            max="1000"
                            step="20"
-                           inputId="font-size"
+                           id="font-size"
                            (change)="update()"
         ></app-percent-input>
         %
