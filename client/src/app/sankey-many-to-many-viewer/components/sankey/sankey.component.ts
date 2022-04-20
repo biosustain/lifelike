@@ -32,7 +32,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
   @Input() selected: undefined | SankeyManyToManyLink | SankeyManyToManyNode;
 
   // region Life cycle
-  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign, networkTraceIdx}: SimpleChanges) {
+  ngOnChanges({selected, searchedEntities, focusedNode, data, nodeAlign, networkTraceIdx, activeViewName}: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -43,9 +43,13 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       }
     }
 
+    if (!isNil(activeViewName) && !activeViewName.firstChange) {
+      this.viewChanged = true;
+    }
+
     let kludge = false;
     if (data && this.svg) {
-      if (isNil(networkTraceIdx)) {
+      if (isNil(networkTraceIdx) && !this.viewChanged) {
         kludge = true;
 
         this._data.links.sort((a: any, b: any) => a._index - b._index);
@@ -116,18 +120,14 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
         /* tslint:disable:prefer-for-of */
         for (let n = 0; n < this.data.nodes.length; n++) {
           if (!isNil(this.data.nodes[n]._sourceLinks)) {
-            try {
-              this.data.nodes[n]._sourceLinks.sort(nodeSorter);
-            } catch {
-              console.log(this.data.nodes[n]);
-            }
+            this.data.nodes[n]._sourceLinks.sort(nodeSorter);
           }
           if (!isNil(this.data.nodes[n]._targetLinks)) {
             this.data.nodes[n]._targetLinks.sort(nodeSorter);
           }
         }
       }
-      // using this.data instead of current value so we use copy made by setter
+      this.viewChanged = false;
       this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
     }
 
