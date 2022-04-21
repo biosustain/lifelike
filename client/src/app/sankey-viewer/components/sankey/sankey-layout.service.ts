@@ -376,15 +376,6 @@ export class SankeyLayoutService extends AttributeAccessors {
           node._y0 = node._y1 - node._value * ky;
         }
 
-        if (node._y0 < 0) {
-          node._y1 -= node._y0;
-          node._y0 = 0;
-        }
-
-        if (node._y1 > y1) {
-          node._y0 -= (node._y1 - y1);
-          node._y1 = y1;
-        }
         for (const link of node._sourceLinks) {
           link._width = link._value * ky;
         }
