@@ -43,7 +43,10 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       }
     }
 
-    if (!isNil(activeViewName) && !activeViewName.firstChange) {
+    // Here we abuse the fact that name of base views ("Single-Lane" and "Multi-Lane") is actually undefined. We have to hack our way
+    // around that fact that saved views trigger ngOnChanges twice, and abusing the fact that base view names are undefined is one way to
+    // do that.
+    if (!isNil(activeViewName) && !isNil(activeViewName.currentValue)) {
       this.viewChanged = true;
     }
 
