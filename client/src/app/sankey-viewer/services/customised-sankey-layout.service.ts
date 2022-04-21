@@ -366,16 +366,6 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
           node._y0 = node._y1 - nodeHeight;
         }
 
-        if (node._y0 < 0) {
-          node._y1 -= node._y0;
-          node._y0 = 0;
-        }
-
-        if (node._y1 > height) {
-          node._y0 -= (node._y1 - height);
-          node._y1 = height;
-        }
-
         // apply the y scale on links
         for (const link of node._sourceLinks) {
           link._width = link._value * ky;
