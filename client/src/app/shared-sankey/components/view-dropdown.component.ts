@@ -216,7 +216,7 @@ export class SankeyViewDropdownComponent implements OnChanges {
   openBaseView(baseView: ViewBase, params?: Partial<SankeyURLLoadParams>): Promise<boolean> {
     const {object} = this;
     return this.workspaceManager.navigateByUrl({
-      url: `/projects/${object.project.name}/${baseView}/${object.hashId}#${
+      url: `/projects/${object.project.name}/${baseView}/${object.hashId}?${
         this.objectToFragment({
           [SankeyURLLoadParam.NETWORK_TRACE_IDX]: this.sankeyController.state.networkTraceIdx,
           [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
