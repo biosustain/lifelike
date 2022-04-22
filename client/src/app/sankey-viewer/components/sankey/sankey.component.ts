@@ -172,9 +172,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         for (const link of data.previousValue.links) {
           this._data.links[m]._y0 = link._y0;
           this._data.links[m]._y1 = link._y1;
-          this._data.links[m]._width = link._width;
-          this._data.links[m]._value = link._value;
-          this._data.links[m]._circular = link._circular;
           this._data.links[m]._index = link._index;
           this._data.links[m]._order = link._order;
           if (isNil(this._data.links[m]._order)) {
@@ -190,7 +187,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           const prevNode = data.previousValue.nodes[i];
           const dataNode = this._data.nodes[i];
 
-          dataNode._value = prevNode._value;
           dataNode._x0 = prevNode._x0;
           dataNode._x1 = prevNode._x1;
           dataNode._y0 = prevNode._y0;
