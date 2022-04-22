@@ -43,15 +43,15 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       }
     }
 
-    if (!isNil(activeViewName) && !activeViewName.firstChange) {
+    // Here we abuse the fact that name of base views ("Single-Lane" and "Multi-Lane") is actually undefined. We have to hack our way
+    // around that fact that saved views trigger ngOnChanges twice, and abusing the fact that base view names are undefined is one way to
+    // do that.
+    if (!isNil(activeViewName) && !isNil(activeViewName.currentValue)) {
       this.viewChanged = true;
     }
 
-    let kludge = false;
     if (data && this.svg) {
       if (isNil(networkTraceIdx) && !this.viewChanged) {
-        kludge = true;
-
         this._data.links.sort((a: any, b: any) => a._index - b._index);
         data.previousValue.links.sort((a, b) => a._index - b._index);
 
@@ -128,7 +128,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
         }
       }
       this.viewChanged = false;
-      this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
+      this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     if (selected) {
