@@ -79,7 +79,7 @@
     <div class="mb-1">Link Value Accessor:</div>
     <label ngbButtonLabel class="mb-0"
            *ngFor="let valueAccessor of options.linkValueGenerators | keyvalue">
-        <input ngbButton type="radio" [value]="valueAccessor.value"
+        <input ngbButton type="radio" [value]="valueAccessor.key"
                [disabled]="valueAccessor.value.disabled && valueAccessor.value.disabled()"> {{valueAccessor.value.description}}
     </label>
     <label ngbButtonLabel class="mb-0"
@@ -112,4 +112,3 @@
         <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}
     </label>
 </div>
-
