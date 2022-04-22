@@ -366,16 +366,6 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
           node._y0 = node._y1 - nodeHeight;
         }
 
-        if (node._y0 < 0) {
-          node._y1 -= node._y0;
-          node._y0 = 0;
-        }
-
-        if (node._y1 > height) {
-          node._y0 -= (node._y1 - height);
-          node._y1 = height;
-        }
-
         // apply the y scale on links
         for (const link of node._sourceLinks) {
           link._width = link._value * ky;
@@ -513,15 +503,13 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   /**
    * Calculate layout and address possible circular links
    */
-   calcLayout(graph, kludge = false) {
-    if (!kludge) {
-      // Associate the nodes with their respective links, and vice versa
-      this.computeNodeLinks(graph);
-      // Determine which links result in a circular path in the graph
-      this.identifyCircles(graph);
-      // Calculate the nodes' values, based on the values of the incoming and outgoing links
-      this.computeNodeValues(graph);
-    }
+   calcLayout(graph) {
+    // Associate the nodes with their respective links, and vice versa
+    this.computeNodeLinks(graph);
+    // Determine which links result in a circular path in the graph
+    this.identifyCircles(graph);
+    // Calculate the nodes' values, based on the values of the incoming and outgoing links
+    this.computeNodeValues(graph);
     // Calculate the nodes' depth based on the incoming and outgoing links
     //     Sets the nodes':
     //     - depth:  the depth in the graph
