@@ -36,6 +36,8 @@ import { openModal } from 'app/shared/utils/modals';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
+const BIOC_ID_COLUMN_INDEX = 2;
+
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
 
@@ -104,13 +106,15 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               tap(() => progressDialogRef.close()),
               mergeMap(blob =>
                 from(this.objectCreationService.executePutWithProgressDialog([{
-                  ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
-                  contentValue: blob,
-                }], [{
-                  organism: {
-                    organism_name: document.organism,
-                    synonym: document.organism,
-                    tax_id: document.taxID}}])
+                    ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
+                    contentValue: blob,
+                  }], [{
+                    organism: {
+                      organism_name: document.organism,
+                      synonym: document.organism,
+                      tax_id: document.taxID
+                    }
+                  }])
                 )),
               finalize(() => progressDialogRef.close()),
             ).toPromise().then(results => results.pop());
@@ -182,21 +186,52 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     ];
   }
 
+  addBioCycIdColumn(document: EnrichmentDocument, table: EnrichmentTable): void {
+    const biocycInfo = document.result?.domainInfo?.BioCyc;
+    const biocycLabels = biocycInfo?.labels;
+    if (biocycLabels) {
+      table.tableHeader[0].splice(BIOC_ID_COLUMN_INDEX, 0, {
+        name: 'BioCyc ID',
+        span: '' + biocycLabels.length,
+      });
+      const tableHeaderLine2 = table.tableHeader[1];
+      if (tableHeaderLine2) {
+        if (biocycLabels.length > 1) {
+          tableHeaderLine2.splice(BIOC_ID_COLUMN_INDEX, 0, ...biocycLabels.map(name => ({name, span: '1'})));
+        } else {
+          tableHeaderLine2.splice(BIOC_ID_COLUMN_INDEX, 0, {name: '', span: '1'});
+        }
+      }
+      document.result.genes.forEach((gene, index) =>
+        table.tableCells[index].splice(BIOC_ID_COLUMN_INDEX, 0, ...biocycLabels.map(label => {
+            const geneDomainResult = gene?.domains?.BioCyc?.[label];
+            if (geneDomainResult) {
+              const biocycId = /[\?&]id=([^&#]*)/.exec(geneDomainResult.link)?.[1] ?? '';
+              return {text: biocycId};
+            } else {
+              return {text: ''};
+            }
+          })
+        )
+      );
+    }
+  }
+
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
       name: 'CSV',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
-          mergeMap(document => new EnrichmentTable({
-            usePlainText: true,
-          }).load(document)),
-          mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
-          map(blob => {
-            return new File([blob], object.filename + '.csv');
-          }),
-        );
-      },
+      export: () => this.filesystemService.getContent(object.hashId).pipe(
+        mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
+        mergeMap(document => new EnrichmentTable({
+          usePlainText: true,
+        }).load(document).pipe(
+          tap(table => this.addBioCycIdColumn(document, table)),
+        )),
+        mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
+        map(blob => {
+          return new File([blob], object.filename + '.csv');
+        }),
+      )
     }, {
       name: 'Lifelike Enrichment Table File',
       export: () => {
