@@ -4,11 +4,11 @@ import { DragImage } from 'app/shared/utils/drag';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 
-import { UniversalGraphNode } from '../services/interfaces';
+import { GraphNode } from '../services/interfaces';
 
 const style = new KnowledgeMapStyle(null);
 
-export function createNodeDragImage(d: UniversalGraphNode): DragImage {
+export function createNodeDragImage(d: GraphNode): DragImage {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 

@@ -1,4 +1,4 @@
-import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, GraphGroup, GraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -7,7 +7,7 @@ import { GraphAction, GraphActionReceiver } from './actions';
  */
 export class GroupCreation implements GraphAction {
   constructor(public description: string,
-              public group: NodeGroup,
+              public group: GraphGroup,
               public readonly select = false) {
   }
   apply(component: GraphActionReceiver) {
@@ -30,7 +30,7 @@ export class GroupCreation implements GraphAction {
  */
 export class GroupDeletion implements GraphAction {
   constructor(public description: string,
-              public group: NodeGroup) {
+              public group: GraphGroup) {
   }
 
   apply(component: GraphActionReceiver) {
@@ -47,8 +47,8 @@ export class GroupDeletion implements GraphAction {
  */
 export class GroupExtension implements GraphAction {
   constructor(public description: string,
-              public group: NodeGroup,
-              public newMembers: UniversalGraphNode[]) {
+              public group: GraphGroup,
+              public newMembers: GraphNode[]) {
   }
 
   apply(component: GraphActionReceiver) {

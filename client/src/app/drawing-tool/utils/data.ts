@@ -8,8 +8,8 @@ import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
 import {
   GraphEntity,
   GraphEntityType,
-  UniversalGraphEdge,
-  UniversalGraphNode,
+  GraphEdge,
+  GraphNode,
 } from '../services/interfaces';
 
 export function extractGraphEntityActions(items: DataTransferData<any>[], origin: { x: number, y: number }) {
@@ -27,12 +27,12 @@ export function extractGraphEntityActions(items: DataTransferData<any>[], origin
   // Create nodes and edges
   for (const entity of entities) {
     if (entity.type === GraphEntityType.Node) {
-      const node = entity.entity as UniversalGraphNode;
+      const node = entity.entity as GraphNode;
       actions.push(new NodeCreation(
         `Create ${node.display_name} node`, node, true,
       ));
     } else if (entity.type === GraphEntityType.Edge) {
-      const edge = entity.entity as UniversalGraphEdge;
+      const edge = entity.entity as GraphEdge;
       actions.push(new EdgeCreation(
         `Create edge`, edge, true,
       ));
@@ -51,7 +51,7 @@ export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: num
 
   // Create nodes and edges
   for (const entity of nodes) {
-    const node = entity.entity as UniversalGraphNode;
+    const node = entity.entity as GraphNode;
     // Creating a new hash like this when we're assuming that a hash already exists seems kind of fishy to me. Leaving this here
     // because I don't want to break anything, but it's worth pointing out.
     const newId = node.hash || uuidv4();
@@ -71,7 +71,7 @@ export function normalizeGraphEntities(entities: GraphEntity[], origin: { x: num
   }
 
   for (const entity of edges) {
-    const edge = entity.entity as UniversalGraphEdge;
+    const edge = entity.entity as GraphEdge;
     const newFrom = nodeHashMap.get(edge.from);
     const newTo = nodeHashMap.get(edge.to);
     if (newFrom != null && newTo != null) {

@@ -7,7 +7,7 @@ import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, GraphNode, } from 'app/drawing-tool/services/interfaces';
 import { IMAGE_LABEL } from 'app/shared/constants';
 
 import { EntityForm } from './entity-form';
@@ -22,12 +22,12 @@ export class NodeFormComponent extends EntityForm {
 
   nodeTypeChoices = annotationTypes;
 
-  originalNode: UniversalGraphNode;
-  updatedNode: UniversalGraphNode;
+  originalNode: GraphNode;
+  updatedNode: GraphNode;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphNode>,
-    updatedData: RecursivePartial<UniversalGraphNode>,
+    originalData: RecursivePartial<GraphNode>,
+    updatedData: RecursivePartial<GraphNode>,
   }>();
 
   previousLabel: string;

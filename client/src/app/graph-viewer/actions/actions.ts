@@ -4,9 +4,9 @@
  */
 
 import {
-  NodeGroup,
-  UniversalGraphEdge,
-  UniversalGraphNode
+  GraphGroup,
+  GraphEdge,
+  GraphNode
 } from 'app/drawing-tool/services/interfaces';
 
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
@@ -21,51 +21,51 @@ export interface GraphActionReceiver {
    * Add the given node to the graph.
    * @param node the node
    */
-  addNode(node: UniversalGraphNode): void;
+  addNode(node: GraphNode): void;
 
   /**
    * Remove the given node from the graph.
    * @param node the node
    */
-  removeNode(node: UniversalGraphNode): {
+  removeNode(node: GraphNode): {
     found: boolean,
-    removedEdges: UniversalGraphEdge[],
+    removedEdges: GraphEdge[],
   };
 
   /**
    * Mark the node as being updated.
    * @param node the node
    */
-  updateNode(node: UniversalGraphNode): void;
+  updateNode(node: GraphNode): void;
 
   /**
    * Add the given edge to the graph.
    * @param edge the edge
    */
-  addEdge(edge: UniversalGraphEdge): void;
+  addEdge(edge: GraphEdge): void;
 
   /**
    * Remove the given edge from the graph.
    * @param edge the edge
    * @return true if the edge was found
    */
-  removeEdge(edge: UniversalGraphEdge): boolean;
+  removeEdge(edge: GraphEdge): boolean;
 
   /**
    * Mark the edge as being updated.
    * @param edge the node
    */
-  updateEdge(edge: UniversalGraphEdge): void;
+  updateEdge(edge: GraphEdge): void;
 
-  addGroup(group: NodeGroup): void;
+  addGroup(group: GraphGroup): void;
 
-  removeGroup(group: NodeGroup): boolean;
+  removeGroup(group: GraphGroup): boolean;
 
-  updateGroup(group: NodeGroup): void;
+  updateGroup(group: GraphGroup): void;
 
-  addToGroup(newMembers: UniversalGraphNode[], group: NodeGroup): void;
+  addToGroup(newMembers: GraphNode[], group: GraphGroup): void;
 
-  removeFromGroup(newMembers: UniversalGraphNode[], group: NodeGroup): void;
+  removeFromGroup(newMembers: GraphNode[], group: GraphGroup): void;
 
 
   /**

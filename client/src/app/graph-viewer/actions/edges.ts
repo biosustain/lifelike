@@ -1,4 +1,4 @@
-import { GraphEntityType, UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, GraphEdge } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -7,7 +7,7 @@ import { GraphAction, GraphActionReceiver } from './actions';
  */
 export class EdgeCreation implements GraphAction {
   constructor(public description: string,
-              public edge: UniversalGraphEdge,
+              public edge: GraphEdge,
               public readonly select = false) {
   }
 
@@ -32,7 +32,7 @@ export class EdgeCreation implements GraphAction {
  */
 export class EdgeDeletion implements GraphAction {
   constructor(public description: string,
-              public edge: UniversalGraphEdge) {
+              public edge: GraphEdge) {
   }
 
   apply(component: GraphActionReceiver) {

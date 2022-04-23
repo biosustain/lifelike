@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
 
-import { UniversalGraphNode, UniversalGraphNodeTemplate } from '../../services/interfaces';
+import { GraphNode, GraphNodeTemplate } from '../../services/interfaces';
 import { createNodeDragImage } from '../../utils/drag';
 
 @Component({
@@ -37,13 +37,13 @@ export class PaletteComponent {
   }
 
   dragStart(event: DragEvent, annotationStyle: AnnotationStyle) {
-    const copiedNode: UniversalGraphNodeTemplate = {
+    const copiedNode: GraphNodeTemplate = {
       display_name: annotationStyle.label,
       label: annotationStyle.label,
       sub_labels: [],
     };
 
-    const dragImageNode: UniversalGraphNode = {
+    const dragImageNode: GraphNode = {
       ...copiedNode,
       hash: '',
       data: {

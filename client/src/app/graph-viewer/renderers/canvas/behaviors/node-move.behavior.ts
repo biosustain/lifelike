@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash-es';
 import * as d3 from 'd3';
 
-import { GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, GraphGroup, GraphNode } from 'app/drawing-tool/services/interfaces';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
@@ -17,10 +17,10 @@ export class MovableNode extends AbstractCanvasBehavior {
    * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
    * so node center is the same the mouse position, and the jump is not what we want.
    */
-  private target: UniversalGraphNode | NodeGroup | undefined;
-  private originalTarget: UniversalGraphNode | NodeGroup | undefined;
+  private target: GraphNode | GraphGroup | undefined;
+  private originalTarget: GraphNode | GraphGroup | undefined;
   private startMousePosition: [number, number] = [0, 0];
-  private originalNodePositions = new Map<UniversalGraphNode, [number, number]>();
+  private originalNodePositions = new Map<GraphNode, [number, number]>();
 
   constructor(protected readonly graphView: CanvasGraphView) {
     super();
@@ -32,14 +32,14 @@ export class MovableNode extends AbstractCanvasBehavior {
     const entity = event.entity;
 
     if (entity?.type === GraphEntityType.Node) {
-      const node = entity.entity as UniversalGraphNode;
+      const node = entity.entity as GraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
       this.target = node;
       this.originalTarget = cloneDeep(this.target);
     } else if (entity?.type === GraphEntityType.Group) {
-      const group = entity.entity as NodeGroup;
+      const group = entity.entity as GraphGroup;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
@@ -59,15 +59,15 @@ export class MovableNode extends AbstractCanvasBehavior {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
 
-      const selectedNodes = new Set<UniversalGraphNode | NodeGroup>();
+      const selectedNodes = new Set<GraphNode | GraphGroup>();
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
-          const node = entity.entity as UniversalGraphNode;
+          const node = entity.entity as GraphNode;
           selectedNodes.add(node);
         }
       }
       if (this.target.label === GROUP_LABEL) {
-        const group = this.target as NodeGroup;
+        const group = this.target as GraphGroup;
         for (const n of group.members) {
         selectedNodes.add(n);
         }
@@ -110,7 +110,7 @@ export class MovableNode extends AbstractCanvasBehavior {
         const originalData = this.originalTarget.data;
         this.target.data.x = originalData.x + shiftX;
         this.target.data.y = originalData.y + shiftY;
-        this.graphView.invalidateGroup(this.target as NodeGroup);
+        this.graphView.invalidateGroup(this.target as GraphGroup);
       }
     }
 
@@ -133,12 +133,12 @@ export class MovableNode extends AbstractCanvasBehavior {
               x: node.data.x,
               y: node.data.y,
             },
-          } as Partial<UniversalGraphNode>, {
+          } as Partial<GraphNode>, {
             data: {
               x: originalX,
               y: originalY,
             },
-          } as Partial<UniversalGraphNode>));
+          } as Partial<GraphNode>));
         }
 
         if (this.target.label === GROUP_LABEL) {
@@ -150,12 +150,12 @@ export class MovableNode extends AbstractCanvasBehavior {
               x: this.target.data.x,
               y: this.target.data.y,
             },
-          } as Partial<NodeGroup>, {
+          } as Partial<GraphGroup>, {
             data: {
               x: this.originalTarget.data.x,
               y: this.originalTarget.data.y,
             },
-          } as Partial<NodeGroup>));
+          } as Partial<GraphGroup>));
         }
 
 
