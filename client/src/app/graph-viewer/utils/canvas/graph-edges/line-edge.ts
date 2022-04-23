@@ -4,8 +4,7 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import { drawTextNotSmallerThanMin, NO_TEXT_THRESHOLD } from '../shared';
-import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
+import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point } from '../shared';
 
 export interface StandardEdgeOptions {
   source: Point;

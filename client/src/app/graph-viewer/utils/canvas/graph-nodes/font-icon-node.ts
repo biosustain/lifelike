@@ -1,7 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
-import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 import { TextElement } from '../text-element';
+import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
 
 
 export interface IconNodeOptions {

@@ -6,6 +6,7 @@ import { nullCoalesce } from 'app/shared/utils/types';
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../../renderers/behaviors';
 import { PlacedObject } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
+import { Point } from '../canvas/shared';
 
 export abstract class AbstractObjectHandleBehavior<T extends Handle> extends AbstractCanvasBehavior {
   protected handle: T | undefined;
@@ -79,7 +80,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     return {width, height};
   }
 
-  isPointIntersectingNode(placedObject: PlacedObject, {x, y}: Point): boolean {
+  isPointIntersectingNodeHandles(placedObject: PlacedObject, {x, y}: Point): boolean {
     return this.getHandleIntersected(placedObject, {x, y}) ? true : undefined;
   }
 
@@ -136,32 +137,3 @@ export interface Handle {
   displayColor?: string;
 }
 
-// TODO: Move! And correct imports
-export interface BoundingBox {
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-}
-
-export interface Point {
-  x: number;
-  y: number;
-}
-
-/**
- * Check if one (child) bbox is cointained in full by the other (parent) bbox.
- * @param parent - possibly larger Bounding Box to contain child
- * @param child - possible smaller Bounding Box to be contained within parent
- * PS Feel free to change the naming, I am not sure about it, just did not want to do bbox1 and bbox2
- */
-export function isBBoxEnclosing(parent: BoundingBox, child: BoundingBox): boolean {
-  return child.minX >= parent.minX
-      && child.minY >= parent.minY
-      && child.maxX <= parent.maxX
-      && child.maxY <= parent.maxY;
-}
-
-export function isPointIntersecting(bbox: BoundingBox, {x, y}: Point): boolean {
-  return (bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y);
-}

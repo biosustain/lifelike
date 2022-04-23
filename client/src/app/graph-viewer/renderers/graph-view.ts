@@ -25,7 +25,7 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
-import { BoundingBox, isPointIntersecting, Point } from '../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, isPointIntersecting, Point } from '../utils/canvas/shared';
 
 /**
  * A rendered view of a graph.
@@ -100,6 +100,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * webcola object used for automatic layout.
    * Initialized in {@link ngAfterViewInit}.
    */
+    // TODO: Inspect that. Is this deprecated?
   cola: Layout;
 
   /**
@@ -137,7 +138,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Holds currently active behaviors. Behaviors provide UI for the graph.
    */
   readonly behaviors = new BehaviorList<BT>([
-    'isPointIntersectingNode',
+    'isPointIntersectingNodeHandles',
     'isPointIntersectingEdge',
     'isBBoxEnclosingNode',
     'isBBoxEnclosingEdge',
@@ -497,7 +498,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * As groups don't have their size, we need to recalculate them when members change position
    * @param group to recalculate
    */
-  // TODO: Change the margin component from % to px
   recalculateGroup(group: UniversalGraphGroup): UniversalGraphGroup {
     const bbox = this.getNodeBoundingBox(group.members || [], group.margin);
     const { minX, minY, maxX, maxY } = bbox;
@@ -514,7 +514,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Remove node from the group - if node has a group.
    * @param hash - hash of node to be removed
    */
-  // TODO: Accept node ref instead of string?
   tryRemoveNodeFromGroup(hash: string) {
     const group = this.groupHashMap.get(hash);
 
@@ -559,9 +558,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   updateGroup(group: UniversalGraphGroup) {
-    // TODO: Maybe do that only on move of a member, not on every update
-    // TODO: This breaks dragging
     this.recalculateGroup(group);
+
     this.invalidateGroup(group);
     this.requestRender();
   }
@@ -757,7 +755,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, position);
+      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedNode, position);
       if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(position)) {
         const distance = Math.hypot(position.x - d.data.x, position.y - d.data.y);
         // Node is so close, that we are sure it is it. Terminate early.
@@ -815,13 +813,18 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     return undefined;
   }
 
-  // TODO: docs
-  getGroupAtPosition(groups: UniversalGraphGroup[], point: Point): UniversalGraphGroup | undefined {
+  /**
+   * Find whether there exist a group at position. If 2+ groups share the position, will return newer (top one)
+   * @param groups list of groups to search through
+   * @param position - {x, y} coordinated of the position
+   */
+  getGroupAtPosition(groups: UniversalGraphGroup[], position: Point): UniversalGraphGroup | undefined {
     for (const group of groups) {
       const placedGroup = this.placeGroup(group);
       const bbox = placedGroup.getBoundingBox();
-      const hookResult = this.behaviors.call('isPointIntersectingNode', placedGroup, point);
-      if ((hookResult !== undefined && hookResult) || isPointIntersecting(bbox, point)) {
+      // This hook checks whether rescaling handles are created, and if so, if 'position' is within it.
+      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedGroup, position);
+      if ((hookResult !== undefined && hookResult) || isPointIntersecting(bbox, position)) {
         return group;
       }
     }
@@ -962,7 +965,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
-  // TODO: Docs
+  /**
+   * Place (calculate rendering data) the group onto a canvas and store the result in renderTree.
+   * @param d the group
+   */
   abstract placeGroup(d: UniversalGraphGroup): PlacedGroup;
 
   /**
@@ -970,7 +976,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * real size of the object as it would appear. Use the returning object
    * to get these metrics or use the object to render the entity. The
    * returned object has the style of the entity baked into it.
-   * @param d the edge
+   * @param d the entity
    */
   placeEntity(d: GraphEntity): PlacedObject {
     if (d.type === GraphEntityType.Node) {
@@ -1211,33 +1217,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         target,
       };
     });
-
-    // // TODO: Remove test groups
-    // const layoutGroups: GraphLayoutGroup[] = [
-    //   {
-    //     name: 'Bands',
-    //     color: '#740CAA',
-    //     leaves: [],
-    //     // groups: [],
-    //     padding: 10,
-    //   },
-    //   {
-    //     name: 'Things',
-    //     color: '#0CAA70',
-    //     leaves: [],
-    //     // groups: [],
-    //     padding: 10,
-    //   },
-    // ];
-    //
-    // for (const node of layoutNodes) {
-    //   const n = Math.floor(Math.random() * (layoutGroups.length + 2));
-    //   if (n < layoutGroups.length) {
-    //     layoutGroups[n].leaves.push(node);
-    //   }
-    // }
-    //
-    // this.layoutGroups = layoutGroups;
 
     this.cola
       .nodes(layoutNodes)

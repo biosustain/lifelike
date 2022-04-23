@@ -3,12 +3,13 @@ import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { Point } from '../../../utils/canvas/shared';
 
 
 const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
