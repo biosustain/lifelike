@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 
 import { isNil } from 'lodash-es';
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
 import { PUBMED_URL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
@@ -62,12 +61,12 @@ export class SearchRecordRelationshipsComponent {
   constructor() {
   }
 
-  setChemicalDataStrings(chemical: UniversalGraphNode) {
+  setChemicalDataStrings(chemical: GraphNode) {
     this.chemicalDisplayName = isNil(chemical.displayName) ? '' : chemical.displayName;
     this.chemicalLabel = isNil(chemical.label) ? '' : chemical.label;
   }
 
-  setDiseaseDataStrings(disease: UniversalGraphNode) {
+  setDiseaseDataStrings(disease: GraphNode) {
     this.diseaseDisplayName = isNil(disease.displayName) ? '' : disease.displayName;
     this.diseaseLabel = isNil(disease.label) ? '' : disease.label;
   }
@@ -89,7 +88,7 @@ export class SearchRecordRelationshipsComponent {
           id: getLink(this.node),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    } as Partial<GraphNode>));
   }
 
   getVisualizerQueryParams(params) {
