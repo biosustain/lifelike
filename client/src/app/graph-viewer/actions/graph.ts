@@ -1,4 +1,4 @@
-import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, GraphGroup, GraphEdge, GraphNode } from 'app/drawing-tool/services/interfaces';
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
 
 import { GraphAction, GraphActionReceiver } from './actions';
@@ -25,11 +25,11 @@ export class GraphEntityUpdate implements GraphAction {
 
   private matchAndUpdateEntity(component: GraphActionReceiver) {
     if (this.entity.type === GraphEntityType.Node) {
-      component.updateNode(this.entity.entity as UniversalGraphNode);
+      component.updateNode(this.entity.entity as GraphNode);
     } else if (this.entity.type === GraphEntityType.Edge) {
-      component.updateEdge(this.entity.entity as UniversalGraphEdge);
+      component.updateEdge(this.entity.entity as GraphEdge);
     } else if (this.entity.type === GraphEntityType.Group) {
-      component.updateGroup(this.entity.entity as NodeGroup);
+      component.updateGroup(this.entity.entity as GraphGroup);
     }
   }
 }

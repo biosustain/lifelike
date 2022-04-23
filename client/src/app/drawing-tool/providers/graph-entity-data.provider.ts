@@ -13,7 +13,7 @@ import {
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { makeid } from 'app/shared/utils/identifiers';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphRelationship } from '../services/interfaces';
+import { GraphEntity, GraphEntityType, GraphNode, UniversalGraphRelationship } from '../services/interfaces';
 
 export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>('universalGraphEntity');
 export const GRAPH_NODE_TYPE = 'application/***ARANGO_DB_NAME***-node';
@@ -38,7 +38,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
 
     // First check if the content has a node embedded in it
     if (nodeData) {
-      const node = JSON.parse(nodeData) as UniversalGraphNode;
+      const node = JSON.parse(nodeData) as GraphNode;
       results.push({
         token: GRAPH_ENTITY_TOKEN,
         data: [{

@@ -1,4 +1,4 @@
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphNode } from 'app/drawing-tool/services/interfaces';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid } from 'app/shared/utils/identifiers';
 
@@ -24,7 +24,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
     const data = dragEvent.dataTransfer.getData('application/***ARANGO_DB_NAME***-node');
     let node;
     try {
-      node = JSON.parse(data) as UniversalGraphNode;
+      node = JSON.parse(data) as GraphNode;
     } catch (e) {
       return BehaviorResult.Continue;
     }

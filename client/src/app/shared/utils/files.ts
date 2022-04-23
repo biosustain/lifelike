@@ -3,7 +3,7 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { UniversalGraph } from 'app/drawing-tool/services/interfaces';
+import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
 
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
@@ -43,7 +43,7 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
  * Maps the graph stored in export to the graph suitable for further manipulation.
  * As nodes are stored groups, we add them to the 'nodes' collection - so we would have them all in one place.
  */
-export function mapJsonToGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
+export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeMapGraph> {
   return map( graph => {
     // TODO: This allows to handle the transition without data migration. Not sure if we want to do that though - maybe migration is better?
     graph.groups = graph.groups ?? [];
@@ -54,8 +54,8 @@ export function mapJsonToGraph(): OperatorFunction<UniversalGraph, UniversalGrap
   });
 }
 
-export function mapJsonToProperGraph(): OperatorFunction<UniversalGraph, UniversalGraph> {
-  return map((graph: UniversalGraph) => {
+export function mapJsonToProperGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeMapGraph> {
+  return map((graph: KnowledgeMapGraph) => {
     return {
       ...graph,
 

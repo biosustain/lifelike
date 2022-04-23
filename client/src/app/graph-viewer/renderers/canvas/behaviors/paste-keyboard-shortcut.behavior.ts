@@ -2,7 +2,7 @@ import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import {
   GraphEntity,
   GraphEntityType,
-  UniversalGraphNode,
+  GraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { uuidv4 } from 'app/shared/utils/identifiers';
@@ -57,7 +57,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       if (data.type === TYPE_STRING) {
         for (const entry of data.selection) {
           if (entry.type === GraphEntityType.Node) {
-            const node = entry.entity as UniversalGraphNode;
+            const node = entry.entity as GraphNode;
             actions.push(new NodeCreation(
               `Paste content from clipboard`, {
                 ...node,

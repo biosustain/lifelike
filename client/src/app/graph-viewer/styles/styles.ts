@@ -1,4 +1,4 @@
-import { NodeGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphGroup, GraphEdge, GraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { BoundingBox, Point } from '../utils/behaviors/abstract-object-handle-behavior';
 
@@ -13,7 +13,7 @@ export interface NodeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeNode(d: UniversalGraphNode,
+  placeNode(d: GraphNode,
             ctx: CanvasRenderingContext2D,
             options: PlacementOptions): PlacedNode;
 }
@@ -33,9 +33,9 @@ export interface EdgeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeEdge(d: UniversalGraphEdge,
-            from: UniversalGraphNode,
-            to: UniversalGraphNode,
+  placeEdge(d: GraphEdge,
+            from: GraphNode,
+            to: GraphNode,
             placedFrom: PlacedNode,
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
@@ -50,7 +50,7 @@ export interface GroupRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeGroup(d: NodeGroup,
+  placeGroup(d: GraphGroup,
              ctx: CanvasRenderingContext2D,
              options: PlacementOptions): PlacedGroup;
 }
