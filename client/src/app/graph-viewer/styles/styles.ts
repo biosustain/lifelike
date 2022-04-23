@@ -171,13 +171,11 @@ export abstract class PlacedNode extends PlacedObject {
 
   /**
    * Get the first intersection point of a line coming from outside this object
-   * to the center of the object. This method is vital to figuring out if an
-   * object has been clicked by the mouse.
-   * @param lineOriginX the line's origin X
-   * @param lineOriginY the line's origin Y
-   * @return [x, y]
+   * to the center of the object.
+   * @param lineOrigin the line's origin point
+   * @return Point
    */
-  abstract lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[];
+  abstract lineIntersectionPoint(lineOrigin: Point): Point;
 }
 
 /**

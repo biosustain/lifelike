@@ -1026,22 +1026,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+      const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
+      const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
       const styleData: GraphEdgeStyle = nullCoalesce(d.style, {});
       const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
       const lineWidth = lineWidthScale * 1 + 20;
 
       (new LineEdge(ctx, {
-        source: {
-          x: fromX,
-          y: fromY,
-        },
-        target: {
-          x: toX,
-          y: toY,
-        },
+        source,
+        target,
         stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
           lineCap: 'square',
         }),
@@ -1076,22 +1070,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+      const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
+      const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
       const styleData: GraphEdgeStyle = nullCoalesce(d.style, {});
       const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
       const lineWidth = lineWidthScale * 1 + 20;
 
       (new LineEdge(ctx, {
-        source: {
-          x: fromX,
-          y: fromY,
-        },
-        target: {
-          x: toX,
-          y: toY,
-        },
+        source,
+        target,
         stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),

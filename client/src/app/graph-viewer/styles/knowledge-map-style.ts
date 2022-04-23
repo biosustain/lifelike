@@ -251,8 +251,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     // Find where the line intersects with the source and target nodes
     // TODO: Consider using the 'closest point to bbox' instead of intersection point
-    const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-    const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+    const target = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
+    const source = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
     // Arrow/whatever at the beginning of the line
     const sourceLineEnd = this.createHead(
@@ -280,14 +280,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     }) : null;
 
     return new LineEdge(ctx, {
-      source: {
-        x: fromX,
-        y: fromY,
-      },
-      target: {
-        x: toX,
-        y: toY,
-      },
+      source,
+      target,
       textbox,
       sourceLineEnd,
       targetLineEnd,

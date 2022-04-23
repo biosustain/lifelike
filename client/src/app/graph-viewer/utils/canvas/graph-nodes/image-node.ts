@@ -58,15 +58,15 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     this.ctx.globalCompositeOperation = 'destination-over';
     let lineWidth = 0;
     if (this.image) {
-      this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);
+      this.ctx.drawImage(this.image, this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
       const ctx = this.ctx;
 
       if (this.stroke) {
         this.stroke.setContext(ctx);
         lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
         this.ctx.rect(
-          this.nodeX - lineWidth / 2.0,
-          this.nodeY - lineWidth / 2.0,
+          this.bbox.minX - lineWidth / 2.0,
+          this.bbox.minY - lineWidth / 2.0,
           this.nodeWidth + lineWidth,
           this.nodeHeight + lineWidth
         );
@@ -75,8 +75,8 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
       }
     } else {
       this.ctx.rect(
-        this.nodeX,
-        this.nodeY,
+        this.bbox.minX,
+        this.bbox.minY,
         this.nodeWidth,
         this.nodeHeight
       );

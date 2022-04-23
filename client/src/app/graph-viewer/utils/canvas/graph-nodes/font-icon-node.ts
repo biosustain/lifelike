@@ -80,9 +80,9 @@ export class FontIconNode extends PlacedNode {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
+  lineIntersectionPoint(lineOrigin: Point): Point {
     // TODO: Polygonal intersection because we have an icon 'head' and a text 'body'
-    return [this.x, this.y];
+    return {x: this.x, y: this.y};
   }
 
   draw(transform: any): void {
