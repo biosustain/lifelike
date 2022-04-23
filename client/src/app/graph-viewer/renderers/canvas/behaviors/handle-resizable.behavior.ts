@@ -3,12 +3,13 @@ import { cloneDeep } from 'lodash-es';
 import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
-import { BLACK_COLOR, GROUP_LABEL, HANDLE_BLUE_COLOR } from 'app/shared/constants';
+import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { BLACK_COLOR, HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior } from '../../behaviors';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { Point } from '../../../utils/canvas/shared';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 
@@ -68,7 +69,7 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
 
   // TODO: Why this is here? Its not related to the handle, at least the usage
   // TODO: Change the name as this makes sure that you click handles, not node
-  isPointIntersectingNode(placedObject: PlacedObject, point: Point): boolean {
+  isPointIntersectingNodeHandles(placedObject: PlacedObject, point: Point): boolean {
     // Consider ourselves still intersecting if we have a handle
     return (!!this.handle || !!this.getHandleIntersected(placedObject, point)) ? true : undefined;
   }
@@ -92,7 +93,7 @@ export class ActiveNodeResize extends ActiveResize {
   getHandleBoundingBoxes(placedNode: PlacedNode): DragHandle[] {
     const bbox = placedNode.getBoundingBox();
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
-    const size = handleSize * noZoomScale;
+    const size = HANDLE_SIZE * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
     const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
@@ -209,7 +210,7 @@ export class ActiveGroupResize extends ActiveResize {
   getHandleBoundingBoxes(placedGroup: PlacedGroup): DragHandle[] {
     const bbox = placedGroup.getBoundingBox();
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
-    const size = handleSize * noZoomScale;
+    const size = HANDLE_SIZE * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
 
@@ -387,4 +388,4 @@ interface OriginalData {
   y: number;
 }
 
-export const handleSize = 10;
+export const HANDLE_SIZE = 10;

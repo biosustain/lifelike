@@ -20,7 +20,7 @@ import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { isPointIntersecting, Point } from '../../utils/behaviors/abstract-object-handle-behavior';
+import { isPointIntersecting, Point } from '../../utils/canvas/shared';
 
 
 export interface CanvasGraphViewOptions {
