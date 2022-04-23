@@ -1,6 +1,6 @@
 import * as d3 from 'd3'; // TODO: Maybe limit that import
 
-import { GraphEntity, GraphEntityType, GraphGroup, GraphNode, } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { nullCoalesce } from 'app/shared/utils/types';
 
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../../renderers/behaviors';
@@ -11,7 +11,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
   protected handle: T | undefined;
 
   protected constructor(protected readonly graphView: CanvasGraphView,
-                        protected readonly target: GraphNode | GraphGroup) {
+                        protected readonly target: UniversalGraphNode | UniversalGraphGroup) {
     super();
   }
 
@@ -25,12 +25,12 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     const point: Point = {x: graphX, y: graphY};
 
     if (subject?.type === GraphEntityType.Node) {
-      this.handle = this.getHandleIntersected(this.graphView.placeNode(subject.entity as GraphNode), point);
+      this.handle = this.getHandleIntersected(this.graphView.placeNode(subject.entity as UniversalGraphNode), point);
       if (this.handle != null) {
         this.activeDragStart(event.event, point, subject);
       }
     } else if (subject?.type === GraphEntityType.Group) {
-      this.handle = this.getHandleIntersected(this.graphView.placeGroup(subject.entity as GraphGroup), point);
+      this.handle = this.getHandleIntersected(this.graphView.placeGroup(subject.entity as UniversalGraphGroup), point);
       if (this.handle != null) {
         this.activeDragStart(event.event, point, subject);
       }
@@ -61,7 +61,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     return this.getNodeSize(this.target);
   }
 
-  protected getNodeSize(node: GraphNode): { width: number, height: number } {
+  protected getNodeSize(node: UniversalGraphNode): { width: number, height: number } {
     let width = node.data.width;
     let height = node.data.height;
 

@@ -20,7 +20,7 @@ import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { GraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -448,7 +448,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       style: {
         showDetail: meta.type === 'link',
       },
-    } as Partial<GraphNode>));
+    } as Partial<UniversalGraphNode>));
   }
 
   zoomIn() {
@@ -686,7 +686,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
-    } as Partial<GraphNode>));
+    } as Partial<UniversalGraphNode>));
   }
 
 

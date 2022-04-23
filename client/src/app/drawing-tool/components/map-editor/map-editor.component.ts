@@ -22,7 +22,7 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
-import { GraphEntityType, KnowledgeMap, GraphGroup, KnowledgeMapGraph, GraphNode } from '../../services/interfaces';
+import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -403,7 +403,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
       'Create group',
       {
         members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
-          [entity.entity as GraphNode] : []),
+          [entity.entity as UniversalGraphNode] : []),
         margin: 10,
         hash: uuidv4(),
         display_name: '',
@@ -423,9 +423,9 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
   addToGroup() {
     const selection = this.graphCanvas?.selection.get();
     // TODO: Error on 0 or 2?
-    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as GraphGroup;
+    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as UniversalGraphGroup;
 
-    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as GraphNode] : []);
+    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []);
     // No duplicates
     const newMembers = potentialMembers.filter(node => !group.members.includes(node));
     this.graphCanvas?.execute(new GroupExtension(

@@ -4,9 +4,9 @@
  */
 
 import {
-  GraphGroup,
-  GraphEdge,
-  GraphNode
+  UniversalGraphGroup,
+  UniversalGraphEdge,
+  UniversalGraphNode
 } from 'app/drawing-tool/services/interfaces';
 
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
@@ -21,51 +21,51 @@ export interface GraphActionReceiver {
    * Add the given node to the graph.
    * @param node the node
    */
-  addNode(node: GraphNode): void;
+  addNode(node: UniversalGraphNode): void;
 
   /**
    * Remove the given node from the graph.
    * @param node the node
    */
-  removeNode(node: GraphNode): {
+  removeNode(node: UniversalGraphNode): {
     found: boolean,
-    removedEdges: GraphEdge[],
+    removedEdges: UniversalGraphEdge[],
   };
 
   /**
    * Mark the node as being updated.
    * @param node the node
    */
-  updateNode(node: GraphNode): void;
+  updateNode(node: UniversalGraphNode): void;
 
   /**
    * Add the given edge to the graph.
    * @param edge the edge
    */
-  addEdge(edge: GraphEdge): void;
+  addEdge(edge: UniversalGraphEdge): void;
 
   /**
    * Remove the given edge from the graph.
    * @param edge the edge
    * @return true if the edge was found
    */
-  removeEdge(edge: GraphEdge): boolean;
+  removeEdge(edge: UniversalGraphEdge): boolean;
 
   /**
    * Mark the edge as being updated.
    * @param edge the node
    */
-  updateEdge(edge: GraphEdge): void;
+  updateEdge(edge: UniversalGraphEdge): void;
 
-  addGroup(group: GraphGroup): void;
+  addGroup(group: UniversalGraphGroup): void;
 
-  removeGroup(group: GraphGroup): boolean;
+  removeGroup(group: UniversalGraphGroup): boolean;
 
-  updateGroup(group: GraphGroup): void;
+  updateGroup(group: UniversalGraphGroup): void;
 
-  addToGroup(newMembers: GraphNode[], group: GraphGroup): void;
+  addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
 
-  removeFromGroup(newMembers: GraphNode[], group: GraphGroup): void;
+  removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
 
 
   /**

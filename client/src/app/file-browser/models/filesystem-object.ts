@@ -1,6 +1,6 @@
 import { isNil, isEmpty, has } from 'lodash-es';
 
-import { KnowledgeMap, Source, GraphEntityData, KnowledgeMapGraph, GraphNode, } from 'app/drawing-tool/services/interfaces';
+import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
@@ -78,7 +78,7 @@ export class ProjectImpl implements Project {
   addDataTransferData(dataTransfer: DataTransfer) {
     createProjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const node: Partial<Omit<GraphNode, 'data'>> & { data: Partial<GraphEntityData> } = {
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: 'link',
       sub_labels: [],
@@ -543,7 +543,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     const sources: Source[] = this.getGraphEntitySources();
 
-    const node: Partial<Omit<GraphNode, 'data'>> & { data: Partial<GraphEntityData> } = {
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
