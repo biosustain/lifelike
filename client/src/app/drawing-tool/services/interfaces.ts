@@ -1,12 +1,12 @@
 import { ReferenceType } from 'app/shared/references';
 
 export interface UniversalGraphRelationship {
-  node1: UniversalGraphNode;
-  node2: UniversalGraphNode;
-  edge: UniversalGraphEdge;
+  node1: GraphNode;
+  node2: GraphNode;
+  edge: GraphEdge;
 }
 
-export interface UniversalEntityData {
+export interface GraphEntityData {
   references?: Reference[];
   hyperlinks?: Hyperlink[];
   detail?: string;
@@ -15,7 +15,7 @@ export interface UniversalEntityData {
   sources?: Source[];
 }
 
-export interface UniversalNodeStyle {
+export interface GraphNodeStyle {
   fontSizeScale?: number;
   fillColor?: string;
   strokeColor?: string;
@@ -25,23 +25,23 @@ export interface UniversalNodeStyle {
   showDetail?: boolean;
 }
 
-export interface NodeGroup extends UniversalGraphNode {
-  members: UniversalGraphNode[];
+export interface GraphGroup extends GraphNode {
+  members: GraphNode[];
   margin: number;
 }
 
 // Created for export purpose: do not duplicate the nodes on export
-export interface SimplifiedNodeGroup extends UniversalGraphNode {
+export interface SimplifiedGraphGroup extends GraphNode {
   hashes: string[];
 }
 
-export interface UniversalGraphNode {
+export interface GraphNode {
   data: {
     x: number;
     y: number;
     width?: number,
     height?: number,
-  } & UniversalEntityData;
+  } & GraphEntityData;
   display_name: string;
   hash: string;
   shape?: string;
@@ -56,14 +56,14 @@ export interface UniversalGraphNode {
   label: string;
   // TODO: We do not use this anywhere, is this needed?
   sub_labels: string[];
-  style?: UniversalNodeStyle;
+  style?: GraphNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate =
-  Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>
-  & { data?: Partial<UniversalEntityData>, style?: Partial<UniversalNodeStyle> };
+export type GraphNodeTemplate =
+  Pick<GraphNode, 'display_name' | 'label' | 'sub_labels'>
+  & { data?: Partial<GraphEntityData>, style?: Partial<GraphNodeStyle> };
 
-export interface UniversalEdgeStyle {
+export interface GraphEdgeStyle {
   fontSizeScale?: number;
   strokeColor?: string;
   lineType?: string;
@@ -72,29 +72,28 @@ export interface UniversalEdgeStyle {
   targetHeadType?: string;
 }
 
-export interface UniversalGraphEdge {
-  data?: UniversalEntityData;
+export interface GraphEdge {
+  data?: GraphEntityData;
   label: string;
   from: string;
   to: string;
-  style?: UniversalEdgeStyle;
+  style?: GraphEdgeStyle;
 }
 
 
-export interface UniversalGraph {
-  nodes: UniversalGraphNode[];
-  edges: UniversalGraphEdge[];
-  groups: NodeGroup[];
+export interface KnowledgeMapGraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  groups: GraphGroup[];
 }
 
 export interface ExportableGraph {
-  nodes: UniversalGraphNode[];
-  edges: UniversalGraphEdge[];
-  groups: SimplifiedNodeGroup[];
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  groups: SimplifiedGraphGroup[];
 }
 
-// TODO: Triple check that
-export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge | NodeGroup;
+export declare type UniversalGraphEntity = GraphNode | GraphEdge | GraphGroup;
 
 export enum GraphEntityType {
   Node = 'node',
@@ -147,7 +146,7 @@ export interface KnowledgeMap {
   label: string;
   description: string;
   /** JSON representation of graph */
-  graph: UniversalGraph;
+  graph: KnowledgeMapGraph;
   /** ISO-8601 timestamp of when project was last updated */
   modified_date?: string;
   /** Whether or not project is public to userbase */

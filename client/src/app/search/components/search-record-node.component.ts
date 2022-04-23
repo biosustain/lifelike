@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
 import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
@@ -66,7 +66,7 @@ export class SearchRecordNodeComponent {
           id: getLink(this.node),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    } as Partial<GraphNode>));
   }
 
   getNodeDomain(url: URL): string {

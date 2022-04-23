@@ -22,7 +22,7 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 
-import { GraphEntityType, KnowledgeMap, NodeGroup, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
+import { GraphEntityType, KnowledgeMap, GraphGroup, KnowledgeMapGraph, GraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -37,7 +37,7 @@ import { extractGraphEntityActions } from '../../utils/data';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
+export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
@@ -117,14 +117,14 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.clearLockInterval();
   }
 
-  getExtraSource(): Observable<UniversalGraph | null> {
+  getExtraSource(): Observable<KnowledgeMapGraph | null> {
     return from([this.locator]).pipe(switchMap(
       locator => this.filesystemService.getBackupContent(locator)
         .pipe(
           switchMap(blob => blob
             ? of(blob).pipe(
               mapBlobToBuffer(),
-              mapBufferToJson<UniversalGraph>(),
+              mapBufferToJson<KnowledgeMapGraph>(),
             )
             : of(null)),
           this.errorHandler.create({label: 'Load map backup'}),
@@ -132,7 +132,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     ));
   }
 
-  handleExtra(backup: UniversalGraph | null) {
+  handleExtra(backup: KnowledgeMapGraph | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
@@ -194,7 +194,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.providerSubscription$ = this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
         readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
-          mapBufferToJson<UniversalGraph>(),
+          mapBufferToJson<KnowledgeMapGraph>(),
           this.errorHandler.create({label: 'Restore map from backup'}),
         ).subscribe(graph => {
           this.graphCanvas.execute(new KnowledgeMapRestore(
@@ -403,7 +403,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       'Create group',
       {
         members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
-          [entity.entity as UniversalGraphNode] : []),
+          [entity.entity as GraphNode] : []),
         margin: 10,
         hash: uuidv4(),
         display_name: '',
@@ -423,9 +423,9 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   addToGroup() {
     const selection = this.graphCanvas?.selection.get();
     // TODO: Error on 0 or 2?
-    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as NodeGroup;
+    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as GraphGroup;
 
-    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []);
+    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as GraphNode] : []);
     // No duplicates
     const newMembers = potentialMembers.filter(node => !group.members.includes(node));
     this.graphCanvas?.execute(new GroupExtension(
@@ -457,8 +457,8 @@ class KnowledgeMapUpdate implements GraphAction {
 class KnowledgeMapRestore implements GraphAction {
   constructor(public description: string,
               public graphCanvas: CanvasGraphView,
-              public updatedData: UniversalGraph,
-              public originalData: UniversalGraph) {
+              public updatedData: KnowledgeMapGraph,
+              public originalData: KnowledgeMapGraph) {
   }
 
   apply(component: GraphActionReceiver) {

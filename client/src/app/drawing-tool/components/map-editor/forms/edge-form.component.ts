@@ -5,7 +5,7 @@ import { cloneDeep, isNil } from 'lodash-es';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
+import { GraphEdge } from 'app/drawing-tool/services/interfaces';
 import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { PALETTE_COLORS } from 'app/drawing-tool/services/palette';
@@ -36,12 +36,12 @@ export class EdgeFormComponent implements AfterViewInit {
 
   paletteChoices = [...PALETTE_COLORS];
 
-  originalEdge: UniversalGraphEdge;
-  updatedEdge: UniversalGraphEdge;
+  originalEdge: GraphEdge;
+  updatedEdge: GraphEdge;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphEdge>,
-    updatedData: RecursivePartial<UniversalGraphEdge>
+    originalData: RecursivePartial<GraphEdge>,
+    updatedData: RecursivePartial<GraphEdge>
   }>();
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();

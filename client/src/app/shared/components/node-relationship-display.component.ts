@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { Source, UniversalGraphNode, UniversalGraphRelationship } from 'app/drawing-tool/services/interfaces';
+import { Source, GraphNode, UniversalGraphRelationship } from 'app/drawing-tool/services/interfaces';
 import { AssociationSnippet } from 'app/interfaces';
 
 import { getPubtatorSearchUrl } from '../constants';
@@ -49,7 +49,7 @@ export class NodeRelationshipComponent {
           id: databaseUrl,
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    } as Partial<GraphNode>));
 
     // Prevents the edge dragStart event from overriding the node dragStart
     event.stopPropagation();

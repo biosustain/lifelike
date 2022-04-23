@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash-es';
 
-import { GraphEntity, GraphEntityType, NodeGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, GraphGroup, GraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
@@ -28,12 +28,12 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
   setup() {
     this.selectionChangeSubscription = this.graphView.selection.changeObservable.subscribe(([newSelection, oldSelection]) => {
       if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node &&
-        this.graphView.placeNode(newSelection[0].entity as UniversalGraphNode).resizable) {
+        this.graphView.placeNode(newSelection[0].entity as GraphNode).resizable) {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
-        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveNodeResize(this.graphView, newSelection[0].entity as UniversalGraphNode), 100);
+        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveNodeResize(this.graphView, newSelection[0].entity as GraphNode), 100);
       } else if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Group) {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
-        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveGroupResize(this.graphView, newSelection[0].entity as NodeGroup), 100);
+        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveGroupResize(this.graphView, newSelection[0].entity as GraphGroup), 100);
       } else {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
       }
@@ -48,7 +48,7 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
 export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHandle> {
   protected originalData: OriginalData | undefined;
   protected dragStartPosition: Point = {x: 0, y: 0};
-  protected originalTarget: UniversalGraphNode | NodeGroup;
+  protected originalTarget: GraphNode | GraphGroup;
 
   protected readonly sideHandleMaker = (posX, posY, halfSize, execute) => ({
       execute,
@@ -60,7 +60,7 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
     })
 
   constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode | NodeGroup) {
+              target: GraphNode | GraphGroup) {
     super(graphView, target);
     this.originalTarget = cloneDeep(this.target);
   }
@@ -180,12 +180,12 @@ export class ActiveNodeResize extends ActiveResize {
           width: this.target.data.width,
           height: this.target.data.height,
         },
-      } as Partial<UniversalGraphNode>, {
+      } as Partial<GraphNode>, {
         data: {
           width: this.originalTarget.data.width,
           height: this.originalTarget.data.height,
         },
-      } as Partial<UniversalGraphNode>));
+      } as Partial<GraphNode>));
       this.originalTarget = cloneDeep(this.target);
     }
   }
@@ -195,14 +195,14 @@ export class ActiveNodeResize extends ActiveResize {
 // TODO: Update the width parameters of all the nodes so they would not be recalculated?
 // TODO: Update Actions that allow rollbacks
 export class ActiveGroupResize extends ActiveResize {
-  private originalGroup: NodeGroup;
-  private readonly targetGroup: NodeGroup;
+  private originalGroup: GraphGroup;
+  private readonly targetGroup: GraphGroup;
 
   constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode | NodeGroup) {
+              target: GraphNode | GraphGroup) {
     super(graphView, target);
-    this.originalGroup = cloneDeep(this.target) as NodeGroup;
-    this.targetGroup = this.target as NodeGroup;
+    this.originalGroup = cloneDeep(this.target) as GraphGroup;
+    this.targetGroup = this.target as GraphGroup;
   }
 
   getHandleBoundingBoxes(placedGroup: PlacedGroup): DragHandle[] {
@@ -323,7 +323,7 @@ export class ActiveGroupResize extends ActiveResize {
 
   protected activeDrag(event: MouseEvent, graphPosition: Point) {
     this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
-    this.graphView.invalidateGroup(this.target as NodeGroup);
+    this.graphView.invalidateGroup(this.target as GraphGroup);
     this.graphView.requestRender();
   }
 
@@ -345,13 +345,13 @@ export class ActiveGroupResize extends ActiveResize {
         data: {
           ...node.data
         },
-      } as Partial<UniversalGraphNode>, {
+      } as Partial<GraphNode>, {
         data: {
           // TODO: This is not really that precise - the groups are larger. Fix that.
           ...this.getNodeSize(this.originalGroup.members[i]),
           ...this.originalGroup.members[i].data,
         },
-      } as Partial<UniversalGraphNode>));
+      } as Partial<GraphNode>));
     }
 
     actions.push(new GraphEntityUpdate('Group resize', {
@@ -361,11 +361,11 @@ export class ActiveGroupResize extends ActiveResize {
       data: {
         ...this.targetGroup.data
       },
-    } as Partial<NodeGroup>, {
+    } as Partial<GraphGroup>, {
       data: {
         ...this.originalGroup.data
       },
-    } as Partial<NodeGroup>));
+    } as Partial<GraphGroup>));
 
     this.graphView.execute(new CompoundAction('Group resize', actions));
   }
@@ -373,7 +373,7 @@ export class ActiveGroupResize extends ActiveResize {
 }
 
 interface DragHandle extends Handle {
-  execute: (target: UniversalGraphNode,
+  execute: (target: GraphNode,
             originalData: OriginalData,
             dragStartPosition: Point,
             graphPosition: Point) => void;

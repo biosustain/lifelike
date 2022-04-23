@@ -35,7 +35,7 @@ import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resourc
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
 
-import { GraphEntity, UniversalGraph } from '../services/interfaces';
+import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 
 @Component({
@@ -187,7 +187,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
         this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
-          mapBufferToJson<UniversalGraph>(),
+          mapBufferToJson<KnowledgeMapGraph>(),
           mapJsonToGraph(),
           this.errorHandler.create({ label: 'Parse map data' }),
         ).subscribe(

@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, GraphNode } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AbstractObjectHandleBehavior, Handle, Point } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
@@ -31,7 +31,7 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
 
           this.graphView.behaviors.add(HANDLE_BEHAVIOR_KEY,
-            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNode), 2);
+            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as GraphNode), 2);
         } else {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
         }
@@ -46,7 +46,7 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
   protected size = 20;
 
   constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode) {
+              target: GraphNode) {
     super(graphView, target);
   }
 
@@ -54,7 +54,7 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
     if (subject != null && subject.type === GraphEntityType.Node) {
       this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
       this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
-        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
+        new ActiveEdgeCreationHelper(this.graphView, subject.entity as GraphNode), 10);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
@@ -105,7 +105,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   } = null;
 
   constructor(private readonly graphView: CanvasGraphView,
-              private readonly from: UniversalGraphNode) {
+              private readonly from: GraphNode) {
     super();
   }
 
@@ -139,7 +139,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
 
     if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
+      const node = subject.entity as GraphNode;
       if (node !== this.from) {
         this.graphView.execute(new EdgeCreation('Create connection', {
           from: this.from.hash,
