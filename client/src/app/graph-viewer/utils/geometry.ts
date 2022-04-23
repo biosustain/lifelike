@@ -1,9 +1,9 @@
 import intersects from 'intersects';
 
-import { Point } from './behaviors/abstract-object-handle-behavior';
+import { BoundingBox, Point } from './behaviors/abstract-object-handle-behavior';
 
-// TODO: Clean up / find an alternative
-export function pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
+// TODO: Refactor this during second round of refactorization
+export function pointOnRect({x, y}: Point, {minX, minY, maxX, maxY}: BoundingBox, validate: boolean): Point {
   if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
     return {x, y};
   }
