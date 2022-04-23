@@ -1,7 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { pointOnRect } from '../../geometry';
-import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
+import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
 
 export interface BaseRectangleNodeOptions {
   x: number;

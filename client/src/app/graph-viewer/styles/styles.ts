@@ -1,6 +1,6 @@
 import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
-import { BoundingBox, Point } from '../utils/behaviors/abstract-object-handle-behavior';
+import { BoundingBox, Point } from '../utils/canvas/shared';
 
 /**
  * A style of node rendering, used to render different shapes of nodes.

@@ -61,3 +61,32 @@ export function drawStroke(ctx: CanvasRenderingContext2D, stroke: Line, zoomRese
     ctx.stroke();
   }
 }
+
+export interface BoundingBox {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/**
+ * Check if one (child) bbox is cointained in full by the other (parent) bbox.
+ * @param parent - possibly larger Bounding Box to contain child
+ * @param child - possible smaller Bounding Box to be contained within parent
+ * PS Feel free to change the naming, I am not sure about it, just did not want to do bbox1 and bbox2
+ */
+export function isBBoxEnclosing(parent: BoundingBox, child: BoundingBox): boolean {
+  return child.minX >= parent.minX
+    && child.minY >= parent.minY
+    && child.maxX <= parent.maxX
+    && child.maxY <= parent.maxY;
+}
+
+export function isPointIntersecting(bbox: BoundingBox, {x, y}: Point): boolean {
+  return (bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y);
+}

@@ -1,6 +1,6 @@
 import intersects from 'intersects';
 
-import { BoundingBox, Point } from './behaviors/abstract-object-handle-behavior';
+import { BoundingBox, Point } from './canvas/shared';
 
 // TODO: Refactor this during second round of refactorization
 export function pointOnRect({x, y}: Point, {minX, minY, maxX, maxY}: BoundingBox, validate: boolean): Point {
