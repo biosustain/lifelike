@@ -46,6 +46,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
   legend: Map<string, string> = new Map<string, string>();
 
+  TOOLTIP_OFFSET = 100;
   WORD_CLOUD_MARGIN = 10;
   MAX_ALGO_INPUT = 1000;
   FONT_MIN = 12;
@@ -317,7 +318,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
         .style('display', 'block')
         .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
-        .style('top', (coordsOfText.y - coordsOfCloud.y) + 'px');
+        .style('top', (coordsOfText.y - this.TOOLTIP_OFFSET) + 'px');
     };
 
     // Get the word elements
