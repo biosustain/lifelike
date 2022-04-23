@@ -948,20 +948,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       ctx.beginPath();
       this.placeGroup(group).draw(this.transform);
     }
-    // // TODO: This is currently only for demo
-    // for (const d of this.layoutGroups) {
-    //   if (d.leaves.length) {
-    //     ctx.beginPath();
-    //     const bbox = this.getNodeBoundingBox(d.leaves.map(entry => entry.reference), 10);
-    //     ctx.fillStyle = d.color;
-    //     ctx.strokeStyle = d.color;
-    //     ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-    //     ctx.globalAlpha = 0.1;
-    //     ctx.fill();
-    //     ctx.globalAlpha = 1;
-    //     ctx.stroke();
-    //   }
-    // }
   }
 
   private* drawEdges(ctx: CanvasRenderingContext2D) {
