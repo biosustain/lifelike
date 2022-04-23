@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, ViewChild, AfterContentInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -100,12 +100,11 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
         combineLatest([
           this.route.queryParams,
-          this.route.fragment
         ]).pipe(
-          switchMap(([queryParams, fragment]) =>
+          switchMap(([queryParams]) =>
             // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
             // (do not kill route observable)
-            this.parseUrlFragmentToState(fragment).pipe(
+            this.parseUrlParamsToState(queryParams).pipe(
               catchError((err, o) => {
                 this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
                 // return empty observable so does not continue with that one
@@ -165,6 +164,10 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
   get selectedNetworkTrace() {
     return this.sankeyController.selectedNetworkTrace;
+  }
+
+  get selectedNetworkTraceIdx() {
+    return this.sankeyController.selectedNetworkTraceIdx;
   }
 
   get predefinedValueAccessor() {
@@ -316,10 +319,9 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     return modalRef;
   }
 
-  parseUrlFragmentToState(fragment: string): Observable<Partial<SankeyState>> {
+  parseUrlParamsToState(queryParams: Params): Observable<Partial<SankeyState>> {
     const state = {} as Partial<SankeyState>;
-    const params = new URLSearchParams(fragment ?? '');
-    for (const [param, value] of (params as any).entries()) {
+    for (const [param, value] of Object.entries(queryParams)) {
       switch (param) {
         case SankeyURLLoadParam.NETWORK_TRACE_IDX:
           state.networkTraceIdx = parseInt(value, 10) || 0;

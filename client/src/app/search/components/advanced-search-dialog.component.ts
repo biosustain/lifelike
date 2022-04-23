@@ -17,7 +17,7 @@ import { SearchType } from '../shared';
   templateUrl: './advanced-search-dialog.component.html',
   styleUrls: ['./advanced-search-dialog.component.scss']
 })
-export class AdvancedSearchDialogComponent implements OnInit {
+export class AdvancedSearchDialogComponent {
   @Input() set params(params: ContentSearchOptions) {
     this.form.setValue({
       ...this.form.value,
@@ -29,13 +29,9 @@ export class AdvancedSearchDialogComponent implements OnInit {
       // phrase: params.phrase ? params.phrase : '',
       // wildcards: params.wildcards ? params.wildcards : '',
     });
-
-    // Need to set initialCheckedNodes so we can toggle the corresponding checkboxes in the hierarchy tree
-    this.initialCheckedNodes = this.form.get('folders').value;
   }
   @Input() typeChoices: SearchType[] = [];
 
-  initialCheckedNodes: string[] = [];
   fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
   hierarchyLoaded = false;
 
@@ -55,9 +51,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   constructor(
     private readonly modal: NgbActiveModal,
     protected readonly filesystemService: FilesystemService,
-  ) {}
-
-  ngOnInit() {
+  ) {
     this.filesystemService.getHierarchy(true).subscribe((resp) => {
       this.fileHierarchyTree = resp.results.map(fileNodeObjectData => this.convertFODNodetoFONode(fileNodeObjectData));
       this.hierarchyLoaded = true;

@@ -34,6 +34,7 @@ export interface SankeyNode extends GraphNode {
 export interface SankeyLink extends GraphLink {
   l: number[];
   _id: SankeyId;
+  _index?: number | string;
   _trace?: SankeyTrace;
   _source?: SankeyNode | string | number;
   _target?: SankeyNode | string | number;

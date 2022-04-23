@@ -134,7 +134,7 @@
                         <ng-template #noSelectedTrace>Select Trace Network</ng-template>
                     </button>
                     <!-- add class dropdown-menu to avoid relayout -->
-                    <div ngbDropdownMenu class="dropdown-menu">
+                    <div ngbDropdownMenu class="dropdown-menu one-to-many-trace-dropdown">
                         <button (click)="selectNetworkTrace(i)" *ngFor="let trace of networkTraces; let i = index"
                                 ngbDropdownItem>
                             {{ trace?.name || trace?.description || 'Trace Description Unknown' }}
@@ -172,6 +172,8 @@
                     <app-sankey #sankey
                                 *ngIf="renderData"
                                 [data]="renderData"
+                                [networkTraceIdx]="selectedNetworkTraceIdx"
+                                [activeViewName]="activeViewName"
                                 (linkClicked)="selectLink($event)"
                                 (nodeClicked)="selectNode($event)"
                                 (backgroundClicked)="closeDetailsPanel();resetSelection()"
