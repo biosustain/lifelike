@@ -1,4 +1,4 @@
-import { GraphEntityType, GraphGroup, GraphEdge, GraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -7,7 +7,7 @@ import { GraphAction, GraphActionReceiver } from './actions';
  */
 export class NodeCreation implements GraphAction {
   constructor(public readonly description: string,
-              public readonly node: GraphNode,
+              public readonly node: UniversalGraphNode,
               public readonly select = false) {
   }
 
@@ -31,10 +31,10 @@ export class NodeCreation implements GraphAction {
  * Represents the deletion of a node.
  */
 export class NodeDeletion implements GraphAction {
-  private removedEdges: GraphEdge[];
+  private removedEdges: UniversalGraphEdge[];
 
   constructor(public description: string,
-              public node: GraphNode) {
+              public node: UniversalGraphNode) {
   }
 
   apply(component: GraphActionReceiver) {
@@ -65,7 +65,7 @@ export class NodeMove implements GraphAction {
   previousY: number;
 
   constructor(public description: string,
-              public node: GraphNode,
+              public node: UniversalGraphNode,
               public nextX: number,
               public nextY: number) {
     this.previousX = node.data.x;
@@ -89,8 +89,8 @@ export class NodeMove implements GraphAction {
 export class NodesGroupAdd implements GraphAction {
 
   constructor(public description: string,
-              public nodes: GraphNode[],
-              public group: GraphGroup) {
+              public nodes: UniversalGraphNode[],
+              public group: UniversalGraphGroup) {
   }
 
   apply(component: GraphActionReceiver): void {
@@ -108,8 +108,8 @@ export class NodesGroupAdd implements GraphAction {
 export class NodesGroupRemoval implements GraphAction {
 
   constructor(public description: string,
-              public nodes: GraphNode[],
-              public group: GraphGroup) {
+              public nodes: UniversalGraphNode[],
+              public group: UniversalGraphGroup) {
   }
 
   apply(component: GraphActionReceiver): void {

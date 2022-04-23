@@ -4,12 +4,12 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 
 import {
   GraphEntity,
-  GraphEntityType, GraphGroup,
-  GraphEdgeStyle,
+  GraphEntityType, UniversalGraphGroup,
+  UniversalEdgeStyle,
   KnowledgeMapGraph,
-  GraphEdge,
+  UniversalGraphEdge,
   UniversalGraphEntity,
-  GraphNode,
+  UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce } from 'app/shared/utils/types';
@@ -331,7 +331,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.renderTree.clear();
   }
 
-  removeNode(node: GraphNode): { found: boolean; removedEdges: GraphEdge[] } {
+  removeNode(node: UniversalGraphNode): { found: boolean; removedEdges: UniversalGraphEdge[] } {
     const result = super.removeNode(node);
     if (result.found) {
       this.renderTree.delete(node);
@@ -342,7 +342,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return result;
   }
 
-  removeEdge(edge: GraphEdge): boolean {
+  removeEdge(edge: UniversalGraphEdge): boolean {
     const found = super.removeEdge(edge);
     if (found) {
       this.renderTree.delete(edge);
@@ -392,7 +392,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.hoverPosition;
   }
 
-  placeNode(d: GraphNode): PlacedNode {
+  placeNode(d: UniversalGraphNode): PlacedNode {
     let placedNode = this.renderTree.get(d) as PlacedNode;
     if (placedNode) {
       return placedNode;
@@ -409,7 +409,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  placeEdge(d: GraphEdge): PlacedEdge {
+  placeEdge(d: UniversalGraphEdge): PlacedEdge {
     let placedEdge = this.renderTree.get(d) as PlacedEdge;
     if (placedEdge) {
       return placedEdge;
@@ -431,7 +431,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  placeGroup(d: GraphGroup): PlacedGroup {
+  placeGroup(d: UniversalGraphGroup): PlacedGroup {
     const placedGroup = this.renderTree.get(d) as PlacedGroup;
     if (placedGroup) {
       return placedGroup;
@@ -457,7 +457,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * that might affect how the node is rendered, this method must be called.
    * @param d the node
    */
-  invalidateNode(d: GraphNode): void {
+  invalidateNode(d: UniversalGraphNode): void {
 
     this.renderTree.delete(d);
     for (const edge of this.edges) {
@@ -472,11 +472,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * that might affect how the edge is rendered, this method must be called.
    * @param d the edge
    */
-  invalidateEdge(d: GraphEdge): void {
+  invalidateEdge(d: UniversalGraphEdge): void {
     this.renderTree.delete(d);
   }
 
-  invalidateGroup(d: GraphGroup): void {
+  invalidateGroup(d: UniversalGraphGroup): void {
     for (const node of d.members) {
       this.invalidateNode(node);
     }
@@ -487,9 +487,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
    * @param d node or group casted to node.
    */
-  invalidateNodelike(d: GraphNode): void {
+  invalidateNodelike(d: UniversalGraphNode): void {
     if (d.label === GROUP_LABEL) {
-      this.invalidateGroup(d as GraphGroup);
+      this.invalidateGroup(d as UniversalGraphGroup);
     } else {
       this.invalidateNode(d);
     }
@@ -502,11 +502,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    */
   invalidateEntity(entity: GraphEntity): void {
     if (entity.type === GraphEntityType.Node) {
-      this.invalidateNode(entity.entity as GraphNode);
+      this.invalidateNode(entity.entity as UniversalGraphNode);
     } else if (entity.type === GraphEntityType.Edge) {
-      this.invalidateEdge(entity.entity as GraphEdge);
+      this.invalidateEdge(entity.entity as UniversalGraphEdge);
     } else if (entity.type === GraphEntityType.Group) {
-      this.invalidateGroup(entity.entity as GraphGroup);
+      this.invalidateGroup(entity.entity as UniversalGraphGroup);
     }
   }
 
@@ -514,7 +514,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Allows checking if node has a group without exposing groupHashMap for modification
    * @param node - node to check
    */
-  getNodeGroup(node: GraphNode): GraphGroup | undefined {
+  getNodeGroup(node: UniversalGraphNode): UniversalGraphGroup | undefined {
     return this.groupHashMap.get(node.hash);
   }
 
@@ -584,15 +584,15 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     if (e.type === GraphEntityType.Edge) {
       // Pan to edge
-      this.applyPanToEdge(e.entity as GraphEdge, duration, padding);
+      this.applyPanToEdge(e.entity as UniversalGraphEdge, duration, padding);
     } else {
       // Pan to node
-      this.applyPanToNode(e.entity as GraphNode, duration, padding);
+      this.applyPanToNode(e.entity as UniversalGraphNode, duration, padding);
     }
   }
 
   private applyPanToEdge(
-    edge: GraphEdge,
+    edge: UniversalGraphEdge,
     duration: number = 1500,
     padding = 50,
   ) {
@@ -609,8 +609,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       select = select.transition().duration(duration);
     }
 
-    const from: GraphNode = this.nodeHashMap.get(edge.from);
-    const to: GraphNode = this.nodeHashMap.get(edge.to);
+    const from: UniversalGraphNode = this.nodeHashMap.get(edge.from);
+    const to: UniversalGraphNode = this.nodeHashMap.get(edge.to);
 
     const {minX, minY, maxX, maxY} = this.getEdgeBoundingBox([edge], padding);
 
@@ -633,7 +633,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.invalidateAll();
   }
 
-  private applyPanToNode(node: GraphNode, duration: number = 1500, padding = 50) {
+  private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
     this.previousZoomToFitPadding = padding;
 
     const canvasWidth = this.canvas.width;
@@ -1006,7 +1006,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    */
   private drawEntityHighlightBox(ctx: CanvasRenderingContext2D, entity: GraphEntity, strong: boolean) {
     if (entity.type === GraphEntityType.Edge) {
-      const d = entity.entity as GraphEdge;
+      const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodeByHash(d.from);
       const to = this.expectNodeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
@@ -1015,7 +1015,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
       const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
-      const styleData: GraphEdgeStyle = nullCoalesce(d.style, {});
+      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
       const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
       const lineWidth = lineWidthScale * 1 + 20;
 
@@ -1050,7 +1050,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   private drawEntityBackground(ctx: CanvasRenderingContext2D, entity: GraphEntity,
                                fillColor: string) {
     if (entity.type === GraphEntityType.Edge) {
-      const d = entity.entity as GraphEdge;
+      const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodeByHash(d.from);
       const to = this.expectNodeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
@@ -1059,7 +1059,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
       const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
-      const styleData: GraphEdgeStyle = nullCoalesce(d.style, {});
+      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
       const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
       const lineWidth = lineWidthScale * 1 + 20;
 

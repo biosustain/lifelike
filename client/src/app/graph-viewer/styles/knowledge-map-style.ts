@@ -1,12 +1,12 @@
 import {
   DETAIL_NODE_LABELS,
   Hyperlink,
-  GraphGroup,
+  UniversalGraphGroup,
   Source,
-  GraphEdgeStyle,
-  GraphEdge,
-  GraphNode,
-  GraphNodeStyle,
+  UniversalEdgeStyle,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+  UniversalNodeStyle,
 } from 'app/drawing-tool/services/interfaces';
 import {
   EdgeRenderStyle,
@@ -65,8 +65,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
   constructor(protected readonly imageManager: ResourceManager<string, CanvasImageSource>) {
   }
 
-  placeNode(d: GraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
-    const styleData: GraphNodeStyle = d.style || {};
+  placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
+    const styleData: UniversalNodeStyle = d.style || {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
     const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
     const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
@@ -233,15 +233,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     }
   }
 
-  placeEdge(d: GraphEdge,
-            from: GraphNode,
-            to: GraphNode,
+  placeEdge(d: UniversalGraphEdge,
+            from: UniversalGraphNode,
+            to: UniversalGraphNode,
             placedFrom: PlacedNode,
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
     const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS.has(to.label);
-    const styleData: GraphEdgeStyle = d.style || {};
+    const styleData: UniversalEdgeStyle = d.style || {};
     const fontSizeScale = styleData.fontSizeScale ?? 1;
     const strokeColor = styleData.strokeColor ?? borderBlue;
     const lineType = styleData.lineType ?? connectedToNotes ? 'dashed' : this.standardBorder;
@@ -294,12 +294,12 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     });
   }
 
-  placeGroup(d: GraphGroup,
+  placeGroup(d: UniversalGraphGroup,
              ctx: CanvasRenderingContext2D,
              options: PlacementOptions): PlacedGroup {
 
 
-    const styleData: GraphNodeStyle = d.style || {};
+    const styleData: UniversalNodeStyle = d.style || {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
     const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
 

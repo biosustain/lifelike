@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
 
-import { GraphEntity, GraphEntityType, GraphEdge, GraphNode } from '../services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from '../services/interfaces';
 
 @Component({
   selector: 'app-info-view-panel',
@@ -22,10 +22,10 @@ export class InfoViewPanelComponent {
 
   get name(): string {
     if (this.selected.type === GraphEntityType.Node) {
-      const node = this.selected.entity as GraphNode;
+      const node = this.selected.entity as UniversalGraphNode;
       return node.display_name;
     } else if (this.selected.type === GraphEntityType.Edge) {
-      const edge = this.selected.entity as GraphEdge;
+      const edge = this.selected.entity as UniversalGraphEdge;
       return edge.label;
     } else {
       return '?unknown entity type?';
