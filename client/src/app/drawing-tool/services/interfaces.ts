@@ -30,11 +30,6 @@ export interface GraphGroup extends GraphNode {
   margin: number;
 }
 
-// Created for export purpose: do not duplicate the nodes on export
-export interface SimplifiedGraphGroup extends GraphNode {
-  hashes: string[];
-}
-
 export interface GraphNode {
   data: {
     x: number;
@@ -85,12 +80,6 @@ export interface KnowledgeMapGraph {
   nodes: GraphNode[];
   edges: GraphEdge[];
   groups: GraphGroup[];
-}
-
-export interface ExportableGraph {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  groups: SimplifiedGraphGroup[];
 }
 
 export declare type UniversalGraphEntity = GraphNode | GraphEdge | GraphGroup;
