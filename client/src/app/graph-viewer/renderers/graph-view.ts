@@ -8,12 +8,12 @@ import {
   GraphEntity,
   GraphEntityType,
   Hyperlink,
-  GraphGroup,
+  UniversalGraphGroup,
   Source,
   KnowledgeMapGraph,
-  GraphEdge,
+  UniversalGraphEdge,
   UniversalGraphEntity,
-  GraphNode,
+  UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
@@ -40,36 +40,36 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Collection of nodes displayed on the graph. This is not a view --
    * it is a direct copy of nodes being rendered.
    */
-  nodes: GraphNode[] = [];
+  nodes: UniversalGraphNode[] = [];
 
   /**
    * Collection of nodes displayed on the graph. This is not a view --
    * it is a direct copy of edges being rendered.
    */
-  edges: GraphEdge[] = [];
+  edges: UniversalGraphEdge[] = [];
 
   /**
    * Collection of layout groups on the graph.
    */
-  groups: GraphGroup[] = [];
+  groups: UniversalGraphGroup[] = [];
 
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
-  protected nodeHashMap: Map<string, GraphNode> = new Map();
+  protected nodeHashMap: Map<string, UniversalGraphNode> = new Map();
 
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
-  protected groupHashMap: Map<string, GraphGroup> = new Map();
+  protected groupHashMap: Map<string, UniversalGraphGroup> = new Map();
 
   /**
    * Keep track of fixed X/Y positions that come from dragging nodes. These
    * values are passed to the automatic layout routines .
    */
-  readonly nodePositionOverrideMap: Map<GraphNode, [number, number]> = new Map();
+  readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   /**
    * Stores the counters for linked documents
@@ -354,7 +354,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Add the given node to the graph.
    * @param node the node
    */
-  addNode(node: GraphNode): void {
+  addNode(node: UniversalGraphNode): void {
     if (this.nodeHashMap.has(node.hash)) {
       throw new Error('trying to add a node that already is in the node list is bad');
     }
@@ -368,9 +368,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param node the node
    * @return true if the node was found
    */
-  removeNode(node: GraphNode): {
+  removeNode(node: UniversalGraphNode): {
     found: boolean,
-    removedEdges: GraphEdge[],
+    removedEdges: UniversalGraphEdge[],
   } {
     const removedEdges = [];
     let foundNode = false;
@@ -421,7 +421,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Mark the node as being updated.
    * @param node the node
    */
-  updateNode(node: GraphNode): void {
+  updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
     if (this.groupHashMap.has(node.hash)) {
       this.updateGroup(this.groupHashMap.get(node.hash));
@@ -432,7 +432,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Add the given edge to the graph.
    * @param edge the edge
    */
-  addEdge(edge: GraphEdge): void {
+  addEdge(edge: UniversalGraphEdge): void {
     const from = this.expectNodeByHash(edge.from);
     const to = this.expectNodeByHash(edge.to);
     this.edges.push(edge);
@@ -445,7 +445,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param edge the edge
    * @return true if the edge was found
    */
-  removeEdge(edge: GraphEdge): boolean {
+  removeEdge(edge: UniversalGraphEdge): boolean {
     let foundNode = false;
     const from = this.expectNodeByHash(edge.from);
     const to = this.expectNodeByHash(edge.to);
@@ -476,7 +476,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Mark the edge as being updated.
    * @param edge the node
    */
-  updateEdge(edge: GraphEdge): void {
+  updateEdge(edge: UniversalGraphEdge): void {
     this.invalidateEdge(edge);
     this.requestRender();
   }
@@ -485,7 +485,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Create group of nodes
    * @param group - data of the group
    */
-  addGroup(group: GraphGroup) {
+  addGroup(group: UniversalGraphGroup) {
     group.members.forEach((member) => {
       this.tryRemoveNodeFromGroup(member.hash);
       this.groupHashMap.set(member.hash, group);
@@ -498,7 +498,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param group to recalculate
    */
   // TODO: Change the margin component from % to px
-  recalculateGroup(group: GraphGroup): GraphGroup {
+  recalculateGroup(group: UniversalGraphGroup): UniversalGraphGroup {
     const bbox = this.getNodeBoundingBox(group.members || [], group.margin);
     const { minX, minY, maxX, maxY } = bbox;
     const width = Math.abs(maxX - minX);
@@ -533,7 +533,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Ungroup nodes
    * @param group - group to be removed
    */
-  removeGroup(group: GraphGroup): boolean {
+  removeGroup(group: UniversalGraphGroup): boolean {
     let foundNode = false;
 
     for (let i = 0; i < this.groups.length; i++) {
@@ -558,7 +558,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     return foundNode;
   }
 
-  updateGroup(group: GraphGroup) {
+  updateGroup(group: UniversalGraphGroup) {
     // TODO: Maybe do that only on move of a member, not on every update
     // TODO: This breaks dragging
     this.recalculateGroup(group);
@@ -571,7 +571,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param newMembers New nodes to be added
    * @param group Group to extend
    */
-  addToGroup(newMembers: GraphNode[], group: GraphGroup) {
+  addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup) {
     for (const node of newMembers) {
       this.tryRemoveNodeFromGroup(node.hash);
       group.members.push(node);
@@ -586,7 +586,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param newMembers nodes to delete
    * @param group group to delete from
    */
-  removeFromGroup(newMembers: GraphNode[], group: GraphGroup) {
+  removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup) {
     for (const node of newMembers) {
       this.tryRemoveNodeFromGroup(node.hash);
     }
@@ -603,7 +603,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * that might affect how the node is rendered, this method must be called.
    * @param d the node
    */
-  invalidateNode(d: GraphNode): void {
+  invalidateNode(d: UniversalGraphNode): void {
   }
 
     /**
@@ -611,10 +611,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
      * that might affect how the edge is rendered, this method must be called.
      * @param d the edge
      */
-  invalidateEdge(d: GraphEdge): void {
+  invalidateEdge(d: UniversalGraphEdge): void {
   }
 
-  invalidateGroup(d: GraphGroup): void {
+  invalidateGroup(d: UniversalGraphGroup): void {
     for (const node of d.members) {
       this.invalidateNode(node);
     }
@@ -679,7 +679,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param nodes the nodes to check
    * @param padding padding around all the nodes
    */
-  getNodeBoundingBox(nodes: GraphNode[], padding = 0) {
+  getNodeBoundingBox(nodes: UniversalGraphNode[], padding = 0) {
     return this.getGroupBoundingBox(nodes.map(node => this.placeNode(node).getBoundingBox()), padding);
   }
 
@@ -688,7 +688,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param edges the edges to check
    * @param padding padding around all the edges
    */
-  getEdgeBoundingBox(edges: GraphEdge[], padding = 0) {
+  getEdgeBoundingBox(edges: UniversalGraphEdge[], padding = 0) {
     return this.getGroupBoundingBox(edges.map(edge => this.placeEdge(edge).getBoundingBox()), padding);
   }
 
@@ -731,7 +731,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Grab the node referenced by the given hash.
    * @param hash the hash
    */
-  getNodeByHash(hash: string): GraphNode | undefined {
+  getNodeByHash(hash: string): UniversalGraphNode | undefined {
     return this.nodeHashMap.get(hash);
   }
 
@@ -739,7 +739,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Grab the node referenced by the given hash. Throws an error if not found.
    * @param hash the hash
    */
-  expectNodeByHash(hash: string): GraphNode {
+  expectNodeByHash(hash: string): UniversalGraphNode {
     const node = this.getNodeByHash(hash);
     if (node == null) {
       throw new Error('missing node link');
@@ -752,7 +752,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param nodes list of nodes to search through
    * @param position - {x, y} of the position
    */
-  getNodeAtPosition(nodes: GraphNode[], position: Point): GraphNode | undefined {
+  getNodeAtPosition(nodes: UniversalGraphNode[], position: Point): UniversalGraphNode | undefined {
     const possibleNodes = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
@@ -785,8 +785,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param edges list of edges to search through
    * @param position - {x, y} coordinated of the position
    */
-  getEdgeAtPosition(edges: GraphEdge[], position: Point): GraphEdge | undefined {
-    let bestCandidate: { edge: GraphEdge, distanceUnsq: number } = null;
+  getEdgeAtPosition(edges: UniversalGraphEdge[], position: Point): UniversalGraphEdge | undefined {
+    let bestCandidate: { edge: UniversalGraphEdge, distanceUnsq: number } = null;
     const distanceUnsqThreshold = 5 * 5;
 
     for (const d of edges) {
@@ -816,7 +816,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   // TODO: docs
-  getGroupAtPosition(groups: GraphGroup[], point: Point): GraphGroup | undefined {
+  getGroupAtPosition(groups: UniversalGraphGroup[], point: Point): UniversalGraphGroup | undefined {
     for (const group of groups) {
       const placedGroup = this.placeGroup(group);
       const bbox = placedGroup.getBoundingBox();
@@ -833,7 +833,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param nodes list of nodes to search through
    * @param bbox bounding box to check
    */
-  getNodesWithinBBox(nodes: GraphNode[], bbox: BoundingBox): GraphNode[] {
+  getNodesWithinBBox(nodes: UniversalGraphNode[], bbox: BoundingBox): UniversalGraphNode[] {
     const results = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
@@ -851,7 +851,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param edges list of edges to search through
    * @param bbox bounding box to check
    */
-  getEdgesWithinBBox(edges: GraphEdge[], bbox: BoundingBox): GraphEdge[] {
+  getEdgesWithinBBox(edges: UniversalGraphEdge[], bbox: BoundingBox): UniversalGraphEdge[] {
     const results = [];
     for (let i = edges.length - 1; i >= 0; --i) {
       const d = edges[i];
@@ -869,7 +869,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param groups - list of groups to check
    * @param bbox bounding box to check
    */
-  getGroupsWithinBBox(groups: GraphGroup[], bbox: BoundingBox): GraphGroup[] {
+  getGroupsWithinBBox(groups: UniversalGraphGroup[], bbox: BoundingBox): UniversalGraphGroup[] {
     const results = [];
     for (let i = groups.length - 1; i >= 0; --i) {
       const group = groups[i];
@@ -951,7 +951,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * returned object has the style of the node baked into it.
    * @param d the node
    */
-  abstract placeNode(d: GraphNode): PlacedNode;
+  abstract placeNode(d: UniversalGraphNode): PlacedNode;
 
   /**
    * Place the given edge onto the canvas, which involves calculating the
@@ -960,10 +960,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * returned object has the style of the edge baked into it.
    * @param d the edge
    */
-  abstract placeEdge(d: GraphEdge): PlacedEdge;
+  abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
   // TODO: Docs
-  abstract placeGroup(d: GraphGroup): PlacedGroup;
+  abstract placeGroup(d: UniversalGraphGroup): PlacedGroup;
 
   /**
    * Place the given entity onto the canvas, which involves calculating the
@@ -974,11 +974,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   placeEntity(d: GraphEntity): PlacedObject {
     if (d.type === GraphEntityType.Node) {
-      return this.placeNode(d.entity as GraphNode);
+      return this.placeNode(d.entity as UniversalGraphNode);
     } else if (d.type === GraphEntityType.Edge) {
-      return this.placeEdge(d.entity as GraphEdge);
+      return this.placeEdge(d.entity as UniversalGraphEdge);
     } else if (d.type === GraphEntityType.Group) {
-      return this.placeGroup(d.entity as GraphGroup);
+      return this.placeGroup(d.entity as UniversalGraphGroup);
     } else {
       throw new Error('unknown type: ' + d.type);
     }
@@ -1147,7 +1147,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
     const layoutNodes: GraphLayoutNode[] = this.nodes.map((d, i) => new class implements GraphLayoutNode {
       index: number = i;
-      reference: GraphNode = d;
+      reference: UniversalGraphNode = d;
       vx = 0;
       vy = 0;
 
@@ -1259,14 +1259,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 }
 
 /**
- * Represents the object mirroring a {@link GraphNode} that is
+ * Represents the object mirroring a {@link UniversalGraphNode} that is
  * passed to the layout algorithm.
  */
 interface GraphLayoutNode extends InputNode {
   /**
    * A link to the original node that this object is mirroring.
    */
-  reference: GraphNode;
+  reference: UniversalGraphNode;
   index: number;
   x: number;
   y: number;
@@ -1277,14 +1277,14 @@ interface GraphLayoutNode extends InputNode {
 }
 
 /**
- * Represents the object mirroring a {@link GraphEdge} that is
+ * Represents the object mirroring a {@link UniversalGraphEdge} that is
  * passed to the layout algorithm.
  */
 interface GraphLayoutLink extends Link<GraphLayoutNode> {
   /**
    * A link to the original edge that this object is mirroring.
    */
-  reference: GraphEdge;
+  reference: UniversalGraphEdge;
   source: GraphLayoutNode;
   target: GraphLayoutNode;
   index?: number;

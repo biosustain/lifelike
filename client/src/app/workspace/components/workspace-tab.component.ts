@@ -5,7 +5,7 @@ import { isNil } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 
-import { GraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
@@ -94,7 +94,7 @@ export class WorkspaceTabComponent implements OnChanges {
             }
           ]
         }
-      } as Partial<GraphNode>));
+      } as Partial<UniversalGraphNode>));
       dropTarget.dispatchEvent(synthDropEvent);
     });
   }

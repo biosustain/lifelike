@@ -9,7 +9,7 @@ import {
   Hyperlink,
   Reference,
   Source,
-  GraphNode,
+  UniversalGraphNode,
   GraphNodeTemplate,
 } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
@@ -137,7 +137,7 @@ export class AnnotationTagHandler extends TagHandler {
         },
       };
 
-      const dragImageNode: GraphNode = {
+      const dragImageNode: UniversalGraphNode = {
         ...copiedNode,
         hash: '',
         data: {

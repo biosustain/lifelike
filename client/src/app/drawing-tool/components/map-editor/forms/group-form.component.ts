@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { GraphGroup } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
 import { RecursivePartial } from 'app/shared/utils/types';
 
 import { EntityForm } from './entity-form';
@@ -18,12 +18,12 @@ import { EntityForm } from './entity-form';
 export class GroupFormComponent extends EntityForm  {
 
 
-  originalGroup: GraphGroup;
-  updatedGroup: GraphGroup;
+  originalGroup: UniversalGraphGroup;
+  updatedGroup: UniversalGraphGroup;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<GraphGroup>,
-    updatedData: RecursivePartial<GraphGroup>,
+    originalData: RecursivePartial<UniversalGraphGroup>,
+    updatedData: RecursivePartial<UniversalGraphGroup>,
   }>();
 
   constructor(protected readonly workspaceManager: WorkspaceManager,
