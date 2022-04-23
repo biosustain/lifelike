@@ -13,9 +13,9 @@ export interface BaseRectangleNodeOptions {
 
 export abstract class BaseRectangleNode extends PlacedNode {
 
-  protected defaultWidth = 100;
-  protected defaultHeight = 100;
-  protected padding = 10;
+  protected readonly DEFAULT_WIDTH = 100;
+  protected readonly DEFAULT_HEIGHT = 100;
+  protected readonly padding = 10;
 
   readonly x: number;
   readonly y: number;
@@ -23,51 +23,39 @@ export abstract class BaseRectangleNode extends PlacedNode {
   readonly height: number;
   nodeWidth: number;
   nodeHeight: number;
-  readonly nodeX: number;
-  readonly nodeY: number;
-  readonly nodeX2: number;
-  readonly nodeY2: number;
+  readonly bbox;
 
   constructor(protected readonly ctx: CanvasRenderingContext2D, options: BaseRectangleNodeOptions) {
     super();
     Object.assign(this, options);
 
-    this.nodeWidth = (this.width ?? this.defaultWidth) + this.padding;
-    this.nodeHeight = ( this.height ?? this.defaultHeight) + this.padding;
-    this.nodeX = this.x - this.nodeWidth / 2;
-    this.nodeY = this.y - this.nodeHeight / 2;
-    this.nodeX2 = this.nodeX + this.nodeWidth;
-    this.nodeY2 = this.nodeY + this.nodeHeight;
+    this.nodeWidth = (this.width ?? this.DEFAULT_WIDTH) + this.padding;
+    this.nodeHeight = ( this.height ?? this.DEFAULT_HEIGHT) + this.padding;
+    const minX = this.x - this.nodeWidth / 2;
+    const minY = this.y - this.nodeHeight / 2;
+    const maxX = minX + this.nodeWidth;
+    const maxY = minY + this.nodeHeight;
+    this.bbox = {minX, minY, maxX, maxY};
   }
 
   getBoundingBox(): BoundingBox {
-    return {
-      minX: this.nodeX,
-      minY: this.nodeY,
-      maxX: this.nodeX2,
-      maxY: this.nodeY2,
-    };
+    return this.bbox;
   }
 
   isPointIntersecting({x, y}: Point): boolean {
-    return x >= this.nodeX && x <= this.nodeX2 && y >= this.nodeY && y <= this.nodeY2;
+    return x >= this.bbox.minX && x <= this.bbox.maxX && y >= this.bbox.minY && y <= this.bbox.maxY;
   }
 
   isBBoxEnclosing(bbox: BoundingBox): boolean {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
-    const {x, y} = pointOnRect(
-      lineOriginX,
-      lineOriginY,
-      this.nodeX,
-      this.nodeY,
-      this.nodeX2,
-      this.nodeY2,
+  lineIntersectionPoint(lineOrigin: Point): Point {
+    return pointOnRect(
+      lineOrigin,
+      this.bbox,
       true,
     );
-    return [x, y];
   }
 
 

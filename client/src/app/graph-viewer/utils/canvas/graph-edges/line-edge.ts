@@ -8,8 +8,8 @@ import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
 import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 
 export interface StandardEdgeOptions {
-  source: { x: number, y: number };
-  target: { x: number, y: number };
+  source: Point;
+  target: Point;
   textbox?: TextElement;
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
@@ -21,8 +21,8 @@ export interface StandardEdgeOptions {
  * Draws an edge using a {@link Line}.
  */
 export class LineEdge extends PlacedEdge {
-  readonly source: { x: number, y: number };
-  readonly target: { x: number, y: number };
+  readonly source: Point;
+  readonly target: Point;
   readonly textbox: TextElement | undefined;
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;

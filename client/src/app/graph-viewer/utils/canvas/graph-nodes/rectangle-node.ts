@@ -25,7 +25,7 @@ export class RectangleNode extends BaseRectangleNode {
   readonly forceVisibleText = false;
 
   // This controls how 'rounded' the rect is
-  readonly arcSize = 5;
+  readonly ARC_SIZE = 5;
 
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
@@ -44,11 +44,11 @@ export class RectangleNode extends BaseRectangleNode {
     // Node shape
     ctx.save();
     (ctx as any).roundedRect(
-      this.nodeX,
-      this.nodeY,
+      this.bbox.minX,
+      this.bbox.minY,
       this.nodeWidth,
       this.nodeHeight,
-      this.arcSize,
+      this.ARC_SIZE,
     );
 
     drawStrokeAndFill(ctx, this.shapeFillColor);
