@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { isEmpty } from 'lodash-es';
@@ -48,16 +48,15 @@ export class ObjectSelectionDialogComponent
   }
 
   getValue(): Promise<readonly FilesystemObject[]> {
-    return this.objectSelect.object$.pipe(
-      switchMap((object: FilesystemObject) => object.children.selection$.pipe(
-        map(items => isEmpty(items) ? [object] : items)
-      )),
-      first(),
+    return this.objectSelect.object.children.selection$.pipe(
+      map(items => isEmpty(items) ? [this.objectSelect.object] : items)
+    ).pipe(
+      first()
     ).toPromise();
   }
 
   submit() {
-    return this.objectSelect.object$.pipe(
+    return of(this.objectSelect.object).pipe(
       switchMap((object: FilesystemObject) =>
         iif(
           () => object?.hashId != null,

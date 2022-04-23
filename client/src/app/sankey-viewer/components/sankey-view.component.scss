@@ -20,6 +20,11 @@
   }
 }
 
+.one-to-many-trace-dropdown {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
 .scrollbar-with-value {
   width: calc(100% - 3ch);
   vertical-align: middle;

@@ -2,9 +2,18 @@ import { ControlValueAccessor } from '@angular/forms';
 
 export abstract class AbstractControlValueAccessor<T> implements ControlValueAccessor {
 
-  value: T = this.getDefaultValue();
   private changeCallback: any;
   private touchCallback: any;
+
+  _value: T;
+
+  get value() {
+    return this._value ?? this.getDefaultValue();
+  }
+
+  set value(value) {
+    this._value = value;
+  }
 
   abstract getDefaultValue(): T;
 

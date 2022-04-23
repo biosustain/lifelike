@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ContentChild, TemplateRef } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
