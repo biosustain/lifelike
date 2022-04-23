@@ -54,7 +54,7 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type GraphNodeTemplate =
+export type UniversalGraphNodeTemplate =
   Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>
   & { data?: Partial<UniversalEntityData>, style?: Partial<UniversalNodeStyle> };
 

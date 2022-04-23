@@ -3,7 +3,7 @@ import 'canvas-plus';
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import { defaultLabelFontSize, drawStroke, drawStrokeAndFill, visibleTextThreshold } from '../shared';
+import { DEFAULT_LABEL_FONT_SIZE, drawStroke, drawStrokeAndFill, VISIBLE_TEXT_THRESHOLD } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -39,7 +39,7 @@ export class RectangleNode extends BaseRectangleNode {
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = parseFloat(this.textbox.font);
     const visibleText = this.forceVisibleText ||
-      transform.k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
+      transform.k >= VISIBLE_TEXT_THRESHOLD * (DEFAULT_LABEL_FONT_SIZE / fontSize);
 
     // Node shape
     ctx.save();

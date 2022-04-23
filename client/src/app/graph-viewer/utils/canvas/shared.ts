@@ -6,13 +6,23 @@ import { Line } from './lines/lines';
 // ---------------------------------
 
 // First threshold - we want start to modify the fonts to increase visibility/remove text from nodes
-export const visibleTextThreshold = 0.4;
+export const VISIBLE_TEXT_THRESHOLD = 0.4;
 // Second threshold - we remove all text from the graph
-export const noTextThreshold = 0.15;
+export const NO_TEXT_THRESHOLD = 0.15;
 
 // Knowledge-map styles
-export const defaultLabelFontSize = 16;
-export const borderBlue = '#2B7CE9';
+export const DEFAULT_LABEL_FONT_SIZE = 16;
+export const BORDER_BLUE_COLOR = '#2B7CE9';
+
+
+export enum LineTypes {
+  Dashed = 'dashed',
+  LongDashed = 'long-dashed',
+  Dotted = 'dotted',
+  Blank = 'none',
+  Solid = 'solid',
+  TwoDash = 'two-dashed'
+}
 
 // ---------------------------------
 // Shared functions
@@ -28,9 +38,9 @@ export const borderBlue = '#2B7CE9';
 export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: number, y: number) {
   const oldFont = textbox.font;
   const fontSize = parseFloat(oldFont);
-  const visibleText = k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
+  const visibleText = k >= VISIBLE_TEXT_THRESHOLD * (DEFAULT_LABEL_FONT_SIZE / fontSize);
   if (!visibleText) {
-    textbox.font = ((defaultLabelFontSize * visibleTextThreshold) / k)
+    textbox.font = ((DEFAULT_LABEL_FONT_SIZE * VISIBLE_TEXT_THRESHOLD) / k)
       + 'px' + oldFont.split('px').pop();
   }
   textbox.drawCenteredAt(x, y);
