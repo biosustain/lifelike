@@ -23,7 +23,7 @@ export abstract class BaseRectangleNode extends PlacedNode {
   readonly height: number;
   nodeWidth: number;
   nodeHeight: number;
-  readonly bbox;
+  readonly bbox: BoundingBox;
 
   constructor(protected readonly ctx: CanvasRenderingContext2D, options: BaseRectangleNodeOptions) {
     super();

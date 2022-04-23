@@ -41,16 +41,16 @@ import { DashedLine } from '../utils/canvas/lines/dashed';
 import { ResourceManager } from '../utils/resource/resource-manager';
 import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
 import { GroupNode } from '../utils/canvas/graph-groups/group-node';
-import { borderBlue, defaultLabelFontSize } from '../utils/canvas/shared';
+import { BORDER_BLUE_COLOR, DEFAULT_LABEL_FONT_SIZE, LineTypes } from '../utils/canvas/shared';
 
 
 /**
  * Implements the style used on the Knowledge Graph.
  */
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, GroupRenderStyle {
-  private readonly standardBorder = 'solid';
-  private readonly noBorder = 'none';
-  private readonly font = 'Roboto, "Helvetica Neue", sans-serif';
+  private readonly STANDARD_BORDER = LineTypes.Solid;
+  private readonly NO_BORDER = LineTypes.Blank;
+  private readonly FONT = 'Roboto, "Helvetica Neue", sans-serif';
   private readonly defaultSourceLineEndDescriptor: string = null;
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
@@ -68,7 +68,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = d.style || {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
-    const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
+    const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
     const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
 
     // Pull style from the annotation types map
@@ -81,7 +81,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     // Relation nodes have their font color stored elsewhere, so we need to check that first
     const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || BLACK_COLOR));
     const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || WHITE_COLOR);
-    const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || borderBlue);
+    const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || BORDER_BLUE_COLOR);
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
@@ -111,7 +111,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         height: d.data.height || textbox.actualHeightWithInsets,
         textbox,
         stroke: this.createLine(
-          styleData.lineType ?? this.standardBorder,
+          styleData.lineType ?? this.STANDARD_BORDER,
           styleData.lineWidthScale ?? 1 *
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
           styleData.strokeColor ?? this.detailTypeBackgrounds.get(d.label),
@@ -193,7 +193,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
           imageManager: this.imageManager,
           imageId: d.image_id,
           stroke: this.createLine(
-            styleData.lineType ?? this.noBorder,
+            styleData.lineType ?? this.NO_BORDER,
             styleData.lineWidthScale ?? 1,
             styleData.strokeColor ?? WHITE_COLOR,
           ),
@@ -223,7 +223,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         height: nullCoalesce(d.data.height, textbox.actualHeight),
         textbox,
         stroke: this.createLine(
-          styleData.lineType ?? this.standardBorder,
+          styleData.lineType ?? this.STANDARD_BORDER,
           styleData.lineWidthScale ?? 1,
           strokeColor,
         ),
@@ -243,8 +243,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS.has(to.label);
     const styleData: UniversalEdgeStyle = d.style || {};
     const fontSizeScale = styleData.fontSizeScale ?? 1;
-    const strokeColor = styleData.strokeColor ?? borderBlue;
-    const lineType = styleData.lineType ?? connectedToNotes ? 'dashed' : this.standardBorder;
+    const strokeColor = styleData.strokeColor ?? BORDER_BLUE_COLOR;
+    const lineType = styleData.lineType ?? connectedToNotes ? LineTypes.Dashed : this.STANDARD_BORDER;
     const lineWidth = styleData.lineWidthScale ?? 1;
     const sourceHeadType = styleData.sourceHeadType;
     const targetHeadType = styleData.targetHeadType;
@@ -273,7 +273,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     // Label textbox, if any
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
-      font: (placementOptions.highlighted ? 'bold ' : '') + (defaultLabelFontSize * fontSizeScale) + 'px ' + this.font,
+      font: (placementOptions.highlighted ? 'bold ' : '') + (DEFAULT_LABEL_FONT_SIZE * fontSizeScale) + 'px ' + this.FONT,
       fillStyle: '#444',
       strokeStyle: WHITE_COLOR,
       strokeWidth: 3,
@@ -301,7 +301,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     const styleData: UniversalNodeStyle = d.style || {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
-    const labelFont = (defaultLabelFontSize * labelFontSizeScale) + 'px ' + this.font;
+    const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
 
     const labelTextbox = new TextElement(ctx, {
       text: d.display_name,
@@ -316,7 +316,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       width: d.data.width,
       height: d.data.height,
       stroke: this.createLine(
-        styleData.lineType ?? this.noBorder,
+        styleData.lineType ?? this.NO_BORDER,
         styleData.lineWidthScale ?? 0,
         nullCoalesce(styleData.strokeColor, WHITE_COLOR),
       ),
@@ -340,15 +340,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       return null;
     }
 
-    if (type === 'none') {
+    if (type === LineTypes.Blank) {
       return null;
-    } else if (type === 'dashed') {
+    } else if (type === LineTypes.Dashed) {
       return new DashedLine(width, style, [10, 10]);
-    } else if (type === 'long-dashed') {
+    } else if (type === LineTypes.LongDashed) {
       return new DashedLine(width, style, [25, 10]);
-    } else if (type === 'dotted') {
+    } else if (type === LineTypes.Dotted) {
       return new DashedLine(width, style, [1, 2]);
-    } else if (type === 'two-dashed') {
+    } else if (type === LineTypes.TwoDash) {
       return new DashedLine(width, style, [4, 8, 20, 8]);
     } else {
       return new SolidLine(width, style);
@@ -380,7 +380,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       return null;
     }
 
-    if (descriptor === 'none') {
+    if (descriptor === LineTypes.Blank) {
       return null;
     }
 

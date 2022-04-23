@@ -4,7 +4,7 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
+import { drawTextNotSmallerThanMin, NO_TEXT_THRESHOLD } from '../shared';
 import { BoundingBox, isBBoxEnclosing, Point } from '../../behaviors/abstract-object-handle-behavior';
 
 export interface StandardEdgeOptions {
@@ -166,7 +166,7 @@ export class LineEdge extends PlacedEdge {
    * @param transform current graph transform
    */
   drawLayer2(transform: any) {
-    if (this.textbox && transform.k > noTextThreshold) {
+    if (this.textbox && transform.k > NO_TEXT_THRESHOLD) {
       drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }
   }

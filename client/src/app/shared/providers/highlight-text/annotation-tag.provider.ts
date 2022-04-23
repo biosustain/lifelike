@@ -10,7 +10,7 @@ import {
   Reference,
   Source,
   UniversalGraphNode,
-  GraphNodeTemplate,
+  UniversalGraphNodeTemplate,
 } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
@@ -121,7 +121,7 @@ export class AnnotationTagHandler extends TagHandler {
         });
       }
 
-      const copiedNode: GraphNodeTemplate = {
+      const copiedNode: UniversalGraphNodeTemplate = {
         display_name: text,
         label: meta.type.toLowerCase(),
         sub_labels: [],

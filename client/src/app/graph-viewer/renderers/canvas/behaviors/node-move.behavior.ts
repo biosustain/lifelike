@@ -100,9 +100,7 @@ export class MovableNode extends AbstractCanvasBehavior {
         const [originalX, originalY] = this.originalNodePositions.get(node);
         node.data.x = originalX + shiftX;
         node.data.y = originalY + shiftY;
-        // this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
         this.graphView.invalidateNode(node);
-        // TODO: Store this in history as ONE object
       }
 
       if (this.target.label === GROUP_LABEL) {
