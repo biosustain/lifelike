@@ -19,10 +19,11 @@ export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: nu
   const oldFont = textbox.font;
   const fontSize = parseFloat(oldFont);
   const visibleText = k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
-  if (!visibleText) {
-    textbox.font = ((defaultLabelFontSize * visibleTextThreshold) / k)
+  if (visibleText) {
+    textbox.drawCenteredAt(x, y);
+  } else {
+    const newFont = ((defaultLabelFontSize * visibleTextThreshold) / k)
       + 'px' + oldFont.split('px').pop();
+    textbox.drawWithDifferentFont(x, y, newFont);
   }
-  textbox.drawCenteredAt(x, y);
-  textbox.font = oldFont;
 }
