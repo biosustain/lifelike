@@ -94,7 +94,7 @@ export class WorkspaceTabComponent implements OnChanges {
       synthDropEvent.dataTransfer.effectAllowed = 'all';
       synthDropEvent.dataTransfer.setData('application/lifelike-node', JSON.stringify({
         display_name: this.tab.title,
-        label: 'link',
+        label: this.tab.getComponent()?.map ? 'map' : 'link',
         sub_labels: [],
         data: {
           sources
