@@ -20,7 +20,7 @@ import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -670,6 +670,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
+
+    const sources: Source[] = [{
+      domain: this.object.filename,
+      url: ['/projects', encodeURIComponent(this.object.project.name),
+        'files', encodeURIComponent(this.object.hashId)].join('/'),
+    }];
+
+    if (this.object.doi) {
+      sources.push({domain: 'DOI', url: this.object.doi});
+    }
+
     dataTransfer.setData('text/plain', this.object.filename);
     dataTransfer.setData('application/lifelike-node', JSON.stringify({
       display_name: this.object.filename,
@@ -680,11 +691,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           type: 'PROJECT_OBJECT',
           id: this.object.hashId + '',
         }],
-        sources: [{
-          domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name),
-            'files', encodeURIComponent(this.object.hashId)].join('/'),
-        }],
+        sources
       },
     } as Partial<UniversalGraphNode>));
   }

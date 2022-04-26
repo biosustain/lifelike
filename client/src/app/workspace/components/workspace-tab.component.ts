@@ -5,7 +5,7 @@ import { isNil } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
@@ -77,6 +77,16 @@ export class WorkspaceTabComponent implements OnChanges {
     const dropTarget = document.elementFromPoint(dropRect.x + (dropRect.width / 2), dropRect.y + (dropRect.height / 2));
     const synthDropEvent = new DragEvent('drop', {dataTransfer: new DataTransfer()});
 
+    const sources: Source[] = [{
+      domain: this.tab.title,
+      url: this.tab.url
+    }];
+
+    const doi = this.tab.getComponent()?.object?.doi;
+    if (doi) {
+      sources.push({domain: 'DOI', url: doi});
+    }
+
     this.viewService.getShareableLink(
       this.tab.getComponent(), this.tab.url
     ).subscribe((url) => {
@@ -87,12 +97,7 @@ export class WorkspaceTabComponent implements OnChanges {
         label: 'link',
         sub_labels: [],
         data: {
-          sources: [
-            {
-              domain: this.tab.title,
-              url: this.tab.url
-            }
-          ]
+          sources
         }
       } as Partial<UniversalGraphNode>));
       dropTarget.dispatchEvent(synthDropEvent);
