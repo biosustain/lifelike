@@ -154,6 +154,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
     this.form.get('filename').markAsDirty();
+    this.form.get('description').markAsDirty();
     this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
     // Remove the warnings - they will come back if switched again
     this.selectedFile.hasErrors = false;
