@@ -35,7 +35,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
   invalidInputs = false;
 
-  // TODO: Do we want to trim this extension? Do we want to trim more extensions (.pdf)?
   readonly extensionsToCutRegex = /.map$/;
 
   constructor(modal: NgbActiveModal,
@@ -154,12 +153,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.selectedFile = this.fileList[newIndex];
     this.selectedFileIndex = newIndex;
     this.form.patchValue(this.selectedFile.formState);
-    this.form.markAsDirty();
+    this.form.get('filename').markAsDirty();
     this.filePossiblyAnnotatable = this.selectedFile.filePossiblyAnnotatable;
     // Remove the warnings - they will come back if switched again
     this.selectedFile.hasErrors = false;
     this.invalidInputs = this.fileList.some((file) => file.hasErrors);
-
   }
 
   private extractFilename(s: string): string {
