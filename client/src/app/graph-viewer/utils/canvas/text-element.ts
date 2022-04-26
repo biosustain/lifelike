@@ -32,7 +32,7 @@ export class TextElement {
   readonly maxHeight: number | undefined;
   readonly maxLines: number | undefined;
   readonly text: string;
-  font: string;
+  readonly font: string;
   readonly lineHeight: number = 1.2;
   readonly actualLineHeight: number;
   readonly fillStyle: string | undefined = '#000';
