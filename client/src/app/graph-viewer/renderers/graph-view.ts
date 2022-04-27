@@ -15,7 +15,6 @@ import {
   UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
@@ -593,65 +592,30 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Invalidate the whole renderer cache.
    */
-  invalidateAll(): void {
-  }
+  abstract invalidateAll(): void;
 
   /**
    * Invalidate any cache entries for the given node. If changes are made
    * that might affect how the node is rendered, this method must be called.
    * @param d the node
    */
-  invalidateNode(d: UniversalGraphNode): void {
-  }
+  abstract invalidateNode(d: UniversalGraphNode): void;
 
     /**
      * Invalidate any cache entries for the given edge. If changes are made
      * that might affect how the edge is rendered, this method must be called.
      * @param d the edge
      */
-  invalidateEdge(d: UniversalGraphEdge): void {
-  }
+  abstract invalidateEdge(d: UniversalGraphEdge): void;
 
-  invalidateGroup(d: UniversalGraphGroup): void {
-    for (const node of d.members) {
-      this.invalidateNode(node);
-    }
-  }
+  abstract invalidateGroup(d: UniversalGraphGroup): void;
 
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms
-   * @param options addiitonal find options
+   * @param options aditional find options
    */
-  findMatching(terms: string[], options: FindOptions = {}): GraphEntity[] {
-    const matcher = compileFind(terms, options);
-    const matches: GraphEntity[] = [];
-
-    for (const node of this.nodes) {
-      const data: { detail?: string } = node.data != null ? node.data : {};
-      const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-
-      if (matcher(text)) {
-        matches.push({
-          type: GraphEntityType.Node,
-          entity: node,
-        });
-      }
-    }
-
-    for (const edge of this.edges) {
-      const data: { detail?: string } = edge.data != null ? edge.data : {};
-      const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-      if (matcher(text)) {
-        matches.push({
-          type: GraphEntityType.Edge,
-          entity: edge,
-        });
-      }
-    }
-
-    return matches;
-  }
+  abstract findMatching(terms: string[], options: FindOptions): GraphEntity[];
 
   /**
    * Get the current position (graph coordinates) where the user is currently
