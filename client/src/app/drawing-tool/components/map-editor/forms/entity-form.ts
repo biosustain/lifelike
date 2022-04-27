@@ -14,7 +14,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { openPotentialInternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
-export class EntityForm implements AfterViewInit {
+export abstract class EntityForm implements AfterViewInit {
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
 
@@ -35,10 +35,15 @@ export class EntityForm implements AfterViewInit {
 
   overflow = false;
 
-  constructor(
+  protected constructor(
     protected readonly workspaceManager: WorkspaceManager,
   ) {
   }
+
+  /**
+   * Emit save event on user changes
+   */
+  abstract doSave();
 
   changeOverflow(newValue) {
     if (this.overflow !== newValue) {
