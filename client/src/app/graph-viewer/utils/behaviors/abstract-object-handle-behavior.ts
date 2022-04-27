@@ -1,7 +1,7 @@
 import * as d3 from 'd3'; // TODO: Maybe limit that import
 
 import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
-import { nullCoalesce } from 'app/shared/utils/types';
+import { BLACK_COLOR, WHITE_COLOR } from 'app/shared/constants';
 
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../../renderers/behaviors';
 import { PlacedObject } from '../../styles/styles';
@@ -105,8 +105,8 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     ctx.beginPath();
     ctx.lineWidth = 1 / transform.scale(1).k;
     if (document.activeElement === this.graphView.canvas) {
-      ctx.fillStyle = nullCoalesce(displayColor, '#000');
-      ctx.strokeStyle = '#fff';
+      ctx.fillStyle = displayColor || BLACK_COLOR;
+      ctx.strokeStyle = WHITE_COLOR;
     } else {
       ctx.fillStyle = '#CCC';
       ctx.strokeStyle = '#999';

@@ -2,7 +2,6 @@ import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
-import { nullCoalesce } from 'app/shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
@@ -316,7 +315,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('Regulon')) {
       if (wrapper.regulon !== null) {
-        const regulatorText = nullCoalesce(wrapper.regulon.result.regulator_family, '');
+        const regulatorText = wrapper.regulon.result.regulator_family ?? '';
         const activatedText = wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : '';
         const repressedText = wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : '';
 
