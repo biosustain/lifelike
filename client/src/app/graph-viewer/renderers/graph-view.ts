@@ -1185,7 +1185,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.cola
       .nodes(layoutNodes)
       .links(layoutLinks)
-      // .groups(layoutGroups)
       .symmetricDiffLinkLengths(50)
       .handleDisconnected(false)
       .size([this.width, this.height])

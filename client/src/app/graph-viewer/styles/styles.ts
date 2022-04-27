@@ -79,9 +79,6 @@ export abstract class PlacedObject {
   private placedObjectRenderer: PlacedObjectRenderer;
   protected children: PlacedObject[] = [];
 
-  // resizable = false;
-  // uniformlyResizable = false;
-
   /**
    * Binds an object to a context.
    * @param renderer the renderer

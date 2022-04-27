@@ -904,7 +904,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
-    // yield* this.drawLayoutGroups(ctx);
     yield* this.drawGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
