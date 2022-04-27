@@ -4,7 +4,6 @@ import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
@@ -21,6 +20,7 @@ import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/can
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
+import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 
 import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -162,7 +162,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
       new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut',
       new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10); // from below
+    this.graphCanvas.behaviors.add('moving', new MovableEntity(this.graphCanvas), -10); // from below
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation',
       new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
