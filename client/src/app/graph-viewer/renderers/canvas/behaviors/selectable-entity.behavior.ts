@@ -33,24 +33,21 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
   }
 
   selectOrAddToSelection(entity: GraphEntity, shouldAppend: boolean) {
-    const isNull = entity == null;
     if (shouldAppend) {
-      if (!isNull) {
+      if (entity) {
         this.amendSelection(entity);
       }
+      // Shift clicks on empty canvas does not remove selection
       return;
     }
-    if (isNull) {
-      this.graphView.selection.replace([]);
-    } else {
+    if (entity) {
       this.graphView.selection.replace([entity]);
+    } else {
+      this.graphView.selection.replace([]);
     }
   }
 
   doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult {
-    // const group = this.graphView.getGroupAtMouse();
-    // this.selectOrAddToSelection(group, this.isRegionSelecting(event.event));
-    // this.graphView.requestRender();
     return BehaviorResult.Continue;
   }
 
