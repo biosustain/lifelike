@@ -84,6 +84,8 @@ export interface KnowledgeMapGraph {
 
 export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge | UniversalGraphGroup;
 
+export declare type UniversalGraphNodelike = UniversalGraphNode | UniversalGraphGroup;
+
 export enum GraphEntityType {
   Node = 'node',
   Edge = 'edge',
