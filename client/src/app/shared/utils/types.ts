@@ -9,14 +9,6 @@ export function nullCoalesce(...items) {
   return null;
 }
 
-export function emptyIfNull(s: any) {
-  if (s == null) {
-    return '';
-  } else {
-    return '' + s;
-  }
-}
-
 export function nullIfEmpty(s: any) {
   if (s == null) {
     return null;
