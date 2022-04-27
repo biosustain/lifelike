@@ -16,11 +16,12 @@ import { nullCoalesce } from 'app/shared/utils/types';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
+import { compileFind, FindOptions } from 'app/shared/utils/find';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { isPointIntersecting, Point } from '../../utils/canvas/shared';
+import { Point } from '../../utils/canvas/shared';
 
 
 export interface CanvasGraphViewOptions {
@@ -690,6 +691,41 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.invalidateAll();
+  }
+
+  /**
+   * Get all nodes and edges that match some search terms.
+   * @param terms the terms
+   * @param options additional find options
+   */
+  findMatching(terms: string[], options: FindOptions = {}): GraphEntity[] {
+    const matcher = compileFind(terms, options);
+    const matches: GraphEntity[] = [];
+
+    for (const node of this.nodes) {
+      const data: { detail?: string } = node.data != null ? node.data : {};
+      const text = ((node.display_name ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+
+      if (matcher(text)) {
+        matches.push({
+          type: GraphEntityType.Node,
+          entity: node,
+        });
+      }
+    }
+
+    for (const edge of this.edges) {
+      const data: { detail?: string } = edge.data != null ? edge.data : {};
+      const text = ((edge.label ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+      if (matcher(text)) {
+        matches.push({
+          type: GraphEntityType.Edge,
+          entity: edge,
+        });
+      }
+    }
+
+    return matches;
   }
 
   // ========================================
