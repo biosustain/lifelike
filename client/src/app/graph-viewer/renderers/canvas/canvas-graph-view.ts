@@ -12,7 +12,6 @@ import {
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
-import { nullCoalesce } from 'app/shared/utils/types';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
@@ -1051,9 +1050,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
       const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
-      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
-      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-      const lineWidth = lineWidthScale * 1 + 20;
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
 
       (new LineEdge(ctx, {
         source,
@@ -1095,9 +1094,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
       const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
-      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
-      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-      const lineWidth = lineWidthScale * 1 + 20;
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
 
       (new LineEdge(ctx, {
         source,

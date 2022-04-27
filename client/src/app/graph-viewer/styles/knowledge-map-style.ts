@@ -17,7 +17,6 @@ import {
   PlacedNode,
   PlacementOptions,
 } from 'app/graph-viewer/styles/styles';
-import { nullCoalesce, nullIfEmpty } from 'app/shared/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
@@ -219,8 +218,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       return new RectangleNode(ctx, {
         x: d.data.x,
         y: d.data.y,
-        width: nullCoalesce(d.data.width, textbox.actualWidth),
-        height: nullCoalesce(d.data.height, textbox.actualHeight),
+        width: d.data.width ?? textbox.actualWidth,
+        height: d.data.height ?? textbox.actualHeight,
         textbox,
         stroke: this.createLine(
           styleData.lineType ?? this.STANDARD_BORDER,
@@ -256,7 +255,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     // Arrow/whatever at the beginning of the line
     const sourceLineEnd = this.createHead(
-      nullIfEmpty(sourceHeadType),
+      sourceHeadType,
       lineWidth,
       strokeColor,
       this.defaultSourceLineEndDescriptor,
@@ -264,7 +263,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     // Arrow/whatever at the end of the line
     const targetLineEnd = this.createHead(
-      nullIfEmpty(targetHeadType),
+      targetHeadType,
       lineWidth,
       strokeColor,
       connectedToNotes ? null : this.defaultTargetLineEndDescriptor,
@@ -318,7 +317,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       stroke: this.createLine(
         styleData.lineType ?? this.NO_BORDER,
         styleData.lineWidthScale ?? 0,
-        nullCoalesce(styleData.strokeColor, WHITE_COLOR),
+        styleData.strokeColor ?? WHITE_COLOR,
       ),
       textbox: labelTextbox,
       // TODO: This might get change, maybe some default background for groups?
@@ -366,7 +365,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
                      lineWidth: number,
                      strokeColor: string,
                      defaultType: string | undefined = null): LineHead | undefined {
-    const effectiveType = nullCoalesce(nullIfEmpty(type), nullIfEmpty(defaultType));
+    const effectiveType = type || defaultType;
 
     if (effectiveType == null) {
       return null;

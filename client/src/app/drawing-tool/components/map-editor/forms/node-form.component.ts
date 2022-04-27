@@ -3,7 +3,7 @@ import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@
 import { cloneDeep, startCase } from 'lodash-es';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
-import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
+import { RecursivePartial } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
@@ -79,23 +79,23 @@ export class NodeFormComponent extends EntityForm {
     // Swap node display name and detail when switching to a Note or Link (LL-1946)
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
-      if (nullIfEmpty(this.node.data.detail) === null
-        && this.node.display_name != null
+      if (!this.node.data.detail
+        // This should not be able to happen, right?
+        // && this.node.display_name != null
         && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
         this.node.style.showDetail = true;
         this.node.data.detail = this.node.display_name;
         this.node.display_name = startCase(this.node.label);
-      } else if (nullIfEmpty(this.node.data.detail) !== null) {
+      } else if (this.node.data.detail) {
         // If we aren't swapping, but we already have detail, turn on detail mode
         // to keep the behavior consistent
         this.node.style.showDetail = true;
       }
     } else if (fromDetailNode && !toDetailNode) {
       // If we are moving away from a detail node, restore the display name (sometimes)
-      if ((nullIfEmpty(this.node.display_name) === null
+      if ((!this.node.display_name
           || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
-        && nullIfEmpty(this.node.data.detail) !== null
-        && this.node.data.detail.length <= 50) {
+        && this.node.data.detail?.length <= 50) {
         this.node.display_name = this.node.data.detail;
         this.node.data.detail = '';
       }
