@@ -9,7 +9,7 @@ import {
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode,
+  UniversalGraphNode, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
@@ -476,6 +476,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.renderTree.delete(d);
   }
 
+  /**
+   * Invalidate any cache entries for the given group. If changes are made
+   * that might affect how the group is rendered, this method must be called.
+   * @param d the group
+   */
   invalidateGroup(d: UniversalGraphGroup): void {
     for (const node of d.members) {
       this.invalidateNode(node);
@@ -487,11 +492,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
    * @param d node or group casted to node.
    */
-  invalidateNodelike(d: UniversalGraphNode): void {
+  invalidateNodelike(d: UniversalGraphNodelike): void {
     if (d.label === GROUP_LABEL) {
       this.invalidateGroup(d as UniversalGraphGroup);
     } else {
-      this.invalidateNode(d);
+      this.invalidateNode(d as UniversalGraphNode);
     }
   }
 

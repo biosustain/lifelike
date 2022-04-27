@@ -13,7 +13,7 @@ import {
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode,
+  UniversalGraphNode, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
@@ -589,6 +589,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
   }
 
+  // ========================================
+  // Object accessors
+  // ========================================
+  // Invalidate === remove from cache. Once the Placed version of the object is removed
+  // from RenderTree, it will get 'placed' (transformed into drawable object) during the next render batch.
+  // This means that the visual appearance of the entity will not be modified without invalidating it, hence
+  // we need to call this on (almost) every entity update.
+
   /**
    * Invalidate the whole renderer cache.
    */
@@ -608,7 +616,18 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
      */
   abstract invalidateEdge(d: UniversalGraphEdge): void;
 
+  /**
+   * Remove group from cache, so its graphical representation would be recomputed.
+   * @param d
+   */
   abstract invalidateGroup(d: UniversalGraphGroup): void;
+
+
+  /**
+   * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
+   * @param d node or group.
+   */
+  abstract invalidateNodelike(d: UniversalGraphNodelike): void;
 
   /**
    * Get all nodes and edges that match some search terms.
