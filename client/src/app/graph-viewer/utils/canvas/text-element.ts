@@ -1,5 +1,3 @@
-import { nullCoalesce } from 'app/shared/utils/types';
-
 interface TextboxOptions {
   width?: number;
   maxWidth?: number;
@@ -186,7 +184,7 @@ export class TextElement {
         lines: [],
         verticalOverflow: true,
         horizontalOverflow: true,
-        actualWidth: nullCoalesce(this.width, this.maxWidth, metrics.width),
+        actualWidth: (this.width ?? this.maxWidth) ?? metrics.width,
       };
 
     } else if (effectiveWidth != null) {
