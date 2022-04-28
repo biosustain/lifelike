@@ -1,6 +1,12 @@
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, zip } from 'lodash-es';
 
-import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+  UniversalGraphNodelike
+} from 'app/drawing-tool/services/interfaces';
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
@@ -50,7 +56,7 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
 export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHandle> {
   protected originalData: OriginalData | undefined;
   protected dragStartPosition: Point = {x: 0, y: 0};
-  protected originalTarget: UniversalGraphNode | UniversalGraphGroup;
+  protected originalTarget: UniversalGraphNodelike;
 
   protected readonly sideHandleMaker = (posX, posY, halfSize, execute) => ({
       execute,
@@ -62,13 +68,11 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
     })
 
   constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode | UniversalGraphGroup) {
+              target: UniversalGraphNodelike) {
     super(graphView, target);
     this.originalTarget = cloneDeep(this.target);
   }
 
-  // TODO: Why this is here? Its not related to the handle, at least the usage
-  // TODO: Change the name as this makes sure that you click handles, not node
   isPointIntersectingNodeHandles(placedObject: PlacedObject, point: Point): boolean {
     // Consider ourselves still intersecting if we have a handle
     return (!!this.handle || !!this.getHandleIntersected(placedObject, point)) ? true : undefined;
@@ -79,11 +83,10 @@ export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHand
     this.dragStartPosition = graphPosition;
   }
 
-  protected getUniformScalingRatio(originalData, graphPosition, handleDiagonal) {
-    const ratio = originalData.width / originalData.height;
-    const sizingVecLen = Math.hypot(graphPosition.x - originalData.x, graphPosition.y - originalData.y) - handleDiagonal / 2;
-    // const normY = Math.abs(sizingVecLen / Math.sqrt(ratio ** 2 + 1));
-    return sizingVecLen;
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
+    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
+    this.graphView.invalidateNodelike(this.target);
+    this.graphView.requestRender();
   }
 
 }
@@ -99,7 +102,6 @@ export class ActiveNodeResize extends ActiveResize {
     const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
 
     // There is no handle on top: edge creation button is there.
-
     const handles = [
       // Right - one-dim scaling
       this.sideHandleMaker(
@@ -131,7 +133,6 @@ export class ActiveNodeResize extends ActiveResize {
           target.data.height = Math.abs(this.originalData.height + distance);
           target.data.y = this.originalData.y + distance / 2.0;
         }),
-      // Top left
     ];
     // If node (currently: images) can be scaled uniformly, add those handles.
     if (placedNode.uniformlyResizable) {
@@ -161,13 +162,6 @@ export class ActiveNodeResize extends ActiveResize {
       );
     }
     return handles;
-  }
-
-
-  protected activeDrag(event: MouseEvent, graphPosition: Point) {
-    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
-    this.graphView.invalidateNode(this.target);
-    this.graphView.requestRender();
   }
 
 
@@ -224,11 +218,11 @@ export class ActiveGroupResize extends ActiveResize {
           const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
           this.targetGroup.data.width = Math.abs(this.originalGroup.data.width + distance);
           this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
-          zip(this.targetGroup.members, this.originalGroup.members).forEach(([targetGroup, originalGroup]) => {
-            targetGroup.data.width = Math.abs((originalGroup.data.width ||
-              this.getNodeSize(originalGroup).width) + distance);
-            targetGroup.data.x = originalGroup.data.x + distance / 2.0;
-          })
+          zip(this.targetGroup.members, this.originalGroup.members).forEach(([targetGroupMember, originalGroupMember]) => {
+            targetGroupMember.data.width = Math.abs((originalGroupMember.data.width ||
+              this.getNodeSize(originalGroupMember).width) + distance);
+            targetGroupMember.data.x = originalGroupMember.data.x + distance / 2.0;
+          });
 
         }),
       // Left - one-dim scaling
