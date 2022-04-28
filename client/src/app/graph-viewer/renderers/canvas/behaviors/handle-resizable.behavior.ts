@@ -224,11 +224,11 @@ export class ActiveGroupResize extends ActiveResize {
           const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
           this.targetGroup.data.width = Math.abs(this.originalGroup.data.width + distance);
           this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
-          for (let i = 0; i < this.targetGroup.members.length; i++) {
-            this.targetGroup.members[i].data.width = Math.abs((this.originalGroup.members[i].data.width ||
-              this.getNodeSize(this.originalGroup.members[i]).width) + distance);
-            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x + distance / 2.0;
-          }
+          zip(this.targetGroup.members, this.originalGroup.members).forEach(([targetGroup, originalGroup]) => {
+            targetGroup.data.width = Math.abs((originalGroup.data.width ||
+              this.getNodeSize(originalGroup).width) + distance);
+            targetGroup.data.x = originalGroup.data.x + distance / 2.0;
+          })
 
         }),
       // Left - one-dim scaling
