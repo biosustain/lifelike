@@ -54,15 +54,6 @@ export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeM
   });
 }
 
-export function mapJsonToProperGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeMapGraph> {
-  return map((graph: KnowledgeMapGraph) => {
-    return {
-      ...graph,
-
-    };
-  });
-}
-
 export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, any | undefined> {
   return map((data: ArrayBuffer | undefined) => {
     if (data == null) {
