@@ -50,6 +50,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
   private readonly STANDARD_BORDER = LineTypes.Solid;
   private readonly NO_BORDER = LineTypes.Blank;
   private readonly FONT = 'Roboto, "Helvetica Neue", sans-serif';
+  private readonly DEFAULT_ICON_SIZE = 50;
   private readonly defaultSourceLineEndDescriptor: string = null;
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
@@ -65,7 +66,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
   }
 
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
-    const styleData: UniversalNodeStyle = d.style || {};
+    const styleData: UniversalNodeStyle = d.style ?? {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
     const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
     const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
@@ -106,13 +107,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       return new RectangleNode(ctx, {
         x: d.data.x,
         y: d.data.y,
-        width: d.data.width || textbox.actualWidthWithInsets,
-        height: d.data.height || textbox.actualHeightWithInsets,
+        width: d.data.width ?? textbox.actualWidthWithInsets,
+        height: d.data.height ?? textbox.actualHeightWithInsets,
         textbox,
         stroke: this.createLine(
           styleData.lineType ?? this.STANDARD_BORDER,
           styleData.lineWidthScale ?? 1 *
-          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          (forceVisibleText ? 1.3 : 1),
           styleData.strokeColor ?? this.detailTypeBackgrounds.get(d.label),
         ),
         shapeFillColor: styleData.bgColor ?? this.detailTypeBackgrounds.get(d.label),
@@ -141,7 +142,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         iconTextColor = specialIconColor;
       }
       const iconLabelColor = specialIconColor ?? iconTextColor;
-      const iconSize = d.icon?.size || 50;
+      const iconSize = d.icon?.size ?? this.DEFAULT_ICON_SIZE;
       // Change font family to custom kit if icon is customly added
       const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
       const iconFontFace = d.icon?.face ?? fontAwesomeFont;
@@ -240,7 +241,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
     const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS.has(to.label);
-    const styleData: UniversalEdgeStyle = d.style || {};
+    const styleData: UniversalEdgeStyle = d.style ?? {};
     const fontSizeScale = styleData.fontSizeScale ?? 1;
     const strokeColor = styleData.strokeColor ?? BORDER_BLUE_COLOR;
     const lineType = styleData.lineType ?? connectedToNotes ? LineTypes.Dashed : this.STANDARD_BORDER;
@@ -298,7 +299,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
              options: PlacementOptions): PlacedGroup {
 
 
-    const styleData: UniversalNodeStyle = d.style || {};
+    const styleData: UniversalNodeStyle = d.style ?? {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
     const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
 
