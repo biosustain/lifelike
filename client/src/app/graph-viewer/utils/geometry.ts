@@ -66,7 +66,7 @@ export function distanceUnsq(point1: Point, point2: Point): number {
 }
 
 export function distanceSq(point1: Point, point2: Point): number {
-  return Math.sqrt(distanceUnsq(point1, point2));
+  return Math.hypot(point2.x - point1.x, point2.y - point1.y);
 }
 
 /**
