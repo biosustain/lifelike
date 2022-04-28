@@ -1051,8 +1051,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
-      const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
+      const source = placedTo.lineIntersectionPoint(from.data as Point);
+      const target = placedFrom.lineIntersectionPoint(to.data as Point);
 
       const styleData: UniversalEdgeStyle = d.style ?? {};
       const lineWidthScale = styleData.lineWidthScale ?? 1;
