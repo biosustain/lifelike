@@ -296,21 +296,22 @@ export class ActiveGroupResize extends ActiveResize {
       target.data.height = 2 * normY;
       const finalRatio = target.data.height / originalData.height;
       for (let i = 0; i < this.originalGroup.members.length; i++) {
-        const xOriginDistance = Math.abs(originalData.x - this.originalGroup.members[i].data.x);
-        const yOriginDistance = Math.abs(originalData.y - this.originalGroup.members[i].data.y);
+        const originalGroup = this.originalGroup.members[i];
+        const targetGroup = this.targetGroup.members[i];
+        const xOriginDistance = Math.abs(originalData.x - originalGroup.data.x);
+        const yOriginDistance = Math.abs(originalData.y - originalGroup.data.y);
 
 
-        const xDirection = this.originalGroup.members[i].data.x > this.originalGroup.data.x ? 1 : -1;
-        const yDirection = this.originalGroup.members[i].data.y > this.originalGroup.data.y ? 1 : -1;
-        const baseWidth = this.originalGroup.members[i].data.width || this.getNodeSize(this.originalGroup.members[i]).width;
-        const baseHeight = this.originalGroup.members[i].data.height || this.getNodeSize(this.originalGroup.members[i]).height;
-        this.targetGroup.members[i].data.width = Math.abs(baseWidth * finalRatio);
-        this.targetGroup.members[i].data.height = Math.abs(baseHeight * finalRatio);
-        this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x +
+        const xDirection = originalGroup.data.x > this.originalGroup.data.x ? 1 : -1;
+        const yDirection = originalGroup.data.y > this.originalGroup.data.y ? 1 : -1;
+        const baseWidth = originalGroup.data.width || this.getNodeSize(originalGroup).width;
+        const baseHeight = originalGroup.data.height || this.getNodeSize(originalGroup).height;
+        targetGroup.data.width = Math.abs(baseWidth * finalRatio);
+        targetGroup.data.height = Math.abs(baseHeight * finalRatio);
+        targetGroup.data.x = originalGroup.data.x +
           (xOriginDistance * finalRatio - xOriginDistance ) * xDirection;
-        this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y +
+        targetGroup.data.y = originalGroup.data.y +
           (yOriginDistance * finalRatio - yOriginDistance ) * yDirection;
-
       }
     };
 
