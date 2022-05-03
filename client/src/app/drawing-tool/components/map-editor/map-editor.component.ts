@@ -21,6 +21,8 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
+import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
+
 
 import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -156,6 +158,8 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     super.registerGraphBehaviors();
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut',
       new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('duplicate-keyboard-shortcut',
+      new DuplicateKeyboardShortcutBehavior(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
       new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
     this.graphCanvas.behaviors.add('image-upload',
