@@ -20,13 +20,13 @@ graphCanvas.destroy();
 ```
 
 ## Reference
-* Graph - information about state of the map and its component. Basically a parsed version of `graph.json` file from map content.
-* Graph Entity - umbrella term for all types of map components - current `nodes | edges | groups`.
+* Graph - information about the state of the map and its component. A parsed version of the `graph.json` file from map content.
+* Graph Entity - an umbrella term for all types of map components - current `nodes | edges | groups`.
 * Placed Object - boiled down representation of `Entity` responsible for storing information relevant for
-the rendering process - as well as the `draw()` function itself.
-* Action - encapsulation of user actions that allow to undo/redo itself. Used for tracking the history of edition in order to implement
+the rendering process and the `draw()` function itself.
+* Action - encapsulation of user actions that allow undo/redo itself. Used for tracking the history of edition in order to implement
 those (undo/redo) mechanism
-* Behaviour - responsible for handling events from user, such as dragging/clicking of the canvas/entities.
+* Behaviour - responsible for handling events from the user, such as dragging/clicking of the canvas/entities.
 
 
 ## UML
@@ -35,7 +35,7 @@ those (undo/redo) mechanism
 ## Organization
 
 * [renderers/](renderers) - The renderers themselves and the starting point of all this code
-  * [graph-view](renderers/graph-view.ts) - Responsible for management of the graph itself. The functions here affects the state of 
+  * [graph-view](renderers/graph-view.ts) - Responsible for management of the graph itself. The functions here affect the state of 
   the `graph` rather than rendering itself. Implements the code responsible for the graph manipulation via `GraphAction`.
   * [canvas/canvas-graph-view.ts](renderers/canvas/canvas-graph-view.ts) - Extends `graph-view` with
   code responsible for drawing on the canvas. Stores the render information in `[Entity name]RenderStyle`
@@ -48,8 +48,8 @@ those (undo/redo) mechanism
     have metrics (width, height, bbox) and draw() methods - placed objects.
 * [actions/](actions) - `Actions` abstract user-initiated *actions* so they can be rolled back or redone --
     when you need to record something the user did, create an action and call `renderer.execute(action)`.
-Actions affecting multiple entities can be stored together in a group action - `Compound Action`. In order to enable
-method to be called from `GraphAction`, its prototype should be added to `GraphActionReceiver` class, which is implement
+Actions affecting multiple entities can be stored together in group action - `Compound Action`. In order to enable
+the method to be called from `GraphAction`, its prototype should be added to `GraphActionReceiver` class, which is implemented
 by the `graph-view` class (and implemented there).
 * [utils/](utils) - Utility methods used by the graph viewer.
     * [canvas/](utils/canvas) - Stores the class files for `PlacedObject`. 
@@ -57,8 +57,8 @@ by the `graph-view` class (and implemented there).
 ## Todo
 
 * [ ] Improve performance to the point that we can render 1,000,000 nodes (or at least a LOT)
-    * [x] Automatically decide when to not draw text (text rendering is extremely expensive)
-    * [ ] Automatically decide when to not draw round node corners (`arc()` is a little expensive)
+    * [x] Automatically decide when not to draw text (text rendering is costly)
+    * [ ] Automatically decide when not to draw round node corners (`arc()` is a little expensive)
     * [ ] Cache word wrapping results as much as possible in `TextElement` (text metrics are expensive)
     * [ ] Consider drawing nodes onto off-screen canvases in `PlacedNode` and `PlacedEdge` and then
         copying those canvases onto the main canvas when draw() is called for maximum performance
@@ -71,5 +71,5 @@ by the `graph-view` class (and implemented there).
     * [ ] Use a spatial index or culling to make `getEntityAtMouse()` fast as possible
 
 * [] Improve drawing mechanism
-  * [] Add the selection as last part of the drawing, rather than drawing under the nodes/edges
-  * [] Allow users to choose Z-index of the entities.
+  * [] Add the selection as the last part of the drawing, rather than drawing under the nodes/edges
+  * [] Allow users to choose the Z-index of the entities.
