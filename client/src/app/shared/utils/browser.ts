@@ -29,7 +29,6 @@ export function toValidLink(url: string): string {
 
 export function removeViewModeIfPresent(url: string): string {
   url = url.trim();
-  console.log(url);
   if (url.endsWith('/edit') || url.endsWith('/edit#')) {
     return url.substr(0, url.lastIndexOf('/'));
   }
