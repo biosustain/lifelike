@@ -34,7 +34,6 @@ import { DataTransferDataService } from 'app/shared/services/data-transfer-data.
 import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
-import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 
 import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
