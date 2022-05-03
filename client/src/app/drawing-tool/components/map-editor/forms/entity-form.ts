@@ -25,8 +25,8 @@ export abstract class EntityForm implements AfterViewInit {
     ...LINE_TYPES.entries(),
   ];
 
-  paletteChoices = [...PALETTE_COLORS];
-  bgPaletteChoices = [...BG_PALETTE_COLORS];
+  readonly paletteChoices = PALETTE_COLORS;
+  readonly bgPaletteChoices = BG_PALETTE_COLORS;
   ASSUMED_PANEL_HEIGHT = 450;
 
   @Input() infoPanel: InfoPanel;
