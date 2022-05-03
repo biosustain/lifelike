@@ -419,8 +419,8 @@ Note:
 
 ## Showing Progress
 
-In order to show progress, use `ProgressDialogComponent`.
-It accepts list of progress observables (`Observable<Progress>`) and creates a progress bar for each entry.
+To show progress, use `ProgressDialogComponent`.
+It accepts a list of progress observables (`Observable<Progress>`) and creates a progress bar for each entry.
 Currently, two different type of bars are supported:
 ```typescript
 const progress = new Progress({
@@ -429,7 +429,7 @@ const progress = new Progress({
       value: loadingPercentage, // Determines how filled the value is.
     });
 ```
-This will display a partially filled bar - good when we can evaluate the state of work (for example, file upload).
+This will display a partially filled bar - good when we can evaluate the work state (for example, file upload).
 ```typescript
 const progress = new Progress({
       mode: ProgressMode.Indeterminate, // Stripped and animated bar
@@ -437,12 +437,13 @@ const progress = new Progress({
       value: _, // Bar will always be full!
     });
 ```
-Selecting an `Indeterminate` mode will result in animated and stripped bar (which is always full).
-This works best for showing progress of operations that completion status cannot be evaluated.
-The rest of modes (`Buffer, Query`) is not implemented and will result in same bar as `Indeterminate` - at least for now.
+Selecting an `Indeterminate` mode will result in an animated and stripped bar (which is always full).
+This works best for showing the progress of operations that completion status cannot be evaluated.
+The rest of the modes (`Buffer, Query`) is not implemented and will result in the same bar as `Indeterminate` - at least for now.
 
-As we support multiple bars per dialog, array of `Progress` objects should be passed while creating 
+As we support multiple bars per dialog, an array of `Progress` objects should be passed while creating 
 `ProgressDialogComponent` alongside with appropriate `title`.
+
 
 ## Utility Classes
 
