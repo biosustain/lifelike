@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, partition } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
@@ -26,18 +26,21 @@ import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { LockError } from 'app/file-browser/services/filesystem.service';
 import { ObjectLock } from 'app/file-browser/models/object-lock';
-import { MimeTypes } from 'app/shared/constants';
+import { IMAGE_DEFAULT_SIZE, MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
+import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 
-import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
+import { IMAGE_TOKEN, ImageTransferData } from '../../providers/image-entity-data.provider';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -267,7 +270,40 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     const hoverPosition = this.graphCanvas.hoverPosition;
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
+
       const actions = extractGraphEntityActions(items, hoverPosition);
+
+      const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
+
+      // TODO: Maybe move, but stay in this class, cause we need services
+      for (const item of imageItems) {
+        const {node, hash} = item.data as ImageTransferData;
+        // This takes a split second, but we might want to consider having a progress bar here!
+        this.filesystemService.getContent(hash).subscribe(
+          blob => {
+            const imageId = makeid();
+            this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId))
+              .subscribe(dimensions => {
+                // Scale smaller side up to 300 px
+                const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
+                this.graphCanvas.execute(new NodeCreation(
+                  `Insert image`, {
+                    ...node,
+                    hash: uuidv4(),
+                    image_id: imageId,
+                    label: 'image',
+                    data: {
+                      x: hoverPosition.x,
+                      y: hoverPosition.y,
+                      width: dimensions.width * ratio,
+                      height: dimensions.height * ratio,
+                    },
+                  },
+                  true
+                ));
+              });
+        });
+      }
 
       if (actions.length) {
         this.graphCanvas.execute(new CompoundAction('Drag to map', actions));

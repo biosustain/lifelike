@@ -14,6 +14,7 @@ import {
 import { makeid } from 'app/shared/utils/identifiers';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphRelationship } from '../services/interfaces';
+import { FILESYSTEM_IMAGE_TRANSFER_TYPE } from './image-entity-data.provider';
 
 export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>('universalGraphEntity');
 export const GRAPH_NODE_TYPE = 'application/lifelike-node';
@@ -34,7 +35,10 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     const results: DataTransferData<GraphEntity[]>[] = [];
 
     const nodeData = dataTransfer.getData(GRAPH_NODE_TYPE);
+
     const relationshipData = dataTransfer.getData(GRAPH_RELATIONSHIP_TYPE);
+
+    const imageData = dataTransfer.getData(FILESYSTEM_IMAGE_TRANSFER_TYPE);
 
     // First check if the content has a node embedded in it
     if (nodeData) {
@@ -48,6 +52,8 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
         confidence: 0,
       });
     }
+
+
 
     // Then check if it has a relationship embedded in it
     if (relationshipData) {
@@ -72,8 +78,9 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
       });
     }
 
-    // Otherwise try to create a note or link node from available data
-    if (!nodeData && !relationshipData) {
+    // Otherwise, try to create a note or link node from available data
+    // Unless this is an image transfer
+    if (!nodeData && !relationshipData && !imageData) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];
