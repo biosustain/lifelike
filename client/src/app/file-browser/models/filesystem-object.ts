@@ -11,9 +11,10 @@ import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
+import { FILESYSTEM_IMAGE_HASH, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData, } from '../providers/filesystem-object-data.provider';
+import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
@@ -536,6 +537,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move to DataTransferData framework
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
+
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
       privileges: this.privileges,
@@ -544,22 +546,29 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.name,
-      label: this.type === 'map' ? 'map' : 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.id + '',
-        }],
-        sources,
-      },
-    };
+        display_name: this.filename,
+        label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
+        sub_labels: [],
+        data: {
+          references: [{
+            type: 'PROJECT_OBJECT',
+            id: this.id + '',
+          }],
+          sources,
+        },
+      };
 
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+    if (this.mimeType.trim().startsWith('image/')) {
+      dataTransfer.setData(FILESYSTEM_IMAGE_HASH, this.hashId);
+      dataTransfer.setData(FILESYSTEM_IMAGE_TRANSFER_TYPE, JSON.stringify(node));
+    } else {
+
+      dataTransfer.effectAllowed = 'all';
+      dataTransfer.setData('text/plain', this.name);
+      dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
+      dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+    }
+
   }
 
   private getId(): any {

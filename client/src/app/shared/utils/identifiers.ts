@@ -12,6 +12,8 @@ function uuidv4() {
   });
 }
 
+
+// TODO: Switch all the identifiers
 /**
  * random short sequence generator
  */

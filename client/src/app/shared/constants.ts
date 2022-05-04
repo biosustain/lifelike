@@ -85,6 +85,8 @@ export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'Uni
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 50;
 
+export const IMAGE_DEFAULT_SIZE = 300;
+
 export const MAX_DESCRIPTION_LENGTH = 5000;
 export const FORMATS_WITH_POSSIBLE_DESCRIPTION = ['graph'];
 
