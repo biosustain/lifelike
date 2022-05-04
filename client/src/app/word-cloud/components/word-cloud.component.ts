@@ -311,6 +311,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     // Also create a function for the tooltip content, to be shown when the text is hovered over
     const cloudWrapper = this.wordCloudWrapperEl;
     const keywordsShown = this.keywordsShown;
+    const tooltipOffset = this.TOOLTIP_OFFSET;
     const mouseenter = function(d) {
       const coordsOfCloud = cloudWrapper.nativeElement.getBoundingClientRect() as DOMRect;
       const coordsOfText = this.getBoundingClientRect() as DOMRect;
@@ -318,7 +319,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
         .style('display', 'block')
         .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
-        .style('top', (coordsOfText.y - this.TOOLTIP_OFFSET) + 'px');
+        .style('top', (coordsOfText.y - tooltipOffset) + 'px');
     };
 
     // Get the word elements
