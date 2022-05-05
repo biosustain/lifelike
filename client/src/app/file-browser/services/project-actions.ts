@@ -6,9 +6,9 @@ import { finalize } from 'rxjs/operators';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { ProjectsService } from './projects.service';
 import { ProjectImpl } from '../models/filesystem-object';
@@ -23,7 +23,8 @@ export class ProjectActions {
               protected readonly modalService: NgbModal,
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly progressDialog: ProgressDialog) {
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly clipboard: ClipboardService) {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
@@ -89,11 +90,10 @@ export class ProjectActions {
   }
 
   openShareDialog(project: ProjectImpl): Promise<any> {
-    const modalRef = this.modalService.open(CopyLinkDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/${project.getURL()}`;
-    return modalRef.result;
+    return Promise.resolve(
+      this.clipboard.copy(`${window.location.origin}/${project.getURL()}`),
+    );
   }
-
 }
 
 export class CreateDialogOptions {
