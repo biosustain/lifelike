@@ -1,4 +1,5 @@
 import { nullCoalesce } from 'app/shared/utils/types';
+import { REGEX } from 'app/shared/regex';
 
 interface TextboxOptions {
   width?: number;
@@ -198,69 +199,67 @@ export class TextElement {
       const blocks = this.text.split(/\r?\n/g);
 
       blockLoop:
-      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        // We break on whitespace, word endings and special chars `\.,_-`.
-        const tokens = blocks[blockIndex].split(/(?:(?<=\S)(?=\s))|(?<=[^\s\d\w]|[\\.,_-])|(?<=\w)(?=\W)/gi);
+        for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+          // We break on whitespace, word endings and special chars `\.,_-`.
+          const tokens = blocks[blockIndex].split(REGEX.BETWEEN_TEXT_BREAKS);
 
-        for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
-          const lineHorizontalOverflow = metrics.width > effectiveWidth;
+          for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
+            const lineHorizontalOverflow = metrics.width > effectiveWidth;
 
-          if (lineHorizontalOverflow) {
-            // If we can split on the previous, try to break the words on syllables
-            // If there is no match, return the entire string as array (will be marked as overflow)
-            const splitTokens = line.match(
-              /[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi) || [line];
-            for (const widthFitLine of this.getWidthFittedLines(splitTokens, effectiveWidth - this.hyphenWidth)) {
-              const stillOverflow = widthFitLine.metrics.width > effectiveWidth;
-              // If that did not help, we cannot do anything else
-              if (stillOverflow) {
-                // If this line overflows, make sure to mark the box as overflowing and
-                // update the width of the box
-                boxHorizontalOverflow = true;
-                actualWidth = effectiveWidth;
+            if (lineHorizontalOverflow) {
+              // If we can split on the previous, try to break the words on syllables
+              // If there is no match, return the entire string as array (will be marked as overflow)
+              const splitTokens = line.match(REGEX.BETWEEN_SYLABES) || [line];
+              for (const widthFitLine of this.getWidthFittedLines(splitTokens, effectiveWidth - this.hyphenWidth)) {
+                const stillOverflow = widthFitLine.metrics.width > effectiveWidth;
+                // If that did not help, we cannot do anything else
+                if (stillOverflow) {
+                  // If this line overflows, make sure to mark the box as overflowing and
+                  // update the width of the box
+                  boxHorizontalOverflow = true;
+                  actualWidth = effectiveWidth;
+                }
+                lines.push({
+                  // Since we break the words, add hyphen.
+                  text: widthFitLine.line + '-',
+                  metrics: widthFitLine.metrics,
+                  xOffset: 0,
+                  horizontalOverflow: stillOverflow
+                });
               }
+            } else {
               lines.push({
-                // Since we break the words, add hyphen.
-                text: widthFitLine.line + '-',
-                metrics: widthFitLine.metrics,
-                xOffset: 0,
-                horizontalOverflow: stillOverflow
+                text: line,
+                metrics,
+                xOffset: 0, // We'll update later
+                horizontalOverflow: lineHorizontalOverflow,
               });
             }
-          } else {
-            lines.push({
-            text: line,
-            metrics,
-            xOffset: 0, // We'll update later
-            horizontalOverflow: lineHorizontalOverflow,
-          });
+
+
+            if (metrics.width > actualWidth && !lineHorizontalOverflow) {
+              // If the line isn't overflowing but this line's width is longer than the
+              // running actual width, update that
+              actualWidth = metrics.width;
+            }
+
+
+            // We've overflow the height if we add another line
+            if ((remainingTokens || blockIndex < blocks.length - 1) && (
+              (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
+              || (this.maxLines != null && lines.length >= this.maxLines))
+            ) {
+              boxVerticalOverflow = true;
+              break blockLoop;
+            }
           }
 
-
-          if (metrics.width > actualWidth && !lineHorizontalOverflow) {
-            // If the line isn't overflowing but this line's width is longer than the
-            // running actual width, update that
-            actualWidth = metrics.width;
-          }
-
-
-
-          // We've overflow the height if we add another line
-          if ((remainingTokens || blockIndex < blocks.length - 1) && (
-            (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
-            || (this.maxLines != null && lines.length >= this.maxLines))
-          ) {
-            boxVerticalOverflow = true;
-            break blockLoop;
+          // Do X offset for center and other alignments
+          // Do this in a second phase because actualWidth is still being calculated
+          for (const line of lines) {
+            line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
           }
         }
-
-        // Do X offset for center and other alignments
-        // Do this in a second phase because actualWidth is still being calculated
-        for (const line of lines) {
-          line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
-        }
-      }
 
       return {
         lines,
