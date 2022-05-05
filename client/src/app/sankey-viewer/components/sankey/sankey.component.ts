@@ -136,14 +136,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // region Life cycle
   ngOnChanges({
-      selectedNodes,
-      selectedLinks,
-      searchedEntities,
-      focusedNode,
-      data,
-      nodeAlign,
-      networkTraceIdx,
-      activeViewName}: SimpleChanges) {
+                selectedNodes,
+                selectedLinks,
+                searchedEntities,
+                focusedNode,
+                data,
+                nodeAlign,
+                networkTraceIdx,
+                activeViewName
+              }: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -458,16 +459,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async linkClick(element, data) {
     this.linkClicked.emit(data);
-    this.clipboard.writeToClipboard(data.path).then(_ =>
-        this.snackBar.open(
-          `Path copied to clipboard`,
-          undefined,
-          {duration: 500},
-        ),
-      console.error
-    );
-
-    // this.showPopOverForSVGElement(element, {link: data});
+    return this.clipboard.copy(data.path, {sucess: 'Path copied to clipboard'});
   }
 
   async nodeClick(element, data) {

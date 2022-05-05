@@ -39,7 +39,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
 
   constructor(readonly router: Router,
               protected readonly snackBar: MatSnackBar,
-              protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,

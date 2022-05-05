@@ -12,6 +12,7 @@ import { LegendService } from 'app/shared/services/legend.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { NodeLegend } from 'app/interfaces';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
 import { WordCloudAnnotationFilterEntityWithLayout } from '../interfaces';
@@ -30,7 +31,6 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
 
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapperEl: ElementRef;
   @ViewChild('wordCloudWrapper', {static: false}) wordCloudWrapperEl: ElementRef;
   @ViewChild('wordCloudTooltip', {static: false}) wordCloudTooltipEl: ElementRef;
   @ViewChild('wordCloudSvg', {static: false}) wordCloudSvgEl: ElementRef;
@@ -61,7 +61,8 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   cloudResizeObserver: any;
 
   constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly legendService: LegendService) {
+              protected readonly legendService: LegendService,
+              protected readonly clipboard: ClipboardService) {
     this.layout = cloud();
 
     // Initialize the background task
@@ -210,21 +211,12 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   copyWordCloudToClipboard() {
-    const hiddenTextAreaWrapper = this.hiddenTextAreaWrapperEl.nativeElement;
-    hiddenTextAreaWrapper.style.display = 'block';
-    const tempTextArea = document.createElement('textarea');
-
-    hiddenTextAreaWrapper.appendChild(tempTextArea);
-    this.annotationData.forEach(annotation => {
-      if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
-        tempTextArea.value += `${annotation.text}\n`;
-      }
-    });
-    tempTextArea.select();
-    document.execCommand('copy');
-
-    hiddenTextAreaWrapper.removeChild(tempTextArea);
-    hiddenTextAreaWrapper.style.display = 'none';
+    const textToCopy = this.annotationData.reduce(
+      (text, annotation) =>
+        this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)) ? text + `${annotation.text}\n` : text,
+      ''
+    );
+    return this.clipboard.copy(textToCopy);
   }
 
   /**
