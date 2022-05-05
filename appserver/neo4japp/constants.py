@@ -60,6 +60,7 @@ class LogEventType(Enum):
     ANNOTATION = 'annotations'
     AUTHENTICATION = 'authentication'
     CONTENT_SEARCH = 'content_search'
+    CLIENT_EVENT = 'client-event'
     ELASTIC = 'elastic'
     ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
