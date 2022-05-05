@@ -592,7 +592,7 @@ export class SankeyLayoutService extends AttributeAccessors {
     }
   }
 
-  calcLayout(graph, kludge = false) {
+  calcLayout(graph) {
     // Process the graph's nodes and links, setting their positions
 
     // Associate the nodes with their respective links, and vice versa
