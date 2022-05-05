@@ -162,13 +162,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       this.viewChanged = true;
     }
 
-    let kludge = false;
     if (data && this.svg) {
       // If there was no change in the network trace or the view, do the kludgy copying. Otherwise we proceed normally. In other words,
       // whenever the network trace or view is changed, we do a hard reset.
       if (isNil(networkTraceIdx) && !this.viewChanged) {
-        kludge = true;
-
         this._data.links.sort((a: any, b: any) => a._index - b._index);
         data.previousValue.links.sort((a, b) => a._index - b._index);
 
@@ -176,9 +173,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         for (const link of data.previousValue.links) {
           this._data.links[m]._y0 = link._y0;
           this._data.links[m]._y1 = link._y1;
-          this._data.links[m]._width = link._width;
-          this._data.links[m]._value = link._value;
-          this._data.links[m]._circular = link._circular;
           this._data.links[m]._index = link._index;
           this._data.links[m]._order = link._order;
           if (isNil(this._data.links[m]._order)) {
@@ -194,7 +188,6 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           const prevNode = data.previousValue.nodes[i];
           const dataNode = this._data.nodes[i];
 
-          dataNode._value = prevNode._value;
           dataNode._x0 = prevNode._x0;
           dataNode._x1 = prevNode._x1;
           dataNode._y0 = prevNode._y0;
@@ -245,7 +238,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         }
       }
       this.viewChanged = false;
-      this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
+      this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
@@ -848,10 +841,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * and adjustments from outer scope
    * @param data graph declaration
    */
-  updateLayout(data, kludge = false) {
+  updateLayout(data) {
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
-          this.sankey.calcLayout(data, kludge);
+          this.sankey.calcLayout(data);
         }
         if (isObject(data._precomputedLayout)) {
           const [currentWidth, currentHeight] = this.sankey.size;
