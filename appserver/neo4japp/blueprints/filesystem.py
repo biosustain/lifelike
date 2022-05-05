@@ -825,6 +825,7 @@ class FileListView(FilesystemBaseView):
                 db.session.rollback()
 
         db.session.commit()
+        # rollback in case of error?
 
         # ========================================
         # Return new file
@@ -925,6 +926,7 @@ class FileListView(FilesystemBaseView):
                 file.modifier = current_user
 
         db.session.commit()
+        # rollback in case of error?
 
         # ========================================
         # Return changed files
@@ -1194,6 +1196,7 @@ class FileBackupView(FilesystemBaseView):
         backup.user = current_user
         db.session.add(backup)
         db.session.commit()
+        # rollback in case of error?
 
         return jsonify({})
 
@@ -1213,6 +1216,7 @@ class FileBackupView(FilesystemBaseView):
                                                   current_user.id))
         )
         db.session.commit()
+        # rollback in case of error?
 
         return jsonify({})
 
@@ -1370,6 +1374,7 @@ class FileLockListView(FileLockBaseView):
         result = db.session.execute(stmt)
         lock_acquired = bool(len(list(result)))
         db.session.commit()
+        # rollback in case of error?
 
         if lock_acquired:
             return self.get_locks_response(hash_id)
@@ -1390,6 +1395,7 @@ class FileLockListView(FileLockBaseView):
                 file_lock_table.c.user_id == current_user.id))
         )
         db.session.commit()
+        # rollback in case of error?
 
         return self.get_locks_response(hash_id)
 
