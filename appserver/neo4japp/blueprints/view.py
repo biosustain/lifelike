@@ -31,6 +31,7 @@ class ViewBaseView(MethodView):
         view = View()
         view_id = view.get_or_create(params).id
         db.session.commit()
+        # rollback in case of error?
         return Response(str(view_id), mimetype="text/plain")
 
 

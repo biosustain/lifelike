@@ -232,6 +232,7 @@ class ProjectBaseView(MethodView):
             try:
                 db.session.commit()
             except IntegrityError as e:
+                db.session.rollback()
                 raise ValidationError("The project name is already taken.")
 
         return missing_hash_ids
@@ -289,6 +290,7 @@ class ProjectListView(ProjectBaseView):
             raise ValidationError('The project name already is already taken.', 'name')
 
         db.session.commit()
+        # rollback in case of error?
 
         return self.get_project_response(project.hash_id, current_user)
 
