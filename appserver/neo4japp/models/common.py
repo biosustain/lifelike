@@ -1,7 +1,9 @@
+from datetime import datetime
 from decimal import Decimal
 
 import sqlalchemy as sa
 import timeflake
+from flask import g
 from marshmallow import fields
 from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy.ext.declarative import declared_attr
@@ -211,6 +213,14 @@ class FullTimestampMixin(TimestampMixin):
     @property
     def deleted(self):
         return self.deletion_date is not None
+
+    def delete(self, current_user=None):
+        """ Mark object as deleted"""
+        if not self.deleted:
+            current_user = current_user or g.current_user
+            self.deletion_date = datetime.now()
+            self.deleter = current_user
+            self.modifier = current_user
 
 
 class RecyclableMixin:

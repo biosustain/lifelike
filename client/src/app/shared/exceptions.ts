@@ -1,9 +1,27 @@
 export class UserError {
-  constructor(public readonly title,
-              public readonly message,
-              public readonly additionalMsgs,
-              public readonly stacktrace = null,
-              public readonly cause = null,
-              public readonly transactionId = null) {
+  constructor({
+                title,
+                message,
+                additionalMsgs = [],
+                stacktrace = null,
+                cause = null,
+                transactionId = null
+              }) {
+    this.title = title;
+    this.message = message;
+    this.additionalMsgs = additionalMsgs;
+    this.stacktrace = stacktrace;
+    this.cause = cause;
+    this.transactionId = transactionId;
   }
+
+  title: string;
+  message: string;
+  additionalMsgs: string[];
+  stacktrace: string;
+  cause: string;
+  transactionId: string;
+}
+
+export class DeleteNonEmpty extends UserError {
 }
