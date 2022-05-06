@@ -12,7 +12,7 @@
                 class="dropdown-item"
                 ngbDropdownItem
                 (click)="changeValue.emit(key)">
-            <ngb-highlight [result]="optionTextAccessor(item)" [term]="search"></ngb-highlight>
+            <ngb-highlight [result]="optionTextAccessor(key, item)" [term]="search"></ngb-highlight>
         </button>
     </ng-template>
 </div>

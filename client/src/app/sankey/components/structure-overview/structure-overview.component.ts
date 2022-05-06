@@ -149,7 +149,6 @@ const parseGraphFile = ({graph, nodes, links, ...rest}) => ([
   property('links', () => parseArray(links, parseLink)),
   ...mapObj(rest)
 ]);
-
 @Component({
   selector: 'app-sankey-structure-overview',
   templateUrl: './structure-overview.component.html',
@@ -165,7 +164,7 @@ export class StructureOverviewComponent {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  getNodeById$ = this.common.dataWithUtils$.pipe(
+  getNodeById$ = this.common.data$.pipe(
     map(({nodeById}) => nodeById),
     shareReplay({bufferSize: 1, refCount: true})
   );
@@ -176,7 +175,7 @@ export class StructureOverviewComponent {
   );
 
   nodeSets$ = this.common.data$.pipe(
-    map(({graph: {node_sets}}) => node_sets),
+    map(({graph: {nodeSets}}) => nodeSets),
     shareReplay({bufferSize: 1, refCount: true})
   );
 

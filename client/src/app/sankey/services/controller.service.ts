@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, throwError, ReplaySubject, merge as rx_merge, Observable, combineLatest } from 'rxjs';
-import { merge, transform, cloneDeepWith, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
-import { switchMap, map, filter, catchError, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
+import { of, Subject, iif, ReplaySubject, Observable, combineLatest } from 'rxjs';
+import { merge, transform, clone, max, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
+import { switchMap, map, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphNode, GraphFile, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 import {
@@ -39,6 +39,7 @@ import {
 import { SankeyViews, SankeyView } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
+import { SankeyDocument, TraceNetwork } from '../cls/SankeyDocument';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -76,6 +77,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   private _data$ = new ReplaySubject<SankeyFile>(1);
   data$ = this._data$.pipe(
     $freezeInDev,
+    map(file => new SankeyDocument(file)),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
@@ -90,19 +92,18 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }));
 
   dataWithUtils$ = this.data$.pipe(
-    this.$addDataUtils,
     debug('dataWithUtils$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
   renderDataWithUtils$ = this.data$.pipe(
-    map(({links, nodes, ...rest}) => ({
-      ...rest,
-      // shallow copy so we can add new properties for rendering
-      links: links.map(clone),
-      nodes: nodes.map(clone),
-    })),
-    this.$addDataUtils,
+    // map(({links, nodes, ...rest}) => ({
+    //   ...rest,
+    //   // shallow copy so we can add new properties for rendering
+    //   links: links.map(clone),
+    //   nodes: nodes.map(clone),
+    // })),
+    // this.$addDataUtils,
     debug('renderDataWithUtils$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
@@ -157,26 +158,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
   fontSizeScale$ = this.stateAccessor('fontSizeScale');
 
-  views$ = rx_merge(
-    this.data$.pipe(map(({_views = {}}) => _views)),
-    this.viewsUpdate$
-  ).pipe(
-    debug('views$'),
-    shareReplay<SankeyViews>(1)
-  );
-
-  /**
-   * Returns active view or null if no view is active
-   */
-  view$ = this.views$.pipe(
-    switchMap(views => this.viewName$.pipe(
-      map(viewName => views[viewName] ?? null),
-    )),
-    distinctUntilChanged(),
-    debug('view'),
-    shareReplay<SankeyView>(1)
-  );
-
   labelEllipsis$ = this.stateAccessor('labelEllipsis');
 
   /**
@@ -221,28 +202,42 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     prescalers
   });
 
-  networkTrace$ = this.optionStateAccessor('networkTraces', 'networkTraceIdx');
+  networkTrace$ = this.optionStateAccessor<TraceNetwork>('networkTraces', 'networkTraceIdx');
+
+  views$ = this.networkTrace$.pipe(
+    switchMap(trace => trace.views$),
+    debug('views$'),
+    shareReplay<SankeyViews>(1)
+  );
+
+  /**
+   * Returns active view or null if no view is active
+   */
+  view$ = this.views$.pipe(
+    switchMap(views => this.viewName$.pipe(
+      map(viewName => views[viewName] ?? null),
+    )),
+    distinctUntilChanged(),
+    debug('view'),
+    shareReplay<SankeyView>(1)
+  );
 
   oneToMany$ = this.networkTrace$.pipe(
-    switchMap(({sources, targets}) => this.data$.pipe(
-      map(({graph: {node_sets}}) => {
-        const _inNodes = node_sets[sources];
-        const _outNodes = node_sets[targets];
-        return Math.min(_inNodes.length, _outNodes.length) === 1;
-      })
-    ))
+    map(({sources, targets}) =>
+      Math.min(sources.length, targets.length) === 1
+    )
   );
 
 
   partialNetworkTraceData$ = this.networkTrace$.pipe(
     switchMap(({sources, targets, traces}) => this.renderDataWithUtils$.pipe(
-      map(({links, nodes, graph: {node_sets}, nodeById}) => ({
+      map(({links, nodes, nodeById}) => ({
         links,
         nodes,
         traces,
         nodeById,
-        sources: node_sets[sources],
-        targets: node_sets[targets]
+        sources,
+        targets
       }))
     )),
     debug('partialNetworkTraceData$'),
@@ -255,9 +250,9 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   align$ = this.optionStateAccessor<Align>('aligns', 'alignId');
 
   pathReports$ = this.dataWithUtils$.pipe(
-    map(({nodes, nodeById, links, graph: {trace_networks}}) =>
+    map(({nodes, nodeById, links, graph: {traceNetworks}}) =>
       transform(
-        trace_networks,
+        traceNetworks,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
           const traceNodes = this.getNetworkTraceNodes(traceLinks, nodeById).map(clone);
@@ -341,25 +336,15 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   networkTraceDefaultSizing$ = this.networkTrace$.pipe(
-    map(({defaultSizing}) => defaultSizing),
-    filter(defaultSizing => !!defaultSizing),
-    switchMap((defaultSizing: string) =>
-      this.options$.pipe(
-        switchMap(({predefinedValueAccessors}) =>
-          iif(
-            () => !!predefinedValueAccessors[defaultSizing],
-            of(predefinedValueAccessors[defaultSizing]),
-            throwError(new Error(`No predefined value accessor for ${defaultSizing}`))
-          )
+    switchMap(({defaultSizing}) =>
+      iif(
+        () => defaultSizing,
+        of(defaultSizing),
+        this.oneToMany$.pipe(
+          map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
         )
       )
-    ),
-    catchError(error => {
-      this.warningController.warn(error);
-      return this.oneToMany$.pipe(
-        map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
-      );
-    })
+    )
   );
 
   prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
@@ -381,10 +366,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           () => baseViewName,
           of({networkTraceIdx}),
           this.data$.pipe(
-            map(({graph: {trace_networks, node_sets}}) => {
-              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
-              const sources = node_sets[sourcesSetId];
-              const targets = node_sets[targetsNameId];
+            map(({graph: {traceNetworks, nodeSets}}) => {
+              const {sources, targets} = traceNetworks[networkTraceIdx];
               return {
                 networkTraceIdx,
                 baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
@@ -405,10 +388,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           () => alignId,
           of({alignId}),
           this.data$.pipe(
-            map(({graph: {trace_networks, node_sets}}) => {
-              const {sources: sourcesSetId, targets: targetsNameId} = trace_networks[networkTraceIdx];
-              const sources = node_sets[sourcesSetId];
-              const targets = node_sets[targetsNameId];
+            map(({graph: {traceNetworks}}) => {
+              const {sources, targets} = traceNetworks[networkTraceIdx];
               return {
                 alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left
               };
@@ -450,7 +431,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   loadData(data: SankeyFile) {
-    this.preprocessData(data);
+    // this.preprocessData(data);
     this.data = data;
     return of(true);
   }
@@ -561,7 +542,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
-      networkTraces: graph.trace_networks,
+      networkTraces: graph.traceNetworks,
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph})
@@ -587,48 +568,49 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   resetController() {
     return this.data$.pipe(
       first(),
-      switchMap(data => this.loadData(data as SankeyFile))
+      // todo
+      // switchMap(data => this.loadData(data))
     ).toPromise();
   }
 
-  preprocessData(content: SankeyFile): SankeyFile {
-    content.nodes.forEach((n: GraphNode & { _id: SankeyId }) => {
-      n._id = n.id;
-    });
-    content.links.forEach((l: GraphLink & { _id: SankeyId }, index) => {
-      l._id = index;
-    });
-    content.graph.trace_networks.forEach((tn: SankeyTraceNetwork) => {
-      let maxVal = max(tn.traces.map(({group}) => group ?? -1));
-      if (!isFinite(maxVal)) {
-        maxVal = Math.random();
-      }
-      tn.traces.forEach(tr => {
-        tr._group = tr.group ?? (tr.group === -1 && ++maxVal);
-      });
-    });
-    return transform(content, (result, value, key) => {
-      // only views are editable
-      if (key === '_views') {
-        result[key] = value;
-      } else {
-        result[key] = cloneDeepWith(value, Object.freeze);
-      }
-    }, {}) as SankeyFile;
-  }
+  // preprocessData(content: SankeyFile): SankeyFile {
+  //   content.nodes.forEach((n: GraphNode & { _id: SankeyId }) => {
+  //     n._id = n.id;
+  //   });
+  //   content.links.forEach((l: GraphLink & { _id: SankeyId }, index) => {
+  //     l._id = index;
+  //   });
+  //   content.graph.trace_networks.forEach((tn: SankeyTraceNetwork) => {
+  //     let maxVal = max(tn.traces.map(({group}) => group ?? -1));
+  //     if (!isFinite(maxVal)) {
+  //       maxVal = Math.random();
+  //     }
+  //     tn.traces.forEach(tr => {
+  //       tr._group = tr.group ?? (tr.group === -1 && ++maxVal);
+  //     });
+  //   });
+    // return transform(content, (result, value, key) => {
+    //   // only views are editable
+    //   if (key === '_views') {
+    //     result[key] = value;
+    //   } else {
+    //     result[key] = cloneDeepWith(value, Object.freeze);
+    //   }
+    // }, {}) as SankeyFile;
+  // }
 
-  addIds(content) {
-    content.nodes.forEach(n => {
-      n._id = n.id;
-    });
-    content.links.forEach((l, i) => {
-      l._id = i;
-    });
-  }
-
-  load(content) {
-    this.addIds(content);
-    this.preprocessData(content);
-    this.extractOptionsFromGraph(content);
-  }
+  // addIds(content) {
+  //   content.nodes.forEach(n => {
+  //     n._id = n.id;
+  //   });
+  //   content.links.forEach((l, i) => {
+  //     l._id = i;
+  //   });
+  // }
+  //
+  // load(content) {
+  //   this.addIds(content);
+  //   // this.preprocessData(content);
+  //   this.extractOptionsFromGraph(content);
+  // }
 }
