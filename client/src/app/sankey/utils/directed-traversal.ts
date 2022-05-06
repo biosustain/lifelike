@@ -1,4 +1,5 @@
 import { sum } from 'd3-array';
+import { SankeyNode } from '../interfaces';
 
 interface Direction {
   nextLinksAccessor: string;
@@ -20,7 +21,7 @@ export const rtl = {
 
 export class DirectedTraversal {
   direction: Direction;
-  startNodes: Array<any>;
+  startNodes: Array<SankeyNode>;
   private endNodes: Array<any>;
 
   constructor([inNodes, outNodes]) {

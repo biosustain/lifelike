@@ -12,12 +12,11 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormBuilder } from '@angular/forms';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
-import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick } from 'lodash-es';
+import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer } from 'rxjs';
+import { isNil, pick, flatMap } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -51,6 +50,10 @@ import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
 import { SankeyUpdateService } from '../services/sankey-update.service';
+import { SankeyViewCreateComponent } from './view/create/view-create.component';
+import { SankeyConfirmComponent } from './confirm.component';
+import { viewBaseToNameMapping } from '../constants/view-base';
+import { SankeyDocument } from '../cls/SankeyDocument';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -225,6 +228,17 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     )),
   );
 
+  networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
+    map(networkTraces => new ExtendedMap<string, any>(
+      flatMap(networkTraces, (networkTrace, index) => ([
+        [`nt_${index}`, networkTrace],
+        ...Object.entries(networkTrace?._views ?? {}).map(([id, view]) => ([`view_${id}`, view]))
+      ]))
+    )),
+  );
+  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
+    map(activeViewBase => viewBaseToNameMapping[activeViewBase] ?? ''));
+
 
   data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
@@ -233,9 +247,19 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   detailsPanel$ = new BehaviorSubject(false);
 
+  selectView(viewName) {
+    return this.viewController.selectView(viewName).toPromise();
+  }
 
-  traceNameAccessor({name, description}) {
-    return name || description || 'Trace Description Unknown';
+  traceAndViewNameAccessor(id, traceOrView) {
+    return traceOrView?.name ?? traceOrView?.description ?? `\t${id}`;
+  }
+
+  confirmDeleteView(viewName): Promise<any> {
+    return this.confirm({
+      header: 'Confirm delete',
+      body: `Are you sure you want to delete the '${viewName}' view?`
+    }).then(() => this.viewController.deleteView(viewName).toPromise());
   }
 
   ngOnInit() {
@@ -324,9 +348,9 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     return pass;
   }
 
-  saveFile(data: GraphFile) {
+  saveFile(data: SankeyDocument) {
     const contentValue = new Blob(
-      [JSON.stringify(data)],
+      [data.toString()],
       {type: MimeTypes.Graph});
     return this.filesystemService.save(
       [this.object.hashId],
@@ -351,6 +375,55 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   async selectNetworkTrace(networkTraceIdx) {
     await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+  }
+
+  async selectNetworkTraceOrView(networkTraceIdx) {
+    await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+  }
+
+  confirm({header, body}): Promise<any> {
+    const modal = this.modalService.open(
+      SankeyConfirmComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    modal.componentInstance.header = header;
+    modal.componentInstance.body = body;
+    return modal.result;
+  }
+
+  confirmCreateView(viewName) {
+    return this.viewController.views$.pipe(
+      first(),
+      switchMap(views =>
+        iif(
+          () => !!views[viewName],
+          defer(() => this.confirm({
+            header: 'View already exists',
+            body: `View ${viewName} already exists. Do you want to overwrite it?`
+          })),
+          of(true)
+        )
+      ),
+      switchMap(overwrite =>
+        iif(
+          () => overwrite,
+          this.viewController.createView(viewName),
+          of(false)
+        )
+      )
+    );
+  }
+
+  saveView(): Promise<any> {
+    const createDialog = this.modalService.open(
+      SankeyViewCreateComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    return createDialog.result.then(({viewName}) => this.confirmCreateView(viewName).toPromise());
+  }
+
+  openBaseView(baseViewName: ViewBase): Promise<any> {
+    return this.viewController.openBaseView(baseViewName).toPromise();
   }
 
   open(content) {
@@ -402,7 +475,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   resetView() {
     this.sankeyController.data$.pipe(
       first(),
-      tap(data => this.sankeyController.data = data)
+      // tap(data => this.sankeyController.data = data)
     ).toPromise();
     this.sankeyController.delta$.next({});
     this.baseViewContext$.pipe(

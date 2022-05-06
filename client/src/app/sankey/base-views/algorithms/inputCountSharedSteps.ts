@@ -14,7 +14,7 @@ export function calculateInputCountSkippingCircularLinks(
   nextLinkValue: (nodeValue: number, nextLinks) => number
 ) {
   sortedNodes.forEach(n => {
-    n._value = dt.startNodes.includes(n.id) ? 1 : 0;
+    n._value = dt.startNodes.includes(n) ? 1 : 0;
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
     n._value = prevLinks.reduce((a, l) => a + (l._value ?? 0), n._value);

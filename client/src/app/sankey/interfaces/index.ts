@@ -51,6 +51,8 @@ export interface SankeyState {
 
 export interface SankeyTraceNetwork extends GraphTraceNetwork {
   traces: Array<SankeyTrace>;
+
+  _views: SankeyViews;
 }
 
 export interface SankeyGraph extends GraphGraph {
@@ -65,8 +67,6 @@ export interface SankeyFile<
   graph: Graph;
   links: Array<Link>;
   nodes: Array<Node>;
-
-  _views: SankeyViews;
 }
 
 export interface SankeyData extends SankeyFile {

@@ -47,11 +47,11 @@ export class SankeySearchService {
 
   currentSearch$ = this.common.data$.pipe(
     // limit size of data we operate on
-    map(({nodes, links, graph: {trace_networks}}) => ({
+    map(({nodes, links, graph: {traceNetworks}}) => ({
       nodes,
       links,
       graph: {
-        trace_networks
+        traceNetworks
       }
     })),
     switchMap(data => this.searchTokens$.pipe(

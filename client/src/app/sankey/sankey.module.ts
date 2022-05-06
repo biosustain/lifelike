@@ -29,7 +29,6 @@ import { SankeySearchPanelModule } from './components/search-panel/sankey-search
 import { PathReportComponent } from './components/path-report/path-report.component';
 import { SankeyAdvancedPanelDirective } from './directives/advanced-panel.directive';
 import { SankeyViewCreateComponent } from './components/view/create/view-create.component';
-import { SankeyViewDropdownComponent } from './components/view/dropdown/view-dropdown.component';
 import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
 import { SankeyConfirmComponent } from './components/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
@@ -44,7 +43,6 @@ import { StructureOverviewComponent } from './components/structure-overview/stru
     PathReportComponent,
     SankeyConfirmComponent,
     SankeyViewCreateComponent,
-    SankeyViewDropdownComponent,
     SankeyAdvancedPanelComponent,
     StructureOverviewComponent
   ],
