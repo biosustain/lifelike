@@ -83,9 +83,14 @@ class ProjectCreateSchema(CamelCaseSchema):
 
 
 class BulkProjectRequestSchema(CamelCaseSchema):
-    hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
-                           required=True,
-                           validate=marshmallow.validate.Length(min=1, max=100))
+    hash_ids = fields.List(
+        fields.String(
+            validate=marshmallow.validate.Length(min=1, max=200)
+        ),
+        required=True,
+        validate=marshmallow.validate.Length(min=1, max=100)
+    )
+    reqursive = fields.Boolean(missing=False)
 
 
 class ProjectUpdateRequestSchema(BulkProjectRequestSchema):

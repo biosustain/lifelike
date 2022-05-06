@@ -1,0 +1,12 @@
+<app-modal-header (cancel)="cancel()">
+    Confirm Deletion
+</app-modal-header>
+
+<app-modal-body>
+    Project is not empty. Would you like to delete all files and folders recursively?
+</app-modal-body>
+
+<app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-danger" (click)="close()">Delete</button>
+</app-modal-footer>

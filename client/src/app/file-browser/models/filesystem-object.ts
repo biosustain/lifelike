@@ -32,6 +32,10 @@ export class ProjectImpl implements Project {
   root?: FilesystemObject;
   privileges: ProjectPrivileges;
 
+  get effectiveName(): string {
+    return this.name || this.hashId;
+  }
+
   get projectName() {
     return this.name;
   }
