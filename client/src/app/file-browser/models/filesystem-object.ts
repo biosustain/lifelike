@@ -113,6 +113,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
+  pinned: boolean;
   uploadUrl: string;
   annotationsDate: string;
   readonly creationDate: string;
@@ -584,6 +585,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
     return (
+      // Sort pinned files first
+      (a.pinned ? -1 : 1) ||
       // Sort directories first
       Number(b.mimeType === MimeTypes.Directory) - Number(a.mimeType === MimeTypes.Directory) ||
       // Sort files by timestamp
