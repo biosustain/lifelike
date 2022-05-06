@@ -14,7 +14,8 @@
 
     <table class="table module-body-table table-selectable" style="table-layout: fixed">
       <colgroup>
-        <col>
+        <col style="width: 50px"> <!-- Checkbox -->
+        <col> <!-- Name -->
         <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column"><!-- Annotated -->
         <col style="width: 90px" class="d-none d-cbp-md-table-column"> <!-- Created -->
         <col class="w-20" [ngStyle.gt-xs]="'width:120px'"> <!-- Author -->
@@ -23,18 +24,18 @@
       <thead>
         <tr>
           <th class="text-truncate">
-            <ng-container *ngIf="objects != null && objects.multipleSelection; else singleSelectionSelectAll">
+            <ng-container *ngIf="objects != null && objects.multipleSelection">
               <div class="custom-control custom-checkbox">
                 <input type="checkbox"
                        id="{{ id }}-select-all"
                        class="custom-control-input"
                        [checked]="objects.isAllSelected()"
                        (change)="objects.toggleAll()">
-                <label class="custom-control-label" for="{{ id }}-select-all">Name</label>
+                <label class="custom-control-label" for="{{ id }}-select-all"></label>
               </div>
             </ng-container>
-            <ng-template #singleSelectionSelectAll>Name</ng-template>
           </th>
+          <th class="text-truncate">Name</th>
           <th class="text-truncate d-none d-cbp-sm-table-cell">Annotated</th>
           <th class="text-truncate d-none d-cbp-md-table-cell">Modified</th>
           <th class="text-truncate">User</th>
@@ -46,52 +47,52 @@
       <tbody>
       <!-- Placeholders -->
         <ng-template #placeholders>
-            <tr>
-                <td class="align-middle text-nowrap overflow-hidden">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden text-truncate">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td>
-                    <div class="d-flex align-items-end">
-                        <div ngbDropdown class="d-inline-block ml-auto">
-                            <button class="btn btn-sm" ngbDropdownToggle>
-                                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                            </button>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="align-middle text-nowrap overflow-hidden">
-                    <span class="placeholder-box">Loading loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td class="align-middle text-nowrap overflow-hidden text-truncate">
-                    <span class="placeholder-box">Loading loading</span>
-                </td>
-                <td>
-                    <div class="d-flex align-items-end">
-                        <div ngbDropdown class="d-inline-block ml-auto">
-                            <button class="btn btn-sm" ngbDropdownToggle>
-                                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                            </button>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+          <tr>
+            <td class="align-middle text-nowrap overflow-hidden">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-end">
+                <div ngbDropdown class="d-inline-block ml-auto">
+                  <button class="btn btn-sm" ngbDropdownToggle>
+                    <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="align-middle text-nowrap overflow-hidden">
+              <span class="placeholder-box">Loading loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-end">
+                <div ngbDropdown class="d-inline-block ml-auto">
+                  <button class="btn btn-sm" ngbDropdownToggle>
+                    <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
         </ng-template>
         <ng-container *ngIf="objects; else placeholders">
           <tr *ngFor="let object of objects.view$ | async; index as objectIndex"
@@ -108,52 +109,54 @@
                         class="custom-control-input"
                         (change)="objects.toggle(object); $event.preventDefault()"
                         [checked]="objects.isSelected(object)">
-                <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}">
-                  <div class="d-flex align-items-center"
-                       popoverTitle="Description"
-                       container="body"
-                       triggers="mouseenter:mouseleave"
-                       placement="right"
-                       [popoverClass]="'tooltip-newlines'"
-                       [ngbPopover]="object.description  | truncate: MAX_TOOLTIP_LENGTH"
-                       [disablePopover]="object.description == null || object.description.length === 0">
-                    <div class="d-inline-block mr-1">
-                      <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
-                    </div>
+                <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}"></label>
+              </div>
+            </td>
 
-                    <div class="d-inline-block text-truncate">
-                      <a [appLink]="object.getCommands(forEditing)"
-                          [handleClick]="false"
-                          (click)="openObject(object); $event.preventDefault()">
-                        <ng-container *ngIf="!object.isDirectory; else dirLabel">{{ object.filename }}</ng-container>
-                        <ng-template #dirLabel>
-                          <strong>{{ object.filename }}</strong>
-                        </ng-template>
-                      </a>
-                    </div>
+            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'" (click)="objects.toggle(object)">
+              <div class="d-flex align-items-center"
+                    popoverTitle="Description"
+                    container="body"
+                    triggers="mouseenter:mouseleave"
+                    placement="right"
+                    [popoverClass]="'tooltip-newlines'"
+                    [ngbPopover]="object.description  | truncate: MAX_TOOLTIP_LENGTH"
+                    [disablePopover]="object.description == null || object.description.length === 0">
+                <div class="d-inline-block mr-1">
+                  <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
+                </div>
 
-                    <div *ngIf="object.public"
-                          class="d-inline-block ml-1"
-                          ngbTooltip="This item is public and can be viewed by any logged-in user."
-                          container="body">
-                      <i class="fa fa-fw text-icon fa-globe"></i>
-                    </div>
+                <div class="d-inline-block text-truncate">
+                  <a [appLink]="object.getCommands(forEditing)"
+                      [handleClick]="false"
+                      (click)="openObject(object); $event.preventDefault()">
+                    <ng-container *ngIf="!object.isDirectory; else dirLabel">{{ object.filename }}</ng-container>
+                    <ng-template #dirLabel>
+                      <strong>{{ object.filename }}</strong>
+                    </ng-template>
+                  </a>
+                </div>
 
-                    <div *ngIf="!object.privileges.writable && !object.privileges.commentable"
-                          class="d-inline-block ml-1"
-                          ngbTooltip="You do not have permission to edit this item."
-                          container="body">
-                      <i class="fa fa-fw text-icon fa-lock"></i>
-                    </div>
+                <div *ngIf="object.public"
+                      class="d-inline-block ml-1"
+                      ngbTooltip="This item is public and can be viewed by any logged-in user."
+                      container="body">
+                  <i class="fa fa-fw text-icon fa-globe"></i>
+                </div>
 
-                    <div *ngIf="!object.privileges.writable && object.privileges.commentable"
-                          class="d-inline-block ml-1"
-                          ngbTooltip="You can make comments on this item, but you cannot edit it."
-                          container="body">
-                      <i class="fa fa-fw text-icon fa-comment"></i>
-                    </div>
-                  </div>
-                </label>
+                <div *ngIf="!object.privileges.writable && !object.privileges.commentable"
+                      class="d-inline-block ml-1"
+                      ngbTooltip="You do not have permission to edit this item."
+                      container="body">
+                  <i class="fa fa-fw text-icon fa-lock"></i>
+                </div>
+
+                <div *ngIf="!object.privileges.writable && object.privileges.commentable"
+                      class="d-inline-block ml-1"
+                      ngbTooltip="You can make comments on this item, but you cannot edit it."
+                      container="body">
+                  <i class="fa fa-fw text-icon fa-comment"></i>
+                </div>
               </div>
             </td>
 
