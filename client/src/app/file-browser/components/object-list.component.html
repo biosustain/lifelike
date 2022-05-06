@@ -209,6 +209,7 @@
                                    [forEditing]="forEditing"
                                    [showDelete]="true"
                                    (objectOpen)="openObject($event)"
+                                   (objectUpdate)="updateView()"
                                    (refreshRequest)="refreshRequest.emit($event)">
                   </app-object-menu>
                 </mat-menu>
