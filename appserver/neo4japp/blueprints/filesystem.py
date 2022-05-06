@@ -2,6 +2,7 @@ import hashlib
 import io
 import itertools
 import json
+import os
 import typing
 import urllib.request
 import zipfile
@@ -70,7 +71,6 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
-import os
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -106,7 +106,11 @@ class FilesystemBaseView(MethodView):
                            '(KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
     def get_nondeleted_recycled_file(
-            self, filter, lazy_load_content=False, attr_excl: List[str] = None) -> Files:
+        self,
+        filter,
+        lazy_load_content=False,
+        attr_excl: List[str] = None
+    ) -> Files:
         """
         Returns a file that is guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -226,6 +230,80 @@ class FilesystemBaseView(MethodView):
 
         # In the end, we just return a list of Files instances!
         return files
+
+    def get_nondeleted_recycled_descendants(
+        self,
+        filter,
+        lazy_load_content=False,
+        require_hash_ids: List[str] = None,
+        sort: List[str] = [],
+        attr_excl: List[str] = None
+    ) -> List[Files]:
+        """
+        Returns files that are guaranteed to be non-deleted, but may or may not be
+        recycled, that matches the provided filter. If you do not want recycled files,
+        exclude them with a filter condition.
+
+        :param filter: the SQL Alchemy filter
+        :param lazy_load_content: whether to load the file's content into memory
+        :param require_hash_ids: a list of file hash IDs that must be in the result
+        :param attr_excl: list of file attributes to exclude from the query
+        :param sort: str list of file attributes to order by
+        :return: the result, which may be an empty list
+        """
+        current_user = g.current_user
+
+        t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
+        t_project = db.aliased(Projects, name='_project')
+
+        # The following code gets a whole file hierarchy, complete with permission
+        # information for the current user for the whole hierarchy, all in one go, but the
+        # code is unfortunately very complex. However, as long as we can limit the instances of
+        # this complex code to only one place in the codebase (right here), while returning
+        # just a list of file objects (therefore abstracting all complexity to within
+        # this one method), hopefully we manage it. One huge upside is that anything downstream
+        # from this method, including the client, has zero complexity to deal with because
+        # all the required information is available.
+
+        # First, we fetch the requested files, AND the parent folders of these files, AND the
+        # project. Note that to figure out the project, as of writing, you have to walk
+        # up the hierarchy to the top most folder to figure out the associated project, which
+        # the following generated query does. In the future, we MAY want to cache the project of
+        # a file on every file row to make a lot of queries a lot simpler.
+        query = build_file_hierarchy_query(
+            and_(
+                filter,
+                Files.deletion_date.is_(None)
+            ),
+            t_project,
+            t_file,
+            file_attr_excl=attr_excl,
+            direction='children'
+        ) \
+            .options(raiseload('*'),
+                     joinedload(t_file.user)) \
+            .order_by(*[text(f'_file.{col}') for col in sort])
+
+        # Add extra boolean columns to the result indicating various permissions (read, write,
+        # etc.) for the current user, which then can be read later by FileHierarchy or manually.
+        # Note that file permissions are hierarchical (they are based on their parent folder and
+        # also the project permissions), so you cannot just check these columns for ONE file to
+        # determine a permission -- you also have to read all parent folders and the project!
+        # Thankfully, we just loaded all parent folders and the project above, and so we'll use
+        # the handy FileHierarchy class later to calculate this permission information.
+        private_data_access = get_authorization_service().has_role(
+            current_user, 'private-data-access'
+        )
+        query = add_project_user_role_columns(query, t_project, current_user.id,
+                                              access_override=private_data_access)
+        query = add_file_user_role_columns(query, t_file, current_user.id,
+                                           access_override=private_data_access)
+
+        if lazy_load_content:
+            query = query.options(lazyload(t_file.content))
+
+        # In the end, we just return a list of Files instances!
+        return [row[0] for row in query.all()]
 
     def check_file_permissions(
             self,
@@ -860,9 +938,13 @@ class FileListView(FilesystemBaseView):
                 new_ids = [file.id for file in new_files]
 
                 # Possibly could be optimized with some get_or_create or insert_if_not_exist
-                to_add = [MapLinks(map_id=map_id, linked_id=file.id) for file in new_files if not
-                          db.session.query(MapLinks).filter_by(map_id=map_id, linked_id=file.id
-                                                               ).scalar()]
+                to_add = [
+                    MapLinks(map_id=map_id, linked_id=file.id)
+                    for file in new_files if not
+                    db.session.query(MapLinks).filter_by(
+                        map_id=map_id, linked_id=file.id
+                    ).scalar()
+                ]
 
         response = self.get_bulk_file_response(targets['hash_ids'], current_user,
                                                missing_hash_ids=missing_hash_ids)
@@ -920,10 +1002,7 @@ class FileListView(FilesystemBaseView):
                 file.recycler = current_user
                 file.modifier = current_user
 
-            if not file.deleted:
-                file.deletion_date = datetime.now()
-                file.deleter = current_user
-                file.modifier = current_user
+            file.delete()
 
         db.session.commit()
         # rollback in case of error?
