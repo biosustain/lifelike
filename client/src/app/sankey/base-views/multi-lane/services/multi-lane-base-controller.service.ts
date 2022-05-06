@@ -106,7 +106,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
   ) {
     const traceBasedLinkSplitMap = new Map();
     const traceGroupColorMap = colorMap ?? new Map(
-      traces.map(({_group}) => [_group, christianColors[_group]])
+      traces.map(({group}) => [group, christianColors[group]])
     );
     const networkTraceLinks = traces.reduce((o, trace, traceIdx) => {
       const color = traceGroupColorMap.get(trace._group);

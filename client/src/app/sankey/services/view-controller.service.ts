@@ -10,6 +10,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
+import { network } from 'vis-network';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -129,9 +130,8 @@ export class ViewControllerService {
           size: {width, height}
         } as SankeyView))
       )),
-      switchMap(view => this.views$.pipe(
-        first(),
-        tap(views => this.common.viewsUpdate$.next({...views, [viewName]: view}))
+      switchMap(view => this.common.networkTrace$.pipe(
+          tap(networkTrace => networkTrace.addView(viewName, view))
       )),
       switchMap(_views => this.common.data$.pipe(
         first(),

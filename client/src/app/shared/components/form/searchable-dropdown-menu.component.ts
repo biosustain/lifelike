@@ -80,7 +80,7 @@ export class SearchableDropdownMenuComponent<Id, Item> implements OnChanges {
     this.search$.pipe(map(searchTerm => inText(searchTerm)))
   ]).pipe(
     map(([items, searchFunction]) =>
-      items.filter(([, item]) => searchFunction(this.optionTextAccessor(item)))
+      items.filter(([id, item]) => searchFunction(this.optionTextAccessor(id, item)))
     )
   );
   @Output() changeValue = new EventEmitter<Id>();
@@ -88,7 +88,7 @@ export class SearchableDropdownMenuComponent<Id, Item> implements OnChanges {
   @ContentChild('item', {static: true}) itemTemplateRef: TemplateRef<any>;
   @ViewChild(NgbDropdownMenu, {static: true}) dropdownMenu: NgbDropdownMenu;
   @ViewChild('search', {static: true}) searchInput;
-  @Input() optionTextAccessor: (item: Item) => string = (item: Item) => String(item);
+  @Input() optionTextAccessor: (id, item: Item) => string = (id, item: Item) => String(item);
 
   ngOnChanges({items, isOpen}: SimpleChanges) {
     if (items) {
