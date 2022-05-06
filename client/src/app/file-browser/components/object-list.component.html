@@ -15,6 +15,7 @@
     <table class="table module-body-table table-selectable" style="table-layout: fixed">
       <colgroup>
         <col style="width: 50px"> <!-- Checkbox -->
+        <col style="width: 30px"> <!-- "Pinned" -->
         <col> <!-- Name -->
         <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column"><!-- Annotated -->
         <col style="width: 90px" class="d-none d-cbp-md-table-column"> <!-- Created -->
@@ -35,6 +36,7 @@
               </div>
             </ng-container>
           </th>
+          <th></th>
           <th class="text-truncate">Name</th>
           <th class="text-truncate d-none d-cbp-sm-table-cell">Annotated</th>
           <th class="text-truncate d-none d-cbp-md-table-cell">Modified</th>
@@ -110,6 +112,18 @@
                         (change)="objects.toggle(object); $event.preventDefault()"
                         [checked]="objects.isSelected(object)">
                 <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}"></label>
+              </div>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden">
+              <div class="d-flex align-items-center"
+                   container="body"
+                   ngbTooltip="Write access is required to pin/unpin files"
+                   [disableTooltip]="object.privileges.writable"
+                   (click)="togglePin(object)">
+                <div class="d-inline-block mr-1">
+                  <i [class]="'fas fa-thumbtack ' + (object.pinned ? 'text-primary' : 'text-secondary')"></i>
+                </div>
               </div>
             </td>
 
