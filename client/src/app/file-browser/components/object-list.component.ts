@@ -28,6 +28,7 @@ export class ObjectListComponent {
 
   @Input() appLinks = false;
   @Input() forEditing = true;
+  @Input() showPins = true;
   @Input() showDescription = false;
   @Input() parent: FilesystemObject | undefined;
   @Input() objects: CollectionModel<FilesystemObject> | undefined;
