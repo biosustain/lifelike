@@ -4,11 +4,11 @@ import { MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { SankeyId } from './pure';
 
 export interface SearchLink extends GraphLink {
-  _id: SankeyId;
+  id: SankeyId;
 }
 
 export interface SearchNode extends GraphNode {
-  _id: SankeyId;
+  id: number;
 }
 
 export enum EntityType {
