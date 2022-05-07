@@ -1,19 +1,21 @@
 import { partition, sumBy, mean } from 'lodash-es';
 
 import { ExtendedWeakMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyTrace, SankeyData } from 'app/sankey/interfaces';
 import {
   initInputCountCalculation,
   calculateInputCountSkippingCircularLinksA,
   getLinkLayers,
   calculateInputCountSkippingCircularLinksB
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
+import { SankeyLink, Trace } from 'app/sankey/cls/SankeyDocument';
 
 import { MultiLaneBaseControllerService } from '../services/multi-lane-base-controller.service';
+import { NetworkTraceData } from '../../../interfaces';
+import { Base } from '../interfaces';
 
 export function inputCount(
   this: MultiLaneBaseControllerService,
-  data: SankeyData
+  data: NetworkTraceData<Base>
 ) {
   const {
     sortedNodes,
@@ -27,11 +29,11 @@ export function inputCount(
   linkLayers.forEach(layer => {
     const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
     const circularTraces = new Set(circularLinks.map(({_trace}) => _trace));
-    const traceCircularEstimation = new WeakMap<SankeyTrace, number>();
+    const traceCircularEstimation = new WeakMap<Trace, number>();
     for (const circularTrace of circularTraces) {
       const traceNormalLinks = normalLinks.filter(({_trace}) => _trace === circularTrace);
       const traceCircularLinks = circularLinks.filter(({_trace}) => _trace === circularTrace);
-      const traceNormalLinksValue = sumBy(traceNormalLinks, ({_value}) => _value);
+      const traceNormalLinksValue = sumBy(traceNormalLinks, ({value}) => value);
       // each trace should flow only value of one so abs(sum(link values) - sum(circular values)) = 1
       // yet it remains an estimate cause we do not know which circular link contribution to sum
       // ass a good estimate assuming that each circular link contributes equal factor of sum
@@ -40,14 +42,14 @@ export function inputCount(
       traceCircularEstimation.set(circularTrace, traceCircularLinkEstimation);
     }
     circularLinks.forEach(circularLink => {
-      const circularLinkEstimation = traceCircularEstimation.get(circularLink._trace);
+      const circularLinkEstimation = traceCircularEstimation.get(circularLink.trace);
       const estimations = perLayerLinkEstimation.getSet(circularLink, []);
       estimations.push(circularLinkEstimation);
     });
     circularLinks.forEach(circularLink => {
-      circularLink._value = mean(perLayerLinkEstimation.get(circularLink));
-      delete circularLink._multiple_values;
-      this.warningController.assert(circularLink._value <= maxExpectedValue,
+      circularLink.value = mean(perLayerLinkEstimation.get(circularLink));
+      delete circularLink.multipleValues;
+      this.warningController.assert(circularLink.value <= maxExpectedValue,
         'Input count algorithm fail - node value exceeds input node count');
     });
   });
@@ -56,12 +58,12 @@ export function inputCount(
 
   return {
     nodes: data.nodes
-      .filter(n => n._sourceLinks.length + n._targetLinks.length > 0),
+      .filter(n => n.sourceLinks.length + n.targetLinks.length > 0),
     links: data.links,
     _sets: {
       link: {
-        _value: true,
-        _multiple_values: false
+        value: true,
+        multipleValues: false
       }
     }
   };

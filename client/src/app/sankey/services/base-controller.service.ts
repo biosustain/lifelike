@@ -5,7 +5,7 @@ import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/o
 import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
 
 import { isNotEmpty } from 'app/shared/utils';
-import { NetworkTraceData, } from 'app/sankey/interfaces';
+import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -13,7 +13,7 @@ import { debug } from 'app/shared/rxjs/debug';
 
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
-import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
+import { SankeyNodeHeight } from '../base-views/interfaces';
 import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
@@ -29,7 +29,7 @@ import {
 } from '../interfaces/valueAccessors';
 import { SankeyView } from '../interfaces/view';
 
-export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
+export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -38,8 +38,8 @@ export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptio
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class BaseControllerService<Options extends SankeyBaseOptions, State extends SankeyBaseState>
-  extends StateControlAbstractService<Options, State> implements ServiceOnInit {
+export class BaseControllerService<Base extends TypeContext>
+  extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit {
 
   constructor(
     readonly common: ControllerService,
@@ -52,14 +52,15 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   fontSizeScale$: Observable<unknown>;
 
   nodeHeight$: Observable<SankeyNodeHeight>;
-  networkTraceData$: Observable<NetworkTraceData>;
+  networkTraceData$: Observable<NetworkTraceData<Base>>;
   viewBase;
-  nodeValueAccessor$: Observable<ValueGenerator>;
-  linkValueAccessor$: Observable<ValueGenerator>;
+  nodeValueAccessor$: Observable<ValueGenerator<Base>>;
+  linkValueAccessor$: Observable<ValueGenerator<Base>>;
   predefinedValueAccessor$: Observable<MultiValueAccessor>;
 
+  // @ts-ignore
   readonly linkValueAccessors: {
-    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
+    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator<Base>
   } = Object.freeze({
     [LINK_VALUE_GENERATOR.fixedValue0]: {
       preprocessing: linkValues.fixedValue(0)
@@ -67,10 +68,10 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     [LINK_VALUE_GENERATOR.fixedValue1]: {
       preprocessing: linkValues.fixedValue(1)
     },
-    [LINK_VALUE_GENERATOR.fraction_of_fixed_node_value]: {
-      requires: ({node}) => node.fixedValue,
-      preprocessing: linkValues.fractionOfFixedNodeValue
-    },
+    // [LINK_VALUE_GENERATOR.fraction_of_fixed_nodevalue]: {
+    //   requires: ({node}) => node.fixedValue,
+    //   preprocessing: linkValues.fractionOfFixedNodeValue
+    // },
     // defined per base view - different implementation
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: () => {
@@ -80,35 +81,37 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   });
 
   linkPropertyAcessors: {
-    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator
+    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator<Base>
   } = {
     [LINK_PROPERTY_GENERATORS.byProperty]: k => ({
+      // @ts-ignore
       preprocessing: linkValues.byProperty(k),
       postprocessing: ({links}) => {
         links.forEach(l => {
-          l._value /= (l._adjacent_divider || 1);
+          l.value /= (l.adjacentDivider || 1);
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              _value: true
+              value: true
             }
           }
         };
       }
     }),
     [LINK_PROPERTY_GENERATORS.byArrayProperty]: k => ({
+      // @ts-ignore
       preprocessing: linkValues.byArrayProperty(k),
       postprocessing: ({links}) => {
         links.forEach(l => {
-          l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1)) as [number, number];
+          l.multipleValues = l.multipleValues.map(d => d / (l.adjacentDivider || 1)) as [number, number];
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              _multiple_values: true
+              multipleValues: true
             }
           }
         };
@@ -117,12 +120,13 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   };
 
   nodeValueAccessors: {
-    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator
+    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator<Base>
   } = {
     [NODE_VALUE_GENERATOR.none]: {
       preprocessing: nodeValues.noneNodeValue
     },
     [NODE_VALUE_GENERATOR.fixedValue1]: {
+      // @ts-ignore
       preprocessing: nodeValues.fixedValue(1)
     }
   };
@@ -205,7 +209,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
             ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
           }))
         )),
-        debug<Partial<State>>('predefinedValueAccessorId change')
+        debug<Partial<Base['state']>>('predefinedValueAccessorId change')
       ),
       this.delta$.pipe(
         map(this.pickPartialAccessors),
@@ -223,7 +227,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
             ))
           )
         ),
-        debug<Partial<State>>('partialAccessors change')
+        debug<Partial<Base['state']>>('partialAccessors change')
       )
     ).pipe(
       distinctUntilChanged(isEqual)
@@ -266,12 +270,13 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
         )
       ),
       tap(stateDelta => {
-        this.delta$.next(stateDelta as Partial<State>);
+        this.delta$.next(stateDelta as Partial<Base['state']>);
       })
     );
   }
 
-  nodePropertyAcessor: (k) => ValueGenerator = k => ({
+  nodePropertyAcessor: (k) => ValueGenerator<Base> = k => ({
+    // @ts-ignore
     preprocessing: nodeValues.byProperty(k)
   })
 }

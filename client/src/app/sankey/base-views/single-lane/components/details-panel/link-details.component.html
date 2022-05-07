@@ -9,10 +9,10 @@
                     <p [innerHTML]="entity.description" [style.whiteSpace]="'pre-wrap'"></p>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel *ngIf="!entity._multiple_values else multipleValues" [disabled]="true">
+            <ngb-panel *ngIf="!entity.multipleValues else multipleValues" [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
                     <app-button-with-selectable-text ngbPanelToggle [disabled]="true" title="Value">
-                        {{ parseProperty(entity._value) }}
+                        {{ parseProperty(entity.value) }}
                     </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
@@ -22,11 +22,11 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Source value</b>
-                                {{ parseProperty(entity._multiple_values[0]) }}
+                                {{ parseProperty(entity.multipleValues[0]) }}
                             </li>
                             <li class="list-group-item d-flex flex-wrap justify-content-between">
                                 <b>Target value</b>
-                                {{ parseProperty(entity._multiple_values[1]) }}
+                                {{ parseProperty(entity.multipleValues[1]) }}
                             </li>
                         </ul>
                     </ng-template>
@@ -47,7 +47,7 @@
                             </div>
                             <div class="property">
                                 <span>Group</span>
-                                <span>{{ trace._group }}</span>
+                                <span>{{ trace.group }}</span>
                             </div>
                             <button *ngIf="trace.detail_edges" (click)="openTraceView(trace)"
                                     class="btn btn-block btn-outline-primary">

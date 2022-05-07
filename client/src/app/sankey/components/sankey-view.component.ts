@@ -25,7 +25,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, ViewBase, SankeyFile } from 'app/sankey/interfaces';
+import { SankeyState, ViewBase } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -53,7 +53,7 @@ import { SankeyUpdateService } from '../services/sankey-update.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
-import { SankeyDocument } from '../cls/SankeyDocument';
+import { SankeyDocument, TraceNetwork, View } from '../cls/SankeyDocument';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -110,7 +110,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
         this.emitModuleProperties();
         this.currentFileId = object.hashId;
         if (this.sanityChecks(content)) {
-          return this.sankeyController.loadData(content as SankeyFile);
+          return this.sankeyController.loadData(content);
         }
       })
     ).subscribe(() => {
@@ -143,9 +143,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     });
 
     this.sankeyController.viewsUpdate$.pipe(
-      switchMap(_views => this.sankeyController.data$.pipe(
-        map(data => ({...data, _views}))
-      ))
+      switchMap(() => this.sankeyController.data$)
     ).subscribe(data => this.saveFile(data));
 
     this.search.term$.pipe(
@@ -229,13 +227,22 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   );
 
   networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
-    map(networkTraces => new ExtendedMap<string, any>(
-      flatMap(networkTraces, (networkTrace, index) => ([
-        [`nt_${index}`, networkTrace],
-        ...Object.entries(networkTrace?._views ?? {}).map(([id, view]) => ([`view_${id}`, view]))
-      ]))
-    )),
+    switchMap(networkTraces =>
+      combineLatest(
+        networkTraces.map((networkTrace, index) =>
+          networkTrace.views$.pipe(
+            map(views => [
+              [`nt_${index}`, networkTrace],
+              ...Object.entries(views).map(([id, view]) => ([`view_${index}_${id}`, view]))
+            ] as [string, TraceNetwork | View][])
+          ),
+        )
+      )
+    ),
+    map(nestedOptions => new ExtendedMap(flatMap(nestedOptions))),
+    debug('networkTracesAndViewsMap$')
   );
+
   activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
     map(activeViewBase => viewBaseToNameMapping[activeViewBase] ?? ''));
 
@@ -247,12 +254,16 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   detailsPanel$ = new BehaviorSubject(false);
 
-  selectView(viewName) {
-    return this.viewController.selectView(viewName).toPromise();
-  }
+  viewName$ = this.sankeyController.viewName$;
 
-  traceAndViewNameAccessor(id, traceOrView) {
-    return traceOrView?.name ?? traceOrView?.description ?? `\t${id}`;
+  selectView = (networkTraceIdx, viewName) => this.viewController.selectView(networkTraceIdx, viewName).toPromise();
+
+  traceAndViewNameAccessor = (networkTraceOrViewId, traceOrView) => {
+    return this.applyOnNetworkTraceOrView(
+      networkTraceOrViewId,
+      traceId => traceOrView.name ?? traceOrView.description,
+      (_, viewId) => `+ ${viewId}`
+    );
   }
 
   confirmDeleteView(viewName): Promise<any> {
@@ -373,12 +384,27 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       ).toPromise();
   }
 
-  async selectNetworkTrace(networkTraceIdx) {
-    await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+  selectNetworkTrace = networkTraceIdx => this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+
+  applyOnNetworkTraceOrView(networkTraceOrViewId, networkTraceCallback, viewCallback) {
+    // Kinda ugly fix to maintain search functionality working with views in here
+    if (networkTraceOrViewId.startsWith('nt_')) {
+      const networkTraceIdx = Number(networkTraceOrViewId.replace('nt_', ''));
+      return networkTraceCallback(networkTraceIdx);
+    }
+    if (networkTraceOrViewId.startsWith('view_')) {
+      const [, networkTraceIdx, viewId] = networkTraceOrViewId.match(/^view_(\d+)_(.+)$/);
+      return viewCallback(networkTraceIdx, viewId);
+    }
+    throw new Error('Unknown option prefix');
   }
 
-  async selectNetworkTraceOrView(networkTraceIdx) {
-    await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+  selectNetworkTraceOrView(networkTraceOrViewIdx) {
+    return this.applyOnNetworkTraceOrView(
+      networkTraceOrViewIdx,
+      this.selectNetworkTrace,
+      this.selectView
+    );
   }
 
   confirm({header, body}): Promise<any> {

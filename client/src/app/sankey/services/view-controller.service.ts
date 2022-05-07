@@ -4,13 +4,13 @@ import { combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map, tap, switchMap, first } from 'rxjs/operators';
 import { omit, transform, pick, assign } from 'lodash-es';
 
-import { ViewBase, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
+import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
-import { network } from 'vis-network';
+import { SankeyNode, SankeyLink } from '../cls/SankeyDocument';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -41,29 +41,6 @@ export class ViewControllerService {
     map(({baseView}) => baseView)
   );
 
-  readonly nodeViewProperties: Array<keyof SankeyNode> = [
-    '_layer',
-    '_value',
-    '_value',
-    '_depth',
-    '_height',
-    '_x0',
-    '_x1',
-    '_y0',
-    '_y1',
-    '_order'
-  ];
-  readonly linkViewProperties: Array<keyof SankeyLink> = [
-    '_value',
-    '_multiple_values',
-    '_y0',
-    '_y1',
-    '_circular',
-    '_width',
-    '_order',
-    '_adjacent_divider',
-    '_id'
-  ];
   readonly statusOmitProperties = ['viewName', 'baseViewName', 'baseViewInitialState'];
 
   graph$ = this.layout$.pipe(
@@ -74,17 +51,17 @@ export class ViewControllerService {
     switchMap(layout => layout.graphViewport$)
   );
 
-  selectView(viewName) {
-    return this.common.patchState({viewName});
+  selectView(networkTraceIdx, viewName) {
+    return this.common.patchState({networkTraceIdx, viewName});
   }
 
   registerLayout(layout: DefaultLayoutService) {
     this.layout$.next(layout);
   }
 
-  mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
+  mapToPropertyObject(entities: Array<SankeyNode | SankeyLink>): SankeyNodesOverwrites | SankeyLinksOverwrites {
     return transform(entities, (result, entity) => {
-      result[entity._id] = pick(entity, properties);
+      result[entity.id] = entity.viewProperties;
     }, {});
   }
 
@@ -119,8 +96,8 @@ export class ViewControllerService {
         first(),
         map(({nodes, links}) => ({
           ...partialView,
-          nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
-          links: this.mapToPropertyObject(links, this.linkViewProperties)
+          nodes: this.mapToPropertyObject(nodes as any),
+          links: this.mapToPropertyObject(links as any)
         }))
       )),
       switchMap(partialView => this.graphViewport$.pipe(
@@ -131,7 +108,8 @@ export class ViewControllerService {
         } as SankeyView))
       )),
       switchMap(view => this.common.networkTrace$.pipe(
-          tap(networkTrace => networkTrace.addView(viewName, view))
+        first(),
+        tap(networkTrace => networkTrace.addView(viewName, view))
       )),
       switchMap(_views => this.common.data$.pipe(
         first(),
@@ -142,10 +120,10 @@ export class ViewControllerService {
   }
 
   deleteView(viewName) {
-    return this.common.views$.pipe(
+    return this.common.networkTrace$.pipe(
       first(),
-      map(views => omit(views, viewName)),
-      tap(views => this.common.viewsUpdate$.next(views)),
+      tap(networkTrace => networkTrace.deleteView(viewName)),
+      tap(views => this.common.viewsUpdate$.next(viewName)),
       // If the deleted view is the current view, switch from it
       switchMap(() => this.common.patchState(
         {viewName: null},

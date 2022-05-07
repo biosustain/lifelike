@@ -5,9 +5,8 @@ import { select as d3_select } from 'd3-selection';
 import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
 import { forkJoin, combineLatest, merge, of, Observable } from 'rxjs';
 import { first } from 'lodash-es';
-import { color as d3_color } from 'd3-color';
+import { color as d3color } from 'd3-color';
 
-import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 import { mapIterable } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
@@ -20,14 +19,14 @@ import { SelectionEntity, SelectionType } from 'app/sankey/interfaces/selection'
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
-import { SankeySingleLaneLink, SankeySingleLaneOptions, SankeySingleLaneState } from '../../interfaces';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../interfaces/search';
 import { ErrorMessages } from '../../../../constants/error';
 import { SankeyUpdateService } from '../../../../services/sankey-update.service';
+import { Base } from '../../interfaces';
 
-type SankeyEntity = SankeyNode | SankeyLink;
+type SankeyEntity = Base['node'] | Base['link'];
 
 @Component({
   selector: 'app-sankey-single-lane',
@@ -43,7 +42,7 @@ type SankeyEntity = SankeyNode | SankeyLink;
   ],
 })
 export class SankeySingleLaneComponent
-  extends SankeyAbstractComponent<SankeySingleLaneOptions, SankeySingleLaneState>
+  extends SankeyAbstractComponent<Base>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     readonly clipboard: ClipboardService,
@@ -74,7 +73,7 @@ export class SankeySingleLaneComponent
         ),
         // allow string == number match interpolation ("58" == 58 -> true)
         // tslint:disable-next-line:triple-equals
-        comparator: (id, {_id}) => id == _id
+        comparator: (id, link) => link.id == id
       }
     )
   );
@@ -84,24 +83,24 @@ export class SankeySingleLaneComponent
     if (!data) {
       return of({nodesIds: new Set(), linksIds: new Set()});
     }
-    const traversalId = data._id;
-    const leftNode = ((data as SankeyLink)._source ?? data) as SankeyNode;
-    const rightNode = ((data as SankeyLink)._target ?? data) as SankeyNode;
+    const traversalId = data.id;
+    const leftNode = ((data as Base['link']).source ?? data) as Base['node'];
+    const rightNode = ((data as Base['link']).target ?? data) as Base['node'];
 
     return this.sankey.baseView.highlightCircular$.pipe(
       map(highlightCircular => {
         const helper = {
           left: {
             graphRelativePosition: 'left',
-            nextNode: '_source',
-            nextLinks: '_targetLinks',
-            traversedLinks: new Set<SankeySingleLaneLink>()
+            nextNode: 'source',
+            nextLinks: 'targetLinks',
+            traversedLinks: new Set<Base['link']>()
           },
           right: {
             graphRelativePosition: 'right',
-            nextNode: '_target',
-            nextLinks: '_sourceLinks',
-            traversedLinks: new Set<SankeySingleLaneLink>()
+            nextNode: 'target',
+            nextLinks: 'sourceLinks',
+            traversedLinks: new Set<Base['link']>()
           }
         };
         const nodes = new Set([leftNode, rightNode]);
@@ -120,12 +119,12 @@ export class SankeySingleLaneComponent
           const {
             graphRelativePosition, nextNode, nextLinks, traversedLinks
           } = helper[direction];
-          node[nextLinks].forEach((l: SankeySingleLaneLink) => {
+          node[nextLinks].forEach((l: Base['link']) => {
             const had = traversedLinks.has(l);
-            if (!had && (highlightCircular || !l._circular)) {
+            if (!had && (highlightCircular || !l.circular)) {
               traversedLinks.add(l);
-              l._graphRelativePosition = l._visited === traversalId ? 'multiple' : graphRelativePosition;
-              l._visited = traversalId;
+              l.graphRelativePosition = l.visited === traversalId ? 'multiple' : graphRelativePosition;
+              l.visited = traversalId;
               nodes.add(l[nextNode]);
               objects2traverse.add({
                 direction,
@@ -141,13 +140,13 @@ export class SankeySingleLaneComponent
           ...helper.right.traversedLinks
         ]);
 
-        links.forEach(l => delete l._visited);
-        delete (data as SankeySingleLaneLink)._graphRelativePosition;
-        links.add((data as SankeySingleLaneLink));
+        links.forEach(l => delete l.visited);
+        delete (data as Base['link']).graphRelativePosition;
+        links.add((data as Base['link']));
 
         return {
-          nodesIds: mapIterable(nodes, ({_id}) => _id),
-          linksIds: mapIterable(links, ({_id}) => _id)
+          nodesIds: mapIterable(nodes, ({id}) => id),
+          linksIds: mapIterable(links, ({id}) => id)
         };
       })
     );
@@ -158,12 +157,12 @@ export class SankeySingleLaneComponent
     publish((selection$: Observable<SelectionEntity>) => merge(
       selection$.pipe(
         map(({type, entity}) => type === SelectionType.node && entity),
-        updateAttrSingular(this.renderedNodes$, 'selected', (entity, {_id}) => (entity as SankeyNode)._id === _id),
+        updateAttrSingular(this.renderedNodes$, 'selected', (entity, {id}) => (entity as Base['node']).id === id),
         debug('nodeSelection')
       ),
       selection$.pipe(
         map(({type, entity}) => type === SelectionType.link && entity),
-        updateAttrSingular(this.renderedLinks$, 'selected', (entity, {_id}) => (entity as SankeyLink)._id === _id),
+        updateAttrSingular(this.renderedLinks$, 'selected', (entity, {id}) => (entity as Base['link']).id === id),
         debug('linkSelection')
       )
       // selection$.pipe(
@@ -181,7 +180,7 @@ export class SankeySingleLaneComponent
           this.renderedNodes$,
           'transitively-selected',
           {
-            accessor: (nodesIds, {_id}) => nodesIds.has(_id),
+            accessor: (nodesIds, {id}) => nodesIds.has(id),
           }
         ),
         debug('transnodeSelection')
@@ -192,7 +191,7 @@ export class SankeySingleLaneComponent
           this.renderedLinks$,
           'transitively-selected',
           {
-            accessor: (linksIds, {_id}) => linksIds.has(_id),
+            accessor: (linksIds, {id}) => linksIds.has(id),
             enter: s => s
               .attr('transitively-selected', ({_graphRelativePosition}) => _graphRelativePosition ?? true)
               .raise()
@@ -227,7 +226,7 @@ export class SankeySingleLaneComponent
                 linksSelection
                   .each(function({label}) {
                     const color = EdgeColorCodes[label.toLowerCase()];
-                    const stroke = color ? d3_color(color).darker(0.5) : color;
+                    const stroke = color ? d3color(color).darker(0.5) : color;
                     if (isDevMode()) {
                       // This warning should not appear in prod "by design", yet it might be important for debugging
                       warningController.assert(color, ErrorMessages.noColorMapping(label));
@@ -265,12 +264,12 @@ export class SankeySingleLaneComponent
     super.ngOnDestroy();
   }
 
-  panToLink({_y0, _y1, _source: {_x1}, _target: {_x0}}) {
+  panToLink({y0, y1, source: {x1}, target: {x0}}) {
     this.zoom.translateTo(
       // x
-      (_x1 + _x0) / 2,
+      (x1 + x0) / 2,
       // y
-      (_y0 + _y1) / 2,
+      (y0 + y1) / 2,
       undefined,
       true
     );

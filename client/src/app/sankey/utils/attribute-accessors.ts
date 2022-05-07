@@ -1,66 +1,49 @@
 import { ValueFn } from 'd3-selection';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyLink } from 'app/sankey/interfaces';
 
-export abstract class AttributeAccessors {
+import { TypeContext } from '../interfaces';
+
+export abstract class AttributeAccessors<Base extends TypeContext> {
   constructor(protected readonly truncatePipe: TruncatePipe) {
   }
 
-  get id(): ValueFn<any, SankeyNode | SankeyLink, number | string> {
-    return ({_id}) => _id;
+  get id(): ValueFn<any, Base['node'] | Base['link'], number | string> {
+    return ({id}) => id;
   }
 
-  get nodeLabel(): ValueFn<any, SankeyNode, string> {
+  get nodeLabel(): ValueFn<any, Base['node'], string> {
     return ({label = ''}) => label;
   }
 
-  // get nodeLabelShort(): ValueFn<any, SankeyNode, string> {
-  //   const {nodeLabel, truncatePipe: {transform}} = this;
-  //   return (d, i?, n?) => transform(nodeLabel(d, i, n), AttributeAccessors.labelEllipsis);
-  // }
-  //
-  // get nodeLabelShouldBeShorted(): ValueFn<any, SankeyNode, boolean> {
-  //   const {nodeLabel} = this;
-  //   return (d, i, n) => nodeLabel(d, i, n).length > AttributeAccessors.labelEllipsis;
-  // }
-
   // color can be object with toString method
-  get nodeColor(): ValueFn<any, SankeyNode, string | object> {
-    return ({_color}) => _color;
+  get nodeColor(): ValueFn<any, Base['node'], string | object> {
+    return ({color}) => color;
   }
 
   // color can be object with toString method
-  get linkColor(): ValueFn<any, SankeyLink, string | object> {
-    return ({_color}) => _color;
+  get linkColor(): ValueFn<any, Base['link'], string | object> {
+    return ({color}) => color;
   }
 
   get linkBorder() {
     return undefined;
   }
 
-  get nodeTitle(): ValueFn<any, SankeyNode, string> {    return ({description}) => description;
+  get nodeTitle(): ValueFn<any, Base['node'], string> {    return ({description}) => description;
   }
 
-  get linkTitle(): ValueFn<any, SankeyLink, string> {
+  get linkTitle(): ValueFn<any, Base['link'], string> {
     return ({description}) => description;
   }
 
-  get value(): (node: SankeyNode) => number {
-    return ({_value = 0}) => _value;
+  get value(): (node: Base['node']) => number {
+    return ({value = 0}) => value;
   }
 
-  // get linkPath(): ValueFn<any, SankeyLink, string> {
-  //   return d3Sankey.sankeyLinkHorizontal;
-  // }
-
-  get circular(): ValueFn<any, SankeyLink, boolean> {
-    return ({_circular}) => _circular;
+  get circular(): ValueFn<any, Base['link'], boolean> {
+    return ({circular}) => circular;
   }
-
-  // get fontSize(): ValueFn<any, SankeyNode, number | string> {
-  //   return () => 12;
-  // }
 
   static labelEllipsis = 10;
 }

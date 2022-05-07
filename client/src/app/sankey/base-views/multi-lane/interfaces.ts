@@ -1,6 +1,8 @@
+import { SankeyLink, Trace, SankeyNode, SankeyTraceLink } from 'app/sankey/cls/SankeyDocument';
+
 import { LINK_PALETTES } from './color-palette';
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
-import { SankeyLink, SankeyTrace, SankeyNode, SankeyId, NetworkTraceData } from '../../interfaces';
+import { SankeyId, NetworkTraceData, TypeContext } from '../../interfaces';
 
 export interface SankeyMultiLaneOptions extends SankeyBaseOptions {
   linkPalettes: LINK_PALETTES;
@@ -13,14 +15,11 @@ export interface SankeyMultiLaneState extends SankeyBaseState {
 export type BaseOptions = SankeyMultiLaneOptions;
 export type BaseState = SankeyMultiLaneState;
 
-export interface SankeyMultiLaneLink extends SankeyLink {
-  _trace?: SankeyTrace;
-  _originLinkId?: SankeyId;
+export interface Base extends TypeContext {
+  options: BaseOptions;
+  state: BaseState;
+  link: SankeyTraceLink;
+  node: SankeyNode<this['link']>;
 }
 
-export interface SankeyMultiLaneNode extends SankeyNode {
-  _sourceLinks?: Array<SankeyMultiLaneLink>;
-  _targetLinks?: Array<SankeyMultiLaneLink>;
-}
-
-export type MultiLaneNetworkTraceData = NetworkTraceData<SankeyMultiLaneNode, SankeyMultiLaneLink>;
+export type MultiLaneNetworkTraceData = NetworkTraceData<Base>;

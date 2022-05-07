@@ -4,7 +4,7 @@ import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
 import { switchMap, map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { of, Observable, combineLatest } from 'rxjs';
 
-import { SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
+import { ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -18,12 +18,10 @@ import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/va
 
 import { inputCount } from '../algorithms/linkValues';
 import {
-  SankeySingleLaneLink,
-  SankeySingleLaneNode,
   BaseOptions,
   BaseState,
-  SingleLaneNetworkTraceData,
-  SankeySingleLaneState
+  SankeySingleLaneState,
+  Base
 } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 
@@ -34,7 +32,7 @@ import { nodeColors, NodePosition } from '../utils/nodeColors';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SingleLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> implements ServiceOnInit {
+export class SingleLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -92,23 +90,24 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
 
   colorLinkByType$ = this.stateAccessor('colorLinkByType');
 
-  networkTraceData$: Observable<SingleLaneNetworkTraceData> = this.common.partialNetworkTraceData$.pipe(
-    map(({links, nodes, nodeById, sources, targets, traces}) => {
-      const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-      const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
+  networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
+    switchMap(({links, nodes, nodeById}) => this.common.networkTrace$.pipe(
+        map(({sources, targets, traces}) => {
+          const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
+          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
 
-      // move this to run in pararell with positioning
-      this.colorNodes(networkTraceNodes, sources, targets);
-      return {
-        nodes: networkTraceNodes,
-        links: networkTraceLinks,
-        nodeById,
-        sources,
-        targets
-      };
-    }),
-    debug('SingleLaneBaseControllerService.networkTraceData$'),
-    shareReplay<SingleLaneNetworkTraceData>(1)
+          // move this to run in pararell with positioning
+          this.colorNodes(networkTraceNodes, sources as any, targets as any, nodeById);
+          return {
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            nodeById, sources, targets
+          };
+        }),
+        debug('SingleLaneBaseControllerService.networkTraceData$'),
+        shareReplay<Base['data']>(1)
+      )
+    )
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
@@ -117,14 +116,14 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   // Trace logic
   /**
    * Extract links which relates to certain trace network and
-   * assign _color property based on their trace.
+   * assign color property based on their trace.
    * Also creates duplicates if given link is used in multiple traces.
    * Should return copy of link Objects (do not mutate links!)
    */
   getNetworkTraceLinks(
-    traces: SankeyTraceNetwork['traces'],
-    links: Array<SankeyLink>
-  ): SankeySingleLaneLink[] {
+    traces: Base['trace'][],
+    links: Array<Base['link']>
+  ): Array<Base['link']> {
     const traceLink = flatMap(traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
     const linkIdxToTraceLink = groupBy(traceLink, 'linkIdx');
     return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => ({
@@ -136,24 +135,18 @@ export class SingleLaneBaseControllerService extends BaseControllerService<BaseO
   /**
    * Color nodes if they are in source or target set.
    */
-  colorNodes(nodes, sourcesIds: number[], targetsIds: number[]) {
-    nodes.forEach(node => node._color = undefined);
-    const nodeById = new Map<number, SankeySingleLaneNode>(nodes.map(node => [node.id, node]));
-    const mapNodePositionToColor = (ids: number[], position: NodePosition) =>
-      ids.forEach(id => {
-        const node = nodeById.get(id);
-        if (node) {
-          node._color = nodeColors.get(position);
-        } else {
-          this.warningController.warn(ErrorMessages.missingNode(id), true);
-        }
+  colorNodes(nodes, sources: Array<Base['node']>, targets: Array<Base['node']>, nodeById) {
+    nodes.forEach(node => node.color = undefined);
+    const mapNodePositionToColor = (nodesToColor: Array<Base['node']>, position: NodePosition) =>
+      nodesToColor.forEach(node => {
+          node.color = nodeColors.get(position);
       });
-    mapNodePositionToColor(sourcesIds, NodePosition.left);
-    mapNodePositionToColor(targetsIds, NodePosition.right);
-    const reusedIds = intersection(sourcesIds, targetsIds);
-    if (isNotEmpty(reusedIds)) {
-      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reusedIds));
-      mapNodePositionToColor(reusedIds, NodePosition.multi);
+    mapNodePositionToColor(sources, NodePosition.left);
+    mapNodePositionToColor(targets, NodePosition.right);
+    const reused = intersection(sources, targets);
+    if (isNotEmpty(reused)) {
+      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reused));
+      mapNodePositionToColor(reused, NodePosition.multi);
     }
   }
 }

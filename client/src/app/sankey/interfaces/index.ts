@@ -1,6 +1,5 @@
-import { GraphTraceNetwork, GraphGraph, GraphFile, GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork, GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 
-import { SankeyTrace, SankeyNode, SankeyLink, SankeyId } from './pure';
 import { PRESCALERS } from './prescalers';
 import { ALIGN_ID, ALIGNS } from './align';
 import {
@@ -11,11 +10,15 @@ import {
   NodeValueAccessor
 } from './valueAccessors';
 import { SankeyViews } from './view';
+import { TraceNetwork, SankeyDocument, Trace, SankeyLink, SankeyNode, SankeyTraceLink } from '../cls/SankeyDocument';
+import { BaseOptions, BaseState } from '../base-views/multi-lane/interfaces';
+import { SankeyLinkInterface, SankeyNodeInterface, SankeyRenderLinkInterface, SankeyRenderNodeInterface } from './pure';
+import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 
 // Re-export the interfaces which are defined separately for DOMless ussage
 export * from './pure';
 
-export interface IntermediateProcessedData extends Partial<SankeyData> {
+export interface IntermediateProcessedData {
   _sets: object;
 }
 
@@ -27,7 +30,7 @@ export interface SankeyStaticOptions {
 }
 
 export interface SankeyFileOptions {
-  networkTraces: Array<SankeyTraceNetwork>;
+  networkTraces: Array<TraceNetwork>;
   nodeValueAccessors: NodeValueAccessor;
   linkValueAccessors: LinkValueAccessor;
   predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
@@ -50,29 +53,7 @@ export interface SankeyState {
 }
 
 export interface SankeyTraceNetwork extends GraphTraceNetwork {
-  traces: Array<SankeyTrace>;
-
   _views: SankeyViews;
-}
-
-export interface SankeyGraph extends GraphGraph {
-  trace_networks: Array<SankeyTraceNetwork>;
-}
-
-export interface SankeyFile<
-  Graph extends GraphGraph = SankeyGraph,
-  Node extends GraphNode = SankeyNode,
-  Link extends GraphLink = SankeyLink
-> extends GraphFile {
-  graph: Graph;
-  links: Array<Link>;
-  nodes: Array<Node>;
-}
-
-export interface SankeyData extends SankeyFile {
-  graph: SankeyGraph;
-  nodes: Array<SankeyNode>;
-  links: Array<SankeyLink>;
 }
 
 // Do not change these strings! They are tightly coupled with urls.
@@ -81,10 +62,24 @@ export enum ViewBase {
   sankeySingleLane = 'sankey-many-to-many'
 }
 
-export interface NetworkTraceData<Node extends SankeyNode = SankeyNode, Link extends SankeyLink = SankeyLink> {
-  nodes: Array<Node>;
-  links: Array<Link>;
-  sources: SankeyId[];
-  targets: SankeyId[];
+export interface TypeContext {
+  options: SankeyBaseOptions;
+  state: SankeyBaseState;
+  node: SankeyNodeInterface;
+  link: SankeyLinkInterface;
+  trace: Trace;
+  data: NetworkTraceData<this>;
 }
 
+export interface RenderTypeContext extends TypeContext {
+  node: SankeyRenderNodeInterface;
+  link: SankeyRenderLinkInterface;
+}
+
+export interface NetworkTraceData<Base extends TypeContext> {
+  links: Array<Base['link']>;
+  nodes: Array<Base['node']>;
+  nodeById: Map<string, Base['node']>;
+  sources: Array<Base['node']>;
+  targets: Array<Base['node']>;
+}
