@@ -58,11 +58,12 @@ import { map, tap, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyNode, SankeyLink, SankeyId } from 'app/sankey/interfaces';
+import { SankeyId, TypeContext } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
 import { ErrorMessages } from '../constants/error';
+import { SankeyLink, SankeyNode } from '../cls/SankeyDocument';
 
 interface Horizontal {
   width: number;
@@ -93,7 +94,7 @@ export interface LayoutData {
   targets: SankeyId[];
 }
 
-export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
+export abstract class SankeyAbstractLayoutService<Base extends TypeContext> extends AttributeAccessors<Base> {
   constructor(
     protected readonly truncatePipe: TruncatePipe
   ) {
@@ -101,11 +102,11 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
   }
 
   get sourceValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values?.[0] ?? _value;
+    return ({value, multipleValues}) => multipleValues?.[0] ?? value;
   }
 
   get targetValue(): (link: SankeyLink) => number {
-    return ({_value, _multiple_values}) => _multiple_values?.[1] ?? _value;
+    return ({value, multipleValues}) => multipleValues?.[1] ?? value;
   }
 
   _extent$: Subject<Extent> = new ReplaySubject<Extent>();
@@ -145,9 +146,9 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
    */
   computeNodeLinks = tap(({nodes, links, nodeById}) => {
     for (const [i, node] of nodes.entries()) {
-      node._index = i;
-      node._sourceLinks = [];
-      node._targetLinks = [];
+      node.index = i;
+      node.sourceLinks = [];
+      node.targetLinks = [];
     }
     this.registerLinks({links, nodeById});
   });
@@ -163,8 +164,8 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
     // Building adjacency graph
     const adjList = [];
     links.forEach(link => {
-      const source = (link._source as SankeyNode)._index;
-      const target = (link._target as SankeyNode)._index;
+      const source = (link.source as SankeyNode).index;
+      const target = (link.target as SankeyNode).index;
       if (!adjList[source]) {
         adjList[source] = [];
       }
@@ -194,15 +195,15 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
     }
 
     links.forEach(link => {
-      const target = (link._target as SankeyNode)._index;
-      const source = (link._source as SankeyNode)._index;
+      const target = (link.target as SankeyNode).index;
+      const source = (link.source as SankeyNode).index;
       // If self-linking or a back-edge
       if (target === source || (circularLinks[source] && circularLinks[source][target])) {
-        link._circular = true;
-        link._circularLinkID = circularLinkID;
+        link.circular = true;
+        link.circularLinkID = circularLinkID;
         circularLinkID = circularLinkID + 1;
       } else {
-        link._circular = false;
+        link.circular = false;
       }
     });
   });
@@ -213,42 +214,42 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
    * - depth:  the depth in the graph
    */
   computeNodeDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_target', '_sourceLinks')) {
-      node._depth = x;
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'target', 'sourceLinks')) {
+      node.depth = x;
     }
   });
 
   computeNodeReversedDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, '_source', '_targetLinks')) {
-      node._reversedDepth = x;
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'source', 'targetLinks')) {
+      node.reversedDepth = x;
     }
   });
 
   static ascendingSourceBreadth(a, b) {
-    return SankeyAbstractLayoutService.ascendingBreadth(a._source, b._source) || a._index - b._index;
+    return SankeyAbstractLayoutService.ascendingBreadth(a.source, b.source) || a.index - b.index;
   }
 
   static ascendingTargetBreadth(a, b) {
-    return SankeyAbstractLayoutService.ascendingBreadth(a._target, b._target) || a._index - b._index;
+    return SankeyAbstractLayoutService.ascendingBreadth(a.target, b.target) || a.index - b.index;
   }
 
   static ascendingBreadth(a, b) {
-    return a._y0 - b._y0;
+    return a.y0 - b.y0;
   }
 
   static computeLinkBreadths({nodes}: LayoutData) {
     for (const node of nodes) {
-      let y0 = node._y0;
+      let y0 = node.y0;
       let y1 = y0;
-      for (const link of node._sourceLinks) {
-        link._y0 = y0 + link._width / 2;
+      for (const link of node.sourceLinks) {
+        link.y0 = y0 + link.width / 2;
         // noinspection JSSuspiciousNameCombination
-        y0 += link._width;
+        y0 += link.width;
       }
-      for (const link of node._targetLinks) {
-        link._y1 = y1 + link._width / 2;
+      for (const link of node.targetLinks) {
+        link.y1 = y1 + link.width / 2;
         // noinspection JSSuspiciousNameCombination
-        y1 += link._width;
+        y1 += link.width;
       }
     }
   }
@@ -273,30 +274,23 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
     const {find} = SankeyAbstractLayoutService;
 
     for (const [i, link] of links.entries()) {
-      link._index = i;
+      link.index = i;
       const {source, target} = link;
-      let {_source, _target} = link;
-      if (typeof _source !== 'object') {
-        _source = link._source = typeof source !== 'object' ? find(nodeById, source) : source;
-      }
-      if (typeof _target !== 'object') {
-        _target = link._target = typeof target !== 'object' ? find(nodeById, target) : target;
-      }
-      _source._sourceLinks.push(link);
-      _target._targetLinks.push(link);
+      source.sourceLinks.push(link);
+      target.targetLinks.push(link);
     }
     if (this.linkSort) {
       const relatedNodes = links.reduce(
-        (o, {_source, _target}) => {
-          o.add(_source);
-          o.add(_target);
+        (o, {source, target}) => {
+          o.add(source);
+          o.add(target);
           return o;
         },
         new Set()
       );
-      for (const {_sourceLinks, _targetLinks} of relatedNodes) {
-        _sourceLinks.sort(this.linkSort);
-        _targetLinks.sort(this.linkSort);
+      for (const {sourceLinks, targetLinks} of relatedNodes) {
+        sourceLinks.sort(this.linkSort);
+        targetLinks.sort(this.linkSort);
       }
     }
   }
@@ -304,19 +298,19 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
    * @param nodes - set of nodes to start iteration with
-   * @param nextNodeProperty - property of link pointing to next node (_source, _target)
-   * @param nextLinksProperty - property of node pointing to next links (_sourceLinks, _targetLinks)
+   * @param nextNodeProperty - property of link pointing to next node (source, target)
+   * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[SankeyNode, number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
-    let current = new Set<SankeyNode>(nodes);
-    let next = new Set<SankeyNode>();
+    let current = new Set<Base['node']>(nodes);
+    let next = new Set<Base['node']>();
     let x = 0;
     while (current.size) {
       for (const node of current) {
         yield [node, x];
         for (const link of node[nextLinksProperty]) {
-          next.add(link[nextNodeProperty] as SankeyNode);
+          next.add(link[nextNodeProperty] as Base['node']);
         }
       }
       if (++x > n) {
@@ -331,8 +325,8 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
     const {dx} = this;
     const kx = (width - dx) / (x - 1);
     for (const node of data.nodes) {
-      node._x0 = x0 + node._layer * kx;
-      node._x1 = node._x0 + dx;
+      node.x0 = x0 + node.layer * kx;
+      node.x1 = node.x0 + dx;
     }
   }
 
@@ -340,8 +334,8 @@ export abstract class SankeyAbstractLayoutService extends AttributeAccessors {
     const {dx} = this;
     if (widthChangeRatio !== 1) {
       for (const node of data.nodes) {
-        node._x0 = (node._x0 - x0) * widthChangeRatio + x0;
-        node._x1 = node._x0 + dx;
+        node.x0 = (node.x0 - x0) * widthChangeRatio + x0;
+        node.x1 = node.x0 + dx;
       }
     }
   }

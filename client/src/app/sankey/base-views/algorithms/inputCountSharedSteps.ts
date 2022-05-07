@@ -1,7 +1,8 @@
 import { clone } from 'lodash-es';
 
 import { ExtendedMap } from 'app/shared/utils/types';
-import { SankeyLink, SankeyNode, NetworkTraceData } from 'app/sankey/interfaces';
+import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
+import { SankeyLink, SankeyNode } from 'app/sankey/cls/SankeyDocument';
 
 import { DirectedTraversal } from '../../utils/directed-traversal';
 import { DefaultLayoutService } from '../../services/layout.service';
@@ -14,29 +15,29 @@ export function calculateInputCountSkippingCircularLinks(
   nextLinkValue: (nodeValue: number, nextLinks) => number
 ) {
   sortedNodes.forEach(n => {
-    n._value = dt.startNodes.includes(n) ? 1 : 0;
+    n.value = dt.startNodes.includes(n) ? 1 : 0;
     const prevLinks = dt.prevLinks(n);
     const nextLinks = dt.nextLinks(n);
-    n._value = prevLinks.reduce((a, l) => a + (l._value ?? 0), n._value);
+    n.value = prevLinks.reduce((a, l) => a + (l.value ?? 0), n.value);
     this.warningController.assert(
       // JS floats calculations has very limited precision which can lead to rounding error in here
-      n._value.toPrecision(5) <= maxExpectedValue,
+      n.value.toPrecision(5) <= maxExpectedValue,
       'Input count algorithm fail - node value exceeds input node count'
     );
-    const outFrac = nextLinkValue(n._value, nextLinks);
+    const outFrac = nextLinkValue(n.value, nextLinks);
     nextLinks.forEach(l => {
       // skip setting circular values
-      if (!l._circular) {
-        l._value = outFrac;
+      if (!l.circular) {
+        l.value = outFrac;
       }
-      delete l._multiple_values;
+      delete l.multipleValues;
     });
   });
 }
 
 export function initInputCountCalculation(
   this: DefaultLayoutService,
-  data: NetworkTraceData
+  data: NetworkTraceData<TypeContext>
 ) {
   // traverse from side with less nodes
   const dt = new DirectedTraversal([data.sources, data.targets]);
@@ -60,8 +61,8 @@ export function getLinkLayers<Link extends SankeyLink>(
 ): Map<number, Link[]> {
   const linkLayers = new ExtendedMap<number, Link[]>();
   links.forEach(link => {
-    const sourceLayer = (link._source as SankeyNode)._layer;
-    const targetLayer = (link._target as SankeyNode)._layer;
+    const sourceLayer = (link.source as SankeyNode).layer;
+    const targetLayer = (link.target as SankeyNode).layer;
     const minLayer = Math.min(sourceLayer, targetLayer);
     const maxLayer = Math.max(sourceLayer, targetLayer);
     for (let layer = minLayer; layer < maxLayer; layer++) {
@@ -100,8 +101,8 @@ export function calculateInputCountSkippingCircularLinksB(
     dt,
     maxExpectedValue,
     (nodeValue, nextLinks) => {
-      const nextNonCircularLinks = nextLinks.filter(({_circular}) => !_circular);
-      const nextCircularLinksSum = nextLinks.filter(({_circular}) => _circular).reduce((acc, l) => acc + l._value, 0);
+      const nextNonCircularLinks = nextLinks.filter(({circular}) => !circular);
+      const nextCircularLinksSum = nextLinks.filter(({circular}) => circular).reduce((acc, l) => acc + l.value, 0);
       return (nodeValue - nextCircularLinksSum) / nextNonCircularLinks.length;
     }
   );

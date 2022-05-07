@@ -1,5 +1,5 @@
 // region UI options
-import { SankeyData, IntermediateProcessedData } from './index';
+import { IntermediateProcessedData, NetworkTraceData, TypeContext } from './index';
 import { DefaultLayoutService } from '../services/layout.service';
 import { Property } from './property';
 
@@ -8,11 +8,13 @@ export interface ValueAccessor extends Property {
   type?: LINK_PROPERTY_GENERATORS;
 }
 
-export type ValueProcessingStep = (this: DefaultLayoutService, v: SankeyData) => IntermediateProcessedData | undefined;
+export type ValueProcessingStep<Base extends TypeContext> =
+  (this: DefaultLayoutService, v: NetworkTraceData<Base>) =>
+    (Partial<NetworkTraceData<Base>> & IntermediateProcessedData) | undefined;
 
-export interface ValueGenerator {
-  preprocessing: ValueProcessingStep;
-  postprocessing?: ValueProcessingStep;
+export interface ValueGenerator<Base extends TypeContext> {
+  preprocessing: ValueProcessingStep<Base>;
+  postprocessing?: ValueProcessingStep<Base>;
   // not used yet
   requires?: any;
 }
@@ -39,7 +41,7 @@ export enum LINK_VALUE_GENERATOR {
   fixedValue0 = 'Fixed Value = 0',
   fixedValue1 = 'Fixed Value = 1',
   input_count = 'Input count',
-  fraction_of_fixed_node_value = 'Fraction of fixed node value',
+  // fraction_of_fixed_nodevalue = 'Fraction of fixed node value',
 }
 
 export enum LINK_PROPERTY_GENERATORS {

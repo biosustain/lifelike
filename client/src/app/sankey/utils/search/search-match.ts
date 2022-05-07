@@ -9,7 +9,7 @@
  */
 import { omit, slice, isObject, uniq, flatMap, pullAt } from 'lodash-es';
 
-import { ExtendedWeakMap, LazyLoadedMap } from 'app/shared/utils/types';
+import { ExtendedWeakMap, ExtendedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
 import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 
@@ -21,7 +21,6 @@ import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
      "window is undefined"
      "alert is undefined"
 */
-import { SankeyTrace } from '../../interfaces/pure';
 import { indexByProperty } from '..';
 import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../../interfaces/search';
 
@@ -35,19 +34,19 @@ export class SankeySearch {
               }) {
     this.data = data;
     this.matcher = prioritisedCompileFind(searchTokens, options);
-    this.matchedTraces = new ExtendedWeakMap<SankeyTrace & any, Match[]>();
-    this.matchedLink = new LazyLoadedMap<SearchLink['_id'], Generator<Match>>();
-    this.matchedNodes = new LazyLoadedMap<SearchNode['_id'], Generator<Match>>();
-    this.nodeById = indexByProperty(data.nodes, '_id');
+    this.matchedTraces = new ExtendedWeakMap<GraphTrace & any, Match[]>();
+    this.matchedLink = new ExtendedMap<SearchLink['id'], Generator<Match>>();
+    this.matchedNodes = new ExtendedMap<SearchNode['id'], Generator<Match>>();
+    this.nodeById = indexByProperty(data.nodes, 'id');
     this.networkTraceIdx = networkTraceIdx;
   }
 
   data;
   networkTraceIdx: number;
   matcher: (term: string) => MatchPriority | boolean;
-  matchedTraces: ExtendedWeakMap<SankeyTrace & any, Match[]>;
-  matchedLink: LazyLoadedMap<SearchLink['_id'], Generator<Match>>;
-  matchedNodes: LazyLoadedMap<SearchNode['_id'], Generator<Match>>;
+  matchedTraces: ExtendedWeakMap<GraphTrace & any, Match[]>;
+  matchedLink: ExtendedMap<SearchLink['id'], Generator<Match>>;
+  matchedNodes: ExtendedMap<SearchNode['id'], Generator<Match>>;
   nodeById: Map<string, SearchNode>;
   potentialEntitiesWithAdditionalMatches: MatchGenerator[] = [];
 
@@ -89,8 +88,8 @@ export class SankeySearch {
   }
 
   matchNode(node: SearchNode): Generator<Match> {
-    return this.matchedNodes.getSet(
-      node._id,
+    return this.matchedNodes.getSetLazily(
+      node.id,
       () => this.matchObject(
         omit(node, this.ignoredNodeProperties)
       )
@@ -98,8 +97,8 @@ export class SankeySearch {
   }
 
   * matchLink(link: SearchLink): Generator<Match> {
-    const matches = this.matchedLink.getSet(
-      link._id,
+    const matches = this.matchedLink.getSetLazily(
+      link.id,
       () => this.matchObject(
         omit(link, this.ignoredLinkProperties)
       )
@@ -119,7 +118,7 @@ export class SankeySearch {
     }
   }
 
-  * matchTrace(trace: SankeyTrace): Generator<Match> {
+  * matchTrace(trace: GraphTrace): Generator<Match> {
     yield* this.matchObject(
       omit(trace, this.ignoredTraceProperties)
     );
@@ -185,12 +184,12 @@ export class SankeySearch {
       if (!done) {
         potentialEntitiesWithAdditionalMatches.push({
           type: EntityType.Node,
-          id: node._id,
+          id: node.id,
           matchGenerator
         });
         yield {
           type: EntityType.Node,
-          id: node._id,
+          id: node.id,
           value
         };
       }
@@ -201,12 +200,12 @@ export class SankeySearch {
       if (!done) {
         potentialEntitiesWithAdditionalMatches.push({
           type: EntityType.Link,
-          id: link._id,
+          id: link.id,
           matchGenerator
         });
         yield {
           type: EntityType.Link,
-          id: link._id,
+          id: link.id,
           value
         };
       }
@@ -217,12 +216,12 @@ export class SankeySearch {
       if (!done) {
         potentialEntitiesWithAdditionalMatches.push({
           type: EntityType.Trace,
-          id: trace._id,
+          id: trace.id,
           matchGenerator
         });
         yield {
           type: EntityType.Trace,
-          id: trace._id,
+          id: trace.id,
           value
         };
       }

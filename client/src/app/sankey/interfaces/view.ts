@@ -3,13 +3,9 @@ import { RecursivePartial } from 'app/shared/schemas/common';
 
 import { SankeyState, ViewBase } from './index';
 
-export interface SankeyLinksOverwrites {
-  [linkId: string]: Partial<GraphLink>;
-}
+export type SankeyLinksOverwrites = Record<string, Partial<GraphLink>>;
 
-export interface SankeyNodesOverwrites {
-  [nodeId: string]: Partial<GraphNode>;
-}
+export type SankeyNodesOverwrites = Record<string, Partial<GraphNode>>;
 
 export interface ViewSize {
   width: number;
@@ -18,13 +14,12 @@ export interface ViewSize {
 
 export interface SankeyView {
   state: object & SankeyState;
-  base: ViewBase;
   size: ViewSize;
   nodes: SankeyNodesOverwrites;
   links: SankeyLinksOverwrites;
 }
 
-export type SankeyApplicableView = RecursivePartial<SankeyView> & Pick<SankeyView, 'base'>;
+export type SankeyApplicableView = RecursivePartial<SankeyView>;
 
 export interface SankeyViews {
   [viewName: string]: SankeyView;

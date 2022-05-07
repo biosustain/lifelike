@@ -7,14 +7,14 @@ import {
   initInputCountCalculation,
   getLinkLayers
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
-import { SankeyTrace } from 'app/sankey/interfaces';
 
-import { SankeySingleLaneLink, SankeySingleLaneData } from '../interfaces';
+import { Base } from '../interfaces';
 import { SingleLaneLayoutService } from '../services/single-lane-layout.service';
+import { NetworkTraceData } from '../../../interfaces';
 
 export function inputCount(
   this: SingleLaneLayoutService,
-  data: SankeySingleLaneData
+  data: Base['data']
 ) {
   const {
     sortedNodes,
@@ -23,16 +23,16 @@ export function inputCount(
   } = initInputCountCalculation.call(this, data);
   calculateInputCountSkippingCircularLinksA.call(this, sortedNodes, dt, maxExpectedValue);
   // estimate circular link values based on trace information (LL-3704)
-  const linkLayers: Map<number, SankeySingleLaneLink[]> = getLinkLayers.call(this, data.links);
-  const perLayerLinkEstimation = new ExtendedWeakMap<SankeySingleLaneLink, number[]>();
+  const linkLayers: Map<number, Base['link'][]> = getLinkLayers.call(this, data.links);
+  const perLayerLinkEstimation = new ExtendedWeakMap<Base['link'], number[]>();
   linkLayers.forEach(layer => {
-    const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
-    const circularTraces = new Set(flatMap(circularLinks, ({_traces}) => _traces));
-    const traceCircularEstimation = new WeakMap<SankeyTrace, number>();
+    const [circularLinks, normalLinks] = partition(layer, ({circular}) => circular);
+    const circularTraces = new Set(flatMap(circularLinks, ({traces}) => traces));
+    const traceCircularEstimation = new WeakMap<Base['trace'], number>();
     for (const circularTrace of circularTraces) {
-      const traceNormalLinks = normalLinks.filter(({_traces}) => _traces.includes(circularTrace));
-      const traceCircularLinks = circularLinks.filter(({_traces}) => _traces.includes(circularTrace));
-      const traceNormalLinksValue = sumBy(traceNormalLinks, ({_value}) => _value);
+      const traceNormalLinks = normalLinks.filter(({traces}) => traces.includes(circularTrace));
+      const traceCircularLinks = circularLinks.filter(({traces}) => traces.includes(circularTrace));
+      const traceNormalLinksValue = sumBy(traceNormalLinks, ({value}) => value);
       // each trace should flow only value of one so abs(sum(link values) - sum(circular values)) = 1
       // yet it remains an estimate cause we do not know which circular link contribution to sum
       // ass a good estimate assuming that each circular link contributes equal factor of sum
@@ -41,14 +41,14 @@ export function inputCount(
       traceCircularEstimation.set(circularTrace, traceCircularLinkEstimation);
     }
     circularLinks.forEach(circularLink => {
-      const circularLinkEstimation = sumBy(circularLink._traces, _trace => traceCircularEstimation.get(_trace));
+      const circularLinkEstimation = sumBy(circularLink.traces, trace => traceCircularEstimation.get(trace));
       const estimations = perLayerLinkEstimation.getSet(circularLink, []);
       estimations.push(circularLinkEstimation);
     });
     circularLinks.forEach(circularLink => {
-      circularLink._value = mean(perLayerLinkEstimation.get(circularLink));
-      delete circularLink._multiple_values;
-      this.warningController.assert(circularLink._value <= maxExpectedValue,
+      circularLink.value = mean(perLayerLinkEstimation.get(circularLink));
+      delete circularLink.multipleValues;
+      this.warningController.assert(circularLink.value <= maxExpectedValue,
         'Input count algorithm fail - node value exceeds input node count');
     });
   });
@@ -57,12 +57,12 @@ export function inputCount(
 
   return {
     nodes: data.nodes
-      .filter(n => n._sourceLinks.length + n._targetLinks.length > 0),
+      .filter(n => n.sourceLinks.length + n.targetLinks.length > 0),
     links: data.links,
     _sets: {
       link: {
-        _value: true,
-        _multiple_values: false
+        value: true,
+        multipleValues: false
       }
     }
   };

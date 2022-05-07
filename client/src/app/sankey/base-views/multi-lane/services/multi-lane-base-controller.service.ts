@@ -4,7 +4,7 @@ import { switchMap, map, distinctUntilChanged, shareReplay } from 'rxjs/operator
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
-import { SankeyTraceNetwork, SankeyLink, ViewBase } from 'app/sankey/interfaces';
+import { ViewBase, NetworkTraceData } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -12,10 +12,11 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
+import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/cls/SankeyDocument';
 
 import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
-import { BaseState, BaseOptions, MultiLaneNetworkTraceData, SankeyMultiLaneState } from '../interfaces';
+import { BaseState, BaseOptions, SankeyMultiLaneState, Base } from '../interfaces';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -24,7 +25,7 @@ import { BaseState, BaseOptions, MultiLaneNetworkTraceData, SankeyMultiLaneState
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class MultiLaneBaseControllerService extends BaseControllerService<BaseOptions, BaseState> implements ServiceOnInit {
+export class MultiLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -74,20 +75,23 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
 
   palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
 
-  networkTraceData$ = this.common.partialNetworkTraceData$.pipe(
-    switchMap(({links, nodes, traces, nodeById, ...rest}) => {
-        const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
-        const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
-        this.colorNodes(networkTraceNodes);
-        return of({
-          nodes: networkTraceNodes,
-          links: networkTraceLinks,
-          nodeById,
-          ...rest
-        });
-    }),
-    debug('MultiLaneBaseControllerService.networkTraceData$'),
-    shareReplay<MultiLaneNetworkTraceData>(1)
+  networkTraceData$ = this.common.data$.pipe(
+    switchMap(({links, nodes, nodeById}) => this.common.networkTrace$.pipe(
+        map((tn) => {
+          const {traces, sources, targets} = tn;
+          const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
+          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
+          this.colorNodes(networkTraceNodes);
+          return {
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            nodeById, sources, targets
+          };
+        }),
+        debug('MultiLaneBaseControllerService.networkTraceData$'),
+        shareReplay<Base['data']>(1)
+      )
+    )
   );
 
   linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');
@@ -95,12 +99,12 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
   // Trace logic
   /**
    * Extract links which relates to certain trace network and
-   * assign _color property based on their trace.
+   * assign color property based on their trace.
    * Also creates duplicates if given link is used in multiple traces.
    * Should return copy of link Objects (do not mutate links!)
    */
   getAndColorNetworkTraceLinks(
-    traces: SankeyTraceNetwork['traces'],
+    traces: TraceNetwork['traces'],
     links: ReadonlyArray<Readonly<SankeyLink>>,
     colorMap?
   ) {
@@ -109,19 +113,12 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
       traces.map(({group}) => [group, christianColors[group]])
     );
     const networkTraceLinks = traces.reduce((o, trace, traceIdx) => {
-      const color = traceGroupColorMap.get(trace._group);
-      trace._color = color;
+      const color = traceGroupColorMap.get(trace.group);
+      trace.color = color;
       return o.concat(
         trace.edges.map(linkIdx => {
           const originLink = links[linkIdx];
-          const link = {
-            ...originLink,
-            _color: color,
-            _trace: trace,
-            _order: -trace._group,
-            _originLinkId: originLink._id,
-            _id: `${originLink._id}_${trace._group}_${traceIdx}`
-          };
+          const link = new SankeyTraceLink(originLink, trace, traceIdx);
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
           if (!adjacentLinks) {
             adjacentLinks = [];
@@ -137,7 +134,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
       // normalise only if multiple (skip /1)
       if (adjacentLinkGroupLength) {
         adjacentLinkGroup.forEach(l => {
-          l._adjacent_divider = adjacentLinkGroupLength;
+          l.adjacentDivider = adjacentLinkGroupLength;
         });
       }
     }
@@ -163,7 +160,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<BaseOp
       }
     );
     nodes.forEach(node => {
-      node._color = nodesColorMap.get(nodeColorCategoryAccessor(node));
+      node.color = nodesColorMap.get(nodeColorCategoryAccessor(node));
     });
   }
 }
