@@ -236,7 +236,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'keyup')
+      fromEvent(this.canvas, 'keydown')
         .subscribe(this.canvasKeyDown.bind(this)),
     );
 
