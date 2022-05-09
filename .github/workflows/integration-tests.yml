@@ -54,7 +54,6 @@ jobs:
       - name: Migration Integrity Check
         run: docker-compose -f docker-compose.ci-test.yml exec -T appserver ./bin/migration-integrity-check
 
-
   client:
     name: Client Linting and Testing
     runs-on: ubuntu-latest
@@ -64,22 +63,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
-          cache: 'yarn'
+          cache: yarn
           cache-dependency-path: client/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build application
-        run: yarn build
+      - name: Check code format
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: false
+          prettier: true
+          prettier_dir: client
+          check_name: "Client - ${linter}"
 
-      - name: Run linter
+      - name: Run TSLint
         run: yarn lint-ci
 
       - name: Run tests
