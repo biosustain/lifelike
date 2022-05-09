@@ -461,6 +461,10 @@ class FilesystemBaseView(MethodView):
                         file.public = params['public']
                         changed_fields.add('public')
 
+                if 'pinned' in params:
+                    file.pinned = params['pinned']
+                    changed_fields.add('pinned')
+
                 if 'fallback_organism' in params:
                     file.organism_name = params['fallback_organism']['organism_name']
                     file.organism_synonym = params['fallback_organism']['synonym']
