@@ -9,14 +9,10 @@ import { GraphNode, GraphLink, GraphTrace } from 'app/shared/providers/graph-typ
 export type SankeyId = string | number;
 
 // Preping for render
-export interface SankeyNodeInterface extends Partial<SankeyRenderNodeInterface> {
+export interface SankeyNodeInterface {
   id: number;
   label?: string;
   description?: string;
-}
-
-// Needed for render
-export interface SankeyRenderNodeInterface extends SankeyNodeInterface {
   color: string | Color;
   // value?: number;
   depth: number;
@@ -31,16 +27,13 @@ export interface SankeyRenderNodeInterface extends SankeyNodeInterface {
   sourceLinks: SankeyLinkInterface[];
   targetLinks: SankeyLinkInterface[];
   value: number;
+  layer: number;
 }
 
 // preping for render
-export interface SankeyLinkInterface extends Partial<SankeyRenderLinkInterface> {
+export interface SankeyLinkInterface {
   id: SankeyId;
   description: string;
-}
-
-// Needed for render
-export interface SankeyRenderLinkInterface extends SankeyLinkInterface {
   multipleValues?: [number, number];
   value: number;
   adjacentDivider: number;

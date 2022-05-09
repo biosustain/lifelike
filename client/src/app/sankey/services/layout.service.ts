@@ -7,7 +7,7 @@ import { combineLatest, iif, ReplaySubject, Subject, EMPTY } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyState, TypeContext, RenderTypeContext } from 'app/sankey/interfaces';
+import { SankeyState, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -146,7 +146,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       )
     ),
     debug('graph$'),
-    shareReplay<Base['data'] & RenderTypeContext['data']>(1)
+    shareReplay<Base['data']>(1)
   );
 
   zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);

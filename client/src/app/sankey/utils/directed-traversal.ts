@@ -1,6 +1,6 @@
 import { sum } from 'd3-array';
 
-import { SankeyNode } from '../cls/SankeyDocument';
+import { SankeyNode } from '../model/SankeyDocument';
 
 interface Direction {
   nextLinksAccessor: string;
