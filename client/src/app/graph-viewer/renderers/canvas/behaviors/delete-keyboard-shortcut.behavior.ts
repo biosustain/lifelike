@@ -20,7 +20,6 @@ export class DeleteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   }
 
   keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
-  // keyDown(event: KeyboardEvent): BehaviorResult {
     if (event.event.key === 'Delete') {
       const actions0: GraphAction[] = [];
       const actions1: GraphAction[] = [];
