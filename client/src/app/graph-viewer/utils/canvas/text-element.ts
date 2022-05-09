@@ -33,7 +33,7 @@ export class TextElement {
   readonly maxHeight: number | undefined;
   readonly maxLines: number | undefined;
   readonly text: string;
-  font: string;
+  readonly font: string;
   readonly lineHeight: number = 1.2;
   readonly actualLineHeight: number;
   readonly fillStyle: string | undefined = '#000';
@@ -341,9 +341,26 @@ export class TextElement {
    * @param y center Y
    */
   drawCenteredAt(x: number, y: number) {
-    const width = this.width != null ? this.width : this.actualWidthWithInsets;
-    const height = this.height != null ? this.height : this.actualHeightWithInsets;
+    const width = this.width ?? this.actualWidthWithInsets;
+    const height = this.height ?? this.actualHeightWithInsets;
     this.draw(x - width / 2, y - height / 2);
+  }
+
+  /**
+   * Recalculate line metrics for new font and draw centered at the given position.
+   */
+  drawWithDifferentFont(x: number, y: number, font: string) {
+    this.ctx.font = font;
+
+    // Calculate height of line
+    const metrics: TextMetrics = this.ctx.measureText(this.text);
+    const actualHeightWithInsets = (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) * this.lineHeight
+      + this.topInset + this.bottomInset;
+    this.draw(x - metrics.width / 2, y - actualHeightWithInsets / 2);
+
+    // Reset to old font
+    this.ctx.font = this.font;
+
   }
 
   /**
@@ -356,7 +373,6 @@ export class TextElement {
     minY += this.topInset;
 
     const effectiveWidth = this.getEffectiveWidth();
-    this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
       if (!line.horizontalOverflow) {
