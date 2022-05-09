@@ -800,7 +800,7 @@ def create_edge(edge, node_hash_type_dict):
     url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
     url = url_data[-1]['url'] if len(url_data) else ''
     if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-           item in ['link', 'note']):
+           item in ['link', 'note', 'image']):
         default_line_style = 'dashed'
         default_arrow_head = 'none'
     return {
