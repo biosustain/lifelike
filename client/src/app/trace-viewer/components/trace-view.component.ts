@@ -181,14 +181,10 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
         }
       }
     }
-    this.error = new UserError(
-      'Could Not Find Trace in Source',
-      'This trace could not be found in the source file. Please find the trace in the source, and try again',
-      [],
-      '',
-      undefined,
-      undefined
-    );
+    this.error = new UserError({
+      title: 'Could Not Find Trace in Source',
+      message: 'This trace could not be found in the source file. Please find the trace in the source, and try again'
+    });
     return undefined;
   }
 }
