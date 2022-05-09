@@ -24,6 +24,7 @@ export class CollectionModel<T> {
   }
 
   multipleSelection = false;
+  private _updateView$ = new BehaviorSubject<boolean>(false);
   filter$ = new BehaviorSubject<Filter<T>>(null);
   sort$ = new BehaviorSubject<Sort<T>>(null);
   private _items$ = new BehaviorSubject<Array<T>>([]);
@@ -75,6 +76,7 @@ export class CollectionModel<T> {
     this.items$,
     this.filter$,
     this.sort$,
+    this._updateView$,
   ]).pipe(
     map(([items, filter, sort]) => {
       let filteredItems = [...items];
@@ -102,6 +104,10 @@ export class CollectionModel<T> {
 
   setSort(sort: Sort<T>) {
     this.sort$.next(sort);
+  }
+
+  updateView() {
+    this._updateView$.next(true);
   }
 
   // seems not used in any place

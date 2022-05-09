@@ -4,7 +4,7 @@
     <app-module-progress *ngIf="status.running">
         Loading Statistical Enrichment...
     </app-module-progress>
-    <ng-template #tabTitle>Statistical Enrichment</ng-template>
+    <ng-template #tabTitle> {{object.filename}} - Statistical Enrichment</ng-template>
     <ng-container *ngIf="status.resultsShown">
         <app-module-header *ngIf="object"
                            [object]="object"

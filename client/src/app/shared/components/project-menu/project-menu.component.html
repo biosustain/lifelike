@@ -5,6 +5,9 @@
   <button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
     Edit collaborators...
   </button>
+  <button ngbDropdownItem (click)="openDeleteDialog(project)">
+    Delete project...
+  </button>
 </ng-container>
 <ng-container *ngIf="showTools">
   <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>

@@ -17,3 +17,9 @@
 .dropdown-divider:last-child {
   display: none;
 }
+
+.view-dropdown {
+    max-height: 500px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}

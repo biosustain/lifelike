@@ -75,6 +75,7 @@ class CopyrightInfringementReportView(MethodView):
             # created and re-raise the error.
             db.session.delete(copyright_infringement_report)
             db.session.commit()
+            # rollback in case of error?
             raise
 
         return jsonify(dict(result=copyright_infringement_report.to_dict()))
