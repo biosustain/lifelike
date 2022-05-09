@@ -12,7 +12,7 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
-import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/cls/SankeyDocument';
+import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/model/SankeyDocument';
 
 import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';

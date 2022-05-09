@@ -1,4 +1,4 @@
-import { SankeyLink, Trace, SankeyNode, SankeyTraceLink } from 'app/sankey/cls/SankeyDocument';
+import { SankeyLink, Trace, SankeyNode, SankeyTraceLink } from 'app/sankey/model/SankeyDocument';
 
 import { LINK_PALETTES } from './color-palette';
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';

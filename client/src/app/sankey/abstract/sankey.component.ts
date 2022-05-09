@@ -10,7 +10,7 @@ import { zoomIdentity } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyId, TypeContext } from 'app/sankey/interfaces';
+import { SankeyId, TypeContext, SankeyLinkInterface } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
@@ -148,7 +148,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
           circular
         }
       } = this;
-      const layerWidth = ({source, target}) => Math.abs(target.layer - source.layer);
+      const layerWidth = ({source, target}: SankeyLinkInterface) => Math.abs(target.layer - source.layer);
 
       // save selection in this point so we can forward d3 lifecycle groups
       return this.linkSelection

@@ -10,9 +10,8 @@ import {
   NodeValueAccessor
 } from './valueAccessors';
 import { SankeyViews } from './view';
-import { TraceNetwork, SankeyDocument, Trace, SankeyLink, SankeyNode, SankeyTraceLink } from '../cls/SankeyDocument';
-import { BaseOptions, BaseState } from '../base-views/multi-lane/interfaces';
-import { SankeyLinkInterface, SankeyNodeInterface, SankeyRenderLinkInterface, SankeyRenderNodeInterface } from './pure';
+import { TraceNetwork, SankeyDocument, Trace, SankeyLink, SankeyNode, SankeyTraceLink } from '../model/SankeyDocument';
+import { SankeyLinkInterface, SankeyNodeInterface } from './pure';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 
 // Re-export the interfaces which are defined separately for DOMless ussage

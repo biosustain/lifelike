@@ -2,7 +2,7 @@ import { TypeContext } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 import { SelectionEntity, SelectionType } from '../../interfaces/selection';
-import { SankeyTraceLink, SankeyNode, SankeyLink } from '../../cls/SankeyDocument';
+import { SankeyTraceLink, SankeyNode, SankeyLink } from '../../model/SankeyDocument';
 
 
 export interface SankeySingleLaneStateExtend {

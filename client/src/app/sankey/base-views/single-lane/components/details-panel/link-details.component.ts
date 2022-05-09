@@ -10,7 +10,7 @@ import { Base } from '../../interfaces';
   templateUrl: './link-details.component.html',
   styleUrls: ['./link-details.component.scss']
 })
-export class SankeySingleLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent {
+export class SankeySingleLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent<Base> {
   constructor(
     protected baseView: BaseControllerService<Base>,
     protected readonly route: ActivatedRoute
