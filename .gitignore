@@ -22,7 +22,7 @@ Thumbs.db
 .run
 
 # IDE - VSCode
-.vscode/
+.vscode/*
 
 # ignore db files
 neo4j/data/*

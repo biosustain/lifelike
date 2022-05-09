@@ -1,0 +1,6 @@
+.github/
+dist/
+node_modules/
+
+# Transpiled TSLint files
+tslint/*.js

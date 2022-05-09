@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    // Recommended in Anuglar's new project boilerplate
+    "angular.ng-template",
+
+    // Code formatting with Prettier
+    "esbenp.prettier-vscode"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  // Use Prettier as default code formatter
+  "[*.{js,ts,html,css}]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Autoformat on save
+  "editor.formatOnSave": true
+}
