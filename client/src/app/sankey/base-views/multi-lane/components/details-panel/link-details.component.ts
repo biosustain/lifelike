@@ -9,7 +9,7 @@ import { Base } from '../../interfaces';
   selector: 'app-sankey-multi-lane-link-details',
   templateUrl: './link-details.component.html'
 })
-export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent {
+export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent<Base> {
   constructor(
     protected baseView: BaseControllerService<Base>,
     protected readonly route: ActivatedRoute

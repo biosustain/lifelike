@@ -1,5 +1,5 @@
 import { PropertyDictionary, FunctionProperty } from './property';
-import { SankeyNode } from '../cls/SankeyDocument';
+import { SankeyNode } from '../model/SankeyDocument';
 
 export interface Align extends FunctionProperty {
   fn: (node: SankeyNode, n: number) => number;

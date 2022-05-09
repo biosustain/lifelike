@@ -53,7 +53,7 @@ import { SankeyUpdateService } from '../services/sankey-update.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
-import { SankeyDocument, TraceNetwork, View } from '../cls/SankeyDocument';
+import { SankeyDocument, TraceNetwork, View } from '../model/SankeyDocument';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -255,6 +255,8 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   detailsPanel$ = new BehaviorSubject(false);
 
   viewName$ = this.sankeyController.viewName$;
+
+  viewBase = ViewBase;
 
   selectView = (networkTraceIdx, viewName) => this.viewController.selectView(networkTraceIdx, viewName).toPromise();
 

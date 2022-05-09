@@ -213,7 +213,7 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   label?: string;
   color: string | Color;
   description?: string;
-  value?: number;
+  value: number;
   order: number;
 
   constructor(node, id) {

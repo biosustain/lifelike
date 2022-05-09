@@ -2,7 +2,7 @@ import { clone } from 'lodash-es';
 
 import { ExtendedMap } from 'app/shared/utils/types';
 import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
-import { SankeyLink, SankeyNode } from 'app/sankey/cls/SankeyDocument';
+import { SankeyLink, SankeyNode } from 'app/sankey/model/SankeyDocument';
 
 import { DirectedTraversal } from '../../utils/directed-traversal';
 import { DefaultLayoutService } from '../../services/layout.service';

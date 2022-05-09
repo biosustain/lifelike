@@ -63,7 +63,7 @@ import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
 import { ErrorMessages } from '../constants/error';
-import { SankeyLink, SankeyNode } from '../cls/SankeyDocument';
+import { SankeyLink, SankeyNode } from '../model/SankeyDocument';
 
 interface Horizontal {
   width: number;
@@ -136,8 +136,8 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
   dx = 10; // nodeWidth
   py = 10; // nodePadding
 
-  nodeSort: <N extends SankeyNode>(a: N, b: N) => number;
-  linkSort: <L extends SankeyLink>(a: L, b: L) => number;
+  nodeSort: <N extends Base['node']>(a: N, b: N) => number;
+  linkSort: <L extends Base['link']>(a: L, b: L) => number;
 
   /**
    * Each node maintains list of its source/target links

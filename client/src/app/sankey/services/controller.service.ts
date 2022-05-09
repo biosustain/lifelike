@@ -36,7 +36,7 @@ import {
 import { SankeyViews, SankeyView } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
-import { SankeyDocument, TraceNetwork, SankeyNode } from '../cls/SankeyDocument';
+import { SankeyDocument, TraceNetwork, SankeyNode } from '../model/SankeyDocument';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
