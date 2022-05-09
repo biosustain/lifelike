@@ -1,3 +1,5 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -13,7 +15,8 @@ export class CopyKeyboardShortcutBehavior extends AbstractCanvasBehavior {
    */
   boundCopy = this.copy.bind(this);
 
-  constructor(private readonly graphView: CanvasGraphView) {
+  constructor(private readonly graphView: CanvasGraphView,
+              private readonly snackBar: MatSnackBar) {
     super();
     document.addEventListener('copy', this.boundCopy);
   }
@@ -30,11 +33,18 @@ export class CopyKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     }
 
     const selection: GraphEntity[] = this.graphView.selection.get();
-
-    const clipboardData = JSON.stringify({
-      type: TYPE_STRING,
-      selection,
-    } as GraphClipboardData);
+    let clipboardData;
+    if (selection.length === 0) {
+      this.snackBar.open('Nothing to copy!', 'Close', {
+                  duration: 5000,
+                });
+      clipboardData = '';
+    } else {
+      clipboardData = JSON.stringify({
+        type: TYPE_STRING,
+        selection,
+      } as GraphClipboardData);
+    }
 
     event.clipboardData.setData('text/plain', clipboardData);
     event.preventDefault();
