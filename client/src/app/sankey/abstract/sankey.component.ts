@@ -528,7 +528,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
   @d3EventCallback
   linkClick(element, data) {
     return Promise.resolve(this.selection.toggleLink(data)).then(() =>
-      this.clipboard.writeToClipboard(data.path).then(() =>
+      Promise.resolve(this.clipboard.writeToClipboard(data.path)).then(() =>
           this.snackBar.open(
             `Path copied to clipboard`,
             undefined,
