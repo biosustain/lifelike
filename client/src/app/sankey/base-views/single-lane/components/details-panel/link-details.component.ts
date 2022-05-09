@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { SankeyAbstractLinkDetailsComponent } from '../../../../abstract/entity-details/link-details.component';
 import { BaseControllerService } from '../../../../services/base-controller.service';
-import { SankeyBaseOptions, SankeyBaseState } from '../../../interfaces';
+import { Base } from '../../interfaces';
 
 @Component({
   selector: 'app-sankey-single-lane-link-details',
@@ -12,7 +12,7 @@ import { SankeyBaseOptions, SankeyBaseState } from '../../../interfaces';
 })
 export class SankeySingleLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent {
   constructor(
-    protected baseView: BaseControllerService<SankeyBaseOptions, SankeyBaseState>,
+    protected baseView: BaseControllerService<Base>,
     protected readonly route: ActivatedRoute
   ) {
     super(baseView, route);

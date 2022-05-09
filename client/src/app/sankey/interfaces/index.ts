@@ -71,11 +71,6 @@ export interface TypeContext {
   data: NetworkTraceData<this>;
 }
 
-export interface RenderTypeContext extends TypeContext {
-  node: SankeyRenderNodeInterface;
-  link: SankeyRenderLinkInterface;
-}
-
 export interface NetworkTraceData<Base extends TypeContext> {
   links: Array<Base['link']>;
   nodes: Array<Base['node']>;
