@@ -8,6 +8,7 @@ interface EnvironmentVars {
   testVar: string;
   oauthIssuer: string;
   oauthClientId: string;
+  lifelikeVersion: string;
 }
 
 // Read environment variables (set by env.js) from browser window
@@ -20,6 +21,7 @@ export const environment = {
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
   oauthClientId: browserWindowEnv.oauthClientId || 'client',
+  lifelikeVersion: browserWindowEnv.lifelikeVersion || 'undefined',
 };
 
 /*
