@@ -1,20 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 
-import {
-  PaginatedRequestOptions,
-  ResultList,
-  ResultMapping,
-  SingleResult,
-} from 'app/shared/schemas/common';
+import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ModelList } from 'app/shared/models';
 import { serializePaginatedParams } from 'app/shared/utils/params';
 
 import { ProjectList } from '../models/project-list';
-import { ProjectImpl } from '../models/filesystem-object';
+import { ProjectImpl, FilesystemObject } from '../models/filesystem-object';
 import {
   BulkProjectUpdateRequest,
   CollaboratorData,
@@ -22,28 +17,37 @@ import {
   ProjectCreateRequest,
   ProjectData,
   ProjectSearchRequest,
+  FilesystemObjectData,
 } from '../schema';
 import { encode } from 'punycode';
 import { Collaborator } from '../models/collaborator';
 
 @Injectable()
 export class ProjectsService {
+  /**
+   * The list of projects has been updated.
+   */
+  update$ = new Subject();
 
   constructor(protected readonly http: HttpClient) {}
 
   list(options?: PaginatedRequestOptions): Observable<ProjectList> {
-    return this.http.get<ResultList<ProjectData>>(
-      `/api/projects/projects`, {
-        params: serializePaginatedParams(options, false),
-      },
-    ).pipe(
-      map(data => {
-        const projectList = new ProjectList();
-        projectList.collectionSize = data.total;
-        projectList.results.replace(data.results.map(
-          itemData => new ProjectImpl().update(itemData)));
-        return projectList;
-      }),
+    return this.update$.pipe(
+      startWith(Date.now()),
+      switchMap(() => this.http.get<ResultList<ProjectData>>(
+          `/api/projects/projects`, {
+            params: serializePaginatedParams(options, false),
+          },
+        ).pipe(
+          map(data => {
+            const projectList = new ProjectList();
+            projectList.collectionSize = data.total;
+            projectList.results.replace(data.results.map(
+              itemData => new ProjectImpl().update(itemData)));
+            return projectList;
+          }),
+        )
+      )
     );
   }
 
@@ -134,4 +138,34 @@ export class ProjectsService {
     );
   }
 
+  delete(
+    hashId: string,
+    updateWithLatest?: { [hashId: string]: FilesystemObject },
+    reqursive = false,
+  ):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.request<ResultMapping<FilesystemObjectData>>(
+      'DELETE',
+      `/api/projects/projects`, {
+        headers: {'Content-Type': 'application/json'},
+        body: {
+          hashIds: [hashId],
+          reqursive
+        },
+        responseType: 'json',
+      },
+    ).pipe(
+      map(data => {
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
+        for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
+          if (!(itemHashId in ret)) {
+            ret[itemHashId] = new FilesystemObject();
+          }
+          ret[itemHashId].update(itemData);
+        }
+        this.update$.next();
+        return ret;
+      })
+    );
+  }
 }

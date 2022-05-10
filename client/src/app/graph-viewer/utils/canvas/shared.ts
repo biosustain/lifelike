@@ -39,12 +39,13 @@ export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: nu
   const oldFont = textbox.font;
   const fontSize = parseFloat(oldFont);
   const visibleText = k >= VISIBLE_TEXT_THRESHOLD * (DEFAULT_LABEL_FONT_SIZE / fontSize);
-  if (!visibleText) {
-    textbox.font = ((DEFAULT_LABEL_FONT_SIZE * VISIBLE_TEXT_THRESHOLD) / k)
+  if (visibleText) {
+    textbox.drawCenteredAt(x, y);
+  } else {
+    const newFont = ((DEFAULT_LABEL_FONT_SIZE * VISIBLE_TEXT_THRESHOLD) / k)
       + 'px' + oldFont.split('px').pop();
+    textbox.drawWithDifferentFont(x, y, newFont);
   }
-  textbox.drawCenteredAt(x, y);
-  textbox.font = oldFont;
 }
 
 export function drawStrokeAndFill(ctx: CanvasRenderingContext2D, shapeFillColor: string) {

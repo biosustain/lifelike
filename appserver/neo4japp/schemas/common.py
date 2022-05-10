@@ -55,6 +55,7 @@ class ResultMappingSchema(CamelCaseSchema):
 class ErrorResponseSchema(CamelCaseSchema):
     """All errors are emitted with this schema."""
     title = fields.String()
+    type = fields.String()
     message = fields.String()
     additional_msgs = fields.List(fields.String())
     stacktrace = fields.String()
