@@ -50,11 +50,8 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
       this.viewChanged = true;
     }
 
-    let kludge = false;
     if (data && this.svg) {
       if (isNil(networkTraceIdx) && !this.viewChanged) {
-        kludge = true;
-
         this._data.links.sort((a: any, b: any) => a._index - b._index);
         data.previousValue.links.sort((a, b) => a._index - b._index);
 
@@ -62,9 +59,6 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
         for (const link of data.previousValue.links) {
           this._data.links[m]._y0 = link._y0;
           this._data.links[m]._y1 = link._y1;
-          this._data.links[m]._width = link._width;
-          this._data.links[m]._value = link._value;
-          this._data.links[m]._circular = link._circular;
           this._data.links[m]._index = link._index;
           this._data.links[m]._order = link._order;
           if (isNil(this._data.links[m]._order)) {
@@ -80,7 +74,6 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
           const prevNode = data.previousValue.nodes[i];
           const dataNode = this._data.nodes[i];
 
-          dataNode._value = prevNode._value;
           dataNode._x0 = prevNode._x0;
           dataNode._x1 = prevNode._x1;
           dataNode._y0 = prevNode._y0;
@@ -131,7 +124,7 @@ export class SankeyManyToManyComponent extends SankeyComponent implements AfterV
         }
       }
       this.viewChanged = false;
-      this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
+      this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     if (selected) {

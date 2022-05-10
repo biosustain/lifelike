@@ -9,7 +9,7 @@ from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
 
 from neo4japp.database import db, get_projects_service, get_authorization_service
-from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
+from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, DeleteNonEmpty
 from neo4japp.models import (
     AppRole,
     AppUser,
@@ -104,10 +104,14 @@ class ProjectBaseView(MethodView):
                 code=404)
         return files[0]
 
-    def get_nondeleted_projects(self, filter, accessible_only=False, sort=None,
-                                require_hash_ids: List[str] = None,
-                                pagination: Optional[Pagination] = None) \
-            -> Tuple[List[Projects], int]:
+    def get_nondeleted_projects(
+        self,
+        filter,
+        accessible_only=False,
+        sort=None,
+        require_hash_ids: List[str] = None,
+        pagination: Optional[Pagination] = None
+    ) -> Tuple[List[Projects], int]:
         """
         Returns files that are guaranteed to be non-deleted that match the
         provided filter.
@@ -158,8 +162,12 @@ class ProjectBaseView(MethodView):
 
         return projects, total
 
-    def check_project_permissions(self, projects: List[Projects], user: AppUser,
-                                  require_permissions: List[str]):
+    def check_project_permissions(
+        self,
+        projects: List[Projects],
+        user: AppUser,
+        require_permissions: List[str]
+    ):
         """
         Helper method to check permissions on the provided projects. On error, an
         exception is thrown.
@@ -196,8 +204,13 @@ class ProjectBaseView(MethodView):
             'result': return_project,
         }))
 
-    def get_bulk_project_response(self, hash_ids: List[str], user: AppUser, *,
-                                  missing_hash_ids: Iterable[str] = None):
+    def get_bulk_project_response(
+        self,
+        hash_ids: List[str],
+        user: AppUser,
+        *,
+        missing_hash_ids: Iterable[str] = None
+    ):
         projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids),
                                                        require_hash_ids=hash_ids)
         self.check_project_permissions(projects, user, ['readable'])
@@ -232,6 +245,7 @@ class ProjectBaseView(MethodView):
             try:
                 db.session.commit()
             except IntegrityError as e:
+                db.session.rollback()
                 raise ValidationError("The project name is already taken.")
 
         return missing_hash_ids
@@ -289,6 +303,7 @@ class ProjectListView(ProjectBaseView):
             raise ValidationError('The project name already is already taken.', 'name')
 
         db.session.commit()
+        # rollback in case of error?
 
         return self.get_project_response(project.hash_id, current_user)
 
@@ -301,6 +316,60 @@ class ProjectListView(ProjectBaseView):
         missing_hash_ids = self.update_projects(targets['hash_ids'], params, current_user)
         return self.get_bulk_project_response(targets['hash_ids'], current_user,
                                               missing_hash_ids=missing_hash_ids)
+
+    # noinspection DuplicatedCode
+    @use_args(lambda request: BulkProjectRequestSchema())
+    def delete(self, targets):
+        """File delete endpoint."""
+
+        current_user = g.current_user
+
+        hash_ids = targets['hash_ids']
+        reqursive = targets['reqursive']
+
+        project = self.get_nondeleted_project(Projects.hash_id.in_(hash_ids))
+        self.check_project_permissions([project], current_user, ['writable'])
+
+        # ========================================
+        # Apply
+        # ========================================
+
+        from neo4japp.blueprints.filesystem import FilesystemBaseView
+        from neo4japp.models import Files
+        project_***ARANGO_USERNAME***_and_descendants = FilesystemBaseView.get_nondeleted_recycled_descendants(
+            self,
+            and_(
+                Files.id == project.***ARANGO_USERNAME***_id,
+                Files.recycling_date.is_(None),
+            ))
+
+        # For now, we won't let people delete non-empty folders (although this code
+        # is subject to a race condition) because the app doesn't handle deletion that well
+        # yet and the children would just become orphan files that would still be
+        # accessible but only by URL and with no easy way to delete them
+        if len(project_***ARANGO_USERNAME***_and_descendants) > 1:
+            if reqursive:
+                if not current_user.has_role('admin'):
+                    raise ValidationError('Only admins has permission to delete project '
+                                          'recursively.', 'reqursive')
+            else:
+                raise DeleteNonEmpty('Only empty folders can be deleted.')
+
+        for file in project_***ARANGO_USERNAME***_and_descendants:
+            file.delete()
+
+        project.delete()
+
+        db.session.commit()
+
+        # ========================================
+        # Return changed files
+        # ========================================
+
+        return jsonify(MultipleProjectResponseSchema().dump(dict(
+            mapping={},
+            missing=[],
+        )))
 
 
 class ProjectSearchView(ProjectBaseView):
