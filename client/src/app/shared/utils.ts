@@ -9,7 +9,6 @@ import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 import { FAClass, CustomIconColors, Unicodes } from './constants';
 
-
 /**
  * Splits a pascal-case (e.g. "TheQuickRedFox") string, separating the words by a " " character. E.g. "The Quick Red Fox".
  * @param str the pascal-case string to split
@@ -296,3 +295,5 @@ export const reduceIterable = (itrable, callbackfn, initialValue: any = notDefin
   }
   return initialValue;
 };
+
+export const isPromise = value => typeof value?.then === 'function';
