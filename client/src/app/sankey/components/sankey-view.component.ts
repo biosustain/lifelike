@@ -55,6 +55,7 @@ import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
+import { MultiValueAccessor } from '../interfaces/valueAccessors';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -193,7 +194,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   layout$: Observable<DefaultLayoutService>;
   graph$: Observable<object>;
 
-  predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
+  predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
   readonlyView$ = this.sankeyController.view$.pipe(
     tap(v => console.log('view', v))
   );
