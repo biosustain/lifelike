@@ -64,17 +64,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  private _data$ = new ReplaySubject<GraphFile>(1);
-  data$ = this._data$.pipe(
-    $freezeInDev,
-    map(file => new SankeyDocument(file)),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
-
-  // Using setter on private property to ensure that nobody subscribes to raw data
-  set data(data: GraphFile) {
-    this._data$.next(data);
-  }
+  data$ = new ReplaySubject<SankeyDocument>(1);
 
   state$ = rxjs_merge(
     this.delta$,
@@ -422,12 +412,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     });
   }
 
-  loadData(data: GraphFile) {
-    // this.preprocessData(data);
-    this.data = data;
-    return of(true);
-  }
-
   resetState() {
     this.delta$.next({});
   }
@@ -531,22 +515,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph})
     };
   }
-
-  /**
-   * Given nodes and links find all traces which they are relating to.
-   */
-  // getRelatedTraces({nodes, links}): SankeyTrace[] {
-  //   // check nodes links for traces which are coming in and out
-  //   const nodesLinks = [...nodes].reduce(
-  //     (linksAccumulator, {sourceLinks, targetLinks}) =>
-  //       linksAccumulator.concat(sourceLinks, targetLinks)
-  //     , []
-  //   );
-  //   // add links traces and reduce to unique values
-  //   return uniq(flatMap(nodesLinks.concat([...links]), '_traces'));
-  // }
-
-  // endregion
 
   resetController() {
     return this.data$.pipe(
