@@ -1,8 +1,8 @@
-import { SankeyLink, Trace, SankeyNode, SankeyTraceLink } from 'app/sankey/model/SankeyDocument';
+import { SankeyNode, SankeyTraceLink } from 'app/sankey/model/sankey-document';
 
 import { LINK_PALETTES } from './color-palette';
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
-import { SankeyId, NetworkTraceData, TypeContext } from '../../interfaces';
+import { NetworkTraceData, TypeContext } from '../../interfaces';
 
 export interface SankeyMultiLaneOptions extends SankeyBaseOptions {
   linkPalettes: LINK_PALETTES;

@@ -1,4 +1,4 @@
-import { GraphTraceNetwork, GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork } from 'app/shared/providers/graph-type/interfaces';
 
 import { PRESCALERS } from './prescalers';
 import { ALIGN_ID, ALIGNS } from './align';
@@ -10,7 +10,7 @@ import {
   NodeValueAccessor
 } from './valueAccessors';
 import { SankeyViews } from './view';
-import { TraceNetwork, SankeyDocument, Trace, SankeyLink, SankeyNode, SankeyTraceLink } from '../model/SankeyDocument';
+import { TraceNetwork, Trace } from '../model/sankey-document';
 import { SankeyLinkInterface, SankeyNodeInterface } from './pure';
 import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
 

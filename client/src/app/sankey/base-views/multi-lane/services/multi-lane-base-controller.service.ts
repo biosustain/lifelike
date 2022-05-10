@@ -4,7 +4,7 @@ import { switchMap, map, distinctUntilChanged, shareReplay } from 'rxjs/operator
 import { isEqual, merge } from 'lodash-es';
 import { of, combineLatest } from 'rxjs';
 
-import { ViewBase, NetworkTraceData } from 'app/sankey/interfaces';
+import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -12,11 +12,11 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
-import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/model/SankeyDocument';
+import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/model/sankey-document';
 
 import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
-import { BaseState, BaseOptions, SankeyMultiLaneState, Base } from '../interfaces';
+import { SankeyMultiLaneState, Base } from '../interfaces';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)

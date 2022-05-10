@@ -1,4 +1,4 @@
-import { SankeyLink, SankeyNode, Trace } from '../model/SankeyDocument';
+import { SankeyLink, SankeyNode, Trace } from '../model/sankey-document';
 
 // region Selection
 export enum SelectionType {
