@@ -19,7 +19,7 @@ export function toValidLink(url: string): string {
     return 'http:' + url;
     // Internal URL begins with single /
   } else if (url.startsWith('/')) {
-    return url;
+    return removeViewModeIfPresent(url);
   } else if (url.match(/^mailto:/i)) {
     return url;
   } else {
@@ -27,11 +27,15 @@ export function toValidLink(url: string): string {
   }
 }
 
+export function removeViewModeIfPresent(url: string): string {
+  return url.replace(/\/edit[\?#$]/, '');
+}
+
+
 /**
  * Returns the string as a valid URL object
  * @param url - user provided string with url
  */
-
 export function toValidUrl(url: string): URL {
   // Create a valid href string
   url = toValidLink(url);
