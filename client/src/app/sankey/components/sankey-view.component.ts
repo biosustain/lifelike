@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
@@ -74,7 +75,6 @@ interface BaseViewContext {
   ]
 })
 export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareComponent, AfterViewInit {
-  fileContent: GraphFile;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -184,6 +184,8 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     return this.dynamicComponentRef.get('advanced').instance;
   }
 
+  fileContent: GraphFile;
+
   baseViewContext$: Observable<BaseViewContext>;
   baseView$: Observable<DefaultBaseControllerService>;
   selection$: Observable<SankeySelectionService>;
@@ -246,8 +248,10 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   );
 
   activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
-    map(activeViewBase => viewBaseToNameMapping[activeViewBase] ?? ''));
-
+    map(activeViewBase => activeViewBase ? viewBaseToNameMapping[activeViewBase as string] : 'chuj'),
+    debug('activeViewBaseName$'),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
 
   data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
@@ -260,6 +264,8 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
 
   viewBase = ViewBase;
 
+  order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
+
   selectView = (networkTraceIdx, viewName) => this.viewController.selectView(networkTraceIdx, viewName).toPromise();
 
   traceAndViewNameAccessor = (networkTraceOrViewId, traceOrView) => {
@@ -268,7 +274,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       traceId => traceOrView.name ?? traceOrView.description,
       (_, viewId) => `+ ${viewId}`
     );
-  }
+  };
 
   confirmDeleteView(viewName): Promise<any> {
     return this.confirm({
@@ -324,7 +330,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       map(({layout}) => layout)
     );
     this.graph$ = this.layout$.pipe(
-      switchMap(layout => layout.graph$)
+      switchMap<DefaultLayoutService, Observable<object>>(layout => layout.graph$)
     );
     this.selection$ = this.baseViewContext$.pipe(
       map(({selection}) => selection)

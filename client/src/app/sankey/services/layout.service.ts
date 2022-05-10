@@ -3,7 +3,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { merge, omit, isNil, clone, range } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil, catchError } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Subject, EMPTY } from 'rxjs';
+import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -124,7 +124,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
 
-  graph$ = this.baseView.common.view$.pipe(
+  graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
     // ensure no calculation of view if base view changed
     takeUntil(this.destroyed$),
     // todo temporary fixes needs to work but do not know how to make it better
@@ -701,7 +701,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     (a.source.order - b.source.order) ||
     (a.target.order - b.target.order) ||
     (a.order - b.order)
-  )
+  );
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -709,7 +709,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
     let current = new Set<Base['node']>(nodes);
     let next = new Set<Base['node']>();

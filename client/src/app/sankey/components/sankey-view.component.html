@@ -185,7 +185,7 @@
                 <!-- add class dropdown-menu to avoid relayout -->
                 <div ngbDropdownMenu class="dropdown-menu">
                     <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
-                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue"
+                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue: order"
                             ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
                 </div>
             </div>

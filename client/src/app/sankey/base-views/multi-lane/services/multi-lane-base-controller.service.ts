@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { switchMap, map, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { isEqual, merge } from 'lodash-es';
-import { of, combineLatest } from 'rxjs';
+import { switchMap, map, distinctUntilChanged, shareReplay, scan } from 'rxjs/operators';
+import { isEqual, merge, isNil } from 'lodash-es';
+import { of, merge as rxjs_merge, defer, iif } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -16,7 +16,9 @@ import { SankeyLink, TraceNetwork, SankeyTraceLink } from 'app/sankey/model/sank
 
 import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
-import { SankeyMultiLaneState, Base } from '../interfaces';
+import { Base } from '../interfaces';
+import { getBaseState } from '../../../utils/stateLevels';
+import { SankeyView } from '../../../interfaces/view';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -37,8 +39,30 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
 
   viewBase = ViewBase.sankeyMultiLane;
 
-  state$ = combineLatest([
-    of({
+  state$ = rxjs_merge(
+    this.delta$,
+    defer(() => this.state$).pipe(
+      map(({predefinedValueAccessorId}) => predefinedValueAccessorId),
+      distinctUntilChanged(),
+      switchMap(predefinedValueAccessorId => this.common.options$.pipe(
+        map(({predefinedValueAccessors}) => ({
+          predefinedValueAccessorId,
+          ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
+        }))
+      )),
+      shareReplay({bufferSize: 1, refCount: true})
+    ),
+    defer(() => this.common.view$).pipe(
+      switchMap(view =>
+        iif(
+          () => !isNil(view),
+          defer(() => of(getBaseState((view as SankeyView).state)))
+        )
+      ),
+      shareReplay({bufferSize: 1, refCount: true})
+    )
+  ).pipe(
+    scan((state, delta) => merge({}, state, delta), {
       nodeHeight: {
         min: {
           enabled: true,
@@ -49,16 +73,12 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           ratio: 10
         }
       },
-      linkPaletteId: LINK_PALETTE_ID.hue_palette
+      linkPaletteId: LINK_PALETTE_ID.hue_palette,
+      predefinedValueAccessorId: PREDEFINED_VALUE.input_count,
     }),
-    this.delta$,
-    this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.input_count),
-    this.resolveView$
-  ]).pipe(
-    map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
     debug('MultiLaneBaseControllerService.state$'),
-    shareReplay<SankeyMultiLaneState>(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   linkValueAccessors = {
