@@ -8,8 +8,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
-import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
+import { extractDescriptionFromFile } from 'app/shared/utils/files';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';
 import { ObjectCreateRequest } from '../../schema';
@@ -80,7 +79,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     for (let i = 0; (i < event.target.files.length) && (i < uploadLimit); i++) {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
-      await this.extractDescription(targetFile, filename.split('.').pop()).then(description => {
+      await extractDescriptionFromFile(targetFile).then(description => {
         const fileEntry: FileInput = {
           formState: {
             contentValue: targetFile,
@@ -170,18 +169,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       const isMap = s.match(/\.json$/i);
       return 'document' + (isMap ? '' : '.pdf');
     }
-  }
-
-  private extractDescription(file: File, format: string): Promise<string> {
-     if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
-       return file.text().then(text => {
-          if (format === 'graph') {
-            return extractDescriptionFromSankey(text);
-          }
-          return '';
-       });
-     }
-     return Promise.resolve('');
   }
 
   handleDelete(index: number) {
