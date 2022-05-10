@@ -248,7 +248,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   );
 
   activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
-    map(activeViewBase => activeViewBase ? viewBaseToNameMapping[activeViewBase as string] : 'chuj'),
+    map(activeViewBase => viewBaseToNameMapping[activeViewBase]),
     debug('activeViewBaseName$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
