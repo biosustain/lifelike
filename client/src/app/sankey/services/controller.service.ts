@@ -4,15 +4,8 @@ import { of, Subject, iif, ReplaySubject, Observable, combineLatest } from 'rxjs
 import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise, tap } from 'rxjs/operators';
 
-import { GraphPredefinedSizing, GraphNode, GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import {
-  SankeyState,
-  SankeyFileOptions,
-  SankeyStaticOptions,
-  ViewBase,
-  SankeyId,
-  SankeyOptions
-} from 'app/sankey/interfaces';
+import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
@@ -36,7 +29,7 @@ import {
 import { SankeyViews, SankeyView } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
-import { SankeyDocument, TraceNetwork, SankeyNode } from '../model/SankeyDocument';
+import { SankeyDocument, TraceNetwork, SankeyNode } from '../model/sankey-document';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
