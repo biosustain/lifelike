@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, isEqual } from 'lodash-es';
-import { switchMap, map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
-import { of, Observable, combineLatest } from 'rxjs';
+import { flatMap, groupBy, intersection, merge, isEqual, isNil } from 'lodash-es';
+import { switchMap, map, shareReplay, distinctUntilChanged, scan } from 'rxjs/operators';
+import { of, Observable, combineLatest, merge as rxjs_merge, defer, iif } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -19,6 +19,9 @@ import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/va
 import { inputCount } from '../algorithms/linkValues';
 import { SankeySingleLaneState, Base } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
+import { getBaseState } from '../../../utils/stateLevels';
+import { SankeyView } from '../../../interfaces/view';
+import { LINK_PALETTE_ID } from '../../multi-lane/color-palette';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -44,8 +47,30 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
   // );
 
-  state$ = combineLatest([
-    of({
+  state$ = rxjs_merge(
+    this.delta$,
+    defer(() => this.state$).pipe(
+      map(({predefinedValueAccessorId}) => predefinedValueAccessorId),
+      distinctUntilChanged(),
+      switchMap(predefinedValueAccessorId => this.common.options$.pipe(
+        map(({predefinedValueAccessors}) => ({
+          predefinedValueAccessorId,
+          ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
+        }))
+      )),
+      shareReplay({bufferSize: 1, refCount: true})
+    ),
+    defer(() => this.common.view$).pipe(
+      switchMap(view =>
+        iif(
+          () => !isNil(view),
+          defer(() => of(getBaseState((view as SankeyView).state)))
+        )
+      ),
+      shareReplay({bufferSize: 1, refCount: true})
+    )
+  ).pipe(
+    scan((state, delta) => merge({}, state, delta), {
       highlightCircular: true,
       colorLinkByType: false,
       nodeHeight: {
@@ -57,16 +82,12 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
           enabled: true,
           ratio: 2
         }
-      }
+      },
+      predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
     }),
-    this.delta$,
-    this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height),
-    this.resolveView$
-  ]).pipe(
-    map((deltas) => merge({}, ...deltas)),
     distinctUntilChanged(isEqual),
     debug('SingleLaneBaseControllerService.state$'),
-    shareReplay<SankeySingleLaneState>(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   highlightCircular$ = this.stateAccessor('highlightCircular');
@@ -135,7 +156,9 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     nodes.forEach(node => node.color = undefined);
     const mapNodePositionToColor = (nodesToColor: Array<Base['node']>, position: NodePosition) =>
       nodesToColor.forEach(node => {
-        node.color = nodeColors.get(position);
+        if (node) {
+          node.color = nodeColors.get(position);
+        }
       });
     mapNodePositionToColor(sources, NodePosition.left);
     mapNodePositionToColor(targets, NodePosition.right);
