@@ -17,12 +17,7 @@ import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { inputCount } from '../algorithms/linkValues';
-import {
-  BaseOptions,
-  BaseState,
-  SankeySingleLaneState,
-  Base
-} from '../interfaces';
+import { SankeySingleLaneState, Base } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 
 /**
@@ -126,10 +121,11 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   ): Array<Base['link']> {
     const traceLink = flatMap(traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
     const linkIdxToTraceLink = groupBy(traceLink, 'linkIdx');
-    return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => ({
-      ...links[linkIdx],
-      _traces: wrappedTraces.map(({trace}) => trace)
-    }));
+    return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => {
+      const link = links[linkIdx];
+      link.traces = traces;
+      return link;
+    });
   }
 
   /**
@@ -139,7 +135,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     nodes.forEach(node => node.color = undefined);
     const mapNodePositionToColor = (nodesToColor: Array<Base['node']>, position: NodePosition) =>
       nodesToColor.forEach(node => {
-          node.color = nodeColors.get(position);
+        node.color = nodeColors.get(position);
       });
     mapNodePositionToColor(sources, NodePosition.left);
     mapNodePositionToColor(targets, NodePosition.right);
