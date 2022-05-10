@@ -7,7 +7,7 @@ import {
   getLinkLayers,
   calculateInputCountSkippingCircularLinksB
 } from 'app/sankey/base-views/algorithms/inputCountSharedSteps';
-import { SankeyLink, Trace } from 'app/sankey/model/SankeyDocument';
+import { SankeyLink, Trace } from 'app/sankey/model/sankey-document';
 
 import { MultiLaneLayoutService } from '../services/multi-lane-layout.service';
 import { MultiLaneBaseControllerService } from '../services/multi-lane-base-controller.service';

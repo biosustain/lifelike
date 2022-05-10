@@ -63,7 +63,7 @@ import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
 import { ErrorMessages } from '../constants/error';
-import { SankeyLink, SankeyNode } from '../model/SankeyDocument';
+import { SankeyLink, SankeyNode } from '../model/sankey-document';
 
 interface Horizontal {
   width: number;

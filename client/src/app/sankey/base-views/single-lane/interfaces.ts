@@ -2,8 +2,7 @@ import { TypeContext } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 import { SelectionEntity, SelectionType } from '../../interfaces/selection';
-import { SankeyTraceLink, SankeyNode, SankeyLink } from '../../model/SankeyDocument';
-
+import { SankeyNode, SankeyLink } from '../../model/sankey-document';
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;

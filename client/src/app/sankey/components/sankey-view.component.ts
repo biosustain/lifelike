@@ -16,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer } from 'rxjs';
-import { isNil, pick, flatMap } from 'lodash-es';
+import { isNil, pick, flatMap, zip } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -53,7 +53,7 @@ import { SankeyUpdateService } from '../services/sankey-update.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
-import { SankeyDocument, TraceNetwork, View } from '../model/SankeyDocument';
+import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -74,6 +74,7 @@ interface BaseViewContext {
   ]
 })
 export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareComponent, AfterViewInit {
+  fileContent: GraphFile;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -110,6 +111,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
         this.emitModuleProperties();
         this.currentFileId = object.hashId;
         if (this.sanityChecks(content)) {
+          this.fileContent = content;
           return this.sankeyController.loadData(content);
         }
       })
@@ -361,9 +363,33 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     return pass;
   }
 
+  /**
+   * Temporary safty net SankeyDocument is under development
+   * SankeyDocument.toDict() should give stringable representation of file
+   * and SankeyDocument.toString() should encode it as string.
+   * Ultimatly for given FileContent:
+   * `new SankeyDocument(FileContent).toString() = FileContent`
+   * yet current implementation cannot guarantee that just yet.
+   */
+  updateOnlyViews(sankeyDocument: SankeyDocument) {
+    const {graph: {traceNetworks}} = sankeyDocument;
+    const {graph: {trace_networks, ...fcGraph}, ...fc} = this.fileContent;
+    return {
+      graph: {
+        ...fcGraph,
+        trace_networks: zip(traceNetworks, trace_networks).map(([tn, fctn]) => ({
+          ...fctn,
+          _views: tn.toDict()._views
+        }))
+      },
+      ...fc
+    };
+  }
+
   saveFile(data: SankeyDocument) {
+    const newContent = this.updateOnlyViews(data);
     const contentValue = new Blob(
-      [data.toString()],
+      [JSON.stringify(newContent)],
       {type: MimeTypes.Graph});
     return this.filesystemService.save(
       [this.object.hashId],
@@ -396,7 +422,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     }
     if (networkTraceOrViewId.startsWith('view_')) {
       const [, networkTraceIdx, viewId] = networkTraceOrViewId.match(/^view_(\d+)_(.+)$/);
-      return viewCallback(networkTraceIdx, viewId);
+      return viewCallback(Number(networkTraceIdx), viewId);
     }
     throw new Error('Unknown option prefix');
   }

@@ -17,7 +17,7 @@ import { isNotEmpty } from 'app/shared/utils';
 
 import { SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface, SankeyNodeInterface } from '../interfaces';
 import { indexByProperty } from '../utils';
-import { SankeyView, SankeyLinksOverwrites, SankeyNodesOverwrites } from '../interfaces/view';
+import { SankeyView } from '../interfaces/view';
 
 const listMapToDict =
   <GraphType extends object>(list: SankeyDocumentPartMixin<GraphType>[]) =>
@@ -47,7 +47,12 @@ export class View implements SankeyDocumentPartMixin<SankeyView> {
   }
 
   toDict() {
-    return this;
+    return {
+      state: this.state,
+      size: this.size,
+      nodes: this.nodes,
+      links: this.links
+    };
   }
 }
 
@@ -81,7 +86,7 @@ export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
 
 export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> {
   traces: Trace[];
-  views$: BehaviorSubject<{ [key: string]: View }>;
+  views$: BehaviorSubject<Record<string, View>>;
   private sankeyDocument;
   sources: SankeyNode[];
   targets: SankeyNode[];
@@ -92,6 +97,10 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
   color: string | Color;
   _sources: string;
   _targets: string;
+
+  get views() {
+    return this.views$.value;
+  }
 
   constructor(
     {
