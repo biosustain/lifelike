@@ -52,13 +52,6 @@ export class MultiLaneBaseAdvancedPanelComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.baseView.common.viewName$.subscribe(viewName =>
-      this.setDisableControlsState(viewName, [
-        'nodeHeight',
-        'linkValueAccessorId',
-        'nodeValueAccessorId',
-      ])
-    );
   }
 
   ngOnDestroy() {

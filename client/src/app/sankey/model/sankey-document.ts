@@ -1,6 +1,8 @@
-import { assign, mapValues, entries, max, isNumber, omit } from 'lodash-es';
-import { BehaviorSubject } from 'rxjs';
+import { assign, mapValues, entries, max, isNumber, omit, zip } from 'lodash-es';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Color } from 'd3-color';
+import { switchMap } from 'rxjs/internal/operators/switchMap';
+import { shareReplay, map, first } from 'rxjs/operators';
 
 import {
   GraphNodeSets,
@@ -14,10 +16,16 @@ import {
   GraphPredefinedSizing
 } from 'app/shared/providers/graph-type/interfaces';
 import { isNotEmpty } from 'app/shared/utils';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
+import { MimeTypes } from 'app/shared/constants';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface, SankeyNodeInterface } from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';
+import { ErrorMessages } from '../constants/error';
 
 const listMapToDict =
   <GraphType extends object>(list: SankeyDocumentPartMixin<GraphType>[]) =>
@@ -190,6 +198,10 @@ class SankeyGraph implements SankeyDocumentPartMixin<GraphGraph> {
     this.sankeyDocument = sankeyDocument;
     this.sizing = sizing;
     this.nodeSets = new NodeSets(node_sets, sankeyDocument);
+
+    if (!trace_networks.length) {
+      throw Error(ErrorMessages.missingNetworkTraces);
+    }
     this.traceNetworks = trace_networks.map(traceNetwork => new TraceNetwork(traceNetwork, this, sankeyDocument));
   }
 
@@ -299,6 +311,10 @@ export class SankeyLink implements SankeyDocumentPartMixin<GraphLink>, SankeyLin
       id: this.id
     };
   }
+
+  get(key: string) {
+    return this[key];
+  }
 }
 
 export class SankeyTraceLink implements SankeyLinkInterface {
@@ -354,6 +370,10 @@ export class SankeyTraceLink implements SankeyLinkInterface {
       id: this.id
     };
   }
+
+  get(key) {
+    return this[key] ?? this.originLink.get(key);
+  }
 }
 
 export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
@@ -366,9 +386,15 @@ export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
   multigraph: boolean;
 
   constructor({nodes, links, graph, ...rest}: GraphFile) {
+    if (!nodes.length) {
+      throw Error(ErrorMessages.missingNodes);
+    }
+    if (!links.length) {
+      throw Error(ErrorMessages.missingLinks);
+    }
+
     assign(this, rest);
     this.isDirty$ = new BehaviorSubject(false);
-
     this.nodes = nodes.map(node => new SankeyNode(node, node.id));
     this.nodeById = indexByProperty(this.nodes, 'id');
     this.links = links.map((link, index) => new SankeyLink(link, index, this));
@@ -383,5 +409,96 @@ export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
       directed: this.directed,
       multigraph: this.multigraph
     };
+  }
+}
+
+export class SankeyFile {
+
+  constructor(
+    filesystemService: FilesystemService,
+    hashId: string
+  ) {
+    this.hashId = hashId;
+    this.filesystemService = filesystemService;
+    this.reload();
+  }
+  private readonly hashId;
+  private readonly filesystemService: FilesystemService;
+
+  metaLoadTask = new BackgroundTask<string, FilesystemObject>(
+    hash => this.filesystemService.get(hash)
+  );
+
+  contentLoadTask = new BackgroundTask<string, GraphFile>(
+    hash => this.filesystemService.getContent(hash).pipe(
+      mapBlobToBuffer(),
+      mapBufferToJson()
+    )
+  );
+
+  metadata$ = this.metaLoadTask.results$.pipe(
+    map(({result}) => result),
+    shareReplay<FilesystemObject>({bufferSize: 1, refCount: true})
+  );
+
+  content$ = this.contentLoadTask.results$.pipe(
+    map(({result}) => result),
+    shareReplay<GraphFile>({bufferSize: 1, refCount: true})
+  );
+
+  document$ = this.content$.pipe(
+    map(raw => new SankeyDocument(raw)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  /**
+   * Temporary safty net SankeyDocument is under development
+   * SankeyDocument.toDict() should give stringable representation of file
+   * and SankeyDocument.toString() should encode it as string.
+   * Ultimatly for given FileContent:
+   * `new SankeyDocument(FileContent).toString() = FileContent`
+   * yet current implementation cannot guarantee that just yet.
+   */
+  contentWithOnlyViewsUpdated$ = this.content$.pipe(
+    switchMap(({graph: {trace_networks, ...fcGraph}, ...fc}) =>
+      this.document$.pipe(
+        map(({graph: {traceNetworks}}) => ({
+          graph: {
+            ...fcGraph,
+            trace_networks: zip(traceNetworks, trace_networks).map(([tn, fctn]) => ({
+              ...fctn,
+              _views: tn.toDict()._views
+            }))
+          },
+          ...fc
+        }))
+      )
+    )
+  );
+
+  reload() {
+    const {hashId} = this;
+    this.metaLoadTask.update(hashId);
+    this.contentLoadTask.update(hashId);
+  }
+
+  save(): Observable<FilesystemObject> {
+    const {hashId} = this;
+    return this.contentWithOnlyViewsUpdated$.pipe(
+      first(),
+      map(content =>
+        new Blob(
+          [JSON.stringify(content)],
+          {type: MimeTypes.Graph}
+        )
+      ),
+      switchMap(contentValue =>
+        this.filesystemService.save(
+          [hashId],
+          {contentValue}
+        )
+      ),
+      map(updatedFiles => updatedFiles[hashId])
+    );
   }
 }

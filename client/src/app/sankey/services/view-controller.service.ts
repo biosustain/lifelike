@@ -6,12 +6,12 @@ import { omit, transform, assign } from 'lodash-es';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
 import { SankeyNode, SankeyLink } from '../model/sankey-document';
-import { debug } from '../../shared/rxjs/debug';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)

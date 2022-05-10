@@ -37,15 +37,6 @@ export class SankeyAdvancedPanelComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.common.viewName$.subscribe(viewName => {
-      if (viewName) {
-        this.form.get('prescalerId').disable({emitEvent: false});
-        this.form.get('alignId').disable({emitEvent: false});
-      } else {
-        this.form.get('prescalerId').enable({emitEvent: false});
-        this.form.get('alignId').enable({emitEvent: false});
-      }
-    });
   }
 
   ngOnDestroy() {
