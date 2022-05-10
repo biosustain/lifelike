@@ -11,6 +11,7 @@ import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
 import { SankeyNode, SankeyLink } from '../model/sankey-document';
+import { debug } from '../../shared/rxjs/debug';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -28,9 +29,7 @@ export class ViewControllerService {
 
   views$ = this.common.views$;
 
-  activeViewBase$ = this.common.state$.pipe(
-    map(({baseViewName}) => baseViewName)
-  );
+  activeViewBase$ = this.common.baseViewName$;
 
   activeViewName$ = this.common.state$.pipe(
     map(({viewName}) => viewName)
@@ -41,7 +40,7 @@ export class ViewControllerService {
     map(({baseView}) => baseView)
   );
 
-  readonly statusOmitProperties = ['viewName', 'baseViewName', 'baseViewInitialState'];
+  readonly statusOmitProperties = ['viewName', 'baseViewInitialState'];
 
   graph$ = this.layout$.pipe(
     switchMap(layout => layout.graph$)
@@ -84,18 +83,10 @@ export class ViewControllerService {
       first(),
       map(states => assign({}, ...states)),
       map(stateDelta => omit(stateDelta, this.statusOmitProperties)),
-      switchMap(state => this.activeViewBase$.pipe(
-        first(),
-        map(base => ({
-          state,
-          viewName,
-          base
-        })),
-      )),
-      switchMap(partialView => this.graph$.pipe(
+      switchMap(state => this.graph$.pipe(
         first(),
         map(({nodes, links}) => ({
-          ...partialView,
+          state,
           nodes: this.mapToPropertyObject(nodes as any),
           links: this.mapToPropertyObject(links as any)
         }))

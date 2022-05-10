@@ -72,19 +72,20 @@ export abstract class StateControlAbstractService<Options extends object, State 
   ): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
-      switchMap(currentStateDelta => {
-        const newStateDelta = reducer(currentStateDelta, statePatch);
-        return iif(
-          () => !isNil(newStateDelta),
-          of(
-            // ommit empty values so they can be reset to defaultState
-            omitBy(
-              newStateDelta,
-              isNil
-            ) as Partial<State>
-          ),
-        );
-      }),
+      map(currentStateDelta => reducer(currentStateDelta, statePatch)),
+      // switchMap(currentStateDelta => {
+      //   const newStateDelta = reducer(currentStateDelta, statePatch);
+      //   return iif(
+      //     () => !isNil(newStateDelta),
+      //     of(
+      //       // ommit empty values so they can be reset to defaultState
+      //       omitBy(
+      //         newStateDelta,
+      //         isNil
+      //       ) as Partial<State>
+      //     ),
+      //   );
+      // }),
       tap(stateDelta => this.delta$.next(stateDelta))
     );
   }

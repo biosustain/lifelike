@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, ReplaySubject, Observable, combineLatest } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
-import { switchMap, map, first, shareReplay, distinctUntilChanged, publish, startWith, pairwise, tap } from 'rxjs/operators';
+import { of, Subject, iif, ReplaySubject, Observable, EMPTY, merge as rxjs_merge, defer } from 'rxjs';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, omitBy } from 'lodash-es';
+import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, scan, filter } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
@@ -29,7 +29,7 @@ import {
 import { SankeyViews, SankeyView } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
-import { SankeyDocument, TraceNetwork, SankeyNode } from '../model/sankey-document';
+import { SankeyDocument, TraceNetwork, SankeyNode, View } from '../model/sankey-document';
 
 export const customisedMultiValueAccessorId = 'Customised';
 
@@ -76,29 +76,58 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     this._data$.next(data);
   }
 
-  state$ = this.delta$.pipe(
-    publish(delta$ =>
-      combineLatest([
-        of({
-          normalizeLinks: false,
-          prescalerId: PRESCALER_ID.none,
-          labelEllipsis: {
-            enabled: true,
-            value: LayoutService.labelEllipsis
-          },
-          fontSizeScale: 1.0
-        }),
-        delta$,
-        this.resolveNetworkTraceAndBaseView(delta$),
-        this.resolveNodeAlign(delta$),
-        this.resolveView(delta$)
-      ])
-    ),
-    map((deltas) => merge({}, ...deltas)),
+  state$ = rxjs_merge(
+    this.delta$,
+    defer(() => this.view$).pipe(
+      switchMap(view =>
+        iif(
+          () => !isNil(view),
+          defer(() => of(getCommonState((view as View).state))),
+          defer(() => this.networkTrace$).pipe(
+            map(({sources, targets}) => ({
+              viewName: null,
+              alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
+              baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+            })),
+            debug('state$ networkTrace update'),
+            shareReplay({bufferSize: 1, refCount: true})
+          )
+        )
+      ),
+      debug('state$ view update'),
+      shareReplay({bufferSize: 1, refCount: true})
+    )
+  ).pipe(
     distinctUntilChanged(isEqual),
+    scan((state, delta) => merge({}, state, delta), {
+      networkTraceIdx: 0,
+      normalizeLinks: false,
+      prescalerId: PRESCALER_ID.none,
+      labelEllipsis: {
+        enabled: true,
+        value: LayoutService.labelEllipsis
+      },
+      fontSizeScale: 1.0
+    }),
+    map(state => omitBy(state, isNil)),
     debug('state$'),
-    shareReplay(1)
+    shareReplay({bufferSize: 1, refCount: true})
   );
+
+  //   this.delta$.pipe(
+  //   publish(delta$ =>
+  //     combineLatest([,
+  //       delta$,
+  //       this.resolveNetworkTraceAndBaseView(delta$),
+  //       this.resolveNodeAlign(delta$),
+  //       this.resolveView(delta$)
+  //     ])
+  //   ),
+  //   map((deltas) => merge({}, ...deltas)),
+  //   distinctUntilChanged(isEqual),
+  //   debug('state$'),
+  //   shareReplay(1)
+  // );
   networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
   baseViewName$ = this.stateAccessor('baseViewName');
   // do not use standart accessor for this one cause we want null if it wasnt set
@@ -183,7 +212,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
    */
   view$ = this.views$.pipe(
     switchMap(views => this.viewName$.pipe(
-      map(viewName => views[viewName] ?? null),
+      map(viewName => views[viewName as string] ?? null),
     )),
     distinctUntilChanged(),
     debug('view'),
@@ -341,6 +370,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           () => alignId,
           of({alignId}),
           this.data$.pipe(
+            first(),
             map(({graph: {traceNetworks}}) => {
               const {sources, targets} = traceNetworks[networkTraceIdx];
               return {
@@ -365,7 +395,13 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           of({}),
           this.views$.pipe(
             map((views, index) => views[delta.viewName]),
-            tap(view => view ?? new Error('view not found')),
+            switchMap(view =>
+              iif(
+                () => isNil(view),
+                EMPTY,
+                of(view)
+              )
+            ),
             map(view => merge(
               getCommonState(view.state),
               // if there was no change of view name allow for the view to be updated
