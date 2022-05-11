@@ -32,6 +32,9 @@ export const groupByTraceGroupWithAccumulation = () => {
   const traceGroupOrder = new Set();
   return links => {
     links.forEach(({trace}) => {
+      if (isNil(trace)) {
+        console.log('trace is null');
+      }
       traceGroupOrder.add(trace.group);
     });
     const groups = [...traceGroupOrder];
@@ -146,7 +149,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       )
     ),
     debug('graph$'),
-    shareReplay<Base['data']>(1)
+    shareReplay<Base['data']>(1),
+    takeUntil(this.destroyed$)
   );
 
   zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
@@ -204,11 +208,17 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         let y1 = y0;
         for (const link of node.sourceLinks) {
           link.y0 = y0 + link.width / 2;
+          if (!isFinite(link.y0)) {
+            throw new Error(`link.y0 is not finite: ${link.y0}`);
+          }
           // noinspection JSSuspiciousNameCombination
           y0 += link.width;
         }
         for (const link of node.targetLinks) {
           link.y1 = y1 + link.width / 2;
+          if (!isFinite(link.y1)) {
+            throw new Error(`link.y1 is not finite: ${link.y1}`);
+          }
           // noinspection JSSuspiciousNameCombination
           y1 += link.width;
         }
@@ -359,12 +369,21 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         nodes.sort((a, b) => a.order - b.order).forEach(node => {
           const nodeHeight = node.height;
           node.y0 = y;
+          if (!isFinite(node.y0)) {
+            throw new Error('y0 is not finite');
+          }
           node.y1 = y + nodeHeight;
+          if (!isFinite(node.y1)) {
+            throw new Error('y1 is not finite');
+          }
           y += nodeHeight + spacerSize;
 
           // apply the y scale on links
           for (const link of node.sourceLinks) {
             link.width = link.value * ky;
+            if (!isFinite(link.width)) {
+              throw new Error('width is not finite');
+            }
           }
         });
         for (const {sourceLinks, targetLinks} of nodes) {
@@ -384,7 +403,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
           const {dy, py, dx, value} = this;
 
           // normal calculation based on tallest column
-          let ky = min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value));
+          let ky = Math.max(0, min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value)));
           if (nodeHeight.max.enabled) {
             const maxCurrentHeight = max(nodesAndPlaceholders, value) * ky;
             if (nodeHeight.max.ratio) {
@@ -464,12 +483,11 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
               return this.getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders).pipe(
                 this.computeNodeHeights(nodesAndPlaceholders),
                 debug('computeNodeHeights'),
-                this.update.waitForUpdateWindow,
+                takeUntil(this.destroyed$),
                 // Calculate the nodes' and links' vertical position within their respective column
                 //     Also readjusts sankeyCircular size if circular links are needed, and node x's
                 tap(() => this.computeNodeBreadths(data, columns)),
                 debug('computeNodeBreadths'),
-                this.update.waitForUpdateWindow,
                 catchError(() => EMPTY),
                 this.layoutNodesWithinColumns(columns),
                 debug('layoutNodesWithinColumns'),
@@ -488,7 +506,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       // If refCount is true, the source will be unsubscribed from once the reference count drops to zero,
       // i.e. the inner ReplaySubject will be unsubscribed. All new subscribers will receive value emissions
       // from a new ReplaySubject which in turn will cause a new subscription to the source observable.
-      shareReplay({bufferSize: 1, refCount: true})
+      shareReplay({bufferSize: 1, refCount: true}),
+      takeUntil(this.destroyed$)
     );
   }
 
@@ -616,11 +635,11 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
     for (let i = 0; i < sourceIndex; i++) {
       const nestedLink = sourceLinks[i];
-      sourceY += nestedLink.multipleValues?.[0] ?? nestedLink.value;
+      sourceY += nestedLink.multipleValues?.[0] ?? nestedLink.value ?? 0;
     }
     for (let i = 0; i < targetIndex; i++) {
       const nestedLink = targetLinks[i];
-      targetY += nestedLink.multipleValues?.[1] ?? nestedLink.value;
+      targetY += nestedLink.multipleValues?.[1] ?? nestedLink.value ?? 0;
     }
 
     if (normalize) {
@@ -661,6 +680,16 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         sourceY1 = linkValue * valueScaler + sourceY0;
         targetY1 = linkValue * valueScaler + targetY0;
       }
+    }
+    if ([sourceX,
+      sourceY0,
+      sourceY1,
+      targetX,
+      targetY0,
+      targetY1,
+      sourceBezierX,
+      targetBezierX].some(isNaN)) {
+      console.log(sourceX, sourceY0, sourceY1, targetX, targetY0, targetY1, sourceBezierX, targetBezierX);
     }
     return {
       sourceX,

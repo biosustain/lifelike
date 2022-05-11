@@ -30,14 +30,6 @@ export class SankeyUpdateService {
     };
   });
 
-  waitForUpdateWindow = audit(graph =>
-    iif(
-      () => this.isDirty,
-      this.cleanup$,
-      of(graph)
-    )
-  );
-
   modified(element, data) {
     this._isDirty$.next(true);
   }

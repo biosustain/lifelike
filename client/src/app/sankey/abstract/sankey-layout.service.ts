@@ -243,11 +243,17 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       let y1 = y0;
       for (const link of node.sourceLinks) {
         link.y0 = y0 + link.width / 2;
+        if (!isFinite(link.y0)) {
+          throw new Error('Infinite link.y0');
+        }
         // noinspection JSSuspiciousNameCombination
         y0 += link.width;
       }
       for (const link of node.targetLinks) {
         link.y1 = y1 + link.width / 2;
+        if (!isFinite(link.y1)) {
+          throw new Error('Infinite link.y1');
+        }
         // noinspection JSSuspiciousNameCombination
         y1 += link.width;
       }
@@ -301,7 +307,7 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
     let current = new Set<Base['node']>(nodes);
     let next = new Set<Base['node']>();
