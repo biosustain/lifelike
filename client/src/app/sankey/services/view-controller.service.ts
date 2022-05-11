@@ -2,11 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map, tap, switchMap, first } from 'rxjs/operators';
-import { omit, transform, assign } from 'lodash-es';
+import { omit, transform, assign, mapValues, merge } from 'lodash-es';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { debug } from 'app/shared/rxjs/debug';
 
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
@@ -51,7 +50,11 @@ export class ViewControllerService {
   );
 
   selectView(networkTraceIdx, viewName) {
-    return this.common.patchState({networkTraceIdx, viewName});
+    return this.common.patchState(
+      {networkTraceIdx, viewName},
+      (delta, patch) =>
+        merge({}, mapValues(delta, () => null), patch)
+    );
   }
 
   registerLayout(layout: DefaultLayoutService) {

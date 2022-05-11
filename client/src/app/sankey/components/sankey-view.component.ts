@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, first, startWith, shareReplay } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, first, startWith, shareReplay, delay } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
 import { isNil, pick, flatMap } from 'lodash-es';
 
@@ -232,7 +232,13 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
-  selectView = (networkTraceIdx, viewName) => this.viewController.selectView(networkTraceIdx, viewName).toPromise();
+  selectView(networkTraceIdx, viewName) {
+    return this.baseView$.pipe(
+      first(),
+      tap(baseView => baseView.delta$.next({})),
+      switchMap(() => this.viewController.selectView(networkTraceIdx, viewName))
+    ).toPromise();
+  }
 
   traceAndViewNameAccessor = (networkTraceOrViewId, traceOrView) => {
     return this.applyOnNetworkTraceOrView(
@@ -330,15 +336,20 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   saveFile() {
     return this.sankeyFile$.pipe(
-      switchMap(sankeyFile => sankeyFile.save())
-    ).toPromise().then(
-      () => this.snackBar.open('File has been updated.', null, {
-        duration: 2000,
+      switchMap(sankeyFile => sankeyFile.save()),
+      delay(1000),
+      tap(() => {
+        this.snackBar.open('File has been updated.', null, {
+          duration: 2000,
+        });
       }),
-      () => this.snackBar.open('Error saving file.', null, {
-        duration: 2000,
+      catchError(() => {
+        this.snackBar.open('Error saving file.', null, {
+          duration: 2000,
+        });
+        return of();
       })
-    );
+    ).toPromise();
   }
 
   selectNetworkTrace = networkTraceIdx => this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
@@ -359,8 +370,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   selectNetworkTraceOrView(networkTraceOrViewIdx) {
     return this.applyOnNetworkTraceOrView(
       networkTraceOrViewIdx,
-      this.selectNetworkTrace,
-      this.selectView
+      this.selectNetworkTrace.bind(this),
+      this.selectView.bind(this)
     );
   }
 
