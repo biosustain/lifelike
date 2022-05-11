@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, ReplaySubject, Observable, EMPTY, merge as rxjs_merge, defer } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, omitBy } from 'lodash-es';
-import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, scan, filter } from 'rxjs/operators';
+import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, mapValues } from 'lodash-es';
+import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 
 import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
-import { $freezeInDev } from 'app/shared/rxjs/development';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -66,40 +65,48 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   data$ = new ReplaySubject<SankeyDocument>(1);
 
-  state$ = rxjs_merge(
-    this.delta$,
-    defer(() => this.view$).pipe(
-      switchMap(view =>
-        iif(
-          () => !isNil(view),
-          defer(() => of(getCommonState((view as View).state))),
-          defer(() => this.networkTrace$).pipe(
-            map(({sources, targets}) => ({
-              viewName: null,
-              alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
-              baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
-            })),
-            debug('state$ networkTrace update'),
-            shareReplay({bufferSize: 1, refCount: true})
-          )
-        )
-      ),
-      debug('state$ view update'),
-      shareReplay({bufferSize: 1, refCount: true})
+  state$ = this.delta$.pipe(
+    switchMap(delta =>
+      iif(
+        () => !isNil(delta.viewName) && !isNil(delta.networkTraceIdx),
+        this.data$.pipe(
+          map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
+          map(({views}) => views[delta.viewName]),
+          map(view => getCommonState((view as View).state)),
+          map(state => merge({}, state, delta))
+        ),
+        of(delta)
+      )
+    ),
+    map(delta => merge(
+      {},
+      {
+        networkTraceIdx: 0,
+        normalizeLinks: false,
+        prescalerId: PRESCALER_ID.none,
+        labelEllipsis: {
+          enabled: true,
+          value: LayoutService.labelEllipsis
+        },
+        fontSizeScale: 1.0
+      },
+      delta
+    )),
+    switchMap((delta: Partial<SankeyState>) =>
+      iif(
+        () => !isNil(delta.networkTraceIdx),
+        this.data$.pipe(
+          map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
+          map(({sources, targets}) => ({
+            alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
+            baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+          })),
+          map(state => merge({}, state, delta))
+        ),
+        of(delta)
+      )
     )
   ).pipe(
-    distinctUntilChanged(isEqual),
-    scan((state, delta) => merge({}, state, delta), {
-      networkTraceIdx: 0,
-      normalizeLinks: false,
-      prescalerId: PRESCALER_ID.none,
-      labelEllipsis: {
-        enabled: true,
-        value: LayoutService.labelEllipsis
-      },
-      fontSizeScale: 1.0
-    }),
-    map(state => omitBy(state, isNil)),
     debug('state$'),
     shareReplay({bufferSize: 1, refCount: true})
   );
@@ -405,11 +412,15 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   selectNetworkTrace(networkTraceIdx: number) {
-    return this.patchState({
-      networkTraceIdx,
-      baseViewName: null,
-      viewName: null,
-    });
+    return this.patchState(
+      {
+        networkTraceIdx,
+        baseViewName: null,
+        viewName: null,
+      },
+      (delta, patch) =>
+        merge({}, mapValues(delta, () => null), patch)
+    );
   }
 
   resetState() {

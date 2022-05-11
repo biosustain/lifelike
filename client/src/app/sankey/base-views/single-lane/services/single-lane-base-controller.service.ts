@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 
 import { flatMap, groupBy, intersection, merge, isEqual, isNil } from 'lodash-es';
 import { switchMap, map, shareReplay, distinctUntilChanged, scan } from 'rxjs/operators';
@@ -30,7 +30,7 @@ import { LINK_PALETTE_ID } from '../../multi-lane/color-palette';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SingleLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit {
+export class SingleLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit, OnDestroy {
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -41,11 +41,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   }
 
   viewBase = ViewBase.sankeySingleLane;
-
-  // parseDelta$ = this.delta$.pipe(
-  //   // @ts-ignore
-  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
-  // );
 
   state$ = rxjs_merge(
     this.delta$,
@@ -127,6 +122,15 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
+
+  // parseDelta$ = this.delta$.pipe(
+  //   // @ts-ignore
+  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
+  // );
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+  }
 
 
   // Trace logic

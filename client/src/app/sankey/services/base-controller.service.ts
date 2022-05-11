@@ -1,6 +1,6 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { Observable, of, iif, merge as rxjs_merge } from 'rxjs';
+import { Observable, of, iif, merge as rxjs_merge, Subject } from 'rxjs';
 import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/operators';
 import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
 
@@ -39,7 +39,7 @@ export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
  */
 @Injectable()
 export class BaseControllerService<Base extends TypeContext>
-  extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit {
+  extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit, OnDestroy {
 
   constructor(
     readonly common: ControllerService,
@@ -48,6 +48,8 @@ export class BaseControllerService<Base extends TypeContext>
   ) {
     super();
   }
+
+  destroy$ = new Subject<void>();
 
   fontSizeScale$: Observable<unknown>;
 
@@ -134,6 +136,10 @@ export class BaseControllerService<Base extends TypeContext>
   resolveView$ = this.common.view$.pipe(
     map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
   );
+
+  ngOnDestroy() {
+    this.destroy$.next();
+  }
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
