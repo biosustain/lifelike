@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, mapValues } from 'lodash-es';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 import { max } from 'd3';
 
@@ -414,15 +414,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   selectNetworkTrace(networkTraceIdx: number) {
-    return this.patchState(
-      {
-        networkTraceIdx,
-        baseViewName: null,
-        viewName: null,
-      },
-      (delta, patch) =>
-        merge({}, mapValues(delta, () => null), patch)
-    );
+    return this.setState({networkTraceIdx});
   }
 
   loadData(data: GraphFile) {
@@ -433,6 +425,15 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   resetState() {
     this.delta$.next({});
+  }
+
+  resetView() {
+    return this.setState(
+      {
+        networkTraceIdx: null,
+        viewName: null,
+      }
+    );
   }
 
   // Trace logic
