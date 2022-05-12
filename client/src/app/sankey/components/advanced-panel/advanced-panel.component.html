@@ -38,7 +38,7 @@
                    type="checkbox">
             Max shown label characters
             <input formControlName="value"
-                   max="50" min="0"
+                   [max]="maximumLabelLength$ | async" min="0"
                    ngbButton
                    type="range">
             {{ form.get('labelEllipsis.value').value }}

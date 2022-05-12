@@ -24,7 +24,11 @@
         </div>
         <div class="btn-group ml-1">
             <button (click)="saveView()" [disabled]="!object?.isEditable" class="btn btn-secondary"
-                    container="body" ngbTooltip="Save view" placement="bottom" type="button">
+                    container="body" ngbTooltip="Save View" placement="bottom" type="button">
+                <i class="fa fa-fw fa-save"></i>
+            </button>
+            <button (click)="saveViewAs()" [disabled]="!object?.isEditable" class="btn btn-secondary"
+                    container="body" ngbTooltip="Save View As" placement="bottom" type="button">
                 <i class="fa fa-fw fa-save"></i>
             </button>
         </div>
@@ -106,7 +110,7 @@
             </button>
         </ng-container>
         <button (click)="resetView()" class="btn btn-secondary" container="body"
-                ngbTooltip="Reset the view" placement="bottom"
+                ngbTooltip="Reset this view" placement="bottom"
                 type="button">
             <i class="fas fa-sync"></i>
         </button>
@@ -144,12 +148,6 @@
                     ngbTooltip="Zoom Out" placement="bottom"
                     type="button">
                 <i class="fas fa-search-minus"></i>
-            </button>
-        </div>
-        <div *ngIf="update.isAwaited" class="btn-group d-inline-block" title="Apply updates">
-            <button (click)="update.reset()"
-                    class="btn btn-primary">
-                <i class="fas fa-sync-alt"></i> Apply updates
             </button>
         </div>
         <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"
