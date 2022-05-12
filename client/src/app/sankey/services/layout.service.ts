@@ -86,6 +86,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     protected readonly update: SankeyUpdateService
   ) {
     super(truncatePipe);
+    this.extent$.subscribe(this.update.viewPort$);
   }
 
   destroyed$ = new Subject();
@@ -154,10 +155,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   takeUntilViewChange = takeUntil(this.baseView.common.view$);
 
   private calculateLayout$;
-
-  resetDirty() {
-    this.update.reset();
-  }
 
   ngOnDestroy() {
     this.destroyed$.next();

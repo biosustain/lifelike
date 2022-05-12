@@ -157,7 +157,7 @@ export class SankeySearchService {
         map(focusIdx => preprocessedMatches[focusIdx]),
         filter(searchFocus => Boolean(searchFocus)),
         switchMap(searchFocus =>
-          this.common.patchState({
+          this.common.setState({
             networkTraceIdx: searchFocus.networkTraceIdx
           }).pipe(
             map(() => searchFocus)

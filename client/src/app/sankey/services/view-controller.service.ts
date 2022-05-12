@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map, tap, switchMap, first } from 'rxjs/operators';
-import { omit, transform, assign, mapValues, merge } from 'lodash-es';
+import { omit, transform, assign } from 'lodash-es';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -11,6 +11,7 @@ import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
 import { SankeyNode, SankeyLink } from '../model/sankey-document';
+import { SankeyUpdateService } from './sankey-update.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -22,7 +23,8 @@ import { SankeyNode, SankeyLink } from '../model/sankey-document';
 export class ViewControllerService {
   constructor(
     private common: ControllerService,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    protected readonly update: SankeyUpdateService
   ) {
   }
 
@@ -50,11 +52,7 @@ export class ViewControllerService {
   );
 
   selectView(networkTraceIdx, viewName) {
-    return this.common.patchState(
-      {networkTraceIdx, viewName},
-      (delta, patch) =>
-        merge({}, mapValues(delta, () => null), patch)
-    );
+    return this.common.setState({networkTraceIdx, viewName});
   }
 
   registerLayout(layout: DefaultLayoutService) {
@@ -68,9 +66,9 @@ export class ViewControllerService {
   }
 
   openBaseView(baseViewName: ViewBase): Observable<any> {
-    return this.common.patchState({
-      baseViewName,
-      viewName: null
+    return this.common.setState({
+      networkTraceIdx: null,
+      baseViewName
     });
   }
 
@@ -106,7 +104,7 @@ export class ViewControllerService {
         tap(networkTrace => networkTrace.addView(viewName, view))
       )),
       tap(() => this.common.viewsUpdate$.next()),
-      switchMap(() => this.common.patchState({viewName}))
+      switchMap(() => this.common.setState({viewName}))
     );
   }
 
@@ -116,14 +114,10 @@ export class ViewControllerService {
       tap(networkTrace => networkTrace.deleteView(viewName)),
       tap(views => this.common.viewsUpdate$.next(viewName)),
       // If the deleted view is the current view, switch from it
-      switchMap(() => this.common.patchState(
-        {viewName: null},
-        (delta, patch) =>
-          delta.viewName === viewName && {
-            ...delta,
-            viewName: null
-          }
-      )),
+      switchMap(() => this.common.reduceState(
+        state =>
+          state.viewName === viewName ? omit(state, 'viewName') : state
+      ))
     );
   }
 }

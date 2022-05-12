@@ -572,18 +572,16 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   resetView() {
-    this.sankeyController.data$.pipe(
-      first(),
-      // tap(data => this.sankeyController.data = data)
-    ).toPromise();
-    this.sankeyController.delta$.next({});
-    this.baseViewContext$.pipe(
-      first(),
-      tap(({baseView, layout, selection}) => {
-        baseView.delta$.next({});
-        selection.reset();
-      })
-    ).subscribe();
+    combineLatest([
+      this.sankeyController.resetView(),
+      this.baseViewContext$.pipe(
+        first(),
+        tap(({baseView, layout, selection}) => {
+          baseView.delta$.next({});
+          selection.reset();
+        })
+      )
+    ]).toPromise();
     this.resetZoom();
   }
 
