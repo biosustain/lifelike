@@ -1,4 +1,4 @@
-.github/
+.githooks/
 dist/
 node_modules/
 
