@@ -33,6 +33,7 @@ export class SankeyAdvancedPanelComponent
   });
 
   prescalers$ = this.common.prescalers$;
+  maximumLabelLength$ = this.common.maximumLabelLength$;
   aligns$ = this.common.aligns$;
 
   ngOnInit() {

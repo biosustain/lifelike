@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
 import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, mapValues } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { max } from 'd3';
 
 import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
@@ -326,6 +327,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
+  maximumLabelLength$ = unifiedSingularAccessor(this.options$, 'maximumLabelLength');
   aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
   linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
   linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
@@ -524,12 +526,17 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     );
   }
 
+  private findMaximumLabelLength(nodes: SankeyNode[]) {
+    return max(nodes, ({label = ''}) => label.length);
+  }
+
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
       networkTraces: graph.traceNetworks,
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
-      nodeValueAccessors: this.extractNodeValueProperties({nodes, graph})
+      nodeValueAccessors: this.extractNodeValueProperties({nodes, graph}),
+      maximumLabelLength: this.findMaximumLabelLength(nodes)
     };
   }
 
