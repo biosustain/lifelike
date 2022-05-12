@@ -65,13 +65,13 @@ import { AttributeAccessors } from '../utils/attribute-accessors';
 import { ErrorMessages } from '../constants/error';
 import { SankeyLink, SankeyNode } from '../model/sankey-document';
 
-interface Horizontal {
+export interface Horizontal {
   width: number;
   x0: number;
   x1: number;
 }
 
-interface Vertical {
+export interface Vertical {
   height: number;
   y0: number;
   y1: number;
@@ -285,20 +285,20 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       source.sourceLinks.push(link);
       target.targetLinks.push(link);
     }
-    if (this.linkSort) {
-      const relatedNodes = links.reduce(
-        (o, {source, target}) => {
-          o.add(source);
-          o.add(target);
-          return o;
-        },
-        new Set()
-      );
-      for (const {sourceLinks, targetLinks} of relatedNodes) {
-        sourceLinks.sort(this.linkSort);
-        targetLinks.sort(this.linkSort);
-      }
-    }
+    // if (this.linkSort) {
+    //   const relatedNodes = links.reduce(
+    //     (o, {source, target}) => {
+    //       o.add(source);
+    //       o.add(target);
+    //       return o;
+    //     },
+    //     new Set()
+    //   );
+    //   for (const {sourceLinks, targetLinks} of relatedNodes) {
+    //     sourceLinks.sort(this.linkSort);
+    //     targetLinks.sort(this.linkSort);
+    //   }
+    // }
   }
 
   /**
@@ -307,7 +307,7 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
     let current = new Set<Base['node']>(nodes);
     let next = new Set<Base['node']>();

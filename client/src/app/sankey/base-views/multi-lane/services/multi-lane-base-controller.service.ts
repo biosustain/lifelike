@@ -73,7 +73,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
         map(({predefinedValueAccessors}) =>
           this.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId])
         ),
-        map(state => merge({}, state, delta))
+        map(state => merge({}, delta, state))
       )
     )
   ).pipe(

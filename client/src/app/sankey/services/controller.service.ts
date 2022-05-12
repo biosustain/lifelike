@@ -8,6 +8,7 @@ import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-typ
 import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
+import { $freezeInDev } from 'app/shared/rxjs/development';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -18,23 +19,11 @@ import { StateControlAbstractService } from '../abstract/state-control.service';
 import { getCommonState } from '../utils/stateLevels';
 import { ErrorMessages } from '../constants/error';
 import { PRESCALER_ID, Prescaler } from '../interfaces/prescalers';
-import {
-  MultiValueAccessor,
-  PREDEFINED_VALUE,
-  LINK_VALUE_GENERATOR,
-  NODE_VALUE_GENERATOR,
-  LINK_PROPERTY_GENERATORS
-} from '../interfaces/valueAccessors';
-import { SankeyViews, SankeyView } from '../interfaces/view';
+import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR, NODE_VALUE_GENERATOR, LINK_PROPERTY_GENERATORS } from '../interfaces/valueAccessors';
+import { SankeyViews } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
 import { SankeyDocument, TraceNetwork, SankeyNode, View } from '../model/sankey-document';
-
-export const customisedMultiValueAccessorId = 'Customised';
-
-export const customisedMultiValueAccessor = {
-  description: customisedMultiValueAccessorId
-} as MultiValueAccessor;
 
 /**
  * Reducer pipe
@@ -63,7 +52,23 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  data$ = new ReplaySubject<SankeyDocument>(1);
+  views$ = this.networkTrace$.pipe(
+    switchMap(trace => trace.views$),
+    debug('views$'),
+    shareReplay<Record<string, View>>(1)
+  );
+  /**
+   * Returns active view or null if no view is active
+   */
+  view$ = this.views$.pipe(
+    switchMap(views => this.viewName$.pipe(
+      map(viewName => views[viewName as string] ?? null),
+    )),
+    distinctUntilChanged(),
+    debug('view'),
+    shareReplay<View>(1)
+  );
+  private _data$ = new ReplaySubject<GraphFile>(1);
 
   state$ = this.delta$.pipe(
     switchMap(delta =>
@@ -197,24 +202,16 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   });
 
   networkTrace$ = this.optionStateAccessor<TraceNetwork>('networkTraces', 'networkTraceIdx');
-
-  views$ = this.networkTrace$.pipe(
-    switchMap(trace => trace.views$),
-    debug('views$'),
-    shareReplay<SankeyViews>(1)
+  data$ = this._data$.pipe(
+    $freezeInDev,
+    map(file => new SankeyDocument(file)),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
-  /**
-   * Returns active view or null if no view is active
-   */
-  view$ = this.views$.pipe(
-    switchMap(views => this.viewName$.pipe(
-      map(viewName => views[viewName as string] ?? null),
-    )),
-    distinctUntilChanged(),
-    debug('view'),
-    shareReplay<SankeyView>(1)
-  );
+  // Using setter on private property to ensure that nobody subscribes to raw data
+  set data(data: GraphFile) {
+    this._data$.next(data);
+  }
 
   oneToMany$ = this.networkTrace$.pipe(
     map(({sources, targets}) =>
@@ -421,6 +418,12 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       (delta, patch) =>
         merge({}, mapValues(delta, () => null), patch)
     );
+  }
+
+  loadData(data: GraphFile) {
+    // this.preprocessData(data);
+    this.data = data;
+    return of(true);
   }
 
   resetState() {

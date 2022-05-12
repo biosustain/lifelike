@@ -32,10 +32,7 @@ export class SankeySingleLaneAdvancedPanelComponent
       }),
       max: this.formBuilder.group({
         enabled: [false, []],
-        ratio: [{
-          value: 0,
-          disabled: true
-        }, []],
+        ratio: [0, []],
       }),
     }),
     linkValueAccessorId: [undefined, []],
