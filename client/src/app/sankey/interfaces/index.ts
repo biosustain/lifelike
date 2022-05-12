@@ -33,6 +33,7 @@ export interface SankeyFileOptions {
   nodeValueAccessors: NodeValueAccessor;
   linkValueAccessors: LinkValueAccessor;
   predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
+  maximumLabelLength: number;
 }
 
 export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;

@@ -34,6 +34,8 @@ import { MimeTypes } from 'app/shared/constants';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -188,6 +190,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     private viewController: ViewControllerService,
     private search: SankeySearchService,
     public update: SankeyUpdateService,
+    private readonly messageDialog: MessageDialog,
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -464,13 +467,32 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
             header: 'View already exists',
             body: `View ${viewName} already exists. Do you want to overwrite it?`
           })),
-          of(true)
+          // of(true)
+          // As of Tim requirement ensure that view name is unique in file.
+          this.sankeyController.networkTraces$.pipe(
+            first(),
+            switchMap(networkTraces =>
+              iif(
+                () => networkTraces.some(nt => nt.views?.[viewName]),
+                defer(() => this.messageDialog.display({
+                  title: 'View name is not unique',
+                  message: 'View name needs to be unique across all trace networks.',
+                  type: MessageType.Error,
+                })).pipe(
+                  tap(() => {
+                    throw new Error('View name is not unique');
+                  })
+                ),
+                of(true)
+              )
+            )
+          )
         )
       ),
       switchMap(overwrite =>
         iif(
           () => overwrite,
-          this.viewController.createView(viewName),
+          defer(() => this.viewController.createView(viewName)),
           of(false)
         )
       )
@@ -478,11 +500,25 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   saveView(): Promise<any> {
-    const createDialog = this.modalService.open(
+    return this.viewController.activeViewName$.pipe(
+      first(),
+      switchMap(viewName =>
+        iif(
+          () => viewName,
+          defer(() => this.viewController.createView(viewName)),
+          defer(() => this.saveViewAs())
+        )
+      )
+    ).toPromise();
+  }
+
+  saveViewAs(): Promise<any> {
+    const dialogRef = this.modalService.open(
       SankeyViewCreateComponent,
       {ariaLabelledBy: 'modal-basic-title'}
     );
-    return createDialog.result.then(({viewName}) => this.confirmCreateView(viewName).toPromise());
+    dialogRef.componentInstance.accept = ({viewName}) => this.confirmCreateView(viewName).toPromise();
+    return dialogRef.result;
   }
 
   openBaseView(baseViewName: ViewBase): Promise<any> {
