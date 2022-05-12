@@ -1,10 +1,9 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
 import { Observable, of, iif, merge as rxjs_merge, Subject } from 'rxjs';
-import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/operators';
+import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
 import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
 
-import { isNotEmpty } from 'app/shared/utils';
 import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
@@ -14,7 +13,6 @@ import { debug } from 'app/shared/rxjs/debug';
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
 import { SankeyNodeHeight } from '../base-views/interfaces';
-import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { getBaseState } from '../utils/stateLevels';
@@ -190,8 +188,6 @@ export class BaseControllerService<Base extends TypeContext>
         'predefinedValueAccessorId'
       ).pipe(
         map(predefinedValueAccessorId =>
-          predefinedValueAccessorId === customisedMultiValueAccessorId ?
-            customisedMultiValueAccessor :
             predefinedValueAccessors[predefinedValueAccessorId]
         )))
     );
@@ -217,24 +213,24 @@ export class BaseControllerService<Base extends TypeContext>
         )),
         debug<Partial<Base['state']>>('predefinedValueAccessorId change')
       ),
-      this.delta$.pipe(
-        map(this.pickPartialAccessors),
-        distinctUntilChanged(isEqual),
-        filter(isNotEmpty),
-        // here we are sensing change of (node|link)ValueAccessorId
-        // usually we just change one of them so we need to preserve state for the other one
-        switchMap(delta => this.state$.pipe(
-            first(),
-            map(this.pickPartialAccessors),
-            map(state => merge(
-              {predefinedValueAccessorId: customisedMultiValueAccessorId},
-              state,
-              delta
-            ))
-          )
-        ),
-        debug<Partial<Base['state']>>('partialAccessors change')
-      )
+      // this.delta$.pipe(
+      //   map(this.pickPartialAccessors),
+      //   distinctUntilChanged(isEqual),
+      //   filter(isNotEmpty),
+      //   // here we are sensing change of (node|link)ValueAccessorId
+      //   // usually we just change one of them so we need to preserve state for the other one
+      //   switchMap(delta => this.state$.pipe(
+      //       first(),
+      //       map(this.pickPartialAccessors),
+      //       map(state => merge(
+      //         {predefinedValueAccessorId: customisedMultiValueAccessorId},
+      //         state,
+      //         delta
+      //       ))
+      //     )
+      //   ),
+      //   debug<Partial<Base['state']>>('partialAccessors change')
+      // )
     ).pipe(
       distinctUntilChanged(isEqual)
     );

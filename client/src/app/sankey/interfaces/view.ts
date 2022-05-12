@@ -1,11 +1,20 @@
-import { GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
 import { RecursivePartial } from 'app/shared/schemas/common';
 
-import { SankeyState, ViewBase } from './index';
+import { SankeyState } from './index';
 
-export type SankeyLinksOverwrites = Record<string, Partial<GraphLink>>;
+export type SankeyLinksOverwrites = Record<string, SavedLinkProperties>;
 
-export type SankeyNodesOverwrites = Record<string, Partial<GraphNode>>;
+interface SavedNodeProperties {
+  y0: number;
+  x0: number;
+  order: number;
+}
+
+interface SavedLinkProperties {
+  order: number;
+}
+
+export type SankeyNodesOverwrites = Record<string, SavedNodeProperties>;
 
 export interface ViewSize {
   width: number;

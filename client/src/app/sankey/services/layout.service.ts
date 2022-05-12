@@ -2,8 +2,8 @@ import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
 import { merge, omit, isNil, clone, range } from 'lodash-es';
-import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil, catchError } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable } from 'rxjs';
+import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil, catchError, first } from 'rxjs/operators';
+import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -19,9 +19,9 @@ import { normalizeGenerator } from '../utils';
 import { SankeyAbstractLayoutService, LayoutData } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
-import { Prescaler } from '../interfaces/prescalers';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
 import { SankeyUpdateService } from './sankey-update.service';
+import { View, SankeyNode } from '../model/sankey-document';
 
 interface LayerPlaceholder {
   layer: number;
@@ -130,24 +130,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
     // ensure no calculation of view if base view changed
     takeUntil(this.destroyed$),
-    // todo temporary fixes needs to work but do not know how to make it better
-    startWith(undefined),
-    pairwise(),
-    map(([previousView, view]) => {
-      // reset zoom adjustments after leaving the view
-      if (!isNil(previousView) && isNil(view)) {
-        this.zoomAdjustment$.next({zoom: 1});
-      }
-      return view;
-    }),
     // temporary fixes end
-    switchMap(view =>
-      iif(
-        () => isNil(view),
-        this.calculateLayout$,
-        this.recreateLayout(view)
-      )
-    ),
+    switchMap(view => this.calculateLayout$),
     debug('graph$'),
     shareReplay<Base['data']>(1),
     takeUntil(this.destroyed$)
@@ -230,10 +214,10 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     return combineLatest([
       this.baseView.nodeValueAccessor$,
       this.baseView.linkValueAccessor$,
-      this.baseView.common.prescaler$
+      // this.baseView.common.prescaler$
     ]).pipe(
-      filter<[ValueGenerator<Base>, ValueGenerator<Base>, Prescaler]>(params => params.every(param => !!param)),
-      tap(([nodeValueAccessor, linkValueAccessor, prescaler]) => {
+      filter<[ValueGenerator<Base>, ValueGenerator<Base>]>(params => params.every(param => !!param)),
+      tap(([nodeValueAccessor, linkValueAccessor]) => {
 
         const preprocessedLinks = linkValueAccessor.preprocessing.call(this, data) ?? {};
         const preprocessedNodes = nodeValueAccessor.preprocessing.call(this, data) ?? {};
@@ -250,15 +234,15 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
         let minValue = data.nodes.reduce((m, n) => {
           if (n.value !== undefined) {
-            n.value = prescaler.fn(n.value);
+            // n.value = prescaler.fn(n.value);
             return Math.min(m, n.value);
           }
           return m;
         }, 0);
         minValue = data.links.reduce((m, l) => {
-          l.value = prescaler.fn(l.value);
+          // l.value = prescaler.fn(l.value);
           if (l.multipleValues) {
-            l.multipleValues = l.multipleValues.map(prescaler.fn) as [number, number];
+            // l.multipleValues = l.multipleValues.map(prescaler.fn) as [number, number];
             return Math.min(m, ...l.multipleValues);
           }
           return Math.min(m, l.value);
@@ -377,21 +361,35 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
             throw new Error('y1 is not finite');
           }
           y += nodeHeight + spacerSize;
-
           // apply the y scale on links
-          for (const link of node.sourceLinks) {
-            link.width = link.value * ky;
-            if (!isFinite(link.width)) {
-              throw new Error('width is not finite');
-            }
-          }
+          // for (const link of node.sourceLinks) {
+          //   link.width = link.value * ky;
+          //   if (!isFinite(link.width)) {
+          //     throw new Error('width is not finite');
+          //   }
+          // }
         });
-        for (const {sourceLinks, targetLinks} of nodes) {
-          sourceLinks.sort(this.linkSort);
-          targetLinks.sort(this.linkSort);
-        }
       })
     );
+  }
+
+  sortNodesLinks(nodes) {
+    for (const {sourceLinks, targetLinks} of nodes) {
+      sourceLinks.sort(this.linkSort);
+      targetLinks.sort(this.linkSort);
+    }
+  }
+
+  computeLinksWidth({links}) {
+    return tap(({ky}) => {
+      const {value: valueAccessor} = this;
+      for (const link of links) {
+        link.width = link.value * ky;
+        if (!isFinite(link.width)) {
+          throw new Error('width is not finite');
+        }
+      }
+    });
   }
 
   getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders: NodeColumns<Base>) {
@@ -400,30 +398,29 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       this.vertical$
     ]).pipe(
       map(([nodeHeight, {height, y0, y1}]) => {
-          const {dy, py, dx, value} = this;
+        const {dy, py, dx, value} = this;
 
-          // normal calculation based on tallest column
-          let ky = Math.max(0, min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value)));
-          if (nodeHeight.max.enabled) {
-            const maxCurrentHeight = max(nodesAndPlaceholders, value) * ky;
-            if (nodeHeight.max.ratio) {
-              const maxScaling = dx * nodeHeight.max.ratio / maxCurrentHeight;
-              if (maxScaling < 1) {
-                ky *= maxScaling;
-              }
+        // normal calculation based on tallest column
+        let ky = Math.max(0, min(columnsWithLinkPlaceholders, c => (height - (c.length - 1) * py) / sum(c, value)));
+        if (nodeHeight.max.enabled) {
+          const maxCurrentHeight = max(nodesAndPlaceholders, value) * ky;
+          if (nodeHeight.max.ratio) {
+            const maxScaling = dx * nodeHeight.max.ratio / maxCurrentHeight;
+            if (maxScaling < 1) {
+              ky *= maxScaling;
             }
           }
-          return {
-            ky,
-            height,
-            y0,
-            y1,
-            nodeHeight,
-            // readjust py for current context
-            py: Math.min(dy, height / (max(columnsWithLinkPlaceholders, (c: Array<any>) => c.length) - 1))
-          } as VerticalContext;
         }
-      ),
+        return {
+          ky,
+          height,
+          y0,
+          y1,
+          nodeHeight,
+          // readjust py for current context
+          py: Math.min(dy, height / (max(columnsWithLinkPlaceholders, (c: Array<any>) => c.length) - 1))
+        } as VerticalContext;
+      }),
       debug('setVerticalLayoutParams')
     );
   }
@@ -433,7 +430,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       map(align => {
         const {dx} = this;
         const {nodes} = data as LayoutData;
-        const x = max(nodes, d => d.depth) + 1; // Don't use Array.fill([]) as it will just copy ref to the same []
+        const x = max(nodes, d => d.depth) + 1;
+        // Don't use Array.fill([]) as it will just copy ref to the same []
         const columns: Base['node'][][] = new Array(x).fill(undefined).map(() => []);
         for (const node of nodes) {
           const i = Math.max(0, Math.min(x - 1, Math.floor(align.fn.call(null, node, x))));
@@ -451,6 +449,57 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         };
       })
     );
+  }
+
+  loadNodesPositionFromView(verticalContext, data, view: View) {
+    return this.horizontal$.pipe(
+      // calculate width change ratio for repositioning of the nodes
+      startWith({} as any),
+      pairwise(),
+      map(([prevHorizontal, horizontalContext], callIndex) => {
+        if (callIndex === 0) {
+          // Absolute node positioning
+          const sy = verticalContext.height / view.size.height;
+          const sx = horizontalContext.width / view.size.width;
+          // for faster lookup
+          const entityById = new Map<string, SankeyNode>(data.nodes.map((d, i) => [String(d.id), d]));
+          Object.entries(view.nodes).map(([id, {y0, x0, order}]) => {
+            const entity = entityById.get(id);
+            if (entity) {
+              entity.y0 = y0 * sy;
+              entity.x0 = x0 * sx;
+              entity.y1 = entity.y0 + entity.height;
+              entity.x1 = entity.x0 + this.dx;
+              entity.order = order;
+            } else {
+              this.warningController.warn(ErrorMessages.missingEntity(id));
+            }
+          });
+        } else {
+          const prevWidth = prevHorizontal?.width ?? horizontalContext.width;
+          const widthChangeRatio = horizontalContext.width / prevWidth;
+
+          // Relative node positioning (to preserve draged node position)
+          this.repositionNodesHorizontaly(data, horizontalContext, widthChangeRatio);
+        }
+        return verticalContext;
+      })
+    );
+  }
+
+  loadLinkOrderFromView(data, view: View) {
+    return tap(() => {
+      // for faster lookup
+      const entityById = new Map<string, SankeyNode>(data.links.map((d, i) => [String(d.id), d]));
+      Object.entries(view.links).map(([id, {order}]) => {
+        const entity = entityById.get(id);
+        if (entity) {
+          entity.order = order;
+        } else {
+          this.warningController.warn(ErrorMessages.missingEntity(id));
+        }
+      });
+    });
   }
 
   onInit(): void {
@@ -484,22 +533,44 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                 this.computeNodeHeights(nodesAndPlaceholders),
                 debug('computeNodeHeights'),
                 takeUntil(this.destroyed$),
-                // Calculate the nodes' and links' vertical position within their respective column
-                //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-                tap(() => this.computeNodeBreadths(data, columns)),
-                debug('computeNodeBreadths'),
-                catchError(() => EMPTY),
-                this.layoutNodesWithinColumns(columns),
-                debug('layoutNodesWithinColumns'),
-                this.computeLinkBreadths(nodesAndPlaceholders),
-                debug('computeLinkBreadths'),
+                switchMap(verticalContext => this.baseView.common.view$.pipe(
+                  first(),
+                  switchMap(view =>
+                    iif(
+                      () => isNil(view),
+                      of(verticalContext).pipe(
+                        // Calculate the nodes' and links' vertical position within their respective column
+                        //     Also readjusts sankeyCircular size if circular links are needed, and node x's
+                        tap(() => this.computeNodeBreadths(data, columns)),
+                        debug('computeNodeBreadths'),
+                        catchError(() => EMPTY),
+                        this.layoutNodesWithinColumns(columns),
+                        debug('layoutNodesWithinColumns')
+                      ),
+                      this.loadNodesPositionFromView(verticalContext, data, view).pipe(
+                        this.loadLinkOrderFromView(data, view)
+                      )
+                    )
+                  ),
+                  tap(() => this.sortNodesLinks(data.nodes)),
+                  this.computeLinksWidth(data),
+                  this.computeLinkBreadths(nodesAndPlaceholders),
+                  debug('computeLinkBreadths'),
+                )),
+                switchMap(verticalContext => this.baseView.common.view$.pipe(
+                  first(),
+                  switchMap(view =>
+                    iif(
+                      () => isNil(view),
+                      of(data).pipe(this.positionNodes(x)),
+                      of(data)
+                    )
+                  )
+                )),
+                debug('positionNodes')
               );
-            }),
-            map(verticalContext => data),
-            this.positionNodes(x),
-            debug('positionNodes'),
-          )
-        )
+            })
+          ))
       )),
       debug('calculateLayout'),
       // IMPORTANT!
@@ -591,7 +662,34 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       }),
       this.computeNodeLinks,
       // Adjust the zoom so view fits into viewport
-      this.adjustViewToViewport(view)
+      this.adjustViewToViewport(view),
+      switchMap(data => this.baseView.nodeHeight$.pipe(
+        map((nodeHeight) => {
+          let ky = 1;
+          if (nodeHeight.max.enabled) {
+            const maxSetNodeHeight = nodeHeight.max.ratio + this.dx;
+            const maxNodeHeight = max(data.nodes, node => node.height);
+            if (maxNodeHeight > maxSetNodeHeight) {
+              ky = maxSetNodeHeight / maxNodeHeight;
+            }
+          }
+          for (const node of data.nodes) {
+            if (nodeHeight.min.enabled && nodeHeight.min.value) {
+              node.height = Math.max(node.height * ky, nodeHeight.min.value);
+            } else {
+              node.height = node.height * ky;
+            }
+          }
+        }),
+        map(verticalContext => data),
+        tap(({nodes}) =>
+          nodes.forEach(node => {
+            const nodeY = (node.y1 - node.y0) / 2 + node.y0;
+            node.y0 = nodeY - node.height / 2;
+            node.y1 = nodeY + node.height / 2;
+          })
+        )
+      ))
     );
   }
 
@@ -730,7 +828,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     (a.source.order - b.source.order) ||
     (a.target.order - b.target.order) ||
     (a.order - b.order)
-  );
+  )
 
   /**
    * Iterate over nodes and recursively reiterate on the ones they are connecting to.
@@ -738,7 +836,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
     let current = new Set<Base['node']>(nodes);
     let next = new Set<Base['node']>();
