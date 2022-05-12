@@ -87,8 +87,19 @@ def data_upgrades():
 
             # Create a new, properly compressed zip file
             zip_bytes = BytesIO()
-            with zipfile.ZipFile(zip_bytes, 'x', zipfile.ZIP_DEFLATED) as zip_file:
-                zip_file.writestr('graph.json', byte_graph)
+            with zipfile.ZipFile(zip_bytes, 'x', zipfile.ZIP_DEFLATED) as compressed_zip_file:
+                compressed_zip_file.writestr('graph.json', byte_graph)
+
+                for node in map_json['nodes']:
+                    if node.get('image_id', None) is not None:
+                        image_name = "".join(['images/', node.get('image_id'), '.png'])
+                        try:
+                            image_bytes = uncompressed_zip_file.read(image_name)
+                        except KeyError:
+                            # For some reason there was a node with an image id, but no
+                            # corresponding image file
+                            continue
+                        compressed_zip_file.writestr(image_name, image_bytes)
 
             # Create the file_content update mapping object, and add it to the list of updates
             new_bytes = zip_bytes.getvalue()
