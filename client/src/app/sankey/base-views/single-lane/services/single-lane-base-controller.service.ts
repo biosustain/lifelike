@@ -1,8 +1,8 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, isEqual, isNil } from 'lodash-es';
-import { switchMap, map, shareReplay, distinctUntilChanged, scan } from 'rxjs/operators';
-import { of, Observable, combineLatest, merge as rxjs_merge, defer, iif } from 'rxjs';
+import { flatMap, groupBy, intersection, merge, isNil } from 'lodash-es';
+import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { of, Observable, defer, iif } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -17,11 +17,10 @@ import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { inputCount } from '../algorithms/linkValues';
-import { SankeySingleLaneState, Base } from '../interfaces';
+import { Base } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 import { getBaseState } from '../../../utils/stateLevels';
-import { SankeyView } from '../../../interfaces/view';
-import { LINK_PALETTE_ID } from '../../multi-lane/color-palette';
+import { View } from '../../../model/sankey-document';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -42,47 +41,48 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   viewBase = ViewBase.sankeySingleLane;
 
-  state$ = rxjs_merge(
-    this.delta$,
-    defer(() => this.state$).pipe(
-      map(({predefinedValueAccessorId}) => predefinedValueAccessorId),
-      distinctUntilChanged(),
-      switchMap(predefinedValueAccessorId => this.common.options$.pipe(
-        map(({predefinedValueAccessors}) => ({
-          predefinedValueAccessorId,
-          ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
-        }))
-      )),
-      shareReplay({bufferSize: 1, refCount: true})
+  state$ = this.delta$.pipe(
+    switchMap(delta =>
+      this.common.view$.pipe(
+        switchMap(view =>
+          iif(
+            () => !isNil(view),
+            defer(() => of(getBaseState((view as View).state))),
+            of({})
+          )
+        ),
+        map(state => merge({}, state, delta))
+      )
     ),
-    defer(() => this.common.view$).pipe(
-      switchMap(view =>
-        iif(
-          () => !isNil(view),
-          defer(() => of(getBaseState((view as SankeyView).state)))
-        )
-      ),
-      shareReplay({bufferSize: 1, refCount: true})
+    map(delta => merge(
+      {},
+      {
+        highlightCircular: true,
+        colorLinkByType: false,
+        nodeHeight: {
+          min: {
+            enabled: true,
+            value: 4
+          },
+          max: {
+            enabled: true,
+            ratio: 2
+          }
+        },
+        predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
+      },
+      delta
+    )),
+    switchMap(delta => this.common.options$.pipe(
+        map(({predefinedValueAccessors}) =>
+          this.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId])
+        ),
+        map(state => merge({}, delta, state))
+      )
     )
   ).pipe(
-    scan((state, delta) => merge({}, state, delta), {
-      highlightCircular: true,
-      colorLinkByType: false,
-      nodeHeight: {
-        min: {
-          enabled: true,
-          value: 4
-        },
-        max: {
-          enabled: true,
-          ratio: 2
-        }
-      },
-      predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
-    }),
-    distinctUntilChanged(isEqual),
     debug('SingleLaneBaseControllerService.state$'),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay<Base['state']>({bufferSize: 1, refCount: true})
   );
 
   highlightCircular$ = this.stateAccessor('highlightCircular');

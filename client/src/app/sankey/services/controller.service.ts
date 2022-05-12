@@ -52,22 +52,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  views$ = this.networkTrace$.pipe(
-    switchMap(trace => trace.views$),
-    debug('views$'),
-    shareReplay<Record<string, View>>(1)
-  );
-  /**
-   * Returns active view or null if no view is active
-   */
-  view$ = this.views$.pipe(
-    switchMap(views => this.viewName$.pipe(
-      map(viewName => views[viewName as string] ?? null),
-    )),
-    distinctUntilChanged(),
-    debug('view'),
-    shareReplay<View>(1)
-  );
   private _data$ = new ReplaySubject<GraphFile>(1);
 
   state$ = this.delta$.pipe(
@@ -138,6 +122,12 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     distinctUntilChanged()
   );
 
+  data$ = this._data$.pipe(
+    $freezeInDev,
+    map(file => new SankeyDocument(file)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
   /**
    * Observable of current view options
    * based on currently loaded data and choosen base view
@@ -152,7 +142,26 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     shareReplay<SankeyOptions>(1)
   );
 
+  networkTrace$ = this.optionStateAccessor<TraceNetwork>('networkTraces', 'networkTraceIdx');
+
   networkTraces$ = unifiedSingularAccessor(this.options$, 'networkTraces');
+
+  views$ = this.networkTrace$.pipe(
+    switchMap(trace => trace.views$),
+    debug('views$'),
+    shareReplay<Record<string, View>>(1)
+  );
+  /**
+   * Returns active view or null if no view is active
+   */
+  view$ = this.views$.pipe(
+    switchMap(views => this.viewName$.pipe(
+      map(viewName => views[viewName as string] ?? null),
+    )),
+    distinctUntilChanged(),
+    debug('view'),
+    shareReplay<View>(1)
+  );
 
   viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
   fontSizeScale$ = this.stateAccessor('fontSizeScale');
@@ -201,12 +210,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     prescalers
   });
 
-  networkTrace$ = this.optionStateAccessor<TraceNetwork>('networkTraces', 'networkTraceIdx');
-  data$ = this._data$.pipe(
-    $freezeInDev,
-    map(file => new SankeyDocument(file)),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
 
   // Using setter on private property to ensure that nobody subscribes to raw data
   set data(data: GraphFile) {
