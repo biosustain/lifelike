@@ -1,5 +1,5 @@
 import { Observable, ReplaySubject, Subject, of, iif } from 'rxjs';
-import { merge, omitBy, isNil, partial } from 'lodash-es';
+import { merge, omitBy, isNil, partial, assignWith } from 'lodash-es';
 import { switchMap, map, shareReplay, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
@@ -66,6 +66,10 @@ export abstract class StateControlAbstractService<Options extends object, State 
     ) as Observable<MappingResult>;
   }
 
+  /**
+   * Accepts object to update state.
+   * Properties set to null will be reset to their default values.
+   */
   patchState(
     statePatch: Partial<State>,
     reducer: (stateDelta: Partial<State>, patch: Partial<State>) => Partial<State> = partial(merge, {})
@@ -86,6 +90,40 @@ export abstract class StateControlAbstractService<Options extends object, State 
           ),
         );
       }),
+      tap(stateDelta => this.delta$.next(stateDelta))
+    );
+  }
+
+  /**
+   * Accepts object to be set as state.
+   * Properties set to null will be assigned current values.
+   *
+   * This method is complementary to patchState. Helping to set only desired properties.
+   */
+  setState(
+    statePatch: Partial<State>
+  ): Observable<Partial<State>> {
+    return this.delta$.pipe(
+      first(),
+      map(delta => assignWith(
+        {},
+        delta,
+        statePatch,
+        (objValue, srcValue, key, object, source) => isNil(srcValue) ? objValue : srcValue
+      )),
+      tap(stateDelta => this.delta$.next(stateDelta))
+    );
+  }
+
+  /**
+   * Set the state as direvative of current state.
+   */
+  reduceState(
+    reducer: (state: Partial<State>) => Partial<State> = state => state
+  ): Observable<Partial<State>> {
+    return this.delta$.pipe(
+      first(),
+      map(reducer),
       tap(stateDelta => this.delta$.next(stateDelta))
     );
   }
