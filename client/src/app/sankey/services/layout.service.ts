@@ -78,6 +78,8 @@ interface VerticalContext {
 @Injectable()
 export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayoutService<Base>
   implements ServiceOnInit, OnDestroy {
+  destroyed$ = new Subject();
+
   graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
     // ensure no calculation of view if base view changed
     takeUntil(this.destroyed$),
@@ -88,8 +90,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     shareReplay<Base['data']>(1),
     takeUntil(this.destroyed$)
   );
-
-  destroyed$ = new Subject();
 
   linkPath$ = this.baseView.common.normalizeLinks$.pipe(
     map(normalizeLinks => {
