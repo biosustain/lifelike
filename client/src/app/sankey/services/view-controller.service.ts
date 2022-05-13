@@ -104,7 +104,10 @@ export class ViewControllerService {
         tap(networkTrace => networkTrace.addView(viewName, view))
       )),
       tap(() => this.common.viewsUpdate$.next()),
-      switchMap(() => this.common.setState({viewName}))
+      switchMap(() => this.common.setState({
+        viewName,
+        networkTraceIdx: null
+      }))
     );
   }
 

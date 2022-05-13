@@ -132,7 +132,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
   ready = false;
-  object: FilesystemObject;
+  object$ = new ReplaySubject<FilesystemObject>(1);
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
   searchPanel$ = new BehaviorSubject(false);
@@ -209,8 +209,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     // Listener for file open
     this.loadTask.results$.pipe(
       switchMap(({result: [object, content]}) => {
-        this.object = object;
-        this.emitModuleProperties();
+        this.object$.next(object);
         this.currentFileId = object.hashId;
         if (this.sanityChecks(content)) {
           this.fileContent = content;
@@ -241,7 +240,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     });
 
     this.route.params.subscribe(({file_id}: { file_id: string }) => {
-      this.object = null;
       this.currentFileId = null;
       this.openSankey(file_id);
     });
@@ -256,7 +254,20 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     ).subscribe(open => {
       this.searchPanel$.next(open);
     });
+
+    this.moduleProperties$.subscribe(this.modulePropertiesChange);
   }
+
+  moduleProperties$ = combineLatest([
+    this.object$,
+    this.update.edited$
+  ]).pipe(
+    map(([{filename}, edited]) => ({
+      title: filename,
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      badge: edited ? '*' : undefined
+    }))
+  );
 
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
@@ -403,25 +414,26 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     const contentValue = new Blob(
       [JSON.stringify(newContent)],
       {type: MimeTypes.Graph});
-    return this.filesystemService.save(
-      [this.object.hashId],
-      {contentValue}
-    )
-      .pipe(
-        delay(1000),
-        tap(() => {
-          this.emitModuleProperties();
-          this.snackBar.open('File has been updated.', null, {
-            duration: 2000,
-          });
-        }),
-        catchError(() => {
-          this.snackBar.open('Error saving file.', null, {
-            duration: 2000,
-          });
-          return EMPTY;
-        })
-      ).toPromise();
+    return this.object$.pipe(
+      switchMap(object => this.filesystemService.save(
+        [object.hashId],
+        {contentValue}
+      )
+        .pipe(
+          delay(1000),
+          tap(() => {
+            this.snackBar.open('File has been updated.', null, {
+              duration: 2000,
+            });
+          }),
+          catchError(() => {
+            this.snackBar.open('Error saving file.', null, {
+              duration: 2000,
+            });
+            return EMPTY;
+          })
+        ))
+    ).toPromise();
   }
 
   selectNetworkTrace = networkTraceIdx => this.sankeyController.selectNetworkTrace(networkTraceIdx);
@@ -632,11 +644,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
    * @param hashId - represent the sankey to open
    */
   openSankey(hashId: string) {
-    if (this.object != null && this.currentFileId === this.object.hashId) {
-      return;
-    }
     this.ready = false;
-
     this.loadTask.update(hashId);
   }
 
@@ -650,36 +658,38 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     this.paramsSubscription.unsubscribe();
   }
 
-  emitModuleProperties() {
-    this.modulePropertiesChange.next({
-      title: this.object.filename,
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-    });
-  }
-
   openNewWindow() {
-    this.filesystemObjectActions.openNewWindow(this.object);
+    return this.object$.pipe(
+      map(object =>
+        this.filesystemObjectActions.openNewWindow(object)
+      )
+    );
   }
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', this.object.filename);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.object.filename,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId + '',
-        }],
-        sources: [{
-          domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name),
-            'sankey', encodeURIComponent(this.object.hashId)].join('/'),
-        }],
-      },
-    }));
+    return this.object$.pipe(
+      map(object => {
+        dataTransfer.setData('text/plain', object.filename);
+        dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+          display_name: object.filename,
+          label: 'link',
+          sub_labels: [],
+          data: {
+            references: [{
+              type: 'PROJECT_OBJECT',
+              id: object.hashId + '',
+            }],
+            sources: [{
+              domain: object.filename,
+              url: ['/projects', encodeURIComponent(object.project.name),
+                'sankey', encodeURIComponent(object.hashId)].join('/'),
+            }],
+          },
+        }));
+        return dataTransfer;
+      })
+    );
   }
 
   selectPredefinedValueAccessor(predefinedValueAccessorId) {
