@@ -1,8 +1,8 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { Observable, of, iif, merge as rxjs_merge, Subject } from 'rxjs';
+import { Observable, of, iif, merge as rxjs_merge, Subject, combineLatest } from 'rxjs';
 import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
-import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
+import { merge, isNil, omitBy, has, pick, isEqual, isEmpty, omit } from 'lodash-es';
 
 import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -26,6 +26,7 @@ import {
   NODE_VALUE_GENERATOR
 } from '../interfaces/valueAccessors';
 import { SankeyView } from '../interfaces/view';
+import { EditService } from './edit.service';
 
 export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
 
@@ -39,13 +40,31 @@ export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
 export class BaseControllerService<Base extends TypeContext>
   extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit, OnDestroy {
 
-  constructor(
-    readonly common: ControllerService,
-    readonly warningController: WarningControllerService,
-    readonly injector: Injector
-  ) {
-    super();
-  }
+  hasPendingChanges$ = combineLatest([
+    this.update.edited$,
+    this.common.view$.pipe(
+      switchMap(view =>
+        iif(
+          () => isNil(view),
+          of(false),
+          this.delta$.pipe(
+            switchMap(baseViewDelta =>
+              iif(
+                () => isEmpty(baseViewDelta),
+                this.common.delta$.pipe(
+                  map(commonDelta => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
+                  map(commonDelta => !isEmpty(commonDelta))
+                ),
+                of(true)
+              )
+            )
+          )
+        )
+      ),
+    )
+  ]).pipe(
+    map(editFlags => editFlags.some(f => f)),
+  );
 
   destroy$ = new Subject<void>();
 
@@ -135,6 +154,15 @@ export class BaseControllerService<Base extends TypeContext>
     map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
   );
 
+  constructor(
+    readonly common: ControllerService,
+    readonly warningController: WarningControllerService,
+    readonly injector: Injector,
+    protected readonly update: EditService
+  ) {
+    super();
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
   }
@@ -188,7 +216,7 @@ export class BaseControllerService<Base extends TypeContext>
         'predefinedValueAccessorId'
       ).pipe(
         map(predefinedValueAccessorId =>
-            predefinedValueAccessors[predefinedValueAccessorId]
+          predefinedValueAccessors[predefinedValueAccessorId]
         )))
     );
 

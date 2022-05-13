@@ -11,7 +11,7 @@ import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
 import { SankeyNode, SankeyLink } from '../model/sankey-document';
-import { SankeyUpdateService } from './sankey-update.service';
+import { EditService } from './edit.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -24,7 +24,7 @@ export class ViewControllerService {
   constructor(
     private common: ControllerService,
     readonly warningController: WarningControllerService,
-    protected readonly update: SankeyUpdateService
+    protected readonly update: EditService
   ) {
   }
 

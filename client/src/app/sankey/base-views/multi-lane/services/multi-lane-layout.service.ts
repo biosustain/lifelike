@@ -10,9 +10,9 @@ import { LayoutService, groupByTraceGroupWithAccumulation, LayersContext } from 
 
 import { DirectedTraversal } from '../../../utils/directed-traversal';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
-import { BaseOptions, BaseState, MultiLaneNetworkTraceData, Base } from '../interfaces';
+import { Base } from '../interfaces';
 import { symmetricDifference } from '../../../utils';
-import { SankeyUpdateService } from '../../../services/sankey-update.service';
+import { EditService } from '../../../services/edit.service';
 
 type MultilaneDataWithContext = LayersContext<Base>;
 
@@ -23,7 +23,7 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
     protected readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService,
     protected readonly modalService: NgbModal,
-    protected readonly update: SankeyUpdateService
+    protected readonly update: EditService
   ) {
     super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();

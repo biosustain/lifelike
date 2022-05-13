@@ -6,6 +6,7 @@ export type SankeyLinksOverwrites = Record<string, SavedLinkProperties>;
 
 interface SavedNodeProperties {
   y0: number;
+  y1: number;
   x0: number;
   order: number;
 }
