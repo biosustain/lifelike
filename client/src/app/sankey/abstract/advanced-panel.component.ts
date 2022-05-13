@@ -38,10 +38,6 @@ export abstract class SankeyAbstractAdvancedPanelComponent<Options extends objec
     ))
   );
 
-  setDisableControlsState(state: boolean, controlsIds: string[], opts = {emitEvent: false}) {
-    return controlsIds.map(controlId => this.form.get(controlId)[state ? 'disable' : 'enable']?.(opts));
-  }
-
   ngOnInit() {
     // make the connection hot
     this.formToStateSubscribtion = this.formStateSync$.subscribe();

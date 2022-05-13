@@ -33,24 +33,24 @@ import { isNotEmpty } from 'app/shared/utils';
 import { ALIGNS, ALIGN_ID } from '../interfaces/align';
 
 function targetDepth(d) {
-  return d._target._depth;
+  return d.target.depth;
 }
 
 function left(node) {
-  return node._depth;
+  return node.depth;
 }
 
 function right(node, n) {
-  return n - 1 - node._reversedDepth;
+  return n - 1 - node.reversedDepth;
 }
 
 function justify(node, n) {
-  return isNotEmpty(node._sourceLinks) ? node._depth : n - 1;
+  return isNotEmpty(node.sourceLinks) ? node.depth : n - 1;
 }
 
 function center(node) {
-  return isNotEmpty(node._targetLinks) ? node._depth
-    : isNotEmpty(node._sourceLinks) ? (min(node._sourceLinks, targetDepth) as any) - 1
+  return isNotEmpty(node.targetLinks) ? node.depth
+    : isNotEmpty(node.sourceLinks) ? (min(node.sourceLinks, targetDepth) as any) - 1
       : 0;
 }
 

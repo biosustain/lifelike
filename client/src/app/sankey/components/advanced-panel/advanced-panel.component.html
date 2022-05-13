@@ -38,18 +38,18 @@
                    type="checkbox">
             Max shown label characters
             <input formControlName="value"
-                   max="50" min="0"
+                   [max]="maximumLabelLength$ | async" min="0"
                    ngbButton
                    type="range">
             {{ form.get('labelEllipsis.value').value }}
         </label>
     </div>
-    <div class="form-group" ngbRadioGroup formControlName="prescalerId" title="Prescaler">
-        <div class="mb-1">Prescaler:</div>
-        <label ngbButtonLabel *ngFor="let prescaler of prescalers$ | async | keyvalue"
-               [title]="prescaler.value.description"
-               class="mb-0">
-            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}
-        </label>
-    </div>
+<!--    <div class="form-group" ngbRadioGroup formControlName="prescalerId" title="Prescaler">-->
+<!--        <div class="mb-1">Prescaler:</div>-->
+<!--        <label ngbButtonLabel *ngFor="let prescaler of prescalers$ | async | keyvalue"-->
+<!--               [title]="prescaler.value.description"-->
+<!--               class="mb-0">-->
+<!--            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}-->
+<!--        </label>-->
+<!--    </div>-->
 </form>

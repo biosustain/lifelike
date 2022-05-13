@@ -1,30 +1,28 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { first, last } from 'lodash-es';
-import { color } from 'd3-color';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { DirectedTraversal } from 'app/sankey/utils/directed-traversal';
-import { SankeyNode } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { LayoutService, LayersContext } from 'app/sankey/services/layout.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
-import { BaseOptions, BaseState, SingleLaneNetworkTraceData } from '../interfaces';
-import { SankeyUpdateService } from '../../../services/sankey-update.service';
+import { Base } from '../interfaces';
+import { EditService } from '../../../services/edit.service';
 
-type SinglelaneDataWithContext = LayersContext<SingleLaneNetworkTraceData>;
+type SinglelaneDataWithContext = LayersContext<Base>;
 
 @Injectable()
-export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseState> implements ServiceOnInit, OnDestroy {
+export class SingleLaneLayoutService extends LayoutService<Base> implements ServiceOnInit, OnDestroy {
   constructor(
     readonly baseView: SingleLaneBaseControllerService,
     protected readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService,
     protected readonly modalService: NgbModal,
-    protected readonly update: SankeyUpdateService
+    protected readonly update: EditService
   ) {
     super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();
@@ -58,7 +56,7 @@ export class SingleLaneLayoutService extends LayoutService<BaseOptions, BaseStat
           return;
         }
         visited.add(node);
-        node._order = order++;
+        node.order = order++;
         const links = dt.nextLinks(node);
         relayoutLinks(links);
       });

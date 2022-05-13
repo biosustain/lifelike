@@ -1,11 +1,10 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { Observable, of, iif, merge as rxjs_merge } from 'rxjs';
-import { map, tap, switchMap, first, distinctUntilChanged, filter } from 'rxjs/operators';
-import { merge, isNil, omitBy, has, pick, isEqual } from 'lodash-es';
+import { Observable, of, iif, merge as rxjs_merge, Subject, combineLatest } from 'rxjs';
+import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
+import { merge, isNil, omitBy, has, pick, isEqual, isEmpty, omit } from 'lodash-es';
 
-import { isNotEmpty } from 'app/shared/utils';
-import { NetworkTraceData, } from 'app/sankey/interfaces';
+import { NetworkTraceData, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -13,8 +12,7 @@ import { debug } from 'app/shared/rxjs/debug';
 
 import * as linkValues from '../algorithms/linkValues';
 import * as nodeValues from '../algorithms/nodeValues';
-import { SankeyBaseState, SankeyBaseOptions, SankeyNodeHeight } from '../base-views/interfaces';
-import { customisedMultiValueAccessorId, customisedMultiValueAccessor } from './controller.service';
+import { SankeyNodeHeight } from '../base-views/interfaces';
 import { StateControlAbstractService } from '../abstract/state-control.service';
 import { unifiedSingularAccessor } from '../utils/rxjs';
 import { getBaseState } from '../utils/stateLevels';
@@ -28,8 +26,9 @@ import {
   NODE_VALUE_GENERATOR
 } from '../interfaces/valueAccessors';
 import { SankeyView } from '../interfaces/view';
+import { EditService } from './edit.service';
 
-export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptions, SankeyBaseState>;
+export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -38,28 +37,49 @@ export type DefaultBaseControllerService = BaseControllerService<SankeyBaseOptio
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class BaseControllerService<Options extends SankeyBaseOptions, State extends SankeyBaseState>
-  extends StateControlAbstractService<Options, State> implements ServiceOnInit {
+export class BaseControllerService<Base extends TypeContext>
+  extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit, OnDestroy {
 
-  constructor(
-    readonly common: ControllerService,
-    readonly warningController: WarningControllerService,
-    readonly injector: Injector
-  ) {
-    super();
-  }
+  hasPendingChanges$ = combineLatest([
+    this.update.edited$,
+    this.common.view$.pipe(
+      switchMap(view =>
+        iif(
+          () => isNil(view),
+          of(false),
+          this.delta$.pipe(
+            switchMap(baseViewDelta =>
+              iif(
+                () => isEmpty(baseViewDelta),
+                this.common.delta$.pipe(
+                  map(commonDelta => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
+                  map(commonDelta => !isEmpty(commonDelta))
+                ),
+                of(true)
+              )
+            )
+          )
+        )
+      ),
+    )
+  ]).pipe(
+    map(editFlags => editFlags.some(f => f)),
+  );
+
+  destroy$ = new Subject<void>();
 
   fontSizeScale$: Observable<unknown>;
 
   nodeHeight$: Observable<SankeyNodeHeight>;
-  networkTraceData$: Observable<NetworkTraceData>;
+  networkTraceData$: Observable<NetworkTraceData<Base>>;
   viewBase;
-  nodeValueAccessor$: Observable<ValueGenerator>;
-  linkValueAccessor$: Observable<ValueGenerator>;
+  nodeValueAccessor$: Observable<ValueGenerator<Base>>;
+  linkValueAccessor$: Observable<ValueGenerator<Base>>;
   predefinedValueAccessor$: Observable<MultiValueAccessor>;
 
+  // @ts-ignore
   readonly linkValueAccessors: {
-    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator
+    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator<Base>
   } = Object.freeze({
     [LINK_VALUE_GENERATOR.fixedValue0]: {
       preprocessing: linkValues.fixedValue(0)
@@ -67,10 +87,10 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
     [LINK_VALUE_GENERATOR.fixedValue1]: {
       preprocessing: linkValues.fixedValue(1)
     },
-    [LINK_VALUE_GENERATOR.fraction_of_fixed_node_value]: {
-      requires: ({node}) => node.fixedValue,
-      preprocessing: linkValues.fractionOfFixedNodeValue
-    },
+    // [LINK_VALUE_GENERATOR.fraction_of_fixed_nodevalue]: {
+    //   requires: ({node}) => node.fixedValue,
+    //   preprocessing: linkValues.fractionOfFixedNodeValue
+    // },
     // defined per base view - different implementation
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: () => {
@@ -80,35 +100,37 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   });
 
   linkPropertyAcessors: {
-    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator
+    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator<Base>
   } = {
     [LINK_PROPERTY_GENERATORS.byProperty]: k => ({
+      // @ts-ignore
       preprocessing: linkValues.byProperty(k),
       postprocessing: ({links}) => {
         links.forEach(l => {
-          l._value /= (l._adjacent_divider || 1);
+          l.value /= (l.adjacentDivider || 1);
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              _value: true
+              value: true
             }
           }
         };
       }
     }),
     [LINK_PROPERTY_GENERATORS.byArrayProperty]: k => ({
+      // @ts-ignore
       preprocessing: linkValues.byArrayProperty(k),
       postprocessing: ({links}) => {
         links.forEach(l => {
-          l._multiple_values = l._multiple_values.map(d => d / (l._adjacent_divider || 1)) as [number, number];
+          l.multipleValues = l.multipleValues.map(d => d / (l.adjacentDivider || 1)) as [number, number];
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              _multiple_values: true
+              multipleValues: true
             }
           }
         };
@@ -117,12 +139,13 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   };
 
   nodeValueAccessors: {
-    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator
+    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator<Base>
   } = {
     [NODE_VALUE_GENERATOR.none]: {
       preprocessing: nodeValues.noneNodeValue
     },
     [NODE_VALUE_GENERATOR.fixedValue1]: {
+      // @ts-ignore
       preprocessing: nodeValues.fixedValue(1)
     }
   };
@@ -130,6 +153,19 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
   resolveView$ = this.common.view$.pipe(
     map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
   );
+
+  constructor(
+    readonly common: ControllerService,
+    readonly warningController: WarningControllerService,
+    readonly injector: Injector,
+    protected readonly update: EditService
+  ) {
+    super();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+  }
 
   /**
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
@@ -180,9 +216,7 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
         'predefinedValueAccessorId'
       ).pipe(
         map(predefinedValueAccessorId =>
-          predefinedValueAccessorId === customisedMultiValueAccessorId ?
-            customisedMultiValueAccessor :
-            predefinedValueAccessors[predefinedValueAccessorId]
+          predefinedValueAccessors[predefinedValueAccessorId]
         )))
     );
 
@@ -205,26 +239,26 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
             ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
           }))
         )),
-        debug<Partial<State>>('predefinedValueAccessorId change')
+        debug<Partial<Base['state']>>('predefinedValueAccessorId change')
       ),
-      this.delta$.pipe(
-        map(this.pickPartialAccessors),
-        distinctUntilChanged(isEqual),
-        filter(isNotEmpty),
-        // here we are sensing change of (node|link)ValueAccessorId
-        // usually we just change one of them so we need to preserve state for the other one
-        switchMap(delta => this.state$.pipe(
-            first(),
-            map(this.pickPartialAccessors),
-            map(state => merge(
-              {predefinedValueAccessorId: customisedMultiValueAccessorId},
-              state,
-              delta
-            ))
-          )
-        ),
-        debug<Partial<State>>('partialAccessors change')
-      )
+      // this.delta$.pipe(
+      //   map(this.pickPartialAccessors),
+      //   distinctUntilChanged(isEqual),
+      //   filter(isNotEmpty),
+      //   // here we are sensing change of (node|link)ValueAccessorId
+      //   // usually we just change one of them so we need to preserve state for the other one
+      //   switchMap(delta => this.state$.pipe(
+      //       first(),
+      //       map(this.pickPartialAccessors),
+      //       map(state => merge(
+      //         {predefinedValueAccessorId: customisedMultiValueAccessorId},
+      //         state,
+      //         delta
+      //       ))
+      //     )
+      //   ),
+      //   debug<Partial<Base['state']>>('partialAccessors change')
+      // )
     ).pipe(
       distinctUntilChanged(isEqual)
     );
@@ -266,12 +300,13 @@ export class BaseControllerService<Options extends SankeyBaseOptions, State exte
         )
       ),
       tap(stateDelta => {
-        this.delta$.next(stateDelta as Partial<State>);
+        this.delta$.next(stateDelta as Partial<Base['state']>);
       })
     );
   }
 
-  nodePropertyAcessor: (k) => ValueGenerator = k => ({
+  nodePropertyAcessor: (k) => ValueGenerator<Base> = k => ({
+    // @ts-ignore
     preprocessing: nodeValues.byProperty(k)
   })
 }

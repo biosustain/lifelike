@@ -47,11 +47,11 @@ export class SankeySearchService {
 
   currentSearch$ = this.common.data$.pipe(
     // limit size of data we operate on
-    map(({nodes, links, graph: {trace_networks}}) => ({
+    map(({nodes, links, graph: {traceNetworks}}) => ({
       nodes,
       links,
       graph: {
-        trace_networks
+        traceNetworks
       }
     })),
     switchMap(data => this.searchTokens$.pipe(
@@ -157,7 +157,7 @@ export class SankeySearchService {
         map(focusIdx => preprocessedMatches[focusIdx]),
         filter(searchFocus => Boolean(searchFocus)),
         switchMap(searchFocus =>
-          this.common.patchState({
+          this.common.setState({
             networkTraceIdx: searchFocus.networkTraceIdx
           }).pipe(
             map(() => searchFocus)

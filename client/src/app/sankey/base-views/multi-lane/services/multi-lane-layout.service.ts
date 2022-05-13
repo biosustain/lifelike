@@ -10,35 +10,34 @@ import { LayoutService, groupByTraceGroupWithAccumulation, LayersContext } from 
 
 import { DirectedTraversal } from '../../../utils/directed-traversal';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
-import { BaseOptions, BaseState, MultiLaneNetworkTraceData } from '../interfaces';
-import { SankeyNode } from '../../../interfaces';
+import { Base } from '../interfaces';
 import { symmetricDifference } from '../../../utils';
-import { SankeyUpdateService } from '../../../services/sankey-update.service';
+import { EditService } from '../../../services/edit.service';
 
-type MultilaneDataWithContext = LayersContext<MultiLaneNetworkTraceData>;
+type MultilaneDataWithContext = LayersContext<Base>;
 
 @Injectable()
-export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState> implements OnDestroy {
+export class MultiLaneLayoutService extends LayoutService<Base> implements OnDestroy {
   constructor(
     readonly baseView: MultiLaneBaseControllerService,
     protected readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService,
     protected readonly modalService: NgbModal,
-    protected readonly update: SankeyUpdateService
+    protected readonly update: EditService
   ) {
     super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();
   }
 
   get nodeColor() {
-    return ({_sourceLinks, _targetLinks, _color}: SankeyNode) => {
+    return ({sourceLinks, targetLinks, color}: Base['node']) => {
       // check if any trace is finishing or starting here
-      const difference = symmetricDifference(_sourceLinks, _targetLinks, link => link._trace);
+      const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace);
       // if there is only one trace start/end then color node with its color
       if (difference.size === 1) {
-        return difference.values().next().value._trace._color;
+        return difference.values().next().value.trace.color;
       } else {
-        return _color;
+        return color;
       }
     };
   }
@@ -64,7 +63,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
     const relayoutLinks = linksToTraverse =>
       linksToTraverse.forEach(l => {
         relayoutNodes([dt.nextNode(l)]);
-        traceOrder.add(l._trace);
+        traceOrder.add(l.trace);
       });
     const relayoutNodes = nodesToTraverse =>
       nodesToTraverse.forEach(node => {
@@ -72,7 +71,7 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
           return;
         }
         visited.add(node);
-        node._order = order++;
+        node.order = order++;
         const sortedLinks = sortByTrace(dt.nextLinks(node));
         relayoutLinks(sortedLinks);
       });
@@ -84,11 +83,11 @@ export class MultiLaneLayoutService extends LayoutService<BaseOptions, BaseState
 
     const tracesLength = traces.length;
     links.forEach(link => {
-      link._order = sum([
+      link.order = sum([
         // save order by group
-        groups.indexOf(link._trace._group),
+        groups.indexOf(link.trace.group),
         // top up with fraction to order by trace
-        traces.indexOf(link._trace) / tracesLength
+        traces.indexOf(link.trace) / tracesLength
       ]);
     });
   }

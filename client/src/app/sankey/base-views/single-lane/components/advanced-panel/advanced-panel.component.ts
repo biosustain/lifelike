@@ -32,10 +32,7 @@ export class SankeySingleLaneAdvancedPanelComponent
       }),
       max: this.formBuilder.group({
         enabled: [false, []],
-        ratio: [{
-          value: 0,
-          disabled: true
-        }, []],
+        ratio: [0, []],
       }),
     }),
     linkValueAccessorId: [undefined, []],
@@ -50,13 +47,6 @@ export class SankeySingleLaneAdvancedPanelComponent
 
   ngOnInit() {
     super.ngOnInit();
-    this.baseView.common.viewName$.subscribe(viewName =>
-      this.setDisableControlsState(viewName, [
-        'nodeHeight',
-        'linkValueAccessorId',
-        'nodeValueAccessorId',
-      ])
-    );
   }
 
   ngOnDestroy() {

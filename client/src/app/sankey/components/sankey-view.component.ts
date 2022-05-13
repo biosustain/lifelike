@@ -12,12 +12,12 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormBuilder } from '@angular/forms';
+import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
-import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY } from 'rxjs';
-import { isNil, pick } from 'lodash-es';
+import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
+import { isNil, pick, flatMap, zip } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -26,7 +26,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, ViewBase, SankeyFile } from 'app/sankey/interfaces';
+import { SankeyState, ViewBase } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
@@ -34,6 +34,8 @@ import { MimeTypes } from 'app/shared/constants';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -50,7 +52,11 @@ import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
-import { SankeyUpdateService } from '../services/sankey-update.service';
+import { EditService } from '../services/edit.service';
+import { SankeyViewCreateComponent } from './view/create/view-create.component';
+import { SankeyConfirmComponent } from './confirm.component';
+import { viewBaseToNameMapping } from '../constants/view-base';
+import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -67,10 +73,109 @@ interface BaseViewContext {
     SankeySearchService,
     ControllerService,
     ViewControllerService,
-    SankeyUpdateService
+    EditService
   ]
 })
-export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareComponent, AfterViewInit {
+export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy {
+  fileContent: GraphFile;
+
+  get viewParams() {
+    return this.sankeyController.state$.pipe(
+      first(),
+      map(state =>
+        pick(
+          state,
+          [
+            'networkTraceIdx',
+            'viewBase',
+            'viewName'
+          ]
+        )
+      )
+    ).toPromise();
+  }
+
+  get sankey() {
+    return this.dynamicComponentRef.get('sankey').instance;
+  }
+
+  get details() {
+    return this.dynamicComponentRef.get('details').instance;
+  }
+
+  get advanced() {
+    return this.dynamicComponentRef.get('advanced').instance;
+  }
+
+  readonlyView$ = this.sankeyController.view$.pipe(
+    tap(v => console.log('view', v))
+  );
+
+  baseViewContext$: Observable<BaseViewContext>;
+  baseView$: Observable<DefaultBaseControllerService>;
+  selection$: Observable<SankeySelectionService>;
+  predefinedValueAccessor$: Observable<object>;
+  layout$: Observable<DefaultLayoutService>;
+  graph$: Observable<object>;
+  unsavedChanges$ = new Subject<boolean>();
+
+  predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
+  paramsSubscription: Subscription;
+
+
+  private dynamicComponentRef = new Map();
+
+  @ViewChild(SankeyDirective, {static: true}) sankeySlot;
+  @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
+  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
+  returnUrl: string;
+  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
+  openSankeySub: Subscription;
+  ready = false;
+  object: FilesystemObject;
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  searchPanel$ = new BehaviorSubject(false);
+  advancedPanel = false;
+  currentFileId;
+  entitySearchTerm$ = new ReplaySubject<string>(1);
+
+  isArray = Array.isArray;
+  entitySearchList$ = new BehaviorSubject([]);
+  _entitySearchListIdx$ = new ReplaySubject<number>(1);
+  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
+    map(networkTraces => new ExtendedMap(
+      networkTraces.map((networkTrace, index) => [index, networkTrace])
+    )),
+  );
+  data$ = this.sankeyController.data$;
+
+  networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
+    switchMap(networkTraces =>
+      combineLatest(
+        networkTraces.map((networkTrace, index) =>
+          networkTrace.views$.pipe(
+            map(views => [
+              [`nt_${index}`, networkTrace],
+              ...Object.entries(views).map(([id, view]) => ([`view_${index}_${id}`, view]))
+            ] as [string, TraceNetwork | View][])
+          ),
+        )
+      )
+    ),
+    map(nestedOptions => new ExtendedMap(flatMap(nestedOptions))),
+    debug('networkTracesAndViewsMap$')
+  );
+
+  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
+    map(activeViewBase => viewBaseToNameMapping[activeViewBase]),
+    debug('activeViewBaseName$'),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  pandingChanges$ = defer(() => this.baseView$.pipe(
+    switchMap(baseView => baseView.hasPendingChanges$)
+  ));
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -88,7 +193,8 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     private zone: NgZone,
     private viewController: ViewControllerService,
     private search: SankeySearchService,
-    public update: SankeyUpdateService,
+    public update: EditService,
+    private readonly messageDialog: MessageDialog,
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -107,7 +213,8 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
         this.emitModuleProperties();
         this.currentFileId = object.hashId;
         if (this.sanityChecks(content)) {
-          return this.sankeyController.loadData(content as SankeyFile);
+          this.fileContent = content;
+          return this.sankeyController.loadData(content);
         }
       })
     ).subscribe(() => {
@@ -140,9 +247,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     });
 
     this.sankeyController.viewsUpdate$.pipe(
-      switchMap(_views => this.sankeyController.data$.pipe(
-        map(data => ({...data, _views}))
-      ))
+      switchMap(() => this.sankeyController.data$)
     ).subscribe(data => this.saveFile(data));
 
     this.search.term$.pipe(
@@ -153,89 +258,35 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     });
   }
 
-  get viewParams() {
-    return this.sankeyController.state$.pipe(
-      first(),
-      map(state =>
-        pick(
-          state,
-          [
-            'networkTraceIdx',
-            'viewBase',
-            'viewName'
-          ]
-        )
-      )
-    ).toPromise();
-  }
-
-  get sankey() {
-    return this.dynamicComponentRef.get('sankey').instance;
-  }
-
-  get details() {
-    return this.dynamicComponentRef.get('details').instance;
-  }
-
-  get advanced() {
-    return this.dynamicComponentRef.get('advanced').instance;
-  }
-
-  baseViewContext$: Observable<BaseViewContext>;
-  baseView$: Observable<DefaultBaseControllerService>;
-  selection$: Observable<SankeySelectionService>;
-  predefinedValueAccessor$: Observable<object>;
-  layout$: Observable<DefaultLayoutService>;
-  graph$: Observable<object>;
-
-  predefinedValueAccessors$ = this.sankeyController.predefinedValueAccessors$;
-  readonlyView$ = this.sankeyController.view$.pipe(
-    tap(v => console.log('view', v))
-  );
-
-
-  private dynamicComponentRef = new Map();
-
-  @ViewChild(SankeyDirective, {static: true}) sankeySlot;
-  @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
-  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
-
-  paramsSubscription: Subscription;
-  returnUrl: string;
-  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
-  openSankeySub: Subscription;
-  ready = false;
-  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  searchPanel$ = new BehaviorSubject(false);
-  advancedPanel = false;
-  object: FilesystemObject;
-  currentFileId;
-
-  isArray = Array.isArray;
-
-  entitySearchTerm$ = new ReplaySubject<string>(1);
-  entitySearchList$ = new BehaviorSubject([]);
-  _entitySearchListIdx$ = new ReplaySubject<number>(1);
-
-
-  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
-    map(networkTraces => new ExtendedMap(
-      networkTraces.map((networkTrace, index) => [index, networkTrace])
-    )),
-  );
-
-
-  data$ = this.sankeyController.data$;
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
   networkTrace$ = this.sankeyController.networkTrace$;
 
   detailsPanel$ = new BehaviorSubject(false);
 
+  viewName$ = this.sankeyController.viewName$;
 
-  traceNameAccessor({name, description}) {
-    return name || description || 'Trace Description Unknown';
+  viewBase = ViewBase;
+
+  order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
+
+  selectView(networkTraceIdx, viewName) {
+    return this.viewController.selectView(networkTraceIdx, viewName);
+  }
+
+  traceAndViewNameAccessor = (networkTraceOrViewId, traceOrView) => {
+    return this.applyOnNetworkTraceOrView(
+      networkTraceOrViewId,
+      traceId => traceOrView.name ?? traceOrView.description,
+      (_, viewId) => `+ ${viewId}`
+    );
+  }
+
+  confirmDeleteView(viewName): Promise<any> {
+    return this.confirm({
+      header: 'Confirm delete',
+      body: `Are you sure you want to delete the '${viewName}' view?`
+    }).then(() => this.viewController.deleteView(viewName).toPromise());
   }
 
   ngOnInit() {
@@ -285,7 +336,7 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       map(({layout}) => layout)
     );
     this.graph$ = this.layout$.pipe(
-      switchMap(layout => layout.graph$)
+      switchMap<DefaultLayoutService, Observable<object>>(layout => layout.graph$)
     );
     this.selection$ = this.baseViewContext$.pipe(
       map(({selection}) => selection)
@@ -324,9 +375,33 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
     return pass;
   }
 
-  saveFile(data: GraphFile) {
+  /**
+   * Temporary safty net SankeyDocument is under development
+   * SankeyDocument.toDict() should give stringable representation of file
+   * and SankeyDocument.toString() should encode it as string.
+   * Ultimatly for given FileContent:
+   * `new SankeyDocument(FileContent).toString() = FileContent`
+   * yet current implementation cannot guarantee that just yet.
+   */
+  updateOnlyViews(sankeyDocument: SankeyDocument) {
+    const {graph: {traceNetworks}} = sankeyDocument;
+    const {graph: {trace_networks, ...fcGraph}, ...fc} = this.fileContent;
+    return {
+      graph: {
+        ...fcGraph,
+        trace_networks: zip(traceNetworks, trace_networks).map(([tn, fctn]) => ({
+          ...fctn,
+          _views: tn.toDict()._views
+        }))
+      },
+      ...fc
+    };
+  }
+
+  saveFile(data: SankeyDocument) {
+    const newContent = this.updateOnlyViews(data);
     const contentValue = new Blob(
-      [JSON.stringify(data)],
+      [JSON.stringify(newContent)],
       {type: MimeTypes.Graph});
     return this.filesystemService.save(
       [this.object.hashId],
@@ -349,8 +424,109 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
       ).toPromise();
   }
 
-  async selectNetworkTrace(networkTraceIdx) {
-    await this.sankeyController.selectNetworkTrace(networkTraceIdx).toPromise();
+  selectNetworkTrace = networkTraceIdx => this.sankeyController.selectNetworkTrace(networkTraceIdx);
+
+  applyOnNetworkTraceOrView(networkTraceOrViewId, networkTraceCallback, viewCallback) {
+    // Kinda ugly fix to maintain search functionality working with views in here
+    if (networkTraceOrViewId.startsWith('nt_')) {
+      const networkTraceIdx = Number(networkTraceOrViewId.replace('nt_', ''));
+      return networkTraceCallback(networkTraceIdx);
+    }
+    if (networkTraceOrViewId.startsWith('view_')) {
+      const [, networkTraceIdx, viewId] = networkTraceOrViewId.match(/^view_(\d+)_(.+)$/);
+      return viewCallback(Number(networkTraceIdx), viewId);
+    }
+    throw new Error('Unknown option prefix');
+  }
+
+  selectNetworkTraceOrView(networkTraceOrViewIdx) {
+    return this.baseView$.pipe(
+      first(),
+      tap(baseView => baseView.delta$.next({})),
+      switchMap(() => this.applyOnNetworkTraceOrView(
+        networkTraceOrViewIdx,
+        this.selectNetworkTrace.bind(this),
+        this.selectView.bind(this)
+      ))
+    ).toPromise();
+  }
+
+  confirm({header, body}): Promise<any> {
+    const modal = this.modalService.open(
+      SankeyConfirmComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    modal.componentInstance.header = header;
+    modal.componentInstance.body = body;
+    return modal.result;
+  }
+
+  confirmCreateView(viewName) {
+    return this.viewController.views$.pipe(
+      first(),
+      switchMap(views =>
+        iif(
+          () => !!views[viewName],
+          defer(() => this.confirm({
+            header: 'View already exists',
+            body: `View ${viewName} already exists. Do you want to overwrite it?`
+          })),
+          // of(true)
+          // As of Tim requirement ensure that view name is unique in file.
+          this.sankeyController.networkTraces$.pipe(
+            first(),
+            switchMap(networkTraces =>
+              iif(
+                () => networkTraces.some(nt => nt.views?.[viewName]),
+                defer(() => this.messageDialog.display({
+                  title: 'View name is not unique',
+                  message: 'View name needs to be unique across all trace networks.',
+                  type: MessageType.Error,
+                })).pipe(
+                  tap(() => {
+                    throw new Error('View name is not unique');
+                  })
+                ),
+                of(true)
+              )
+            )
+          )
+        )
+      ),
+      switchMap(overwrite =>
+        iif(
+          () => overwrite,
+          defer(() => this.viewController.createView(viewName)),
+          of(false)
+        )
+      )
+    );
+  }
+
+  saveView(): Promise<any> {
+    return this.viewController.activeViewName$.pipe(
+      first(),
+      switchMap(viewName =>
+        iif(
+          () => viewName,
+          defer(() => this.viewController.createView(viewName)),
+          defer(() => this.saveViewAs())
+        )
+      )
+    ).toPromise();
+  }
+
+  saveViewAs(): Promise<any> {
+    const dialogRef = this.modalService.open(
+      SankeyViewCreateComponent,
+      {ariaLabelledBy: 'modal-basic-title'}
+    );
+    dialogRef.componentInstance.accept = ({viewName}) => this.confirmCreateView(viewName).toPromise();
+    return dialogRef.result;
+  }
+
+  openBaseView(baseViewName: ViewBase): Promise<any> {
+    return this.viewController.openBaseView(baseViewName).toPromise();
   }
 
   open(content) {
@@ -400,18 +576,17 @@ export class SankeyViewComponent implements OnInit, OnDestroy, ModuleAwareCompon
   }
 
   resetView() {
-    this.sankeyController.data$.pipe(
-      first(),
-      tap(data => this.sankeyController.data = data)
-    ).toPromise();
-    this.sankeyController.delta$.next({});
-    this.baseViewContext$.pipe(
-      first(),
-      tap(({baseView, layout, selection}) => {
-        baseView.delta$.next({});
-        selection.reset();
-      })
-    ).subscribe();
+    combineLatest([
+      this.sankeyController.resetView(),
+      this.baseViewContext$.pipe(
+        first(),
+        tap(({baseView, layout, selection}) => {
+          baseView.delta$.next({});
+          selection.reset();
+          this.update.reset();
+        })
+      )
+    ]).toPromise();
     this.resetZoom();
   }
 

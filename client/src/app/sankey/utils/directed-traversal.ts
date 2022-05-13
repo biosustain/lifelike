@@ -1,5 +1,7 @@
 import { sum } from 'd3-array';
 
+import { SankeyNode } from '../model/sankey-document';
+
 interface Direction {
   nextLinksAccessor: string;
   prevLinksAccessor: string;
@@ -7,21 +9,21 @@ interface Direction {
 }
 
 export const ltr = {
-  nextLinksAccessor: '_sourceLinks',
-  prevLinksAccessor: '_targetLinks',
-  nodeAccessor: '_target'
+  nextLinksAccessor: 'sourceLinks',
+  prevLinksAccessor: 'targetLinks',
+  nodeAccessor: 'target'
 } as Direction;
 
 export const rtl = {
-  nextLinksAccessor: '_targetLinks',
-  prevLinksAccessor: '_sourceLinks',
-  nodeAccessor: '_source'
+  nextLinksAccessor: 'targetLinks',
+  prevLinksAccessor: 'sourceLinks',
+  nodeAccessor: 'source'
 } as Direction;
 
 export class DirectedTraversal {
   direction: Direction;
-  startNodes: Array<any>;
-  private endNodes: Array<any>;
+  startNodes: Array<SankeyNode>;
+  private endNodes: Array<SankeyNode>;
 
   constructor([inNodes, outNodes]) {
     // figure out if we traverse ltr or rtl based on the number of nodes on each side (and their links)
@@ -30,8 +32,8 @@ export class DirectedTraversal {
       inNodes.length
       - outNodes.length
     ) || (
-      sum(outNodes, ({_targetLinks = []}) => _targetLinks.length)
-      - sum(inNodes, ({_sourceLinks = []}) => _sourceLinks.length)
+      sum(outNodes, ({targetLinks = []}) => targetLinks.length)
+      - sum(inNodes, ({sourceLinks = []}) => sourceLinks.length)
     )) < 0) {
       this.direction = ltr;
       this.startNodes = inNodes;
@@ -53,7 +55,7 @@ export class DirectedTraversal {
   depthSorter(asc = true) {
     const { direction } = this;
     const sortDirection = Math.pow(-1, Number(asc !== (direction === ltr)));
-    return (a, b) => sortDirection * (a._depth - b._depth);
+    return (a, b) => sortDirection * (a.depth - b.depth);
   }
 
   nextLinks(node) {
