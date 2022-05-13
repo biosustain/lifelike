@@ -2,7 +2,7 @@
        (click)="$event.stopPropagation()" #search/>
 <div class="filtrable-list">
     <ng-container
-            *ngFor="let item of filteredItems$ | async | keyvalue; let i = index"
+            *ngFor="let item of filteredItems$ | async | keyvalue: order; let i = index"
             [ngTemplateOutlet]="itemTemplateRef || defaultItemTemplateRef"
             [ngTemplateOutletContext]="{ $implicit: item.value, key: item.key, index: i, search: search$ | async }">
     </ng-container>
@@ -12,7 +12,7 @@
                 class="dropdown-item"
                 ngbDropdownItem
                 (click)="changeValue.emit(key)">
-            <ngb-highlight [result]="optionTextAccessor(item)" [term]="search"></ngb-highlight>
+            <ngb-highlight [result]="optionTextAccessor(key, item)" [term]="search"></ngb-highlight>
         </button>
     </ng-template>
 </div>

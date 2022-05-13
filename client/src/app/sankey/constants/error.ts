@@ -12,12 +12,12 @@ export const ErrorMessages = {
     `Node (id: ${id}) needed to render this graph has not been provided in file.`,
   missingValueAccessor: (type, id) =>
     `${capitalize(type)} values accessor ${id} could not be found`,
-  missingNodeValueAccessor: id => this.missingValueAccessor('node', id),
-  missingLinkValueAccessor: id => this.missingValueAccessor('link', id),
+  missingNodeValueAccessor: id => ErrorMessages.missingValueAccessor('node', id),
+  missingLinkValueAccessor: id => ErrorMessages.missingValueAccessor('link', id),
   incorrectValueAccessor: (type, predefinedProperties) =>
     `Predefined ${type} value accessor accesses not existing properties: ${Array.from(predefinedProperties)}`,
-  incorrectLinkValueAccessor: predefinedProperties => this.incorrectValueAccessor('link', predefinedProperties),
-  incorrectNodeValueAccessor: predefinedProperties => this.incorrectValueAccessor('node', predefinedProperties),
+  incorrectLinkValueAccessor: predefinedProperties => ErrorMessages.incorrectValueAccessor('link', predefinedProperties),
+  incorrectNodeValueAccessor: predefinedProperties => ErrorMessages.incorrectValueAccessor('node', predefinedProperties),
   exccedPaletteSize: (palette, size) =>
     `Predefined palette has not enough colors. ` +
     `From palette [${Array.from(palette)}] (size: ${palette.location}), requested ${size} colors.`,

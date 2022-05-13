@@ -2,14 +2,16 @@ import { Injectable } from '@angular/core';
 
 import { combineLatest, ReplaySubject, Observable } from 'rxjs';
 import { map, tap, switchMap, first } from 'rxjs/operators';
-import { omit, transform, pick, assign } from 'lodash-es';
+import { omit, transform, assign } from 'lodash-es';
 
-import { ViewBase, SankeyNode, SankeyLink } from 'app/sankey/interfaces';
+import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { DefaultLayoutService } from './layout.service';
 import { ControllerService } from './controller.service';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../interfaces/view';
+import { SankeyNode, SankeyLink } from '../model/sankey-document';
+import { EditService } from './edit.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -21,15 +23,14 @@ import { SankeyNodesOverwrites, SankeyLinksOverwrites, SankeyView } from '../int
 export class ViewControllerService {
   constructor(
     private common: ControllerService,
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    protected readonly update: EditService
   ) {
   }
 
   views$ = this.common.views$;
 
-  activeViewBase$ = this.common.state$.pipe(
-    map(({baseViewName}) => baseViewName)
-  );
+  activeViewBase$ = this.common.baseViewName$;
 
   activeViewName$ = this.common.state$.pipe(
     map(({viewName}) => viewName)
@@ -40,30 +41,7 @@ export class ViewControllerService {
     map(({baseView}) => baseView)
   );
 
-  readonly nodeViewProperties: Array<keyof SankeyNode> = [
-    '_layer',
-    '_value',
-    '_value',
-    '_depth',
-    '_height',
-    '_x0',
-    '_x1',
-    '_y0',
-    '_y1',
-    '_order'
-  ];
-  readonly linkViewProperties: Array<keyof SankeyLink> = [
-    '_value',
-    '_multiple_values',
-    '_y0',
-    '_y1',
-    '_circular',
-    '_width',
-    '_order',
-    '_adjacent_divider',
-    '_id'
-  ];
-  readonly statusOmitProperties = ['viewName', 'baseViewName', 'baseViewInitialState'];
+  readonly statusOmitProperties = ['viewName', 'baseViewInitialState'];
 
   graph$ = this.layout$.pipe(
     switchMap(layout => layout.graph$)
@@ -73,24 +51,24 @@ export class ViewControllerService {
     switchMap(layout => layout.graphViewport$)
   );
 
-  selectView(viewName) {
-    return this.common.patchState({viewName});
+  selectView(networkTraceIdx, viewName) {
+    return this.common.setState({networkTraceIdx, viewName});
   }
 
   registerLayout(layout: DefaultLayoutService) {
     this.layout$.next(layout);
   }
 
-  mapToPropertyObject(entities: Partial<SankeyNode | SankeyLink>[], properties): SankeyNodesOverwrites | SankeyLinksOverwrites {
+  mapToPropertyObject(entities: Array<SankeyNode | SankeyLink>): SankeyNodesOverwrites | SankeyLinksOverwrites {
     return transform(entities, (result, entity) => {
-      result[entity._id] = pick(entity, properties);
+      result[entity.id] = entity.viewProperties;
     }, {});
   }
 
   openBaseView(baseViewName: ViewBase): Observable<any> {
-    return this.common.patchState({
-      baseViewName,
-      viewName: null
+    return this.common.setState({
+      networkTraceIdx: null,
+      baseViewName
     });
   }
 
@@ -106,20 +84,12 @@ export class ViewControllerService {
       first(),
       map(states => assign({}, ...states)),
       map(stateDelta => omit(stateDelta, this.statusOmitProperties)),
-      switchMap(state => this.activeViewBase$.pipe(
-        first(),
-        map(base => ({
-          state,
-          viewName,
-          base
-        })),
-      )),
-      switchMap(partialView => this.graph$.pipe(
+      switchMap(state => this.graph$.pipe(
         first(),
         map(({nodes, links}) => ({
-          ...partialView,
-          nodes: this.mapToPropertyObject(nodes, this.nodeViewProperties),
-          links: this.mapToPropertyObject(links, this.linkViewProperties)
+          state,
+          nodes: this.mapToPropertyObject(nodes as any),
+          links: this.mapToPropertyObject(links as any)
         }))
       )),
       switchMap(partialView => this.graphViewport$.pipe(
@@ -129,32 +99,25 @@ export class ViewControllerService {
           size: {width, height}
         } as SankeyView))
       )),
-      switchMap(view => this.views$.pipe(
+      switchMap(view => this.common.networkTrace$.pipe(
         first(),
-        tap(views => this.common.viewsUpdate$.next({...views, [viewName]: view}))
+        tap(networkTrace => networkTrace.addView(viewName, view))
       )),
-      switchMap(_views => this.common.data$.pipe(
-        first(),
-        map(data => ({...data, _views}))
-      )),
-      switchMap(() => this.common.patchState({viewName}))
+      tap(() => this.common.viewsUpdate$.next()),
+      switchMap(() => this.common.setState({viewName}))
     );
   }
 
   deleteView(viewName) {
-    return this.common.views$.pipe(
+    return this.common.networkTrace$.pipe(
       first(),
-      map(views => omit(views, viewName)),
-      tap(views => this.common.viewsUpdate$.next(views)),
+      tap(networkTrace => networkTrace.deleteView(viewName)),
+      tap(views => this.common.viewsUpdate$.next(viewName)),
       // If the deleted view is the current view, switch from it
-      switchMap(() => this.common.patchState(
-        {viewName: null},
-        (delta, patch) =>
-          delta.viewName === viewName && {
-            ...delta,
-            viewName: null
-          }
-      )),
+      switchMap(() => this.common.reduceState(
+        state =>
+          state.viewName === viewName ? omit(state, 'viewName') : state
+      ))
     );
   }
 }

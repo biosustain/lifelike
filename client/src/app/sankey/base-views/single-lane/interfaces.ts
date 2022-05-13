@@ -1,8 +1,8 @@
-import { SankeyLink, SankeyTrace, SankeyNode, SankeyFile, NetworkTraceData } from 'app/sankey/interfaces';
+import { TypeContext } from 'app/sankey/interfaces';
 
 import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
 import { SelectionEntity, SelectionType } from '../../interfaces/selection';
-
+import { SankeyNode, SankeyLink } from '../../model/sankey-document';
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
@@ -17,38 +17,28 @@ export interface SankeySingleLaneOptionsExtend {
 
 export type SankeySingleLaneOptions = SankeyBaseOptions & SankeySingleLaneOptionsExtend;
 
-export interface SankeySingleLaneLink extends SankeyLink {
-  _graphRelativePosition?: 'left' | 'right' | 'multiple';
-  _visited?: string | number;
-  _traces?: SankeyTrace[];
-}
-
-export interface SankeySingleLaneNode extends SankeyNode {
-  _source: SankeySingleLaneLink;
-  _target: SankeySingleLaneLink;
-}
-
-export interface SankeySingleLaneData extends SankeyFile {
-  links: SankeySingleLaneLink[];
-  nodes: SankeySingleLaneNode[];
-}
 
 export type SelectionSingleLaneEntity = SelectionEntity | {
-  [SelectionType.link]: SankeySingleLaneLink;
+  [SelectionType.link]: Base['link'];
 };
 
 export type SankeySingleLaneSelection = {
-  node: SankeySingleLaneNode
+  node: Base['node']
 } | {
-  link: SankeySingleLaneLink
+  link: Base['link']
 } | {
-  trace: SankeyTrace
+  trace: Base['trace']
 };
 
 export type BaseOptions = SankeySingleLaneOptions;
 export type BaseState = SankeySingleLaneState;
 
-export type SingleLaneNetworkTraceData = NetworkTraceData<SankeySingleLaneNode, SankeySingleLaneLink>;
+export interface Base extends TypeContext {
+  options: BaseOptions;
+  state: BaseState;
+  link: SankeyLink;
+  node: SankeyNode<this['link']>;
+}
 
 export interface Palette {
   name: string;

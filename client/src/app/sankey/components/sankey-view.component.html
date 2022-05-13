@@ -8,14 +8,29 @@
             <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
         </app-module-error>
     </ng-container>
-    <app-module-header [object]="object"
+    <app-module-header (dragStarted)="dragStarted($event)"
                        *ngIf="(data$ | async) as data"
-                       (dragStarted)="dragStarted($event)">
+                       [object]="object">
         <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                          [object]="object" [showDelete]="false"
                          [showOpen]="false">
         </app-module-menu>
-        <app-warning-pill></app-warning-pill>
+        <div *ngIf="pandingChanges$ | async">
+            <span class="badge badge-danger badge-pill ml-1"
+                  ngbTooltip="Has unsaved changes" container="body">
+              <i class="fa fa-pencil-alt"></i>
+            </span>
+        </div>
+        <div class="btn-group ml-1">
+            <button (click)="saveView()" [disabled]="!object?.isEditable" class="btn btn-secondary"
+                    container="body" ngbTooltip="Save View" placement="bottom" type="button">
+                <i class="fa fa-fw fa-save"></i>
+            </button>
+            <button (click)="saveViewAs()" [disabled]="!object?.isEditable" class="btn btn-secondary"
+                    container="body" ngbTooltip="Save View As" placement="bottom" type="button">
+                <i class="fa fa-fw fa-save"></i>
+            </button>
+        </div>
         <ng-container moduleMenuAdditions>
             <div class="dropdown-divider"></div>
             <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
@@ -54,7 +69,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body" [style.whiteSpace]="'pre-line'">
+                    <div [style.whiteSpace]="'pre-line'" class="modal-body">
                         {{ data.graph.description }}
                     </div>
                 </ng-template>
@@ -88,22 +103,36 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <app-warning-list [showAll]="true" [dismissible]="false"></app-warning-list>
+                        <app-warning-list [dismissible]="false" [showAll]="true"></app-warning-list>
                     </div>
                 </ng-template>
             </button>
         </ng-container>
         <button (click)="resetView()" class="btn btn-secondary" container="body"
-                ngbTooltip="Reset the view" placement="bottom"
+                ngbTooltip="Reset this view" placement="bottom"
                 type="button">
             <i class="fas fa-sync"></i>
         </button>
-        <app-sankey-view-dropdown
-                [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-                class="d-inline-block"
-                [object]="object"
-        ></app-sankey-view-dropdown>
-        <div class="btn-group-toggle" [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'">
+        <div [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+             class="btn-group d-inline-block mr-auto"
+             ngbDropdown title="Select baseview">
+            <button class="btn btn-secondary" ngbDropdownToggle>
+                {{activeViewBaseName$ | async}}
+            </button>
+            <!-- add class dropdown-menu to avoid relayout -->
+            <div class="dropdown-menu" ngbDropdownMenu>
+                <button (click)="openBaseView(viewBase.sankeyMultiLane)"
+                        ngbDropdownItem>
+                    Multi-Lane View
+                </button>
+                <button (click)="openBaseView(viewBase.sankeySingleLane)"
+                        ngbDropdownItem>
+                    Single-Lane View
+                </button>
+            </div>
+        </div>
+
+        <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
             <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                     ngbTooltip="Fit Map to Window" placement="bottom"
                     type="button">
@@ -120,49 +149,47 @@
                 <i class="fas fa-search-minus"></i>
             </button>
         </div>
-        <div *ngIf="update.isAwaited" class="btn-group d-inline-block" title="Apply updates">
-            <button (click)="update.reset()"
-                    class="btn btn-primary">
-                <i class="fas fa-sync-alt"></i> Apply updates
-            </button>
-        </div>
-        <div class="btn-group-toggle flex-wrap" [ngClass.gt-sm]="'btn-group ml-auto'"
-             [ngStyle.lt-md]="'display: contents'">
+        <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"
+             class="btn-group-toggle flex-wrap">
             <div class="btn-group d-inline-block" ngbDropdown
                  title="Select Trace Network">
                 <button class="btn btn-primary" ngbDropdownToggle>
-                    <ng-container
-                            *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">{{
-                        networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}</ng-container>
-                    <ng-template #noSelectedTrace>Select Trace Network</ng-template>
+                    <ng-container *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">
+                        {{ networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}
+                        <ng-container *ngIf="viewName$ | async as viewName">
+                            → {{ viewName }}
+                        </ng-container>
+                    </ng-container>
+                    <ng-template #noSelectedTrace>Select Trace Network or View</ng-template>
                 </button>
-                    <!-- add class dropdown-menu to avoid relayout-->
-                <div ngbDropdownMenu class="dropdown-menu">
+                <!-- add class dropdown-menu to avoid relayout-->
+                <div class="dropdown-menu" ngbDropdownMenu>
                     <app-searchable-dropdown-menu
-                            (changeValue)="selectNetworkTrace($event)"
+                            (changeValue)="selectNetworkTraceOrView($event)"
                             [appConstrainToViewport]="viewport.size$"
+                            [items]="networkTracesAndViewsMap$ | async"
+                            [optionTextAccessor]="traceAndViewNameAccessor"
                             class="d-flex flex-column"
-                            [items]="networkTracesMap$ | async"
-                            [optionTextAccessor]="traceNameAccessor"
                     ></app-searchable-dropdown-menu>
                 </div>
             </div>
-            <div class="btn-group d-inline-block" ngbDropdown title="Predefined sizing options"
-                 *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor">
-                <button class="btn btn-primary" ngbDropdownToggle [disabled]="readonlyView$ | async">
+            <div *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor" class="btn-group d-inline-block"
+                 ngbDropdown
+                 title="Predefined sizing options">
+                <button class="btn btn-primary" ngbDropdownToggle>
                     {{ predefinedValueAccessor?.description !== 'None' ?
                     predefinedValueAccessor.description :
                     'Select Predefined Value Accessor' }}
                 </button>
                 <!-- add class dropdown-menu to avoid relayout -->
-                <div ngbDropdownMenu class="dropdown-menu">
+                <div class="dropdown-menu" ngbDropdownMenu>
                     <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
-                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue"
+                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue: order"
                             ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
                 </div>
             </div>
             <label class="btn-primary flex-grow-0" ngbButtonLabel>
-                <input type="checkbox" ngbButton [(ngModel)]="advancedPanel">Advanced
+                <input [(ngModel)]="advancedPanel" ngbButton type="checkbox">Advanced
             </label>
             <div class="btn-group btn-group-toggle">
                 <app-sankey-search-control>

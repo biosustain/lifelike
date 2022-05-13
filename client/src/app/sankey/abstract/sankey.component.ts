@@ -10,7 +10,7 @@ import { zoomIdentity } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { SankeyLink, SankeyNode, SankeyId } from 'app/sankey/interfaces';
+import { SankeyId, TypeContext, SankeyLinkInterface } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { isNotEmpty } from 'app/shared/utils';
@@ -18,32 +18,31 @@ import { isNotEmpty } from 'app/shared/utils';
 import { representativePositiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
-import { SankeyBaseOptions, SankeyBaseState } from '../base-views/interfaces';
 import { LayoutService } from '../services/layout.service';
 import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
 import { Match, EntityType } from '../interfaces/search';
-import { SankeyUpdateService } from '../services/sankey-update.service';
+import { EditService } from '../services/edit.service';
 
-export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<SankeyBaseOptions, SankeyBaseState>;
+export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<TypeContext>;
 
 @Component({templateUrl: './sankey.component.svg'})
-export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions, State extends SankeyBaseState>
+export abstract class SankeyAbstractComponent<Base extends TypeContext>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     protected readonly clipboard: ClipboardService,
     protected readonly snackBar: MatSnackBar,
-    protected readonly sankey: LayoutService<Options, State>,
+    protected readonly sankey: LayoutService<Base>,
     protected readonly wrapper: ElementRef,
     protected readonly zone: NgZone,
     protected readonly selection: SankeySelectionService,
     protected readonly search: SankeySearchService,
-    protected readonly updateController: SankeyUpdateService
+    protected readonly updateController: EditService
   ) {
   }
 
   // region D3Selection
-  get linkSelection(): d3_Selection<any, SankeyLink, any, any> {
+  get linkSelection(): d3_Selection<any, Base['link'], any, any> {
     // returns empty selection if DOM struct was not initialised
     return d3_select(this.links.nativeElement)
       .selectAll(function() {
@@ -52,7 +51,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       });
   }
 
-  get nodeSelection(): d3_Selection<any, SankeyNode, any, any> {
+  get nodeSelection(): d3_Selection<any, Base['node'], any, any> {
     // returns empty selection if DOM struct was not initialised
     return d3_select(this.nodes.nativeElement)
       .selectAll(function() {
@@ -73,7 +72,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
             type === EntityType.Node &&
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            nodes.find(({_id}) => _id == id)
+            nodes.find(({id: nodeId}) => nodeId == id)
           ),
           updateSingular(this.renderedNodes$, {
             enter: s => s
@@ -107,7 +106,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
               })
           }),
         )),
-        tap((node: SankeyNode) => node && this.panToNode(node)),
+        tap((node: Base['node']) => node && this.panToNode(node as any)),
       )),
     debug('focusedNode$')
   );
@@ -149,11 +148,11 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           circular
         }
       } = this;
-      const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
+      const layerWidth = ({source, target}: SankeyLinkInterface) => Math.abs(target.layer - source.layer);
 
       // save selection in this point so we can forward d3 lifecycle groups
       return this.linkSelection
-        .data<SankeyLink>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
+        .data<Base['link']>(links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
         .join(
           enter => enter
             .append('path')
@@ -168,19 +167,19 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
             // .transition().duration(RELAYOUT_DURATION)
             // .attrTween('d', link => {
             //   const newPathParams = calculateLinkPathParams(link, this.normalizeLinks);
-            //   const paramsInterpolator = d3Interpolate.interpolateObject(link._calculated_params, newPathParams);
+            //   const paramsInterpolator = d3Interpolate.interpolateObject(link.calculated_params, newPathParams);
             //   return t => {
             //     const interpolatedParams = paramsInterpolator(t);
             //     // save last params on each iteration so we can interpolate from last position upon
             //     // animation interrupt/cancel
-            //     link._calculated_params = interpolatedParams;
+            //     link.calculated_params = interpolatedParams;
             //     return composeLinkPath(interpolatedParams);
             //   };
             // })
             .attr('d', linkPath),
           exit => exit.remove()
         )
-        .attr('thickness', d => d._width || 0)
+        .attr('thickness', d => d.width || 0)
         .call(join =>
           join.select('title')
             .text(linkTitle)
@@ -206,11 +205,11 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       } = this;
 
       return this.nodeSelection
-        .data<SankeyNode>(
+        .data<Base['node']>(
           nodes.filter(
             // should no longer be an issue but leaving as sanity check
             // (if not satisfied visualisation brakes)
-            n => n._sourceLinks.length + n._targetLinks.length > 0
+            n => n.sourceLinks.length + n.targetLinks.length > 0
           ),
           id
         )
@@ -218,7 +217,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           enter => enter.append('g')
             .call(enterNode => updateNodeRect(enterNode.append('rect')))
             .call(this.attachNodeEvents)
-            .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`)
+            .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
             .call(enterNode =>
               updateNodeText(
                 fontSize,
@@ -255,14 +254,14 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
             })
             // todo: reenable when performance improves
             // .transition().duration(RELAYOUT_DURATION)
-            .attr('transform', ({_x0, _y0}) => `translate(${_x0},${_y0})`),
+            .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`),
           exit => exit.remove()
         )
         .call(joined => {
           updateNodeRect(
             joined
               .select('rect')
-              .style('fill', nodeColor as d3_ValueFn<any, SankeyNode, string>)
+              .style('fill', nodeColor as d3_ValueFn<any, Base['node'], string>)
           );
           joined.select('g')
             .call(textGroup => {
@@ -314,7 +313,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
             .raise(),
           // just delete property (don't set it to false)
           exit: s => s.attr('searched', undefined),
-          accessor: (arr, {_id}) => arr.includes(_id),
+          accessor: (arr, {id}) => arr.includes(id),
         })
       ),
       matches$.pipe(
@@ -324,7 +323,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
           otherOnStart: null,
           // just delete property (don't set it to false)
           exit: s => s.attr('searched', undefined),
-          accessor: (arr, {_id}) => arr.includes(_id),
+          accessor: (arr, {id}) => arr.includes(id),
         })
       )
     ])),
@@ -372,8 +371,8 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
   updateNodeText(fontSize, texts) {
     const {width} = this;
     return texts
-      .attr('transform', ({_x0, _x1, _y0, _y1}) =>
-        `translate(${_x0 < width / 2 ? (_x1 - _x0) + 6 : -6} ${(_y1 - _y0) / 2})`
+      .attr('transform', ({x0, x1, y0, y1}) =>
+        `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`
       )
       .attr('text-anchor', 'end')
       .attr('font-size', fontSize)
@@ -381,7 +380,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
         textGroup.select('text')
           .attr('dy', '0.35em')
       )
-      .filter(({_x0}) => _x0 < width / 2)
+      .filter(({x0}) => x0 < width / 2)
       .attr('text-anchor', 'start')
       .attr('font-size', fontSize);
   }
@@ -417,12 +416,12 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
   }
 
 
-  panToNode({_x0, _x1, _y0, _y1}) {
+  panToNode({x0, x1, y0, y1}) {
     this.zoom.translateTo(
       // x
-      (_x0 + _x1) / 2,
+      (x0 + x1) / 2,
       // y
-      (_y0 + _y1) / 2,
+      (y0 + y1) / 2,
       undefined,
       true
     );
@@ -585,19 +584,19 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
       linkPath$
     } = this.sankey;
 
-    const nodeWidth = d._x1 - d._x0;
-    const nodeHeight = d._y1 - d._y0;
+    const nodeWidth = d.x1 - d.x0;
+    const nodeHeight = d.y1 - d.y0;
     const newPosition = {
-      _x0: d._x0 + d3_event.dx,
-      _x1: d._x0 + d3_event.dx + nodeWidth,
-      _y0: d._y0 + d3_event.dy,
-      _y1: d._y0 + d3_event.dy + nodeHeight
+      x0: d.x0 + d3_event.dx,
+      x1: d.x0 + d3_event.dx + nodeWidth,
+      y0: d.y0 + d3_event.dy,
+      y1: d.y0 + d3_event.dy + nodeHeight
     };
     Object.assign(d, newPosition);
     d3_select(element)
       .raise()
-      .attr('transform', `translate(${d._x0},${d._y0})`);
-    const relatedLinksIds = d._sourceLinks.concat(d._targetLinks).map(id);
+      .attr('transform', `translate(${d.x0},${d.y0})`);
+    const relatedLinksIds = d.sourceLinks.concat(d.targetLinks).map(id);
     return linkPath$.pipe(
       switchMap(linkPath =>
         this.renderedLinks$.pipe(
@@ -635,7 +634,7 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
 
   // region Highlight
   highlightTraces(traces: Set<object>) {
-    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({_trace}) => traces.has(_trace));
+    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
   }
 
   highlightNodeGroup(group) {
@@ -695,9 +694,9 @@ export abstract class SankeyAbstractComponent<Options extends SankeyBaseOptions,
 
   updateNodeRect(rects) {
     return rects
-      .attr('height', ({_y1, _y0}) => representativePositiveNumber(_y1 - _y0))
-      .attr('width', ({_x1, _x0}) => _x1 - _x0)
-      .attr('width', ({_x1, _x0}) => _x1 - _x0);
+      .attr('height', ({y1, y0}) => representativePositiveNumber(y1 - y0))
+      .attr('width', ({x1, x0}) => x1 - x0)
+      .attr('width', ({x1, x0}) => x1 - x0);
   }
 
   // endregion
