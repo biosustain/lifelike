@@ -22,7 +22,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { Base } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { updateAttr } from '../../../../utils/rxjs';
-import { SankeyUpdateService } from '../../../../services/sankey-update.service';
+import { EditService } from '../../../../services/edit.service';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -48,7 +48,7 @@ export class SankeyMultiLaneComponent
     protected readonly zone: NgZone,
     protected readonly selection: SankeySelectionService,
     protected readonly search: SankeySearchService,
-    protected readonly updateController: SankeyUpdateService
+    protected readonly updateController: EditService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search, updateController);
     selection.multiselect = true;

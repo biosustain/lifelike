@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { first, last } from 'lodash-es';
-import { color } from 'd3-color';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -11,8 +10,8 @@ import { LayoutService, LayersContext } from 'app/sankey/services/layout.service
 import { ServiceOnInit } from 'app/shared/schemas/common';
 
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
-import { BaseOptions, BaseState, Base } from '../interfaces';
-import { SankeyUpdateService } from '../../../services/sankey-update.service';
+import { Base } from '../interfaces';
+import { EditService } from '../../../services/edit.service';
 
 type SinglelaneDataWithContext = LayersContext<Base>;
 
@@ -23,7 +22,7 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
     protected readonly truncatePipe: TruncatePipe,
     readonly warningController: WarningControllerService,
     protected readonly modalService: NgbModal,
-    protected readonly update: SankeyUpdateService
+    protected readonly update: EditService
   ) {
     super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();

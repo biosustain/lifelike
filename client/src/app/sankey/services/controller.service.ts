@@ -119,8 +119,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   baseViewName$ = this.stateAccessor('baseViewName');
   // do not use standart accessor for this one cause we want null if it wasnt set
   viewName$ = this.state$.pipe(
-    map(({viewName = null}) => viewName),
-    distinctUntilChanged()
+    map(({viewName = null}) => viewName)
   );
 
   data$ = this._data$.pipe(
@@ -159,7 +158,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     switchMap(views => this.viewName$.pipe(
       map(viewName => views[viewName as string] ?? null),
     )),
-    distinctUntilChanged(),
     debug('view'),
     shareReplay<View>(1)
   );
@@ -539,13 +537,5 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph}),
       maximumLabelLength: this.findMaximumLabelLength(nodes)
     };
-  }
-
-  resetController() {
-    return this.data$.pipe(
-      first(),
-      // todo
-      // switchMap(data => this.loadData(data))
-    ).toPromise();
   }
 }

@@ -52,7 +52,7 @@ import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
 import { SankeyURLLoadParam } from '../interfaces/url';
-import { SankeyUpdateService } from '../services/sankey-update.service';
+import { EditService } from '../services/edit.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
@@ -73,7 +73,7 @@ interface BaseViewContext {
     SankeySearchService,
     ControllerService,
     ViewControllerService,
-    SankeyUpdateService
+    EditService
   ]
 })
 export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy {
@@ -173,6 +173,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     shareReplay({bufferSize: 1, refCount: true})
   );
 
+  pandingChanges$ = defer(() => this.baseView$.pipe(
+    switchMap(baseView => baseView.hasPendingChanges$)
+  ));
+
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -189,7 +193,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     private zone: NgZone,
     private viewController: ViewControllerService,
     private search: SankeySearchService,
-    public update: SankeyUpdateService,
+    public update: EditService,
     private readonly messageDialog: MessageDialog,
   ) {
     this.loadTask = new BackgroundTask(hashId =>
@@ -579,6 +583,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         tap(({baseView, layout, selection}) => {
           baseView.delta$.next({});
           selection.reset();
+          this.update.reset();
         })
       )
     ]).toPromise();
