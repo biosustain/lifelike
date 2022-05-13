@@ -23,7 +23,7 @@ import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../interfaces/search';
 import { ErrorMessages } from '../../../../constants/error';
-import { SankeyUpdateService } from '../../../../services/sankey-update.service';
+import { EditService } from '../../../../services/edit.service';
 import { Base } from '../../interfaces';
 
 type SankeyEntity = Base['node'] | Base['link'];
@@ -53,7 +53,7 @@ export class SankeySingleLaneComponent
     protected selection: SankeySelectionService,
     protected search: SankeySearchService,
     readonly warningController: WarningControllerService,
-    protected readonly updateController: SankeyUpdateService
+    protected readonly updateController: EditService
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search, updateController);
     selection.multiselect = false;

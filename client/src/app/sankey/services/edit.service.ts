@@ -1,22 +1,29 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, ReplaySubject, combineLatest } from 'rxjs';
-import { scan, switchMap, map } from 'rxjs/operators';
+import { BehaviorSubject, ReplaySubject, combineLatest, Subject } from 'rxjs';
+import { scan, switchMap, map, startWith, shareReplay } from 'rxjs/operators';
 import { minBy } from 'lodash-es';
 import { uniq, maxBy } from 'lodash';
+
+import { isNotEmpty } from 'app/shared/utils';
 
 import { SankeyNode } from '../model/sankey-document';
 
 @Injectable()
-export class SankeyUpdateService {
+export class EditService {
   reset$ = new BehaviorSubject<any>(false);
-  movedNode$ = new ReplaySubject<SankeyNode>(1);
+  movedNode$ = new Subject<SankeyNode>();
   movedNodes$ = this.reset$.pipe(
     switchMap(() =>
       this.movedNode$.pipe(
-        scan((movedNodes, node) => uniq([...movedNodes, node]), [] as SankeyNode[]),
+        startWith([] as SankeyNode[]),
+        scan((movedNodes: SankeyNode[], node: SankeyNode) => uniq([...movedNodes, node])),
       )
-    )
+    ),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+  edited$ = this.movedNodes$.pipe(
+    map(movedNodes => isNotEmpty(movedNodes))
   );
   movedNodesExtent$ = this.movedNodes$.pipe(
     map(movedNodes => ({

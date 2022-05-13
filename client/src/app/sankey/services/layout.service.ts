@@ -20,8 +20,8 @@ import { SankeyAbstractLayoutService, LayoutData } from '../abstract/sankey-layo
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
-import { SankeyUpdateService } from './sankey-update.service';
-import { View, SankeyNode } from '../model/sankey-document';
+import { EditService } from './edit.service';
+import { View, SankeyNode, SankeyDocument } from '../model/sankey-document';
 
 interface LayerPlaceholder {
   layer: number;
@@ -78,16 +78,16 @@ interface VerticalContext {
 @Injectable()
 export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayoutService<Base>
   implements ServiceOnInit, OnDestroy {
-  constructor(
-    readonly baseView: BaseControllerService<Base>,
-    protected readonly truncatePipe: TruncatePipe,
-    readonly warningController: WarningControllerService,
-    protected readonly modalService: NgbModal,
-    protected readonly update: SankeyUpdateService
-  ) {
-    super(truncatePipe);
-    this.extent$.subscribe(this.update.viewPort$);
-  }
+  graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
+    // ensure no calculation of view if base view changed
+    takeUntil(this.destroyed$),
+    // temporary fixes end
+    switchMap(view => this.calculateLayout$),
+    tap(() => this.update.reset()),
+    debug('graph$'),
+    shareReplay<Base['data']>(1),
+    takeUntil(this.destroyed$)
+  );
 
   destroyed$ = new Subject();
 
@@ -128,15 +128,16 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
 
-  graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
-    // ensure no calculation of view if base view changed
-    takeUntil(this.destroyed$),
-    // temporary fixes end
-    switchMap(view => this.calculateLayout$),
-    debug('graph$'),
-    shareReplay<Base['data']>(1),
-    takeUntil(this.destroyed$)
-  );
+  constructor(
+    readonly baseView: BaseControllerService<Base>,
+    protected readonly truncatePipe: TruncatePipe,
+    readonly warningController: WarningControllerService,
+    protected readonly modalService: NgbModal,
+    protected readonly update: EditService
+  ) {
+    super(truncatePipe);
+    this.extent$.subscribe(this.update.viewPort$);
+  }
 
   zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
 
@@ -460,12 +461,18 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
           const sx = horizontalContext.width / view.size.width;
           // for faster lookup
           const entityById = new Map<string, SankeyNode>(data.nodes.map((d, i) => [String(d.id), d]));
-          Object.entries(view.nodes).map(([id, {y0, x0, order}]) => {
+          Object.entries(view.nodes).map(([id, {y0, y1, x0, order}]) => {
             const entity = entityById.get(id);
             if (entity) {
-              entity.y0 = y0 * sy;
+              if (sy < 1) {
+                const y = (y0 + y1) / 2;
+                entity.y0 = y * sy - entity.height / 2;
+                entity.y1 = y * sy + entity.height / 2;
+              } else {
+                entity.y0 = y0 * sy;
+                entity.y1 = y0 * sy + entity.height;
+              }
               entity.x0 = x0 * sx;
-              entity.y1 = entity.y0 + entity.height;
               entity.x1 = entity.x0 + this.dx;
               entity.order = order;
             } else {
@@ -501,7 +508,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
-      tap(() => this.update.reset()),
       // Calculate layout and address possible circular links
       // Associate the nodes with their respective links, and vice versa
       this.computeNodeLinks,
@@ -519,7 +525,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       this.computeNodeReversedDepths,
       debug('computeNodeReversedDepths'),
       // After this method data becomes wrapped in context {data, ...context}
-      switchMap(data => this.computeNodeLayers(data).pipe(
+      switchMap((data: SankeyDocument) => this.computeNodeLayers(data).pipe(
         switchMap(({columns, x}) =>
           // Calculate the nodes' values, based on the values of the incoming and outgoing links
           this.assignValues(data).pipe(

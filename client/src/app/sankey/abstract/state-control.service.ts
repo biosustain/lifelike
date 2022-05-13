@@ -1,5 +1,5 @@
 import { Observable, ReplaySubject, Subject, of, iif } from 'rxjs';
-import { merge, omitBy, isNil, partial, assignWith } from 'lodash-es';
+import { merge, omitBy, isNil, partial, transform } from 'lodash-es';
 import { switchMap, map, shareReplay, first, tap } from 'rxjs/operators';
 
 import { Many } from 'app/shared/schemas/common';
@@ -105,11 +105,10 @@ export abstract class StateControlAbstractService<Options extends object, State 
   ): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
-      map(delta => assignWith(
-        {},
-        delta,
+      map(delta => transform(
         statePatch,
-        (objValue, srcValue, key, object, source) => isNil(srcValue) ? objValue : srcValue
+        (accumulator, value, key, object) => accumulator[key] = isNil(value) ? delta[key] : value,
+        {} as Partial<State>
       )),
       tap(stateDelta => this.delta$.next(stateDelta))
     );

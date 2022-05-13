@@ -21,6 +21,7 @@ import { Base } from '../interfaces';
 import { nodeColors, NodePosition } from '../utils/nodeColors';
 import { getBaseState } from '../../../utils/stateLevels';
 import { View } from '../../../model/sankey-document';
+import { EditService } from '../../../services/edit.service';
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -33,9 +34,10 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
-    readonly injector: Injector
+    readonly injector: Injector,
+    protected readonly update: EditService
   ) {
-    super(common, warningController, injector);
+    super(common, warningController, injector, update);
     this.onInit();
   }
 

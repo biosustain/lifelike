@@ -15,8 +15,7 @@
                          [object]="object" [showDelete]="false"
                          [showOpen]="false">
         </app-module-menu>
-        <app-warning-pill></app-warning-pill>
-        <div *ngIf="false">
+        <div *ngIf="pandingChanges$ | async">
             <span class="badge badge-danger badge-pill ml-1"
                   ngbTooltip="Has unsaved changes" container="body">
               <i class="fa fa-pencil-alt"></i>
