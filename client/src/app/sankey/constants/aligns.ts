@@ -65,11 +65,11 @@ export const aligns: ALIGNS = {
     description: 'Align nodes to the right',
     fn: right,
   },
-  [ALIGN_ID.center]: {
-    name: 'center',
-    description: 'Align nodes to the center',
-    fn: center,
-  },
+  // [ALIGN_ID.center]: {
+  //   name: 'center',
+  //   description: 'Align nodes to the center',
+  //   fn: center,
+  // },
   [ALIGN_ID.justify]: {
     name: 'justify',
     description: 'Justify nodes',

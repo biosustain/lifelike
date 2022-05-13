@@ -8,7 +8,7 @@ export interface Align extends FunctionProperty {
 export enum ALIGN_ID {
   left = 'left',
   right = 'right',
-  center = 'center',
+  // center = 'center',
   justify = 'justify',
 }
 

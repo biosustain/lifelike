@@ -8,195 +8,198 @@
             <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
         </app-module-error>
     </ng-container>
-    <app-module-header (dragStarted)="dragStarted($event)"
-                       *ngIf="(data$ | async) as data"
-                       [object]="object">
-        <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
-                         [object]="object" [showDelete]="false"
-                         [showOpen]="false">
-        </app-module-menu>
-        <div *ngIf="pandingChanges$ | async">
+    <ng-container *ngIf="object$ | async as object">
+        <app-module-header (dragStarted)="dragStarted($event)"
+                           *ngIf="(data$ | async) as data"
+                           [object]="object">
+            <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
+                             [object]="object" [showDelete]="false"
+                             [showOpen]="false">
+            </app-module-menu>
+            <div *ngIf="pandingChanges$ | async">
             <span class="badge badge-danger badge-pill ml-1"
                   ngbTooltip="Has unsaved changes" container="body">
               <i class="fa fa-pencil-alt"></i>
             </span>
-        </div>
-        <div class="btn-group ml-1">
-            <button (click)="saveView()" [disabled]="!object?.isEditable" class="btn btn-secondary"
-                    container="body" ngbTooltip="Save View" placement="bottom" type="button">
-                <i class="fa fa-fw fa-save"></i>
-            </button>
-            <button (click)="saveViewAs()" [disabled]="!object?.isEditable" class="btn btn-secondary"
-                    container="body" ngbTooltip="Save View As" placement="bottom" type="button">
-                <i class="fa fa-fw fa-save"></i>
-            </button>
-        </div>
-        <ng-container moduleMenuAdditions>
-            <div class="dropdown-divider"></div>
-            <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
-                Open logs
-                <ng-template #logModal let-modal>
-                    <div class="modal-header">
-                        <h4 class="modal-title">Logs</h4>
-                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body p-0 pb-1">
-                        <ng-container
-                                *ngIf="isArray(data.graph.log); else justText">
-
-                            <ul class="list-group list-group-flush">
-                                <li *ngFor="let log of data?.graph.log"
-                                    class="list-group-item"
-                                >{{ log }}</li>
-                            </ul>
-                        </ng-container>
-                        <ng-template #justText>
-                            {{ data.graph.log }}
-                        </ng-template>
-                    </div>
-                </ng-template>
-            </button>
-            <button (click)="open(descriptionModal)" ngbDropdownItem>
-                Open description
-                <ng-template #descriptionModal let-modal>
-                    <div class="modal-header">
-                        <h4 class="modal-title">Description</h4>
-                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div [style.whiteSpace]="'pre-line'" class="modal-body">
-                        {{ data.graph.description }}
-                    </div>
-                </ng-template>
-            </button>
-            <button (click)="openPathReport()" ngbDropdownItem>
-                Open path report
-            </button>
-            <button (click)="open(fileStructureOverview)" ngbDropdownItem>
-                Open structure overview
-                <ng-template #fileStructureOverview let-modal>
-                    <div class="modal-header">
-                        <h4 class="modal-title">Structure Overview</h4>
-                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <app-sankey-structure-overview></app-sankey-structure-overview>
-                    </div>
-                </ng-template>
-            </button>
-            <button (click)="open(warningList)" ngbDropdownItem>
-                Warning List
-                <ng-template #warningList let-modal>
-                    <div class="modal-header">
-                        <h4 class="modal-title">Warnings</h4>
-                        <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <app-warning-list [dismissible]="false" [showAll]="true"></app-warning-list>
-                    </div>
-                </ng-template>
-            </button>
-        </ng-container>
-        <button (click)="resetView()" class="btn btn-secondary" container="body"
-                ngbTooltip="Reset this view" placement="bottom"
-                type="button">
-            <i class="fas fa-sync"></i>
-        </button>
-        <div [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
-             class="btn-group d-inline-block mr-auto"
-             ngbDropdown title="Select baseview">
-            <button class="btn btn-secondary" ngbDropdownToggle>
-                {{activeViewBaseName$ | async}}
-            </button>
-            <!-- add class dropdown-menu to avoid relayout -->
-            <div class="dropdown-menu" ngbDropdownMenu>
-                <button (click)="openBaseView(viewBase.sankeyMultiLane)"
-                        ngbDropdownItem>
-                    Multi-Lane View
+            </div>
+            <div class="btn-group ml-1">
+                <button (click)="saveView()" [disabled]="!object?.isEditable" class="btn btn-secondary"
+                        container="body" ngbTooltip="Save View" placement="bottom" type="button">
+                    <i class="fa fa-fw fa-save"></i>
                 </button>
-                <button (click)="openBaseView(viewBase.sankeySingleLane)"
-                        ngbDropdownItem>
-                    Single-Lane View
+                <button (click)="saveViewAs()" [disabled]="!object?.isEditable" class="btn btn-secondary"
+                        container="body" ngbTooltip="Save View As" placement="bottom" type="button">
+                    <i class="fa fa-fw fa-save"></i>
                 </button>
             </div>
-        </div>
+            <ng-container moduleMenuAdditions>
+                <div class="dropdown-divider"></div>
+                <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
+                    Open logs
+                    <ng-template #logModal let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Logs</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-0 pb-1">
+                            <ng-container
+                                    *ngIf="isArray(data.graph.log); else justText">
 
-        <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
-            <button (click)="resetZoom()" class="btn btn-secondary" container="body"
-                    ngbTooltip="Fit Map to Window" placement="bottom"
-                    type="button">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-            <button (click)="zoomIn()" class="btn btn-secondary" container="body"
-                    ngbTooltip="Zoom In" placement="bottom"
-                    type="button">
-                <i class="fas fa-search-plus"></i>
-            </button>
-            <button (click)="zoomOut()" class="btn btn-secondary" container="body"
-                    ngbTooltip="Zoom Out" placement="bottom"
-                    type="button">
-                <i class="fas fa-search-minus"></i>
-            </button>
-        </div>
-        <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"
-             class="btn-group-toggle flex-wrap">
-            <div class="btn-group d-inline-block" ngbDropdown
-                 title="Select Trace Network">
-                <button class="btn btn-primary" ngbDropdownToggle>
-                    <ng-container *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">
-                        {{ networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}
-                        <ng-container *ngIf="viewName$ | async as viewName">
-                            → {{ viewName }}
-                        </ng-container>
-                    </ng-container>
-                    <ng-template #noSelectedTrace>Select Trace Network or View</ng-template>
+                                <ul class="list-group list-group-flush">
+                                    <li *ngFor="let log of data?.graph.log"
+                                        class="list-group-item"
+                                    >{{ log }}</li>
+                                </ul>
+                            </ng-container>
+                            <ng-template #justText>
+                                {{ data.graph.log }}
+                            </ng-template>
+                        </div>
+                    </ng-template>
                 </button>
-                <!-- add class dropdown-menu to avoid relayout-->
-                <div class="dropdown-menu" ngbDropdownMenu>
-                    <app-searchable-dropdown-menu
-                            (changeValue)="selectNetworkTraceOrView($event)"
-                            [appConstrainToViewport]="viewport.size$"
-                            [items]="networkTracesAndViewsMap$ | async"
-                            [optionTextAccessor]="traceAndViewNameAccessor"
-                            class="d-flex flex-column"
-                    ></app-searchable-dropdown-menu>
-                </div>
-            </div>
-            <div *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor" class="btn-group d-inline-block"
-                 ngbDropdown
-                 title="Predefined sizing options">
-                <button class="btn btn-primary" ngbDropdownToggle>
-                    {{ predefinedValueAccessor?.description !== 'None' ?
-                    predefinedValueAccessor.description :
-                    'Select Predefined Value Accessor' }}
+                <button (click)="open(descriptionModal)" ngbDropdownItem>
+                    Open description
+                    <ng-template #descriptionModal let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Description</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div [style.whiteSpace]="'pre-line'" class="modal-body">
+                            {{ data.graph.description }}
+                        </div>
+                    </ng-template>
+                </button>
+                <button (click)="openPathReport()" ngbDropdownItem>
+                    Open path report
+                </button>
+                <button (click)="open(fileStructureOverview)" ngbDropdownItem>
+                    Open structure overview
+                    <ng-template #fileStructureOverview let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Structure Overview</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-sankey-structure-overview></app-sankey-structure-overview>
+                        </div>
+                    </ng-template>
+                </button>
+                <button (click)="open(warningList)" ngbDropdownItem>
+                    Warning List
+                    <ng-template #warningList let-modal>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Warnings</h4>
+                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                    type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <app-warning-list [dismissible]="false" [showAll]="true"></app-warning-list>
+                        </div>
+                    </ng-template>
+                </button>
+            </ng-container>
+            <button (click)="resetView()" class="btn btn-secondary" container="body"
+                    ngbTooltip="Reset this view" placement="bottom"
+                    type="button">
+                <i class="fas fa-sync"></i>
+            </button>
+            <div [ngClass.gt-sm]="'btn-group mr-auto'" [ngStyle.lt-md]="'display: contents'"
+                 class="btn-group d-inline-block mr-auto"
+                 ngbDropdown title="Select baseview">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                    {{activeViewBaseName$ | async}}
                 </button>
                 <!-- add class dropdown-menu to avoid relayout -->
                 <div class="dropdown-menu" ngbDropdownMenu>
-                    <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
-                            *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue: order"
-                            ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
+                    <button (click)="openBaseView(viewBase.sankeyMultiLane)"
+                            ngbDropdownItem>
+                        Multi-Lane View
+                    </button>
+                    <button (click)="openBaseView(viewBase.sankeySingleLane)"
+                            ngbDropdownItem>
+                        Single-Lane View
+                    </button>
                 </div>
             </div>
-            <label class="btn-primary flex-grow-0" ngbButtonLabel>
-                <input [(ngModel)]="advancedPanel" ngbButton type="checkbox">Advanced
-            </label>
-            <div class="btn-group btn-group-toggle">
-                <app-sankey-search-control>
-                </app-sankey-search-control>
+
+            <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
+                <button (click)="resetZoom()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Fit Map to Window" placement="bottom"
+                        type="button">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button (click)="zoomIn()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Zoom In" placement="bottom"
+                        type="button">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+                <button (click)="zoomOut()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Zoom Out" placement="bottom"
+                        type="button">
+                    <i class="fas fa-search-minus"></i>
+                </button>
             </div>
-        </div>
-    </app-module-header>
+            <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"
+                 class="btn-group-toggle flex-wrap">
+                <div class="btn-group d-inline-block" ngbDropdown
+                     title="Select Trace Network">
+                    <button class="btn btn-primary" ngbDropdownToggle>
+                        <ng-container *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">
+                            {{ networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}
+                            <ng-container *ngIf="viewName$ | async as viewName">
+                                → {{ viewName }}
+                            </ng-container>
+                        </ng-container>
+                        <ng-template #noSelectedTrace>Select Trace Network or View</ng-template>
+                    </button>
+                    <!-- add class dropdown-menu to avoid relayout-->
+                    <div class="dropdown-menu" ngbDropdownMenu>
+                        <app-searchable-dropdown-menu
+                                (changeValue)="selectNetworkTraceOrView($event)"
+                                [appConstrainToViewport]="viewport.size$"
+                                [items]="networkTracesAndViewsMap$ | async"
+                                [optionTextAccessor]="traceAndViewNameAccessor"
+                                class="d-flex flex-column"
+                        ></app-searchable-dropdown-menu>
+                    </div>
+                </div>
+                <div *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor"
+                     class="btn-group d-inline-block"
+                     ngbDropdown
+                     title="Predefined sizing options">
+                    <button class="btn btn-primary" ngbDropdownToggle>
+                        {{ predefinedValueAccessor?.description !== 'None' ?
+                        predefinedValueAccessor.description :
+                        'Select Predefined Value Accessor' }}
+                    </button>
+                    <!-- add class dropdown-menu to avoid relayout -->
+                    <div class="dropdown-menu" ngbDropdownMenu>
+                        <button (click)="selectPredefinedValueAccessor(predefinedValueAccessor.key)"
+                                *ngFor="let predefinedValueAccessor of predefinedValueAccessors$ | async | keyvalue: order"
+                                ngbDropdownItem>{{predefinedValueAccessor.value.description}}</button>
+                    </div>
+                </div>
+                <label class="btn-primary flex-grow-0" ngbButtonLabel>
+                    <input [(ngModel)]="advancedPanel" ngbButton type="checkbox">Advanced
+                </label>
+                <div class="btn-group btn-group-toggle">
+                    <app-sankey-search-control>
+                    </app-sankey-search-control>
+                </div>
+            </div>
+        </app-module-header>
+    </ng-container>
     <div class="relative w-100 h-100 overflow-hidden">
         <as-split [gutterSize]="5"
                   direction="horizontal"

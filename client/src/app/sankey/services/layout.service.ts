@@ -85,7 +85,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     takeUntil(this.destroyed$),
     // temporary fixes end
     switchMap(view => this.calculateLayout$),
-    tap(() => this.update.reset()),
     debug('graph$'),
     shareReplay<Base['data']>(1),
     takeUntil(this.destroyed$)
@@ -508,6 +507,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
   onInit(): void {
     this.calculateLayout$ = this.baseView.networkTraceData$.pipe(
+      tap(() => this.update.reset()),
       // Calculate layout and address possible circular links
       // Associate the nodes with their respective links, and vice versa
       this.computeNodeLinks,
