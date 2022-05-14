@@ -152,8 +152,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     }))
   );
 
-  takeUntilViewChange = takeUntil(this.baseView.common.view$);
-
   private calculateLayout$;
 
   ngOnDestroy() {

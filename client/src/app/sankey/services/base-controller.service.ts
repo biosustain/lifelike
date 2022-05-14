@@ -150,10 +150,6 @@ export class BaseControllerService<Base extends TypeContext>
     }
   };
 
-  resolveView$ = this.common.view$.pipe(
-    map(view => isNil(view) ? {} : getBaseState((view as SankeyView).state))
-  );
-
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
