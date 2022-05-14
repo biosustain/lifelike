@@ -107,10 +107,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     return this.dynamicComponentRef.get('advanced').instance;
   }
 
-  readonlyView$ = this.sankeyController.view$.pipe(
-    tap(v => console.log('view', v))
-  );
-
   baseViewContext$: Observable<BaseViewContext>;
   baseView$: Observable<DefaultBaseControllerService>;
   selection$: Observable<SankeySelectionService>;

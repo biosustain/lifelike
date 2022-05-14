@@ -119,7 +119,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   baseViewName$ = this.stateAccessor('baseViewName');
   // do not use standart accessor for this one cause we want null if it wasnt set
   viewName$ = this.state$.pipe(
-    map(({viewName = null}) => viewName)
+    map(({viewName = null}) => viewName),
+    distinctUntilChanged()
   );
 
   data$ = this._data$.pipe(
@@ -159,7 +160,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       map(viewName => views[viewName as string] ?? null),
     )),
     debug('view'),
-    shareReplay<View>(1)
+    shareReplay<View>({bufferSize: 1, refCount: true})
   );
 
   viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
