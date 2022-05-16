@@ -8,7 +8,7 @@
         <th *ngFor="let header of GENE_TABLE_HEADERS">{{ header }}</th>
         <tr *ngFor="let gene of document.importGenes">
             <td>{{ gene }}</td>
-            <td>{{ document.expressionValues.get(gene) }}</td>
+            <td>{{ document.values.get(gene) }}</td>
         </tr>
     </table>
   </div>

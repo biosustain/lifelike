@@ -11,7 +11,7 @@ import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCB
 export class BaseEnrichmentDocument {
   taxID = '';
   organism = '';
-  expressionValues = new Map<string, string>();
+  values = new Map<string, string>();
   importGenes: string[] = [];
   domains: string[] = [
     'Regulon',
@@ -124,9 +124,9 @@ export class BaseEnrichmentDocument {
     const taxID = data.taxId;
     const organism = data.organism;
     const domains = data.sources.filter(domain => domain.length);
-    const expressionValues = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.expressionValue || '']));
+    const values = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.value || '']));
     return {
-      importGenes, taxID, organism, domains, expressionValues, ...rest
+      importGenes, taxID, organism, domains, values, ...rest
     };
   }
 
@@ -273,7 +273,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       annotatedFullName: node.full_name || '',
                       link,
                       domains: this.generateGeneDomainResults(domains, domainWrapper, node),
-                      expressionValue: this.expressionValues.get(synonym),
+                      value: this.values.get(synonym),
                     });
                   }
                 }
@@ -284,7 +284,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
                     genesList.push({
                         imported: gene,
-                        expressionValue: this.expressionValues.get(gene),
+                        value: this.values.get(gene),
                     });
                   }
                 }
@@ -449,7 +449,7 @@ export interface EnrichedGene {
   annotatedFullName?: string;
   link?: string;
   domains?: { [domain: string]: EnrichedGeneDomain };
-  expressionValue?: string;
+  value?: string;
 }
 
 export interface EnrichmentResult {
@@ -480,6 +480,6 @@ export interface EnrichmentParsedData {
   taxID: string;
   organism: string;
   domains: string[];
-  expressionValues?: Map<string, string>;
+  values?: Map<string, string>;
   result?: EnrichmentResult;
 }

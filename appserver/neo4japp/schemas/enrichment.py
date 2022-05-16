@@ -17,7 +17,7 @@ class EnrichedGene(CamelCaseSchema):
     annotatedMatched = fields.String(allow_none=True)
     annotatedFullName = fields.String(allow_none=True)
     link = fields.String(allow_none=True)
-    expressionValue = fields.String(allow_none=True)
+    value = fields.String(allow_none=True)
     domains = fields.Dict(
         keys=fields.String(), values=fields.Dict(
             keys=fields.String(), values=fields.Nested(EnrichmentValue)), allow_none=True)
