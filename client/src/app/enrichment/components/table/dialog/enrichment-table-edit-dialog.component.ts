@@ -64,10 +64,10 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       tax_id: value.taxID,
     } : null);
     this.form.get('entitiesList').setValue(value.importGenes.map(gene => {
-        const expressionValue = value.expressionValues.get(gene);
+        const geneValue = value.values.get(gene);
         let row = gene;
-        if (!isNil(expressionValue) && expressionValue.length) {
-            row += `\t${expressionValue}`;
+        if (!isNil(geneValue) && geneValue.length) {
+            row += `\t${geneValue}`;
         }
         return row;
     }).join('\n'));
@@ -82,7 +82,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   getValue(): EnrichmentTableEditDialogValue {
     const parentValue: ObjectEditDialogValue = super.getValue();
     const value = this.form.value;
-    const [geneRows, importGenes, expressionValues, expectedRowLen] = [
+    const [geneRows, importGenes, values, expectedRowLen] = [
         (value.entitiesList as string).split(/[\/\n\r]/g),
         [],
         new Map<string, string>(),
@@ -95,13 +95,13 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
             cols.concat(Array<string>(expectedRowLen - cols.length));
         }
         importGenes.push(cols[0]);
-        expressionValues.set(cols[0], cols[1]);
+        values.set(cols[0], cols[1]);
     });
 
     this.document.setParameters({
       fileId: value.fileId || this.fileId || '',
       importGenes,
-      expressionValues,
+      values,
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,
       domains: value.domainsList,

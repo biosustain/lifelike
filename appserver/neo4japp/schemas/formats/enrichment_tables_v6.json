@@ -194,7 +194,7 @@
                   "type": "string",
                   "minLength": 0
                 },
-                "expressionValue": {
+                "value": {
                     "type": "string",
                     "minLength": 0
                 },
