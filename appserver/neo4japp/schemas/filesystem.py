@@ -83,9 +83,14 @@ class ProjectCreateSchema(CamelCaseSchema):
 
 
 class BulkProjectRequestSchema(CamelCaseSchema):
-    hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
-                           required=True,
-                           validate=marshmallow.validate.Length(min=1, max=100))
+    hash_ids = fields.List(
+        fields.String(
+            validate=marshmallow.validate.Length(min=1, max=200)
+        ),
+        required=True,
+        validate=marshmallow.validate.Length(min=1, max=100)
+    )
+    reqursive = fields.Boolean(missing=False)
 
 
 class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
@@ -127,6 +132,7 @@ class FileSchema(CamelCaseSchema):
     doi = fields.String()
     upload_url = fields.String()
     public = fields.Boolean()
+    pinned = fields.Boolean()
     annotations_date = fields.DateTime()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
     creation_date = fields.DateTime()
@@ -239,6 +245,7 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)
     public = fields.Boolean(default=False)
+    pinned = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
     hashes_of_linked = fields.List(fields.String, required=False)
     new_images = fields.List(fields.Field, required=False)

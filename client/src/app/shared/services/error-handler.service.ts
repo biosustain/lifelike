@@ -108,8 +108,9 @@ export class ErrorHandler {
                   }
                 }
 
-                return new UserError(
-                  title, message, additionalMsgs, stacktrace, error, transactionId);
+                return new UserError({
+                  ...error, title, message, additionalMsgs, stacktrace, transactionId
+                });
               }),
             );
           }
@@ -124,8 +125,9 @@ export class ErrorHandler {
           stacktrace = error + '';
         }
 
-        return of(new UserError(
-          title, message, additionalMsgs, stacktrace, error, transactionId));
+        return of(new UserError({
+          ...error, title, message, additionalMsgs, stacktrace, transactionId
+        }));
       }),
     );
   }

@@ -357,9 +357,14 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
       // nodes are placed in order from tree traversal
       nodes.sort((a, b) => a._order - b._order).forEach(node => {
         const nodeHeight = node._height;
-        node._y0 = y;
-        node._y1 = y + nodeHeight;
-        y += nodeHeight + spacerSize;
+
+        if (isNaN(node._y1)) {
+          node._y0 = y;
+          node._y1 = y + nodeHeight;
+          y += nodeHeight + spacerSize;
+        } else {
+          node._y0 = node._y1 - nodeHeight;
+        }
 
         // apply the y scale on links
         for (const link of node._sourceLinks) {
@@ -498,7 +503,7 @@ export class CustomisedSankeyLayoutService extends SankeyLayoutService {
   /**
    * Calculate layout and address possible circular links
    */
-  calcLayout(graph) {
+   calcLayout(graph) {
     // Associate the nodes with their respective links, and vice versa
     this.computeNodeLinks(graph);
     // Determine which links result in a circular path in the graph
