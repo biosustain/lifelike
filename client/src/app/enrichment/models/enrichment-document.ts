@@ -11,6 +11,7 @@ import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCB
 export class BaseEnrichmentDocument {
   taxID = '';
   organism = '';
+  expressionValues = new Map<string, string>();
   importGenes: string[] = [];
   domains: string[] = [
     'Regulon',
@@ -117,14 +118,15 @@ export class BaseEnrichmentDocument {
     };
   }
 
-  decode({data, ...rest}: EnrichmentData): EnrichmentParsedData {
+  decode({data, result, ...rest}: EnrichmentData): EnrichmentParsedData {
     // parse the file content to get gene list and organism tax id and name
     const importGenes = data.genes.split(',');
     const taxID = data.taxId;
     const organism = data.organism;
     const domains = data.sources.filter(domain => domain.length);
+    const expressionValues = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.expressionValue || '']));
     return {
-      importGenes, taxID, organism, domains, ...rest
+      importGenes, taxID, organism, domains, expressionValues, ...rest
     };
   }
 
@@ -270,7 +272,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       fullName: node.full_name || '',
                       annotatedFullName: node.full_name || '',
                       link,
-                      domains: this.generateGeneDomainResults(domains, domainWrapper, node)
+                      domains: this.generateGeneDomainResults(domains, domainWrapper, node),
+                      expressionValue: this.expressionValues.get(synonym),
                     });
                   }
                 }
@@ -278,7 +281,11 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 for (const gene of importGenes) {
                   if (!synonymsSet.has(gene)) {
                     geneMap.add(gene);
-                    genesList.push({imported: gene});
+
+                    genesList.push({
+                        imported: gene,
+                        expressionValue: this.expressionValues.get(gene),
+                    });
                   }
                 }
 
@@ -442,6 +449,7 @@ export interface EnrichedGene {
   annotatedFullName?: string;
   link?: string;
   domains?: { [domain: string]: EnrichedGeneDomain };
+  expressionValue?: string;
 }
 
 export interface EnrichmentResult {
@@ -472,5 +480,6 @@ export interface EnrichmentParsedData {
   taxID: string;
   organism: string;
   domains: string[];
+  expressionValues?: Map<string, string>;
   result?: EnrichmentResult;
 }
