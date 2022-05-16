@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 
+import { isNil } from 'lodash-es';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -62,7 +63,14 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       synonym: value.organism,
       tax_id: value.taxID,
     } : null);
-    this.form.get('entitiesList').setValue(value.importGenes.join('\n'));
+    this.form.get('entitiesList').setValue(value.importGenes.map(gene => {
+        const expressionValue = value.expressionValues.get(gene);
+        let row = gene;
+        if (!isNil(expressionValue) && expressionValue.length) {
+            row += `\t${expressionValue}`;
+        }
+        return row;
+    }).join('\n'));
     this.setDomains();
   }
 
@@ -73,11 +81,27 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   getValue(): EnrichmentTableEditDialogValue {
     const parentValue: ObjectEditDialogValue = super.getValue();
-
     const value = this.form.value;
+    const [geneRows, importGenes, expressionValues, expectedRowLen] = [
+        (value.entitiesList as string).split(/[\/\n\r]/g),
+        [],
+        new Map<string, string>(),
+        2
+    ];
+
+    geneRows.forEach(row => {
+        const cols = row.split('\t');
+        if (cols.length < expectedRowLen) {
+            cols.concat(Array<string>(expectedRowLen - cols.length));
+        }
+        importGenes.push(cols[0]);
+        expressionValues.set(cols[0], cols[1]);
+    });
+
     this.document.setParameters({
       fileId: value.fileId || this.fileId || '',
-      importGenes: value.entitiesList.split(/[\/\n\r]/g),
+      importGenes,
+      expressionValues,
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,
       domains: value.domainsList,
