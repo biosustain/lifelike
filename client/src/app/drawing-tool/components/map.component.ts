@@ -220,7 +220,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   registerGraphBehaviors() {
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas, this.snackBar), -100);
   }
 
   ngOnDestroy() {

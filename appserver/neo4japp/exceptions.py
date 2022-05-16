@@ -38,14 +38,28 @@ class ServerException(Exception):
     def version(self, version):
         self._version = version
 
+    @property
+    def type(self):
+        return type(self).__name__
+
     def __str__(self):
         return f'<Exception> {self.title}:{self.message}'
 
     def to_dict(self):
-        retval = {}
-        retval['title'] = self.title
-        retval['message'] = self.message
-        return retval
+        return {
+            'title': self.title,
+            'message': self.message,
+            'type': self.type
+        }
+
+
+class DeleteNonEmpty(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class StatisticalEnrichmentError(ServerException):
