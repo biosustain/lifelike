@@ -21,6 +21,7 @@ export class EnrichmentTable {
     const tableHeader: TableHeader[][] = [
       [
         {name: 'Imported', span: '1'},
+        {name: 'Expression Value', span: '1'},
         {name: 'Matched', span: '1'},
         {name: 'NCBI Gene Full Name', span: '1'},
       ],
@@ -77,6 +78,8 @@ export class EnrichmentTable {
         const row: TableCell[] = [{
           text: this.usePlainText ? resultGene.imported : resultGene.annotatedImported || resultGene.imported,
         }];
+
+        row.push({text: resultGene.expressionValue});
 
         if (resultGene.domains) {
           // There was a match
