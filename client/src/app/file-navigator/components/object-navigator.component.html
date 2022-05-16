@@ -10,15 +10,7 @@
 
     <ng-container *ngIf="status.resultsShown">
         <ng-template #tabTitle>
-            <ng-container *ngIf="object?.isDirectory && !object.parent">
-                Project Navigator for: {{object.project.name}}
-            </ng-container>
-            <ng-container *ngIf="object?.isDirectory && object.parent">
-                Project Navigator for: {{object.filename}}
-            </ng-container>
-            <ng-container *ngIf="!object?.isDirectory">
-                File Navigator
-            </ng-container>
+            {{object.effectiveName}} - {{ object.isDirectory ? 'Project' : 'File' }} Navigator
         </ng-template>
         <app-module-header [titleTemplate]="tabTitle" [object]="object" [showObjectMenu]="false"></app-module-header>
         <div class="flex-fill overflow-auto">

@@ -28,6 +28,7 @@ export class ObjectListComponent {
 
   @Input() appLinks = false;
   @Input() forEditing = true;
+  @Input() showPins = true;
   @Input() showDescription = false;
   @Input() parent: FilesystemObject | undefined;
   @Input() objects: CollectionModel<FilesystemObject> | undefined;
@@ -93,6 +94,24 @@ export class ObjectListComponent {
           this.errorHandler.create({label: 'Download file'}),
         ).subscribe();
       }
+    }
+  }
+
+  updateView() {
+    this.objects.updateView();
+  }
+
+  togglePin(object: FilesystemObject) {
+    if (object.privileges.writable) {
+      return this.filesystemService.save(
+        [object.hashId],
+        { pinned: !object.pinned, parentHashId: object.parent.hashId },
+        {[object.hashId]: object}
+      ).pipe(
+        this.errorHandler.create({label: 'Edit object'}),
+      ).toPromise()
+      .then(() => this.updateView())
+      .then(() => this.snackBar.open(`Saved changes to ${getObjectLabel(object)}.`, 'Close', {duration: 5000}));
     }
   }
 }

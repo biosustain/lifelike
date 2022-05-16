@@ -25,10 +25,7 @@ import { ProjectsService } from './services/projects.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
-import {
-  ObjectPreviewComponent,
-  ObjectPreviewOutletComponent,
-} from './components/object-preview.component';
+import { ObjectPreviewComponent, ObjectPreviewOutletComponent, } from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
@@ -43,11 +40,13 @@ import { FilesystemObjectDataProvider } from './providers/filesystem-object-data
 import { ObjectViewerComponent } from './components/object-viewer.component';
 import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
 import { ObjectUploadDialogComponent } from './components/dialog/object-upload-dialog.component';
+import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 
 @NgModule({
   declarations: [
     ObjectDeleteDialogComponent,
     ObjectDeletionResultDialogComponent,
+    ObjectDeleteReqursiveDialogComponent,
     ObjectBrowserComponent,
     BrowserComponent,
     BrowserContextComponent,

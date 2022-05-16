@@ -84,6 +84,7 @@ export interface FilesystemObjectData {
   mimeType: string;
   doi: string;
   public: boolean;
+  pinned: boolean;
   annotationsDate: string;
   creationDate: string;
   modifiedDate: string;
@@ -152,6 +153,7 @@ export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
   description?: string;
   uploadUrl?: string;
   public?: boolean;
+  pinned?: boolean;
   fallbackOrganism?: OrganismAutocomplete;
   annotationConfigs?: AnnotationConfigurations;
 }

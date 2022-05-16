@@ -28,6 +28,7 @@ import { toValidLink } from 'app/shared/utils/browser';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -198,6 +199,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     protected readonly snackBar: MatSnackBar,
     protected readonly errorHandler: ErrorHandler,
     protected readonly internalSearch: InternalSearchService,
+    protected readonly clipboard: ClipboardService
   ) {
   }
 
@@ -436,7 +438,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // null/undefined because a data source did not match
     // e.g we use "Custom" for phenotype
     if (idLink !== null && idLink !== undefined) {
-      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
+      base.push(
+        annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` :
+          'Id: None');
     } else {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
     }
@@ -688,7 +692,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @HostListener('document:selectionchange', ['$event'])
   selectionChange(event: Event) {
-    if(this.selecting) {
+    if (this.selecting) {
       const selection = window.getSelection();
       const ranges = this.getValidSelectionRanges(selection);
       if (ranges.length) {
@@ -743,7 +747,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    *  after selection start.
    */
   selectionEnd(event: Event) {
-    if(this.firstAnnotationRange) {
+    if (this.firstAnnotationRange) {
       if (IS_MAC) {
         const textLayer = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
         // if it is not multiple page selection (not-supported - still would work just without behaviour adjustment for mac)
@@ -1180,7 +1184,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
     overlayDiv.scrollIntoView({block: 'center'});
-    jQuery(overlayDiv).effect('highlight', {}, 1000);
+    // Does not work without JQuery UI - even thought it does not get detected by lint
+    // jQuery(overlayDiv).effect('highlight', {}, 1000);
     setTimeout(() => {
       jQuery(overlayDiv).remove();
     }, 3000);
@@ -1237,20 +1242,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @HostListener('keydown.control.c')
   @HostListener('keydown.meta.c')
   copySelectedText() {
-    let listener = (e: ClipboardEvent) => {
-      let clipboard = e.clipboardData || window['clipboardData'];
-      clipboard.setData('text', this.allText);
-      e.preventDefault();
-    };
-
-    document.addEventListener('copy', listener, false);
-    document.execCommand('copy');
-    document.removeEventListener('copy', listener, false);
-
+    this.clipboard.copy(this.allText, {sucess: 'It has been copied to clipboard'});
     this.deleteFrictionless();
-
-    this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
-
   }
 
   removeCustomAnnotation(uuid) {

@@ -144,6 +144,7 @@ def seed(filename):
 
             db.session.flush()
             db.session.commit()
+            # rollback in case of error?
 
             if 'id' in table.columns:
                 logger.info(f"Updating sequence for {table.name}...")
@@ -155,6 +156,7 @@ def seed(filename):
 
             db.session.flush()
             db.session.commit()
+            # rollback in case of error?
 
         logger.info("Fixtures imported")
 
@@ -206,6 +208,7 @@ def create_user(name, email):
     user.set_password('password')
     db.session.add(user)
     db.session.commit()
+    # rollback in case of error?
 
 
 @app.cli.command("set-role")
@@ -217,6 +220,7 @@ def set_role(email, role):
     get_role = account_service.get_or_create_role(role)
     user.roles.extend([get_role])
     db.session.commit()
+    # rollback in case of error?
 
 
 @app.cli.command('reset-elastic')
@@ -499,6 +503,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
             db.session.rollback()
 
     db.session.commit()
+    # rollback in case of error?
 
 
 @app.cli.command('merge-maps')

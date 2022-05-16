@@ -69,6 +69,7 @@ class ProjectsService(RDBMSBaseDao):
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
         projects = self.create_project_uncommitted(user, projects)
         db.session.commit()
+        # rollback in case of error?
         return projects
 
     def has_role(self, user: AppUser, projects: Projects) -> Optional[AppRole]:

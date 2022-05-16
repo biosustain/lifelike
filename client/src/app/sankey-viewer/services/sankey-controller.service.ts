@@ -207,6 +207,10 @@ export class SankeyControllerService {
       ];
   }
 
+  get selectedNetworkTraceIdx(): number {
+    return this.state.networkTraceIdx;
+  }
+
   get oneToMany() {
     const {graph: {node_sets}} = this.allData.value;
     const {selectedNetworkTrace} = this;
