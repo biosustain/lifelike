@@ -45,13 +45,13 @@ export class SankeySearchService {
   private _done$ = new ReplaySubject<boolean>(1);
   done$ = this._done$.asObservable();
 
-  currentSearch$ = this.common.data$.pipe(
+  currentSearch$ = this.common._data$.pipe(
     // limit size of data we operate on
-    map(({nodes, links, graph: {traceNetworks}}) => ({
+    map(({nodes, links, graph: {trace_networks}}) => ({
       nodes,
       links,
       graph: {
-        traceNetworks
+        trace_networks
       }
     })),
     switchMap(data => this.searchTokens$.pipe(
