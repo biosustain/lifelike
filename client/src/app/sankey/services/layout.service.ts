@@ -164,19 +164,38 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       // calculate width change ratio for repositioning of the nodes
       startWith({} as any),
       pairwise(),
-      map(([prevHorizontal, horizontal], callIndex) => {
-        if (callIndex === 0) {
-          // Absolute node positioning
-          this.positionNodesHorizontaly(data, horizontal, x);
-        } else {
-          const prevWidth = prevHorizontal?.width ?? horizontal.width;
-          const widthChangeRatio = horizontal.width / prevWidth;
+      switchMap(d => this.update.edited$.pipe(
+        switchMap(edited =>
+          iif(
+            () => edited,
+            of(d).pipe(
+              map(([prevHorizontal, horizontal]) => {
+                const prevWidth = prevHorizontal?.width ?? horizontal.width;
+                const widthChangeRatio = horizontal.width / prevWidth;
 
-          // Relative node positioning (to preserve draged node position)
-          this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
-        }
-        return data;
-      })
+                // Relative node positioning (to preserve draged node position)
+                this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
+                return data;
+              })
+            ),
+            of(d).pipe(
+              map(([prevHorizontal, horizontal], callIndex) => {
+                if (callIndex === 0) {
+                  // Absolute node positioning
+                  this.positionNodesHorizontaly(data, horizontal, x);
+                } else {
+                  const prevWidth = prevHorizontal?.width ?? horizontal.width;
+                  const widthChangeRatio = horizontal.width / prevWidth;
+
+                  // Relative node positioning (to preserve draged node position)
+                  this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
+                }
+                return data;
+              })
+            )
+          )
+        )
+      ))
     ));
   }
 
@@ -368,6 +387,14 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     );
   }
 
+  adjustNodesHeight(nodes: Base['node'][]) {
+    return tap(() =>
+      nodes.forEach(node => {
+        node.y1 = node.y0 + node.height;
+      })
+    );
+  }
+
   sortNodesLinks(nodes) {
     for (const {sourceLinks, targetLinks} of nodes) {
       sourceLinks.sort(this.linkSort);
@@ -546,7 +573,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                 takeUntil(this.destroyed$),
                 switchMap(verticalContext => combineLatest([
                   this.baseView.common.view$.pipe(first()),
-                  this.update.reset$.pipe(startWith(false))
+                  this.update.reset$
                 ]).pipe(
                   switchMap(([view, reset]) =>
                     iif(
@@ -557,11 +584,41 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                         tap(() => this.computeNodeBreadths(data, columns)),
                         debug('computeNodeBreadths'),
                         catchError(() => EMPTY),
-                        this.layoutNodesWithinColumns(columns),
+                        switchMap(d =>
+                          this.update.edited$.pipe(
+                            first(),
+                            switchMap(edited =>
+                              iif(
+                                () => edited,
+                                of(d).pipe(
+                                  this.adjustNodesHeight(data.nodes)
+                                ),
+                                of(d).pipe(
+                                  this.layoutNodesWithinColumns(columns)
+                                )
+                              )
+                            )
+                          )
+                        ),
                         debug('layoutNodesWithinColumns')
                       ),
-                      this.loadNodesPositionFromView(verticalContext, data, view).pipe(
-                        this.loadLinkOrderFromView(data, view)
+                      of(verticalContext).pipe(
+                        switchMap(d =>
+                          this.update.edited$.pipe(
+                            first(),
+                            switchMap(edited =>
+                              iif(
+                                () => edited,
+                                of(d).pipe(
+                                  this.adjustNodesHeight(data.nodes)
+                                ),
+                                this.loadNodesPositionFromView(verticalContext, data, view).pipe(
+                                  this.loadLinkOrderFromView(data, view)
+                                )
+                              )
+                            )
+                          )
+                        )
                       )
                     )
                   ),
