@@ -26,12 +26,12 @@ export class EditService {
     map(movedNodes => isNotEmpty(movedNodes))
   );
   movedNodesExtent$ = this.movedNodes$.pipe(
-    map(movedNodes => ({
+    map(movedNodes => (movedNodes.length ? {
       x0: minBy(movedNodes, 'x0').x0,
-      x1: maxBy(movedNodes, 'x1').y1,
+      x1: maxBy(movedNodes, 'x1').x1,
       y0: minBy(movedNodes, 'y0').y0,
       y1: maxBy(movedNodes, 'y1').y1,
-    }))
+    } : null))
   );
   viewPort$ = new ReplaySubject<{ width: number, height: number }>(1);
   viewBox$ = combineLatest([

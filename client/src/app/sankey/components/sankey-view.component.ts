@@ -77,7 +77,6 @@ interface BaseViewContext {
   ]
 })
 export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy {
-  fileContent: GraphFile;
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
@@ -107,72 +106,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     return this.dynamicComponentRef.get('advanced').instance;
   }
 
-  baseViewContext$: Observable<BaseViewContext>;
-  baseView$: Observable<DefaultBaseControllerService>;
-  selection$: Observable<SankeySelectionService>;
-  predefinedValueAccessor$: Observable<object>;
-  layout$: Observable<DefaultLayoutService>;
-  graph$: Observable<object>;
-  unsavedChanges$ = new Subject<boolean>();
-
-  predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
-  paramsSubscription: Subscription;
-
-
-  private dynamicComponentRef = new Map();
-
-  @ViewChild(SankeyDirective, {static: true}) sankeySlot;
-  @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
-  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
-  returnUrl: string;
-  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
-  openSankeySub: Subscription;
-  ready = false;
-  object$ = new ReplaySubject<FilesystemObject>(1);
-  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  searchPanel$ = new BehaviorSubject(false);
-  advancedPanel = false;
-  currentFileId;
-  entitySearchTerm$ = new ReplaySubject<string>(1);
-
-  isArray = Array.isArray;
-  entitySearchList$ = new BehaviorSubject([]);
-  _entitySearchListIdx$ = new ReplaySubject<number>(1);
-  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
-    map(networkTraces => new ExtendedMap(
-      networkTraces.map((networkTrace, index) => [index, networkTrace])
-    )),
-  );
-  data$ = this.sankeyController.data$;
-
-  networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
-    switchMap(networkTraces =>
-      combineLatest(
-        networkTraces.map((networkTrace, index) =>
-          networkTrace.views$.pipe(
-            map(views => [
-              [`nt_${index}`, networkTrace],
-              ...Object.entries(views).map(([id, view]) => ([`view_${index}_${id}`, view]))
-            ] as [string, TraceNetwork | View][])
-          ),
-        )
-      )
-    ),
-    map(nestedOptions => new ExtendedMap(flatMap(nestedOptions))),
-    debug('networkTracesAndViewsMap$')
-  );
-
-  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
-    map(activeViewBase => viewBaseToNameMapping[activeViewBase]),
-    debug('activeViewBaseName$'),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
-
-  pandingChanges$ = defer(() => this.baseView$.pipe(
-    switchMap(baseView => baseView.hasPendingChanges$)
-  ));
-
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
@@ -190,7 +123,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     private viewController: ViewControllerService,
     private search: SankeySearchService,
     public update: EditService,
-    private readonly messageDialog: MessageDialog,
+    private readonly messageDialog: MessageDialog
   ) {
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
@@ -253,17 +186,73 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
     this.moduleProperties$.subscribe(this.modulePropertiesChange);
   }
+  fileContent: GraphFile;
 
-  moduleProperties$ = combineLatest([
-    this.object$,
-    this.update.edited$
-  ]).pipe(
-    map(([{filename}, edited]) => ({
-      title: filename,
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-      badge: edited ? '*' : undefined
-    }))
+  // baseViewContext$: Observable<BaseViewContext>;
+  // baseView$: Observable<DefaultBaseControllerService>;
+  // selection$: Observable<SankeySelectionService>;
+  // predefinedValueAccessor$: Observable<object>;
+  // layout$: Observable<DefaultLayoutService>;
+  // graph$: Observable<object>;
+  unsavedChanges$ = new Subject<boolean>();
+
+  predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
+  paramsSubscription: Subscription;
+
+
+  private dynamicComponentRef = new Map();
+
+  @ViewChild(SankeyDirective, {static: true}) sankeySlot;
+  @ViewChild(SankeyDetailsPanelDirective, {static: true}) detailsSlot;
+  @ViewChild(SankeyAdvancedPanelDirective, {static: true}) advancedSlot;
+  returnUrl: string;
+  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
+  openSankeySub: Subscription;
+  ready = false;
+  object$ = new ReplaySubject<FilesystemObject>(1);
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  searchPanel$ = new BehaviorSubject(false);
+  advancedPanel = false;
+  currentFileId;
+  entitySearchTerm$ = new ReplaySubject<string>(1);
+
+  isArray = Array.isArray;
+  entitySearchList$ = new BehaviorSubject([]);
+  _entitySearchListIdx$ = new ReplaySubject<number>(1);
+  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
+    map(networkTraces => new ExtendedMap(
+      networkTraces.map((networkTrace, index) => [index, networkTrace])
+    )),
   );
+  data$ = this.sankeyController.data$;
+
+  networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
+    switchMap(networkTraces =>
+      combineLatest(
+        networkTraces.map((networkTrace, index) =>
+          networkTrace.views$.pipe(
+            map(views => [
+              [`nt_${index}`, networkTrace],
+              ...Object.entries(views).map(([id, view]) => ([`view_${index}_${id}`, view]))
+            ] as [string, TraceNetwork | View][])
+          ),
+        )
+      )
+    ),
+    map(nestedOptions => new ExtendedMap(flatMap(nestedOptions))),
+    debug('networkTracesAndViewsMap$')
+  );
+
+  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
+    map(activeViewBase => viewBaseToNameMapping[activeViewBase]),
+    debug('activeViewBaseName$'),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  pandingChanges$ = defer(() => this.baseView$.pipe(
+    switchMap(baseView => baseView.hasPendingChanges$)
+  ));
 
   state$ = this.sankeyController.state$;
   options$ = this.sankeyController.options$;
@@ -274,6 +263,71 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   viewName$ = this.sankeyController.viewName$;
 
   viewBase = ViewBase;
+
+  /**
+   * Load different base view components upom base view change
+   */
+  baseViewContext$ = this.sankeyController.baseViewName$.pipe(
+    map(baseViewName => {
+      const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
+      const moduleFactory = getModuleFactory(baseViewName);
+      const moduleRef = moduleFactory.create(this.injector);
+      const injectComponent = (container, token) => {
+        container.clear();
+        const comp = moduleRef.injector.get(token);
+        const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
+        const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
+        return componentRef;
+      };
+
+      const sankey = injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH);
+
+      this.dynamicComponentRef.set('sankey', sankey);
+      this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
+      this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
+
+      return {
+        baseView: moduleRef.injector.get(BaseControllerService),
+        layout: sankey.instance.sankey,
+        selection: moduleRef.injector.get(SankeySelectionService)
+      };
+    }),
+    tap(({layout, baseView}) => {
+      this.viewController.layout$.next(layout);
+      baseView.delta$.next({});
+    }),
+    debug('baseViewContext$'),
+    shareReplay<BaseViewContext>(1)
+  );
+
+  baseView$ = this.baseViewContext$.pipe(
+    map(({baseView}) => baseView)
+  );
+  predefinedValueAccessor$ = this.baseView$.pipe(
+    switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
+  );
+  layout$ = this.baseViewContext$.pipe(
+    map(({layout}) => layout)
+  );
+  graph$ = this.layout$.pipe(
+    switchMap<DefaultLayoutService, Observable<object>>(layout => layout.graph$)
+  );
+  selection$ = this.baseViewContext$.pipe(
+    map(({selection}) => selection)
+  );
+
+  moduleProperties$ = combineLatest([
+    this.object$,
+    this.baseView$.pipe(
+      switchMap(baseView => baseView.hasPendingChanges$)
+    )
+  ]).pipe(
+    map(([{filename}, edited]) => ({
+      title: filename,
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      badge: edited ? '*' : undefined
+    }))
+  );
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
@@ -297,57 +351,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   ngOnInit() {
-    /**
-     * Load different base view components upom base view change
-     */
-    this.baseViewContext$ = this.sankeyController.baseViewName$.pipe(
-      map(baseViewName => {
-        const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
-        const moduleFactory = getModuleFactory(baseViewName);
-        const moduleRef = moduleFactory.create(this.injector);
-        const injectComponent = (container, token) => {
-          container.clear();
-          const comp = moduleRef.injector.get(token);
-          const factory = moduleRef.componentFactoryResolver.resolveComponentFactory(comp);
-          const componentRef = container.createComponent(factory, null, moduleRef.injector, null);
-          return componentRef;
-        };
-
-        const sankey = injectComponent(this.sankeySlot.viewContainerRef, SANKEY_GRAPH);
-
-        this.dynamicComponentRef.set('sankey', sankey);
-        this.dynamicComponentRef.set('advanced', injectComponent(this.advancedSlot.viewContainerRef, SANKEY_ADVANCED));
-        this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
-
-        return {
-          baseView: moduleRef.injector.get(BaseControllerService),
-          layout: sankey.instance.sankey,
-          selection: moduleRef.injector.get(SankeySelectionService)
-        };
-      }),
-      tap(({layout, baseView}) => {
-        this.viewController.layout$.next(layout);
-        baseView.delta$.next({});
-      }),
-      debug('baseViewContext$'),
-      shareReplay<BaseViewContext>(1)
-    );
-
-    this.baseView$ = this.baseViewContext$.pipe(
-      map(({baseView}) => baseView)
-    );
-    this.predefinedValueAccessor$ = this.baseView$.pipe(
-      switchMap(sankeyBaseViewControl => sankeyBaseViewControl.predefinedValueAccessor$)
-    );
-    this.layout$ = this.baseViewContext$.pipe(
-      map(({layout}) => layout)
-    );
-    this.graph$ = this.layout$.pipe(
-      switchMap<DefaultLayoutService, Observable<object>>(layout => layout.graph$)
-    );
-    this.selection$ = this.baseViewContext$.pipe(
-      map(({selection}) => selection)
-    );
 
     this.selection$.pipe(
       switchMap(selection => selection.selection$),
@@ -601,6 +604,21 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   // region Zoom
   resetZoom() {
     if (this.sankeySlot) {
+      combineLatest([
+        this.update.movedNodesExtent$,
+        this.update.viewPort$
+      ]).pipe(first()).subscribe(([extent, viewPort]) => {
+        if (extent) {
+          const extentWidth = Math.max(viewPort.width, extent.x1) - Math.min(0, extent.x0);
+          const extentHeight = Math.max(viewPort.height, extent.y1) - Math.min(0, extent.y0);
+          const zoom = Math.min(viewPort.width / extentWidth, viewPort.height / extentHeight);
+          this.sankey.sankey.zoomAdjustment$.next({
+            zoom,
+            x0: Math.min(0, extent.x0),
+            y0: Math.min(0, extent.y0)
+          });
+        }
+      });
       this.sankey.zoom.reset();
     }
   }
