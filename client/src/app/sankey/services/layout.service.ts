@@ -390,7 +390,17 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders: NodeColumns<Base>) {
     return combineLatest([
       this.baseView.nodeHeight$,
-      this.vertical$
+      this.vertical$.pipe(
+        switchMap(vertical => this.update.edited$.pipe(
+          switchMap(edited =>
+            iif(
+              () => edited,
+              EMPTY,
+              of(vertical)
+            )
+          )
+        ))
+      )
     ]).pipe(
       map(([nodeHeight, {height, y0, y1}]) => {
         const {dy, py, dx, value} = this;
@@ -534,9 +544,11 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                 this.computeNodeHeights(nodesAndPlaceholders),
                 debug('computeNodeHeights'),
                 takeUntil(this.destroyed$),
-                switchMap(verticalContext => this.baseView.common.view$.pipe(
-                  first(),
-                  switchMap(view =>
+                switchMap(verticalContext => combineLatest([
+                  this.baseView.common.view$.pipe(first()),
+                  this.update.reset$.pipe(startWith(false))
+                ]).pipe(
+                  switchMap(([view, reset]) =>
                     iif(
                       () => isNil(view),
                       of(verticalContext).pipe(
@@ -608,106 +620,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       width: rx1 - rx0,
       height: ry1 - ry0
     };
-  }
-
-  adjustViewToViewport(view) {
-    return switchMap((data: Base['data']) => this.extent$.pipe(
-      // calculate width change ratio for repositioning of the nodes
-      startWith({} as any),
-      pairwise(),
-      map(([prevExtent, extent], callIndex) => {
-        if (callIndex === 0) {
-          // Absolute node positioning
-          const {width: currentWidth, height: currentHeight} = extent;
-          const graphSize = this.calculateSizeFromNodesPosition(data.nodes);
-          const width = Math.max(view.size.width, graphSize.width) ?? currentWidth;
-          const height = Math.max(view.size.height, graphSize.height) ?? currentHeight;
-          const horizontalAdjustment = currentWidth / width;
-          const verticalAdjustment = currentHeight / height;
-
-          let x0 = 0;
-          let y0 = 0;
-          if (graphSize.x0 < 0) {
-            x0 -= graphSize.x0 - this.dx;
-          }
-          if (graphSize.y0 < 0) {
-            y0 -= graphSize.y0 - this.dy;
-          }
-
-          this.repositionNodesHorizontaly(
-            data,
-            extent,
-            horizontalAdjustment / verticalAdjustment
-          );
-          this.zoomAdjustment$.next({
-            x0, y0,
-            zoom: verticalAdjustment
-          });
-        } else {
-          const prevWidth = prevExtent?.width ?? extent.width;
-          const widthChangeRatio = extent.width / prevWidth;
-          // Relative node positioning (to preserve draged node position)
-          this.repositionNodesHorizontaly(data, extent, widthChangeRatio);
-        }
-        return data;
-      })
-    ));
-  }
-
-  recreateLayout(view) {
-    return this.baseView.networkTraceData$.pipe(
-      tap(() => this.update.reset()),
-      tap((data: Base['data']) => {
-        this.applyPropertyObject(view.nodes, data.nodes);
-        this.applyPropertyObject(view.links, data.links);
-      }),
-      this.computeNodeLinks,
-      // Adjust the zoom so view fits into viewport
-      this.adjustViewToViewport(view),
-      switchMap(data => this.baseView.nodeHeight$.pipe(
-        map((nodeHeight) => {
-          let ky = 1;
-          if (nodeHeight.max.enabled) {
-            const maxSetNodeHeight = nodeHeight.max.ratio + this.dx;
-            const maxNodeHeight = max(data.nodes, node => node.height);
-            if (maxNodeHeight > maxSetNodeHeight) {
-              ky = maxSetNodeHeight / maxNodeHeight;
-            }
-          }
-          for (const node of data.nodes) {
-            if (nodeHeight.min.enabled && nodeHeight.min.value) {
-              node.height = Math.max(node.height * ky, nodeHeight.min.value);
-            } else {
-              node.height = node.height * ky;
-            }
-          }
-        }),
-        map(verticalContext => data),
-        tap(({nodes}) =>
-          nodes.forEach(node => {
-            const nodeY = (node.y1 - node.y0) / 2 + node.y0;
-            node.y0 = nodeY - node.height / 2;
-            node.y1 = nodeY + node.height / 2;
-          })
-        )
-      ))
-    );
-  }
-
-  applyPropertyObject(
-    propertyObject: SankeyNodesOverwrites | SankeyLinksOverwrites,
-    entities: Array<Base['node'] | Base['link']>
-  ): void {
-    // for faster lookup
-    const entityById = new Map(entities.map((d, i) => [String(d.id), d]));
-    Object.entries(propertyObject).map(([id, properties]) => {
-      const entity = entityById.get(id);
-      if (entity) {
-        Object.assign(entity, properties);
-      } else {
-        this.warningController.warn(ErrorMessages.missingEntity(id));
-      }
-    });
   }
 
   calculateLinkPathParams(link, normalize = true) {
