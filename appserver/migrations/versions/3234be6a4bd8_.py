@@ -1,7 +1,7 @@
 """Add `pinned` column to files
 
 Revision ID: 3234be6a4bd8
-Revises: 7102b4744622
+Revises: 8103ef4e0a48
 Create Date: 2022-05-05 22:55:18.534103
 
 """
@@ -12,13 +12,15 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '3234be6a4bd8'
-down_revision = '7102b4744622'
+down_revision = '8103ef4e0a48'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('files', sa.Column('pinned', sa.Boolean(), nullable=False, server_default='False'))
+    op.add_column(
+        'files', sa.Column('pinned', sa.Boolean(), nullable=False, server_default='False')
+    )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
