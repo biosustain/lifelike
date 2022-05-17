@@ -53,7 +53,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  private _data$ = new ReplaySubject<GraphFile>(1);
+  _data$ = new ReplaySubject<GraphFile>(1);
 
   state$ = this.delta$.pipe(
     switchMap(delta =>
