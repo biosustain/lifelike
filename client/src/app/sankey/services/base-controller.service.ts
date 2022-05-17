@@ -42,25 +42,17 @@ export class BaseControllerService<Base extends TypeContext>
 
   hasPendingChanges$ = combineLatest([
     this.update.edited$,
-    this.common.view$.pipe(
-      switchMap(view =>
+    this.delta$.pipe(
+      switchMap(baseViewDelta =>
         iif(
-          () => isNil(view),
-          of(false),
-          this.delta$.pipe(
-            switchMap(baseViewDelta =>
-              iif(
-                () => isEmpty(baseViewDelta),
-                this.common.delta$.pipe(
-                  map(commonDelta => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
-                  map(commonDelta => !isEmpty(commonDelta))
-                ),
-                of(true)
-              )
-            )
-          )
+          () => isEmpty(baseViewDelta),
+          this.common.delta$.pipe(
+            map(commonDelta => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
+            map(commonDelta => !isEmpty(commonDelta))
+          ),
+          of(true)
         )
-      ),
+      )
     )
   ]).pipe(
     map(editFlags => editFlags.some(f => f)),
