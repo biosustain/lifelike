@@ -31,6 +31,9 @@
       {{ error }}
     </div>
   </div>
+  <div *ngIf="control.hasError('noDuplicates')">
+    {{ control.getError('noDuplicates').value }}
+  </div>
   <ng-container *ngFor="let error of errors | keyvalue">
     <div *ngIf="control.hasError(error.key)">
       {{ error.value }}
