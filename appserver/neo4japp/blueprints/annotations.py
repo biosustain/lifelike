@@ -421,30 +421,11 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
 
 class FileAnnotationsGenerationView(FilesystemBaseView):
-
-    @use_args(lambda request: BulkFileRequestSchema())
-    @use_args(lambda request: AnnotationGenerationRequestSchema())
-    def post(self, targets, params):
-        """Generate annotations for one or more files."""
-        current_user = g.current_user
-
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
-                                                   lazy_load_content=True)
-        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
-
-        override_organism = None
-        override_annotation_configs = None
-
-        if params.get('organism'):
-            override_organism = params['organism']
-
-        if params.get('annotation_configs'):
-            override_annotation_configs = params['annotation_configs']
-
+    def annotate_files(self, files, user_id, override_organism=None,
+        override_annotation_configs=None):
         updated_files = []
         versions = []
         results = {}
-        missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         for file in files:
             if override_organism is not None:
@@ -466,7 +447,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
                         configs=effective_annotation_configs,
                         organism=effective_organism,
-                        user_id=current_user.id,
+                        user_id=user_id
                     )
                 except AnnotationError as e:
                     current_app.logger.error(
@@ -509,7 +490,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
                         configs=effective_annotation_configs,
                         organism=effective_organism,
-                        user_id=current_user.id,
+                        user_id=user_id,
                         enrichment=enrichment
                     )
 
@@ -538,6 +519,34 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     'success': False,
                     'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.'
                 }
+
+        return updated_files, versions, results
+
+    @use_args(lambda request: BulkFileRequestSchema())
+    @use_args(lambda request: AnnotationGenerationRequestSchema())
+    def post(self, targets, params):
+        """Generate annotations for one or more files."""
+        current_user = g.current_user
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
+                                                   lazy_load_content=True)
+        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+
+        override_organism = None
+        override_annotation_configs = None
+
+        if params.get('organism'):
+            override_organism = params['organism']
+
+        if params.get('annotation_configs'):
+            override_annotation_configs = params['annotation_configs']
+
+        updated_files, versions, results = self.annotate_files(
+            files,
+            current_user.id,
+            override_organism,
+            override_annotation_configs
+        )
 
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
         db.session.bulk_update_mappings(Files, updated_files)
