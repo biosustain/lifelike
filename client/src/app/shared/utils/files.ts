@@ -8,6 +8,9 @@ import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
+import { extractDescriptionFromSankey } from 'app/sankey/utils';
+
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
       const graphRepr =  await JSZip.loadAsync(blob).then((zip: JSZip) => {
