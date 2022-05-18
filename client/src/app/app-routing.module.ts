@@ -312,7 +312,7 @@ const routes: Routes = [
     canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Enrichment Visualisation',
-      fontAwesomeIcon: 'fas chart-bar',
+      fontAwesomeIcon: 'chart-bar',
     },
   },
   {

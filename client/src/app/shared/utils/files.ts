@@ -4,6 +4,9 @@ import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
+import { extractDescriptionFromSankey } from 'app/sankey/utils';
+
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
       const graphRepr =  await JSZip.loadAsync(blob).then((zip: JSZip) => {
@@ -99,3 +102,17 @@ export const getPath = (object: FilesystemObject | undefined): FilesystemObject[
   }
   return path.reverse();
 };
+
+// TODO: Change this to extractAllLifelikeMetadata when we decide to download the metadata
+export function extractDescriptionFromFile(file: File): Promise<string> {
+  const format = file.name.split('.').pop();
+  if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
+    return file.text().then(text => {
+      if (format === 'graph') {
+        return extractDescriptionFromSankey(text);
+      }
+      return '';
+   });
+  }
+  return Promise.resolve('');
+}
