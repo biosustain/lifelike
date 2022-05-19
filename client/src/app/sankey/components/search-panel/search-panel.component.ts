@@ -59,7 +59,7 @@ export class SankeySearchPanelComponent implements AfterViewInit {
 
   networkTraceIdxToName(networkTraceIdx: number): Observable<string> {
     return this.common.networkTraces$.pipe(
-      map(networkTraces => networkTraces[networkTraceIdx].description)
+      map(networkTraces => networkTraces[networkTraceIdx].name)
     );
   }
 
