@@ -279,9 +279,9 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 for (const gene of importGenes) {
-                  if (!synonymsSet.has(gene)) {
+                  // Don't add the unmatched gene if we've already seen it.
+                  if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
                     geneMap.add(gene);
-
                     genesList.push({
                         imported: gene,
                         value: this.values.get(gene),
