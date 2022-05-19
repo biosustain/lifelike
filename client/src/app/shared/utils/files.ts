@@ -3,9 +3,9 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
-import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
