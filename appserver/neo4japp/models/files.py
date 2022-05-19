@@ -440,7 +440,7 @@ def file_insert(mapper, connection, target: Files):
 
 @event.listens_for(Files, 'before_update')
 def receive_file_before_update(mapper, connection, target):
-    # Only update the modified date if any of the specified columns changed
+    # Only update the modified date if any of the specified columns *did not* change
     ignore_date_modified_unless_these_columns = [
         'filename',
         'parent_id',
