@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, ValidationErrors, Validators } from '@angular/forms';
+import { FormArray, FormControl, Validators } from '@angular/forms';
 
 import { isNil } from 'lodash-es';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -42,7 +42,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
               protected readonly progressDialog: ProgressDialog,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog, modalService);
-    this.form.addControl('entitiesList', new FormControl('', [Validators.required, this.noDuplicates]));
+    this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
     this.form.get('organism').setValidators([Validators.required]);
   }
@@ -83,17 +83,16 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     const parentValue: ObjectEditDialogValue = super.getValue();
     const value = this.form.value;
     const geneRows =  (value.entitiesList as string).split(/[\/\n\r]/g);
-    const importGenes = [];
     const values = new Map<string, string>();
     const expectedRowLen =  2;
 
-    geneRows.forEach(row => {
+    const importGenes = geneRows.map(row => {
         const cols = row.split('\t');
         if (cols.length < expectedRowLen) {
             cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
         }
-        importGenes.push(cols[0]);
         values.set(cols[0], cols[1]);
+        return cols[0];
     });
 
     this.document.setParameters({
@@ -132,22 +131,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         i++;
       });
     }
-  }
-
-  private noDuplicates(control: AbstractControl): ValidationErrors | null {
-    const value: string = control.value;
-
-    // If value is an empty string then exit early with a passing value
-    if (isNil(value) || value.trim() === '') {
-        return null;
-    }
-
-    const genes = value.split(/[\/\n\r]/g).map(row => row.split('\t')[0].trim());
-    const duplicateGenes = genes.length === 1 ? [] : genes.sort().filter((gene, index) => gene === genes[index + 1]);
-
-    return duplicateGenes.length ?
-        {noDuplicates: {value: `Please remove ${duplicateGenes.length} duplicate gene(s) from the list: ${duplicateGenes.join(', ')}`}} :
-        null;
   }
 }
 
