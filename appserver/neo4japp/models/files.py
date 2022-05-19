@@ -438,6 +438,30 @@ def file_insert(mapper, connection, target: Files):
         )
 
 
+@event.listens_for(Files, 'before_update')
+def receive_file_before_update(mapper, connection, target):
+    # Only update the modified date if any of the specified columns changed
+    ignore_date_modified_unless_these_columns = [
+        'filename',
+        'parent_id',
+        'description',
+        'content_id',
+        'user_id',
+        'doi',
+        'upload_url',
+        'public',
+        'annotations',
+        'annotation_configs',
+        'custom_annotations',
+        'excluded_annotations',
+        'organism_name',
+        'organism_synonym',
+        'organism_taxonomy_id'
+    ]
+    if not _did_columns_update(target, ignore_date_modified_unless_these_columns):
+        orm.attributes.flag_modified(target, 'modified_date')
+
+
 @event.listens_for(Files, 'after_update')
 def file_update(mapper, connection, target: Files):
     """
