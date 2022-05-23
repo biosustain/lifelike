@@ -17,6 +17,15 @@ on:
         required: false
         default: ***ARANGO_DB_NAME***.azurecr.io
         type: string
+      cloud_sql_instance_name:
+        description: Google Cloud SQL instance name
+        required: true
+        type: string
+      cloud_sql_force_backup:
+        description: Backup before deploying even if no migrations need to be run
+        required: true
+        default: false
+        type: boolean
     secrets:
       CONTAINER_REGISTRY_USERNAME:
         required: true
@@ -26,40 +35,37 @@ on:
         required: true
       SSH_KEY:
         required: true
+      GCP_CREDENTIALS:
+        required: true
 
 jobs:
+  # -------------------------------------------------------------
+  # JOB: Build Docker images
+  # -------------------------------------------------------------
   build:
     name: Build
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         include:
           - image: kg-webserver
             path: ./client
             build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.client_config }}
-
           - image: kg-appserver
             path: ./appserver
-
           - image: kg-cache-service
             path: ./cache-invalidator
-
           - image: kg-statistical-enrichment
             path: ./statistical-enrichment
-
           - image: kg-liquibase
             path: ./graph-db
-
           - image: filebeat
             path: ./filebeat
-
           - image: metricbeat
             path: ./metricbeat
 
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
       - name: Build and push ${{ matrix.image }} image
         uses: whoan/docker-build-with-cache-action@v5
         with:
@@ -72,14 +78,47 @@ jobs:
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           dockerfile: ./Dockerfile
 
+  # ---------------------------------------------
+  # JOB: Backup DB if new migrations are found
+  # ---------------------------------------------
+  cloud-sql-backup:
+    name: Backup Cloud SQL instance
+    needs: build
+    outputs:
+      backup_id: ${{ steps.cloud-sql-backup.outputs.backup_id }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Detect migration changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            src:
+              - 'appserver/migrations/**'
+
+      - if: steps.changes.outputs.migrations == 'true' || inputs.cloud_sql_force_backup == 'true'
+        name: Create a new Clod SQL instance backup
+        uses: ./.github/actions/cloud-sql-backup
+        with:
+          gcp_credentials: "${{ secrets.GCP_CREDENTIALS }}"
+          cloud_sql_instance_name: "${{ inputs.cloud_sql_instance_name }}"
+          backup_description: "Automated backup from GitHub workflow. Run ID: ${{ github.run_id }}"
+
+  # -------------------------------------------------------------
+  # JOB: Deploy to GCP environment using Ansible playbook
+  #      pointed by the Git submodule: /deployment
+  # -------------------------------------------------------------
   deploy:
     name: Deploy
-    needs: build
+    needs:
+      - build
+      - cloud-sql-backup
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ env.INFRA_PAT }}
           submodules: recursive
@@ -93,9 +132,23 @@ jobs:
           echo ::set-output name=build_number::$(git rev-list --count HEAD)
           echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
+      - name: Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+      - uses: google-github-actions/setup-gcloud@v0
+
+      - name: Get Cloud SQL instance private IP address
+        id: database-host
+        run: |
+          echo ::set-output name=ip_address::$( \
+            gcloud sql instances describe --format=json \
+              ${{ inputs.cloud_sql_instance_name }} \
+              | jq -r '.ipAddresses[] | select(.type == "PRIVATE").ipAddress')
+
       - name: Run Ansible deployment action
         uses: ./.github/actions/ansible
-        timeout-minutes: 720 ## workaround: increase step timeout to let Ansible action wait for long running Liquibase updates.
         with:
           workspace_dir: deployment/ansible
           playbook_file_path: playbooks/deploy-gcloud.yml
@@ -108,6 +161,10 @@ jobs:
             --extra-vars docker_img_hash=${{ github.sha }}
             --extra-vars git_timestamp=${{ steps.git-meta.outputs.commit_timestamp }}
             --extra-vars app_build_number=${{ steps.git-meta.outputs.build_number }}
-            --extra-vars app_version=${{ steps.git-meta.outputs.build_version}}
+            --extra-vars app_version=${{ steps.git-meta.outputs.build_version }}
+            --extra-vars github_run_id=${{ github.run_id }}
+            --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
+            --extra-vars cloud_sql_backup_id=${{ jobs.cloud-sql-backup.outputs.backup_id }}
             --user ansible
             --verbose
+
