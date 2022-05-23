@@ -23,7 +23,7 @@ on:
         type: string
       cloud_sql_force_backup:
         description: Backup before deploying even if no migrations need to be run
-        required: true
+        required: false
         default: false
         type: boolean
     secrets:
