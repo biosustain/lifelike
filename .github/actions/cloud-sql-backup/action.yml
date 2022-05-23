@@ -1,0 +1,44 @@
+name: Cloud SQL backup
+description: Backup a Google Cloud SQL instance
+
+inputs:
+  gcp_credentials:
+    description: Google Cloud Platform credentials
+    required: true
+  cloud_sql_instance_name:
+    description: Google Cloud SQL instance name
+    required: true
+  backup_description:
+    description: Backup description
+    required: false
+    default: ""
+
+outputs:
+  backup_id:
+    description: Google Cloud SQL backup ID
+    value: ${{ steps.fetch-backup-id.outputs.backup_id }}
+
+runs:
+  using: composite
+  steps:
+    - id: auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: "${{ inputs.gcp_credentials }}"
+
+    - uses: google-github-actions/setup-gcloud@v0
+
+    - run: |
+        gcloud sql backups create \
+          --instance="${{ inputs.cloud_sql_instance_name }}" \
+          --description="${{ inputs.backup_description }}"
+      shell: bash
+
+    - id: fetch-backup-id
+      run: |
+        echo ::set-output name=backup_id::$( \
+          gcloud sql backups list \
+            --instance="${{ inputs.cloud_sql_instance_name }}" \
+            --format=json --limit 1 | jq -r ".[0].selfLink" )
+      shell: bash
+
