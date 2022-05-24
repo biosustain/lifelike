@@ -217,6 +217,21 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     }
   }
 
+  prepareTableForRadiateAnalysis(table: EnrichmentTable) {
+    table.tableHeader = [[
+        {name: 'value', span: '1'},
+        {name: 'biocyc_id', span: '1'},
+        {name: 'gene_name', span: '1'},
+        {name: 'ncbi_gene_full_name', span: '1'},
+    ]];
+    table.tableCells.forEach((row, index) => {
+        table.tableCells[index] = row.slice(1, 5);
+        if (table.tableCells[index][2].text === 'No match found.') {
+            table.tableCells[index][2].text = '';
+        }
+    });
+  }
+
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     return of([{
       name: 'CSV',
@@ -232,6 +247,21 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           return new File([blob], object.filename + '.csv');
         }),
       )
+    }, {
+        name: 'CSV for Radiate Analysis',
+        export: () => this.filesystemService.getContent(object.hashId).pipe(
+          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
+          mergeMap(document => new EnrichmentTable({
+            usePlainText: true,
+          }).load(document).pipe(
+            tap(table => this.addBioCycIdColumn(document, table)),
+            tap(table => this.prepareTableForRadiateAnalysis(table))
+          )),
+          mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
+          map(blob => {
+            return new File([blob], object.filename + '_radiate_analysis.csv');
+          }),
+        )
     }, {
       name: 'Lifelike Enrichment Table File',
       export: () => {
