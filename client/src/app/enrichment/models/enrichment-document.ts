@@ -273,7 +273,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       annotatedFullName: node.full_name || '',
                       link,
                       domains: this.generateGeneDomainResults(domains, domainWrapper, node),
-                      value: this.values.get(synonym),
+                      value: this.values.get(synonym) || '',
                     });
                   }
                 }
@@ -284,7 +284,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     geneMap.add(gene);
                     genesList.push({
                         imported: gene,
-                        value: this.values.get(gene),
+                        value: this.values.get(gene) || '',
                     });
                   }
                 }
