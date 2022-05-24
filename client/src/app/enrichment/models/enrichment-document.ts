@@ -126,7 +126,7 @@ export class BaseEnrichmentDocument {
     const domains = data.sources.filter(domain => domain.length);
     const values = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.value || '']));
     return {
-      importGenes, taxID, organism, domains, values, ...rest
+      importGenes, taxID, organism, domains, values, result, ...rest
     };
   }
 
