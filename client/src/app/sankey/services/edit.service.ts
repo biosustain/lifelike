@@ -33,7 +33,7 @@ export class EditService {
       y1: maxBy(movedNodes, 'y1').y1,
     } : null))
   );
-  viewPort$ = new ReplaySubject<{ width: number, height: number }>(1);
+  viewPort$ = new ReplaySubject<{ x0: number, y0: number, width: number, height: number }>(1);
   viewBox$ = combineLatest([
     this.viewPort$,
     this.movedNodesExtent$,

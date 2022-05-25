@@ -59,6 +59,7 @@ import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
+import { getBoundingRect } from '../utils/entent';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -192,6 +193,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
     this.moduleProperties$.subscribe(this.modulePropertiesChange);
   }
+
   fileContent: GraphFile;
 
   unsavedChanges$ = new Subject<boolean>();
@@ -310,7 +312,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     map(({layout}) => layout)
   );
   graph$ = this.layout$.pipe(
-    switchMap<DefaultLayoutService, Observable<object>>(layout => layout.graph$)
+    switchMap<DefaultLayoutService, Observable<any>>(layout => layout.graph$)
   );
   selection$ = this.baseViewContext$.pipe(
     map(({selection}) => selection)
@@ -330,29 +332,29 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
 
   dragTitleData$ = this.object$.pipe(
-      switchMap(object =>
-        defer(() => this.moduleContext.url).pipe(
-          map(url => ({
-            'text/plain': object.filename,
-            'application/***ARANGO_DB_NAME***-node': JSON.stringify({
-              display_name: object.filename,
-              label: 'link',
-              sub_labels: [],
-              data: {
-                references: [{
-                  type: 'PROJECT_OBJECT',
-                  id: object.hashId + '',
-                }],
-                sources: [{
-                  domain: object.filename,
-                  url
-                }],
-              },
-            } as Partial<UniversalGraphNode>)
-          }))
-        )
+    switchMap(object =>
+      defer(() => this.moduleContext.url).pipe(
+        map(url => ({
+          'text/plain': object.filename,
+          'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+            display_name: object.filename,
+            label: 'link',
+            sub_labels: [],
+            data: {
+              references: [{
+                type: 'PROJECT_OBJECT',
+                id: object.hashId + '',
+              }],
+              sources: [{
+                domain: object.filename,
+                url
+              }],
+            },
+          } as Partial<UniversalGraphNode>)
+        }))
       )
-    );
+    )
+  );
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
@@ -483,7 +485,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         networkTraceOrViewIdx,
         this.selectNetworkTrace.bind(this),
         this.selectView.bind(this)
-      ))
+      )),
+      tap(() => this.resetZoom())
     ).toPromise();
   }
 
@@ -630,19 +633,18 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   resetZoom() {
     if (this.sankeySlot) {
       combineLatest([
-        this.update.movedNodesExtent$,
+        this.graph$,
         this.update.viewPort$
-      ]).pipe(first()).subscribe(([extent, viewPort]) => {
-        if (extent) {
-          const extentWidth = Math.max(viewPort.width, extent.x1) - Math.min(0, extent.x0);
-          const extentHeight = Math.max(viewPort.height, extent.y1) - Math.min(0, extent.y0);
-          const zoom = Math.min(viewPort.width / extentWidth, viewPort.height / extentHeight);
-          this.sankey.sankey.zoomAdjustment$.next({
-            zoom,
-            x0: Math.min(0, extent.x0),
-            y0: Math.min(0, extent.y0)
-          });
-        }
+      ]).pipe(first()).subscribe(([{nodes}, viewPort]) => {
+        const {x0, x1, y0, y1} = getBoundingRect(nodes);
+        const extentWidth = x1 - x0;
+        const extentHeight = y1 - y0;
+        const zoom = Math.min(viewPort.width / extentWidth, viewPort.height / extentHeight);
+        this.sankey.sankey.zoomAdjustment$.next({
+          zoom,
+          x0: viewPort.x0 - x0,
+          y0: viewPort.y0 - y0
+        });
       });
       this.sankey.zoom.reset();
     }
