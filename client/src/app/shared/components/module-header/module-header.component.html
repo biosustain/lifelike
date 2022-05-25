@@ -12,14 +12,18 @@
         <ng-container *ngIf="!titleTemplate; else titleFromTemplate">
             <h1 class="toolbar-title text-truncate"
                 cdkDrag
+                [draggable]="drag"
                 (cdkDragMoved)="drag.cdkDragMoved($event)"
                 (cdkDragReleased)="drag.cdkDragReleased($event)">
                 {{ object.filename }}
             </h1>
         </ng-container>
         <ng-template #titleFromTemplate>
-            <h1 class="toolbar-title text-truncate" [draggable]="dragStarted.observers.length"
-                (dragstart)="dragStarted.next($event)">
+            <h1 (cdkDragMoved)="drag.cdkDragMoved($event)"
+                (cdkDragReleased)="drag.cdkDragReleased($event)"
+                [draggable]="drag"
+                cdkDrag
+                class="toolbar-title text-truncate">
                 <ng-container [ngTemplateOutlet]="titleTemplate"></ng-container>
             </h1>
         </ng-template>
