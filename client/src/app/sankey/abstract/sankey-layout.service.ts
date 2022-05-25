@@ -85,7 +85,7 @@ export interface Extent {
   y1: number;
 }
 
-type ProcessedExtent = Horizontal & Vertical;
+export type ProcessedExtent = Horizontal & Vertical;
 
 export interface LayoutData {
   nodes: SankeyNode[];
@@ -109,28 +109,6 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     return ({value, multipleValues}) => multipleValues?.[1] ?? value;
   }
 
-  _extent$: Subject<Extent> = new ReplaySubject<Extent>();
-  extent$: Observable<ProcessedExtent> = this._extent$.pipe(
-    map(({x0, x1, y0, y1}) => ({
-      x0, x1, width: x1 - x0,
-      y0, y1, height: y1 - y0
-    })),
-    distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug<ProcessedExtent>('extent$')
-  );
-  horizontal$: Observable<Horizontal> = this.extent$.pipe(
-    map(({x0, x1, width}) => ({x0, x1, width})),
-    distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug('horizontal$')
-  );
-  vertical$: Observable<Vertical> = this.extent$.pipe(
-    map(({y0, y1, height}) => ({y0, y1, height})),
-    distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug('vertical$')
-  );
 
   dy = 8;
   dx = 10; // nodeWidth
@@ -266,10 +244,6 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       throw Error(ErrorMessages.missingNode(id));
     }
     return node as SankeyNode;
-  }
-
-  setExtent(extent: Extent) {
-    this._extent$.next(extent);
   }
 
   /**
