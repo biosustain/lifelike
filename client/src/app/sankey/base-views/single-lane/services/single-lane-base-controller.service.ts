@@ -60,7 +60,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
       {},
       {
         highlightCircular: true,
-        colorLinkByType: false,
+        colorLinkByType: true,
         nodeHeight: {
           min: {
             enabled: true,
