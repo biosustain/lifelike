@@ -23,6 +23,7 @@ import { uuidv4 } from 'app/shared/utils/identifiers';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 
 import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
@@ -39,6 +40,9 @@ import { extractGraphEntityActions } from '../../utils/data';
     '../map.component.scss',
     './map-editor.component.scss',
   ],
+  providers: [
+    ModuleContext
+  ]
 })
 export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;

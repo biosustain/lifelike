@@ -1,4 +1,4 @@
-import { isNil, isEmpty, has } from 'lodash-es';
+import { isNil, isEmpty, has, toPairs } from 'lodash-es';
 
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
@@ -537,10 +537,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return sources;
   }
 
-  addDataTransferData(dataTransfer: DataTransfer) {
-    // TODO: Move to DataTransferData framework
-    createObjectDragImage(this).addDataTransferData(dataTransfer);
-
+  getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
       privileges: this.privileges,
@@ -561,10 +558,19 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       },
     };
 
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+    return {
+      'text/plain': this.name,
+      [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
+      ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node)
+    };
+  }
+
+  addDataTransferData(dataTransfer: DataTransfer) {
+    // TODO: Move to DataTransferData framework
+    createObjectDragImage(this).addDataTransferData(dataTransfer);
+
+    const dragData  = this.getTransferData();
+    toPairs(dragData).forEach(args => dataTransfer.setData(...args));
   }
 
   private getId(): any {
