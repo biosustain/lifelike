@@ -6,6 +6,7 @@ import { map, switchMap } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
+import { RelativeURL } from 'app/shared/utils/url';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -35,14 +36,14 @@ export class ViewService {
 
   getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
     url = removeViewModeIfPresent(url);
-    const hashUrl = new URL(url.replace(/^\/+/, '/'), window.location.href);
-    const viewParams = (componentInstance || {}).viewParams;
+    const hashUrl = new RelativeURL(url);
+    const viewParams = componentInstance?.viewParams;
     if (viewParams) {
       return from(viewParams).pipe(
         switchMap(params => this.create(params)),
         map(viewId => {
           if (viewId) {
-            hashUrl.hash = viewId;
+            hashUrl.fragment = viewId;
           }
           return hashUrl;
         })

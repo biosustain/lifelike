@@ -7,6 +7,7 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { EnrichmentService } from '../../services/enrichment.service';
 
@@ -15,12 +16,14 @@ import { EnrichmentService } from '../../services/enrichment.service';
   selector: 'app-enrichment-visualisation-viewer',
   templateUrl: './enrichment-visualisation-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
-  providers: [EnrichmentVisualisationService, EnrichmentService]
+  providers: [EnrichmentVisualisationService, EnrichmentService, ModuleContext]
 })
 export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwareComponent {
 
   constructor(protected readonly route: ActivatedRoute,
-              readonly enrichmentService: EnrichmentVisualisationService) {
+              readonly enrichmentService: EnrichmentVisualisationService,
+              private readonly moduleContext: ModuleContext) {
+    moduleContext.register(this);
     this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
     this.loadingData = true;
   }

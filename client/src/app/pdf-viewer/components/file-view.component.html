@@ -9,7 +9,7 @@
 
     <ng-container *ngIf="status.resultsShown">
         <app-module-header [object]="object"
-                           (dragStarted)="dragStarted($event)">
+                           [dragTitleData$]="dragTitleData$">
               <app-module-menu *ngIf="object" [object]="object" [forEditing]="true"
                                [showOpen]="false" [showDelete]="false"
                                (objectRefresh)="requestRefresh()">

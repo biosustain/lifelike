@@ -15,6 +15,7 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
@@ -25,7 +26,8 @@ import { TraceNode } from './interfaces';
   styleUrls: ['./trace-view.component.scss'],
   providers: [
     TruncatePipe,
-    WarningControllerService
+    WarningControllerService,
+    ModuleContext
   ]
 })
 export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
@@ -48,7 +50,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
     protected readonly truncatePipe: TruncatePipe,
-    protected readonly warningController: WarningControllerService
+    protected readonly warningController: WarningControllerService,
+    protected readonly moduleContext: ModuleContext
   ) {
     const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;

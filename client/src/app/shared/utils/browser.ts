@@ -5,6 +5,7 @@ import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 
 import { WorkspaceManager } from '../workspace-manager';
+import { isNotEmpty } from '../utils';
 
 /**
  * Create a valid url string suitable for <a> tag href usage.
@@ -131,6 +132,14 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
               if (fragmentMatch && fragmentMatch[1]) {
                 (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
               }
+            } else if (m[1] === 'sankey') {
+              const {hash, searchParams} = new URL(pathSearchHash, 'http://abc.def');
+              if (isNotEmpty(searchParams)) {
+                component.route.queryParams.next(searchParams);
+              }
+              if (hash) {
+                component.route.fragment.next(hash.slice(1));
+              }
             }
             return false;
           },
@@ -209,10 +218,10 @@ const DOMAIN_MAP = new Map([
 
 // Match the url address with the domain
 export function parseURLToDomainName(url: string, defaultReturn?: string): string {
-   for (const [re, val] of DOMAIN_MAP.entries()) {
+  for (const [re, val] of DOMAIN_MAP.entries()) {
     if (re.exec(url)) {
       return val;
     }
-   }
-   return defaultReturn || 'Link';
+  }
+  return defaultReturn || 'Link';
 }
