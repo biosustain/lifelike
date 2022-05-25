@@ -36,6 +36,8 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -73,7 +75,8 @@ interface BaseViewContext {
     SankeySearchService,
     ControllerService,
     ViewControllerService,
-    EditService
+    EditService,
+    ModuleContext
   ]
 })
 export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy {
@@ -123,8 +126,11 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     private viewController: ViewControllerService,
     private search: SankeySearchService,
     public update: EditService,
-    private readonly messageDialog: MessageDialog
+    private readonly messageDialog: MessageDialog,
+    private readonly moduleContext: ModuleContext
   ) {
+    this.moduleContext.register(this);
+
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
         this.filesystemService.get(hashId),
@@ -188,12 +194,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
   fileContent: GraphFile;
 
-  // baseViewContext$: Observable<BaseViewContext>;
-  // baseView$: Observable<DefaultBaseControllerService>;
-  // selection$: Observable<SankeySelectionService>;
-  // predefinedValueAccessor$: Observable<object>;
-  // layout$: Observable<DefaultLayoutService>;
-  // graph$: Observable<object>;
   unsavedChanges$ = new Subject<boolean>();
 
   predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
@@ -328,6 +328,31 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       badge: edited ? '*' : undefined
     }))
   );
+
+  dragTitleData$ = this.object$.pipe(
+      switchMap(object =>
+        defer(() => this.moduleContext.url).pipe(
+          map(url => ({
+            'text/plain': object.filename,
+            'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+              display_name: object.filename,
+              label: 'link',
+              sub_labels: [],
+              data: {
+                references: [{
+                  type: 'PROJECT_OBJECT',
+                  id: object.hashId + '',
+                }],
+                sources: [{
+                  domain: object.filename,
+                  url
+                }],
+              },
+            } as Partial<UniversalGraphNode>)
+          }))
+        )
+      )
+    );
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
@@ -677,32 +702,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       map(object =>
         this.filesystemObjectActions.openNewWindow(object)
       )
-    );
-  }
-
-  dragStarted(event: DragEvent) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    return this.object$.pipe(
-      map(object => {
-        dataTransfer.setData('text/plain', object.filename);
-        dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-          display_name: object.filename,
-          label: 'link',
-          sub_labels: [],
-          data: {
-            references: [{
-              type: 'PROJECT_OBJECT',
-              id: object.hashId + '',
-            }],
-            sources: [{
-              domain: object.filename,
-              url: ['/projects', encodeURIComponent(object.project.name),
-                'sankey', encodeURIComponent(object.hashId)].join('/'),
-            }],
-          },
-        }));
-        return dataTransfer;
-      })
     );
   }
 

@@ -9,7 +9,7 @@
         </app-module-error>
     </ng-container>
     <ng-container *ngIf="object$ | async as object">
-        <app-module-header (dragStarted)="dragStarted($event)"
+        <app-module-header [dragTitleData$]="dragTitleData$"
                            *ngIf="(data$ | async) as data"
                            [object]="object">
             <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"

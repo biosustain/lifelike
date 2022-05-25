@@ -33,6 +33,7 @@ import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/can
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -48,6 +49,9 @@ import { extractGraphEntityActions } from '../../utils/data';
     '../map.component.scss',
     './map-editor.component.scss',
   ],
+  providers: [
+    ModuleContext
+  ]
 })
 export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;

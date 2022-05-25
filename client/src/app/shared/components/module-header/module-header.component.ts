@@ -1,48 +1,43 @@
-import { Component, Input, EventEmitter, Output, TemplateRef } from '@angular/core';
+import { Component, Input, EventEmitter, Output, TemplateRef, OnChanges, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ModuleAwareComponent } from '../../modules';
 import { get } from 'lodash-es';
-import { ViewService } from '../../../file-browser/services/view.service';
+import { Observable, ReplaySubject } from 'rxjs';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ViewService } from 'app/file-browser/services/view.service';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+
 import { WorkspaceManager } from '../../workspace-manager';
+import { ModuleContext } from '../../services/module-context.service';
+import { CdkNativeDragItegration } from '../../utils/drag';
 
 @Component({
   selector: 'app-module-header',
   templateUrl: './module-header.component.html'
 })
-export class ModuleHeaderComponent {
+export class ModuleHeaderComponent implements OnChanges {
   @Input() object!: FilesystemObject;
   @Input() titleTemplate: TemplateRef<any>;
   @Input() returnUrl: string;
   @Input() showObjectMenu = true;
   @Input() showBreadCrumbs = true;
   @Input() showNewWindowButton = true;
-  @Output() dragStarted = new EventEmitter();
+  @Input() dragTitleData$: Observable<Record<string, string>>;
+  drag: CdkNativeDragItegration;
 
   constructor(
-    protected readonly route: ActivatedRoute,
-    protected readonly viewService: ViewService,
-    protected readonly workspaceManager: WorkspaceManager,
-    readonly router: Router,
+    private tabUrlService: ModuleContext
   ) {
   }
 
-  openNewWindow() {
-    let url;
-    let componentInstance: ModuleAwareComponent;
-    const {focusedPane} = this.workspaceManager;
-    if (focusedPane) {
-      const {activeTab} = focusedPane;
-      url = activeTab.url;
-      componentInstance = activeTab.getComponent();
-    } else {
-      // in case of primary outlet
-      url = this.router.url;
-      // @ts-ignore
-      const {contexts} = this.router.***ARANGO_USERNAME***Contexts;
-      componentInstance = get(contexts.get('primary'), 'outlet.component');
+  ngOnChanges({dragTitleData$}: SimpleChanges) {
+    if (dragTitleData$) {
+      this.drag = dragTitleData$.currentValue && new CdkNativeDragItegration(dragTitleData$.currentValue);
     }
-    return this.viewService.getShareableLink(componentInstance, url).toPromise().then(({href}) => window.open(href));
+  }
+
+  openNewWindow() {
+    return this.tabUrlService.url.then(href => window.open(href));
   }
 }

@@ -10,7 +10,7 @@
     <ng-container *ngIf="result.object.value">
         <app-module-header
                 [object]="result.object.value"
-                (dragStarted)="dragStarted($event, result.object.value)">
+                [dragTitleData$]="dragTitleData$">
                   <app-module-menu [object]="result.object.value" [forEditing]="true"
                                    [showOpen]="false" [showDelete]="false"
                                    [showRestore]="true" (objectRestore)="restore($event)"

@@ -20,6 +20,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { ImageBlob } from 'app/shared/utils/forms';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -30,6 +31,9 @@ import { MapImageProviderService } from '../services/map-image-provider.service'
   styleUrls: [
     './map.component.scss',
   ],
+  providers: [
+    ModuleContext
+  ]
 })
 export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
   implements OnDestroy, AfterViewInit, ModuleAwareComponent {
@@ -53,10 +57,12 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
               mapImageProviderService: MapImageProviderService,
-              public readonly progressDialog: ProgressDialog) {
+              public readonly progressDialog: ProgressDialog,
+              protected readonly moduleContext: ModuleContext) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
       mapImageProviderService, objectTypeService);
+    moduleContext.register(this);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
