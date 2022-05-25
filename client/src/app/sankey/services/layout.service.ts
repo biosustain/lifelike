@@ -1,9 +1,21 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone, range } from 'lodash-es';
-import { map, tap, switchMap, shareReplay, filter, startWith, pairwise, takeUntil, catchError, first } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of } from 'rxjs';
+import { merge, omit, isNil, clone, range, isEqual, assign } from 'lodash-es';
+import {
+  map,
+  tap,
+  switchMap,
+  shareReplay,
+  filter,
+  startWith,
+  pairwise,
+  takeUntil,
+  catchError,
+  first,
+  distinctUntilChanged
+} from 'rxjs/operators';
+import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, defer } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -16,7 +28,7 @@ import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 import { SankeyBaseState, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
 import { normalizeGenerator } from '../utils';
-import { SankeyAbstractLayoutService, LayoutData } from '../abstract/sankey-layout.service';
+import { SankeyAbstractLayoutService, LayoutData, ProcessedExtent, Horizontal, Vertical } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
 import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
@@ -78,6 +90,18 @@ interface VerticalContext {
 @Injectable()
 export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayoutService<Base>
   implements ServiceOnInit, OnDestroy {
+
+  constructor(
+    readonly baseView: BaseControllerService<Base>,
+    protected readonly truncatePipe: TruncatePipe,
+    readonly warningController: WarningControllerService,
+    protected readonly modalService: NgbModal,
+    protected readonly update: EditService
+  ) {
+    super(truncatePipe);
+    this.extent$.subscribe(this.update.viewPort$);
+  }
+
   destroyed$ = new Subject();
 
   graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
@@ -127,18 +151,55 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
 
-  constructor(
-    readonly baseView: BaseControllerService<Base>,
-    protected readonly truncatePipe: TruncatePipe,
-    readonly warningController: WarningControllerService,
-    protected readonly modalService: NgbModal,
-    protected readonly update: EditService
-  ) {
-    super(truncatePipe);
-    this.extent$.subscribe(this.update.viewPort$);
-  }
-
   zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
+
+  viewPort$ = new ReplaySubject(1);
+
+  extent$: Observable<ProcessedExtent> = this.viewPort$.pipe(
+    map(({x0, x1, y0, y1}) => ({
+      x0, x1, width: x1 - x0,
+      y0, y1, height: y1 - y0
+    })),
+    switchMap(viewPort =>
+      this.baseView.common.view$.pipe(
+        map(view =>
+          isNil(view) ?
+            viewPort :
+            assign(
+              {},
+              viewPort,
+              {
+                x1: viewPort.x0 + view.size.width,
+                y1: viewPort.y0 + view.size.height
+              },
+              view.size
+            )
+        ),
+        tap(vp => this.zoomAdjustment$.next({
+          x0: vp.x0,
+          y0: vp.y0,
+          zoom: Math.min(viewPort.width / vp.width, viewPort.height / vp.height)
+        }))
+      )
+    ),
+    distinctUntilChanged(isEqual),
+    shareReplay(1),
+    debug<ProcessedExtent>('extent$')
+  );
+
+  horizontal$: Observable<Horizontal> = this.extent$.pipe(
+    map(({x0, x1, width}) => ({x0, x1, width})),
+    distinctUntilChanged(isEqual),
+    shareReplay(1),
+    debug('horizontal$')
+  );
+
+  vertical$: Observable<Vertical> = this.extent$.pipe(
+    map(({y0, y1, height}) => ({y0, y1, height})),
+    distinctUntilChanged(isEqual),
+    shareReplay(1),
+    debug('vertical$')
+  );
 
   graphViewport$ = combineLatest([
     this.extent$,
@@ -153,6 +214,10 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   );
 
   private calculateLayout$;
+
+  setViewPort(viewPort) {
+    this.viewPort$.next(viewPort);
+  }
 
   ngOnDestroy() {
     this.destroyed$.next();
@@ -498,15 +563,19 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
           Object.entries(view.nodes).map(([id, {y0, y1, x0, order}]) => {
             const entity = entityById.get(id);
             if (entity) {
-              if (sy < 1) {
-                const y = (y0 + y1) / 2;
-                entity.y0 = y * sy - entity.height / 2;
-                entity.y1 = y * sy + entity.height / 2;
-              } else {
-                entity.y0 = y0 * sy;
-                entity.y1 = y0 * sy + entity.height;
-              }
-              entity.x0 = x0 * sx;
+              // if (sy < 1) {
+              //   const y = (y0 + y1) / 2;
+              //   entity.y0 = y * sy - entity.height / 2;
+              //   entity.y1 = y * sy + entity.height / 2;
+              // } else {
+              //   entity.y0 = y0 * sy;
+              //   entity.y1 = y0 * sy + entity.height;
+              // }
+              // entity.x0 = x0 * sx;
+
+              entity.y0 = y0;
+              entity.y1 = y1;
+              entity.x0 = x0;
               entity.x1 = entity.x0 + this.dx;
               entity.order = order;
             } else {
