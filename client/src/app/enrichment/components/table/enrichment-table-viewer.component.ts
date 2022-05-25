@@ -29,6 +29,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -48,7 +49,7 @@ interface AnnotationData {
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
-  providers: [EnrichmentService]
+  providers: [EnrichmentService, ModuleContext]
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
