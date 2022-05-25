@@ -464,7 +464,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       .attr('width', width)
       .attr('height', height);
 
-    this.sankey.setExtent({
+    this.sankey.setViewPort({
       x0: margin.left,
       x1: extentX,
       y0: margin.top,
