@@ -165,6 +165,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       // If there was no change in the network trace or the view, do the kludgy copying. Otherwise we proceed normally. In other words,
       // whenever the network trace or view is changed, we do a hard reset.
       if (isNil(networkTraceIdx) && !this.viewChanged) {
+        // NOTE: changing the order of the nodes/links arrays caused a bug in the following code. Be very careful sorting the array in
+        // place, because it may interfere with logic elsewhere! Consider creating a copy of the list if you absolutely need to sort it in
+        // place.
+
         // Sort new and old links on id to get them in the same order
         this.data.links.sort((a: any, b: any) => a._id - b._id);
         data.previousValue.links.sort((a, b) => a._id - b._id);
