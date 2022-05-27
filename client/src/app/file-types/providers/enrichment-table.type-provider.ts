@@ -224,11 +224,16 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
         {name: 'gene_name', span: '1'},
         {name: 'ncbi_gene_full_name', span: '1'},
     ]];
-    table.tableCells.forEach((row, index) => {
-        table.tableCells[index] = row.slice(1, 5);
-        if (table.tableCells[index][2].text === 'No match found.') {
-            table.tableCells[index][2].text = '';
+    // Remove all rows where there was no match, and mutate each row to only include the required columns.
+    table.tableCells = table.tableCells.filter(row => {
+        const matched = row[3].text !== 'No match found.';
+
+        if (matched) {
+            row.shift();
+            row.splice(4);
         }
+
+        return matched;
     });
   }
 
