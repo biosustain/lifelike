@@ -1,3 +1,5 @@
+// PLEASE READ BEFORE UPDATING: If any properties are added/removed from this index, remember to
+// update any relevant ORM event triggers!
 {
     "settings": {
         "analysis": {
