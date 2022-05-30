@@ -225,12 +225,12 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   }
 
   positionNodes(x) {
-    return switchMap(data => this.horizontal$.pipe(
-      // calculate width change ratio for repositioning of the nodes
-      startWith({} as any),
-      pairwise(),
-      switchMap(d => this.update.edited$.pipe(
-        switchMap(edited =>
+    return switchMap(data => this.update.edited$.pipe(
+      switchMap(edited => this.horizontal$.pipe(
+        // calculate width change ratio for repositioning of the nodes
+        startWith({} as any),
+        pairwise(),
+        switchMap(d =>
           iif(
             () => edited,
             of(d).pipe(
@@ -482,17 +482,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders: NodeColumns<Base>) {
     return combineLatest([
       this.baseView.nodeHeight$,
-      this.vertical$.pipe(
-        switchMap(vertical => this.update.edited$.pipe(
-          switchMap(edited =>
-            iif(
-              () => edited,
-              EMPTY,
-              of(vertical)
-            )
-          )
-        ))
-      )
+      this.vertical$
     ]).pipe(
       map(([nodeHeight, {height, y0, y1}]) => {
         const {dy, py, dx, value} = this;
