@@ -182,11 +182,6 @@ class FileSchema(CamelCaseSchema):
             return FileSchema(context=self.context, exclude=(
                 'project',
                 'children',
-                # Including lazy-loaded relationships can cause problems if the Files object has
-                # been expired (e.g., it was committed):
-                # https://github.com/sqlalchemy/sqlalchemy/issues/5317
-                'parent',
-                'user'
             )).dump(obj.parent)
         else:
             return None

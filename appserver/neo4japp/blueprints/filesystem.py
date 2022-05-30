@@ -407,6 +407,7 @@ class FilesystemBaseView(MethodView):
         # Apply
         # ========================================
         file_type_service = get_file_type_service()
+        update_modified_date = not all([field in ['pinned'] for field in params])
 
         for file in target_files:
             assert file.calculated_project is not None
@@ -511,6 +512,10 @@ class FilesystemBaseView(MethodView):
                         file.content_id = new_content_id
                         provider.handle_content_update(file)
             file.modifier = user
+            if update_modified_date:
+                # TODO: Ideally, we would let the ORM handle this. However, our tests need to be
+                # updated with proper transaction management first.
+                file.modified_date = datetime.now()
 
         try:
             db.session.commit()
@@ -533,6 +538,8 @@ class FilesystemBaseView(MethodView):
         # TODO: Potentially move these annotations into a separate table
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
 
+        # TODO: Ideally, we would not query for the files again. But, because we have so much code
+        # that depends on the Files objects not being expired, we have to.
         return_file = self.get_nondeleted_recycled_file(
             Files.hash_id == hash_id,
             attr_excl=EXCLUDE_FIELDS
@@ -556,7 +563,7 @@ class FilesystemBaseView(MethodView):
 
     def get_bulk_file_response(
             self,
-            files: List[Files],
+            hash_ids,
             user: AppUser,
             missing_hash_ids: Iterable[str] = None
     ):
@@ -570,6 +577,9 @@ class FilesystemBaseView(MethodView):
         :param missing_hash_ids: IDs to put in the response
         :return: the response
         """
+        # TODO: Ideally, we would not query for the files again. But, because we have so much code
+        # that depends on the Files objects not being expired, we have to.
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
         self.check_file_permissions(files, user, ['readable'], permit_recycled=True)
 
         returned_files = {}
@@ -921,6 +931,11 @@ class FileListView(FilesystemBaseView):
         query_hash_ids = target_hash_ids + linked_hash_ids
         require_hash_ids = []
 
+        if parent_hash_id in target_hash_ids:
+            raise ValidationError(
+                f'An object cannot be set as the parent of itself.',
+                'parentHashId'
+            )
         if parent_hash_id is not None:
             query_hash_ids.append(parent_hash_id)
             require_hash_ids.append(parent_hash_id)
@@ -976,7 +991,7 @@ class FileListView(FilesystemBaseView):
             db.session.rollback()
             raise
 
-        return self.get_bulk_file_response(target_files, current_user, missing_hash_ids)
+        return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
@@ -1131,8 +1146,14 @@ class FileDetailView(FilesystemBaseView):
 
         # Collect everything that we need to query
         parent_hash_id = params.get('parent_hash_id', None)
-        query_hash_ids = []
+        query_hash_ids = [hash_id]
         require_hash_ids = []
+
+        if hash_id == parent_hash_id:
+            raise ValidationError(
+                f'An object cannot be set as the parent of itself.',
+                'parentHashId'
+            )
 
         if parent_hash_id is not None:
             query_hash_ids.append(parent_hash_id)
