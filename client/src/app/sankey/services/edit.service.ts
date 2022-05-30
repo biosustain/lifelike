@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, ReplaySubject, combineLatest, Subject } from 'rxjs';
-import { scan, switchMap, map, startWith, shareReplay } from 'rxjs/operators';
+import { scan, switchMap, map, startWith, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 import { minBy } from 'lodash-es';
 import { uniq, maxBy } from 'lodash';
 
@@ -23,7 +23,8 @@ export class EditService {
     shareReplay({bufferSize: 1, refCount: true})
   );
   edited$ = this.movedNodes$.pipe(
-    map(movedNodes => isNotEmpty(movedNodes))
+    map(movedNodes => isNotEmpty(movedNodes)),
+    distinctUntilChanged()
   );
   movedNodesExtent$ = this.movedNodes$.pipe(
     map(movedNodes => (movedNodes.length ? {
