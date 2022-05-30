@@ -417,17 +417,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   getVerticalLayoutParams$(nodesAndPlaceholders, columnsWithLinkPlaceholders: NodeColumns<Base>) {
     return combineLatest([
       this.baseView.nodeHeight$,
-      this.vertical$.pipe(
-        switchMap(vertical => this.update.edited$.pipe(
-          switchMap(edited =>
-            iif(
-              () => edited,
-              EMPTY,
-              of(vertical)
-            )
-          )
-        ))
-      )
+      this.vertical$
     ]).pipe(
       map(([nodeHeight, {height, y0, y1}]) => {
         const {dy, py, dx, value} = this;
