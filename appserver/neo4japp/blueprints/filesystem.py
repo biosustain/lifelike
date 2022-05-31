@@ -22,10 +22,11 @@ from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_MAP,
     LogEventType,
     MAPS_RE,
-    FILE_MIME_TYPE_MAP,
-    SUPPORTED_MAP_MERGING_FORMATS
+    SUPPORTED_MAP_MERGING_FORMATS,
+    UPDATE_DATE_MODIFIED_COLUMNS,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -407,7 +408,7 @@ class FilesystemBaseView(MethodView):
         # Apply
         # ========================================
         file_type_service = get_file_type_service()
-        update_modified_date = not all([field in ['pinned'] for field in params])
+        update_modified_date = not any(UPDATE_DATE_MODIFIED_COLUMNS)
 
         for file in target_files:
             assert file.calculated_project is not None
