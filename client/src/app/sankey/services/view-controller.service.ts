@@ -48,7 +48,7 @@ export class ViewControllerService {
   );
 
   graphViewport$ = this.layout$.pipe(
-    switchMap(layout => layout.graphViewport$)
+    switchMap(layout => layout.extent$)
   );
 
   selectView(networkTraceIdx, viewName) {
