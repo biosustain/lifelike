@@ -1015,7 +1015,7 @@ def fix_broken_map_links():
 
         # Zip the file back up before saving to the DB
         zip_bytes2 = io.BytesIO()
-        with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
+        with zipfile.ZipFile(zip_bytes2, 'x', zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr('graph.json', byte_graph)
         new_bytes = zip_bytes2.getvalue()
         new_hash = hashlib.sha256(new_bytes).digest()
