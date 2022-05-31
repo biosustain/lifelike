@@ -28,7 +28,12 @@ from neo4japp.constants import (
     SUPPORTED_MAP_MERGING_FORMATS
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
-from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, NotAuthorized
+from neo4japp.exceptions import (
+     AccessRequestRequiredError,
+     InvalidArgument,
+     RecordNotFound,
+     NotAuthorized
+)
 from neo4japp.models import (
     Projects,
     Files,
@@ -461,10 +466,26 @@ class FilesystemBaseView(MethodView):
                         file.public = params['public']
                         changed_fields.add('public')
 
+                if 'pinned' in params:
+                    file.pinned = params['pinned']
+                    changed_fields.add('pinned')
+
                 if 'fallback_organism' in params:
-                    file.organism_name = params['fallback_organism']['organism_name']
-                    file.organism_synonym = params['fallback_organism']['synonym']
-                    file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+                    if params['fallback_organism'] is None:
+                        file.organism_name = None
+                        file.organism_synonym = None
+                        file.organism_taxonomy_id = None
+                    else:
+                        try:
+                            file.organism_name = params['fallback_organism']['organism_name']
+                            file.organism_synonym = params['fallback_organism']['synonym']
+                            file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+                        except KeyError:
+                            raise InvalidArgument(
+                                title='Failed to Update File',
+                                message='You must provide the following properties for a ' +
+                                        'fallback organism: "organism_name", "synonym", "tax_id".',
+                            )
                     changed_fields.add('organism_name')
                     changed_fields.add('organism_synonym')
                     changed_fields.add('organism_taxonomy_id')
