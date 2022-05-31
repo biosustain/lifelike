@@ -110,8 +110,7 @@ export class ObjectListComponent {
       ).pipe(
         this.errorHandler.create({label: 'Edit object'}),
       ).toPromise()
-      .then(() => this.updateView())
-      .then(() => this.snackBar.open(`Saved changes to ${getObjectLabel(object)}.`, 'Close', {duration: 5000}));
+      .then(() => this.updateView());
     }
   }
 }

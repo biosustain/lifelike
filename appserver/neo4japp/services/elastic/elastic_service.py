@@ -304,6 +304,8 @@ class ElasticService(ElasticConnection, GraphConnection):
                 extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
 
+        # NOTE: Remember to update any relevant ORM event listeners if these properties are
+        # updated! For example, the `after_update` listener of `Files`.
         return {
             '_index': index_id,
             'pipeline': ATTACHMENT_PIPELINE_ID,
