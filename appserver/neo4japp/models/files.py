@@ -13,7 +13,11 @@ from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
 
-from neo4japp.constants import LogEventType
+from neo4japp.constants import (
+    LogEventType,
+    UPDATE_DATE_MODIFIED_COLUMNS,
+    UPDATE_ELASTIC_DOC_COLUMNS,
+)
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.projects import Projects
@@ -441,24 +445,7 @@ def file_insert(mapper, connection, target: Files):
 @event.listens_for(Files, 'before_update')
 def receive_file_before_update(mapper, connection, target):
     # Only update the modified date if any of the specified columns *did not* change
-    ignore_date_modified_unless_these_columns = [
-        'filename',
-        'parent_id',
-        'description',
-        'content_id',
-        'user_id',
-        'doi',
-        'upload_url',
-        'public',
-        'annotations',
-        'annotation_configs',
-        'custom_annotations',
-        'excluded_annotations',
-        'organism_name',
-        'organism_synonym',
-        'organism_taxonomy_id'
-    ]
-    if not _did_columns_update(target, ignore_date_modified_unless_these_columns):
+    if not _did_columns_update(target, UPDATE_DATE_MODIFIED_COLUMNS):
         orm.attributes.flag_modified(target, 'modified_date')
 
 
@@ -469,23 +456,7 @@ def file_update(mapper, connection, target: Files):
     back.
     """
     # Only do re-indexing if any of the specified columns changed
-    ignore_elastic_reindex_unless_these_columns = [
-        'filename',
-        'parent_id',
-        'description',
-        'content_id',
-        'user_id',
-        'doi',
-        'upload_url',
-        'annotations',
-        'annotation_configs',
-        'custom_annotations',
-        'excluded_annotations',
-        'organism_name',
-        'organism_synonym',
-        'organism_taxonomy_id'
-    ]
-    if _did_columns_update(target, ignore_elastic_reindex_unless_these_columns):
+    if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
         # Import what we need, when we need it (Helps to avoid circular dependencies)
         from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
         from neo4japp.services.file_types.providers import DirectoryTypeProvider
