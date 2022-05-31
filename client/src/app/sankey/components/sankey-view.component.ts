@@ -486,7 +486,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         this.selectNetworkTrace.bind(this),
         this.selectView.bind(this)
       )),
-      tap(() => this.resetZoom())
+      tap(() => this.resetZoom(false))
     ).toPromise();
   }
 
@@ -630,35 +630,21 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   // region Zoom
-  resetZoom() {
+  resetZoom(transition = true) {
     if (this.sankeySlot) {
-      combineLatest([
-        this.graph$,
-        this.update.viewPort$
-      ]).pipe(first()).subscribe(([{nodes}, viewPort]) => {
-        const {x0, x1, y0, y1} = getBoundingRect(nodes);
-        const extentWidth = x1 - x0;
-        const extentHeight = y1 - y0;
-        const zoom = Math.min(viewPort.width / extentWidth, viewPort.height / extentHeight);
-        this.sankey.sankey.zoomAdjustment$.next({
-          zoom,
-          x0: viewPort.x0 - x0,
-          y0: viewPort.y0 - y0
-        });
-      });
-      this.sankey.zoom.reset();
+      this.sankey.zoomToFit(transition);
     }
   }
 
   zoomIn() {
     if (this.sankeySlot) {
-      this.sankey.zoom.scaleBy(1.25);
+      this.sankey.zoom.scaleBy(1.25, true);
     }
   }
 
   zoomOut() {
     if (this.sankeySlot) {
-      this.sankey.zoom.scaleBy(.8);
+      this.sankey.zoom.scaleBy(.8, true);
     }
   }
 

@@ -1,8 +1,8 @@
 import { ElementRef } from '@angular/core';
 
 import { zoom as d3_zoom, ZoomedElementBaseType } from 'd3-zoom';
-import { Selection, select as d3_select } from 'd3-selection';
-import { ValueFn, ZoomTransform, Transition, zoomIdentity } from 'd3';
+import { Selection, select as d3_select, event as d3_event } from 'd3-selection';
+import { ValueFn, ZoomTransform, Transition, zoomIdentity, ZoomBehavior } from 'd3';
 import { isBoolean, isArray, forOwn } from 'lodash-es';
 import { combineLatest, Observable } from 'rxjs';
 import { share } from 'rxjs/operators';
@@ -20,7 +20,7 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
   constructor(elementRef: ElementRef<ZoomRefElement>, params: ZoomParams<ZoomRefElement, Datum>) {
     this.selection = d3_select(elementRef.nativeElement);
     forOwn(params, (value, key) => {
-      if (this.hasOwnProperty(key)) {
+      if (key in this) {
         this[key] = value;
       }
     });
@@ -137,11 +137,11 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
   private onSingular$(typename) {
     return this.listeners.getSetLazily(typename, () =>
       new Observable<any>(subscriber => (
-        this.zoom.on(typename, () => subscriber.next()),
-        () => {
-          this.zoom.on(typename, null);
-          this.listeners.delete(typename);
-        }
+        this.zoom.on(typename, () => subscriber.next(d3_event)),
+          () => {
+            this.zoom.on(typename, null);
+            this.listeners.delete(typename);
+          }
       )).pipe(share())
     );
   }
@@ -160,21 +160,34 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
 
   getTrasitionableSelection(localyDeclaredTransition?) {
     const transition = localyDeclaredTransition ?? this.transition;
-    if (isBoolean(transition)) {
-      return transition ? this.selection.transition() : this.selection;
+    if (transition) {
+      return isBoolean(transition) ? this.selection.transition() : this.selection.transition(transition);
     } else {
-      return this.selection.transition(transition);
+      return this.selection;
     }
   }
 
   scaleBy(k: number,
+          p?: [number, number],
           transition?: boolean) {
-    this.zoom.scaleBy(this.getTrasitionableSelection(transition), k);
+    const args: Parameters<ZoomBehavior<any, any>['scaleTo']> = [this.getTrasitionableSelection(transition), k];
+    if (p) {
+      args.push(p);
+    }
+    this.zoom.scaleBy(...args);
   }
 
-  scaleTo(k: number | ValueFn<Element, {}, number>, p?: [number, number],
-          transition?: boolean): void {
-    this.zoom.scaleTo(this.getTrasitionableSelection(transition), k, p);
+  scaleTo(
+    k: number | ValueFn<Element, {}, number>,
+    p?: [number, number],
+    transition?: boolean
+  ): void {
+    const args: Parameters<ZoomBehavior<any, any>['scaleTo']> = [this.getTrasitionableSelection(transition), k];
+    if (p) {
+      args.push(p);
+    }
+    // d3 counts arguments so passing undefined is not an option
+    this.zoom.scaleTo(...args);
   }
 
   transform(transform: ZoomTransform | ValueFn<Element, {}, ZoomTransform>,

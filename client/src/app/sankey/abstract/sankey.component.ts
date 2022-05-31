@@ -3,10 +3,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay } from 'rxjs/operators';
-import { combineLatest, Subject } from 'rxjs';
+import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
+import { combineLatest, Subject, EMPTY, iif } from 'rxjs';
 import { assign, partial, groupBy } from 'lodash-es';
-import { zoomIdentity } from 'd3';
+import { zoomIdentity, zoomTransform } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
@@ -124,17 +124,63 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   @ViewChild('svg', {static: true}) svg!: ElementRef;
   @ViewChild('g', {static: true}) g!: ElementRef;
+  @ViewChild('zoomDebug', {static: true}) zoomDebug!: ElementRef;
   @ViewChild('nodes', {static: true}) nodes!: ElementRef;
   @ViewChild('links', {static: true}) links!: ElementRef;
 
   zoom: Zoom<SVGElement, number>;
-
   width: number;
+  height: number;
 
   // resize and listen to future resize events
-  resize$ = createResizeObservable(this.wrapper.nativeElement)
-    .pipe(takeUntil(this.destroyed$))
-    .subscribe(rect => this.onResize(rect));
+  // would be nice to listen on #g but SVG lacks support for that
+  viewBox$ = createResizeObservable(this.wrapper.nativeElement)
+    .pipe(
+      takeUntil(this.destroyed$),
+      map(viewPort => ({
+        width: viewPort.width - this.margin.left - this.margin.right,
+        height: viewPort.height - this.margin.top - this.margin.bottom
+      })),
+      shareReplay({refCount: true, bufferSize: 1})
+    );
+
+  vbsubs = this.viewBox$
+    .subscribe(({width, height}) => {
+      this.width = width;
+      this.height = height;
+      this.sankey.setViewPort({
+        x0: 0,
+        y0: 0,
+        x1: width,
+        y1: height
+      });
+    });
+
+  zoomAdjust = this.sankey.isAutoLayout$.pipe(
+    switchMap(isAutoLayout =>
+      iif(
+        () => isAutoLayout,
+        EMPTY,
+        this.viewBox$.pipe(
+          pairwise(),
+          map(([prev, next]) => ({
+            widthChange: next.width / prev.width,
+            heightChange: next.height / prev.height,
+            widthDelta: next.width - prev.width,
+            heightDelta: next.height - prev.height
+          }))
+        )
+      )
+    )
+  ).subscribe(({widthDelta, heightDelta, widthChange, heightChange}) => {
+    const transform = zoomTransform(this.svg.nativeElement);
+    const k = Math.abs(widthChange - 1) > Math.abs(heightChange - 1) ? widthChange : heightChange;
+    const newTransform = transform.translate(
+      widthDelta / 2 / transform.k,
+      heightDelta / 2 / transform.k
+    );
+    this.zoom.transform(newTransform, undefined, true);
+  });
 
   renderedLinks$ = combineLatest([
     this.sankey.graph$,
@@ -332,6 +378,10 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   // endregion
 
+  t: any;
+
+  // endregion
+
   static updateTextShadow(this: SVGElement, _) {
     // this contains ref to textGroup
     const [shadow, text] = this.children as any as [SVGRectElement, SVGTextElement];
@@ -392,10 +442,15 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   }
 
   ngOnInit() {
-    this.zoom = new Zoom(this.svg, {scaleExtent: [0.1, 8]});
-    this.sankey.zoomAdjustment$.subscribe(({zoom, x0 = 0, y0 = 0}) => {
-      this.zoom.initialTransform = zoomIdentity.translate(0, 0).scale(zoom).translate(x0, y0);
-    });
+    this.zoom = new Zoom(
+      this.svg, {
+        scaleExtent: [0.1, 8],
+        // @ts-ignore
+        extent: () => {
+          const {x, y, width, height} = this.g.nativeElement.getBBox();
+          return [[x, y], [x + width, y + height]];
+        }
+      });
 
     this.initSelection();
     this.initFocus();
@@ -415,7 +470,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   initStateUpdate() {
   }
 
-
   panToNode({x0, x1, y0, y1}) {
     this.zoom.translateTo(
       // x
@@ -427,13 +481,15 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     );
   }
 
-  // endregion
-
   ngAfterViewInit() {
     // attach zoom behaviour
-    const {g, zoom} = this;
+    const {g, zoom, zoomDebug} = this;
     const zoomContainer = d3_select(g.nativeElement);
-    this.zoom.on$('zoom').subscribe(() => zoomContainer.attr('transform', d3_event.transform));
+    this.zoom.on$('zoom').subscribe(({transform}) => {
+      this.t = transform;
+      zoomContainer.attr('transform', transform);
+      d3_select(zoomDebug.nativeElement).attr('transform', transform);
+    });
 
     this.sankeySelection.on('click', () => {
       const e = d3_event;
@@ -447,32 +503,36 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     });
   }
 
+  constrainedZoomTransform({width, height}, transform = zoomIdentity) {
+
+  }
+
+  zoomToFit(transition: boolean = true) {
+    return this.viewBox$.pipe(
+      first()
+    ).toPromise().then(({width, height}) => {
+      // @ts-ignore
+      const [[x0, y0], [x1, y1]] = this.zoom.extent();
+      const extentWidth = x1 - x0;
+      const extentHeight = y1 - y0;
+      const k = Math.min(width / extentWidth, height / extentHeight);
+      const transform = zoomIdentity
+        // Center in viewport
+        .translate(width / 2, height / 2)
+        // Scale (now on in scaled units)
+        .scale(k)
+        // Translate to center of extent
+        .translate(-(x0 + extentWidth / 2), -(y0 + extentHeight / 2));
+      // point which should be ~static during transition
+      const p: [number, number] = [x1 - x0, y1 - y0];
+      this.zoom.transform(transform, p, transition);
+    });
+  }
+
   ngOnDestroy() {
     this.destroyed$.next();
   }
 
-  // region Graph sizing
-  onResize({width, height}) {
-    this.width = width;
-    const {margin} = this;
-    const extentX = width - margin.right;
-    const extentY = height - margin.bottom;
-
-    this.zoom.extent = [[0, 0], [width, height]];
-    // Get the svg element and update
-    this.sankeySelection
-      .attr('width', width)
-      .attr('height', height);
-
-    this.sankey.setViewPort({
-      x0: margin.left,
-      x1: extentX,
-      y0: margin.top,
-      y1: extentY
-    });
-  }
-
-  // endregion
 
   // region Events
   @d3Callback
