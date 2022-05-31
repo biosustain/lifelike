@@ -13,10 +13,13 @@ inputs:
     required: true
   ssh_key:
     description: SSH key for remote Ansible connections
-    required: false
+    required: true
   vault_password:
     description: Password used for Ansible vault encrypted files
-    required: false
+    required: true
+  gcp_credentials:
+    description: GCP credentials JSON file
+    required: true
   options:
     description: Additional options for Ansible playbook
     required: false
@@ -30,4 +33,6 @@ runs:
     - ${{ inputs.inventory_file_path }}
     - ${{ inputs.ssh_key }}
     - ${{ inputs.vault_password }}
+    - ${{ inputs.gcp_credentials }}
     - ${{ inputs.options }}
+

@@ -150,6 +150,9 @@ jobs:
               ${{ inputs.cloud_sql_instance_name }} \
               | jq -r '.ipAddresses[] | select(.type == "PRIVATE").ipAddress')
 
+      - run: |
+          echo "Database IP: ${{ steps.database-host.outputs.ip_address }}" >> $GITHUB_STEP_SUMMARY
+
       - name: Run Ansible deployment action
         uses: ./.github/actions/ansible
         with:
@@ -158,6 +161,7 @@ jobs:
           inventory_file_path: inventories/hosts.yml
           vault_password: ${{ secrets.VAULT_PASSWORD }}
           ssh_key: ${{ secrets.SSH_KEY }}
+          gcp_credentials: ${{ secrets.GCP_CREDENTIALS }}
           options: |
             --extra-vars environment_name=${{ inputs.environment_name }}
             --extra-vars client_config=${{ inputs.client_config }}
@@ -167,6 +171,7 @@ jobs:
             --extra-vars app_version=${{ steps.git-meta.outputs.build_version }}
             --extra-vars github_run_id=${{ github.run_id }}
             --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
+            --extra-vars cloud_sql_instance_name=${{ inputs.cloud_sql_instance_name }}
             --user ansible
             --verbose
 

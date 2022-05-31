@@ -1,62 +1,52 @@
-#!/bin/sh
-
+#!/bin/bash
 set -e
 
-export WORKSPACE_DIR=
-if [ ! -z "$INPUT_WORKSPACE_DIR" ]
-then
-    WORKSPACE_DIR="${INPUT_WORKSPACE_DIR}"
-else
-    echo "No working space directory specified."
-fi
+# helper
+tilde=~
 
-export PLAYBOOK_FILE_PATH=
-if [ ! -z "$INPUT_PLAYBOOK_FILE_PATH" ]
-then
-    PLAYBOOK_FILE_PATH="${INPUT_PLAYBOOK_FILE_PATH}"
-else
-    echo "No playbook specified."
-fi
+# ----------------------------------------------------------------------------
+# SSH key path
+# ----------------------------------------------------------------------------
+mkdir -p ~/.ssh
+echo "$INPUT_SSH_KEY" > ~/.ssh/ansible
+chmod 0600 ~/.ssh/ansible
+export SSH_KEY_FILE_PATH="${tilde}/.ssh/ansible"
 
-export INVENTORY_FILE_PATH=
-if [ ! -z "$INPUT_INVENTORY_FILE_PATH" ]
-then
-    INVENTORY_FILE_PATH="-i ${INPUT_INVENTORY_FILE_PATH}"
-else
-    echo "No inventory specified."
-fi
+# ----------------------------------------------------------------------------
+# Ansible Vault password file
+# ----------------------------------------------------------------------------
+echo "$INPUT_VAULT_PASSWORD" > ~/.vault_secrets_pw
+export VAULT_PASSWORD_FILE_PATH="${tilde}/.vault_secrets_pw"
 
-export SSH_KEY=
-if [ ! -z "$INPUT_SSH_KEY" ]
-then
-    mkdir ~/.ssh
-    echo "$INPUT_SSH_KEY" > ~/.ssh/ansible
-    chmod 0600 ~/.ssh/ansible
-    tilde=~
-    SSH_KEY_PATH="${tilde}/.ssh/ansible"
-    SSH_KEY="--key-file ${SSH_KEY_PATH}"
-else
-    echo "No SSH key specified."
-fi
+# ----------------------------------------------------------------------------
+# Options
+# ----------------------------------------------------------------------------
+export OPTIONS=$(echo "${INPUT_OPTIONS}" | tr "\n" " ")
 
-export VAULT_PASSWORD=
-if [ ! -z "$INPUT_VAULT_PASSWORD" ]
-then
-    echo "$INPUT_VAULT_PASSWORD" > ~/.vault_secrets_pw
-    tilde=~
-    VAULT_PASSWORD_PATH="${tilde}/.vault_secrets_pw"
-    VAULT_PASSWORD="--vault-password-file ${VAULT_PASSWORD_PATH}"
-else
-    echo "No vault password specified."
-fi
+# ----------------------------------------------------------------------------
+# Google Cloud Platform credentials
+# ----------------------------------------------------------------------------
+export GCP_PROJECT_NAME="${INPUT_GCP_PROJECT_NAME}"
+export SERVICE_ACCOUNT_PRIVATE_KEY_JSON="${INPUT_SERVICE_ACCOUNT_PRIVATE_KEY_JSON}"
+export SERVICE_ACCOUNT_NAME="${INPUT_SERVICE_ACCOUNT_NAME}"
 
-export OPTIONS=
-if [ ! -z "$INPUT_OPTIONS" ]
-then
-    OPTIONS=$(echo "${INPUT_OPTIONS}" | tr "\n" " ")
-fi
+# ----------------------------------------------------------------------------
+# Authenticate to GCP
+# ----------------------------------------------------------------------------
+echo "${INPUT_GCP_CREDENTIALS}" > gcp-credentials.json
+gcloud auth activate-service-account --key-file=gcp-credentials.json
 
-cd ${WORKSPACE_DIR}
-echo "Running command..."
-echo ansible-playbook ${PLAYBOOK_FILE_PATH} ${INVENTORY_FILE_PATH} ${SSH_KEY} ${VAULT_PASSWORD} ${OPTIONS}
-ansible-playbook ${PLAYBOOK_FILE_PATH} ${INVENTORY_FILE_PATH} ${SSH_KEY} ${VAULT_PASSWORD} ${OPTIONS}
+export GCP_PROJECT_ID=$(jq -r '.project_id' gcp-credentials.json)
+gcloud config set project $GCP_PROJECT_ID
+
+# ----------------------------------------------------------------------------
+# Run ansible playbook
+# ----------------------------------------------------------------------------
+echo "Running ansible-playbook command..."
+cd ${INPUT_WORKSPACE_DIR}
+ansible-playbook \
+  ${INPUT_PLAYBOOK_FILE_PATH} \
+  -i ${INPUT_INVENTORY_FILE_PATH} \
+  --key-file ${SSH_KEY_FILE_PATH} \
+  --vault-password-file ${VAULT_PASSWORD_FILE_PATH} \
+  $OPTIONS
