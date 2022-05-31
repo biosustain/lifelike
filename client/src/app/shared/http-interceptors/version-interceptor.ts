@@ -20,7 +20,7 @@ export class AppVersionInterceptor implements HttpInterceptor {
     addVersionHeader(request: HttpRequest<any>) {
       return request.clone({
           setHeaders: {
-              'Lifelike-version': environment.lifelikeVersion,
+              'Accept-Lifelike-Version': environment.lifelikeVersion,
           }
       });
     }

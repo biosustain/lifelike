@@ -74,10 +74,16 @@ def default_login_required():
 
 @app.before_request
 def check_version_header():
-    if 'Lifelike-version' in request.headers:
-        if current_app.config.get('GITHUB_HASH') == request.headers['Lifelike-version']:
-            return
-    raise OutdatedVersionException('A new version of Lifelike is available. Please refresh your browser to use the new changes')
+    """
+    API version content negotiation. Check if the client requested a specific version,
+    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
+    """
+    requested_version = request.headers.get("Accept-Lifelike-Version")
+    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+        raise OutdatedVersionException(
+            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
+            'changes'
+        )
 
 
 @app.cli.command("seed")
