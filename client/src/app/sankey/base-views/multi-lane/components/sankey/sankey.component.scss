@@ -42,6 +42,8 @@ app-sankey-multi-lane {
     width: 100%;
 
     g {
+      will-change: transform;
+
       .nodes {
         z-index: 1;
 

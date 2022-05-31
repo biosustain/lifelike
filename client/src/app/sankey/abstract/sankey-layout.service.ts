@@ -310,13 +310,14 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     }
   }
 
-  repositionNodesHorizontaly(data, {x0}, widthChangeRatio) {
-    const {dx} = this;
-    if (widthChangeRatio !== 1) {
-      for (const node of data.nodes) {
-        node.x0 = (node.x0 - x0) * widthChangeRatio + x0;
-        node.x1 = node.x0 + dx;
-      }
-    }
-  }
+  // Solved by adjusting zoom instead
+  // repositionNodesHorizontaly(data, {x0}, widthChangeRatio) {
+  //   const {dx} = this;
+  //   if (widthChangeRatio !== 1) {
+  //     for (const node of data.nodes) {
+  //       node.x0 = (node.x0 - x0) * widthChangeRatio + x0;
+  //       node.x1 = node.x0 + dx;
+  //     }
+  //   }
+  // }
 }

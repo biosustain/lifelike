@@ -151,8 +151,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
 
-  zoomAdjustment$ = new ReplaySubject<{ zoom: number, x0?: number, y0?: number }>(1);
-
   viewPort$ = new ReplaySubject(1);
 
   extent$: Observable<ProcessedExtent> = this.viewPort$.pipe(
@@ -174,12 +172,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
               },
               view.size
             )
-        ),
-        tap(vp => this.zoomAdjustment$.next({
-          x0: vp.x0,
-          y0: vp.y0,
-          zoom: Math.min(viewPort.width / vp.width, viewPort.height / vp.height)
-        }))
+        )
       )
     ),
     distinctUntilChanged(isEqual),
@@ -201,19 +194,14 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     debug('vertical$')
   );
 
-  graphViewport$ = combineLatest([
-    this.extent$,
-    this.zoomAdjustment$.pipe(
-      startWith({zoom: 1}),
-    ),
-  ]).pipe(
-    map(([{width, height}, {zoom}]) => ({
-      width: width / zoom,
-      height: height / zoom
-    }))
-  );
-
   private calculateLayout$;
+
+  isAutoLayout$ = combineLatest([
+    this.update.edited$, this.baseView.common.view$
+    ]).pipe(
+      map(args => args.every(a => !a)),
+      shareReplay({refCount: true, bufferSize: 1})
+  );
 
   setViewPort(viewPort) {
     this.viewPort$.next(viewPort);
@@ -226,42 +214,21 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
   positionNodes(x) {
     return switchMap(data => this.update.edited$.pipe(
-      switchMap(edited => this.horizontal$.pipe(
-        // calculate width change ratio for repositioning of the nodes
-        startWith({} as any),
-        pairwise(),
-        switchMap(d =>
+        switchMap(edited =>
           iif(
             () => edited,
-            of(d).pipe(
-              map(([prevHorizontal, horizontal]) => {
-                const prevWidth = prevHorizontal?.width ?? horizontal.width;
-                const widthChangeRatio = horizontal.width / prevWidth;
-
-                // Relative node positioning (to preserve draged node position)
-                this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
-                return data;
-              })
-            ),
-            of(d).pipe(
-              map(([prevHorizontal, horizontal], callIndex) => {
-                if (callIndex === 0) {
-                  // Absolute node positioning
-                  this.positionNodesHorizontaly(data, horizontal, x);
-                } else {
-                  const prevWidth = prevHorizontal?.width ?? horizontal.width;
-                  const widthChangeRatio = horizontal.width / prevWidth;
-
-                  // Relative node positioning (to preserve draged node position)
-                  this.repositionNodesHorizontaly(data, horizontal, widthChangeRatio);
-                }
+            of(data),
+            this.horizontal$.pipe(
+              map(horizontal => {
+                // Absolute node positioning
+                this.positionNodesHorizontaly(data, horizontal, x);
                 return data;
               })
             )
           )
         )
-      ))
-    ));
+      )
+    );
   }
 
   computeLinkBreadths(nodesAndPlaceholders) {
@@ -540,45 +507,35 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
   loadNodesPositionFromView(verticalContext, data, view: View) {
     return this.horizontal$.pipe(
-      // calculate width change ratio for repositioning of the nodes
-      startWith({} as any),
-      pairwise(),
-      map(([prevHorizontal, horizontalContext], callIndex) => {
-        if (callIndex === 0) {
-          // Absolute node positioning
-          const sy = verticalContext.height / view.size.height;
-          const sx = horizontalContext.width / view.size.width;
-          // for faster lookup
-          const entityById = new Map<string, SankeyNode>(data.nodes.map((d, i) => [String(d.id), d]));
-          Object.entries(view.nodes).map(([id, {y0, y1, x0, order}]) => {
-            const entity = entityById.get(id);
-            if (entity) {
-              // if (sy < 1) {
-              //   const y = (y0 + y1) / 2;
-              //   entity.y0 = y * sy - entity.height / 2;
-              //   entity.y1 = y * sy + entity.height / 2;
-              // } else {
-              //   entity.y0 = y0 * sy;
-              //   entity.y1 = y0 * sy + entity.height;
-              // }
-              // entity.x0 = x0 * sx;
+      first(),
+      map(horizontalContext => {
+        // Absolute node positioning
+        const sy = verticalContext.height / view.size.height;
+        const sx = horizontalContext.width / view.size.width;
+        // for faster lookup
+        const entityById = new Map<string, SankeyNode>(data.nodes.map((d, i) => [String(d.id), d]));
+        Object.entries(view.nodes).map(([id, {y0, y1, x0, order}]) => {
+          const entity = entityById.get(id);
+          if (entity) {
+            // if (sy < 1) {
+            //   const y = (y0 + y1) / 2;
+            //   entity.y0 = y * sy - entity.height / 2;
+            //   entity.y1 = y * sy + entity.height / 2;
+            // } else {
+            //   entity.y0 = y0 * sy;
+            //   entity.y1 = y0 * sy + entity.height;
+            // }
+            // entity.x0 = x0 * sx;
 
-              entity.y0 = y0;
-              entity.y1 = y1;
-              entity.x0 = x0;
-              entity.x1 = entity.x0 + this.dx;
-              entity.order = order;
-            } else {
-              this.warningController.warn(ErrorMessages.missingEntity(id));
-            }
-          });
-        } else {
-          const prevWidth = prevHorizontal?.width ?? horizontalContext.width;
-          const widthChangeRatio = horizontalContext.width / prevWidth;
-
-          // Relative node positioning (to preserve draged node position)
-          this.repositionNodesHorizontaly(data, horizontalContext, widthChangeRatio);
-        }
+            entity.y0 = y0;
+            entity.y1 = y1;
+            entity.x0 = x0;
+            entity.x1 = entity.x0 + this.dx;
+            entity.order = order;
+          } else {
+            this.warningController.warn(ErrorMessages.missingEntity(id));
+          }
+        });
         return verticalContext;
       })
     );
