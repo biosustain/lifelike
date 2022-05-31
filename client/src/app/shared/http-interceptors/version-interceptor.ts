@@ -20,7 +20,7 @@ export class AppVersionInterceptor implements HttpInterceptor {
     addVersionHeader(request: HttpRequest<any>) {
       return request.clone({
           setHeaders: {
-              'Lifelike-version': environment.***ARANGO_DB_NAME***Version,
+              'Accept-Lifelike-Version': environment.***ARANGO_DB_NAME***Version,
           }
       });
     }
