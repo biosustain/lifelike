@@ -1,5 +1,16 @@
+from http import HTTPStatus
+
+
 class ServerException(Exception):
-    def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=None,
+        fields=None,
+        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+        *args
+    ):
         """
         Create a new exception.
         :param title: the title of the error, which sometimes used on the client
@@ -54,7 +65,13 @@ class ServerException(Exception):
 
 
 class DeleteNonEmpty(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -63,7 +80,13 @@ class DeleteNonEmpty(ServerException):
 
 
 class StatisticalEnrichmentError(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -72,7 +95,13 @@ class StatisticalEnrichmentError(ServerException):
 
 
 class AnnotationError(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -81,7 +110,13 @@ class AnnotationError(ServerException):
 
 
 class LMDBError(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -90,7 +125,13 @@ class LMDBError(ServerException):
 
 
 class FileUploadError(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -99,7 +140,7 @@ class FileUploadError(ServerException):
 
 
 class NotAuthorized(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=403):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.FORBIDDEN):
         super().__init__(
             title=title,
             message=message,
@@ -108,7 +149,7 @@ class NotAuthorized(ServerException):
 
 
 class RecordNotFound(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=404):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.NOT_FOUND):
         super().__init__(
             title=title,
             message=message,
@@ -117,7 +158,7 @@ class RecordNotFound(ServerException):
 
 
 class InvalidArgument(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=400):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.BAD_REQUEST):
         super().__init__(
             title=title,
             message=message,
@@ -128,7 +169,7 @@ class InvalidArgument(ServerException):
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
 
-    def __init__(self, title=None, message=None, additional_msgs=[], code=401):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.UNAUTHORIZED):
         super().__init__(
             title=title,
             message=message,
@@ -139,7 +180,7 @@ class JWTTokenException(ServerException):
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
 
-    def __init__(self, title=None, message=None, additional_msgs=[], code=401):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.UNAUTHORIZED):
         super().__init__(
             title=title,
             message=message,
@@ -151,17 +192,30 @@ class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
 
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
         super().__init__(
             title=title,
             message=message,
             additional_msgs=additional_msgs,
             code=code)
 
+
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
 
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.NOT_ACCEPTABLE
+    ):
         super().__init__(
             title=title,
             message=message,
@@ -206,7 +260,14 @@ class AccessRequestRequiredError(ServerException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
-    def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):  # noqa
+    def __init__(
+        self,
+        curr_access,
+        req_access,
+        hash_id,
+        additional_msgs=[],
+        code=HTTPStatus.FORBIDDEN
+    ):
         message = f'You have "{curr_access}" access. Please request "{req_access}" ' \
                   f'access at minimum for this content.'
         super().__init__(
