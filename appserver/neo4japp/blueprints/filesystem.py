@@ -408,7 +408,7 @@ class FilesystemBaseView(MethodView):
         # Apply
         # ========================================
         file_type_service = get_file_type_service()
-        update_modified_date = not any(UPDATE_DATE_MODIFIED_COLUMNS)
+        update_modified_date = any([param in UPDATE_DATE_MODIFIED_COLUMNS for param in params])
 
         for file in target_files:
             assert file.calculated_project is not None
