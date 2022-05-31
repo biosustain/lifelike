@@ -22,10 +22,11 @@ from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_MAP,
     LogEventType,
     MAPS_RE,
-    FILE_MIME_TYPE_MAP,
-    SUPPORTED_MAP_MERGING_FORMATS
+    SUPPORTED_MAP_MERGING_FORMATS,
+    UPDATE_DATE_MODIFIED_COLUMNS,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -360,56 +361,42 @@ class FilesystemBaseView(MethodView):
                     f"The file or directory '{file.filename}' has been trashed and "
                     "must be restored first.")
 
-    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
+    def update_files(
+        self,
+        target_files: List[Files],
+        parent_file: Optional[Files],
+        params: Dict,
+        user: AppUser
+    ):
         """
         Updates the specified files using the parameters from a validated request.
-
-        :param hash_ids: the object hash IDs
+        :param target_files: the files to update
+        :param parent_file: parent file of the files to update
         :param params: the parameters
         :param user: the user that is making the change
         """
-        file_type_service = get_file_type_service()
-
-        changed_fields = set()
-
-        # Collect everything that we need to query
-        target_hash_ids = set(hash_ids)
-        parent_hash_id = params.get('parent_hash_id')
-
-        query_hash_ids = hash_ids[:]
-        require_hash_ids = []
-
-        if parent_hash_id is not None:
-            query_hash_ids.append(parent_hash_id)
-            require_hash_ids.append(parent_hash_id)
-
         # ========================================
-        # Fetch and check
+        # Check
         # ========================================
-        # We need to fetch content as it is used in maps update.
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids,
-                                                   lazy_load_content=True)
-        self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
+        files_to_check = target_files[:]  # Makes a copy of target_files so we don't mutate it
+        if parent_file is not None:
+            # Prevent recursive parent hash IDs
+            if parent_file.hash_id in [file.hash_id for file in target_files]:
+                raise ValidationError(
+                    f'An object cannot be set as the parent of itself.',
+                    'parentHashId'
+                )
 
-        target_files = [file for file in files if file.hash_id in target_hash_ids]
-        parent_file = None
-        missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
-
-        # Prevent recursive parent hash IDs
-        if parent_hash_id is not None and parent_hash_id in [file.hash_id for file in target_files]:
-            raise ValidationError(f'An object cannot be set as the parent of itself.',
-                                  "parentHashId")
-
-        # Check the specified parent to see if it can even be a parent
-        if parent_hash_id is not None:
-            parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
-            assert parent_file is not None
-
+            # Check the specified parent to see if it can even be a parent
             if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
-                raise ValidationError(f"The specified parent ({parent_hash_id}) is "
-                                      f"not a folder. It is a file, and you cannot make files "
-                                      f"become a child of another file.", "parentHashId")
+                raise ValidationError(
+                    f'The specified parent ({parent_file.hash_id}) is '
+                    f'not a folder. It is a file, and you cannot make files '
+                    f'become a child of another file.', 'parentHashId'
+                )
+            files_to_check.append(parent_file)
+
+        self.check_file_permissions(files_to_check, user, ['writable'], permit_recycled=False)
 
         if 'content_value' in params and len(target_files) > 1:
             # We don't allow multiple files to be changed due to a potential deadlock
@@ -420,6 +407,8 @@ class FilesystemBaseView(MethodView):
         # ========================================
         # Apply
         # ========================================
+        file_type_service = get_file_type_service()
+        update_modified_date = any([param in UPDATE_DATE_MODIFIED_COLUMNS for param in params])
 
         for file in target_files:
             assert file.calculated_project is not None
@@ -428,7 +417,6 @@ class FilesystemBaseView(MethodView):
             if 'description' in params:
                 if file.description != params['description']:
                     file.description = params['description']
-                    changed_fields.add('description')
 
             # Some changes cannot be applied to ***ARANGO_USERNAME*** directories
             if not is_***ARANGO_USERNAME***_dir:
@@ -450,12 +438,10 @@ class FilesystemBaseView(MethodView):
                                 f"inheritance.", "parent_hash_id")
                         current_parent = current_parent.parent
 
-                    file.parent = parent_file
-                    changed_fields.add('parent')
+                    file.parent_id = parent_file.id
 
                 if 'filename' in params:
                     file.filename = params['filename']
-                    changed_fields.add('filename')
 
                 if 'public' in params:
                     # Directories can't be public because it doesn't work right in all
@@ -464,11 +450,9 @@ class FilesystemBaseView(MethodView):
                     if file.mime_type != DirectoryTypeProvider.MIME_TYPE and \
                             file.public != params['public']:
                         file.public = params['public']
-                        changed_fields.add('public')
 
                 if 'pinned' in params:
                     file.pinned = params['pinned']
-                    changed_fields.add('pinned')
 
                 if 'fallback_organism' in params:
                     if params['fallback_organism'] is None:
@@ -486,13 +470,9 @@ class FilesystemBaseView(MethodView):
                                 message='You must provide the following properties for a ' +
                                         'fallback organism: "organism_name", "synonym", "tax_id".',
                             )
-                    changed_fields.add('organism_name')
-                    changed_fields.add('organism_synonym')
-                    changed_fields.add('organism_taxonomy_id')
 
                 if 'annotation_configs' in params:
                     file.annotation_configs = params['annotation_configs']
-                    changed_fields.add('annotation_configs')
 
                 if 'content_value' in params:
                     buffer = params['content_value']
@@ -532,20 +512,20 @@ class FilesystemBaseView(MethodView):
 
                         file.content_id = new_content_id
                         provider.handle_content_update(file)
-                        changed_fields.add('content_value')
-
-            file.modified_date = datetime.now()
             file.modifier = user
+            if update_modified_date:
+                # TODO: Ideally, we would let the ORM handle this. However, our tests need to be
+                # updated with proper transaction management first.
+                file.modified_date = datetime.now()
 
-        if len(changed_fields):
-            try:
-                db.session.commit()
-            except IntegrityError as e:
-                db.session.rollback()
-                raise ValidationError("No two items (folder or file) can share the same name.",
-                                      "filename")
-
-        return missing_hash_ids
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            raise ValidationError(
+                "No two items (folder or file) can share the same name.",
+                "filename"
+            )
 
     def get_file_response(self, hash_id: str, user: AppUser):
         """
@@ -559,6 +539,8 @@ class FilesystemBaseView(MethodView):
         # TODO: Potentially move these annotations into a separate table
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
 
+        # TODO: Ideally, we would not query for the files again. But, because we have so much code
+        # that depends on the Files objects not being expired, we have to.
         return_file = self.get_nondeleted_recycled_file(
             Files.hash_id == hash_id,
             attr_excl=EXCLUDE_FIELDS
@@ -582,9 +564,8 @@ class FilesystemBaseView(MethodView):
 
     def get_bulk_file_response(
             self,
-            hash_ids: List[str],
+            hash_ids,
             user: AppUser,
-            *,
             missing_hash_ids: Iterable[str] = None
     ):
         """
@@ -597,6 +578,8 @@ class FilesystemBaseView(MethodView):
         :param missing_hash_ids: IDs to put in the response
         :return: the response
         """
+        # TODO: Ideally, we would not query for the files again. But, because we have so much code
+        # that depends on the Files objects not being expired, we have to.
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
         self.check_file_permissions(files, user, ['readable'], permit_recycled=True)
 
@@ -941,48 +924,75 @@ class FileListView(FilesystemBaseView):
 
         # do NOT write any code before those two lines - it will cause some unit tests to fail
         current_user = g.current_user
-        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
 
-        linked_files = params.pop('hashes_of_linked', [])
+        # Collect everything that we need to query
+        target_hash_ids = targets['hash_ids']
+        parent_hash_id = params.get('parent_hash_id', None)
+        linked_hash_ids = params.get('hashes_of_linked', [])
+        query_hash_ids = target_hash_ids + linked_hash_ids
+        require_hash_ids = []
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']))
+        if parent_hash_id in target_hash_ids:
+            raise ValidationError(
+                f'An object cannot be set as the parent of itself.',
+                'parentHashId'
+            )
+        if parent_hash_id is not None:
+            query_hash_ids.append(parent_hash_id)
+            require_hash_ids.append(parent_hash_id)
 
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
+                                                   require_hash_ids=require_hash_ids)
+        missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
+
+        target_files = []
+        linked_files = []
+        parent_file = None
+        for file in files:
+            if file.hash_id in target_hash_ids:
+                target_files.append(file)
+            elif file.hash_id in linked_hash_ids:
+                linked_files.append(file)
+            elif file.hash_id == parent_hash_id:
+                parent_file = file
+
+        self.update_files(target_files, parent_file, params, current_user)
+
+        # TODO: this should really account for multiple files being updated...it should also
+        # probably be in a helper function, like update_files
         map_id = None
-        to_add, new_ids = [], []
+        to_add = []
         if files:
             file = files[0]
             if file.mime_type == FILE_MIME_TYPE_MAP:
                 map_id = file.id
 
-                new_files = self.get_nondeleted_recycled_files(Files.hash_id.in_(linked_files))
-
-                new_ids = [file.id for file in new_files]
-
                 # Possibly could be optimized with some get_or_create or insert_if_not_exist
                 to_add = [
                     MapLinks(map_id=map_id, linked_id=file.id)
-                    for file in new_files if not
+                    for file in linked_files if not
                     db.session.query(MapLinks).filter_by(
                         map_id=map_id, linked_id=file.id
                     ).scalar()
                 ]
-
-        response = self.get_bulk_file_response(targets['hash_ids'], current_user,
-                                               missing_hash_ids=missing_hash_ids)
-        # Add changes to the MapLinks after then response generation, as it might raise exceptions
         try:
             if to_add:
                 db.session.bulk_save_objects(to_add)
             if map_id:
-                delete_count = db.session.query(MapLinks).filter(MapLinks.map_id == map_id,
-                                                                 MapLinks.linked_id.notin_(new_ids)
-                                                                 ).delete(synchronize_session=False)
+                delete_count = db.session.query(
+                    MapLinks
+                ).filter(
+                    MapLinks.map_id == map_id,
+                    MapLinks.linked_id.notin_([file.id for file in linked_files])
+                ).delete(synchronize_session=False)
+
                 if to_add or delete_count:
                     db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
-        return response
+
+        return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
@@ -1134,7 +1144,33 @@ class FileDetailView(FilesystemBaseView):
     def patch(self, params: dict, hash_id: str):
         """Update a single file."""
         current_user = g.current_user
-        self.update_files([hash_id], params, current_user)
+
+        # Collect everything that we need to query
+        parent_hash_id = params.get('parent_hash_id', None)
+        query_hash_ids = [hash_id]
+        require_hash_ids = []
+
+        if hash_id == parent_hash_id:
+            raise ValidationError(
+                f'An object cannot be set as the parent of itself.',
+                'parentHashId'
+            )
+
+        if parent_hash_id is not None:
+            query_hash_ids.append(parent_hash_id)
+            require_hash_ids.append(parent_hash_id)
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
+                                                   require_hash_ids=require_hash_ids)
+        target_files = []
+        parent_file = None
+        for file in files:
+            if file.hash_id in hash_id:
+                target_files.append(file)
+            elif file.hash_id == parent_hash_id:
+                parent_file = file
+
+        self.update_files(target_files, parent_file, params, current_user)
         return self.get(hash_id)
 
 

@@ -6,6 +6,8 @@ import pytest
 from sqlalchemy.orm import make_transient
 
 from neo4japp.models import AppUser, Files, Projects
+from neo4japp.util import snake_to_camel
+
 from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
     ParameterizedAppUser as TestUser
 from tests.helpers.api import generate_jwt_headers
@@ -491,7 +493,8 @@ def test_patch_file(
         f'/filesystem/objects/{quote(file_in_project.hash_id)}',
         headers=headers,
         json={
-            field: sent_value,
+            # Field names must be in camel case for marshmallow to identify them
+            snake_to_camel(field): sent_value,
         },
     )
 
@@ -636,7 +639,8 @@ def test_bulk_patch_files(
             'hashIds': [
                 file_in_project.hash_id,
             ],
-            field: sent_value,
+            # Field names must be in camel case for marshmallow to identify them
+            snake_to_camel(field): sent_value,
         },
     )
 
