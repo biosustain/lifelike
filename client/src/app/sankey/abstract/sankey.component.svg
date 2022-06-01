@@ -1,31 +1,8 @@
 <svg #svg>
     <g [style.transform]="'translate('+margin.left+'px, '+margin.top+'px)'">
-        <rect x="0" y="0"
-              style="width:{{width}}px;height:{{height}}px;opacity:50%;"
-              fill="blue"/>
-        <rect *ngIf="sankey.viewPort$ | async as viewPort"
-              [attr.x]="viewPort.x0" [attr.y]="viewPort.y0"
-              style="width:{{viewPort.x0 + viewPort.x1}}px;height:{{viewPort.y0 + viewPort.y1}}px;opacity:50%;"
-              fill="cyan"/>
         <g #g>
             <g #links class="links"></g>
             <g #nodes class="nodes"></g>
-        </g>
-        <g #zoomDebug style="pointer-events: none;">
-            <text>
-                {{t}}
-            </text>
-            <!--        <rect x="0" y="0" style="width:{{width}}px;height:{{height}}px;opacity:50%;" fill="yellow"/>-->
-            <rect *ngIf="zoom.extent() as extent" [attr.x]="extent[0][0]" [attr.y]="extent[0][1]"
-                  style="width:{{extent[1][0] - extent[0][0]}}px;height:{{extent[1][1] - extent[0][1]}}px;opacity:50%;"
-                  fill="red"
-                  [attr.label]="extent"/>
-            <circle r="10" cx="0" cy="0" fill="red" label="0,0"/>
-            <ng-container>
-                <circle r="10" *ngIf="zoom.extent() as extent" [attr.cx]="(extent[0][0] + extent[1][0]) / 2"
-                        [attr.cy]="(extent[0][1] +
-        extent[1][1]) / 2" fill="pink" label="extent center"/>
-            </ng-container>
         </g>
     </g>
 </svg>
