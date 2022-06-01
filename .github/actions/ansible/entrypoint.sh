@@ -24,13 +24,6 @@ export VAULT_PASSWORD_FILE_PATH="${tilde}/.vault_secrets_pw"
 export OPTIONS=$(echo "${INPUT_OPTIONS}" | tr "\n" " ")
 
 # ----------------------------------------------------------------------------
-# Google Cloud Platform credentials
-# ----------------------------------------------------------------------------
-export GCP_PROJECT_NAME="${INPUT_GCP_PROJECT_NAME}"
-export SERVICE_ACCOUNT_PRIVATE_KEY_JSON="${INPUT_SERVICE_ACCOUNT_PRIVATE_KEY_JSON}"
-export SERVICE_ACCOUNT_NAME="${INPUT_SERVICE_ACCOUNT_NAME}"
-
-# ----------------------------------------------------------------------------
 # Authenticate to GCP
 # ----------------------------------------------------------------------------
 echo "${INPUT_GCP_CREDENTIALS}" > gcp-credentials.json
