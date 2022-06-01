@@ -1,0 +1,16 @@
+@import 'variables';
+
+app-networktrace-view-dropdown-content {
+  .dropdown-item-with-icon {
+    align-items: baseline;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+
+  .search {
+    $search-padding: $dropdown-padding-y;
+    margin: 0 $search-padding $search-padding $search-padding;
+    width: calc(100% - #{$dropdown-padding-y * 2});
+  }
+}

@@ -1,0 +1,28 @@
+<app-searchable-tree
+        [tree]="networkTracesViewsTree$ | async"
+        [searchClass]="'search'"
+        class="d-flex flex-column"
+        [appConstrainToViewport]="viewport.size$"
+>
+    <ng-template #treeNode #treeNestedNode let-node let-level="level">
+        <ng-template #traceNetwork>
+            <button (click)="selectUID(node.id)"
+                    ngbDropdownItem>
+                {{ node.name }}
+            </button>
+        </ng-template>
+        <ng-container *ngIf="level; else traceNetwork">
+            <button (click)="selectUID(node.id)"
+                    @collapseAnimation
+                    ngbDropdownItem
+                    class="dropdown-item-with-icon">
+                + {{ node.name }}
+                <i [ngClass]="{
+                                                            'fa fa-trash': true,
+                                                            'disabled': !object?.isEditable
+                                                            }"
+                   (click)="deleteViewUID(node.id); $event.stopPropagation()"></i>
+            </button>
+        </ng-container>
+    </ng-template>
+</app-searchable-tree>
