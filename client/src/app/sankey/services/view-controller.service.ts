@@ -111,9 +111,10 @@ export class ViewControllerService {
     );
   }
 
-  deleteView(viewName) {
-    return this.common.networkTrace$.pipe(
+  deleteView({networkTraceIdx, viewName}) {
+    return this.common.networkTraces$.pipe(
       first(),
+      map(networkTraces => networkTraces[networkTraceIdx]),
       tap(networkTrace => networkTrace.deleteView(viewName)),
       tap(views => this.common.viewsUpdate$.next(viewName)),
       // If the deleted view is the current view, switch from it

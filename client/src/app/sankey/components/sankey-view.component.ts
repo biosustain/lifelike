@@ -229,28 +229,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
   data$ = this.sankeyController.data$;
 
-  networkTracesViewsTree$ = this.sankeyController.networkTraces$.pipe(
-    switchMap(networkTraces =>
-      combineLatest(
-        networkTraces.map((networkTrace, index) =>
-          networkTrace.views$.pipe(
-            map(views => ({
-              id: `nt_${index}`,
-              name: networkTrace.name,
-              children: entries(views).map(([key, value]) => ({
-                id: `view_${index}_${key}`,
-                name: key
-              }))
-            }))
-          ),
-        )
-      )
-    ),
-    map(nestedOptions => ({
-      children: nestedOptions
-    })),
-    debug('networkTracesAndViewsMap$')
-  );
 
   activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
     map(activeViewBase => viewBaseToNameMapping[activeViewBase]),
@@ -364,23 +342,17 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
-  selectView(networkTraceIdx, viewName) {
-    return this.viewController.selectView(networkTraceIdx, viewName);
+  selectView({networkTraceIdx, viewName}) {
+    return this.viewController.selectView(networkTraceIdx, viewName).pipe(
+      tap(() => this.resetZoom(false))
+    ).toPromise();
   }
 
-  traceAndViewNameAccessor = (networkTraceOrViewId, traceOrView) => {
-    return this.applyOnNetworkTraceOrView(
-      networkTraceOrViewId,
-      traceId => traceOrView.name ?? traceOrView.description,
-      (_, viewId) => `+ ${viewId}`
-    );
-  }
-
-  confirmDeleteView(viewName): Promise<any> {
+  confirmDeleteView({networkTraceIdx, viewName}): Promise<any> {
     return this.confirm({
       header: 'Confirm delete',
-      body: `Are you sure you want to delete the '${viewName}' view?`
-    }).then(() => this.viewController.deleteView(viewName).toPromise());
+      body: `Are you sure you want to delete the '${viewName}' (${networkTraceIdx}) view?`
+    }).then(() => this.viewController.deleteView({networkTraceIdx,viewName}).toPromise());
   }
 
   ngOnInit() {
@@ -468,30 +440,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     ).toPromise();
   }
 
-  selectNetworkTrace = networkTraceIdx => this.sankeyController.selectNetworkTrace(networkTraceIdx);
-
-  applyOnNetworkTraceOrView(networkTraceOrViewId, networkTraceCallback, viewCallback) {
-    // Kinda ugly fix to maintain search functionality working with views in here
-    if (networkTraceOrViewId.startsWith('nt_')) {
-      const networkTraceIdx = Number(networkTraceOrViewId.replace('nt_', ''));
-      return networkTraceCallback(networkTraceIdx);
-    }
-    if (networkTraceOrViewId.startsWith('view_')) {
-      const [, networkTraceIdx, viewId] = networkTraceOrViewId.match(/^view_(\d+)_(.+)$/);
-      return viewCallback(Number(networkTraceIdx), viewId);
-    }
-    throw new Error('Unknown option prefix');
-  }
-
-  selectNetworkTraceOrView(networkTraceOrViewIdx) {
-    return this.baseView$.pipe(
-      first(),
-      tap(baseView => baseView.delta$.next({})),
-      switchMap(() => this.applyOnNetworkTraceOrView(
-        networkTraceOrViewIdx,
-        this.selectNetworkTrace.bind(this),
-        this.selectView.bind(this)
-      )),
+  selectNetworkTraceIdx(networkTraceIdx) {
+    return this.sankeyController.selectNetworkTrace(networkTraceIdx).pipe(
       tap(() => this.resetZoom(false))
     ).toPromise();
   }
