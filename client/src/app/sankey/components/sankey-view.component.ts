@@ -17,7 +17,7 @@ import { KeyValue } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
-import { isNil, pick, flatMap, zip } from 'lodash-es';
+import { isNil, pick, flatMap, zip, entries } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -229,20 +229,26 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
   data$ = this.sankeyController.data$;
 
-  networkTracesAndViewsMap$ = this.sankeyController.networkTraces$.pipe(
+  networkTracesViewsTree$ = this.sankeyController.networkTraces$.pipe(
     switchMap(networkTraces =>
       combineLatest(
         networkTraces.map((networkTrace, index) =>
           networkTrace.views$.pipe(
-            map(views => [
-              [`nt_${index}`, networkTrace],
-              ...Object.entries(views).map(([id, view]) => ([`view_${index}_${id}`, view]))
-            ] as [string, TraceNetwork | View][])
+            map(views => ({
+              id: `nt_${index}`,
+              name: networkTrace.name,
+              children: entries(views).map(([key, value]) => ({
+                id: `view_${index}_${key}`,
+                name: key
+              }))
+            }))
           ),
         )
       )
     ),
-    map(nestedOptions => new ExtendedMap(flatMap(nestedOptions))),
+    map(nestedOptions => ({
+      children: nestedOptions
+    })),
     debug('networkTracesAndViewsMap$')
   );
 

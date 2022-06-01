@@ -86,6 +86,7 @@ import { BaseControlComponent } from './components/base-control.component';
 import { InternalSearchService } from './services/internal-search.service';
 import { PasswordInputComponent } from './components/form/password-input.component';
 import { SearchableDropdownMenuComponent } from './components/form/searchable-dropdown-menu.component';
+import { SearchableTreeComponent } from './components/form/searchable-tree/searchable-tree.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -105,6 +106,7 @@ const components = [
   FormInputFeedbackComponent,
   BackgroundTaskProgressComponent,
   FormRowComponent,
+  SearchableTreeComponent,
   ModalHeaderComponent,
   ModalBodyComponent,
   ModalFooterComponent,
