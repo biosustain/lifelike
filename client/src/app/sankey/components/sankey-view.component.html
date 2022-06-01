@@ -165,13 +165,44 @@
                     </button>
                     <!-- add class dropdown-menu to avoid relayout-->
                     <div class="dropdown-menu" ngbDropdownMenu>
-                        <app-searchable-dropdown-menu
-                                (changeValue)="selectNetworkTraceOrView($event)"
+                        <ng-template #treeNode let-node let-level="level">
+                            node: {{node.id}}
+                            <ng-template #traceNetwork>
+                                <button (click)="selectTraceNetwork(node)"
+                                        ngbDropdownItem>
+                                    tracenetwork: {{ node.name || node.description || 'Trace Description Unknown' }}
+                                </button>
+                            </ng-template>
+                            <ng-container *ngIf="level; else traceNetwork">
+                                <button (click)="selectView(node)"
+                                        ngbDropdownItem>
+                                    view: {{ node.name }}
+                                </button>
+                            </ng-container>
+                        </ng-template>
+                        <ng-template #treeNestedNode let-node let-level="level">
+                            nested node: {{node.id}}
+                            <ng-template #traceNetwork>
+                                <button (click)="selectTraceNetwork(node)"
+                                        ngbDropdownItem>
+                                    tracenetwork: {{ node.name || node.description || 'Trace Description Unknown' }}
+                                </button>
+                            </ng-template>
+                            <ng-container *ngIf="level; else traceNetwork">
+                                <button (click)="selectView(node)"
+                                        ngbDropdownItem>
+                                    view: {{ node.name }}
+                                </button>
+                            </ng-container>
+                            {{node.children}}
+                        </ng-template>
+                        <app-searchable-tree
                                 [appConstrainToViewport]="viewport.size$"
-                                [items]="networkTracesAndViewsMap$ | async"
-                                [optionTextAccessor]="traceAndViewNameAccessor"
+                                [tree]="networkTracesViewsTree$ | async"
+                                [treeNode]="treeNode"
+                                [treeNestedNode]="treeNestedNode"
                                 class="d-flex flex-column"
-                        ></app-searchable-dropdown-menu>
+                        ></app-searchable-tree>
                     </div>
                 </div>
                 <div *ngIf="predefinedValueAccessor$ | async as predefinedValueAccessor"
