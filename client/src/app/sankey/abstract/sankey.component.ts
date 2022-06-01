@@ -378,7 +378,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   // endregion
 
-  t: any;
 
   // endregion
 
@@ -483,12 +482,10 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   ngAfterViewInit() {
     // attach zoom behaviour
-    const {g, zoom, zoomDebug} = this;
+    const {g, zoom} = this;
     const zoomContainer = d3_select(g.nativeElement);
     this.zoom.on$('zoom').subscribe(({transform}) => {
-      this.t = transform;
       zoomContainer.attr('transform', transform);
-      d3_select(zoomDebug.nativeElement).attr('transform', transform);
     });
 
     this.sankeySelection.on('click', () => {
