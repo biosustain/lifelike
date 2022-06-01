@@ -158,8 +158,17 @@ export class SankeySearchService {
         filter(searchFocus => Boolean(searchFocus)),
         switchMap(searchFocus =>
           this.common.patchState({
-            networkTraceIdx: searchFocus.networkTraceIdx
-          }).pipe(
+              networkTraceIdx: searchFocus.networkTraceIdx
+            },
+            (current, delta) =>
+              current.networkTraceIdx === delta.networkTraceIdx
+                ? current
+                : {
+                  ...current,
+                  networkTraceIdx: delta.networkTraceIdx,
+                  viewName: undefined
+                }
+          ).pipe(
             map(() => searchFocus)
           ))
       )
