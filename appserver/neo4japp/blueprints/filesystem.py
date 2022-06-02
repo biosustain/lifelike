@@ -941,8 +941,11 @@ class FileListView(FilesystemBaseView):
             query_hash_ids.append(parent_hash_id)
             require_hash_ids.append(parent_hash_id)
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(query_hash_ids),
+            require_hash_ids=require_hash_ids,
+            lazy_load_content=True
+        )
         missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
 
         target_files = []
@@ -1160,8 +1163,11 @@ class FileDetailView(FilesystemBaseView):
             query_hash_ids.append(parent_hash_id)
             require_hash_ids.append(parent_hash_id)
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=require_hash_ids)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(query_hash_ids),
+            require_hash_ids=require_hash_ids,
+            lazy_load_content=True
+        )
         target_files = []
         parent_file = None
         for file in files:
