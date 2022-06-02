@@ -32,8 +32,8 @@ import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
-import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 
 import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
