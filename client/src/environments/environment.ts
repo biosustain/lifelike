@@ -21,7 +21,7 @@ export const environment = {
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
   oauthClientId: browserWindowEnv.oauthClientId || 'client',
-  lifelikeVersion: browserWindowEnv.lifelikeVersion || 'undefined',
+  lifelikeVersion: '__VERSION__', // This is replaced during the docker build stage
 };
 
 /*
