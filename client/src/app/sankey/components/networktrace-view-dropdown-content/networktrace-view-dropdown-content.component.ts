@@ -102,6 +102,7 @@ export class NetworktraceViewDropdownContentComponent implements AfterViewInit {
   @Output() selectView = new EventEmitter<{ networkTraceIdx, viewName }>();
   @Output() deleteView = new EventEmitter<{ networkTraceIdx, viewName }>();
   @Input() viewport: ElementObserverDirective;
+  @Input() isEditable: boolean;
 
   networkTracesViewsTree$ = this.sankeyController.networkTraces$.pipe(
     switchMap(networkTraces =>
