@@ -167,6 +167,7 @@
                     <app-networktrace-view-dropdown-content
                             class="dropdown-menu"
                             ngbDropdownMenu
+                            [isEditable]="object?.isEditable"
                             [viewport]="viewport"
                             (deleteView)="confirmDeleteView($event)"
                             (selectNetworkTraceIdx)="selectNetworkTraceIdx($event)"

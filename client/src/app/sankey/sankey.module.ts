@@ -33,7 +33,9 @@ import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanc
 import { SankeyConfirmComponent } from './components/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
-import { NetworktraceViewDropdownContentComponent } from './components/networktrace-view-dropdown-content/networktrace-view-dropdown-content.component';
+import {
+  NetworktraceViewDropdownContentComponent
+} from './components/networktrace-view-dropdown-content/networktrace-view-dropdown-content.component';
 
 @NgModule({
   declarations: [
