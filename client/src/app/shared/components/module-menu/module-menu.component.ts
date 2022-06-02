@@ -38,8 +38,8 @@ export class ModuleMenuComponent extends ObjectMenuComponent implements AfterVie
   }
 
   async openShareDialog(target: FilesystemObject) {
-    return this.clipboard.copy(
-      this.tabUrlService.url,
+    return await this.clipboard.copy(
+      this.tabUrlService.shareableLink,
       {intermediate: 'Generating link...'}
     );
   }

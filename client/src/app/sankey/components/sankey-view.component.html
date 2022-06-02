@@ -157,7 +157,7 @@
                     <button class="btn btn-primary" ngbDropdownToggle>
                         <ng-container *ngIf="networkTrace$ | async as networkTrace; else noSelectedTrace">
                             <ng-container *ngIf="viewName$ | async as viewName">
-                                {{ viewName }} in
+                                {{ viewName }} :
                             </ng-container>
                             {{ networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}
                         </ng-container>

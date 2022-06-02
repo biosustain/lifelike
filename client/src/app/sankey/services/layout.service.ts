@@ -528,7 +528,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
             // entity.x0 = x0 * sx;
 
             entity.y0 = y0;
-            entity.y1 = y1;
+            entity.y1 = y0 + entity.height;
             entity.x0 = x0;
             entity.x1 = entity.x0 + this.dx;
             entity.order = order;

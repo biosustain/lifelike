@@ -17,7 +17,7 @@ import { KeyValue } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
-import { isNil, pick, flatMap, zip, entries } from 'lodash-es';
+import { isNil, pick, flatMap, zip, entries, omitBy } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -86,13 +86,15 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     return this.sankeyController.state$.pipe(
       first(),
       map(state =>
-        pick(
-          state,
-          [
-            'networkTraceIdx',
-            'viewBase',
-            'viewName'
-          ]
+        omitBy(
+          pick(
+            state,
+            [
+              'networkTraceIdx',
+              'viewName'
+            ]
+          ),
+          isNil
         )
       )
     ).toPromise();
@@ -317,7 +319,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   dragTitleData$ = this.object$.pipe(
     switchMap(object =>
-      defer(() => this.moduleContext.url).pipe(
+      defer(() => this.moduleContext.appLink).pipe(
         map(url => ({
           'text/plain': object.filename,
           'application/lifelike-node': JSON.stringify({
@@ -343,7 +345,16 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
   selectView({networkTraceIdx, viewName}) {
-    return this.viewController.selectView(networkTraceIdx, viewName).pipe(
+    return this.baseViewContext$.pipe(
+      first(),
+      tap(({baseView, layout, selection}) => {
+        baseView.delta$.next({});
+        selection.reset();
+        this.update.reset();
+      }),
+      switchMap(() =>
+        this.viewController.selectView(networkTraceIdx, viewName)
+      ),
       tap(() => this.resetZoom(false))
     ).toPromise();
   }
@@ -352,7 +363,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     return this.confirm({
       header: 'Confirm delete',
       body: `Are you sure you want to delete the '${viewName}' (${networkTraceIdx}) view?`
-    }).then(() => this.viewController.deleteView({networkTraceIdx,viewName}).toPromise());
+    }).then(() => this.viewController.deleteView({networkTraceIdx, viewName}).toPromise());
   }
 
   ngOnInit() {
@@ -441,7 +452,16 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   selectNetworkTraceIdx(networkTraceIdx) {
-    return this.sankeyController.selectNetworkTrace(networkTraceIdx).pipe(
+    return this.baseViewContext$.pipe(
+      first(),
+      tap(({baseView, layout, selection}) => {
+        baseView.delta$.next({});
+        selection.reset();
+        this.update.reset();
+      }),
+      switchMap(() =>
+        this.sankeyController.selectNetworkTrace(networkTraceIdx)
+      ),
       tap(() => this.resetZoom(false))
     ).toPromise();
   }
