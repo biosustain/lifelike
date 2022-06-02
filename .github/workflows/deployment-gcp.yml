@@ -50,7 +50,7 @@ jobs:
         include:
           - image: kg-webserver
             path: ./client
-            build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.client_config }}
+            build_extra_args: --build-arg ANGULAR_CONFIG=${{ inputs.client_config }} --build-arg CLIENT_VERSION=${{ github.sha }}
           - image: kg-appserver
             path: ./appserver
           - image: kg-cache-service
@@ -169,4 +169,3 @@ jobs:
             --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
             --user ansible
             --verbose
-
