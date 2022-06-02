@@ -237,11 +237,10 @@ def append_to_the_seed(seed_filename: str, filenames: tuple):
         content_id = max([file['id'] for file in file_content]) + 1
         taken_hashes = {file['hash_id'] for file in files}
         for res in results:
-            hash = res['hash_id'] if res['hash_id'] not in taken_hashes \
-                else timeflake.random().base62
             files.append({
                 'id': new_id,
-                'hash_id': hash,
+                'hash_id': res['hash_id'] if res['hash_id'] not in taken_hashes
+                else timeflake.random().base62,
                 'filename': res['filename'],
                 'mime_type': res['mime_type'],
                 'parent_id': 1,
