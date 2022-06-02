@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, HostBinding, ViewEncapsulation, Input } from '@angular/core';
+import { Component, Output, EventEmitter, HostBinding, ViewEncapsulation, Input, AfterViewInit } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 import { switchMap, map } from 'rxjs/operators';
@@ -18,14 +18,17 @@ class UniqueId {
   networkTraceIdx: number;
   viewName: string;
 
-  static decode(uid) {
+  static resolve(uid) {
+    if (uid instanceof UniqueId) {
+      return uid;
+    }
     if (uid.startsWith('nt_')) {
       const networkTraceIdx = Number(uid.replace('nt_', ''));
-      return {networkTraceIdx};
+      return new UniqueId({networkTraceIdx});
     }
     if (uid.startsWith('view_')) {
       const [, networkTraceIdx, viewName] = uid.match(/^view_(\d+)_(.+)$/);
-      return {networkTraceIdx: Number(networkTraceIdx), viewName};
+      return new UniqueId({networkTraceIdx: Number(networkTraceIdx), viewName});
     }
     throw new Error('Unknown option prefix');
   }
@@ -63,12 +66,12 @@ class UniqueId {
             marginBottom: 0,
             paddingBottom: 0
           }),
-          animate(10000)
+          animate(100)
         ]
       ),
       transition(
         ':leave',
-        animate(10000, style({
+        animate(100, style({
           transform: 'scaleY(0)',
           height: 0,
           marginTop: 0,
@@ -87,7 +90,7 @@ class UniqueId {
   ],
   encapsulation: ViewEncapsulation.None
 })
-export class NetworktraceViewDropdownContentComponent {
+export class NetworktraceViewDropdownContentComponent implements AfterViewInit {
   @HostBinding('@blockInitialRenderAnimation') blockInitialRenderAnimation = true;
 
   constructor(
@@ -125,7 +128,7 @@ export class NetworktraceViewDropdownContentComponent {
   );
 
   selectUID(uid) {
-    const {networkTraceIdx, viewName} = UniqueId.decode(uid);
+    const {networkTraceIdx, viewName} = UniqueId.resolve(uid);
     if (isNil(viewName)) {
       this.selectNetworkTraceIdx.emit(networkTraceIdx);
     } else {
@@ -134,7 +137,11 @@ export class NetworktraceViewDropdownContentComponent {
   }
 
   deleteViewUID(uid) {
-    const {networkTraceIdx, viewName} = UniqueId.decode(uid);
+    const {networkTraceIdx, viewName} = UniqueId.resolve(uid);
     this.deleteView.emit({networkTraceIdx, viewName});
+  }
+
+  ngAfterViewInit() {
+    this.blockInitialRenderAnimation = false;
   }
 }
