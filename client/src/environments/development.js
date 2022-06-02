@@ -12,4 +12,7 @@
 
     // Client ID of the OAuth application
     window.__env.oauthClientId = 'lifelike-frontend';
+
+    // Version of the application
+    window.__env.lifelikeVersion = '';
 }(this));
