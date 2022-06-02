@@ -20,7 +20,7 @@
                 + {{ node.name }}
                 <i [ngClass]="{
                                                             'fa fa-trash': true,
-                                                            'disabled': !object?.isEditable
+                                                            'disabled': isEditable
                                                             }"
                    (click)="deleteViewUID(node.id); $event.stopPropagation()"></i>
             </button>
