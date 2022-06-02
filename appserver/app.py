@@ -5,6 +5,10 @@ import hashlib
 import importlib
 import io
 import json
+import base64
+
+import timeflake
+
 import logging
 import math
 import os
@@ -17,7 +21,7 @@ from collections import namedtuple
 from flask import request
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
-from sqlalchemy.sql.expression import and_, text
+from sqlalchemy.sql.expression import and_, text, select
 from sqlalchemy.exc import IntegrityError
 
 from neo4japp.blueprints.auth import auth
@@ -33,6 +37,7 @@ from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
 from neo4japp.models.files import FileContent, Files
+from neo4japp.models import Projects
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
@@ -159,6 +164,107 @@ def seed(filename):
             # rollback in case of error?
 
         logger.info("Fixtures imported")
+
+
+@app.cli.command("append_seed")
+@click.argument('seed_filename', type=click.Path(exists=True))
+@click.argument('filenames', nargs=-1)
+def append_to_the_seed(seed_filename: str, filenames: tuple):
+    if not len(filenames):
+        print('Please specify at least one filename!')
+        return
+
+    conn = db.engine.connect()
+    trans = conn.begin()
+
+    t_file = Files.__table__.alias('t_file')
+    t_file_content = FileContent.__table__.alias('t_file_content')
+
+    query = select([
+        t_file.c.id,
+        t_file.c.hash_id,
+        t_file.c.filename,
+        t_file.c.mime_type,
+        t_file.c.content_id,
+        t_file_content.c.raw_file,
+    ]).select_from(
+        t_file.join(t_file_content, t_file_content.c.id == t_file.c.content_id)
+    ).where(
+        # Do NOT listen to PyCharm == None -> is None suggestion.
+        and_(t_file.c.filename.in_(filenames), t_file.c.deletion_date is None)
+    ).group_by(
+        t_file.c.id,
+        t_file.c.hash_id,
+        t_file.c.filename,
+        t_file.c.mime_type,
+        t_file.c.content_id,
+        t_file_content.c.raw_file,
+    )
+
+    results = [
+        {
+            'id': id,
+            'hash_id': hash_id,
+            'filename': filename,
+            'mime_type': mime_type,
+            'content_id': content_id,
+            'raw_file': raw_file,
+        } for id, hash_id, filename, mime_type, content_id, raw_file
+        in db.session.execute(query).fetchall()]
+
+    if not len(results):
+        print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!')
+        return
+
+    if len(results) != len(filenames):
+        print('Could not retrieve some of the files! Was able to retrieve:')
+        correct = [res['filename'] for res in results]
+        print(', '.join(correct))
+        print('Missing files:')
+        missing = [filename for filename in filenames if filename not in correct]
+        print('', ''.join(missing))
+        return
+
+    with open(seed_filename, 'r') as f:
+        fixtures = json.load(f)
+        files = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.Files', fixtures)
+                     )[0]['records']
+        file_content = list(filter(lambda fix:
+                                   fix.get('model') == 'neo4japp.models.FileContent', fixtures)
+                            )[0]['records']
+
+        new_id = max([file['id'] for file in files]) + 1
+        content_id = max([file['id'] for file in file_content]) + 1
+        taken_hashes = {file['hash_id'] for file in files}
+        for res in results:
+            hash = res['hash_id'] if res['hash_id'] not in taken_hashes \
+                else timeflake.random().base62
+            files.append({
+                'id': new_id,
+                'hash_id': hash,
+                'filename': res['filename'],
+                'mime_type': res['mime_type'],
+                'parent_id': 1,
+                'user_id': 1,
+                'public': False,
+                'content_id': content_id
+            })
+            file_c = {
+                'id': content_id
+            }
+            if res['mime_type'] == FILE_MIME_TYPE_MAP:
+                # # Encode as Base64
+                data = base64.standard_b64encode(res['raw_file'])
+                # # Decode to Base64encoded string
+                file_c['raw_file_base64'] = data.decode('utf-8')
+
+            else:
+                file_c['raw_file_utf8'] = res['raw_file'].decode('utf8')
+            file_content.append(file_c)
+            new_id += 1
+            content_id += 1
+        with open(seed_filename, 'w') as outfile:
+            json.dump(fixtures, outfile)
 
 
 @app.cli.command("drop_tables")
