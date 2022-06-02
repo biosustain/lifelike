@@ -1,4 +1,6 @@
-import { assign, startsWith, isEmpty, filter } from 'lodash-es';
+import { Arguments } from '@angular/cli/models/interface';
+
+import { assign, startsWith, isEmpty, filter, forOwn } from 'lodash-es';
 
 import { isNotEmpty } from '../utils';
 
@@ -17,13 +19,28 @@ class URL_REGEX {
   static href = `^(?:${URL_REGEX.origin})?${URL_REGEX.pathname}${URL_REGEX.search}?${URL_REGEX.hash}?$`;
 }
 
+interface AppURLInterface {
+  protocol: string;
+  username: string;
+  password: string;
+  hostname: string;
+  port: string;
+  pathname: string;
+  search: string[][] | Record<string, string> | string | URLSearchParams;
+  hash: string;
+  host: string;
+  origin: string;
+  href: string;
+}
+
 /**
  * Working with JS URL class is nice however it's requirement for url to be absolute is sometimes hard to go around.
- * This class implements same interface but deals well with relative URLs
+ * This class implements same interface but deals well with relative URLs and provides convininet property setters.
  */
-export class RelativeURL implements URL {
-  constructor(urlString: string) {
+export class AppURL implements URL, AppURLInterface {
+  constructor(urlString: string, overwrites: Partial<AppURLInterface> = {}) {
     this.href = urlString;
+    assign(this, overwrites);
   }
 
   fragment: string;
@@ -48,11 +65,13 @@ export class RelativeURL implements URL {
     return this.pathSegments.map(segment => `/${segment}`).join('');
   }
 
-  set search(value) {
+  // @ts-ignore : follows js inteface
+  set search(value: string[][] | Record<string, string> | string | URLSearchParams) {
     this.searchParams = new URLSearchParams(value);
   }
 
-  get search() {
+  // @ts-ignore : follows js inteface
+  get search(): string {
     const search = this.searchParams.toString();
     return search ? `?${search}` : '';
   }

@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
 import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
-import { forkJoin, combineLatest, merge, of, Observable } from 'rxjs';
+import { forkJoin, combineLatest, merge, of, Observable, zip } from 'rxjs';
 import { first } from 'lodash-es';
 import { color as d3color } from 'd3-color';
 
@@ -89,6 +89,12 @@ export class SankeySingleLaneComponent
 
     return this.sankey.baseView.highlightCircular$.pipe(
       map(highlightCircular => {
+        if (leftNode !== rightNode) {
+          return {
+            nodesIds: new Set(),
+            linksIds: new Set(),
+          };
+        }
         const helper = {
           left: {
             graphRelativePosition: 'left',
@@ -107,15 +113,17 @@ export class SankeySingleLaneComponent
         const objects2traverse = new Set([
           {
             direction: 'left',
-            node: leftNode
+            node: leftNode,
+            path: []
           },
           {
             direction: 'right',
-            node: rightNode
+            node: rightNode,
+            path: []
           }
         ]);
 
-        for (const {direction, node} of objects2traverse) {
+        for (const {direction, node, path} of objects2traverse) {
           const {
             graphRelativePosition, nextNode, nextLinks, traversedLinks
           } = helper[direction];
@@ -128,7 +136,8 @@ export class SankeySingleLaneComponent
               nodes.add(l[nextNode]);
               objects2traverse.add({
                 direction,
-                node: l[nextNode]
+                node: l[nextNode],
+                path: [...path, node, l]
               });
             }
           });
@@ -154,7 +163,7 @@ export class SankeySingleLaneComponent
 
   selectionUpdate$ = this.selection.selection$.pipe(
     // this base view operates on sigular selection
-    publish((selection$: Observable<SelectionEntity>) => merge(
+    publish((selection$: Observable<SelectionEntity>) => zip(
       selection$.pipe(
         map(({type, entity}) => type === SelectionType.node && entity),
         updateAttrSingular(this.renderedNodes$, 'selected', (entity, {id}) => (entity as Base['node']).id === id),
@@ -164,43 +173,46 @@ export class SankeySingleLaneComponent
         map(({type, entity}) => type === SelectionType.link && entity),
         updateAttrSingular(this.renderedLinks$, 'selected', (entity, {id}) => (entity as Base['link']).id === id),
         debug('linkSelection')
-      )
+      ),
       // selection$.pipe(
       //   map(({type, entity}) => type === SelectionType.trace && entity),
       //   debug('traceSelection')
       //   // todo
       // )
-    )),
-    debug('selectionUpdate$'),
-    this.$getConnectedNodesAndLinks,
-    publish(connectedNodesAndLinks$ => combineLatest([
-      connectedNodesAndLinks$.pipe(
-        map(({nodesIds}) => nodesIds),
-        updateAttr(
-          this.renderedNodes$,
-          'transitively-selected',
-          {
-            accessor: (nodesIds, {id}) => nodesIds.has(id),
-          }
-        ),
-        debug('transnodeSelection')
-      ),
-      connectedNodesAndLinks$.pipe(
-        map(({linksIds}) => linksIds),
-        updateAttr(
-          this.renderedLinks$,
-          'transitively-selected',
-          {
-            accessor: (linksIds, {id}) => linksIds.has(id),
-            enter: s => s
-              .attr('transitively-selected', ({_graphRelativePosition}) => _graphRelativePosition ?? true)
-              .raise()
-          }
-        ),
-        debug('translinkSelection')
+      selection$.pipe(
+        map(({entity}) => entity),
+        this.$getConnectedNodesAndLinks,
+        publish(connectedNodesAndLinks$ => combineLatest([
+          connectedNodesAndLinks$.pipe(
+            map(({nodesIds}) => nodesIds),
+            updateAttr(
+              this.renderedNodes$,
+              'transitively-selected',
+              {
+                accessor: (nodesIds, {id}) => nodesIds.has(id),
+              }
+            ),
+            debug('transnodeSelection')
+          ),
+          connectedNodesAndLinks$.pipe(
+            map(({linksIds}) => linksIds),
+            updateAttr(
+              this.renderedLinks$,
+              'transitively-selected',
+              {
+                accessor: (linksIds, {id}) => linksIds.has(id),
+                enter: s => s
+                  .attr('transitively-selected', ({graphRelativePosition}) => graphRelativePosition ?? true)
+                  .raise()
+              }
+            ),
+            debug('translinkSelection')
+          )
+        ])),
+        debug('transSelection')
       )
-    ])),
-    debug('transSelection')
+    )),
+    debug('selectionUpdate$')
   );
 
   ngOnInit() {

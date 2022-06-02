@@ -3,8 +3,8 @@
 <cdk-tree
         [dataSource]="filteredBranches$"
         [treeControl]="treeControl"
-        class="overflow-auto"
-        [trackBy]="trackByFn">
+        class="overflow-auto">
+    <!--        [trackBy]="trackByFn">-->
     <!-- This is the tree node template for leaf nodes -->
     <cdk-tree-node *cdkTreeNodeDef="let node; let index = index; let count = count; let level = level">
         <ng-container
@@ -14,7 +14,8 @@
                    }"></ng-container>
     </cdk-tree-node>
     <!-- This is the tree node template for expandable nodes -->
-    <cdk-nested-tree-node *cdkTreeNodeDef="let node; let index = index; let count = count; let level = level; when: hasChild">
+    <cdk-nested-tree-node
+            *cdkTreeNodeDef="let node; let index = index; let count = count; let level = level; when: hasChild">
         <ng-container
                 [ngTemplateOutlet]="treeNestedNodeTemplateRef"
                 [ngTemplateOutletContext]="{

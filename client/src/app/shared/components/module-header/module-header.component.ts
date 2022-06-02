@@ -38,6 +38,6 @@ export class ModuleHeaderComponent implements OnChanges {
   }
 
   openNewWindow() {
-    return this.tabUrlService.url.then(href => window.open(href));
+    return this.tabUrlService.shareableLink.then(href => window.open(href));
   }
 }
