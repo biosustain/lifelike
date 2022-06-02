@@ -21,7 +21,7 @@ export const environment = {
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
   oauthClientId: browserWindowEnv.oauthClientId || 'client',
-  ***ARANGO_DB_NAME***Version: browserWindowEnv.***ARANGO_DB_NAME***Version || 'undefined',
+  ***ARANGO_DB_NAME***Version: '__VERSION__', // This is replaced during the docker build stage
 };
 
 /*

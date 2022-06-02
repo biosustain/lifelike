@@ -30,6 +30,7 @@ ARG ANGULAR_CONFIG=development
 # default enviroment presets
 ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
 
+ARG CLIENT_VERSION
 
 # ========================================
 # Angular app bundle build
@@ -39,13 +40,15 @@ FROM angular-deps as angular-build
 # build time argument for Angular environment
 ARG ANGULAR_CONFIG=production
 
+ARG CLIENT_VERSION
+
 # Copy the code and build the app bundle
 COPY src ./src
 COPY tslint ./tslint
 COPY e2e ./e2e
 COPY *.json browserslist ./
+RUN sed -i "s/__VERSION__/${CLIENT_VERSION}/" src/environments/environment.ts
 RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
-
 
 # ========================================
 # Runtime stage - NGINX
