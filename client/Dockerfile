@@ -25,22 +25,20 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install
 
-# build time argument for Angular environment
+# build time arguments for Angular environment
 ARG ANGULAR_CONFIG=development
+ARG CLIENT_VERSION=undefined
 # default enviroment presets
 ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
-
-ARG CLIENT_VERSION
 
 # ========================================
 # Angular app bundle build
 # ========================================
 FROM angular-deps as angular-build
 
-# build time argument for Angular environment
+# build time arguments for Angular environment
 ARG ANGULAR_CONFIG=production
-
-ARG CLIENT_VERSION
+ARG CLIENT_VERSION=undefined
 
 # Copy the code and build the app bundle
 COPY src ./src
