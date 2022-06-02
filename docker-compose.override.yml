@@ -150,8 +150,6 @@ services:
       context: ./client
       dockerfile: Dockerfile
       target: angular-deps
-      args:
-        CLIENT_VERSION: undefined
     command: yarn dev-start
     volumes:
       - ./client:/app

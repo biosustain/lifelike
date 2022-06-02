@@ -12,7 +12,4 @@
 
     // Client ID of the OAuth application
     window.__env.oauthClientId = '***ARANGO_DB_NAME***-frontend';
-
-    // Version of the application
-    window.__env.***ARANGO_DB_NAME***Version = '';
 }(this));
