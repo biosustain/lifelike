@@ -72,12 +72,18 @@ def data_upgrades():
                     t_files.c.id == current_parent
                 )
             ).first()
-        project_name, = conn.execution_options(stream_results=True).execute(sa.select([
+        project_name = conn.execution_options(stream_results=True).execute(sa.select([
                 t_projects.c.name,
             ]).where(
                 t_projects.c.root_id == current_file
             )
-        ).first()
+        ).scalar()
+
+        # This *should never* happen. But, we have a single weird file on staging that has no
+        # children and no associated project. Yet another reason to refactor the projects table...
+        if project_name is None:
+            return '/'
+
         file_path.append(project_name)
 
         return '/' + '/'.join(file_path[::-1])
