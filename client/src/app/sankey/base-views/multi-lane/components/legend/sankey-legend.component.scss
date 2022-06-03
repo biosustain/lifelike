@@ -1,0 +1,15 @@
+@use 'sankey';
+
+:host {
+  @include sankey.legend;
+
+  .trace-group {
+    .box {
+      --fill: transparent;
+
+      &:before {
+        background-color: var(--fill);
+      }
+    }
+  }
+}
