@@ -102,7 +102,7 @@ export function calculateInputCountSkippingCircularLinksB(
     maxExpectedValue,
     (nodeValue, nextLinks) => {
       const nextNonCircularLinks = nextLinks.filter(({circular}) => !circular);
-      const nextCircularLinksSum = nextLinks.filter(({circular}) => circular).reduce((acc, l) => acc + l.value, 0);
+      const nextCircularLinksSum = nextLinks.filter(({circular}) => circular).reduce((acc, l) => acc + (l.value ?? 0), 0);
       return (nodeValue - nextCircularLinksSum) / nextNonCircularLinks.length;
     }
   );

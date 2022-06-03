@@ -26,6 +26,7 @@ import { SankeySingleLaneComponent } from './components/sankey/sankey.component'
 import { SankeySingleLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SankeySingleLaneDetailsPanelModule } from './components/details-panel/sankey-single-lane-details-panel.module';
 import { SankeySelectionService } from '../../services/selection.service';
+import { SankeyLegendComponent } from './components/legend/sankey-legend.component';
 
 @NgModule({
   id: ViewBase.sankeySingleLane,
@@ -62,7 +63,8 @@ import { SankeySelectionService } from '../../services/selection.service';
   ],
   declarations: [
     SankeySingleLaneAdvancedPanelComponent,
-    SankeySingleLaneComponent
+    SankeySingleLaneComponent,
+    SankeyLegendComponent
   ]
 })
 export class SingleLaneBaseModule {

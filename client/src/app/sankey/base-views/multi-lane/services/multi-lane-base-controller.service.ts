@@ -1,8 +1,8 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { switchMap, map, shareReplay } from 'rxjs/operators';
-import { merge, isNil } from 'lodash-es';
-import { of, iif, defer } from 'rxjs';
+import { switchMap, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
+import { merge, isNil, uniq } from 'lodash-es';
+import { of, iif, defer, combineLatest } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
@@ -14,7 +14,7 @@ import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 import { SankeyLink, TraceNetwork, SankeyTraceLink, View } from 'app/sankey/model/sankey-document';
 
-import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID } from '../color-palette';
+import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../color-palette';
 import { inputCount } from '../algorithms/linkValues';
 import { Base } from '../interfaces';
 import { getBaseState } from '../../../utils/stateLevels';
@@ -96,6 +96,19 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
   }));
 
   palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
+
+  traceGroupColorMapping$ = this.palette$.pipe(
+    switchMap((palette: any) => this.common.networkTrace$.pipe(
+        map(({traces}) => uniq(traces.map(({group}) => group))),
+        map(groups => createMapToColor(
+          groups.sort((a: number, b: number) => a - b),
+          {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
+          palette.palette
+        ))
+      )
+    ),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
 
   networkTraceData$ = this.common.data$.pipe(
     switchMap(({links, nodes, nodeById}) => this.common.networkTrace$.pipe(
