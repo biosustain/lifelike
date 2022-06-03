@@ -27,12 +27,12 @@ export function inputCount(
   const linkLayers = getLinkLayers.call(this, data.links);
   const perLayerLinkEstimation = new ExtendedWeakMap<SankeyLink, number[]>();
   linkLayers.forEach(layer => {
-    const [circularLinks, normalLinks] = partition(layer, ({_circular}) => _circular);
-    const circularTraces = new Set(circularLinks.map(({_trace}) => _trace));
+    const [circularLinks, normalLinks] = partition(layer, ({circular}) => circular);
+    const circularTraces = new Set(circularLinks.map(({trace}) => trace));
     const traceCircularEstimation = new WeakMap<Trace, number>();
     for (const circularTrace of circularTraces) {
-      const traceNormalLinks = normalLinks.filter(({_trace}) => _trace === circularTrace);
-      const traceCircularLinks = circularLinks.filter(({_trace}) => _trace === circularTrace);
+      const traceNormalLinks = normalLinks.filter(({trace}) => trace === circularTrace);
+      const traceCircularLinks = circularLinks.filter(({trace}) => trace === circularTrace);
       const traceNormalLinksValue = sumBy(traceNormalLinks, ({value}) => value);
       // each trace should flow only value of one so abs(sum(link values) - sum(circular values)) = 1
       // yet it remains an estimate cause we do not know which circular link contribution to sum

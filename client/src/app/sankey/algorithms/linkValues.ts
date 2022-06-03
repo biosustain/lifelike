@@ -1,5 +1,3 @@
-import * as d3Sankey from 'd3-sankey-circular';
-
 import { isNotEmpty } from 'app/shared/utils';
 
 import { representativePositiveNumber } from '../utils';

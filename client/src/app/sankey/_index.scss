@@ -7,7 +7,22 @@ $node-label-shadow: #bbb;
 $active-node-label-shadow: rgb(187, 187, 187);
 $input-spacing: map-get($spacers, 2);
 
+@mixin panel-divider {
+  width: 100%;
+  clear: both;
+  content: '';
+  display: block;
+  @include nav-divider($dropdown-divider-bg, $dropdown-divider-margin-y, true);
+}
+
+@mixin panel-align-presets {
+  // align with button presets
+  padding: $btn-padding-y $btn-padding-x;
+  text-align: left;
+}
+
 @mixin advanced-panel {
+
   form {
     text-align: left;
 
@@ -30,17 +45,11 @@ $input-spacing: map-get($spacers, 2);
       width: 100%;
 
       &:before {
-        width: 100%;
-        clear: both;
-        content: '';
-        display: block;
-        @include nav-divider($dropdown-divider-bg, $dropdown-divider-margin-y, true);
+        @include panel-divider;
       }
 
       > * {
-        // align with button presets
-        padding: $btn-padding-y $btn-padding-x;
-        text-align: left;
+        @include panel-align-presets;
       }
     }
 
@@ -67,6 +76,74 @@ $input-spacing: map-get($spacers, 2);
       flex-grow: 1;
       margin-left: $input-spacing;
       margin-right: $input-spacing;
+    }
+  }
+}
+
+@mixin legend {
+  $box-width: 1.75rem;
+  $box-height: .75rem;
+  //pointer-events: none;
+  width: 100%;
+  @include panel-align-presets;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  display: block;
+
+  // Nice abstract to display description list using grid layout
+  dl.d-grid {
+    display: grid;
+    grid-template-columns: auto;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    column-gap: .5rem;
+
+    > *:not(dt, dd) {
+      display: contents;
+    }
+
+    dt {
+      grid-column-start: 1;
+    }
+  }
+
+  &:before {
+    @include panel-divider;
+  }
+
+  .title {
+    margin-top: 0.75rem;
+    margin-bottom: 0.6rem;
+
+    &:after {
+      @include panel-divider;
+    }
+  }
+
+  .body {
+    margin-bottom: 0;
+  }
+
+  .box {
+    display: inline-block;
+    line-height: 1.5;
+
+    &:before {
+      border-radius: .1rem;
+      border-style: solid;
+      border-width: 2px;
+      content: '';
+      display: inline-block;
+      height: $box-height;
+      width: $box-width;
+      vertical-align: middle;
+    }
+  }
+
+  .circular {
+    .box:before {
+      border-color: black;
+      border-style: dashed;
     }
   }
 }

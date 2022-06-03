@@ -92,14 +92,14 @@ export class SankeyMultiLaneComponent
         // todo
       )
     ])),
-    map(([nodes = [], links = [], _traces = []]) => uniq(
+    map(([nodes = [], links = [], traces = []]) => uniq(
         flatMap(
           nodes as Base['node'][],
           ({sourceLinks, targetLinks}) => [...sourceLinks, ...targetLinks]
         )
           .concat(links as Base['link'][])
           .map(({trace}) => trace)
-          .concat(_traces as any as Base['trace'][])
+          .concat(traces as any as Base['trace'][])
       )
     ),
     publish(traces$ => combineLatest([
@@ -154,19 +154,14 @@ export class SankeyMultiLaneComponent
       }
     } = this;
 
-    this.sankey.baseView.palette$.pipe(
+    this.sankey.baseView.traceGroupColorMapping$.pipe(
       takeUntil(this.destroyed$),
-      switchMap((palette: any) =>
+      switchMap((traceColorPaletteMap) =>
         combineLatest([
           this.renderedLinks$,
           this.renderedNodes$,
         ]).pipe(
           tap(([linksSelection, nodesSelection]) => {
-            const traceColorPaletteMap = createMapToColor(
-              uniq(linksSelection.data().map(({trace: {group}}: Base['link']) => group)).sort((a: number, b: number) => a - b),
-              {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
-              palette.palette
-            );
             linksSelection
               .style('fill', (d: Base['link']) => traceColorPaletteMap.get(d.trace.group))
               .style('stroke', linkBorder as any);
