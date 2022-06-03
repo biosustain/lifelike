@@ -26,6 +26,7 @@ import { SankeyMultiLaneDetailsPanelModule } from './components/details-panel/sa
 import { SankeyMutiLaneDetailsPanelComponent } from './components/details-panel/details-panel.component';
 import { SankeyMultiLaneComponent } from './components/sankey/sankey.component';
 import { SankeySelectionService } from '../../services/selection.service';
+import { SankeyLegendComponent } from './components/legend/sankey-legend.component';
 
 @NgModule({
   id: ViewBase.sankeyMultiLane,
@@ -62,7 +63,8 @@ import { SankeySelectionService } from '../../services/selection.service';
   ],
   declarations: [
     MultiLaneBaseAdvancedPanelComponent,
-    SankeyMultiLaneComponent
+    SankeyMultiLaneComponent,
+    SankeyLegendComponent
   ]
 })
 export class MultiLaneBaseModule {

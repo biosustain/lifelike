@@ -32,23 +32,23 @@
                     </ng-template>
                 </ngb-panel>
             </ng-template>
-            <ngb-panel *ngIf="entity._trace" cardClass="filled-card" title="Trace">
+            <ngb-panel *ngIf="entity.trace" cardClass="filled-card" title="Trace">
                 <ng-template ngbPanelContent>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Source</b>
-                            {{ (getNodeById(entity._trace.source) | async).description }}
+                            {{ (getNodeById(entity.trace.source) | async).description }}
                         </li>
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Target</b>
-                            {{ (getNodeById(entity._trace.target) | async).description }}
+                            {{ (getNodeById(entity.trace.target) | async).description }}
                         </li>
                         <li class="list-group-item d-flex flex-wrap justify-content-between">
                             <b>Group</b>
                             {{ entity.trace.group }}
                         </li>
-                        <li class="list-group-item" *ngIf="entity._trace.detail_edges">
-                            <button (click)="openTraceView(entity._trace)" class="btn btn-outline-primary">
+                        <li class="list-group-item" *ngIf="entity.trace.detail_edges">
+                            <button (click)="openTraceView(entity.trace)" class="btn btn-outline-primary">
                                 Show detailed network
                             </button>
                         </li>

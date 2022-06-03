@@ -48,7 +48,7 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
     const relayoutLinks = linksToTraverse =>
       linksToTraverse.forEach(l => {
         relayoutNodes([dt.nextNode(l)]);
-        traceOrder.add(l._trace);
+        traceOrder.add(l.trace);
       });
     const relayoutNodes = nodesToTraverse =>
       nodesToTraverse.forEach(node => {

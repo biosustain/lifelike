@@ -32,11 +32,11 @@
                     </ng-template>
                 </ngb-panel>
             </ng-template>
-            <ngb-panel *ngIf="entity._traces" cardClass="filled-card" title="Traces">
+            <ngb-panel *ngIf="entity.traces" cardClass="filled-card" title="Traces">
                 <ng-template ngbPanelContent>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex flex-wrap justify-content-between trace" *ngFor="let trace of
-                        entity._traces">
+                        entity.traces">
                             <div class="property">
                                 <span>Source</span>
                                 <span>{{ (getNodeById(trace.source) | async).description }}</span>
