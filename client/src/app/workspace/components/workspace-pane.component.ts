@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input } from '@angular/core';
 
-import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
+import { Pane, Tab, TabDefaults, WorkspaceManager } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-workspace-pane',
@@ -11,6 +11,12 @@ import { Pane, Tab, WorkspaceManager } from 'app/shared/workspace-manager';
 export class WorkspacePaneComponent {
   @Input() pane: Pane;
   @Input() hasSiblings = false;
+
+  NEW_TAB_OPTIONS: TabDefaults[] = [
+      { title: 'File Browser', fontAwesomeIcon: 'fa fa-layer-group', url: '/projects' },
+      { title: 'Knowledge Graph', fontAwesomeIcon: 'fa fa-chart-network', url: '/search/graph' },
+      { title: 'Search', fontAwesomeIcon: 'fa fa-search', url: '/search/content' },
+  ];
 
   constructor(
     protected readonly workspaceManager: WorkspaceManager
@@ -31,8 +37,8 @@ export class WorkspacePaneComponent {
     this.workspaceManager.moveTab(from, event.previousIndex, to, event.currentIndex);
   }
 
-  addTab(url: string) {
-    this.workspaceManager.openTabByUrl(this.pane, url);
+  addTab(tab: TabDefaults) {
+    this.workspaceManager.openTabByUrl(this.pane, tab.url, undefined, tab);
   }
 
   setActiveTab(tab: Tab) {
