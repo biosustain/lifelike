@@ -224,7 +224,7 @@ class OutdatedVersionException(ServerException):
 
 
 class UnsupportedMediaType(ServerException):
-    """Signals that the client sent a request from a old version of the application."""
+    """Signals that the client sent a request for an unsupported media type."""
 
     def __init__(
         self,
