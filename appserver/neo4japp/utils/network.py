@@ -12,6 +12,8 @@ from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
 
 from IPy import IP
 
+from neo4japp.exceptions import UnsupportedMediaType
+
 
 class ControlledConnectionMixin:
     """
@@ -163,13 +165,14 @@ class ContentTooLongError(URLError):
     """Raised when the content is too big."""
 
 
-def read_url(*args, max_length, read_chunk_size=8192, buffer=None, debug_level=0,
-             prefer_direct_downloads=False, **kwargs):
+def read_url(*args, max_length, req_content_type=None, read_chunk_size=8192, buffer=None,
+             debug_level=0, prefer_direct_downloads=False, **kwargs):
     """
     Get the contents at a URL, while controlling access to some degree.
 
     :param args: arguments for the opener
     :param max_length: the maximum length to download
+    :param req_content_type: the expected content type of the response
     :param read_chunk_size: the size of each chunk when downloading
     :param buffer: the buffer object to put the data in -- if None, then a new
         memory BytesIO will be created
@@ -194,13 +197,21 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None, debug_level=0
 
     conn = opener.open(*args, **kwargs)
 
-    # First check the content length returned by the server, if any
+    # First, check the content type returned by the server
+    server_type = conn.headers.get('Content-Type')
+    if req_content_type is not None and server_type != req_content_type:
+        raise UnsupportedMediaType(
+            f'Response Content-Type does not match the requested type: {server_type} vs. ' +
+            f'{req_content_type}'
+        )
+
+    # Then, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
     if server_length is not None:
         try:
             if int(server_length) > max_length:
                 raise ContentTooLongError(
-                    "file Content-Length too big ({} > {})".format(server_length, max_length))
+                    f'Response Content-Length too big ({server_length} > {max_length})')
         except ValueError:
             pass
 
