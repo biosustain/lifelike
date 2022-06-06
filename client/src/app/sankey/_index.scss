@@ -90,6 +90,14 @@ $input-spacing: map-get($spacers, 2);
   padding-bottom: 0;
   display: block;
 
+  legend {
+    width: auto;
+    padding-right: 0.5rem;
+    font-size: $font-size-base;
+    font-weight: $font-weight-base;
+    color: $gray-500;
+  }
+
   // Nice abstract to display description list using grid layout
   dl.d-grid {
     display: grid;
