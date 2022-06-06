@@ -2,15 +2,12 @@
 <dl class="d-grid body">
     <div class="box-container circular" label="Circular links">
         <dt class="box" title="dashed line"></dt>
-        <dd title="ussing Johnson's circuit finding algorithm mark last link in each elementary circuit">link
-            closing circular
-            path
-        </dd>
+        <dd title="ussing Johnson's circuit finding algorithm mark last link in each elementary circuit">Right-to-Left link</dd>
     </div>
-    <div class="box-container trace-group" label="Links colored by trace group">
-        <ng-container *ngFor="let groupColor of traceColors$ | async">
-            <dt class="box" [style.--fill]="groupColor.color"></dt>
-            <dd>trace group: {{groupColor.group}}</dd>
-        </ng-container>
-    </div>
+    <!--    <div class="box-container trace-group" label="Links colored by trace group">-->
+    <!--        <ng-container *ngFor="let groupColor of traceColors$ | async">-->
+    <!--            <dt class="box" [style.&#45;&#45;fill]="groupColor.color"></dt>-->
+    <!--            <dd>trace group: {{groupColor.group}}</dd>-->
+    <!--        </ng-container>-->
+    <!--    </div>-->
 </dl>
