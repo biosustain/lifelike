@@ -1062,15 +1062,18 @@ class FileListView(FilesystemBaseView):
                         'User-Agent': self.url_fetch_user_agent,
                     }),
                     max_length=self.file_max_size,
+                    req_content_type='application/pdf',
                     timeout=self.url_fetch_timeout,
                     prefer_direct_downloads=True
                 )
             except Exception:
-                raise ValidationError('Your file could not be downloaded, either because it is '
-                                      'inaccessible or another problem occurred. Please double '
-                                      'check the spelling of the URL. You can also download '
-                                      'the file to your computer from the original website and '
-                                      'upload the file manually.', "content_url")
+                raise ValidationError(
+                    'Your file could not be uploaded. Please make sure your URL ends with .pdf.' +
+                    ' For example, https://www.example.com/file.pdf. If the problem persists, ' +
+                    'please download the file to your computer from the original website and ' +
+                    'upload the file from your device.',
+                    "content_url"
+                )
 
             return buffer, url
 
