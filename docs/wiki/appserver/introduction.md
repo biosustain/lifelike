@@ -48,11 +48,25 @@ to run the migration without starting the flask application. Remember that this 
 Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` to be up as well.
 ### Importing Seed Data
 
-While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data, run:
+While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data (from the specified file), run:
 
 ```sh
-docker-compose exec appserver flask seed
+docker-compose exec appserver flask seed fixtures/seed.json
 ```
+
+### Extending Seed Data
+
+Since seed files contain the content data of the example files, there are pretty cumbersome to modify manually. If you feel that there is a file that is lacking in the example data (e.g. new Lifelike file type), you can:
+
+ - Import seed data from a specific file
+ - Create/Upload the file(s) you want to include
+ - Run `append_seed` CLI command, specifying seed file and list of filenames to append:
+
+```shell
+docker-compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
+```
+
+If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`. 
 
 ### Making Schema Changes
 
