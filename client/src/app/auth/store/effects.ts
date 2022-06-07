@@ -259,7 +259,7 @@ export class AuthEffects {
       }
     }),
     withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
-    tap(([_, url]) => this.router.navigate([url])),
+    tap(([_, url]) => this.router.navigateByUrl(url)),
   ), {dispatch: false});
 
   oauthLogin$ = createEffect(() => this.actions$.pipe(

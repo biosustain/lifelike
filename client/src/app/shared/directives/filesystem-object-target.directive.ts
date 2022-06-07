@@ -25,6 +25,8 @@ import {
   FilesystemObjectTransferData
 } from 'app/file-browser/providers/filesystem-object-data.provider';
 
+import { extractDescriptionFromFile } from '../utils/files';
+
 @Directive({
   selector: '[appFSObjectTarget]',
 })
@@ -74,7 +76,7 @@ export class FilesystemObjectTargetDirective {
   }
 
   @HostListener('drop', ['$event'])
-  drop(event: DragEvent) {
+  async drop(event: DragEvent) {
     this.dropTargeted = false;
 
     const valid = this.canAcceptDrop(event);
@@ -129,6 +131,7 @@ export class FilesystemObjectTargetDirective {
         const object = new FilesystemObject();
         object.filename = file.name;
         object.parent = this.appFSObjectTarget;
+        object.description = await extractDescriptionFromFile(file);
         return this.objectCreationService.openCreateDialog(object, {
           title: 'Upload File',
           promptUpload: false,

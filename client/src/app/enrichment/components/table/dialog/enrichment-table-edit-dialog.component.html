@@ -45,7 +45,7 @@
       </ng-container>
 
       <ng-template #enrichmentParamsFields>
-        <app-form-row for="entitiesList" label="Gene Names" [control]="form.get('entitiesList')">
+        <app-form-row for="entitiesList" label="Genes" [control]="form.get('entitiesList')">
           <textarea formControlName="entitiesList" id="entitiesList"
                     [appFormInput]="form.get('entitiesList')"
                     rows="5" placeholder="One gene per line"></textarea>
