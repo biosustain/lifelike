@@ -52,11 +52,12 @@ export class SankeySearch {
 
   private readonly ignoredNodeProperties: Array<keyof SearchNode> = [];
   private readonly ignoredLinkProperties: Array<keyof SearchLink> = [
-    'source', 'target'
+    // @ts-ignore
+    'source', 'target', 'trace', 'traces'
   ];
   private readonly ignoredTraceProperties: Array<keyof GraphTrace> = [];
 
-  * matchKeyObject(obj, key) {
+  *matchKeyObject(obj, key) {
     for (const match of this.matchObject(obj)) {
       yield {
         path: [key, ...match.path],
@@ -66,14 +67,14 @@ export class SankeySearch {
     }
   }
 
-  * matchObject(obj): Generator<Match> {
+  *matchObject(obj): Generator<Match> {
     if (Array.isArray(obj)) {
       for (const nestedObj of obj) {
-        yield* this.matchObject(nestedObj);
+        yield*this.matchObject(nestedObj);
       }
     } else if (isObject(obj)) {
       for (const [key, term] of Object.entries(obj)) {
-        yield* this.matchKeyObject(term, key);
+        yield*this.matchKeyObject(term, key);
       }
     } else {
       const match = this.matcher(obj);
@@ -96,30 +97,30 @@ export class SankeySearch {
     );
   }
 
-  * matchLink(link: SearchLink): Generator<Match> {
+  *matchLink(link: SearchLink): Generator<Match> {
     const matches = this.matchedLink.getSetLazily(
       link.id,
       () => this.matchObject(
         omit(link, this.ignoredLinkProperties)
       )
     );
-    yield* matches;
+    yield*matches;
   }
 
-  * nodeIdsToNodes(nodeIds): Generator<SearchNode & any> {
+  *nodeIdsToNodes(nodeIds): Generator<SearchNode & any> {
     for (const nodeId of nodeIds) {
       yield this.nodeById.get(nodeId);
     }
   }
 
-  * linkIdxsToLinks(linkIdxs): Generator<SearchLink & any> {
+  *linkIdxsToLinks(linkIdxs): Generator<SearchLink & any> {
     for (const linkIdx of linkIdxs) {
       yield this.data.links[linkIdx];
     }
   }
 
-  * matchTrace(trace: GraphTrace): Generator<Match> {
-    yield* this.matchObject(
+  *matchTrace(trace: GraphTrace): Generator<Match> {
+    yield*this.matchObject(
       omit(trace, this.ignoredTraceProperties)
     );
     const {node_paths, detail_edges, edges} = trace;
@@ -165,7 +166,7 @@ export class SankeySearch {
   saveGeneratorResults(iterator): [any[], Generator] {
     const calculatedMatches = [];
 
-    function* matchGenerator() {
+    function*matchGenerator() {
       for (const match of iterator) {
         calculatedMatches.push(match);
         yield match;
@@ -175,7 +176,7 @@ export class SankeySearch {
     return [calculatedMatches, matchGenerator()];
   }
 
-  * traverseData({nodes, links, traces}): Generator<any> {
+  *traverseData({nodes, links, traces}): Generator<any> {
     // keep track iterators wich returned match
     const {potentialEntitiesWithAdditionalMatches} = this;
     for (const node of nodes) {
@@ -210,18 +211,18 @@ export class SankeySearch {
         };
       }
     }
-    for (const trace of traces.entries()) {
+    for (const [id, trace] of traces.entries()) {
       const matchGenerator = this.matchTrace(trace);
       const {value, done} = matchGenerator.next();
       if (!done) {
         potentialEntitiesWithAdditionalMatches.push({
           type: EntityType.Trace,
-          id: trace.id,
+          id,
           matchGenerator
         });
         yield {
           type: EntityType.Trace,
-          id: trace.id,
+          id,
           value
         };
       }
@@ -237,19 +238,19 @@ export class SankeySearch {
     return {links: _links, nodes: _nodes, traces};
   }
 
-  * getFirstMatchForEachEntity(traceNetworks, networkTraceIdxMap): Generator<Match> {
+  *getFirstMatchForEachEntity(traceNetworks, networkTraceIdxMap): Generator<Match> {
     for (const traceNetwork of traceNetworks) {
       const {traces} = traceNetwork;
       const traceNetworkData = this.getNetworkTraceData(this.data, traces);
       const networkTraceIdx = networkTraceIdxMap.get(traceNetwork);
-      yield* this.addNetworkTraceIdx(
+      yield*this.addNetworkTraceIdx(
         networkTraceIdx,
         this.traverseData(traceNetworkData)
       );
     }
   }
 
-  * getRemainingMatchesForEachEntity(): Generator<Match> {
+  *getRemainingMatchesForEachEntity(): Generator<Match> {
     for (const {matchGenerator, ...rest} of this.potentialEntitiesWithAdditionalMatches) {
       for (const matchUpdate of matchGenerator) {
         yield {
@@ -260,7 +261,7 @@ export class SankeySearch {
     }
   }
 
-  * addNetworkTraceIdx(networkTraceIdx, iterator) {
+  *addNetworkTraceIdx(networkTraceIdx, iterator) {
     for (const match of iterator) {
       yield {
         networkTraceIdx,

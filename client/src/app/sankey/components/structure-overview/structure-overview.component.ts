@@ -105,12 +105,12 @@ const parseNodeSetId = (label, nodeSetId) => ({
   type: OverviewEntityType.nodeSetId,
 });
 
-const parseTrace = ({node_paths, edges, source, target, detail_edges, ...rest}) => ([
-  property('node_paths', () => parseNodePaths(node_paths)),
+const parseTrace = ({nodePaths, edges, source, target, detailEdges, ...rest}) => ([
+  property('node_paths', () => parseNodePaths(nodePaths)),
   property('edges', () => parseLinkIds(edges)),
   {...parseNodeId(source), label: 'source'},
   {...parseNodeId(target), label: 'target'},
-  property('detail_edges', () => parseDetailEdges(detail_edges)),
+  property('detail_edges', () => parseDetailEdges(detailEdges)),
   ...mapObj(rest)
 ]);
 
@@ -137,9 +137,9 @@ const parseLink = ({
   ...mapObj(rest)
 ]);
 
-const parseGraph = ({node_sets, trace_networks, ...rest}) => ([
-  property('trace_networks', () => parseArray(trace_networks, parseTraceNetwork)),
-  property('node_sets', () => parseNodeSets(node_sets)),
+const parseGraph = ({nodeSets, traceNetworks, ...rest}) => ([
+  property('trace_networks', () => parseArray(traceNetworks, parseTraceNetwork)),
+  property('node_sets', () => parseNodeSets(nodeSets)),
   ...mapObj(rest)
 ]);
 
@@ -149,6 +149,7 @@ const parseGraphFile = ({graph, nodes, links, ...rest}) => ([
   property('links', () => parseArray(links, parseLink)),
   ...mapObj(rest)
 ]);
+
 @Component({
   selector: 'app-sankey-structure-overview',
   templateUrl: './structure-overview.component.html',
