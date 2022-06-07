@@ -513,9 +513,10 @@ class KgService(HybridDBDao):
         return tx.run(
             """
             UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:GO_LINK]-(x:db_GO)
-            WHERE id(g)=node_id
-            RETURN node_id, collect(x.name) AS go_terms
+            OPTIONAL MATCH (ncbi_gene)-[:GO_LINK]-(ncbi_go:db_GO) WHERE id(ncbi_gene)=node_id
+            OPTIONAL MATCH (ncbi_gene2)-[:IS]-(:db_BioCyc)-[:ENCODES]-()-[:GO_LINK]-(biocyc_go)
+                WHERE id(ncbi_gene2)=node_id
+            RETURN node_id, collect(coalesce(ncbi_go.name, biocyc_go.name)) AS go_terms
             """,
             ncbi_gene_ids=ncbi_gene_ids
         ).data()
