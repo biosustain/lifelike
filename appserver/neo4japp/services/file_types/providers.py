@@ -276,8 +276,23 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # TODO: Actually validate PDF content
-        pass
+        data = buffer.read()
+        buffer.seek(0)
+
+        # Check that the pdf is considered openable
+        fp = io.BytesIO(data)
+        try:
+            high_level.extract_text(fp, page_numbers=[0], caching=False)
+        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='This pdf is locked and cannot be loaded into Lifelike.')
+        except Exception:
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf. Please check if the pdf is ' +
+                        'unlocked and openable.'
+            )
 
     def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
@@ -293,10 +308,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
         fp = io.BytesIO(data)
         try:
             text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
-            raise FileUploadError(
-                title='Failed to Read PDF',
-                message='This pdf is locked and cannot be loaded into Lifelike.')
         except Exception:
             raise FileUploadError(
                 title='Failed to Read PDF',
