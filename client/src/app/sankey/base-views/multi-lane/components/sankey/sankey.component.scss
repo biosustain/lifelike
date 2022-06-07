@@ -1,4 +1,5 @@
-@import 'sankey';
+@use 'sankey';
+@use 'variables';
 
 app-sankey-multi-lane {
   $link-dimmed-opacity: .1;
@@ -16,7 +17,7 @@ app-sankey-multi-lane {
 
   @keyframes searchBlink {
     50% {
-      fill: $search-accent-color;
+      fill: sankey.$search-accent-color;
     }
   }
 
@@ -37,7 +38,7 @@ app-sankey-multi-lane {
   width: 100%;
 
   svg {
-    background-color: $window-background;
+    background-color: variables.$window-background;
     height: 100%;
     width: 100%;
 
@@ -55,7 +56,7 @@ app-sankey-multi-lane {
             cursor: move;
             fill-opacity: $node-opacity;
             shape-rendering: crispEdges;
-            stroke: $black;
+            stroke: variables.$black;
             stroke-opacity: $node-stroke-opacity;
             stroke-width: 1;
             transition: opacity 200ms;
@@ -63,7 +64,7 @@ app-sankey-multi-lane {
 
           .text-shadow {
             display: none;
-            fill: $node-label-shadow;
+            fill: sankey.$node-label-shadow;
             filter: blur(.1em);
             mix-blend-mode: lighten;
             stroke: none;
@@ -97,7 +98,7 @@ app-sankey-multi-lane {
           &[selected="true"] {
             > rect {
               opacity: $node-opacity;
-              stroke: $selection-accent-color;
+              stroke: sankey.$selection-accent-color;
               stroke-opacity: 1;
               stroke-width: $node-selected-stroke-width;
             }
@@ -105,22 +106,22 @@ app-sankey-multi-lane {
 
           &[searched="true"] .text-shadow {
             display: initial;
-            fill: opacify($active-node-label-shadow, .5);
+            fill: opacify(sankey.$active-node-label-shadow, .5);
             filter: none;
             mix-blend-mode: normal;
-            stroke: $search-accent-color;
+            stroke: sankey.$search-accent-color;
             transform: scaleY(1.5) scaleX(1.1);
             transform-origin: 15px 0;
           }
 
           &[focused="true"] {
             .text-shadow {
-              fill: opacify($active-node-label-shadow, .85);
+              fill: opacify(sankey.$active-node-label-shadow, .85);
               @include search-blink();
             }
 
             text {
-              fill: $black;
+              fill: variables.$black;
               font-size: 1em;
             }
           }
@@ -137,7 +138,7 @@ app-sankey-multi-lane {
           }
 
           &:hover text {
-            fill: $black;
+            fill: variables.$black;
             font-size: 1em;
           }
         }
@@ -145,7 +146,7 @@ app-sankey-multi-lane {
 
       .links {
         fill: none;
-        stroke: $black;
+        stroke: variables.$black;
         transition: opacity 200ms;
 
         path {
@@ -172,14 +173,14 @@ app-sankey-multi-lane {
           &:hover,
           &[selected="true"] {
             opacity: $link-opacity;
-            stroke: $selection-accent-color;
+            stroke: sankey.$selection-accent-color;
             stroke-opacity: 1;
             stroke-width: $link-selected-stroke-width;
           }
 
           &[searched="true"] {
             opacity: $link-opacity;
-            stroke: $search-accent-color;
+            stroke: sankey.$search-accent-color;
             stroke-opacity: $link-selected-stroke-opacity;
           }
 

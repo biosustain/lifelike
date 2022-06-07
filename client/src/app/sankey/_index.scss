@@ -1,23 +1,26 @@
+@use 'variables';
+// our version of boostrap is not prep yet to use "use"
 @import 'variables';
-@import '~bootstrap/scss/mixins';
+@import '~bootstrap/scss/mixins/deprecate';
+@import '~bootstrap/scss/mixins/nav-divider';
 
-$search-accent-color: $red;
+$search-accent-color: variables.$red;
 $selection-accent-color: #ff0;
 $node-label-shadow: #bbb;
 $active-node-label-shadow: rgb(187, 187, 187);
-$input-spacing: map-get($spacers, 2);
+$input-spacing: map-get(variables.$spacers, 2);
 
 @mixin panel-divider {
   width: 100%;
   clear: both;
   content: '';
   display: block;
-  @include nav-divider($dropdown-divider-bg, $dropdown-divider-margin-y, true);
+  @include nav-divider(variables.$dropdown-divider-bg, variables.$dropdown-divider-margin-y, true);
 }
 
 @mixin panel-align-presets {
   // align with button presets
-  padding: $btn-padding-y $btn-padding-x;
+  padding: variables.$btn-padding-y variables.$btn-padding-x;
   text-align: left;
 }
 
@@ -90,12 +93,14 @@ $input-spacing: map-get($spacers, 2);
   padding-bottom: 0;
   display: block;
 
-  legend {
-    width: auto;
-    padding-right: 0.5rem;
-    font-size: $font-size-base;
-    font-weight: $font-weight-base;
-    color: $gray-500;
+  fieldset {
+    padding: map-get(variables.$spacers, 2) map-get(variables.$spacers, 3);
+    margin: map-get(variables.$spacers, 2) 0;
+
+    legend {
+      margin: 0 - map-get(variables.$spacers, 2);
+      padding: 0 map-get(variables.$spacers, 2);
+    }
   }
 
   // Nice abstract to display description list using grid layout
@@ -105,6 +110,7 @@ $input-spacing: map-get($spacers, 2);
     grid-auto-columns: 1fr;
     grid-auto-flow: column;
     column-gap: .5rem;
+    row-gap: .5rem;
 
     > *:not(dt, dd) {
       display: contents;
@@ -112,6 +118,10 @@ $input-spacing: map-get($spacers, 2);
 
     dt {
       grid-column-start: 1;
+    }
+
+    dd {
+      margin: 0;
     }
   }
 
@@ -123,9 +133,9 @@ $input-spacing: map-get($spacers, 2);
     margin-top: 0.75rem;
     margin-bottom: 0.6rem;
 
-    &:after {
-      @include panel-divider;
-    }
+    //&:after {
+    //  @include panel-divider;
+    //}
   }
 
   .body {
