@@ -1,4 +1,5 @@
-@import 'sankey';
+@use 'variables';
+@use 'sankey';
 
 app-sankey-multi-lane-details-panel {
   // The little dot next to each entity type indicating the color
@@ -10,15 +11,15 @@ app-sankey-multi-lane-details-panel {
   }
 
   .invalid-input {
-    border-color: $danger;
+    border-color: variables.$danger;
   }
 
   .invalid-input:focus {
-    box-shadow: 0 0 0 .2rem rgba($danger, .25);
+    box-shadow: 0 0 0 .2rem rgba(variables.$danger, .25);
   }
 
   .small-font {
-    font-size: $font-size-sm;
+    font-size: variables.$font-size-sm;
   }
 
   .filled-card .card-body {
