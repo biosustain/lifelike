@@ -10,13 +10,13 @@ import { clone, first } from 'lodash-es';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ResultMapping } from 'app/shared/schemas/common';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -49,7 +49,8 @@ export class FilesystemObjectActions {
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService,
               protected readonly objectCreationService: ObjectCreationService,
-              protected readonly objectTypeService: ObjectTypeService) {
+              protected readonly objectTypeService: ObjectTypeService,
+              protected readonly clipboard: ClipboardService) {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
@@ -218,9 +219,9 @@ export class FilesystemObjectActions {
   }
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
-    const modalRef = this.modalService.open(CopyLinkDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}${object.getURL(forEditing)}`;
-    return modalRef.result;
+    return Promise.resolve(
+      this.clipboard.copy(`${window.location.origin}${object.getURL(forEditing)}`)
+    );
   }
 
   openNewWindow(object: FilesystemObject, forEditing = false) {

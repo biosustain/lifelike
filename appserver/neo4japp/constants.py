@@ -60,6 +60,7 @@ class LogEventType(Enum):
     ANNOTATION = 'annotations'
     AUTHENTICATION = 'authentication'
     CONTENT_SEARCH = 'content_search'
+    CLIENT_EVENT = 'client-event'
     ELASTIC = 'elastic'
     ELASTIC_FAILURE = 'elastic-failure'
     ENRICHMENT = 'enrichment_table'
@@ -455,3 +456,40 @@ IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
 
 MAX_FILE_DESCRIPTION_LENGTH = 5000
+
+# Start constants for Files updates
+UPDATE_DATE_MODIFIED_COLUMNS = [
+    'filename',
+    'parent_id',
+    'description',
+    'content_id',
+    'user_id',
+    'doi',
+    'upload_url',
+    'public',
+    'annotations',
+    'annotation_configs',
+    'custom_annotations',
+    'excluded_annotations',
+    'organism_name',
+    'organism_synonym',
+    'organism_taxonomy_id'
+]
+
+UPDATE_ELASTIC_DOC_COLUMNS = [
+    'filename',
+    'parent_id',
+    'description',
+    'content_id',
+    'user_id',
+    'doi',
+    'upload_url',
+    'public',
+    'annotations',
+    'annotation_configs',
+    'custom_annotations',
+    'excluded_annotations',
+    'organism_name',
+    'organism_synonym',
+    'organism_taxonomy_id'
+]

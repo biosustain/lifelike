@@ -3,6 +3,9 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
+
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {
@@ -99,3 +102,17 @@ export const getPath = (object: FilesystemObject | undefined): FilesystemObject[
   }
   return path.reverse();
 };
+
+// TODO: Change this to extractAllLifelikeMetadata when we decide to download the metadata
+export function extractDescriptionFromFile(file: File): Promise<string> {
+  const format = file.name.split('.').pop();
+  if (FORMATS_WITH_POSSIBLE_DESCRIPTION.includes(format)) {
+    return file.text().then(text => {
+      if (format === 'graph') {
+        return extractDescriptionFromSankey(text);
+      }
+      return '';
+   });
+  }
+  return Promise.resolve('');
+}
