@@ -168,11 +168,30 @@ def seed(filename):
 
 @app.cli.command("append_seed")
 @click.argument('seed_filename', type=click.Path(exists=True))
+@click.option('-d', '--directory', default=1)
+@click.option('-o', '--owner', default=1)
 @click.argument('filenames', nargs=-1)
-def append_to_the_seed(seed_filename: str, filenames: tuple):
+def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filenames: tuple):
     if not len(filenames):
         print('Please specify at least one filename!')
         return
+
+    with open(seed_filename, 'r') as f:
+        fixtures = json.load(f)
+        files = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.Files', fixtures)
+                     )[0]['records']
+        users = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.AppUser', fixtures)
+                     )[0]['records']
+        selected_user = list(filter(lambda user: user['id'] == owner, users))
+        if not selected_user:
+            print(f"Cannot find user with id {owner} in seed file: {seed_filename}")
+            return
+        selected_directory = list(filter(lambda file: file['id'] == directory and
+                                         file.get('mime_type', '')
+                                         == 'vnd.***ARANGO_DB_NAME***.filesystem/directory', files))
+        if not selected_directory:
+            print(f"Cannot find directory with id {directory} in seed file: {seed_filename}")
+            return
 
     conn = db.engine.connect()
     trans = conn.begin()
@@ -243,8 +262,8 @@ def append_to_the_seed(seed_filename: str, filenames: tuple):
                 else timeflake.random().base62,
                 'filename': res['filename'],
                 'mime_type': res['mime_type'],
-                'parent_id': 1,
-                'user_id': 1,
+                'parent_id': directory,
+                'user_id': owner,
                 'public': False,
                 'content_id': content_id
             })
