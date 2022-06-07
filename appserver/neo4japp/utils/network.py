@@ -12,7 +12,7 @@ from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
 
 from IPy import IP
 
-from neo4japp.exceptions import UnsupportedMediaType
+from neo4japp.exceptions import UnsupportedMediaTypeError
 
 
 class ControlledConnectionMixin:
@@ -200,7 +200,7 @@ def read_url(*args, max_length, req_content_type=None, read_chunk_size=8192, buf
     # First, check the content type returned by the server
     server_type = conn.headers.get('Content-Type')
     if req_content_type is not None and server_type != req_content_type:
-        raise UnsupportedMediaType(
+        raise UnsupportedMediaTypeError(
             f'Response Content-Type does not match the requested type: {server_type} vs. ' +
             f'{req_content_type}'
         )
