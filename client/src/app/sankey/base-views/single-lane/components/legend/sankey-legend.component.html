@@ -1,33 +1,39 @@
 <div class="title">Legend</div>
-<legend>NODE</legend>
-<dl class="d-grid body">
-    <div class="box-container node-type" label="Nodes colored by type">
-        <dt class="box" [attr.data-position]="'left'"></dt>
-        <dd>source node</dd>
-        <dt class="box" [attr.data-position]="'right'"></dt>
-        <dd>target node</dd>
-    </div>
-</dl>
-<legend>LINK</legend>
-<dl class="d-grid body">
-    <div class="box-container link-type" label="Links colored by type" *ngIf="colorLinkByType$ | async">
-        <ng-container *ngFor="let typemap of colorLinkTypes$ | async | keyvalue">
-            <dt class="box" [attr.data-type]="typemap.key.toLowerCase()"></dt>
-            <dd>{{typemap.key}}</dd>
-        </ng-container>
-    </div>
-    <div class="box-container selection" label="Selection colors" *ngIf="selected$ | async">
-        <dt class="box" [attr.data-position]="'left'"></dt>
-        <dd>Incoming links to selected node</dd>
-        <dt class="box" [attr.data-position]="'right'"></dt>
-        <dd>Outgoing links from selected node</dd>
-        <dt class="box" [attr.data-position]="'multiple'"></dt>
-        <dd>Both incoming and outgoing links from selected node</dd>
-    </div>
-    <div class="box-container circular" label="Circular links">
-        <dt class="box" title="dashed line"></dt>
-        <dd title="ussing Johnson's circuit finding algorithm mark last link in each elementary circuit">
-            Right-to-Left link
-        </dd>
-    </div>
-</dl>
+
+<fieldset class="fieldset-properties border">
+    <legend>NODE</legend>
+    <dl class="d-grid body">
+        <div class="box-container node-type" label="Nodes colored by type">
+            <dt class="box" [attr.data-position]="'left'"></dt>
+            <dd>source</dd>
+            <dt class="box" [attr.data-position]="'right'"></dt>
+            <dd>target</dd>
+        </div>
+    </dl>
+</fieldset>
+
+<fieldset class="fieldset-properties border">
+    <legend>LINK</legend>
+    <dl class="d-grid body">
+        <div class="box-container link-type" label="Links colored by type" *ngIf="colorLinkByType$ | async">
+            <ng-container *ngFor="let typemap of colorLinkTypes$ | async | keyvalue">
+                <dt class="box" [attr.data-type]="typemap.key.toLowerCase()"></dt>
+                <dd>{{typemap.key}}</dd>
+            </ng-container>
+        </div>
+        <div class="box-container selection" label="Selection colors" *ngIf="selected$ | async">
+            <dt class="box" [attr.data-position]="'left'"></dt>
+            <dd>Incoming links to selected node</dd>
+            <dt class="box" [attr.data-position]="'right'"></dt>
+            <dd>Outgoing links from selected node</dd>
+            <dt class="box" [attr.data-position]="'multiple'"></dt>
+            <dd>Both incoming and outgoing links from selected node</dd>
+        </div>
+        <div class="box-container circular" label="Circular links">
+            <dt class="box" title="dashed line"></dt>
+            <dd title="ussing Johnson's circuit finding algorithm mark last link in each elementary circuit">
+                Right-to-Left link
+            </dd>
+        </div>
+    </dl>
+</fieldset>

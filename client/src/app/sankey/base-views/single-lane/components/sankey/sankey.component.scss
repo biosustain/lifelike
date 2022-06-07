@@ -1,5 +1,6 @@
 @use '../../' as this;
-@import 'variables';
+@use 'variables';
+@use 'sankey';
 
 app-sankey-single-lane {
   @mixin link-color($color) {
@@ -9,7 +10,7 @@ app-sankey-single-lane {
 
   @keyframes searchBlink {
     50% {
-      fill: this.$search-accent-color;
+      fill: sankey.$search-accent-color;
     }
   }
 
@@ -30,7 +31,7 @@ app-sankey-single-lane {
   width: 100%;
 
   svg {
-    background-color: $window-background;
+    background-color: variables.$window-background;
     height: 100%;
     width: 100%;
 
@@ -41,7 +42,7 @@ app-sankey-single-lane {
       g {
         .text-shadow {
           display: none;
-          fill: this.$node-label-shadow;
+          fill: sankey.$node-label-shadow;
           filter: blur(.1em);
           mix-blend-mode: lighten;
           stroke: none;
@@ -78,7 +79,7 @@ app-sankey-single-lane {
         &[highlighted="true"] {
           > rect {
             opacity: 100% !important;
-            stroke: this.$selection-accent-color;
+            stroke: sankey.$selection-accent-color;
             stroke-opacity: 1;
             stroke-width: 3;
           }
@@ -107,22 +108,22 @@ app-sankey-single-lane {
 
         &[searched="true"] .text-shadow {
           display: initial;
-          fill: opacify(this.$active-node-label-shadow, .5);
+          fill: opacify(sankey.$active-node-label-shadow, .5);
           filter: none;
           mix-blend-mode: normal;
-          stroke: this.$search-accent-color;
+          stroke: sankey.$search-accent-color;
           transform: scaleY(1.5) scaleX(1.1);
           transform-origin: 15px 0;
         }
 
         &[focused="true"] {
           .text-shadow {
-            fill: opacify(this.$active-node-label-shadow, .85);
+            fill: opacify(sankey.$active-node-label-shadow, .85);
             @include search-blink();
           }
 
           text {
-            fill: $black;
+            fill: variables.$black;
             font-size: 1em;
           }
         }
@@ -139,7 +140,7 @@ app-sankey-single-lane {
         }
 
         &:hover text {
-          fill: $black;
+          fill: variables.$black;
           font-size: 1em;
         }
       }
@@ -167,7 +168,7 @@ app-sankey-single-lane {
       &[transitively-selected="true"],
       &[selected="true"],
       &[highlighted="true"] {
-        stroke: this.$selection-accent-color;
+        stroke: sankey.$selection-accent-color;
         opacity: 1;
         stroke-width: 3;
       }
@@ -193,11 +194,11 @@ app-sankey-single-lane {
       }
 
       &[searched="true"] {
-        stroke: this.$search-accent-color;
+        stroke: sankey.$search-accent-color;
       }
 
       &[focused="true"] {
-        fill: this.$search-accent-color;
+        fill: sankey.$search-accent-color;
         @include search-blink();
       }
     }
