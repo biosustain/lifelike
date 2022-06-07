@@ -224,8 +224,7 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
     ]).select_from(
         t_file.join(t_file_content, t_file_content.c.id == t_file.c.content_id)
     ).where(
-        # Do NOT listen to PyCharm == None -> is None suggestion.
-        and_(t_file.c.filename.in_(filenames), t_file.c.deletion_date is None)
+        and_(t_file.c.filename.in_(filenames), t_file.c.deletion_date.is_(None))
     ).group_by(
         t_file.c.id,
         t_file.c.hash_id,
@@ -285,14 +284,10 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
             file_c = {
                 'id': content_id
             }
-            if res['mime_type'] == FILE_MIME_TYPE_MAP:
-                # # Encode as Base64
-                data = base64.standard_b64encode(res['raw_file'])
-                # # Decode to Base64encoded string
-                file_c['raw_file_base64'] = data.decode('utf-8')
-
-            else:
-                file_c['raw_file_utf8'] = res['raw_file'].decode('utf8')
+            # # Encode as Base64
+            data = base64.standard_b64encode(res['raw_file'])
+            # # Decode to Base64encoded string
+            file_c['raw_file_base64'] = data.decode('utf-8')
             file_content.append(file_c)
             new_id += 1
             content_id += 1
