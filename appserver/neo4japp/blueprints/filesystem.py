@@ -31,9 +31,11 @@ from neo4japp.constants import (
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
      AccessRequestRequiredError,
+     FileUploadError,
      InvalidArgument,
      RecordNotFound,
-     NotAuthorized
+     NotAuthorized,
+     UnsupportedMediaTypeError
 )
 from neo4japp.models import (
     Projects,
@@ -74,7 +76,7 @@ from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.network import read_url
+from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
 
@@ -1057,6 +1059,9 @@ class FileListView(FilesystemBaseView):
         # Fetch from URL
         if url is not None:
             try:
+                # Note that in the future, we may wish to upload files of many different types
+                # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
+                # now it is the expectation.
                 buffer = read_url(
                     urllib.request.Request(url, headers={
                         'User-Agent': self.url_fetch_user_agent,
@@ -1066,13 +1071,19 @@ class FileListView(FilesystemBaseView):
                     timeout=self.url_fetch_timeout,
                     prefer_direct_downloads=True
                 )
-            except Exception:
-                raise ValidationError(
-                    'Your file could not be uploaded. Please make sure your URL ends with .pdf.' +
-                    ' For example, https://www.example.com/file.pdf. If the problem persists, ' +
-                    'please download the file to your computer from the original website and ' +
-                    'upload the file from your device.',
-                    "content_url"
+            except UnsupportedMediaTypeError:
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. Please make sure your URL ends ' +
+                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
+                            'problem persists, please download the file to your computer from ' +
+                            'the original website and upload the file from your device.',
+                )
+            except ContentTooLongError:
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. The requested file is too large. ' +
+                            'Please limit file uploads to less than 315MB.',
                 )
 
             return buffer, url
