@@ -800,7 +800,7 @@ def create_edge(edge, node_hash_type_dict):
     url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
     url = url_data[-1]['url'] if len(url_data) else ''
     if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-           item in ['link', 'note']):
+           item in ['link', 'note', 'image']):
         default_line_style = 'dashed'
         default_arrow_head = 'none'
     return {
@@ -1236,7 +1236,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ValidationError('Previous content of the map is corrupted!')
 
         new_content = io.BytesIO()
-        new_zip = zipfile.ZipFile(new_content, 'w')
+        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
 
         # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
         # to make sure that the graph.json is not copied as well.

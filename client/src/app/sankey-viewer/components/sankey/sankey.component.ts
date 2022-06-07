@@ -136,14 +136,15 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   // region Life cycle
   ngOnChanges({
-      selectedNodes,
-      selectedLinks,
-      searchedEntities,
-      focusedNode,
-      data,
-      nodeAlign,
-      networkTraceIdx,
-      activeViewName}: SimpleChanges) {
+                selectedNodes,
+                selectedLinks,
+                searchedEntities,
+                focusedNode,
+                data,
+                nodeAlign,
+                networkTraceIdx,
+                activeViewName
+              }: SimpleChanges) {
     // using on Changes in place of setters as order is important
     if (nodeAlign) {
       const align = nodeAlign.currentValue;
@@ -161,39 +162,40 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
       this.viewChanged = true;
     }
 
-    let kludge = false;
     if (data && this.svg) {
       // If there was no change in the network trace or the view, do the kludgy copying. Otherwise we proceed normally. In other words,
       // whenever the network trace or view is changed, we do a hard reset.
       if (isNil(networkTraceIdx) && !this.viewChanged) {
-        kludge = true;
+        // NOTE: changing the order of the nodes/links arrays caused a bug in the following code. Be very careful sorting the array in
+        // place, because it may interfere with logic elsewhere! Consider creating a copy of the list if you absolutely need to sort it in
+        // place.
 
-        this._data.links.sort((a: any, b: any) => a._index - b._index);
-        data.previousValue.links.sort((a, b) => a._index - b._index);
+        // Sort new and old links on id to get them in the same order
+        this.data.links.sort((a: any, b: any) => a._id - b._id);
+        data.previousValue.links.sort((a, b) => a._id - b._id);
 
         let m = 0;
         for (const link of data.previousValue.links) {
-          this._data.links[m]._y0 = link._y0;
-          this._data.links[m]._y1 = link._y1;
-          this._data.links[m]._width = link._width;
-          this._data.links[m]._value = link._value;
-          this._data.links[m]._circular = link._circular;
-          this._data.links[m]._index = link._index;
-          this._data.links[m]._order = link._order;
-          if (isNil(this._data.links[m]._order)) {
-            this._data.links[m]._order = 0;
+          this.data.links[m]._y0 = link._y0;
+          this.data.links[m]._y1 = link._y1;
+          this.data.links[m]._index = link._index;
+          this.data.links[m]._order = link._order;
+          if (isNil(this.data.links[m]._order)) {
+            this.data.links[m]._order = 0;
           }
           m++;
         }
 
-        this._data.nodes.sort((a: any, b: any) => a._index - b._index);
-        data.previousValue.nodes.sort((a, b) => a._index - b._index);
+        // Sort the new links *again* so that they are in correct index order
+        this.data.links.sort((a: any, b: any) => a._index - b._index);
+        // Sort new and old nodes on id to get them in the same order
+        this.data.nodes.sort((a: any, b: any) => a._id - b._id);
+        data.previousValue.nodes.sort((a, b) => a._id - b._id);
 
         for (let i = 0; i < data.previousValue.nodes.length; i++) {
           const prevNode = data.previousValue.nodes[i];
-          const dataNode = this._data.nodes[i];
+          const dataNode = this.data.nodes[i];
 
-          dataNode._value = prevNode._value;
           dataNode._x0 = prevNode._x0;
           dataNode._x1 = prevNode._x1;
           dataNode._y0 = prevNode._y0;
@@ -205,18 +207,18 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
           }
 
           if (isNil(dataNode._sourceLinks)) {
-            dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this._data.links[link._index]);
+            dataNode._sourceLinks = prevNode._sourceLinks.map((link) => this.data.links[link._index]);
           } else {
             for (let j = 0; j < prevNode._sourceLinks.length; j++) {
-              dataNode._sourceLinks[j] = this._data.links[dataNode._sourceLinks[j]._index];
+              dataNode._sourceLinks[j] = this.data.links[dataNode._sourceLinks[j]._index];
             }
           }
 
           if (isNil(dataNode._targetLinks)) {
-            dataNode._targetLinks = prevNode._targetLinks.map((link) => this._data.links[link._index]);
+            dataNode._targetLinks = prevNode._targetLinks.map((link) => this.data.links[link._index]);
           } else {
             for (let k = 0; k < prevNode._targetLinks.length; k++) {
-              dataNode._targetLinks[k] = this._data.links[dataNode._targetLinks[k]._index];
+              dataNode._targetLinks[k] = this.data.links[dataNode._targetLinks[k]._index];
             }
           }
         }
@@ -244,7 +246,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
         }
       }
       this.viewChanged = false;
-      this.updateLayout(this.data, kludge).then(d => this.updateDOM(d));
+      this.updateLayout(this.data).then(d => this.updateDOM(d));
     }
 
     const nodes = this.selectedNodes;
@@ -458,16 +460,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async linkClick(element, data) {
     this.linkClicked.emit(data);
-    this.clipboard.writeToClipboard(data.path).then(_ =>
-        this.snackBar.open(
-          `Path copied to clipboard`,
-          undefined,
-          {duration: 500},
-        ),
-      console.error
-    );
-
-    // this.showPopOverForSVGElement(element, {link: data});
+    return this.clipboard.copy(data.path, {sucess: 'Path copied to clipboard'});
   }
 
   async nodeClick(element, data) {
@@ -856,10 +849,10 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
    * and adjustments from outer scope
    * @param data graph declaration
    */
-  updateLayout(data, kludge = false) {
+  updateLayout(data) {
     return new Promise(resolve => {
         if (!data._precomputedLayout) {
-          this.sankey.calcLayout(data, kludge);
+          this.sankey.calcLayout(data);
         }
         if (isObject(data._precomputedLayout)) {
           const [currentWidth, currentHeight] = this.sankey.size;
@@ -937,7 +930,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
     const layerWidth = ({_source, _target}) => Math.abs(_target._layer - _source._layer);
 
     this.linkSelection
-      .data<SankeyLink>(graph.links.sort((a, b) => layerWidth(b) - layerWidth(a)), id)
+      .data<SankeyLink>([...graph.links].sort((a, b) => layerWidth(b) - layerWidth(a)), id)
       .join(
         enter => enter
           .append('path')

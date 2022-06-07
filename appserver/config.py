@@ -6,7 +6,7 @@ class Base():
     SITE_NAME = 'Lifelike Knowledge Search'
 
     # Optional for tracking the master branch for the build
-    GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
+    GITHUB_HASH = os.environ.get('GITHUB_HASH', '__VERSION__')
     GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
     APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
     APP_VERSION = os.environ.get('APP_VERSION', 'undefined')

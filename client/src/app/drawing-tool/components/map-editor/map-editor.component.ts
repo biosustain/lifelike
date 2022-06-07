@@ -33,8 +33,11 @@ import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/can
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
+import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 
-import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
+
+import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -169,6 +172,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     super.registerGraphBehaviors();
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut',
       new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('duplicate-keyboard-shortcut',
+      new DuplicateKeyboardShortcutBehavior(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
       new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
     this.graphCanvas.behaviors.add('image-upload',
@@ -419,8 +424,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   }
 
   @HostListener('window:keydown', ['$event'])
-  keyDown(event: MouseEvent) {
+  keyDown(event: KeyboardEvent) {
     this.lastActivityTime = window.performance.now();
+
+    if (isCtrlOrMetaPressed(event) && event.key === 's') {
+      this.save();
+      event.preventDefault();
+    }
   }
 }
 

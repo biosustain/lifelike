@@ -33,6 +33,10 @@ export class ProjectImpl implements Project {
   root?: FilesystemObject;
   privileges: ProjectPrivileges;
 
+  get effectiveName(): string {
+    return this.name || this.hashId;
+  }
+
   get projectName() {
     return this.name;
   }
@@ -114,6 +118,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
+  pinned: boolean;
   uploadUrl: string;
   annotationsDate: string;
   readonly creationDate: string;
@@ -593,6 +598,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
     return (
+      // Sort pinned files first
+      Number(b.pinned) - Number(a.pinned) ||
       // Sort directories first
       Number(b.mimeType === MimeTypes.Directory) - Number(a.mimeType === MimeTypes.Directory) ||
       // Sort files by timestamp
@@ -608,7 +615,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     for (const key of [
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
+      'pinned', 'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
       'trueFilename']) {

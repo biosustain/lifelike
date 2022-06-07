@@ -70,7 +70,7 @@ export interface ErrorLogMeta {
 export interface ErrorLog extends ErrorLogMeta {
   title: string;
   message: string;
-  additionalMsgs?: string;
+  additionalMsgs?: string[];
   stacktrace?: string;
   transactionId?: string;
 }

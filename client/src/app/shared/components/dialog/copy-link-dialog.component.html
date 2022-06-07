@@ -5,7 +5,7 @@
 <app-modal-body>
   <div class="d-flex">
     <input type="text" class="form-control flex-fill" [value]="url" readonly appAutoFocus [autoSelect]="true" #input>
-    <button type="button" class="btn btn-secondary ml-1" (click)="copyToClipboard()">
+    <button type="button" class="btn btn-secondary ml-1" [appCopyToClipboard]="url">
       <i class="fa fa-copy fa-fw"></i>
     </button>
   </div>

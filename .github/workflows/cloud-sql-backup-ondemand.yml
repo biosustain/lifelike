@@ -1,0 +1,37 @@
+name: Backup Cloud SQL on-demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud_sql_instance_name:
+        description: Google Cloud SQL instance name
+        required: true
+        type: string
+      backup_description:
+        description: Backup description
+        required: false
+        default: On-demand backup from GitHub workflow
+        type: string
+    secrets:
+      GCE_SA_KEY:
+        required: true
+
+jobs:
+  backup:
+    name: Backup Cloud SQL instance
+    runs-on: ubuntu-latest
+    outputs:
+      backup_id: ${{ steps.backup.outputs.backup_id }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create a new Clod SQL instance backup
+        id: backup
+        uses: ./.github/actions/cloud-sql-backup
+        with:
+          gcp_credentials: "${{ secrets.GCE_SA_KEY }}"
+          cloud_sql_instance_name: "${{ github.event.inputs.cloud_sql_instance_name }}"
+          backup_description: "${{ github.event.inputs.backup_description }}"
+      - run: |
+          echo "## Backup created: ${{ steps.backup.outputs.backup_id }}" >> $GITHUB_STEP_SUMMARY
+
