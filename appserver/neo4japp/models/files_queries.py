@@ -13,10 +13,15 @@ from .files import Files, file_collaborator_role
 from .projects_queries import ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
 
+Direction = Union[Literal['children'], Literal['parents']]
 
-def _build_file_cte(direction: Union[Literal['children'], Literal['parents']],
-                    filter, max_depth=Files.MAX_DEPTH,
-                    files_table=Files, projects_table=Projects) -> BaseQuery:
+
+def _build_file_cte(
+    direction: Direction,
+    filter, max_depth=Files.MAX_DEPTH,
+    files_table=Files,
+    projects_table=Projects
+) -> BaseQuery:
     """
     Build a query for fetching *just* the parent (or) child IDs of a file,
     and the file itself. The query returned is to be combined with another query to actually
@@ -80,8 +85,12 @@ def _build_file_cte(direction: Union[Literal['children'], Literal['parents']],
     return q_hierarchy
 
 
-def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
-                           files_table=Files, projects_table=Projects) -> BaseQuery:
+def build_file_parents_cte(
+    filter,
+    max_depth=Files.MAX_DEPTH,
+    files_table=Files,
+    projects_table=Projects
+) -> BaseQuery:
     """
     Build a query for fetching *just* the parent IDs of a file, and the file itself.
     The query returned is to be combined with another query to actually
@@ -96,8 +105,12 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
     return _build_file_cte('parents', filter, max_depth, files_table, projects_table)
 
 
-def build_file_children_cte(filter, max_depth=Files.MAX_DEPTH,
-                            files_table=Files, projects_table=Projects) -> BaseQuery:
+def build_file_children_cte(
+    filter,
+    max_depth=Files.MAX_DEPTH,
+    files_table=Files,
+    projects_table=Projects
+) -> BaseQuery:
     """
     Build a query for fetching *just* the child IDs of a file, and the file itself.
     The query returned is to be combined with another query to actually
@@ -130,10 +143,13 @@ def join_projects_to_parents_cte(q_hierarchy: Query):
         .subquery()
 
 
-def build_file_hierarchy_query(condition, projects_table, files_table,
-                               include_deleted_projects=False,
-                               include_deleted_files=False,
-                               file_attr_excl=None):
+def build_file_hierarchy_query(
+    condition, projects_table, files_table,
+    include_deleted_projects=False,
+    include_deleted_files=False,
+    file_attr_excl=None,
+    direction: Direction = 'parents'
+):
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -153,7 +169,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     # Do it in one query efficiently
 
     # Fetch the target file and its parents
-    q_hierarchy = build_file_parents_cte(and_(
+    q_hierarchy = _build_file_cte(direction, and_(
         condition,
         *([files_table.deleted_date.is_(None)] if include_deleted_files else []),
     ))
@@ -192,8 +208,9 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
 
 
 # noinspection DuplicatedCode
-def add_file_user_role_columns(query, file_table, user_id, role_names=None, column_format=None,
-                               access_override=False):
+def add_file_user_role_columns(
+    query, file_table, user_id, role_names=None, column_format=None, access_override=False
+):
     """
     Add columns to a query for fetching the value of the provided roles for the
     provided user ID for files in the provided file table.

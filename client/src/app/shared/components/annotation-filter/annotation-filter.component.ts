@@ -13,6 +13,7 @@ import {
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
 import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
+import { REGEX } from 'app/shared/regex';
 
 @Component({
   selector: 'app-annotation-filter',
@@ -118,7 +119,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
       validators.push(Validators.min(this.sortingAlgorithm.min));
     }
     if (this.sortingAlgorithm.step === 1) {
-      validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/));
+      validators.push(Validators.pattern(REGEX.FLOAT));
     }
     this.filtersForm = new FormGroup(
       // Form controls
@@ -126,7 +127,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
         minimumValue: new FormControl(0, validators),
         // TODO: Removing for now, may bring back
         // maximumValue: new FormControl(
-        //   0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
+        //   0, [Validators.required, Validators.min(0), Validators.pattern(REGEX.FLOAT)]
         // ),
       }
       // Form group validators

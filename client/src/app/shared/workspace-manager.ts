@@ -8,30 +8,22 @@ import {
   Type,
   ViewContainerRef,
 } from '@angular/core';
-import {
-  ActivatedRoute,
-  ActivatedRouteSnapshot,
-  NavigationExtras,
-  Router,
-  RoutesRecognized,
-  UrlTree,
-} from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter } from 'rxjs/operators';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { cloneDeep, flatMap } from 'lodash-es';
+import { filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
+import { cloneDeep, flatMap, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from './modules';
-import {
-  TabData,
-  WorkspaceSessionLoader,
-  WorkspaceSessionService,
-} from './services/workspace-session.service';
+import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
+import { TrackingService } from './services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
 
 export interface TabDefaults {
   title: string;
   fontAwesomeIcon: string;
+  url?: string;
 }
 
 
@@ -139,8 +131,14 @@ export class Tab {
 
   pendingProperties: ModuleProperties | undefined;
 
-  constructor(private readonly injector: Injector,
-              private readonly componentFactoryResolver: ComponentFactoryResolver) {
+  constructor(
+    private readonly injector: Injector,
+    private readonly componentFactoryResolver: ComponentFactoryResolver,
+    defaults?: TabDefaults,
+  ) {
+    if (defaults) {
+      assign(this, defaults, {defaultsSet: true});
+    }
     this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
   }
 
@@ -155,6 +153,7 @@ export class Tab {
   applyPendingChanges() {
     if (this.pendingProperties) {
       this.title = this.pendingProperties.title;
+      // The way it is coded the updates does not propagate for rendering
       this.fontAwesomeIcon = this.pendingProperties.fontAwesomeIcon;
       this.badge = this.pendingProperties.badge;
       this.loading = !!this.pendingProperties.loading;
@@ -246,6 +245,8 @@ export class Pane {
    */
   readonly activeTabHistory: Set<Tab> = new Set();
 
+  readonly activeTabChanged$ = new Subject<Tab>();
+
   constructor(readonly id: string,
               private readonly injector: Injector) {
   }
@@ -275,13 +276,14 @@ export class Pane {
     if (tab != null) {
       this.activeTabHistory.delete(tab);
       this.activeTabHistory.add(tab);
+      this.activeTabChanged$.next(tab);
     }
   }
 
   /**
    * Get the active tab or created an empty tab if there is none.
    */
-  getActiveTabOrCreate(): Tab {
+  getActiveTabOrCreate(defaults?: TabDefaults): Tab {
     const tab = this.activeTab;
     if (tab) {
       return tab;
@@ -290,16 +292,17 @@ export class Pane {
       this.activeTab = this.tabs[0];
       return this.activeTab;
     }
-    return this.createTab();
+    return this.createTab(defaults);
   }
 
   /**
    * Create a new tab and add it to this pane.
    */
-  createTab(): Tab {
+  createTab(defaults?: TabDefaults): Tab {
     const tab = new Tab(
       this.injector,
       this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any),
+      defaults,
     );
     this.tabs.push(tab);
     this.activeTab = tab;
@@ -474,10 +477,21 @@ export class WorkspaceManager {
 
   constructor(private readonly router: Router,
               private readonly injector: Injector,
-              private readonly sessionService: WorkspaceSessionService) {
+              private readonly sessionService: WorkspaceSessionService,
+              private readonly tracking: TrackingService) {
     this.paneManager = new PaneManager(injector);
     this.hookRouter();
     this.emitEvents();
+    this.panes$.pipe(
+      switchMap(panes => merge(...panes.map(pane => pane.activeTabChanged$))),
+      switchMap(activeTabChange => this.tracking.register({
+        category: TRACKING_CATEGORIES.workbench,
+        action: TRACKING_ACTIONS.activeTabChanged,
+        label: activeTabChange.title,
+        url: activeTabChange.url
+      }))
+    ).subscribe(activeTabChange => {
+    });
   }
 
   isWithinWorkspace() {
@@ -593,12 +607,7 @@ export class WorkspaceManager {
       pane = this.paneManager.getOrCreate(pane);
     }
     this.focusedPane = pane;
-    const tab = pane.createTab();
-    if (tabDefaults) {
-      tab.title = tabDefaults.title;
-      tab.fontAwesomeIcon = tabDefaults.fontAwesomeIcon;
-      tab.defaultsSet = true;
-    }
+    pane.createTab({...tabDefaults, url: String(url)});
     return this.navigateByUrl({url, extras});
   }
 
@@ -674,31 +683,31 @@ export class WorkspaceManager {
     }
 
     if (!withinWorkspace && extras.forceWorkbench) {
-        return this.router.navigateByUrl(this.workspaceUrl).then(() => {
-          return new Promise((accept, reject) => {
-            const navigationArray = [];
-            // If the works only together with parent (like statistical enrichment and enrichment table)
-            // then force the workbench, open the parent on the left and 'child' on the right
-            if (extras.openParentFirst && extras.parentAddress) {
-              // If opening parent on the left, make sure that child will open on the right
-              const parentExtras = {
-                ...extras,
-                openParentFirst: false,
-                preferPane: 'left',
-                matchExistingTab: extras.parentAddress.toString(),
-                shouldReplaceTab: true
-              };
-              extras = {
-                ...extras,
-                openParentFirst: false,
-                preferPane: 'right'
-              };
-              navigationArray.push({url: extras.parentAddress, extras: parentExtras});
-            }
-            navigationArray.push({url: navigationData.url, extras});
-            this.navigateByUrls(navigationArray).then(accept, reject);
-          });
+      return this.router.navigateByUrl(this.workspaceUrl).then(() => {
+        return new Promise((accept, reject) => {
+          const navigationArray = [];
+          // If the works only together with parent (like statistical enrichment and enrichment table)
+          // then force the workbench, open the parent on the left and 'child' on the right
+          if (extras.openParentFirst && extras.parentAddress) {
+            // If opening parent on the left, make sure that child will open on the right
+            const parentExtras = {
+              ...extras,
+              openParentFirst: false,
+              preferPane: 'left',
+              matchExistingTab: extras.parentAddress.toString(),
+              shouldReplaceTab: true
+            };
+            extras = {
+              ...extras,
+              openParentFirst: false,
+              preferPane: 'right'
+            };
+            navigationArray.push({url: extras.parentAddress, extras: parentExtras});
+          }
+          navigationArray.push({url: navigationData.url, extras});
+          this.navigateByUrls(navigationArray).then(accept, reject);
         });
+      });
     } else {
       return this.router.navigateByUrl(navigationData.url, extras);
     }

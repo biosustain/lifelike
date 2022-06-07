@@ -2,13 +2,12 @@ import { CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { isNil } from 'lodash';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
-import { CopyLinkDialogComponent } from 'app/shared/components/dialog/copy-link-dialog.component';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 @Component({
   selector: 'app-workspace-tab',
@@ -31,8 +30,8 @@ export class WorkspaceTabComponent implements OnChanges {
   lastTabDragTarget: Element = null;
 
   constructor(
-    protected readonly modalService: NgbModal,
     protected readonly viewService: ViewService,
+    protected readonly clipboard: ClipboardService
   ) {}
 
   ngOnChanges({tab}: SimpleChanges) {
@@ -42,21 +41,14 @@ export class WorkspaceTabComponent implements OnChanges {
   }
 
   openCopyLinkDialog() {
-    const modalRef = this.modalService.open(CopyLinkDialogComponent);
-    modalRef.componentInstance.url = 'Generating link...';
-    const urlSubscription = this.viewService.getShareableLink(
-      this.tab.getComponent(), this.tab.url
-    ).subscribe((url) => {
-      this.tab.url = url.pathname + url.search + url.hash;
-      modalRef.componentInstance.url = url.href;
-    });
-    // todo: use hidden after update of ng-bootstrap >= 8.0.0
-    // https://ng-bootstrap.github.io/#/components/modal/api#NgbModalRef
-    modalRef.result.then(
-      () => urlSubscription.unsubscribe(),
-      () => urlSubscription.unsubscribe()
+    return this.clipboard.copy(
+      this.viewService.getShareableLink(this.tab.getComponent(), this.tab.url).toPromise()
+        .then((url) => {
+          this.tab.url = url.pathname + url.search + url.hash;
+          return url.href;
+        }),
+      {intermediate: 'Generating link...'}
     );
-    return modalRef.result;
   }
 
   cdkDragMoved($event: CdkDragMove) {
@@ -77,6 +69,16 @@ export class WorkspaceTabComponent implements OnChanges {
     const dropTarget = document.elementFromPoint(dropRect.x + (dropRect.width / 2), dropRect.y + (dropRect.height / 2));
     const synthDropEvent = new DragEvent('drop', {dataTransfer: new DataTransfer()});
 
+    const sources: Source[] = [{
+      domain: this.tab.title,
+      url: this.tab.url
+    }];
+
+    const doi = this.tab.getComponent()?.object?.doi;
+    if (doi) {
+      sources.push({domain: 'DOI', url: doi});
+    }
+
     this.viewService.getShareableLink(
       this.tab.getComponent(), this.tab.url
     ).subscribe((url) => {
@@ -84,15 +86,10 @@ export class WorkspaceTabComponent implements OnChanges {
       synthDropEvent.dataTransfer.effectAllowed = 'all';
       synthDropEvent.dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
         display_name: this.tab.title,
-        label: 'link',
+        label: this.tab.getComponent()?.map ? 'map' : 'link',
         sub_labels: [],
         data: {
-          sources: [
-            {
-              domain: this.tab.title,
-              url: this.tab.url
-            }
-          ]
+          sources
         }
       } as Partial<UniversalGraphNode>));
       dropTarget.dispatchEvent(synthDropEvent);
