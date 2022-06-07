@@ -4,11 +4,13 @@
   </div>
   <div>
     <strong>Genes:</strong>
-    <ul class="my-0 py-0">
-      <li *ngFor="let gene of document.importGenes">
-        {{ gene }}
-      </li>
-    </ul>
+    <table class="table">
+        <th *ngFor="let header of GENE_TABLE_HEADERS">{{ header }}</th>
+        <tr *ngFor="let gene of document.importGenes">
+            <td>{{ gene }}</td>
+            <td>{{ document.values.get(gene) }}</td>
+        </tr>
+    </table>
   </div>
   <div>
     <strong>Domains:</strong>

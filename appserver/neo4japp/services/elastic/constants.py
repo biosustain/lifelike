@@ -5,6 +5,9 @@ from neo4japp.constants import FILE_INDEX_ID
 directory = os.path.realpath(os.path.dirname(__file__))
 
 # Indexing constants
+
+# PLEASE READ BEFORE UPDATING: If any properties are added/removed from this index, remember to
+# update any relevant ORM event triggers!
 FILE_INDEX_DEFINITION_PATH = os.path.join(directory, './mappings/document_idx.json')
 ATTACHMENT_PIPELINE_ID = 'attachment'
 ATTACHMENT_PIPELINE_DEFINITION_PATH = os.path.join(

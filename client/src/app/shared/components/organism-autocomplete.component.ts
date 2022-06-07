@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Output, Input, OnChanges } from '@angular/core';
 
+import { isEmpty, isNil } from 'lodash-es';
 import { iif, Observable, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
-import { isEmpty } from 'lodash';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import {
@@ -66,8 +66,11 @@ export class OrganismAutocompleteComponent implements OnChanges {
         this.organismTaxId
       ).subscribe(
         (response) => {
-          this.inputText = response.organism_name;
-          this.isOrganismSelected = true;
+          // If response is null that means there was no match found
+          if (!isNil(response)) {
+            this.inputText = response.organism_name;
+            this.isOrganismSelected = true;
+          }
         }
       );
     }

@@ -32,8 +32,7 @@ export class WorkspaceTabComponent implements OnChanges {
   constructor(
     protected readonly viewService: ViewService,
     protected readonly clipboard: ClipboardService
-  ) {
-  }
+  ) {}
 
   ngOnChanges({tab}: SimpleChanges) {
     if (tab) {
