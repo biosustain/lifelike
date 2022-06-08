@@ -48,7 +48,6 @@
   }
 
   tbody > tr {
-
     & > td > * {
       // clamp by height so no ellipsis is shown
       max-height: calc(1.5em * 15); // ~15 lines
