@@ -22,13 +22,27 @@
         </ng-template>
         <thead>
         <tr>
-            <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
-            <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
-            <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
-<!--            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>-->
-            <th scope="col" appSortable="q-value" (sort)="onSort($event)"
-                [style.paddingRight]="0"
-            >q-value
+            <th scope="col"
+                appSortable="goId"
+                (sort)="onSort($event)">
+                GOID
+            </th>
+            <th scope="col"
+                appSortable="goTerm"
+                (sort)="onSort($event)">
+                GO Term
+            </th>
+            <th scope="col"
+                appSortable="geneNames"
+                (sort)="onSort($event)">
+                Associated genes
+            </th>
+            <!--            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>-->
+            <th scope="col"
+                appSortable="q-value"
+                (sort)="onSort($event)"
+                [style.paddingRight]="0">
+                q-value
             </th>
             <th scope="col"
                 [ngbTooltip]="legend"
@@ -54,11 +68,11 @@
                     ></ngb-highlight>
                 </span>
             </td>
-<!--            <td>-->
-<!--                <ngb-highlight [result]="row['p-value'].toExponential(2)"-->
-<!--                               [style.whiteSpace]="'pre'"-->
-<!--                               [term]="service.searchTerm"></ngb-highlight>-->
-<!--            </td>-->
+            <!--            <td>-->
+            <!--                <ngb-highlight [result]="row['p-value'].toExponential(2)"-->
+            <!--                               [style.whiteSpace]="'pre'"-->
+            <!--                               [term]="service.searchTerm"></ngb-highlight>-->
+            <!--            </td>-->
             <td [style.paddingRight]="0">
                 <ngb-highlight [result]="row['q-value'].toExponential(2)"
                                [style.whiteSpace]="'pre'"

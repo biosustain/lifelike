@@ -22,7 +22,33 @@
 .table {
   margin-bottom: 0;
 
+  thead {
+    th {
+      cursor: pointer;
+
+      :after {
+        display: inline-block;
+        font-family: 'Font Awesome 5 Pro';
+        content: " ";
+      }
+
+      &[data-sort]:after {
+        display: inline-block;
+        font-family: 'Font Awesome 5 Pro';
+      }
+
+      &[data-sort=asc]:after {
+        content: '\f063';
+      }
+
+      &[data-sort=desc]:after {
+        content: '\f062';
+      }
+    }
+  }
+
   tbody > tr {
+
     & > td > * {
       // clamp by height so no ellipsis is shown
       max-height: calc(1.5em * 15); // ~15 lines
