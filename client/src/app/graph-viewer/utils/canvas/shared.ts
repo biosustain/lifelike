@@ -4,7 +4,7 @@ import { TextElement } from './text-element';
 
 
 // First threshold - we want start to modify the fonts to increase visibility/remove text from nodes
-export const visibleTextThreshold = 0.4;
+export const visibleTextThreshold = 0.6;
 // Second threshold - we remove all text from the graph
 export const noTextThreshold = 0.15;
 

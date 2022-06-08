@@ -88,7 +88,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     }
     if (transform.k > noTextThreshold) {
       this.textbox.maxWidth = this.width;
-      drawTextNotSmallerThanMin(this.textbox, transform.k, this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
+      this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
         this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
     }
 
