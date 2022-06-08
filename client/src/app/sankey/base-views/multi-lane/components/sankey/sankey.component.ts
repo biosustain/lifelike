@@ -2,8 +2,8 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone,
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq } from 'lodash-es';
-import { combineLatest, forkJoin } from 'rxjs';
+import { flatMap, groupBy, uniq, isNil } from 'lodash-es';
+import { combineLatest, forkJoin, iif, zip, of } from 'rxjs';
 import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
@@ -76,6 +76,30 @@ export class SankeyMultiLaneComponent
     tap(current => isNotEmpty(current) && this.panToLinks(current))
   );
 
+  focusedTrace$ = this.sankey.baseView.common.networkTrace$.pipe(
+    switchMap(({traces}) =>
+      this.search.searchFocus$.pipe(
+        map(({type, idx}) => type === EntityType.Trace ? traces[idx] : undefined),
+        switchMap(entity =>
+          iif(
+            () => isNil(entity),
+            zip(
+              of(entity).pipe(
+                tap(e => console.log(e)),
+                updateAttr(this.renderedLinks$, 'focused'),
+                tap(current => isNotEmpty(current) && this.panToLinks(current))
+              ),
+              of(entity).pipe(
+                tap(e => console.log(e)),
+                updateAttr(this.renderedNodes$, 'focused')
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+
   selectionUpdate$ = this.selection.selection$.pipe(
     map(selection => groupBy(selection, 'type')),
     publish(selection$ => combineLatest([
@@ -135,7 +159,8 @@ export class SankeyMultiLaneComponent
   initFocus() {
     forkJoin(
       this.focusedLinks$,
-      this.focusedNode$
+      this.focusedNode$,
+      this.focusedTrace$
     ).pipe(
       takeUntil(this.destroyed$)
     ).subscribe();

@@ -371,6 +371,36 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
           exit: s => s.attr('searched', undefined),
           accessor: (arr, {id}) => arr.includes(id),
         })
+      ),
+      matches$.pipe(
+        map(({[EntityType.Trace]: traces = []}) => traces),
+        updateAttr(this.renderedLinks$, 'searched', {
+          // dont update other
+          otherOnStart: null,
+          // just delete property (don't set it to false)
+          exit: s => s.attr('searched', undefined),
+          accessor: (arr, link) => arr.some(trace => link.belongsToTrace(trace.id)),
+        }),
+        updateAttr(this.renderedNodes$, 'searched', {
+          // dont update other
+          otherOnStart: null,
+          enter: s => s
+            .attr('searched', true)
+            .call(node => node
+              .select('g')
+              .call(textGroup => {
+                // postpone so the size is known
+                requestAnimationFrame(() => {
+                  textGroup
+                    .each(SankeyAbstractComponent.updateTextShadow);
+                });
+              })
+            )
+            .raise(),
+          // just delete property (don't set it to false)
+          exit: s => s.attr('searched', undefined),
+          accessor: (arr, {id}) => arr.includes(id),
+        })
       )
     ])),
     debug('updateSearch')
