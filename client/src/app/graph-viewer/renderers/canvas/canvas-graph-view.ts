@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+import { partition } from 'lodash-es';
 
 import {
   GraphEntity,
@@ -483,32 +484,33 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   /**
    * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
    * we need to evaluate the click according to the display order:
-   * Nodes > Edges > Images
+   * Images > Nodes > Edges
    * @param x - x position
    * @param y - y position
    */
   getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
-    const node = this.getNodeAtPosition(this.nodes, x, y);
-    // If the node is NOT an image, we return it
-    if (node && node.label !== 'image') {
+    const [nodes, images] = partition(this.nodes, n => n.image_id == null);
+    const image = this.getNodeAtPosition(images, x, y);
+    if (image) {
+      return {
+        type: GraphEntityType.Node,
+        entity: image,
+      };
+    }
+
+    const node = this.getNodeAtPosition(nodes, x, y);
+    if (node) {
       return {
         type: GraphEntityType.Node,
         entity: node,
       };
     }
+
     const edge = this.getEdgeAtPosition(this.edges, x, y);
     if (edge) {
       return {
         type: GraphEntityType.Edge,
         entity: edge,
-      };
-    }
-    // This node could only be image - as it is rendered below the edges, we need to
-    // Check and return edge first
-    if (node) {
-      return {
-        type: GraphEntityType.Node,
-        entity: node,
       };
     }
     return undefined;
@@ -809,11 +811,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
 
+    const [nodes, images] = partition(this.nodes, node => node.image_id == null);
+
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
-    yield* this.drawNodes(ctx);
+    yield* this.drawNodes(ctx, nodes);
+    yield* this.drawNodes(ctx, images);
     yield* this.drawHighlightBackground(ctx);
     yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawSearchFocusBackground(ctx);
@@ -931,8 +936,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawNodes(ctx: CanvasRenderingContext2D) {
-    for (const d of this.nodes) {
+  private* drawNodes(ctx: CanvasRenderingContext2D, nodes: UniversalGraphNode[]) {
+    for (const d of nodes) {
       yield null;
       ctx.beginPath();
       this.placeNode(d).draw(this.transform);
