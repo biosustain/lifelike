@@ -21,14 +21,14 @@ export class GraphActionsService {
               readonly filesystemService: FilesystemService) { }
 
   // TODO: Change hoverPosition into point after merge with canvas-refactor PR
-  fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: {x: number, y: number}): Observable<GraphAction[]> {
+  async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: {x: number, y: number}): Promise<GraphAction[]> {
     const actions = extractGraphEntityActions(items, hoverPosition);
     const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
     imageItems.push(imageItems[0]);
     let node;
     let imageId;
-    return of(...imageItems).pipe(
-      take(2),
+    await of(...imageItems).pipe(
+      take(1),
       mergeMap(item => {
         const data = item.data as ImageTransferData;
         node = data.node;
@@ -54,12 +54,13 @@ export class GraphActionsService {
         },
       }, true));
     }),
-      tap(console.log)
-    );
+      tap(console.log),
+      tap(action => actions.push(action)),
+    ).toPromise();
     // console.log(res);
     // console.log('res');
-    // console.log(actions);
-    //
-    // return actions;
+    console.log(actions);
+
+    return actions;
   }
 }
