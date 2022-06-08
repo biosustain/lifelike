@@ -24,6 +24,7 @@ export interface SortEvent {
   exportAs: 'appSortable'
 })
 export class SortableTableHeaderDirective {
+  // tslint:disable-next-line:no-input-rename
   @Input() @Input('appSortable') id: any;
   @HostBinding('attr.data-sort') @Input() public direction: SortDirectionType = SortDirection.none;
 
