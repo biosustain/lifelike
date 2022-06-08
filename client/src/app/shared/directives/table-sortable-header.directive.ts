@@ -15,23 +15,22 @@ const rotate: { [key: string]: SortDirectionType } = {
 };
 
 export interface SortEvent {
-  column: any;
+  id: any;
   direction: SortDirectionType;
 }
 
 @Directive({
-  selector: 'th[appSortable]'
+  selector: 'th[appSortable]',
+  exportAs: 'appSortable'
 })
 export class SortableTableHeaderDirective {
-  @Input() sortable: any;
-  @Input() direction: SortDirectionType;
+  @Input() @Input('appSortable') id: any;
+  @HostBinding('attr.data-sort') @Input() public direction: SortDirectionType = SortDirection.none;
+
   @Output() sort = new EventEmitter<SortEvent>();
 
-  @HostBinding('class.asc') isAsc = () => this.direction === SortDirection.asc;
-  @HostBinding('class.desc') isDesc = () => this.direction === SortDirection.desc;
-
   @HostListener('click') rotate() {
-    this.direction = rotate[this.direction || 'none'];
-    this.sort.emit({column: this.sortable, direction: this.direction});
+    this.direction = rotate[this.direction || SortDirection.none];
+    this.sort.emit({...this});
   }
 }
