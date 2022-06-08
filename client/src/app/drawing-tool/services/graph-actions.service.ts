@@ -24,20 +24,18 @@ export class GraphActionsService {
   async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: {x: number, y: number}): Promise<GraphAction[]> {
     const actions = extractGraphEntityActions(items, hoverPosition);
     const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
-    imageItems.push(imageItems[0]);
     let node;
-    let imageId;
+    const imageId = makeid();
     await of(...imageItems).pipe(
-      take(1),
-      mergeMap(item => {
+      switchMap(item => {
         const data = item.data as ImageTransferData;
         node = data.node;
         return this.filesystemService.getContent(data.hash);
       }),
-      mergeMap(blob => {
-          imageId = makeid();
+      switchMap(blob => {
           return this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId));
       }),
+      take(imageItems.length),
       map(dimensions => {
       // Scale smaller side up to 300 px
       const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
@@ -54,12 +52,8 @@ export class GraphActionsService {
         },
       }, true));
     }),
-      tap(console.log),
       tap(action => actions.push(action)),
     ).toPromise();
-    // console.log(res);
-    // console.log('res');
-    console.log(actions);
 
     return actions;
   }
