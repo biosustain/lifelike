@@ -276,44 +276,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
 
-      const actions = extractGraphEntityActions(items, hoverPosition);
-
-      const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
-
-      // TODO: Maybe move, but stay in this class, cause we need services
-      for (const item of imageItems) {
-        const {node, hash} = item.data as ImageTransferData;
-        // This takes a split second, but we might want to consider having a progress bar here!
-        this.filesystemService.getContent(hash).subscribe(
-          blob => {
-            const imageId = makeid();
-            this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId))
-              .subscribe(dimensions => {
-                // Scale smaller side up to 300 px
-                const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
-                this.graphCanvas.execute(new NodeCreation(
-                  `Insert image`, {
-                    ...node,
-                    hash: uuidv4(),
-                    image_id: imageId,
-                    label: 'image',
-                    data: {
-                      x: hoverPosition.x,
-                      y: hoverPosition.y,
-                      width: dimensions.width * ratio,
-                      height: dimensions.height * ratio,
-                    },
-                  },
-                  true
-                ));
-              });
-        });
-      }
-
-      if (actions.length) {
-        this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
-        this.graphCanvas.focus();
-      }
+      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
+      actionPromise.then(actions => {
+        if (actions.length) {
+          this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
+          this.graphCanvas.focus();
+        }
+      });
     }
   }
 

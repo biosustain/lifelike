@@ -11,7 +11,7 @@ import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
-import { FILESYSTEM_IMAGE_HASH, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
+import { FILESYSTEM_IMAGE_HASHID_TYPE, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../providers/filesystem-object-data.provider';
@@ -564,7 +564,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       };
 
     if (this.mimeType.trim().startsWith('image/')) {
-      dataTransfer.setData(FILESYSTEM_IMAGE_HASH, this.hashId);
+      dataTransfer.setData(FILESYSTEM_IMAGE_HASHID_TYPE, this.hashId);
       dataTransfer.setData(FILESYSTEM_IMAGE_TRANSFER_TYPE, JSON.stringify(node));
     } else {
 
