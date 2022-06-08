@@ -23,6 +23,7 @@ import { ImageBlob } from 'app/shared/utils/forms';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
+import { GraphActionsService } from '../services/graph-actions.service';
 
 @Component({
   selector: 'app-map-view',
@@ -53,10 +54,11 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
               mapImageProviderService: MapImageProviderService,
-              public readonly progressDialog: ProgressDialog) {
+              public readonly progressDialog: ProgressDialog,
+              graphActionsService: GraphActionsService) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
-      mapImageProviderService, objectTypeService);
+      mapImageProviderService, objectTypeService, graphActionsService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

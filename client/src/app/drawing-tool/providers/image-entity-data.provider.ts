@@ -7,7 +7,7 @@ import { UniversalGraphNode } from '../services/interfaces';
 
 export const IMAGE_TOKEN = new DataTransferToken<string>('imageHash');
 export const FILESYSTEM_IMAGE_TRANSFER_TYPE = 'vnd.lifelike.transfer/image-node';
-export const FILESYSTEM_IMAGE_HASH = 'vnd.lifelike.transfer/image-hash';
+export const FILESYSTEM_IMAGE_HASHID_TYPE = 'vnd.lifelike.transfer/image-hash';
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class ImageEntityDataProvider implements DataTransferDataProvider {
   extract(dataTransfer: DataTransfer): DataTransferData<ImageTransferData>[] {
 
     const imageData = dataTransfer.getData(FILESYSTEM_IMAGE_TRANSFER_TYPE);
-    const hash = dataTransfer.getData(FILESYSTEM_IMAGE_HASH);
+    const hash = dataTransfer.getData(FILESYSTEM_IMAGE_HASHID_TYPE);
     if (imageData) {
       const node = JSON.parse(imageData) as UniversalGraphNode;
       return [{
