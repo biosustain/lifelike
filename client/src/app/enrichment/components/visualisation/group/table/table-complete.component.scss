@@ -26,12 +26,6 @@
     th {
       cursor: pointer;
 
-      :after {
-        display: inline-block;
-        font-family: 'Font Awesome 5 Pro';
-        content: " ";
-      }
-
       &[data-sort]:after {
         display: inline-block;
         font-family: 'Font Awesome 5 Pro';
