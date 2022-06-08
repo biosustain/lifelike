@@ -277,11 +277,13 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       const items = this.dataTransferDataService.extract(event.dataTransfer);
 
       const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
-      actionPromise.then(actions => {
+
+      actionPromise.subscribe(actions => {
+        console.log(actions);
         if (actions.length) {
-          this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
-          this.graphCanvas.focus();
-        }
+        this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
+        this.graphCanvas.focus();
+      }
       });
     }
   }
