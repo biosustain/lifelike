@@ -19,6 +19,7 @@ import { GraphEntityDataProvider } from './providers/graph-entity-data.provider'
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
 import { MapImageProviderService } from './services/map-image-provider.service';
 import { ImageEntityDataProvider } from './providers/image-entity-data.provider';
+import { GraphActionsService } from './services/graph-actions.service';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
       multi: true,
     },
     MapImageProviderService,
+    GraphActionsService,
   ],
   exports: [
     RouterModule,
