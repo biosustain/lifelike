@@ -28,14 +28,10 @@
             <i class="fa fa-fw fa-plus"></i>
           </button>
           <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">
-            <button class="dropdown-item" (click)="addTab('/projects')">
-              File Browser
-            </button>
-            <button class="dropdown-item" (click)="addTab('/search/graph')">
-              Knowledge Graph
-            </button>
-            <button class="dropdown-item" (click)="addTab('/search/content')">
-              Search
+            <button *ngFor="let option of NEW_TAB_OPTIONS"
+                    class="dropdown-item"
+                    (click)="addTab(option)">
+                    {{ option.title }}
             </button>
           </div>
         </div>
