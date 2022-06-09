@@ -106,9 +106,9 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
               })
           }),
         )),
-        tap((node: Base['node']) => node && this.panToNode(node as any)),
+        // tap((node: Base['node']) => node && this.panToNode(node as any)),
       )),
-    debug('focusedNode$')
+    // debug('focusedNode$')
   );
 
   readonly MARGIN = 10;
@@ -440,15 +440,17 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     ).subscribe();
   }
 
+  get renderExtent() {
+    const {x, y, width, height} = this.g.nativeElement.getBBox();
+    return [[x, y], [x + width, y + height]];
+  }
+
   ngOnInit() {
     this.zoom = new Zoom(
       this.svg, {
         scaleExtent: [0.1, 8],
         // @ts-ignore
-        extent: () => {
-          const {x, y, width, height} = this.g.nativeElement.getBBox();
-          return [[x, y], [x + width, y + height]];
-        }
+        extent: () => this.renderExtent
       });
 
     this.initSelection();
@@ -500,30 +502,35 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     });
   }
 
-  constrainedZoomTransform({width, height}, transform = zoomIdentity) {
-
+  zoomTransformForExtent(extent) {
+    return this.viewBox$.pipe(
+      map(({width, height}) => {
+        // @ts-ignore
+        const [[x0, y0], [x1, y1]] = extent;
+        const extentWidth = x1 - x0;
+        const extentHeight = y1 - y0;
+        const k = Math.min(width / extentWidth, height / extentHeight);
+        const transform = zoomIdentity
+          // Center in viewport
+          .translate(width / 2, height / 2)
+          // Scale (now on in scaled units)
+          .scale(k)
+          // Translate to center of extent
+          .translate(-(x0 + extentWidth / 2), -(y0 + extentHeight / 2));
+        // point which should be ~static during transition
+        const p: [number, number] = [x1 - x0, y1 - y0];
+        return {transform, p, width, height};
+      })
+    );
   }
 
   zoomToFit(transition: boolean = true) {
-    return this.viewBox$.pipe(
-      first()
-    ).toPromise().then(({width, height}) => {
-      // @ts-ignore
-      const [[x0, y0], [x1, y1]] = this.zoom.extent();
-      const extentWidth = x1 - x0;
-      const extentHeight = y1 - y0;
-      const k = Math.min(width / extentWidth, height / extentHeight);
-      const transform = zoomIdentity
-        // Center in viewport
-        .translate(width / 2, height / 2)
-        // Scale (now on in scaled units)
-        .scale(k)
-        // Translate to center of extent
-        .translate(-(x0 + extentWidth / 2), -(y0 + extentHeight / 2));
-      // point which should be ~static during transition
-      const p: [number, number] = [x1 - x0, y1 - y0];
-      this.zoom.transform(transform, p, transition);
-    });
+    return this.zoomTransformForExtent(this.renderExtent).pipe(
+      first(),
+      tap(({transform, p}) => {
+        this.zoom.transform(transform, p, transition);
+      })
+    ).toPromise();
   }
 
   ngOnDestroy() {

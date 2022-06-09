@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { filter, map, distinctUntilChanged, startWith, pairwise, scan, switchMap } from 'rxjs/operators';
 import { has, isArray, pick, isEqual, isEmpty, uniq } from 'lodash-es';
-import { Selection as d3_Selection } from 'd3-selection';
+import { Selection as d3_Selection, selectAll } from 'd3-selection';
 
 import { Many } from 'app/shared/schemas/common';
 import { isNotEmpty } from 'app/shared/utils';
@@ -41,6 +41,8 @@ interface UpdateCycle<Selection extends d3_Selection<any, any, any, any> = d3_Se
   exit: (selection: Selection) => void;
   affectedOnEnd: (selection: Selection) => void;
 }
+
+const emptyD3SelectionFactory = () => selectAll();
 
 /**
  * Helps with making incremental update to given selection.
@@ -117,25 +119,27 @@ export const update =
         } else {
           affectedOnEnd?.(selection.filter(d => affectedSoFar.includes(d)));
         }
-        return [[], next];
+        return [[], emptyD3SelectionFactory()];
       }
+      let newSelection;
       let enterSelection;
       if (isEmpty(prev)) {
         otherOnStart?.(selection.filter(d => !accessor(next, d)));
-        enterSelection = selection.filter(d => accessor(next, d));
+        enterSelection = newSelection = selection.filter(d => accessor(next, d));
       } else {
         if (isNotEmpty(prev)) {
           exit?.(selection.filter(d => accessor(prev, d) && !accessor(next, d)));
         }
-        enterSelection = selection.filter(d => accessor(next, d) && !accessor(prev, d));
+        newSelection = selection.filter(d => accessor(next, d));
+        enterSelection = newSelection.filter(d => !accessor(prev, d));
       }
       enter?.(enterSelection);
       // if we affect all on start or there is no default to come back to (affectedOnEnd),
       // we do not keep track of affected list (it is always all or is not used at the end)
       const affectedSoFarNext = (otherOnStart || !affectedOnEnd) ? [] : uniq(affectedSoFar.concat(enterSelection.data()));
-      return [affectedSoFarNext, next];
+      return [affectedSoFarNext, newSelection];
     }, [[]]),
-    map(([, next]) => next)
+    map(([, newSelection]) => newSelection)
   );
 
 export const updateSingular =
@@ -160,9 +164,11 @@ export const updateSingular =
         exit?.(selection.filter(d => comparator(prev, d)));
       }
       if (next) {
-        enter?.(selection.filter(d => comparator(next, d)));
+        const newSelection = selection.filter(d => comparator(next, d));
+        enter?.(newSelection);
+        return newSelection;
       }
-      return next;
+      return emptyD3SelectionFactory();
     })
   );
 

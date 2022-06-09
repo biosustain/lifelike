@@ -1,4 +1,4 @@
-import { assign, mapValues, entries, max, isNumber, omit, zip } from 'lodash-es';
+import { assign, mapValues, entries, max, isNumber, omit, zip, flatMap, uniq } from 'lodash-es';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Color } from 'd3-color';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
@@ -65,6 +65,7 @@ export class View implements SankeyDocumentPartMixin<SankeyView> {
 }
 
 export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
+  id: number;
   nodePaths: Array<Array<number>>;
   edges: Array<number>;
   source: number;
@@ -74,8 +75,9 @@ export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
   detailEdges?: Array<[number, number, GraphDetailEdge]>;
   color: string | Color;
 
-  constructor({node_paths, detail_edges, ...rest}: GraphTrace) {
+  constructor({node_paths, detail_edges, ...rest}: GraphTrace, id) {
     assign(this, rest);
+    this.id = id;
     this.nodePaths = node_paths;
     this.detailEdges = detail_edges;
   }
@@ -118,7 +120,7 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
     sankeyDocument
   ) {
     this.sankeyDocument = sankeyDocument;
-    this.traces = traces.map(trace => new Trace(trace));
+    this.traces = traces.map((trace, index) => new Trace(trace, index));
     const tracesWithoutGroups = this.traces.filter(({group}) => !isNumber(group));
     if (isNotEmpty(tracesWithoutGroups)) {
       let maxVal = max(traces.map(({group}) => group ?? -1));
@@ -261,6 +263,10 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
       order: this.order,
     };
   }
+
+  belongsToTrace(id) {
+    return uniq([...this.sourceLinks, ...this.targetLinks]).some(link => link.belongsToTrace(id));
+  }
 }
 
 export class SankeyLink implements SankeyDocumentPartMixin<GraphLink>, SankeyLinkInterface {
@@ -314,6 +320,10 @@ export class SankeyLink implements SankeyDocumentPartMixin<GraphLink>, SankeyLin
 
   get(key: string) {
     return this[key];
+  }
+
+  belongsToTrace(id) {
+    return this.traces.some(trace => trace.id === id);
   }
 }
 
@@ -374,6 +384,10 @@ export class SankeyTraceLink implements SankeyLinkInterface {
   get(key) {
     return this[key] ?? this.originLink.get(key);
   }
+
+  belongsToTrace(id) {
+    return this.trace.id === id;
+  }
 }
 
 export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
@@ -422,6 +436,7 @@ export class SankeyFile {
     this.filesystemService = filesystemService;
     this.reload();
   }
+
   private readonly hashId;
   private readonly filesystemService: FilesystemService;
 

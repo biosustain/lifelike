@@ -1,6 +1,9 @@
 import { isDevMode } from '@angular/core';
 
+import { Selection } from 'd3-selection';
+
 import { bind } from './decorators';
+import { getColectiveBBox } from './svg';
 
 /**
  * Decorator for intercooperation of Typescript classes and D3 callbacks.

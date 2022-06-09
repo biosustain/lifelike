@@ -7,7 +7,7 @@ import { forkJoin, combineLatest, merge, of, Observable, zip } from 'rxjs';
 import { first } from 'lodash-es';
 import { color as d3color } from 'd3-color';
 
-import { mapIterable } from 'app/shared/utils';
+import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -59,23 +59,25 @@ export class SankeySingleLaneComponent
     selection.multiselect = false;
   }
 
-  focusedLink$ = this.search.searchFocus$.pipe(
-    map(({type, id}) =>
-      type === EntityType.Link && id
+  focusedLinks$ = this.sankey.graph$.pipe(
+    switchMap(({links}) =>
+      this.search.searchFocus$.pipe(
+        // map graph file link to sankey link
+        map(({type, id}) => {
+          if (type === EntityType.Link) {
+            // allow string == number match interpolation ("58" == 58 -> true)
+            // tslint:disable-next-line:triple-equals
+            return (links as Base['link'][]).filter(link => link.id == id);
+          }
+          if (type === EntityType.Trace) {
+            return (links as Base['link'][]).filter(link => link.belongsToTrace(id));
+          }
+          return [];
+        }),
+        updateAttr(this.renderedLinks$, 'focused')
+      )
     ),
-    debug('focusedLink$'),
-    updateAttrSingular(
-      this.renderedLinks$,
-      'focused',
-      {
-        enter: s => s.attr('focused', true).raise().call(linkElement =>
-          linkElement.size() && this.panToLink(first(linkElement.data()))
-        ),
-        // allow string == number match interpolation ("58" == 58 -> true)
-        // tslint:disable-next-line:triple-equals
-        comparator: (id, link) => link.id == id
-      }
-    )
+    tap(current => isNotEmpty(current) && this.panToLinks(current))
   );
   // region Select
 
@@ -260,12 +262,14 @@ export class SankeySingleLaneComponent
   }
 
   initFocus() {
-    forkJoin(
-      this.focusedLink$,
+    combineLatest(
+      this.focusedLinks$,
       this.focusedNode$
     ).pipe(
       takeUntil(this.destroyed$)
-    ).subscribe();
+    ).subscribe(r => {
+      console.log(r);
+    });
   }
 
   ngAfterViewInit() {
@@ -276,12 +280,16 @@ export class SankeySingleLaneComponent
     super.ngOnDestroy();
   }
 
-  panToLink({y0, y1, source: {x1}, target: {x0}}) {
+  panToLinks(links) {
+    const [sumX, sumY] = links.reduce(([x, y], {source: {x1}, target: {x0}, y0, y1}) => [
+      x + x0 + x1,
+      y + y0 + y1
+    ], [0, 0]);
     this.zoom.translateTo(
-      // x
-      (x1 + x0) / 2,
-      // y
-      (y0 + y1) / 2,
+      // average x
+      sumX / (2 * links.length),
+      // average y
+      sumY / (2 * links.length),
       undefined,
       true
     );

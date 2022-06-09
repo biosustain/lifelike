@@ -26,7 +26,7 @@ import { ObjectUpdateRequest } from 'app/file-browser/schema';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { NodeTextRange } from 'app/shared/utils/dom';
+import { NodeTextRange } from 'app/shared/utils/dom/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';

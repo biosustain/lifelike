@@ -1,4 +1,5 @@
-import { getBoundingClientRectRelativeToContainer, NodeTextRange } from '../dom';
+import { NodeTextRange } from './';
+import { getBoundingClientRectRelativeToContainer } from './rect';
 
 /**
  * Highlights text in a document asynchronously.

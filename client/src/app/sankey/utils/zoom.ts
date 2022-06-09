@@ -1,17 +1,20 @@
 import { ElementRef } from '@angular/core';
 
-import { zoom as d3_zoom, ZoomedElementBaseType } from 'd3-zoom';
+import { zoom as d3_zoom, ZoomedElementBaseType, ZoomTransform, zoomIdentity, ZoomBehavior, zoomTransform } from 'd3-zoom';
 import { Selection, select as d3_select, event as d3_event } from 'd3-selection';
-import { ValueFn, ZoomTransform, Transition, zoomIdentity, ZoomBehavior } from 'd3';
+import { ValueFn, Transition } from 'd3';
 import { isBoolean, isArray, forOwn } from 'lodash-es';
 import { combineLatest, Observable } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 import { ExtendedMap } from 'app/shared/utils/types';
+import { RectPositionInterface } from 'app/shared/utils/extent';
 
 type ZoomParams<ZoomRefElement extends ZoomedElementBaseType, Datum> = {
   [key in keyof Zoom<ZoomRefElement, Datum>]?: Zoom<ZoomRefElement, Datum>[key]
 };
+
+export const keyedExtentToArray = ({x0, x1, y0, y1}: RectPositionInterface) => [[x0, y0], [x1, y1]];
 
 /**
  * Helper wrapper over d3 zoom behavior.
@@ -165,6 +168,10 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     } else {
       return this.selection;
     }
+  }
+
+  get zoomTransform() {
+    return zoomTransform(this.selection.node());
   }
 
   scaleBy(k: number,

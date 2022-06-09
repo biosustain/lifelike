@@ -59,7 +59,6 @@ import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
-import { getBoundingRect } from '../utils/entent';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;

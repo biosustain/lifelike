@@ -120,6 +120,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           return {
             nodes: networkTraceNodes,
             links: networkTraceLinks,
+            traces,
             nodeById, sources, targets
           };
         }),

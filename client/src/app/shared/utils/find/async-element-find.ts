@@ -1,14 +1,13 @@
 import { escapeRegExp, isNil } from 'lodash-es';
 
-
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
-  scrollRectIntoView,
   walkParentElements,
 } from '../dom';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
 import { AsyncFindController } from './find-controller';
+import { scrollRectIntoView } from '../dom/rect';
 
 /**
  * A find controller for finding items within an element.

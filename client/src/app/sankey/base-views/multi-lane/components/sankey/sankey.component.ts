@@ -3,8 +3,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
 import { flatMap, groupBy, uniq } from 'lodash-es';
-import { combineLatest, forkJoin } from 'rxjs';
-import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
+import { combineLatest, forkJoin, zip, animationFrameScheduler } from 'rxjs';
+import { switchMap, map, tap, takeUntil, publish, throttle, throttleTime, first, filter, withLatestFrom } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
 import { SelectionType } from 'app/sankey/interfaces/selection';
@@ -15,14 +15,16 @@ import { symmetricDifference } from 'app/sankey/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
+import { getBoundingRect } from 'app/shared/utils/extent';
 
-
-import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../../color-palette';
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { Base } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { updateAttr } from '../../../../utils/rxjs';
 import { EditService } from '../../../../services/edit.service';
+import { Trace } from '../../../../model/sankey-document';
+import { keyedExtentToArray } from '../../../../utils/zoom';
+import { zoomIdentity } from 'd3';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -64,16 +66,21 @@ export class SankeyMultiLaneComponent
     switchMap(({links}) =>
       this.search.searchFocus$.pipe(
         // map graph file link to sankey link
-        map(({type, id}) =>
-          type === EntityType.Link ?
+        map(({type, id}) => {
+          if (type === EntityType.Link) {
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            (links as Base['link'][]).filter(({originLinkId}) => originLinkId == id) : []
-        ),
+            return (links as Base['link'][]).filter(({originLinkId}) => originLinkId == id);
+          }
+          if (type === EntityType.Trace) {
+            return (links as Base['link'][]).filter(link => link.belongsToTrace(id));
+          }
+          return [];
+        }),
         updateAttr(this.renderedLinks$, 'focused')
       )
     ),
-    tap(current => isNotEmpty(current) && this.panToLinks(current))
+    // tap(current => isNotEmpty(current) && this.panToLinks(current))
   );
 
   selectionUpdate$ = this.selection.selection$.pipe(
@@ -90,30 +97,38 @@ export class SankeyMultiLaneComponent
       selection$.pipe(
         map(({[SelectionType.trace]: traces = []}) => traces),
         // todo
-      )
-    ])),
-    map(([nodes = [], links = [], traces = []]) => uniq(
-        flatMap(
-          nodes as Base['node'][],
-          ({sourceLinks, targetLinks}) => [...sourceLinks, ...targetLinks]
-        )
-          .concat(links as Base['link'][])
-          .map(({trace}) => trace)
-          .concat(traces as any as Base['trace'][])
-      )
-    ),
-    publish(traces$ => combineLatest([
-      traces$.pipe(
-        map(traces => this.calculateNodeGroupFromTraces(traces)),
-        updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
       ),
-      traces$.pipe(
-        updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {trace}) => arr.includes(trace)})
+      selection$.pipe(
+        map(({
+               [SelectionType.node]: nodes = [],
+               [SelectionType.link]: links = [],
+               [SelectionType.trace]: traces = []
+             }) => uniq(
+            flatMap(
+              nodes as Base['node'][],
+              ({sourceLinks, targetLinks}) => [...sourceLinks, ...targetLinks]
+            )
+              .concat(links as Base['link'][])
+              .map(({trace}) => trace)
+              .concat(traces as any as Base['trace'][])
+          )
+        ),
+        publish(traces$ =>
+          zip(
+            traces$.pipe(
+              map(traces => this.calculateNodeGroupFromTraces(traces)),
+              updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+            ),
+            traces$.pipe(
+              updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {trace}) => arr.includes(trace)})
+            )
+          )
+        )
       )
     ]))
   );
 
-  panToLinks(links) {
+  panToLinks({links}) {
     const [sumX, sumY] = links.reduce(([x, y], {source: {x1}, target: {x0}, y0, y1}) => [
       x + x0 + x1,
       y + y0 + y1
@@ -128,16 +143,82 @@ export class SankeyMultiLaneComponent
     );
   }
 
+  panToNode({x0, x1, y0, y1}) {
+    this.zoom.translateTo(
+      // x
+      (x0 + x1) / 2,
+      // y
+      (y0 + y1) / 2,
+      undefined,
+      true
+    );
+  }
+
   ngOnInit() {
     super.ngOnInit();
   }
 
+  isVisible(extent, width, height) {
+    const currentTransform = this.zoom.zoomTransform;
+
+    return (
+      currentTransform.applyX(extent.x0) >= 0 &&
+      currentTransform.applyY(extent.y0) >= 0 &&
+      currentTransform.applyX(extent.x1) <= width &&
+      currentTransform.applyY(extent.y1) <= height
+    );
+  }
+
   initFocus() {
-    forkJoin(
-      this.focusedLinks$,
-      this.focusedNode$
-    ).pipe(
-      takeUntil(this.destroyed$)
+    this.search.searchFocus$.pipe(
+      withLatestFrom(
+        combineLatest(
+          this.focusedLinks$,
+          this.focusedNode$
+        )
+      ),
+      // Do not return value more often than once per frame
+      throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+      takeUntil(this.destroyed$),
+      // cannot simply merge selection in diff parents
+      // map(selections => selections.reduce((merged, selection) => merged.merge(selection)))
+      switchMap(([focus, [focusedLinkSelection, focusedNodeSelection]]) => {
+        const rect = getBoundingRect([
+          getBoundingRect.from(focusedLinkSelection.nodes().map(el => {
+            const {x, y, width, height} = el.getBBox();
+            return {
+              width: width + 20,
+              height,
+              x: x - 10,
+              y,
+            };
+          })),
+          getBoundingRect.from(focusedNodeSelection.nodes().map(el => {
+            const data = el.__data__;
+            const {x, y, width, height} = el.getBBox();
+            return {
+              width, height,
+              x: x + data.x0,
+              y: y + data.y0,
+            };
+          }))
+        ]);
+        const zoomExtent = keyedExtentToArray(rect);
+        return this.zoomTransformForExtent(zoomExtent).pipe(
+          first(),
+          filter(({transform, width, height}) => !this.isVisible(rect, width, height)),
+          tap(({transform, p}) => {
+            let tr = transform;
+            // if (transform.k > this.zoom.zoomTransform.k) {
+            //   tr = zoomIdentity.scale(this.zoom.zoomTransform.k).translate(transform.x, transform.y);
+            // }
+            if (transform.k === 1) {
+              tr = zoomIdentity;
+            }
+            this.zoom.transform(tr, p, true);
+          })
+        );
+      })
     ).subscribe();
   }
 
