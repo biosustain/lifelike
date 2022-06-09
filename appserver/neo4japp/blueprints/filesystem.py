@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 import typing
+from urllib.error import HTTPError
 import urllib.request
 import zipfile
 
@@ -35,7 +36,6 @@ from neo4japp.exceptions import (
      InvalidArgument,
      RecordNotFound,
      NotAuthorized,
-     UnsupportedMediaTypeError
 )
 from neo4japp.models import (
     Projects,
@@ -1065,20 +1065,32 @@ class FileListView(FilesystemBaseView):
                 buffer = read_url(
                     urllib.request.Request(url, headers={
                         'User-Agent': self.url_fetch_user_agent,
+                        'Accept': 'application/pdf',
                     }),
                     max_length=self.file_max_size,
-                    req_content_type='application/pdf',
                     timeout=self.url_fetch_timeout,
                     prefer_direct_downloads=True
                 )
-            except UnsupportedMediaTypeError:
-                raise FileUploadError(
-                    title='File Upload Error',
-                    message='Your file could not be uploaded. Please make sure your URL ends ' +
-                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
-                            'problem persists, please download the file to your computer from ' +
-                            'the original website and upload the file from your device.',
-                )
+            except HTTPError as http_err:
+                # Should be raised because of the 'Accept' content type header above.
+                if http_err.code == 406:
+                    raise FileUploadError(
+                        title='File Upload Error',
+                        message='Your file could not be uploaded. Please make sure your URL ends ' +
+                                'with .pdf. For example, https://www.example.com/file.pdf. If ' +
+                                'the problem persists, please download the file to your ' +
+                                'computer from the original website and upload the file from ' +
+                                'your device.',
+                    )
+                else:
+                    # An error occurred that we were not expecting
+                    raise FileUploadError(
+                        title='File Upload Error',
+                        message='Your file could not be uploaded due to an unexpected error, ' +
+                                'please try again. If the problem persists, please download the ' +
+                                'file to your computer from the original website and upload the ' +
+                                'file from your device.'
+                    )
             except ContentTooLongError:
                 raise FileUploadError(
                     title='File Upload Error',

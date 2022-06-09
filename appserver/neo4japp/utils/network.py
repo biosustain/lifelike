@@ -12,8 +12,6 @@ from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
 
 from IPy import IP
 
-from neo4japp.exceptions import UnsupportedMediaTypeError
-
 
 class ControlledConnectionMixin:
     """
@@ -165,7 +163,7 @@ class ContentTooLongError(URLError):
     """Raised when the content is too big."""
 
 
-def read_url(*args, max_length, req_content_type=None, read_chunk_size=8192, buffer=None,
+def read_url(*args, max_length, read_chunk_size=8192, buffer=None,
              debug_level=0, prefer_direct_downloads=False, **kwargs):
     """
     Get the contents at a URL, while controlling access to some degree.
@@ -197,15 +195,7 @@ def read_url(*args, max_length, req_content_type=None, read_chunk_size=8192, buf
 
     conn = opener.open(*args, **kwargs)
 
-    # First, check the content type returned by the server
-    server_type = conn.headers.get('Content-Type')
-    if req_content_type is not None and server_type != req_content_type:
-        raise UnsupportedMediaTypeError(
-            f'Response Content-Type does not match the requested type: {server_type} vs. ' +
-            f'{req_content_type}'
-        )
-
-    # Then, check the content length returned by the server, if any
+    # First, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
     if server_length is not None:
         try:
