@@ -95,7 +95,7 @@ $input-spacing: map-get(variables.$spacers, 2);
 
   fieldset {
     padding: map-get(variables.$spacers, 2) map-get(variables.$spacers, 3);
-    margin: map-get(variables.$spacers, 2) 0;
+    margin: map-get(variables.$spacers, 2);// 0;
 
     legend {
       margin: 0 - map-get(variables.$spacers, 2);
@@ -126,7 +126,7 @@ $input-spacing: map-get(variables.$spacers, 2);
   }
 
   &:before {
-    @include panel-divider;
+    //@include panel-divider;
   }
 
   .title {
