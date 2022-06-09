@@ -304,7 +304,7 @@ export class Pane {
       this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any),
       defaults,
     );
-    this.tabs.push(tab);
+    this.tabs.unshift(tab);
     this.activeTab = tab;
     return tab;
   }
