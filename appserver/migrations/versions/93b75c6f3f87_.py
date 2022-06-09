@@ -27,6 +27,12 @@ def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
 
+    op.alter_column(
+        'files',
+        'path',
+        nullable=False
+    )
+
 
 def downgrade():
     op.drop_column('files', 'path')

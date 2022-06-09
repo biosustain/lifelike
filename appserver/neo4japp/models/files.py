@@ -214,7 +214,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     pinned = db.Column(db.Boolean, nullable=False, default=False)
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
-    path = db.Column(db.Text, nullable=True)
+    path = db.Column(db.Text, nullable=False)
 
     """
     Annotations related columns
