@@ -33,8 +33,7 @@ export class WorkspaceTabComponent implements OnChanges {
   constructor(
     protected readonly viewService: ViewService,
     protected readonly clipboard: ClipboardService
-  ) {
-  }
+  ) {}
 
   dragData$ = defer(() =>
     this.viewService.getShareableLink(
