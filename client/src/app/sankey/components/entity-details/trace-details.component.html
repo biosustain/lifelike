@@ -33,6 +33,16 @@
                     </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
+            <ngb-panel *ngFor="let link of entity.links" [disabled]="true">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <a [href]="link.href"
+                       class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                       target="_blank">
+                        <span>{{link.title}}</span>
+                        {{ link.value }}
+                    </a>
+                </ng-template>
+            </ngb-panel>
             <ngb-panel *ngIf="entity.detail_edges">
                 <ng-template disabled="true" ngbPanelHeader>
                     <button (click)="openTraceView(entity)" class="btn btn-link">Show detailed
