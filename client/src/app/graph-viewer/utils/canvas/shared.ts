@@ -6,7 +6,8 @@ import { Line } from './lines/lines';
 // ---------------------------------
 
 // First threshold - we want start to modify the fonts to increase visibility/remove text from nodes
-export const VISIBLE_TEXT_THRESHOLD = 0.4;
+export const VISIBLE_TEXT_THRESHOLD = 0.6;
+
 // Second threshold - we remove all text from the graph
 export const NO_TEXT_THRESHOLD = 0.15;
 
