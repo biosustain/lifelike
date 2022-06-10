@@ -3,7 +3,6 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
 import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
