@@ -1,0 +1,153 @@
+<ng-container *ngFor="let annotation in parsedAnnotations">
+    <ng-template #tooltip>
+        Type: {{annotation.meta.type}}
+<!--            let idLink: DatabaseLink = null;-->
+<!--            const annoId = an.meta.id.indexOf(':') !== -1 ? an.meta.id.split(':')[1] : an.meta.id;-->
+
+<!--            if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {-->
+<!--            const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;-->
+<!--            idLink = source.links.filter(link = > link.name === an.meta.idType)[0];-->
+<!--            }-->
+
+<!--        // null/undefined because a data source did not match-->
+<!--        // e.g we use "Custom" for phenotype-->
+<!--        if (idLink !== null && idLink !== undefined) {-->
+<!--          base.push(-->
+<!--            annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` :-->
+<!--              'Id: None');-->
+<!--        } else {-->
+<!--          base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');-->
+<!--        }-->
+        {{ annotation.meta.idType ? "Data Source: " + escape(annotation.meta.idType) : "Data Source: None"}};
+
+        <ng-container *ngIf="annotation.meta.isCustom">
+            User generated annotation
+        </ng-container>
+
+        <div>
+        // source links if any
+    <ng-container *ngIf="annotation.meta.idHyperlinks?.length > 0">
+            <a>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
+            <div>
+                <a *ngFor="let link of annotation.meta.idHyperlinks" href="${escape(toValidLink(url))}">{{escape(label)}}</a><br>`;
+          </div>`;
+
+        // search links
+        const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+        htmlLinks += `
+          <div>
+            <div
+              class="tooltip-collapse-control collapsed"
+              role="button"
+              data-toggle="collapse"
+              data-target="#${searchLinkCollapseTargetId}"
+              aria-expanded="false"
+              aria-controls="${searchLinkCollapseTargetId}"
+            >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+            <div class="collapse" id="${searchLinkCollapseTargetId}">
+        `;
+        // links should be sorted in the order that they appear in SEARCH_LINKS
+        for (const {domain, url} of SEARCH_LINKS) {
+          const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
+          htmlLinks += `<a target="_blank" href="${escape(link)}">${escape(domain.replace('_', ' '))}</a><br>`;
+    }
+    htmlLinks += `</div></div>`;
+
+    // search internal links
+    const searchInternalLinkCollapseTargetId = uniqueId('pdf-tooltip-internal-collapse-target');
+    htmlLinks += `
+      <div>
+        <div
+          class="tooltip-collapse-control collapsed"
+          role="button"
+          data-toggle="collapse"
+          data-target="#${searchInternalLinkCollapseTargetId}"
+          aria-expanded="false"
+          aria-controls="${searchInternalLinkCollapseTargetId}"
+        >Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
+    `;
+    const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
+    htmlLinks += `<a target="_blank" href="${visLink}">Knowledge Graph</a><br>`;
+    const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
+    htmlLinks += `<a target="_blank" href="${contLink}">File Content</a><br>`;
+    const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
+            htmlLinks += `<a target="_blank" href="${mapLink}">Map Content</a><br>`;
+            htmlLinks += `</div></div>`;
+
+            base.push(htmlLinks);
+            base = [base.join('<br>')];
+
+            if (an.meta.isCustom) {
+            base.push(`
+            <div class="mt-1">
+                <button
+                        type="button"
+                        class="btn btn-primary btn-block"
+                        onclick="
+                window.pdfViewerRef['${this.pdfViewerId}']
+                  .removeCustomAnnotation(${escape(
+        JSON.stringify(an.uuid),
+      )})
+             ">
+                    <i class="fas fa-fw fa-trash"></i>
+                    <span>Delete Annotation</span>
+                </button>
+            </div>
+            if (!an.meta.isCustom && !an.meta.isExcluded) {
+            const annExclusion = {
+                    id: an.meta.id,
+                    idHyperlinks: an.meta.idHyperlinks,
+                    text: an.textInDocument,
+                    type: an.meta.type,
+                    rects: an.rects,
+                    pageNumber: an.pageNumber,
+                            };
+                            base.push(`
+            <div class="mt-1">
+                <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(
+        JSON.stringify(annExclusion))})">
+                    <i class="fas fa-fw fa-minus-circle"></i>
+                    <span>Mark for Exclusion</span>
+                </button>
+            </div>
+            base.push(`
+            <div class="mt-1">
+            <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(
+            JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
+            <i class="fas fa-fw fa-search"></i>
+            <span>Find Occurrences</span>
+          </button>
+        </div>
+        const annExclusion = {
+        text: an.textInDocument,
+            type: an.meta.type,
+            };
+        base.push(`
+        <div class="mt-2" *ngIf="an.meta.isExcluded">
+            <div style="display: flex; flex-direction: column">
+                <span style="line-height: 16px">Manually excluded</span>
+                <span style="line-height: 16px"><i>reason: </i>${escape(an.meta.exclusionReason)}</span>
+                ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${
+                escape(an.meta.exclusionComment)}</span>` : ''}
+            </div>
+            <div class="mt-1">
+                <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(
+        JSON.stringify(annExclusion))})">
+                    <i class="fas fa-fw fa-undo"></i>
+                    <span>Unmark Exclusion</span>
+                </button>
+            </div>
+        </div>
+    </ng-template>
+    <ng-container *ngFor="let rect in annotation.rects">
+        <div [draggable]="true"
+             (onDragStart)=""
+             class="system-annotation"
+             [style]="annotation.style"
+             [ngClass.annotation-highlight]="annotation.highlight"
+             [ngbTooltip]="tooltip"
+             position="top center"
+        ></div>
+    </ng-container>
+</ng-container>
