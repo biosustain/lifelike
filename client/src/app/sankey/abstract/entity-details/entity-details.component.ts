@@ -8,8 +8,9 @@ import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
 
 import { parseForRendering } from '../../utils';
 import { ControllerService } from '../../services/controller.service';
+import { DisplayPropertyType } from '../../interfaces';
 
-@Component({ template: '' })
+@Component({template: ''})
 export abstract class SankeyEntityDetailsComponent {
   constructor(
     protected common: ControllerService,
@@ -42,5 +43,9 @@ export abstract class SankeyEntityDetailsComponent {
     return this.common.data$.pipe(
       map(({nodeById}) => nodeById.get(nodeId) ?? {} as GraphNode)
     );
+  }
+
+  getLinks(displayProperties) {
+    return displayProperties?.filter(({type}) => type === DisplayPropertyType.URL);
   }
 }

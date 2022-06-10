@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { SankeyEntityDetailsComponent } from './entity-details.component';
 import { BaseControllerService } from '../../services/base-controller.service';
-import { TypeContext } from '../../interfaces';
+import { TypeContext, DisplayPropertyType } from '../../interfaces';
 
 @Component({template: ''})
 export abstract class SankeyAbstractLinkDetailsComponent<Base extends TypeContext> extends SankeyEntityDetailsComponent {

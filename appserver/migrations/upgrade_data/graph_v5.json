@@ -50,6 +50,9 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "displayProperties": {
+                      "$ref": "#/$defs/displayProperties"
+                    },
                     "source": {
                       "type": "integer"
                     },
@@ -198,6 +201,9 @@
           "id": {
             "type": "integer"
           },
+          "displayProperties": {
+            "$ref": "#/$defs/displayProperties"
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -322,6 +328,9 @@
           "target": {
             "type": "integer"
           },
+          "displayProperties": {
+            "$ref": "#/$defs/displayProperties"
+          },
           "key": {
             "type": "integer"
           },
@@ -423,22 +432,55 @@
     "links"
   ],
   "$defs": {
-    "links": {
+    "displayPropertyType": {
+      "type": "string",
+      "enum": [
+        "URL"
+      ]
+    },
+    "baseDisplayProperty": {
       "type": "object",
       "properties": {
-        "title": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "href": {
-          "type": "string"
+        "type": {
+          "$ref": "#/$defs/displayPropertyType"
         }
       },
       "required": [
-        "title", "href"
+        "type"
       ]
+    },
+    "displayProperties": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/$defs/baseDisplayProperty"
+              }
+            ],
+            "properties": {
+              "type": {
+                "const": "URL"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "href"
+            ]
+          }
+        ]
+      }
     }
   }
 }

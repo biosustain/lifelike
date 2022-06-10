@@ -69,7 +69,7 @@ def iterate_sankeys(updateCallback):
 
 # region Upgrade
 def check_if_link_exist(entity):
-    if entity.get('links'):
+    if entity.get('displayProperties'):
         raise Exception("Property already exist")
 
 def crash_if_new_property_already_exist(data):
