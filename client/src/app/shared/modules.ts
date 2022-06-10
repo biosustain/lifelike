@@ -1,5 +1,7 @@
 import { EventEmitter } from '@angular/core';
 
+import { Observable } from 'rxjs';
+
 export interface ModuleProperties {
   title: string;
   fontAwesomeIcon: string;
@@ -9,5 +11,5 @@ export interface ModuleProperties {
 
 export interface ModuleAwareComponent {
   modulePropertiesChange?: EventEmitter<ModuleProperties>;
-  viewParams?: object;
+  viewParams?: Promise<object>;
 }

@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -46,32 +46,6 @@ import { MapImageProviderService } from '../services/map-image-provider.service'
   ],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
-  @Input() highlightTerms: string[] | undefined;
-  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  @ViewChild('canvas', {static: true}) canvasChild;
-
-  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
-  loadSubscription: Subscription;
-
-  _locator: string | undefined;
-  @Input() map: FilesystemObject | undefined;
-  @Input() contentValue: Blob | undefined;
-  pendingInitialize = false;
-
-  graphCanvas: CanvasGraphView;
-
-  protected readonly subscriptions = new Subscription();
-  historyChangesSubscription: Subscription;
-  unsavedChangesSubscription: Subscription;
-  providerSubscription$ = new Subscription();
-
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
-
-  entitySearchTerm = '';
-  entitySearchList: GraphEntity[] = [];
-  entitySearchListIdx = -1;
 
   constructor(
     readonly filesystemService: FilesystemService,
@@ -110,6 +84,46 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
   }
 
+  @Input()
+  set locator(value: string | undefined) {
+    this._locator = value;
+    if (value != null) {
+      this.loadTask.update(value);
+    }
+  }
+
+  get locator() {
+    return this._locator;
+  }
+  @Input() highlightTerms: string[] | undefined;
+  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+
+  @ViewChild('canvas', {static: true}) canvasChild;
+
+  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
+  loadSubscription: Subscription;
+
+  _locator: string | undefined;
+  @Input() map: FilesystemObject | undefined;
+  @Input() contentValue: Blob | undefined;
+  pendingInitialize = false;
+
+  graphCanvas: CanvasGraphView;
+
+  protected readonly subscriptions = new Subscription();
+  historyChangesSubscription: Subscription;
+  unsavedChangesSubscription: Subscription;
+  providerSubscription$ = new Subscription();
+
+  unsavedChanges$ = new BehaviorSubject<boolean>(false);
+
+  entitySearchTerm = '';
+  entitySearchList: GraphEntity[] = [];
+  entitySearchListIdx = -1;
+
+  dragTitleData$ = defer(() => of(this.map.getTransferData()));
+
   getExtraSource(): Observable<ExtraResult> {
     return new BehaviorSubject(null);
   }
@@ -146,18 +160,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
       this.initializeMap();
     });
-  }
-
-  @Input()
-  set locator(value: string | undefined) {
-    this._locator = value;
-    if (value != null) {
-      this.loadTask.update(value);
-    }
-  }
-
-  get locator() {
-    return this._locator;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -254,11 +256,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   redo() {
     this.graphCanvas.redo();
-  }
-
-  dragStarted(event: DragEvent) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    this.map.addDataTransferData(dataTransfer);
   }
 
   // ========================================

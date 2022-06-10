@@ -13,6 +13,7 @@ import { DataTransferDataDirective } from './data-transfer-data.directive';
 import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
 import { TextTruncateToTooltipDirective } from './text-truncate-to-tooltip.directive';
 import { ElementObserverDirective } from './element-observer.directive';
+import { ConstrainToViewportDirective } from './constrain-to-viewport.directive';
 import { CopyToClipboardDirective } from './copy-to-clipboard.directive';
 
 const directives = [
@@ -33,6 +34,7 @@ const directives = [
   DataTransferDataDirective,
   FilesystemObjectTargetDirective,
   TextTruncateToTooltipDirective,
+    ConstrainToViewportDirective,
   CopyToClipboardDirective,
   ElementObserverDirective
 ];

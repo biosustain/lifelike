@@ -174,8 +174,8 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
  * @param first set to filter
  * @param second set to check against
  */
-export function setDifference<T>(first: Set<T>, second: Set<T|any>): T[] {
-    return [...first].filter(i => !second.has(i));
+export function setDifference<T>(first: Set<T>, second: Set<T | any>): T[] {
+  return [...first].filter(i => !second.has(i));
 }
 
 /**
@@ -294,6 +294,11 @@ export const reduceIterable = (itrable, callbackfn, initialValue: any = notDefin
     initialValue = callbackfn(initialValue, value, currentIndex++, itrable);
   }
   return initialValue;
+};
+
+export const inText = (pattern: string, flags: string = 'i') => {
+  const compiledExpresion = new RegExp(pattern, flags);
+  return (text: string) => compiledExpresion.test(text);
 };
 
 export const isPromise = value => typeof value?.then === 'function';

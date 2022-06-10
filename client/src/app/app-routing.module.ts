@@ -27,9 +27,8 @@ import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/
 import { EnrichmentVisualisationViewerComponent } from 'app/enrichment/components/visualisation/enrichment-visualisation-viewer.component';
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 import { ObjectViewerComponent } from 'app/file-browser/components/object-viewer.component';
-import { SankeyViewComponent } from 'app/sankey-viewer/components/sankey-view.component';
+import { SankeyViewComponent } from 'app/sankey/components/sankey-view.component';
 import { TraceViewComponent } from 'app/trace-viewer/components/trace-view.component';
-import { SankeyManyToManyViewComponent } from 'app/sankey-many-to-many-viewer/components/sankey-view.component';
 import { CopyrightInfringementFormComponent } from 'app/reports/components/copyright-infringement-form.component';
 import { CookiePolicyComponent } from 'app/policies/components/cookie-policy.component';
 import { CopyrightInfringementPolicyComponent } from 'app/policies/components/copyright-infringement-policy.component';
@@ -135,16 +134,18 @@ const routes: Routes = [
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
     },
   },
   {
+    // Left as legacy link support
+    // for a while now base view is decided by file content or fragment params
     path: 'projects/:project_name/sankey-many-to-many/:file_id',
     canActivate: [LifelikeAuthGuard],
-    component: SankeyManyToManyViewComponent,
+    component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
     },
   },
   {
