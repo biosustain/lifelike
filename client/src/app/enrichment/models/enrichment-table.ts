@@ -6,6 +6,12 @@ import { TableCell, TableHeader } from 'app/shared/components/table/generic-tabl
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
 
 export class EnrichmentTable {
+  DEFAULT_HEADERS = [
+    {name: 'Imported', span: '1'},
+    {name: 'Value', span: '1'},
+    {name: 'Matched', span: '1'},
+    {name: 'NCBI Gene Full Name', span: '1'},
+  ];
 
   protected readonly usePlainText: boolean;
   tableHeader: TableHeader[][] = [];
@@ -17,13 +23,7 @@ export class EnrichmentTable {
 
   load(document: EnrichmentDocument): Observable<this> {
     const tableCells: TableCell[][] = [];
-    const tableHeader: TableHeader[][] = [
-      [
-        {name: 'Imported', span: '1'},
-        {name: 'Matched', span: '1'},
-        {name: 'NCBI Gene Full Name', span: '1'},
-      ],
-    ];
+    const tableHeader: TableHeader[][] = [this.DEFAULT_HEADERS];
 
     const result: EnrichmentResult | undefined = document.result;
 
@@ -34,7 +34,7 @@ export class EnrichmentTable {
       // second header line in those cases
       let tableHeaderLine2Needed = false;
       const tableHeaderLine2: TableHeader[] = [
-        {name: '', span: '3'},
+        {name: '', span: this.DEFAULT_HEADERS.length.toString()},
       ];
 
       for (const domainId of document.domains) {
@@ -76,6 +76,8 @@ export class EnrichmentTable {
         const row: TableCell[] = [{
           text: this.usePlainText ? resultGene.imported : resultGene.annotatedImported || resultGene.imported,
         }];
+
+        row.push({text: resultGene.value});
 
         if (resultGene.domains) {
           // There was a match
