@@ -19,6 +19,7 @@ from graphviz import escape
 from flask import current_app
 
 from pdfminer import high_level
+from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
@@ -28,6 +29,7 @@ from PyPDF4 import PdfFileWriter, PdfFileReader
 from PIL import Image
 from lxml import etree
 
+from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -274,8 +276,23 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # TODO: Actually validate PDF content
-        pass
+        data = buffer.read()
+        buffer.seek(0)
+
+        # Check that the pdf is considered openable
+        fp = io.BytesIO(data)
+        try:
+            high_level.extract_text(fp, page_numbers=[0], caching=False)
+        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='This pdf is locked and cannot be loaded into Lifelike.')
+        except Exception:
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf. Please check if the pdf is ' +
+                        'unlocked and openable.'
+            )
 
     def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
@@ -289,7 +306,14 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
-        text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        try:
+            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        except Exception:
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf. Please check if the pdf is ' +
+                        'unlocked and openable.'
+            )
         doi = _search_doi_in(bytes(text, encoding='utf8'))
 
         return doi
@@ -1310,7 +1334,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ValidationError('Previous content of the map is corrupted!')
 
         new_content = io.BytesIO()
-        new_zip = zipfile.ZipFile(new_content, 'w')
+        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
 
         # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
         # to make sure that the graph.json is not copied as well.

@@ -153,6 +153,7 @@ export class Tab {
   applyPendingChanges() {
     if (this.pendingProperties) {
       this.title = this.pendingProperties.title;
+      // The way it is coded the updates does not propagate for rendering
       this.fontAwesomeIcon = this.pendingProperties.fontAwesomeIcon;
       this.badge = this.pendingProperties.badge;
       this.loading = !!this.pendingProperties.loading;
@@ -303,7 +304,7 @@ export class Pane {
       this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any),
       defaults,
     );
-    this.tabs.push(tab);
+    this.tabs.unshift(tab);
     this.activeTab = tab;
     return tab;
   }

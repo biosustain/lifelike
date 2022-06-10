@@ -7,13 +7,33 @@ import sqlalchemy
 
 from dataclasses import dataclass
 from flask import current_app
-from sqlalchemy import and_, text, event, orm, CheckConstraint
+from sqlalchemy import (
+    and_,
+    bindparam,
+    column,
+    inspect,
+    select,
+    table,
+    text,
+    update,
+    event,
+    orm,
+    CheckConstraint,
+    Integer as sa_Integer,
+    String as sa_String,
+)
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine import Connection
+from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
 
-from neo4japp.constants import LogEventType
+from neo4japp.constants import (
+    LogEventType,
+    UPDATE_DATE_MODIFIED_COLUMNS,
+    UPDATE_ELASTIC_DOC_COLUMNS,
+)
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.projects import Projects
@@ -194,6 +214,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     pinned = db.Column(db.Boolean, nullable=False, default=False)
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+    path = db.Column(db.Text, nullable=False)
 
     """
     Annotations related columns
@@ -407,8 +428,119 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
 
 # Files table ORM event listeners
+def _did_columns_update(target: Files, columns: List[str]) -> bool:
+    insp = inspect(target)
+    return any([insp.attrs.get(col).history.added for col in columns])
+
+
+def _get_parent_path_of_file_query(file_id: int, parent_id: int):
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('path', sa_String),
+        column('parent_id', sa_Integer)
+    )
+
+    if parent_id is None:
+        t_projects = table(
+            'projects',
+            column('id', sa_Integer),
+            column('name', sa_String),
+            column('***ARANGO_USERNAME***_id', sa_Integer)
+        )
+        return select([t_projects.c.name]).where(t_projects.c.***ARANGO_USERNAME***_id == file_id)
+    else:
+        return select([t_files.c.path]).where(t_files.c.id == parent_id)
+
+
+def _get_descendants_of_file_query(***ARANGO_USERNAME***_file_id: int):
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('path', sa_String),
+        column('parent_id', sa_Integer)
+    )
+
+    parent_file = select([
+        t_files.c.id,
+        t_files.c.path,
+        t_files.c.parent_id
+    ]).where(
+        t_files.c.id == ***ARANGO_USERNAME***_file_id
+    ).cte(recursive=True)
+
+    parent_alias = parent_file.alias()
+    children_alias = parent_file.union_all(
+        select([
+            t_files.c.id,
+            t_files.c.path,
+            t_files.c.parent_id
+        ]).where(
+            t_files.c.parent_id == parent_alias.c.id
+        )
+    )
+
+    return select([
+        children_alias.c.id, children_alias.c.path
+    ]).where(
+        children_alias.c.id != ***ARANGO_USERNAME***_file_id
+    )
+
+
+def _get_update_path_query():
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('path', sa_String),
+    )
+
+    return update(
+        t_files
+    ).where(
+        t_files.c.id == bindparam('f_id')
+    ).values(path=bindparam('f_path'))
+
+
+def _update_path_of_file(connection: Connection, target: Files) -> Files:
+    query = _get_parent_path_of_file_query(target.id, target.parent_id)
+    parent_path = connection.execute(query).scalar()
+    target.path = f'{parent_path}/{target.filename}'
+    return target
+
+
+def _update_path_of_file_and_descendants(connection: Connection, target: Files) -> Files:
+    # Parent may have changed too, so we need to get the new one and update this file's path.
+    old_path = target.path
+    target = _update_path_of_file(connection, target)
+    new_path = target.path
+
+    # Get all the descendants of this file so we can update their paths too.
+    descendants = connection.execution_options(
+        stream_results=True
+    ).execute(_get_descendants_of_file_query(target.id))
+
+    if descendants.rowcount > 0:
+        child_update_mappings = []
+        for id, path in descendants:
+            child_update_mappings.append({
+                'f_id': id,
+                'f_path': new_path + path[len(old_path):],
+            })
+        connection.execute(_get_update_path_query(), child_update_mappings)
+    return target
+
+
+@event.listens_for(Files, 'before_insert')
+def before_file_insert(mapper: Mapper, connection: Connection, target: Files):
+    # Only automatically update the path if it was not manually added. This should only be false
+    # when seeding the database for local development.
+    insp = inspect(target)
+    if not insp.attrs.get('path').history.added:
+        target = _update_path_of_file(connection, target)
+
+
 @event.listens_for(Files, 'after_insert')
-def file_insert(mapper, connection, target: Files):
+def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     """
     Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
     file insert will be rolled back.
@@ -433,67 +565,85 @@ def file_insert(mapper, connection, target: Files):
         )
 
 
+@event.listens_for(Files, 'before_update')
+def before_file_update(mapper: Mapper, connection: Connection, target: Files):
+    # Only automatically update the path if it was not manually added. This should only be false
+    # when seeding the database for local development.
+    insp = inspect(target)
+    if not insp.attrs.get('path').history.added:
+        # TODO: Potentially don't need to do this if we know the filename and parent haven't
+        # changed.
+        target = _update_path_of_file_and_descendants(connection, target)
+
+    # Only update the modified date if any of the specified columns *did not* change
+    if not _did_columns_update(target, UPDATE_DATE_MODIFIED_COLUMNS):
+        orm.attributes.flag_modified(target, 'modified_date')
+
+
 @event.listens_for(Files, 'after_update')
-def file_update(mapper, connection, target: Files):
+def file_update(mapper: Mapper, connection: Connection, target: Files):
     """
     Handles updating this document in elastic. Note: if this fails, the file update will be rolled
     back.
     """
-    # Import what we need, when we need it (Helps to avoid circular dependencies)
-    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+    # Only do re-indexing if any of the specified columns changed
+    if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
+        # Import what we need, when we need it (Helps to avoid circular dependencies)
+        from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+        from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
-    try:
-        elastic_service = get_elastic_service()
-        files_to_update = [target.hash_id]
-        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-            family = get_nondeleted_recycled_children_query(
-                Files.id == target.id,
-                children_filter=and_(
-                    Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
-            ).all()
-            files_to_update = [member.hash_id for member in family]
+        try:
+            elastic_service = get_elastic_service()
+            files_to_update = [target.hash_id]
+            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+                family = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+                ).all()
+                files_to_update = [member.hash_id for member in family]
 
-        changes = get_model_changes(target)
-        # Only delete a file when it changes from "not-deleted" to "deleted"
-        if 'deletion_date' in changes and changes['deletion_date'][0] is None and \
-                changes['deletion_date'][1] is not None:  # noqa
-            current_app.logger.info(
-                f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            changes = get_model_changes(target)
+            # Only delete a file when it changes from "not-deleted" to "deleted"
+            if 'deletion_date' in changes and changes['deletion_date'][0] is None and \
+                    changes['deletion_date'][1] is not None:  # noqa
+                current_app.logger.info(
+                    f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+                elastic_service.delete_files(files_to_update)
+                # TODO: Should we handle the case where a document's deleted state goes from
+                # "deleted" to "not deleted"? What would that mean for folders? Re-index all
+                # children as well?
+            else:
+                # File was not deleted, so update it -- and possibly its children if it has any --
+                # instead
+                current_app.logger.info(
+                    f'Attempting to update files in elastic with hash_ids: {files_to_update}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+                # TODO: Change this to an update operation, and only update what has changed
+                # TODO: Only need to update children if the folder name changes (is this true? any
+                # other cases where we would do this? Maybe safer to just always update file path
+                # any time the parent changes...)
+                elastic_service.index_files(files_to_update)
+        except Exception as e:
+            current_app.logger.error(
+                f'Elastic update failed for files with hash_ids: {files_to_update}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
-            elastic_service.delete_files(files_to_update)
-            # TODO: Should we handle the case where a document's deleted state goes from "deleted"
-            # to "not deleted"? What would that mean for folders? Re-index all children as well?
-        else:
-            # File was not deleted, so update it -- and possibly its children if it has any --
-            # instead
-            current_app.logger.info(
-                f'Attempting to update files in elastic with hash_ids: {files_to_update}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            raise ServerException(
+                title='Failed to Update File',
+                message='Something unexpected occurred while updating your file! Please try ' +
+                        'again later.'
             )
-            # TODO: Change this to an update operation, and only update what has changed
-            # TODO: Only need to update children if the folder name changes (is this true? any
-            # other cases where we would do this? Maybe safer to just always update file path
-            # any time the parent changes...)
-            elastic_service.index_files(files_to_update)
-    except Exception as e:
-        current_app.logger.error(
-            f'Elastic update failed for files with hash_ids: {files_to_update}',
-            exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-        )
-        raise ServerException(
-            title='Failed to Update File',
-            message='Something unexpected occurred while updating your file! Please try again ' +
-                    'later.'
-        )
 
 
 @event.listens_for(Files, 'after_delete')
-def file_delete(mapper, connection, target: Files):
+def file_delete(mapper: Mapper, connection: Connection, target: Files):
     """
     Handles deleting this document from elastic. Note: if this fails, the file deletion will be
     rolled back.

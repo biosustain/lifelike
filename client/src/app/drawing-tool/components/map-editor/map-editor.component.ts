@@ -22,6 +22,7 @@ import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
+import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 
 
 import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
@@ -398,8 +399,13 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
   }
 
   @HostListener('window:keydown', ['$event'])
-  keyDown(event: MouseEvent) {
+  keyDown(event: KeyboardEvent) {
     this.lastActivityTime = window.performance.now();
+
+    if (isCtrlOrMetaPressed(event) && event.key === 's') {
+      this.save();
+      event.preventDefault();
+    }
   }
 
   createGroup() {
