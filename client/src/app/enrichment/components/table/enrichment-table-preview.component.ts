@@ -7,7 +7,10 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
   templateUrl: './enrichment-table-preview.component.html',
 })
 export class EnrichmentTablePreviewComponent {
-
   @Input() document: EnrichmentDocument;
 
+  GENE_TABLE_HEADERS = [
+      'Name',
+      'Value'
+  ];
 }

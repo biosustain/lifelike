@@ -28,7 +28,7 @@
     </div>
 
     <div>
-      <label class="m-0">Folders to Include (default all if none selected):</label>
+      <label class="m-0 mb-4">Folders to Include (default all if none selected):</label>
       <div *ngIf="hierarchyLoaded; else hierarchyNotLoaded" style="max-height: 480px; overflow: auto;">
         <app-hierarchy-search-tree
           [treeData]="fileHierarchyTree"
@@ -38,13 +38,21 @@
         ></app-hierarchy-search-tree>
       </div>
       <ng-template #hierarchyNotLoaded>
-        <div class="d-flex flex-column">
-          <span class="placeholder-box w-25 mb-2">Loading loading</span>
-          <span class="placeholder-box w-25 mb-2">Loading loading</span>
-          <span class="placeholder-box w-25">Loading loading</span>
+        <div class="d-flex justify-content-between alert alert-danger" *ngIf="hierarchyError; else loadingPlaceholders">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            Something went wrong retrieving the file structure!
+          </div>
+          <button class="btn btn-secondary" type="button" (click)="getFileHierarchy()">Try Again</button>
         </div>
+        <ng-template #loadingPlaceholders>
+          <div class="d-flex flex-column">
+            <span class="placeholder-box w-25 mb-2">Loading loading</span>
+            <span class="placeholder-box w-25 mb-2">Loading loading</span>
+            <span class="placeholder-box w-25">Loading loading</span>
+          </div>
+        </ng-template>
       </ng-template>
-
     </div>
 
     <!-- TODO: Might add this back in the future -->
