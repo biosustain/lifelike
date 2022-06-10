@@ -38,14 +38,11 @@ export class ViewService {
   getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
     url = removeViewModeIfPresent(url);
     const hashUrl = new AppURL(url);
-    const viewParams = componentInstance?.viewParams;
-    if (viewParams) {
-      return from(viewParams).pipe(
-        switchMap(params => this.create(params)),
-        map(viewId => {
-          if (viewId) {
-            hashUrl.fragment = viewId;
-          }
+    const linkParamsPromise = componentInstance?.linkParams;
+    if (linkParamsPromise) {
+      return from(linkParamsPromise).pipe(
+        map(linkParams => {
+          hashUrl.setSearch(linkParams);
           return hashUrl;
         })
       );

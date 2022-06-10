@@ -138,17 +138,6 @@ const routes: Routes = [
     },
   },
   {
-    // Left as legacy link support
-    // for a while now base view is decided by file content or fragment params
-    path: 'projects/:project_name/sankey-many-to-many/:file_id',
-    canActivate: [LifelikeAuthGuard],
-    component: SankeyViewComponent,
-    data: {
-      title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
-    },
-  },
-  {
     path: 'projects/:project_name/trace/:file_id/:trace_hash',
     canActivate: [LifelikeAuthGuard],
     component: TraceViewComponent,
@@ -357,6 +346,17 @@ const routes: Routes = [
     },
   },
   // Old links
+  {
+    // Left as legacy link support
+    // for a while now base view is decided by file content or fragment params
+    path: 'projects/:project_name/sankey-many-to-many/:file_id',
+    canActivate: [LifelikeAuthGuard],
+    component: SankeyViewComponent,
+    data: {
+      title: 'Sankey',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
+    },
+  },
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
   {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
   {path: 'dt/map', redirectTo: 'projects', pathMatch: 'full'},

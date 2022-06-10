@@ -11,5 +11,5 @@ export interface ModuleProperties {
 
 export interface ModuleAwareComponent {
   modulePropertiesChange?: EventEmitter<ModuleProperties>;
-  viewParams?: Promise<object>;
+  linkParams?: Promise<Record<string, string>>;
 }
