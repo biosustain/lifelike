@@ -3,7 +3,11 @@
  * which may be committed to history for rollback or re-application.
  */
 
-import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  UniversalGraphGroup,
+  UniversalGraphEdge,
+  UniversalGraphNode
+} from 'app/drawing-tool/services/interfaces';
 
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 
@@ -53,10 +57,22 @@ export interface GraphActionReceiver {
    */
   updateEdge(edge: UniversalGraphEdge): void;
 
+  addGroup(group: UniversalGraphGroup): void;
+
+  removeGroup(group: UniversalGraphGroup): boolean;
+
+  updateGroup(group: UniversalGraphGroup): void;
+
+  addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
+
+  removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
+
+
   /**
    * Focus the selected entity (aka focus on the related sidebar for the selection).
    */
   focusEditorPanel(): void;
+
 }
 
 /**

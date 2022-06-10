@@ -4,11 +4,11 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
+import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point } from '../shared';
 
 export interface StandardEdgeOptions {
-  source: { x: number, y: number };
-  target: { x: number, y: number };
+  source: Point;
+  target: Point;
   textbox?: TextElement;
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
@@ -20,8 +20,8 @@ export interface StandardEdgeOptions {
  * Draws an edge using a {@link Line}.
  */
 export class LineEdge extends PlacedEdge {
-  readonly source: { x: number, y: number };
-  readonly target: { x: number, y: number };
+  readonly source: Point;
+  readonly target: Point;
   readonly textbox: TextElement | undefined;
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;
@@ -34,7 +34,7 @@ export class LineEdge extends PlacedEdge {
   readonly labelMaxX: number;
   readonly labelMinY: number;
   readonly labelMaxY: number;
-  readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+  readonly boundingBox: BoundingBox;
 
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
@@ -74,12 +74,12 @@ export class LineEdge extends PlacedEdge {
     };
   }
 
-  getBoundingBox(): { minX: number; minY: number; maxX: number; maxY: number } {
+  getBoundingBox(): BoundingBox {
     return this.boundingBox;
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
-    if (this.isPointIntersectingTextbox(x, y)) {
+  isPointIntersecting({x, y}: Point): boolean {
+    if (this.isPointIntersectingTextbox({x, y})) {
       return true;
     }
 
@@ -90,7 +90,7 @@ export class LineEdge extends PlacedEdge {
     return getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) <= 2;
   }
 
-  private isPointIntersectingTextbox(x: number, y: number): boolean {
+  private isPointIntersectingTextbox({x, y}: Point): boolean {
     if (!this.textbox) {
       return false;
     }
@@ -98,28 +98,29 @@ export class LineEdge extends PlacedEdge {
     return x >= this.labelMinX && x <= this.labelMaxX && y >= this.labelMinY && y <= this.labelMaxY;
   }
 
-  getPointDistanceUnsq(x: number, y: number): number {
-    if (this.isPointIntersectingTextbox(x, y)) {
+  getPointDistanceUnsq(point: Point): number {
+    if (this.isPointIntersectingTextbox(point)) {
       return 0;
     }
 
+
+    // TODO: WHAT
     const dx = this.target.x - this.source.x;
     const dy = this.target.y - this.source.y;
     const l2 = dx * dx + dy * dy;
 
     if (l2 === 0) {
-      return distanceUnsq(x, y, this.source.x, this.source.y);
+      return distanceUnsq(point, {x: this.source.x, y: this.source.y});
     }
 
-    let t = ((x - this.source.x) * dx + (y - this.source.y) * dy) / l2;
+    let t = ((point.x - this.source.x) * dx + (point.y - this.source.y) * dy) / l2;
     t = Math.max(0, Math.min(1, t));
 
-    return distanceUnsq(x, y, this.source.x + t * dx, this.source.y + t * dy);
+    return distanceUnsq(point, {x: this.source.x + t * dx, y: this.source.y + t * dy});
   }
 
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
-    return x0 <= this.boundingBox.minX && y0 <= this.boundingBox.minY
-      && x1 >= this.boundingBox.maxX && y1 >= this.boundingBox.maxY;
+  isBBoxEnclosing(bbox: BoundingBox): boolean {
+    return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
   draw(transform: any): void {
@@ -164,7 +165,7 @@ export class LineEdge extends PlacedEdge {
    * @param transform current graph transform
    */
   drawLayer2(transform: any) {
-    if (this.textbox && transform.k > noTextThreshold) {
+    if (this.textbox && transform.k > NO_TEXT_THRESHOLD) {
       drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }
   }

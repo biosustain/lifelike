@@ -4,6 +4,7 @@ import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { BoundingBox, Point } from '../../../utils/canvas/shared';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 
@@ -26,23 +27,36 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
 
   click(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     const entity = this.graphView.getEntityAtMouse();
-    if (entity == null) {
-      this.graphView.selection.replace([]);
-    } else if (isCtrlOrMetaPressed(event.event) || isShiftPressed(event.event)) {
-      this.amendSelection(entity);
-    } else {
-      this.graphView.selection.replace([entity]);
-    }
+    this.selectOrAddToSelection(entity, this.isRegionSelecting(event.event));
     this.graphView.requestRender();
+    return BehaviorResult.Continue;
+  }
+
+  selectOrAddToSelection(entity: GraphEntity, shouldAppend: boolean) {
+    if (shouldAppend) {
+      if (entity) {
+        this.amendSelection(entity);
+      }
+      // Shift clicks on empty canvas does not remove selection
+      return;
+    }
+    if (entity) {
+      this.graphView.selection.replace([entity]);
+    } else {
+      this.graphView.selection.replace([]);
+    }
+  }
+
+  doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
   dragStart(event: DragBehaviorEvent): BehaviorResult {
     if (this.isRegionSelecting(event.event)) {
-      const [x, y] = this.graphView.getLocationAtMouse();
+      const mousePosition = this.graphView.getLocationAtMouse();
       this.graphView.behaviors.delete(REGION_SELECTION_BEHAVIOR_KEY);
       this.graphView.behaviors.add(REGION_SELECTION_BEHAVIOR_KEY,
-        new ActiveRegionSelection(this.graphView, [x, y], this.isRegionSelectionAdditive(event.event)), 2);
+        new ActiveRegionSelection(this.graphView, mousePosition, this.isRegionSelectionAdditive(event.event)), 2);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
@@ -73,21 +87,21 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
 
 class ActiveRegionSelection extends AbstractCanvasBehavior {
 
-  private regionEnd: [number, number];
+  private regionEnd: Point;
 
   constructor(private readonly graphView: CanvasGraphView,
-              private readonly regionStart: [number, number],
+              private readonly regionStart: Point,
               private readonly additive: boolean) {
     super();
     this.regionEnd = regionStart;
   }
 
-  private getBoundingBox() {
-    const minX = Math.min(this.regionStart[0], this.regionEnd[0]);
-    const maxX = Math.max(this.regionStart[0], this.regionEnd[0]);
-    const minY = Math.min(this.regionStart[1], this.regionEnd[1]);
-    const maxY = Math.max(this.regionStart[1], this.regionEnd[1]);
-    return [minX, minY, maxX, maxY];
+  private getBoundingBox(): BoundingBox {
+    const minX = Math.min(this.regionStart.x, this.regionEnd.x);
+    const maxX = Math.max(this.regionStart.x, this.regionEnd.x);
+    const minY = Math.min(this.regionStart.y, this.regionEnd.y);
+    const maxY = Math.max(this.regionStart.y, this.regionEnd.y);
+    return {minX, minY, maxX, maxY};
   }
 
   drag(event: DragBehaviorEvent): BehaviorResult {
@@ -98,8 +112,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
     this.regionEnd = this.graphView.getLocationAtMouse();
-    const [minX, minY, maxX, maxY] = this.getBoundingBox();
-    const selected = this.graphView.getEntitiesWithinBBox(minX, minY, maxX, maxY);
+    const selected = this.graphView.getEntitiesWithinBBox(this.getBoundingBox());
     if (this.additive) {
       this.graphView.selection.add(selected);
     } else {
@@ -110,7 +123,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
   }
 
   draw(ctx: CanvasRenderingContext2D, transform: any) {
-    const [minX, minY, maxX, maxY] = this.getBoundingBox();
+    const {minX, minY, maxX, maxY} = this.getBoundingBox();
     const width = maxX - minX;
     const height = maxY - minY;
 

@@ -634,75 +634,54 @@ class FileHierarchyView(FilesystemBaseView):
         if params['directories_only']:
             filters.append(Files.mime_type == DirectoryTypeProvider.MIME_TYPE)
 
-        hierarchy = self.get_nondeleted_recycled_files(and_(*filters))
+        hierarchy = self.get_nondeleted_recycled_files(
+            and_(*filters),
+            sort=['path']
+        )
 
+        # Ignoring type annotation to appease mypy, since nested dicts are tricky to type
         ***ARANGO_USERNAME*** = {}  # type: ignore
-        curr_dir = ***ARANGO_USERNAME***
+        chain: List[int] = []
+        file_map = {}
         for file in hierarchy:
-            # Privileges are calculated in `get_nondeleted_recycled_files` above
             if file and file.calculated_privileges[g.current_user.id].readable:
+                file_map[file.id] = file
+
+                # Files with a depth of 1 are ***ARANGO_USERNAME*** folders
+                depth = file.path.count('/')
+
+                # Add a link to the chain
+                if depth > len(chain):
+                    chain.append(file.id)
+                # Cut off the chain up to the new depth
+                elif depth < len(chain):
+                    chain = chain[:(len(chain) - (len(chain) - depth)) - 1]
+                    chain.append(file.id)
+                # Replace the last link in the chain
+                else:
+                    if len(chain):
+                        chain[-1] = file.id
+                    else:
+                        chain.append(file.id)
+
                 curr_dir = ***ARANGO_USERNAME***
-                id_path_list = [f.id for f in file.file_path]
-                for id in id_path_list:
-                    if id not in curr_dir:
-                        curr_dir[id] = {}
-                    curr_dir = curr_dir[id]
+                for link in chain:
+                    if curr_dir.get(link, None) is None:
+                        curr_dir[link] = {}
+                    curr_dir = curr_dir[link]
 
         def generate_node_tree(id, children):
-            file = db.session.query(Files).get(id)
-            filename_path = file.filename_path
-            ordered_children = []
-
-            # Unfortunately, Python doesn't seem to have a built-in for sorting strings the same
-            # way Postgres sorts them with collation. Ideally, we would create our own sorting
-            # function that would do this. This temporary solution of querying the children,
-            # sorting them, and then ordering our data based on that order will work, but it will
-            # also be relatively slow.
-            if children:
-                ordered_children = [
-                    (child_id, children[child_id])
-                    for child_id, in db.session.query(
-                        Files.id
-                    ).filter(
-                        Files.id.in_(c_id for c_id in children)
-                    ).order_by(
-                        Files.filename
-                    )
-                ]
-
+            file = file_map[id]
             return {
                 'data': file,
-                'level': len(filename_path.split('/')) - 2,
+                'level': file.path.count('/') - 1,
                 'children': [
-                    generate_node_tree(id, grandchildren)
-                    for id, grandchildren in ordered_children
+                    generate_node_tree(child_id, children[child_id])
+                    for child_id in children
                 ]
             }
 
-        ordered_projects = [
-            ***ARANGO_USERNAME***_id
-            for ***ARANGO_USERNAME***_id, in db.session.query(
-                Projects.***ARANGO_USERNAME***_id
-            ).filter(
-                Projects.***ARANGO_USERNAME***_id.in_([project_id for project_id in ***ARANGO_USERNAME***.keys()])
-            ).order_by(
-                Projects.name
-            )
-        ]
-
-        # Unfortunately can't just sort by the filenames of ***ARANGO_USERNAME*** folders, since they all have the
-        # filename '/'. Instead, get the sorted project names, and then sort the list using that
-        # order. Also, it doesn't seem that Python has a builtin method for sorting with string
-        # collation, as is done by the Postgres order by. Otherwise, we would do that.
-        sorted_***ARANGO_USERNAME*** = [
-            (project_id, ***ARANGO_USERNAME***[project_id])
-            for project_id in ordered_projects
-        ]
-
-        results = [
-            generate_node_tree(project_id, children)
-            for project_id, children in sorted_***ARANGO_USERNAME***
-        ]
+        results = [generate_node_tree(file_id, ***ARANGO_USERNAME***[file_id]) for file_id in ***ARANGO_USERNAME***]
 
         current_app.logger.info(
             f'Generated file hierarchy!',
