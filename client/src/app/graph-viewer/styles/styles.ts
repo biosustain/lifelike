@@ -1,4 +1,6 @@
-import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+
+import { BoundingBox, Point } from '../utils/canvas/shared';
 
 /**
  * A style of node rendering, used to render different shapes of nodes.
@@ -40,6 +42,19 @@ export interface EdgeRenderStyle {
             options: PlacementOptions): PlacedEdge;
 }
 
+export interface GroupRenderStyle {
+  /**
+   * Place the group within the provided context and return an object
+   * that provides metrics and can render the object.
+   * @param d the edge
+   * @param ctx the context
+   * @param options extra options for placement
+   */
+  placeGroup(d: UniversalGraphGroup,
+             ctx: CanvasRenderingContext2D,
+             options: PlacementOptions): PlacedGroup;
+}
+
 /**
  * Extra options for placement.
  */
@@ -78,28 +93,20 @@ export abstract class PlacedObject {
   /**
    * Get the bounding box.
    */
-  abstract getBoundingBox(): {
-    minX: number,
-    minY: number,
-    maxX: number,
-    maxY: number,
-  };
+  abstract getBoundingBox(): BoundingBox;
 
   /**
    * Check to see if the given coordinates intersects with the object.
    * @param x the X coordinate to check
    * @param y the Y coordinate to check
    */
-  abstract isPointIntersecting(x: number, y: number): boolean;
+  abstract isPointIntersecting({x, y}: Point): boolean;
 
   /**
    * Check to see if the given bbox encloses the object.
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
-  abstract isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean;
+  abstract isBBoxEnclosing(bbox: BoundingBox): boolean;
 
   /**
    * Render the object on the canvas.
@@ -143,22 +150,29 @@ export abstract class PlacedObject {
   }
 }
 
+// ---------------------------------
+// Placed Entities
+// ---------------------------------
+// Placed Entities are map objects that are translated into class responsible for
+// drawing them based on selected properties. They are stored in RenderTree and need
+// to be recalculated on every change in the corresponding map entity
+
 /**
  * A placed node.
  */
 export abstract class PlacedNode extends PlacedObject {
+  // Those are responsible for controlling whether a node has particular set of handles
+  // drawn upon selection
   resizable: boolean;
   uniformlyResizable: boolean;
 
   /**
    * Get the first intersection point of a line coming from outside this object
-   * to the center of the object. This method is vital to figuring out if an
-   * object has been clicked by the mouse.
-   * @param lineOriginX the line's origin X
-   * @param lineOriginY the line's origin Y
-   * @return [x, y]
+   * to the center of the object.
+   * @param lineOrigin the line's origin point
+   * @return Point
    */
-  abstract lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[];
+  abstract lineIntersectionPoint(lineOrigin: Point): Point;
 }
 
 /**
@@ -167,14 +181,20 @@ export abstract class PlacedNode extends PlacedObject {
 export abstract class PlacedEdge extends PlacedObject {
   /**
    * Get the shortest distance (unsquared) between the given point and this object.
-   * @param x the X coordinate to check
-   * @param y the Y coordinate to check
+   * @param point - point to which distance we calculate
    */
-  abstract getPointDistanceUnsq(x: number, y: number): number;
+  abstract getPointDistanceUnsq(point: Point): number;
 
   /**
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */
   abstract drawLayer2(transform: any): void;
+}
+
+/**
+ * Placed group.
+ */
+export abstract class PlacedGroup extends PlacedObject {
+
 }

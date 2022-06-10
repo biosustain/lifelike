@@ -111,11 +111,21 @@
                                         (actionCreated)="graphCanvas.execute($event)">
                         </app-info-panel>
                     </div>
+                    <button *ngIf="canCreateGroupFromSelection()"
+                            class="btn btn-light center mt-2 ml-2"
+                            (click)="createGroup()">
+                        Create Group
+                    </button>
+                    <button *ngIf="canExtendsGroupFromSelection()"
+                            class="btn btn-light center mt-2 ml-2"
+                            (click)="addToGroup()">
+                        Add To Group
+                    </button>
                 </ng-container>
 
                 <ng-template #graphInfo>
                     <ng-container *ngIf="graphCanvas">
-                        <div class="d-flex flex-column h-100">
+                        <div class="d-flex flex-column h-80">
                             <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
                                 class="nav-tabs nav-sidebar-tabs">
                                 <li ngbNavItem="graph">
@@ -135,6 +145,14 @@
                                                     {{ graphCanvas.edges.length | number }}
                                                 </div>
                                             </div>
+
+                                            <div class="row align-items-center">
+                                                <div class="col-sm-6">Group Count:</div>
+                                                <div class="col-sm-6 text-right">
+                                                    {{ graphCanvas.groups.length | number }}
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </ng-template>
                                 </li>

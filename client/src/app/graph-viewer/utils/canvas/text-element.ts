@@ -1,4 +1,4 @@
-import { nullCoalesce } from 'app/shared/utils/types';
+
 import { REGEX } from 'app/shared/regex';
 
 interface TextboxOptions {
@@ -187,7 +187,7 @@ export class TextElement {
         lines: [],
         verticalOverflow: true,
         horizontalOverflow: true,
-        actualWidth: nullCoalesce(this.width, this.maxWidth, metrics.width),
+        actualWidth: (this.width ?? this.maxWidth) ?? metrics.width,
       };
 
     } else if (effectiveWidth != null) {

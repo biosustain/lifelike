@@ -2,11 +2,11 @@ import { Component, Input } from '@angular/core';
 
 import { isNil } from 'lodash-es';
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
 import { PUBMED_URL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { getGraphQueryParams } from 'app/search/utils/search';
+import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { getLink } from '../utils/records';
 import { GraphSearchParameters } from '../graph-search';
