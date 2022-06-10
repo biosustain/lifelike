@@ -66,7 +66,7 @@ def modify_files_with_views(modification_callback):
     for chunk in window_chunk(files, 25):
         for id_, content in chunk:
             data = json.loads(content)
-            print("`df`sdf")
+
             if data.get('_views'):
                 modified = None
                 for view in data['_views'].values():
