@@ -94,7 +94,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         # If we trash the index we also need to re-index all the documents that used it.
         # Currently we take the safe route and simply re-index ALL documents, regardless of
         # which index was actually re-created.
-        self.reindex_all_documents()
+        # self.reindex_all_documents()
 
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
         """Creates a pipeline with the given pipeline id and definition file. If the pipeline
