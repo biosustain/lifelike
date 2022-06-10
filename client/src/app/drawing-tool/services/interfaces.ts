@@ -25,6 +25,11 @@ export interface UniversalNodeStyle {
   showDetail?: boolean;
 }
 
+export interface UniversalGraphGroup extends UniversalGraphNode {
+  members: UniversalGraphNode[];
+  margin: number;
+}
+
 export interface UniversalGraphNode {
   data: {
     x: number;
@@ -44,6 +49,7 @@ export interface UniversalGraphNode {
   };
   image_id?: string;
   label: string;
+  // TODO: We do not use this anywhere, is this needed?
   sub_labels: string[];
   style?: UniversalNodeStyle;
 }
@@ -69,16 +75,21 @@ export interface UniversalGraphEdge {
   style?: UniversalEdgeStyle;
 }
 
-export interface UniversalGraph {
+
+export interface KnowledgeMapGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
+  groups: UniversalGraphGroup[];
 }
 
-export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge;
+export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge | UniversalGraphGroup;
+
+export declare type UniversalGraphNodelike = UniversalGraphNode | UniversalGraphGroup;
 
 export enum GraphEntityType {
   Node = 'node',
   Edge = 'edge',
+  Group = 'group'
 }
 
 export interface GraphEntity {
@@ -126,7 +137,7 @@ export interface KnowledgeMap {
   label: string;
   description: string;
   /** JSON representation of graph */
-  graph: UniversalGraph;
+  graph: KnowledgeMapGraph;
   /** ISO-8601 timestamp of when project was last updated */
   modified_date?: string;
   /** Whether or not project is public to userbase */
@@ -138,9 +149,6 @@ export interface KnowledgeMap {
   /** Name of the project this map is found in */
   project_name?: string;
 }
-
-export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
-export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';
 
 export const DETAIL_NODE_LABELS = new Set(['note', 'link', 'image']);
 

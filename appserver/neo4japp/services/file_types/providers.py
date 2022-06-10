@@ -19,6 +19,7 @@ from graphviz import escape
 from flask import current_app
 
 from pdfminer import high_level
+from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
 from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
@@ -28,6 +29,7 @@ from PyPDF4 import PdfFileWriter, PdfFileReader
 from PIL import Image
 from lxml import etree
 
+from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -274,8 +276,23 @@ class PDFTypeProvider(BaseFileTypeProvider):
         return True
 
     def validate_content(self, buffer: BufferedIOBase):
-        # TODO: Actually validate PDF content
-        pass
+        data = buffer.read()
+        buffer.seek(0)
+
+        # Check that the pdf is considered openable
+        fp = io.BytesIO(data)
+        try:
+            high_level.extract_text(fp, page_numbers=[0], caching=False)
+        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='This pdf is locked and cannot be loaded into Lifelike.')
+        except Exception:
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf. Please check if the pdf is ' +
+                        'unlocked and openable.'
+            )
 
     def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
@@ -289,7 +306,14 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
         # Attempt 2: search through the first two pages of text (no metadata)
         fp = io.BytesIO(data)
-        text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        try:
+            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        except Exception:
+            raise FileUploadError(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf. Please check if the pdf is ' +
+                        'unlocked and openable.'
+            )
         doi = _search_doi_in(bytes(text, encoding='utf8'))
 
         return doi
@@ -430,6 +454,67 @@ def get_icons_data():
                                                        + b64encode(file.read()) \
                                                            .decode(BYTE_ENCODING)
         return ICON_DATA
+
+
+def create_group_node(group):
+    """
+    Creates the node for NodeGroup - background, border, label, etc.
+    :params:
+    :param group: dict storing information about the group.
+    :return: ready to display param dict and dict for corresponding group label, if label is present
+    """
+    style = group.get('style', {})
+    print(group['data'])
+    display_name = group['display_name'] or ""
+
+    has_border = style.get('lineType') and style.get('lineType') != 'none'
+
+    params = {
+        'name': group['hash'],
+        # Graphviz offer no text break utility - it has to be done outside of it
+        'label': '',
+        # We have to inverse the y-axis, as Graphviz coordinate system origin is at the bottom
+        'pos': (
+            f"{group['data']['x'] / SCALING_FACTOR},"
+            f"{-group['data']['y'] / SCALING_FACTOR}!"
+        ),
+        # This is always set for groups
+        'width': f"{group['data']['width'] / SCALING_FACTOR}",
+        'height': f"{group['data']['height'] / SCALING_FACTOR}",
+        'shape': 'box',
+        'style': 'filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
+        'color': style.get('strokeColor'),
+        'fontname': 'sans-serif',
+        'margin': "0.2,0.0",
+        'fillcolor': style.get('bgColor') or 'white',
+        # Setting penwidth to 0 removes the border
+        'penwidth': f"{style.get('lineWidthScale', 1.0)}" if has_border else '0.0'
+    }
+
+    if not display_name:
+        return params, None
+
+    border_width = style.get('lineWidthScale', 1.0) if has_border else 0.0
+    # Try to match the front-end max width by assuming that average font width is equal to 50%%
+    # of the height - and adjusting the text to be roughly of the image width
+    label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    label = escape('\n'.join(textwrap.TextWrapper(
+        width=int(group['data']['width'] / (label_font_size * 0.5)),
+        replace_whitespace=False).wrap(display_name)))
+    label_offset = -group['data']['height'] / 2.0 - LABEL_OFFSET - \
+        (label_font_size / 2.0 * (1 + label.count('\n'))) - border_width
+    label_params = {
+        'name': group['hash'] + '_label',
+        'label': label,
+        'pos': (
+            f"{group['data']['x'] / SCALING_FACTOR},"
+            f"{(-group['data']['y'] - label_offset) / SCALING_FACTOR}!"
+        ),
+        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+        'penwidth': '0.0',
+        'fontcolor': style.get('fillColor') or 'black',
+    }
+    return params, label_params
 
 
 def create_default_node(node):
@@ -936,7 +1021,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = io.StringIO()
         string_list = []
 
-        for node in content_json.get('nodes', []):
+        nodes = content_json.get('nodes', [])
+        for group in content_json.get('groups', []):
+            nodes.push(group)
+            nodes += group.get('members', [])
+
+        for node in nodes:
             node_data = node.get('data', {})
             display_name = node.get('display_name', '')
             detail = node_data.get('detail', '') if node_data else ''
@@ -1004,6 +1094,14 @@ class MapTypeProvider(BaseFileTypeProvider):
         images = []
 
         nodes = json_graph['nodes']
+
+        for group in json_graph.get('groups', []):
+            nodes += group.get('members', [])
+            group_params, label_params = create_group_node(group)
+            graph.node(**group_params)
+            if label_params:
+                graph.node(**label_params)
+
         # Sort the images to the front of the list to ensure that they do not cover other nodes
         nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
 

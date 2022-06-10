@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { MapComponent } from 'app/drawing-tool/components/map.component';
-import { UniversalGraph } from 'app/drawing-tool/services/interfaces';
+import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
@@ -90,7 +90,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
           const zip = new JSZip();
-          zip.file('graph.json', JSON.stringify({edges: [], nodes: []}));
+          zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}));
           return zip.generateAsync({ type: 'blob' }).then((content) => {
             return this.objectCreationService.openCreateDialog(object, {
               title: 'New Map',
@@ -137,7 +137,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
       export: () => {
         return this.filesystemService.getMapContent(object.hashId).pipe(
           mapBlobToBuffer(),
-          mapBufferToJson<UniversalGraph>(),
+          mapBufferToJson<KnowledgeMapGraph>(),
           map(graph => {
             const blob = new Blob([
               graph.nodes.filter(node => node.label === type.toLowerCase()).map(node => node.display_name).join('\r\n')

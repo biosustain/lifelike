@@ -24,7 +24,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { mapBufferToJson, readBlobAsBuffer, mapJsonToGraph } from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -35,7 +35,7 @@ import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resourc
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
 
-import { GraphEntity, UniversalGraph } from '../services/interfaces';
+import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 
 @Component({
@@ -48,6 +48,7 @@ import { MapImageProviderService } from '../services/map-image-provider.service'
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
+  // TODO: Are we listening to this anywhere? Or is this some leftover code?
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @ViewChild('canvas', {static: true}) canvasChild;
@@ -127,6 +128,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
         edgeRenderStyle: style,
+        groupRenderStyle: style,
       });
 
       this.registerGraphBehaviors();
@@ -185,12 +187,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
         this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
-          mapBufferToJson<UniversalGraph>(),
+          mapBufferToJson<KnowledgeMapGraph>(),
+          mapJsonToGraph(),
           this.errorHandler.create({ label: 'Parse map data' }),
         ).subscribe(
           graph => {
             this.graphCanvas.setGraph(graph);
-            for (const node of this.graphCanvas.getGraph().nodes) {
+            for (const node of graph.nodes) {
               if (node.image_id !== undefined) {
                 // put image nodes back into renderTree, doesn't seem to make a difference though
                 this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
