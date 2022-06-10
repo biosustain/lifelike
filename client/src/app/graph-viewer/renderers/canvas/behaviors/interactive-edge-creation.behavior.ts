@@ -3,12 +3,13 @@ import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { handleBlue } from 'app/shared/constants';
+import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { Point } from '../../../utils/canvas/shared';
 
 
 const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
@@ -40,7 +41,7 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   }
 }
 
-class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
+class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
   protected topOffset = 0;
   protected leftOffset = 0;
   protected size = 20;
@@ -50,7 +51,7 @@ class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
     super(graphView, target);
   }
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
     if (subject != null && subject.type === GraphEntityType.Node) {
       this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
       this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
@@ -71,7 +72,7 @@ class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
     ctx.arc(xHandle, yHandle, nodeRadiusHandle, 0, 2 * Math.PI);
     ctx.strokeStyle = '#2B7CE9';
     ctx.stroke();
-    ctx.fillStyle = handleBlue;
+    ctx.fillStyle = HANDLE_BLUE_COLOR;
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
@@ -187,7 +188,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
       ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
       ctx.strokeStyle = '#2B7CE9';
       ctx.stroke();
-      ctx.fillStyle = handleBlue;
+      ctx.fillStyle = HANDLE_BLUE_COLOR;
       ctx.fill();
     }
   }

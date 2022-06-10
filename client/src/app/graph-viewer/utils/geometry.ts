@@ -1,7 +1,9 @@
 import intersects from 'intersects';
 
-// TODO: Clean up / find an alternative
-export function pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
+import { BoundingBox, Point } from './canvas/shared';
+
+// TODO: Refactor this during second round of refactorization
+export function pointOnRect({x, y}: Point, {minX, minY, maxX, maxY}: BoundingBox, validate: boolean): Point {
   if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
     return {x, y};
   }
@@ -57,14 +59,14 @@ export function getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
   return Math.abs(slope - expectedSlope);
 }
 
-export function distanceUnsq(x0: number, y0: number, x1: number, y1: number): number {
-  const dx = x1 - x0;
-  const dy = y1 - y0;
+export function distanceUnsq(point1: Point, point2: Point): number {
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
   return dx * dx + dy * dy;
 }
 
-export function distanceSq(x0: number, y0: number, x1: number, y1: number): number {
-  return Math.sqrt(distanceUnsq(x0, y0, x1, y1));
+export function distanceSq(point1: Point, point2: Point): number {
+  return Math.hypot(point2.x - point1.x, point2.y - point1.y);
 }
 
 /**

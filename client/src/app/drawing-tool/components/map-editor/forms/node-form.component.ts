@@ -1,89 +1,42 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, HostListener, } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
-import { cloneDeep, isNil, startCase } from 'lodash-es';
+import { cloneDeep, startCase } from 'lodash-es';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
-import { nullIfEmpty, RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { RecursivePartial } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
+import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { IMAGE_LABEL } from 'app/shared/constants';
 
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from '../../services/interfaces';
-import { LINE_TYPES } from '../../services/line-types';
-import { PALETTE_COLORS, BG_PALETTE_COLORS } from '../../services/palette';
-import { InfoPanel } from '../../models/info-panel';
+import { EntityForm } from './entity-form';
 
 @Component({
   selector: 'app-node-form',
-  styleUrls: ['./node-form.component.scss'],
+  styleUrls: ['./entity-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent implements AfterViewInit {
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
-  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+export class NodeFormComponent extends EntityForm {
   @ViewChild('option') selectedOption: ElementRef;
 
-  // TODO: Remove that if we decide to add image to annotationTypes
   nodeTypeChoices = annotationTypes;
-  lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
-    ...LINE_TYPES.entries(),
-  ];
-  paletteChoices = [...PALETTE_COLORS];
-  bgPaletteChoices = [...BG_PALETTE_COLORS];
-  private ASSUMED_PANEL_HEIGHT = 450;
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
 
-  @Input() infoPanel: InfoPanel;
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>,
     updatedData: RecursivePartial<UniversalGraphNode>,
   }>();
-  @Output() delete = new EventEmitter<object>();
-  @Output() sourceOpen = new EventEmitter<string>();
 
   previousLabel: string;
 
-  overflow = false;
-
   fixedType = false;
 
-  constructor(
-    protected readonly workspaceManager: WorkspaceManager,
-    protected readonly internalSearch: InternalSearchService
-  ) {
-  }
-
-  changeOverflow(newValue) {
-    if (this.overflow !== newValue) {
-      // stops overflowing
-      if (!newValue && this.infoPanel.activeTab === 'search') {
-        this.infoPanel.activeTab = 'properties';
-      }
-      this.overflow = newValue;
-    }
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    const {
-      scrollWrapper: {
-        nativeElement: {
-          offsetHeight
-        }
-      },
-      ASSUMED_PANEL_HEIGHT
-    } = this;
-    this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => this.onResize(), 0);
+  constructor(protected readonly workspaceManager: WorkspaceManager,
+              protected readonly internalSearch: InternalSearchService) {
+    super(workspaceManager);
   }
 
   get nodeSubtypeChoices() {
@@ -95,19 +48,18 @@ export class NodeFormComponent implements AfterViewInit {
     }
   }
 
+  get hyperlinks() {
+    return this.node.data?.hyperlinks ?? [];
+  }
+
   get node() {
     return this.updatedNode;
   }
 
-  get hyperlinks() {
-    return isNil(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
-  }
-
-  // tslint:disable-next-line: adjacent-overload-signatures
   @Input()
   set node(node) {
     this.previousLabel = node.label;
-    this.fixedType = node.label === 'image';
+    this.fixedType = node.label === IMAGE_LABEL;
 
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
@@ -119,6 +71,7 @@ export class NodeFormComponent implements AfterViewInit {
     this.updatedNode.style = this.updatedNode.style || {};
   }
 
+  // TODO: Inspect and possibly clean this mess.
   handleTypeChange() {
     const fromDetailNode = DETAIL_NODE_LABELS.has(this.previousLabel);
     const toDetailNode = DETAIL_NODE_LABELS.has(this.node.label);
@@ -126,23 +79,23 @@ export class NodeFormComponent implements AfterViewInit {
     // Swap node display name and detail when switching to a Note or Link (LL-1946)
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
-      if (nullIfEmpty(this.node.data.detail) === null
-        && this.node.display_name != null
+      if (!this.node.data.detail
+        // This should not be able to happen, right?
+        // && this.node.display_name != null
         && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
         this.node.style.showDetail = true;
         this.node.data.detail = this.node.display_name;
         this.node.display_name = startCase(this.node.label);
-      } else if (nullIfEmpty(this.node.data.detail) !== null) {
+      } else if (this.node.data.detail) {
         // If we aren't swapping, but we already have detail, turn on detail mode
         // to keep the behavior consistent
         this.node.style.showDetail = true;
       }
     } else if (fromDetailNode && !toDetailNode) {
       // If we are moving away from a detail node, restore the display name (sometimes)
-      if ((nullIfEmpty(this.node.display_name) === null
+      if ((!this.node.display_name
           || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
-        && nullIfEmpty(this.node.data.detail) !== null
-        && this.node.data.detail.length <= 50) {
+        && this.node.data.detail?.length <= 50) {
         this.node.display_name = this.node.data.detail;
         this.node.data.detail = '';
       }
@@ -218,57 +171,16 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   /**
-   * Delete the current node.
-   */
-  doDelete(): void {
-    this.delete.next();
-  }
-
-  /**
-   * Allow user to navigate to a link in a new tab
-   */
-  goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
-  }
-
-  /**
    * Create a blank hyperlink template to add to model
    */
   addHyperlink() {
-    if (isNil(this.node.data.hyperlinks)) {
-      this.node.data.hyperlinks = [];
-    }
-
+    this.node.data.hyperlinks = this.node.data?.hyperlinks ?? [];
     const [domain, url] = ['', ''];
     this.node.data.hyperlinks.push({url, domain});
   }
 
-  /**
-   * Remove hyperlink from specified index
-   * @param i - index of hyperlink to remove
-   */
-  removeHyperlink(i) {
-    this.node.data.hyperlinks.splice(i, 1);
-    this.doSave();
-  }
-
-  /**
-   * Bring user to original source of node information
-   */
-  goToSource(url): void {
-    this.sourceOpen.next(url);
-  }
-
   mayShowDetailText() {
     return this.node.label === 'note' || this.node.label === 'link';
-  }
-
-  focus() {
-    if (this.displayNameRef != null) {
-      const element = this.displayNameRef.nativeElement;
-      element.focus();
-      element.select();
-    }
   }
 
   searchMapNodeInVisualizer(node) {
