@@ -6,8 +6,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import { AnnotationEditDialogComponent } from './annotation-edit-dialog.component';
-import { Rect } from '../annotation-type';
+import { AnnotationEditDialogComponent } from '../annotation-edit-dialog.component';
+import { Rect } from '../../annotation-type';
 
 @Component({
   selector: 'app-annotation-toolbar',

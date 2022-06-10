@@ -13,13 +13,15 @@ import {
   ComponentFactoryResolver,
   ApplicationRef,
   Injector,
+  ComponentRef,
+  ViewContainerRef,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
+import { ComponentPortal, DomPortalOutlet, PortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription, ReplaySubject } from 'rxjs';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
@@ -38,9 +40,85 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
 import { PDFSource, PDFProgressData, PDFPageRenderEvent, PDFPageView, TextLayerBuilder, ScrollDestination } from './pdf-viewer/interfaces';
-import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
+import { AnnotationToolbarComponent } from './components/annotation-layer/annotation-toolbar.component';
+import { AnnotationLayerComponent } from './components/annotation-layer/annotation-layer.component';
 
 declare var jQuery: any;
+
+class AnnotationToolbar {
+  constructor(
+    private pageRef,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private annotationCreated: Subject<any>
+  ) {
+  }
+
+  annotationToolbarRef: ComponentRef<AnnotationToolbarComponent>;
+  viewContainerRef: ViewContainerRef;
+
+  get instance() {
+    return this.annotationToolbarRef.instance;
+  }
+
+  get exist() {
+    return Boolean(this.annotationToolbarRef);
+  }
+
+  private create(inViewContainerRef: ViewContainerRef) {
+    this.annotationToolbarRef = inViewContainerRef.createComponent(
+      this.componentFactoryResolver.resolveComponentFactory(AnnotationToolbarComponent)
+    );
+    this.instance.annotationCreated.subscribe(this.annotationCreated);
+  }
+
+  private move(toViewContainerRef: ViewContainerRef) {
+    const {hostView} = this.annotationToolbarRef;
+    const index = this.viewContainerRef.indexOf(hostView);
+    this.viewContainerRef.detach(index);
+    toViewContainerRef.insert(hostView);
+  }
+
+  showIn(viewContainerRef: ViewContainerRef) {
+    if (this.exist) {
+      this.move(viewContainerRef);
+    } else {
+      this.create(viewContainerRef);
+    }
+    this.viewContainerRef = viewContainerRef;
+  }
+}
+
+class AnnotationPage {
+  annotationLayerRef: ComponentRef<AnnotationLayerComponent>;
+  contentPortal: ComponentPortal<AnnotationLayerComponent>;
+  portalOutlet: DomPortalOutlet;
+  constructor({pageNumber, textLayerDiv}: TextLayerBuilder, portalOutlet: DomPortalOutlet, annotations) {
+    this.portalOutlet = portalOutlet;
+    this.contentPortal = new ComponentPortal(AnnotationLayerComponent);
+    this.annotationLayerRef = portalOutlet.attach(this.contentPortal);
+    this.annotationLayerRef.instance.annotations = annotations;
+  }
+
+  get instance() {
+    return this.annotationLayerRef.instance;
+  }
+
+  get annotationToolbarViewContainerRef() {
+    return this.instance.viewContainerRef;
+  }
+
+  addAnnotation(annotation) {
+
+  }
+
+  onDestroy() {
+    this.portalOutlet?.detach();
+  }
+
+  showToolbar(annotationToolbar) {
+      annotationToolbar.showIn(this.annotationToolbarViewContainerRef);
+  }
+}
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -73,11 +151,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   set addedAnnotations(annotations: Annotation[]) {
     if (annotations) {
       annotations.forEach(annotation => {
-        this.addAnnotation(annotation, annotation.pageNumber);
+        this.addAnnotation(annotation);
         this.annotations.push(annotation);
         this.updateAnnotationVisibility(annotation);
       });
     }
+  }
+
+
+  addAnnotation(annotation) {
+    return this.annotationPages.get(annotation.pageNumber).addAnnotation(annotation);
   }
 
   @Input()
@@ -186,6 +269,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   private firstAnnotationRange: Range | undefined;
   private requestAnimationFrameId: number | undefined;
 
+  annotationToolbar = new AnnotationToolbar(this.pageRef, this.cfr, this.annotationCreated);
+
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
@@ -274,7 +359,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.searchChangedSub.unsubscribe();
     }
 
-    this.textLayerPortalOutlets.forEach(p => p.dispose());
+    this.annotationPages.forEach(p => p.onDestroy());
 
     delete this.pdfViewerRef[this.pdfViewerId];
   }
@@ -305,289 +390,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           element.style.display = 'none';
         }
       }
-    }
-  }
-
-  addAnnotation(annotation: Annotation, pageNum: number) {
-    // each annotation should have allText field set.
-    const allText = (annotation.keywords || []).join(' ');
-    if (!annotation.meta.allText || annotation.meta.allText === '') {
-      annotation.meta.allText = allText;
-    }
-
-    // Do NOT attempt to draw an annotation if the corresponding page has yet to be rendered! (It will get drawn on-demand)
-    if (!isNil(this.pageRef[pageNum])) {
-      const pdfPageView = this.pageRef[pageNum];
-      const viewPort: PageViewport = pdfPageView.viewport;
-      const elementRefs = [];
-      this.annotationHighlightElementMap.set(annotation, elementRefs);
-
-      for (const rect of annotation.rects) {
-        const bounds = viewPort.convertToViewportRectangle(rect);
-        const left = Math.min(bounds[0], bounds[2]);
-        let top = Math.min(bounds[1], bounds[3]);
-        const width = Math.abs(bounds[0] - bounds[2]);
-        const height = Math.abs(bounds[1] - bounds[3]);
-        const overlayContainer = pdfPageView.div;
-        const overlayDiv = document.createElement('div');
-        const location: Location = {
-          pageNumber: annotation.pageNumber,
-          rect,
-        };
-        overlayDiv.setAttribute('draggable', 'true');
-        overlayDiv.addEventListener('dragstart', event => {
-          this.annotationDragStart.emit({
-            event,
-            meta: annotation.meta,
-            location,
-          });
-          event.stopPropagation();
-        });
-        overlayDiv.dataset.annotationId = annotation.meta.id;
-        overlayDiv.setAttribute('class', 'system-annotation'
-          + (this.currentHighlightAnnotationId === annotation.meta.id
-            ? ' annotation-highlight' : ''));
-        overlayDiv.setAttribute('location', JSON.stringify(location));
-        overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
-        top = this.normalizeTopCoordinate(top, annotation);
-        const opacity = this.normalizeOpacityLevel(annotation);
-        const bgcolor = this.normalizeBackgroundColor(annotation);
-        overlayDiv.setAttribute('style', `opacity:${escape(String(opacity))}; background-color: ${escape(bgcolor)};position:absolute;` +
-          'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px');
-        overlayContainer.appendChild(overlayDiv);
-        (annotation as any).ref = overlayDiv;
-        elementRefs.push(overlayDiv);
-        jQuery(overlayDiv).css('cursor', 'move');
-        (jQuery(overlayDiv) as any).qtip(
-          {
-            content: this.prepareTooltipContent(annotation),
-            position: {
-              my: 'top center',
-              at: 'bottom center',
-              viewport: false,
-              target: [left + width / 2, top + height],
-              container: jQuery(overlayContainer),
-            },
-            style: {
-              classes: 'qtip-bootstrap',
-              tip: {
-                width: 16,
-                height: 8,
-              },
-            },
-            show: {
-              delay: 10,
-              event: 'click',
-              solo: true,
-            },
-            hide: {
-              fixed: true,
-              delay: 150,
-              event: 'unfocus',
-            },
-          },
-        );
-      }
-    }
-
-    if (this.pendingHighlights[pageNum]) {
-      const rect = this.pendingHighlights[pageNum];
-      delete this.pendingHighlights[pageNum];
-      this.addHighlightItem(pageNum, rect);
-    }
-
-    this.updateAnnotationVisibility(annotation);
-  }
-
-  normalizeTopCoordinate(top: number, an: Annotation): number {
-    if (an && an.meta && an.meta.isCustom) {
-      return top + 2;
-    }
-    if (an && an.meta && !an.meta.isCustom) {
-      return top - 2;
-    }
-    return top;
-  }
-
-  normalizeOpacityLevel(an: Annotation) {
-    const t = an.meta.type.toLowerCase();
-    return this.opacity;
-  }
-
-  normalizeBackgroundColor(an: Annotation): string {
-    return ENTITY_TYPE_MAP[an.meta.type].color;
-  }
-
-  /**
-   * TODO: Make a reuseable function to create this tooltip to keep things consistent.
-   * Currently also used in AnnotationTagHandler.prepareTooltipContent()
-   *  - collapsing does not work there, maybe has to do with using Renderer2Factory and stopPropagation
-   * @param an
-   * @returns
-   */
-  prepareTooltipContent(an: Annotation): string {
-    let base = [`Type: ${an.meta.type}`];
-    let idLink: DatabaseLink = null;
-    const annoId = an.meta.id.indexOf(':') !== -1 ? an.meta.id.split(':')[1] : an.meta.id;
-
-    if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
-      const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === an.meta.idType)[0];
-    }
-
-    // null/undefined because a data source did not match
-    // e.g we use "Custom" for phenotype
-    if (idLink !== null && idLink !== undefined) {
-      base.push(
-        annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` :
-          'Id: None');
-    } else {
-      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
-    }
-    base.push(an.meta.idType && an.meta.idType !== '' ? `Data Source: ${escape(an.meta.idType)}` : 'Data Source: None');
-
-    if (an.meta.isCustom) {
-      base.push(`User generated annotation`);
-    }
-
-    let htmlLinks = '<div>';
-
-    // source links if any
-    if (an.meta.idHyperlinks && an.meta.idHyperlinks.length > 0) {
-      htmlLinks += `
-        <a>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
-        <div>
-      `;
-
-      for (const link of an.meta.idHyperlinks) {
-        const {label, url} = JSON.parse(link);
-        htmlLinks += `<a target="_blank" href="${escape(toValidLink(url))}">${escape(label)}</a><br>`;
-      }
-
-      htmlLinks += `</div></div>`;
-    }
-
-    // search links
-    const searchLinkCollapseTargetId = uniqueId('pdf-tooltip-collapse-target');
-    htmlLinks += `
-      <div>
-        <div
-          class="tooltip-collapse-control collapsed"
-          role="button"
-          data-toggle="collapse"
-          data-target="#${searchLinkCollapseTargetId}"
-          aria-expanded="false"
-          aria-controls="${searchLinkCollapseTargetId}"
-        >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
-        <div class="collapse" id="${searchLinkCollapseTargetId}">
-    `;
-    // links should be sorted in the order that they appear in SEARCH_LINKS
-    for (const {domain, url} of SEARCH_LINKS) {
-      const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
-      htmlLinks += `<a target="_blank" href="${escape(link)}">${escape(domain.replace('_', ' '))}</a><br>`;
-    }
-    htmlLinks += `</div></div>`;
-
-    // search internal links
-    const searchInternalLinkCollapseTargetId = uniqueId('pdf-tooltip-internal-collapse-target');
-    htmlLinks += `
-      <div>
-        <div
-          class="tooltip-collapse-control collapsed"
-          role="button"
-          data-toggle="collapse"
-          data-target="#${searchInternalLinkCollapseTargetId}"
-          aria-expanded="false"
-          aria-controls="${searchInternalLinkCollapseTargetId}"
-        >Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
-        <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
-    `;
-    const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
-    htmlLinks += `<a target="_blank" href="${visLink}">Knowledge Graph</a><br>`;
-    const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
-    htmlLinks += `<a target="_blank" href="${contLink}">File Content</a><br>`;
-    const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
-    htmlLinks += `<a target="_blank" href="${mapLink}">Map Content</a><br>`;
-    htmlLinks += `</div></div>`;
-
-    base.push(htmlLinks);
-    base = [base.join('<br>')];
-
-    if (an.meta.isCustom) {
-      base.push(`
-        <div class="mt-1">
-          <button
-            type="button"
-            class="btn btn-primary btn-block"
-            onclick="
-                window.pdfViewerRef['${this.pdfViewerId}']
-                  .removeCustomAnnotation(${escape(
-        JSON.stringify(an.uuid),
-      )})
-             ">
-            <i class="fas fa-fw fa-trash"></i>
-            <span>Delete Annotation</span>
-          </button>
-        </div>
-      `);
-    }
-    if (!an.meta.isCustom && !an.meta.isExcluded) {
-      const annExclusion = {
-        id: an.meta.id,
-        idHyperlinks: an.meta.idHyperlinks,
-        text: an.textInDocument,
-        type: an.meta.type,
-        rects: an.rects,
-        pageNumber: an.pageNumber,
-      };
-      base.push(`
-        <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(
-        JSON.stringify(annExclusion))})">
-            <i class="fas fa-fw fa-minus-circle"></i>
-            <span>Mark for Exclusion</span>
-          </button>
-        </div>
-      `);
-    }
-    base.push(`
-        <div class="mt-1">
-          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(
-      JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
-            <i class="fas fa-fw fa-search"></i>
-            <span>Find Occurrences</span>
-          </button>
-        </div>
-      `);
-    if (an.meta.isExcluded) {
-      const annExclusion = {
-        text: an.textInDocument,
-        type: an.meta.type,
-      };
-      base.push(`
-        <div class="mt-2">
-          <div style="display: flex; flex-direction: column">
-            <span style="line-height: 16px">Manually excluded</span>
-            <span style="line-height: 16px"><i>reason: </i>${escape(an.meta.exclusionReason)}</span>
-            ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${escape(an.meta.exclusionComment)}</span>` : ''}
-          </div>
-          <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(
-        JSON.stringify(annExclusion))})">
-              <i class="fas fa-fw fa-undo"></i>
-              <span>Unmark Exclusion</span>
-            </button>
-          </div>
-        </div>`);
-    }
-    return base.join('');
-  }
-
-  processAnnotations(pageNum: number, pdfPageView: any) {
-    this.pageRef[pageNum] = pdfPageView;
-    const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
-    for (const an of filteredAnnotations) {
-      this.addAnnotation(an, pageNum);
     }
   }
 
@@ -640,8 +442,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   ranges;
 
-  annotationToolbarPortal = new ComponentPortal(AnnotationToolbarComponent);
-  annotationToolbarRef;
+  annotationLayerPortal = new ComponentPortal(AnnotationLayerComponent);
+
   /**
    * Flag used to distinguish deselection and selection end
    * based on selectionchange and mouseup events
@@ -661,18 +463,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.selection = null;
     this.firstAnnotationRange = null;
     // taking parent as to not start with Text node which does not have 'closest' method
-    let pageNumber = this.getClosestPageNumber(event.target as Node);
+    let page = this.getClosestAnnotationPage(event.target as Node);
     // not selecting outside pdf viewer
-    if (pageNumber > -1) {
+    if (page) {
       this.selecting = true;
-      const textLayerPortalOutlet = this.textLayerPortalOutlets.get(pageNumber);
-      this.usedTextLayerPortalOutlet = textLayerPortalOutlet;
-      this.annotationToolbarRef = textLayerPortalOutlet.attach(this.annotationToolbarPortal);
-      this.annotationToolbarRef.instance.pageRef = this.pageRef;
-      this.annotationToolbarRef.instance.containerRef = this.containerRef;
-      this.annotationToolbarRef.instance.annotationCreated.subscribe(val => {
-        this.annotationCreated.next(val);
-      });
+      page.showToolbar(this.annotationToolbar);
     }
   }
 
@@ -766,7 +561,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.deselect();
     }
     // allow interaction with toolbar after selection to prevent flickering
-    this.annotationToolbarRef.instance.active = true;
+    this.annotationToolbar.instance.active = true;
   }
 
   /**
@@ -904,6 +699,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return pageView ? parseInt(pageView[0]) : -1;
   }
 
+  getClosestAnnotationPage(node: Node): AnnotationPage {
+    return this.annotationPages.get(this.getClosestPageNumber(node));
+  }
+
   /**
    * Helper to have mapping by '.textLayer' declared only once
    * @param node
@@ -922,7 +721,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         const page = this.getClosestPage(range.startContainer);
         const containerRect = page.getBoundingClientRect();
         const rect = rangeRects.item(0);
-        this.annotationToolbarRef.instance.position = {
+        this.annotationToolbar.instance.position = {
           left: rect.left - containerRect.left,
           top: rect.top - containerRect.top
         };
@@ -1191,26 +990,22 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  textLayerPortalOutlets: Map<number, DomPortalOutlet> = new Map();
+  annotationPages: Map<number, AnnotationPage> = new Map();
 
-  createTextLayerPortalOutlet({pageNumber, textLayerDiv}: TextLayerBuilder) {
-    const portalOutlet = new DomPortalOutlet(
-      textLayerDiv,
-      this.cfr,
-      this.appRef,
-      this.injector
-    );
-    this.textLayerPortalOutlets.set(pageNumber, portalOutlet);
-  }
 
   /**
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
-  pageRendered({pageNumber, source}: PDFPageRenderEvent) {
+  pageRendered({pageNumber, source: {textLayer}}: PDFPageRenderEvent) {
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = pageNumber;
-    this.createTextLayerPortalOutlet(source.textLayer);
-    this.processAnnotations(pageNumber, source);
+    const portalOutlet = new DomPortalOutlet(
+      textLayer.textLayerDiv,
+      this.cfr,
+      this.appRef,
+      this.injector
+    );
+    this.annotationPages.set(pageNumber, new AnnotationPage(textLayer, portalOutlet, []))
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
@@ -1268,7 +1063,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         ann.meta.exclusionReason = exclusionData.reason;
         ann.meta.exclusionComment = exclusionData.comment;
         ann.meta.isCaseInsensitive = exclusionData.isCaseInsensitive;
-        this.addAnnotation(ann, ann.pageNumber);
+        this.addAnnotation(ann);
       }
     });
     this.renderFilterSettings();
@@ -1280,7 +1075,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
         ann.meta.isExcluded = false;
-        this.addAnnotation(ann, ann.pageNumber);
+        this.addAnnotation(ann);
       }
     });
     this.renderFilterSettings();
