@@ -1,6 +1,8 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { TextElement } from '../text-element';
+import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
+
 
 export interface IconNodeOptions {
   x: number;
@@ -54,7 +56,7 @@ export class FontIconNode extends PlacedNode {
     return this.bbox;
   }
 
-  isPointIntersecting(x: number, y: number): boolean {
+  isPointIntersecting({x, y}: Point): boolean {
     // What if the text doesn't render or it's too small? Then the user
     // can't select this node anymore, which is bad
     const clickableIconTextWidth = Math.max(this.iconTextbox.actualWidth, 50);
@@ -74,13 +76,13 @@ export class FontIconNode extends PlacedNode {
     );
   }
 
-  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
-    return x0 <= this.bbox.minX && y0 <= this.bbox.minY && x1 >= this.bbox.maxX && y1 >= this.bbox.maxY;
+  isBBoxEnclosing(bbox: BoundingBox): boolean {
+    return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
+  lineIntersectionPoint(lineOrigin: Point): Point {
     // TODO: Polygonal intersection because we have an icon 'head' and a text 'body'
-    return [this.x, this.y];
+    return {x: this.x, y: this.y};
   }
 
   draw(transform: any): void {
