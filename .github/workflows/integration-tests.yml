@@ -37,7 +37,7 @@ jobs:
       - name: Bring up containers
         run: |-
           docker-compose -f docker-compose.ci-test.yml up -d
-          docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 5000 bin/wait-for-flask
+          docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 500 bin/wait-for-flask
 
       - name: Show Docker logs
         if: ${{ failure() }}
