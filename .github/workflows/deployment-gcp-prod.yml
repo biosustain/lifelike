@@ -3,7 +3,7 @@ name: GCP Prod Deployment
 on:
   workflow_dispatch:
   release:
-    types: [published]
+    types: [released]
   push:
     tags: [prod]
 
