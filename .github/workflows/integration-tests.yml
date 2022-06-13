@@ -34,6 +34,9 @@ jobs:
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
+      - name: Sanity check - are there preexisting volumes?
+        run: docker volume ls
+
       - name: Bring up containers
         run: |-
           docker-compose -f docker-compose.ci-test.yml up -d
