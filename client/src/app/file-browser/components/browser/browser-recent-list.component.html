@@ -1,28 +1,30 @@
 <div class="module-section">
+  <div class="module-section-header">
+    <h2 class="module-section-header-title">Recent Files</h2>
+  </div>
+  <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
     <ng-container *ngIf="(recentFilesService.list | async) as recentList">
-        <ng-container *ngIf="recentList.length">
-            <div class="module-section-header">
-                <h2 class="module-section-header-title">Recent Files</h2>
+      <ng-container *ngIf="recentList.length; else noResults">
+        <div class="tile-deck tile-deck-sm">
+          <div *ngFor="let object of recentList" class="tile d-flex flex-column">
+            <div class="flex-fill d-flex justify-content-center align-items-center my-2">
+              <a class="text-muted" [appLink]="object.getCommands()" [newTab]="true">
+                <i class="fa-2x {{ object.fontAwesomeIcon }}"></i>
+              </a>
             </div>
-
-            <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
-                <div class="tile-deck tile-deck-sm">
-                    <div *ngFor="let object of recentList" class="tile d-flex flex-column">
-                        <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                            <a class="text-muted" [appLink]="object.getCommands()" [newTab]="true">
-                                <i class="fa-2x {{ object.fontAwesomeIcon }}"></i>
-                            </a>
-                        </div>
-                        <div class="text-truncate text-center">
-                            <a [appLink]="object.getCommands()" [newTab]="true" class="d-block text-truncate"
-                             [appTextTruncateToTooltip]="object.filename"
-                             [scroll$]="bodyObserver.scroll$">
-                                <strong>{{ object.filename }}</strong>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div class="text-truncate text-center">
+              <a [appLink]="object.getCommands()" [newTab]="true" class="d-block text-truncate"
+                [appTextTruncateToTooltip]="object.filename"
+                [scroll$]="bodyObserver.scroll$">
+                  <strong>{{ object.filename }}</strong>
+              </a>
             </div>
-        </ng-container>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #noResults>
+        No recent files
+      </ng-template>
     </ng-container>
+  </div>
 </div>

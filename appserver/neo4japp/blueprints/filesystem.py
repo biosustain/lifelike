@@ -1100,7 +1100,18 @@ class FileSearchView(FilesystemBaseView):
             # Now we get the full file information for this slice of the results
             files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
             total = len(files)
+        elif params['type'] == 'pinned':
+            # First we query for public files without getting parent directory
+            # or project information
+            query = db.session.query(Files.id) \
+                .filter(Files.recycling_date.is_(None),
+                        Files.deletion_date.is_(None),
+                        Files.pinned.is_(True)) \
+                .order_by(*params['sort'])
 
+            # Now we get the full file information for this slice of the results
+            files = self.get_nondeleted_recycled_files(Files.id.in_(query.all()))
+            total = len(files)
         else:
             raise NotImplementedError()
 
