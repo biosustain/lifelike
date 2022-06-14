@@ -10,6 +10,9 @@ jobs:
     name: Appserver Linting and Testing
     runs-on: ubuntu-latest
 
+    env:
+      DOCKER_COMPOSE_CMD: docker-compose -f docker-compose.ci-test.yml
+
     steps:
       - name: Cancel Previous Runs
         if: github.event_name != 'workflow_dispatch'
@@ -18,7 +21,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build appserver image
         uses: whoan/docker-build-with-cache-action@v5
@@ -27,33 +30,33 @@ jobs:
           password: ${{ secrets.AZURE_CR_PASSWORD }}
           registry: ***ARANGO_DB_NAME***.azurecr.io
           image_name: kg-appserver
-          image_tag: ${{ github.sha }},latest
+          image_tag: ${{ github.sha }}
           context: ./appserver
           dockerfile: ./Dockerfile
 
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
-      - name: Bring up containers
+      - name: Migration Integrity Check
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver bin/migration-integrity-check
+
+      - name: Linting and code style
         run: |-
-          docker-compose -f docker-compose.ci-test.yml up -d
-          docker-compose -f docker-compose.ci-test.yml exec -T appserver timeout 500 bin/wait-for-flask
+          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver mypy .
+          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver pycodestyle .
+
+      - name: Bring up containers and wait for webserver to be ready
+        timeout-minutes: 10
+        run: |-
+          ${{ env.DOCKER_COMPOSE_CMD }} up -d
+          ${{ env.DOCKER_COMPOSE_CMD }} exec -T appserver bin/wait-for-flask
+
+      - name: Run PyTest
+        run: ${{ env.DOCKER_COMPOSE_CMD }} exec -T appserver pytest tests -p no:warnings
 
       - name: Show Docker logs
         if: ${{ failure() }}
-        run: docker-compose -f docker-compose.ci-test.yml logs
-
-      - name: Linting
-        run: |-
-          docker-compose -f docker-compose.ci-test.yml exec -T appserver mypy .
-          docker-compose -f docker-compose.ci-test.yml exec -T appserver pycodestyle .
-
-      - name: PyTest
-        run: docker-compose -f docker-compose.ci-test.yml exec -T appserver pytest tests -p no:warnings
-
-      - name: Migration Integrity Check
-        run: docker-compose -f docker-compose.ci-test.yml exec -T appserver ./bin/migration-integrity-check
-
+        run: ${{ env.DOCKER_COMPOSE_CMD }} logs --timestamps
 
   client:
     name: Client Linting and Testing
@@ -64,13 +67,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 14.x
-          cache: 'yarn'
+          cache: yarn
           cache-dependency-path: client/yarn.lock
 
       - name: Install dependencies
@@ -84,3 +87,4 @@ jobs:
 
       - name: Run tests
         run: yarn test
+
