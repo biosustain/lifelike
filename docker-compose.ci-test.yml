@@ -41,4 +41,7 @@ services:
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
     restart: on-failure
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
 
