@@ -65,8 +65,8 @@ export class AccountService implements OnDestroy {
     }
 
     currentUser(): Observable<PrivateAppUser> {
-        const userState = JSON.parse(localStorage.getItem('auth')).user;
-        return this.getUsers(userState.hashId).pipe(map(result => result.results[0]));
+        const userState = JSON.parse(localStorage.getItem('auth'))?.user;
+        return this.getUsers(userState?.hashId)?.pipe(map(result => result.results[0]));
     }
 
     changePassword(updateRequest: ChangePasswordRequest) {

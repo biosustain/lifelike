@@ -80,6 +80,11 @@ ARG ANGULAR_CONFIG=production
 # default enviroment presets
 ENV ENVIRONMENT_CONFIG $ANGULAR_CONFIG
 
+# APM configuration (RUM - Realtime User Monitoring)
+ENV APM_ENABLED true
+ENV APM_SERVER_URL ""
+ENV APM_ENVIRONMENT $ENVIRONMENT_CONFIG
+
 # Copy nginx configuraiton template
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 

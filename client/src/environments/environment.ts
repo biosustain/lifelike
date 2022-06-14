@@ -8,6 +8,10 @@ interface EnvironmentVars {
   testVar: string;
   oauthIssuer: string;
   oauthClientId: string;
+  apmEnabled: boolean;
+  apmServerUrl: string;
+  apmServiceName: string;
+  apmEnvironment?: string;
   ***ARANGO_DB_NAME***Version: string;
 }
 
@@ -21,6 +25,10 @@ export const environment = {
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
   oauthClientId: browserWindowEnv.oauthClientId || 'client',
+  apmEnabled: browserWindowEnv.apmEnabled || false,
+  apmServerUrl: browserWindowEnv.apmServerUrl || 'https://elk.prod.***ARANGO_DB_NAME***.bio/rum',
+  apmServiceName: browserWindowEnv.apmServiceName || '***ARANGO_DB_NAME***-client',
+  apmEnvironment: browserWindowEnv.apmEnvironment || 'development',
   ***ARANGO_DB_NAME***Version: '__VERSION__', // This is replaced during the docker build stage
 };
 

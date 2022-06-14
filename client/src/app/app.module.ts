@@ -3,12 +3,14 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 
 import { ChartsModule } from 'ng2-charts';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { ApmModule, ApmService } from '@elastic/apm-rum-angular';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AdminModule } from 'app/admin/admin.module';
 import { LifelikeAuthModule } from 'app/auth/auth.module';
 import { UserModule } from 'app/users/users.module';
 import { AppRoutingModule } from 'app/app-routing.module';
+import { AccountService } from 'app/users/services/account.service';
 import { AppComponent } from 'app/app.component';
 import { SearchModule } from 'app/search/search.module';
 import { SharedModule } from 'app/shared/shared.module';
@@ -36,6 +38,8 @@ import { PoliciesModule } from 'app/policies/policies.module';
 import { ReportsModule } from 'app/reports/reports.module';
 import { WorkspaceModule } from 'app/workspace/workspace.module';
 
+import { environment } from '../environments/environment';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -44,9 +48,10 @@ import { WorkspaceModule } from 'app/workspace/workspace.module';
     KgStatisticsComponent,
   ],
   entryComponents: [
-    AppVersionDialogComponent,
+    AppVersionDialogComponent
   ],
   imports: [
+    ApmModule,
     BrowserModule,
     PdfViewerLibModule,
     AdminModule,
@@ -76,6 +81,8 @@ import { WorkspaceModule } from 'app/workspace/workspace.module';
     WorkspaceModule
   ],
   providers: [
+    ApmService,
+    AccountService,
     httpInterceptorProviders,
     Title,
     WorkspaceManager,
@@ -89,4 +96,23 @@ import { WorkspaceModule } from 'app/workspace/workspace.module';
   bootstrap: [AppComponent],
 })
 export class AppModule {
+  constructor(apmService: ApmService, accountService: AccountService) {
+    // Setup Application Performance Monitoring
+    if (environment.apmEnabled) {
+      const apm = apmService.init({
+        serverUrl: environment.apmServerUrl,
+        serviceName: environment.apmServiceName,
+        environment: environment.apmEnvironment,
+        centralConfig: true,
+      });
+      accountService.currentUser()?.subscribe((account) => {
+        if (account) {
+          apm.setUserContext({
+            id: account.id,
+            username: account.username,
+          });
+        }
+      });
+    }
+  }
 }
