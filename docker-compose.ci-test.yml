@@ -41,4 +41,7 @@ services:
   elasticsearch:
     image: ghcr.io/sbrg/lifelike-elasticsearch:latest
     restart: on-failure
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
 
