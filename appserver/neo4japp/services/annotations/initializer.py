@@ -14,7 +14,7 @@ from .sorted_annotation_service import (
 )
 from .tokenizer import Tokenizer
 
-from neo4japp.database import graph
+from neo4japp.database import get_neo4j_driver
 
 from .constants import (
     ANATOMY_LMDB,
@@ -56,7 +56,8 @@ def get_annotation_db_service():
 
 
 def get_annotation_graph_service():
-    return AnnotationGraphService(graph)
+    driver = get_neo4j_driver()
+    return AnnotationGraphService(driver)
 
 
 def get_manual_annotation_service():
