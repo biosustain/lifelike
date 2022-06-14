@@ -17,7 +17,6 @@ export class BrowserCommunityListComponent implements OnInit, OnDestroy {
     () => this.filesystemService.search({
       type: 'public',
       sort: '-creationDate',
-      limit: 5,
     }),
   );
   private loadTaskSubscription: Subscription;
