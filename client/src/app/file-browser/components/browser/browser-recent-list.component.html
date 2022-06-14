@@ -1,30 +1,43 @@
-<div class="module-section">
-  <div class="module-section-header">
-    <h2 class="module-section-header-title">Recent Files</h2>
-  </div>
-  <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
-    <ng-container *ngIf="(recentFilesService.list | async) as recentList">
-      <ng-container *ngIf="recentList.length; else noResults">
-        <div class="tile-deck tile-deck-sm">
-          <div *ngFor="let object of recentList" class="tile d-flex flex-column">
-            <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-              <a class="text-muted" [appLink]="object.getCommands()" [newTab]="true">
-                <i class="fa-2x {{ object.fontAwesomeIcon }}"></i>
-              </a>
-            </div>
-            <div class="text-truncate text-center">
-              <a [appLink]="object.getCommands()" [newTab]="true" class="d-block text-truncate"
-                [appTextTruncateToTooltip]="object.filename"
-                [scroll$]="bodyObserver.scroll$">
-                  <strong>{{ object.filename }}</strong>
-              </a>
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <div class="module-section">
+    <div class="module-section-header">
+      <h2 class="module-section-header-title">Recent Files</h2>
+    </div>
+
+    <div class="module-section-body">
+      <!-- Error message -->
+      <ng-container *ngIf="status.failedErrorShown; else noError">
+        <app-module-error [error]="status.error">
+          <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+        </app-module-error>
+      </ng-container>
+
+      <ng-template #noError>
+        <!-- Placeholders -->
+        <ng-container *ngIf="status.placeholdersShown">
+          <div class="module-section-body">
+            <div  *ngFor="let p of [0, 1]" class="mb-3">
+              <span class="placeholder-box">Loading loading loading loading</span>
             </div>
           </div>
-        </div>
-      </ng-container>
-      <ng-template #noResults>
-        No recent files
+        </ng-container>
+
+        <!-- Content -->
+        <ng-container *ngIf="status.resultsShown">
+            <ng-container *ngIf="(list.results.view$ | async).length; else noResults">
+              <div class="flex-fill overflow-auto">
+                <app-object-list [objects]="status.placeholdersShown ? null : list.results"
+                                 [appLinks]="true"
+                                 [forEditing]="false"
+                                 [showPins]="false"
+                                 [objectControls]="false"
+                                 (refreshRequest)="refresh()">
+                </app-object-list>
+              </div>
+            </ng-container>
+            <ng-template #noResults>No recent files</ng-template>
+        </ng-container>
       </ng-template>
-    </ng-container>
+    </div>
   </div>
-</div>
+</ng-container>
