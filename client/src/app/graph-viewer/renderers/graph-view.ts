@@ -734,31 +734,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param position - {x, y} of the position
    */
   getNodeAtPosition(nodes: UniversalGraphNode[], position: Point): UniversalGraphNode | undefined {
-    const possibleNodes = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
       const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedNode, position);
       if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(position)) {
-        const distance = Math.hypot(position.x - d.data.x, position.y - d.data.y);
-        // Node is so close, that we are sure it is it. Terminate early.
-        if (distance <= this.MIN_NODE_DISTANCE) {
-          return d;
-        }
-        possibleNodes.push({
-          node: d,
-          distance
-        });
-
+        return d;
       }
     }
-    if (possibleNodes.length === 0) {
-      return undefined;
-    }
-    possibleNodes.sort((a, b) => {
-      return a.distance - b.distance;
-    });
-    return possibleNodes[0].node;
+    return undefined;
   }
 
   /**
@@ -1251,7 +1235,3 @@ interface GraphLayoutLink extends Link<GraphLayoutNode> {
   index?: number;
 }
 
-enum referenceCheckingMode {
-  nodeAdded = 1,
-  nodeDeleted = -1,
-}
