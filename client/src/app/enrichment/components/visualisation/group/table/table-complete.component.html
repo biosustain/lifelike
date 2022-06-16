@@ -23,7 +23,7 @@
         <thead>
         <tr>
             <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
-            <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
+            <th scope="col" appSortable [id]="goTerm" (sort)="onSort($event)">GO Term</th>
             <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
 <!--            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>-->
             <th scope="col" appSortable="q-value" (sort)="onSort($event)"
