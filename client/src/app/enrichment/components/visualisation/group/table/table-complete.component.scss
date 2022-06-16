@@ -29,6 +29,7 @@
       &[data-sort]:after {
         display: inline-block;
         font-family: 'Font Awesome 5 Pro';
+        margin-left: 0.3em;
       }
 
       &[data-sort=asc]:after {
