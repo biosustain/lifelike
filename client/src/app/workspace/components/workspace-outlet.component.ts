@@ -42,7 +42,8 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   ngOnDestroy(): void {
-    this.viewComponentRef.detach();
+    // This will detach and destroy both the viewContainerRef AND the componentRef
+    this.currentContainer.destroy();
   }
 
   get container() {
@@ -93,5 +94,4 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   focusedInside() {
     this.outletFocus.emit();
   }
-
 }

@@ -3,12 +3,21 @@ import re
 from dataclasses import dataclass
 from flask import current_app
 from sqlalchemy import (
+    bindparam,
+    column,
     event,
+    inspect,
     orm,
     and_,
     or_,
+    select,
+    table,
+    Integer as sa_Integer,
+    String as sa_String,
+    update,
 )
-from sqlalchemy.orm import validates
+from sqlalchemy.engine import Connection
+from sqlalchemy.orm import Mapper, validates
 from sqlalchemy.orm.query import Query
 from typing import Dict
 
@@ -122,8 +131,55 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
         )
 
 
+# Start ORM Events & Helpers
+def _get_files_starting_with_path_query(path: str):
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('path', sa_String),
+    )
+    return select([
+        t_files.c.id, t_files.c.path
+    ]).where(
+        t_files.c.path.startswith(path, escape='$', autoescape=True)
+    )
+
+
+def _get_update_path_query():
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('path', sa_String),
+    )
+
+    return update(
+        t_files
+    ).where(
+        t_files.c.id == bindparam('f_id')
+    ).values(path=bindparam('f_path'))
+
+
+def _update_path_of_***ARANGO_USERNAME***_and_descendants(connection: Connection, old_name: str, new_name: str):
+    # Find all files whose paths start with the old name.
+    old_path = f'/{old_name}'
+    new_path = f'/{new_name}'
+    descendants = connection.execution_options(
+        stream_results=True
+    ).execute(_get_files_starting_with_path_query(old_path))
+
+    # Note that this will either be 0 or 1, since we're streaming the results.
+    if descendants.rowcount > 0:
+        child_update_mappings = []
+        for id, path in descendants:
+            child_update_mappings.append({
+                'f_id': id,
+                'f_path': new_path + path[len(old_path):],
+            })
+        connection.execute(_get_update_path_query(), child_update_mappings)
+
+
 @event.listens_for(Projects, 'after_insert')
-def init_default_access(mapper, connection, target):
+def init_default_access(mapper: Mapper, connection: Connection, target: Projects):
     # Sets up the "READ" role
     read_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-read'
@@ -156,7 +212,17 @@ def init_default_access(mapper, connection, target):
 
 
 @event.listens_for(Projects, 'after_update')
-def project_update(mapper, connection, target: Projects):
+def before_project_update(mapper: Mapper, connection: Connection, target: Projects):
+    insp = inspect(target)
+    deleted = insp.attrs.get('name').history.deleted
+    added = insp.attrs.get('name').history.added
+
+    if len(added):
+        _update_path_of_***ARANGO_USERNAME***_and_descendants(connection, deleted[0], added[0])
+
+
+@event.listens_for(Projects, 'after_update')
+def after_project_update(mapper: Mapper, connection: Connection, target: Projects):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.database import get_elastic_service
     from neo4japp.models.files import Files

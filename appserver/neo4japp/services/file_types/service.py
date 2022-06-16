@@ -250,6 +250,9 @@ class FileTypeService:
         results: List[Tuple[float, str]] = []
         for provider in self.providers:
             try:
+                # Note that each provider sets the same priority value for each mime_type, so the
+                # priority is in the order the providers are registered. This is not ideal, we
+                # should explicitly set the priority.
                 results.extend(provider.detect_mime_type(buffer))
             finally:
                 buffer.seek(0)
