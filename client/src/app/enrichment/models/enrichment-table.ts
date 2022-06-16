@@ -2,7 +2,6 @@ import { Observable, of } from 'rxjs';
 import { isEqual } from 'lodash-es';
 
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
-import { nullCoalesce } from 'app/shared/utils/types';
 
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
 
@@ -46,7 +45,7 @@ export class EnrichmentTable {
         // second header row
         tableHeader[0].push({
           name: domainId + (domainInfo.labels.length > 1 ? '' : ' ' +
-            nullCoalesce(domainInfo.labels[0], '')),
+            domainInfo.labels[0] ?? ''),
           span: String(domainInfo.labels.length),
         });
 

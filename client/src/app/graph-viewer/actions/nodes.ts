@@ -1,4 +1,4 @@
-import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -80,5 +80,43 @@ export class NodeMove implements GraphAction {
   rollback(component: GraphActionReceiver) {
     this.node.data.x = this.previousX;
     this.node.data.y = this.previousY;
+  }
+}
+
+/**
+ * Used to handle adding of the node(s) into the group
+ */
+export class NodesGroupAdd implements GraphAction {
+
+  constructor(public description: string,
+              public nodes: UniversalGraphNode[],
+              public group: UniversalGraphGroup) {
+  }
+
+  apply(component: GraphActionReceiver): void {
+    component.addToGroup(this.nodes, this.group);
+  }
+
+  rollback(component: GraphActionReceiver): void {
+    component.removeFromGroup(this.nodes, this.group);
+  }
+}
+
+/**
+ * Used to handle removal of the node(s) from the group
+ */
+export class NodesGroupRemoval implements GraphAction {
+
+  constructor(public description: string,
+              public nodes: UniversalGraphNode[],
+              public group: UniversalGraphGroup) {
+  }
+
+  apply(component: GraphActionReceiver): void {
+    component.removeFromGroup(this.nodes, this.group);
+  }
+
+  rollback(component: GraphActionReceiver): void {
+    component.addToGroup(this.nodes, this.group);
   }
 }
