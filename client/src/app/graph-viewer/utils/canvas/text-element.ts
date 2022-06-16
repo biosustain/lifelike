@@ -1,4 +1,4 @@
-import { nullCoalesce } from 'app/shared/utils/types';
+
 import { REGEX } from 'app/shared/regex';
 
 interface TextboxOptions {
@@ -187,7 +187,7 @@ export class TextElement {
         lines: [],
         verticalOverflow: true,
         horizontalOverflow: true,
-        actualWidth: nullCoalesce(this.width, this.maxWidth, metrics.width),
+        actualWidth: (this.width ?? this.maxWidth) ?? metrics.width,
       };
 
     } else if (effectiveWidth != null) {
@@ -356,7 +356,7 @@ export class TextElement {
     const metrics: TextMetrics = this.ctx.measureText(this.text);
     const actualHeightWithInsets = (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) * this.lineHeight
       + this.topInset + this.bottomInset;
-    this.draw(x - metrics.width / 2, y - actualHeightWithInsets / 2);
+    this.draw(x - metrics.width / 2, y - actualHeightWithInsets / 2, font);
 
     // Reset to old font
     this.ctx.font = this.font;
@@ -367,13 +367,14 @@ export class TextElement {
    * Draw the text using the top left X and Y coordinates.
    * @param minX top left X
    * @param minY top left Y
+   * @param differentFont optional param allowing to use different font to render
    */
-  draw(minX: number, minY: number) {
+  draw(minX: number, minY: number, differentFont = '') {
     minX += this.leftInset;
     minY += this.topInset;
 
     const effectiveWidth = this.getEffectiveWidth();
-    this.ctx.font = this.font;
+    this.ctx.font = differentFont || this.font;
 
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];

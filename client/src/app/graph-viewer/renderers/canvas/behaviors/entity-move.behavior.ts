@@ -1,25 +1,26 @@
 import { cloneDeep } from 'lodash-es';
 import * as d3 from 'd3';
 
-import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphGroup, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
+import { GROUP_LABEL } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 
-export class MovableNode extends AbstractCanvasBehavior {
+export class MovableEntity extends AbstractCanvasBehavior {
   /**
    * Stores the offset between the node and the initial position of the mouse
    * when clicked during the start of a drag event. Used for node position stability
    * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
    * so node center is the same the mouse position, and the jump is not what we want.
    */
-  private target: UniversalGraphNode | undefined;
-  private originalTarget: UniversalGraphNode | undefined;
+  private target: UniversalGraphNodelike | undefined;
+  private originalTarget: UniversalGraphNodelike | undefined;
   private startMousePosition: [number, number] = [0, 0];
-  private originalNodePositions = new Map<UniversalGraphNode, [number, number]>();
+  private originalNodelikePositions = new Map<UniversalGraphNodelike, [number, number]>();
 
   constructor(protected readonly graphView: CanvasGraphView) {
     super();
@@ -30,12 +31,19 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const entity = event.entity;
 
-    if (entity != null && entity.type === GraphEntityType.Node) {
+    if (entity?.type === GraphEntityType.Node) {
       const node = entity.entity as UniversalGraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
       this.target = node;
+      this.originalTarget = cloneDeep(this.target);
+    } else if (entity?.type === GraphEntityType.Group) {
+      const group = entity.entity as UniversalGraphGroup;
+
+      this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
+
+      this.target = group;
       this.originalTarget = cloneDeep(this.target);
     }
 
@@ -51,12 +59,18 @@ export class MovableNode extends AbstractCanvasBehavior {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
 
-      const selectedNodes = new Set<UniversalGraphNode>();
-
+      const selectedNodes = new Set<UniversalGraphNodelike>();
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
           selectedNodes.add(node);
+        }
+      }
+      if (this.target.label === GROUP_LABEL) {
+        const group = this.target as UniversalGraphGroup;
+        selectedNodes.add(group);
+        for (const n of group.members) {
+          selectedNodes.add(n);
         }
       }
 
@@ -64,7 +78,8 @@ export class MovableNode extends AbstractCanvasBehavior {
       // deselect everything, select just the target node, and then move only the target
       // node, or (b) if the user is holding down the multiple selection modifier key
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
-      if (!selectedNodes.has(this.target)) {
+      // (c) it is a group, and we want to move only members
+      if (!selectedNodes.has(this.target) && this.target.label !== GROUP_LABEL) {
         // Case (a)
         if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
@@ -80,16 +95,22 @@ export class MovableNode extends AbstractCanvasBehavior {
       }
 
       for (const node of selectedNodes) {
-        if (!this.originalNodePositions.has(node)) {
-          this.originalNodePositions.set(node, [node.data.x, node.data.y]);
+        if (!this.originalNodelikePositions.has(node)) {
+          this.originalNodelikePositions.set(node, [node.data.x, node.data.y]);
         }
-        const [originalX, originalY] = this.originalNodePositions.get(node);
+        const [originalX, originalY] = this.originalNodelikePositions.get(node);
         node.data.x = originalX + shiftX;
         node.data.y = originalY + shiftY;
-        this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-        this.graphView.invalidateNode(node);
-        // TODO: Store this in history as ONE object
+        this.graphView.invalidateNodelike(node);
       }
+
+      // if (this.target.label === GROUP_LABEL) {
+      //
+      //   const originalData = this.originalTarget.data;
+      //   this.target.data.x = originalData.x + shiftX;
+      //   this.target.data.y = originalData.y + shiftY;
+      //   this.graphView.invalidateGroup(this.target as UniversalGraphGroup);
+      // }
     }
 
     return BehaviorResult.Continue;
@@ -101,38 +122,56 @@ export class MovableNode extends AbstractCanvasBehavior {
           this.target.data.y !== this.originalTarget.data.y) {
         const actions: GraphAction[] = [];
 
-        for (const [node, [originalX, originalY]] of
-            this.originalNodePositions.entries()) {
-          actions.push(new GraphEntityUpdate('Move node', {
-            type: GraphEntityType.Node,
-            entity: node,
+        for (const [nodelike, [originalX, originalY]] of
+            this.originalNodelikePositions.entries()) {
+          actions.push(new GraphEntityUpdate('Move nodelike', {
+            type: nodelike.label === GROUP_LABEL ? GraphEntityType.Group : GraphEntityType.Node,
+            entity: nodelike,
           }, {
             data: {
-              x: node.data.x,
-              y: node.data.y,
+              x: nodelike.data.x,
+              y: nodelike.data.y,
             },
-          } as Partial<UniversalGraphNode>, {
+          } as Partial<UniversalGraphNodelike>, {
             data: {
               x: originalX,
               y: originalY,
             },
-          } as Partial<UniversalGraphNode>));
+          } as Partial<UniversalGraphNodelike>));
         }
+
+        // if (this.target.label === GROUP_LABEL) {
+        //   actions.push(new GraphEntityUpdate('Group move', {
+        //     type: GraphEntityType.Group,
+        //     entity: this.target,
+        //   }, {
+        //     data: {
+        //       x: this.target.data.x,
+        //       y: this.target.data.y,
+        //     },
+        //   } as Partial<UniversalGraphGroup>, {
+        //     data: {
+        //       x: this.originalTarget.data.x,
+        //       y: this.originalTarget.data.y,
+        //     },
+        //   } as Partial<UniversalGraphGroup>));
+        // }
+
 
         this.graphView.execute(new CompoundAction('Node move', actions));
 
         this.target = null;
-        this.originalNodePositions.clear();
+        this.originalNodelikePositions.clear();
 
         return BehaviorResult.Stop;
       } else {
         this.target = null;
-        this.originalNodePositions.clear();
+        this.originalNodelikePositions.clear();
 
         return BehaviorResult.Continue;
       }
     } else {
-      this.originalNodePositions.clear();
+      this.originalNodelikePositions.clear();
 
       return BehaviorResult.Continue;
     }

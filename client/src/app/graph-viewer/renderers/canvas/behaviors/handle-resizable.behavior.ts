@@ -1,13 +1,21 @@
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, zip } from 'lodash-es';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { PlacedNode } from 'app/graph-viewer/styles/styles';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+  UniversalGraphNodelike
+} from 'app/drawing-tool/services/interfaces';
+import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
-import { handleBlue } from 'app/shared/constants';
+import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { BLACK_COLOR, HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
+import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { Point } from '../../../utils/canvas/shared';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 
@@ -29,7 +37,11 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
       if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node &&
         this.graphView.placeNode(newSelection[0].entity as UniversalGraphNode).resizable) {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
-        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveResize(this.graphView, newSelection[0].entity as UniversalGraphNode), 100);
+        this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveNodeResize(this.graphView, newSelection[0].entity as UniversalGraphNode), 100);
+      } else if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Group) {
+        this.graphView.behaviors.delete(BEHAVIOR_KEY);
+        this.graphView.behaviors.add(BEHAVIOR_KEY,
+          new ActiveGroupResize(this.graphView, newSelection[0].entity as UniversalGraphGroup), 100);
       } else {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
       }
@@ -40,34 +52,118 @@ export class HandleResizableBehavior extends AbstractCanvasBehavior {
 /**
  * Holds the state of an active resize.
  */
-export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
-  private originalData: { width: number, height: number, x: number, y: number } | undefined;
-  private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
-  private originalTarget: UniversalGraphNode;
 
+export abstract class ActiveResize extends AbstractObjectHandleBehavior<DragHandle> {
+  protected originalData: OriginalData | undefined;
+  protected dragStartPosition: Point = {x: 0, y: 0};
+  protected originalTarget: UniversalGraphNodelike;
+
+  protected readonly sideHandleMaker = (posX, posY, halfSize, execute) => ({
+      execute,
+      minX: posX - halfSize,
+      minY: posY - halfSize,
+      maxX: posX + halfSize,
+      maxY: posY + halfSize,
+      displayColor: BLACK_COLOR
+    })
 
   constructor(graphView: CanvasGraphView,
-              target: UniversalGraphNode,
-              private size = 10) {
+              target: UniversalGraphNodelike) {
     super(graphView, target);
     this.originalTarget = cloneDeep(this.target);
   }
 
-  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
+  isPointIntersectingNodeHandles(placedObject: PlacedObject, point: Point): boolean {
     // Consider ourselves still intersecting if we have a handle
-    return (!!this.handle || !!this.getHandleIntersected(placedNode, x, y)) ? true : undefined;
+    return (!!this.handle || !!this.getHandleIntersected(placedObject, point)) ? true : undefined;
   }
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+  protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
     this.originalData = {x: this.target.data.x, y: this.target.data.y, ...this.getCurrentNodeSize()};
-    this.dragStartPosition = {x: graphX, y: graphY};
+    this.dragStartPosition = graphPosition;
   }
 
-  protected activeDrag(event: MouseEvent, graphX: number, graphY: number) {
-    this.handle.execute(this.target, this.originalData, this.dragStartPosition, {x: graphX, y: graphY});
-    this.graphView.invalidateNode(this.target);
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
+    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
+    this.graphView.invalidateNodelike(this.target);
     this.graphView.requestRender();
   }
+
+}
+
+export class ActiveNodeResize extends ActiveResize {
+
+  getHandleBoundingBoxes(placedNode: PlacedNode): DragHandle[] {
+    const bbox = placedNode.getBoundingBox();
+    const noZoomScale = 1 / this.graphView.transform.scale(1).k;
+    const size = HANDLE_SIZE * noZoomScale;
+    const halfSize = size / 2;
+    const handleDiagonal = Math.sqrt(2) * size;
+    const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
+
+    // There is no handle on top: edge creation button is there.
+    const handles = [
+      // Right - one-dim scaling
+      this.sideHandleMaker(
+        bbox.maxX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
+          target.data.width = Math.abs(this.originalData.width + distance);
+          target.data.x = this.originalData.x + distance / 2.0;
+        }),
+      // Left - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
+          target.data.width = Math.abs(this.originalData.width - distance);
+          target.data.x = this.originalData.x + distance / 2.0;
+        }),
+      // Bottom - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX + (bbox.maxX - bbox.minX) / 2,
+        bbox.maxY,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
+          target.data.height = Math.abs(this.originalData.height + distance);
+          target.data.y = this.originalData.y + distance / 2.0;
+        }),
+    ];
+    // If node (currently: images) can be scaled uniformly, add those handles.
+    if (placedNode.uniformlyResizable) {
+      const cornerHandleMaker = (posX, posY) => ({
+        execute,
+        minX: posX - halfSize,
+        minY: posY - halfSize,
+        maxX: posX + halfSize,
+        maxY: posY + halfSize,
+        displayColor: HANDLE_BLUE_COLOR
+      });
+
+      const execute = (target, originalData: OriginalData, dragStartPosition, graphPosition) => {
+        const ratio = this.originalData.width / this.originalData.height;
+        const sizingVecLen = Math.hypot(graphPosition.x - x, graphPosition.y - y) - handleDiagonal / 2;
+        const normY = Math.abs(sizingVecLen / Math.sqrt(ratio ** 2 + 1));
+        target.data.width = 2 * normY * ratio;
+        target.data.height = 2 * normY;
+      };
+
+
+      handles.push(
+        cornerHandleMaker(bbox.minX, bbox.minY), // Top left
+        cornerHandleMaker(bbox.minX, bbox.maxY), // Bottom left
+        cornerHandleMaker(bbox.maxX, bbox.maxY), // Bottom right
+        cornerHandleMaker(bbox.maxX, bbox.minY), // Top right
+      );
+    }
+    return handles;
+  }
+
 
   protected activeDragEnd(event: MouseEvent) {
     if (this.target.data.width !== this.originalTarget.data.width ||
@@ -90,85 +186,198 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     }
   }
 
-  getHandleBoundingBoxes(placedNode: PlacedNode): DragHandle[] {
-    const bbox = placedNode.getBoundingBox();
+}
+
+// TODO: Update the width parameters of all the nodes so they would not be recalculated?
+// TODO: Update Actions that allow rollbacks
+export class ActiveGroupResize extends ActiveResize {
+  private originalGroup: UniversalGraphGroup;
+  private readonly targetGroup: UniversalGraphGroup;
+
+  constructor(graphView: CanvasGraphView,
+              target: UniversalGraphNode | UniversalGraphGroup) {
+    super(graphView, target);
+    this.originalGroup = cloneDeep(this.target) as UniversalGraphGroup;
+    this.targetGroup = this.target as UniversalGraphGroup;
+  }
+
+  getHandleBoundingBoxes(placedGroup: PlacedGroup): DragHandle[] {
+    const bbox = placedGroup.getBoundingBox();
     const noZoomScale = 1 / this.graphView.transform.scale(1).k;
-    const size = this.size * noZoomScale;
+    const size = HANDLE_SIZE * noZoomScale;
     const halfSize = size / 2;
     const handleDiagonal = Math.sqrt(2) * size;
-    // const [x, y] = [placedNode.x, placedNode.y];
-    // or
-    const [x, y] = [(bbox.maxX + bbox.minX) / 2, (bbox.maxY + bbox.minY) / 2];
-    // There is no handle on top: edge creation button is there.
-    const sideMaker = (posX, posY, execute) => ({
+
+    const handles = [
+      // Right - one-dim scaling
+      this.sideHandleMaker(
+        bbox.maxX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
+          this.targetGroup.data.width = Math.abs(this.originalGroup.data.width + distance);
+          this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
+          zip(this.targetGroup.members, this.originalGroup.members).forEach(([targetGroupMember, originalGroupMember]) => {
+            targetGroupMember.data.width = Math.abs((originalGroupMember.data.width ||
+              this.getNodeSize(originalGroupMember).width) + distance);
+            targetGroupMember.data.x = originalGroupMember.data.x + distance / 2.0;
+          });
+
+        }),
+      // Left - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX,
+        bbox.minY + (bbox.maxY - bbox.minY) / 2,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
+          this.targetGroup.data.width = Math.abs(this.originalGroup.data.width - distance);
+          this.targetGroup.data.x = this.originalGroup.data.x + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.width = Math.abs((this.originalGroup.members[i].data.width ||
+              this.getNodeSize(this.originalGroup.members[i]).width) - distance);
+            this.targetGroup.members[i].data.x = this.originalGroup.members[i].data.x + distance / 2.0;
+          }
+
+        }),
+      // Bottom - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX + (bbox.maxX - bbox.minX) / 2,
+        bbox.maxY,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
+          this.targetGroup.data.height = Math.abs(this.originalGroup.data.height + distance);
+          this.targetGroup.data.y = this.originalGroup.data.y + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.height = Math.abs((this.originalGroup.members[i].data.height ||
+              this.getNodeSize(this.originalGroup.members[i]).height) + distance);
+            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
+          }
+        }),
+      // Top - one-dim scaling
+      this.sideHandleMaker(
+        bbox.minX + (bbox.maxX - bbox.minX) / 2,
+        bbox.minY,
+        halfSize,
+        (target, originalData, dragStartPosition, graphPosition) => {
+          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
+          this.targetGroup.data.height = Math.abs(this.originalGroup.data.height - distance);
+          this.targetGroup.data.y = this.originalGroup.data.y + distance / 2.0;
+          for (let i = 0; i < this.targetGroup.members.length; i++) {
+            this.targetGroup.members[i].data.height = Math.abs((this.originalGroup.members[i].data.height ||
+              this.getNodeSize(this.originalGroup.members[i]).height) - distance);
+            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
+          }
+        }),
+    ];
+    const cornerHandleMaker = (posX, posY) => ({
       execute,
       minX: posX - halfSize,
       minY: posY - halfSize,
       maxX: posX + halfSize,
       maxY: posY + halfSize,
-      displayColor: '#000000'
+      displayColor: HANDLE_BLUE_COLOR
     });
-    const handles = [
-      // Right - one-dim scaling
-      sideMaker(
-        bbox.maxX,
-        bbox.minY + (bbox.maxY - bbox.minY) / 2,
-        (target, originalData, dragStartPosition, graphPosition) => {
-          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
-          target.data.width = Math.abs(this.originalData.width + distance);
-          target.data.x = this.originalData.x + distance / 2.0;
-        }),
-      // Left - one-dim scaling
-      sideMaker(
-        bbox.minX,
-        bbox.minY + (bbox.maxY - bbox.minY) / 2,
-        (target, originalSize, dragStartPosition, graphPosition) => {
-          const distance = (graphPosition.x - this.dragStartPosition.x) * noZoomScale;
-          target.data.width = Math.abs(this.originalData.width - distance);
-          target.data.x = this.originalData.x + distance / 2.0;
-        }),
-      // Bottom - one-dim scaling
-      sideMaker(
-        bbox.minX + (bbox.maxX - bbox.minX) / 2,
-        bbox.maxY,
-        (target, originalSize, dragStartPosition, graphPosition) => {
-          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
-          target.data.height = Math.abs(this.originalData.height + distance);
-          target.data.y = this.originalData.y + distance / 2.0;
-        }),
-      // Top left
-    ];
-    // If node (currently: images) can be scaled uniformly, add those handles.
-    if (placedNode.uniformlyResizable) {
-      const execute = (target, originalSize, dragStartPosition, graphPosition) => {
-        const ratio = this.originalData.width / this.originalData.height;
-        const sizingVecLen = Math.hypot(graphPosition.x - x, graphPosition.y - y) - handleDiagonal / 2;
-        const normY = Math.abs(sizingVecLen / Math.sqrt(ratio ** 2 + 1));
-        target.data.width = 2 * normY * ratio;
-        target.data.height = 2 * normY;
-      };
-      const cornerMaker = (posX, posY) => ({
-        execute,
-        minX: posX - halfSize,
-        minY: posY - halfSize,
-        maxX: posX + halfSize,
-        maxY: posY + halfSize,
-        displayColor: handleBlue
+
+    const execute = (target, originalData: OriginalData, dragStartPosition, graphPosition) => {
+      const ratio = originalData.width / originalData.height;
+      const sizingVecLen = Math.hypot(graphPosition.x - originalData.x, graphPosition.y - originalData.y) - handleDiagonal / 2;
+      const normY = Math.abs(sizingVecLen / Math.sqrt(ratio ** 2 + 1));
+
+      target.data.width = 2 * normY * ratio;
+      target.data.height = 2 * normY;
+      const finalRatio = target.data.height / originalData.height;
+      zip(this.originalGroup.members, this.targetGroup.members).forEach(([originalGroupMember,
+                                                                           targetGroupMember]) => {
+        const xOriginDistance = Math.abs(originalData.x - originalGroupMember.data.x);
+        const yOriginDistance = Math.abs(originalData.y - originalGroupMember.data.y);
+        const xDirection = originalGroupMember.data.x > this.originalGroup.data.x ? 1 : -1;
+        const yDirection = originalGroupMember.data.y > this.originalGroup.data.y ? 1 : -1;
+        const baseWidth = originalGroupMember.data.width || this.getNodeSize(originalGroupMember).width;
+        const baseHeight = originalGroupMember.data.height || this.getNodeSize(originalGroupMember).height;
+        targetGroupMember.data.width = Math.abs(baseWidth * finalRatio);
+        targetGroupMember.data.height = Math.abs(baseHeight * finalRatio);
+        targetGroupMember.data.x = originalGroupMember.data.x +
+          (xOriginDistance * finalRatio - xOriginDistance ) * xDirection;
+        targetGroupMember.data.y = originalGroupMember.data.y +
+          (yOriginDistance * finalRatio - yOriginDistance ) * yDirection;
       });
-      handles.push(
-        cornerMaker(bbox.minX, bbox.minY), // Top left
-        cornerMaker(bbox.minX, bbox.maxY), // Bottom left
-        cornerMaker(bbox.maxX, bbox.maxY), // Bottom right
-        cornerMaker(bbox.maxX, bbox.minY), // Top right
-      );
-    }
+    };
+
+    handles.push(
+      cornerHandleMaker(bbox.minX, bbox.minY), // Top left
+      cornerHandleMaker(bbox.minX, bbox.maxY), // Bottom left
+      cornerHandleMaker(bbox.maxX, bbox.maxY), // Bottom right
+      cornerHandleMaker(bbox.maxX, bbox.minY), // Top right
+    );
     return handles;
   }
+
+  protected activeDrag(event: MouseEvent, graphPosition: Point) {
+    this.handle.execute(this.target, this.originalData, this.dragStartPosition, graphPosition);
+    this.graphView.invalidateGroup(this.target as UniversalGraphGroup);
+    this.graphView.requestRender();
+  }
+
+  /**
+   * Once active drag is ended, update group and members in bulk.
+   * We spread entire data entry here as x and y parameters are affected as well
+   * @param event - event information. Not used.
+   * @protected
+   */
+  protected activeDragEnd(event: MouseEvent) {
+    const actions: GraphAction[] = [];
+
+    for (let i = 0; i < this.originalGroup.members.length; i++) {
+      const node = this.targetGroup.members[i];
+      actions.push(new GraphEntityUpdate('Node resize from group resize', {
+        type: GraphEntityType.Node,
+        entity: node,
+      }, {
+        data: {
+          ...node.data
+        },
+      } as Partial<UniversalGraphNode>, {
+        data: {
+          // TODO: This is not really that precise - the groups are larger. Fix that.
+          ...this.getNodeSize(this.originalGroup.members[i]),
+          ...this.originalGroup.members[i].data,
+        },
+      } as Partial<UniversalGraphNode>));
+    }
+
+    actions.push(new GraphEntityUpdate('Group resize', {
+      type: GraphEntityType.Group,
+      entity: this.targetGroup,
+    }, {
+      data: {
+        ...this.targetGroup.data
+      },
+    } as Partial<UniversalGraphGroup>, {
+      data: {
+        ...this.originalGroup.data
+      },
+    } as Partial<UniversalGraphGroup>));
+
+    this.graphView.execute(new CompoundAction('Group resize', actions));
+  }
+
 }
 
 interface DragHandle extends Handle {
   execute: (target: UniversalGraphNode,
-            originalData: { width: number, height: number, x: number, y: number },
-            dragStartPosition: { x: number, y: number },
-            graphPosition: { x: number, y: number }) => void;
+            originalData: OriginalData,
+            dragStartPosition: Point,
+            graphPosition: Point) => void;
 }
+
+interface OriginalData {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
+
+export const HANDLE_SIZE = 10;

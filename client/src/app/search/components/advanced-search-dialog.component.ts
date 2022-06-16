@@ -1,8 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { FilesystemObjectData } from 'app/file-browser/schema';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -34,6 +35,7 @@ export class AdvancedSearchDialogComponent {
 
   fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
   hierarchyLoaded = false;
+  hierarchyError = false;
 
   resetHierarchyTreeSubject = new Subject<boolean>();
 
@@ -52,8 +54,19 @@ export class AdvancedSearchDialogComponent {
     private readonly modal: NgbActiveModal,
     protected readonly filesystemService: FilesystemService,
   ) {
-    this.filesystemService.getHierarchy(true).subscribe((resp) => {
+    this.getFileHierarchy();
+  }
+
+  getFileHierarchy() {
+    this.hierarchyError = false;
+    this.filesystemService.getHierarchy(true).pipe(
+      catchError((error) => {
+        this.hierarchyError = true;
+        return throwError(error);
+      })
+    ).subscribe((resp) => {
       this.fileHierarchyTree = resp.results.map(fileNodeObjectData => this.convertFODNodetoFONode(fileNodeObjectData));
+      this.hierarchyError = false;
       this.hierarchyLoaded = true;
     });
   }

@@ -1,6 +1,6 @@
 import { partition } from 'lodash-es';
 
-import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphEdge, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { uuidv4 } from 'app/shared/utils/identifiers';
@@ -18,8 +18,6 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     super();
   }
 
-  // TODO: This is developed parallel to the groups - it can go into master before them
-  // TODO: so it is required to adjust that on groups PR as well
   keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
     if (event.event.key === 'd' && isCtrlOrMetaPressed(event.event)) {
       const actions: GraphAction[] = [];
@@ -31,10 +29,19 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       const [edges, otherEntities] = partition(selection, entity => {
         return entity.type === GraphEntityType.Edge;
       });
+
+      const [groups, nodes] = partition(selection, entity => {
+        return entity.type === GraphEntityType.Group;
+      });
       // Select if there is only one entity copied
       const shouldSelect = selection.length === 1;
       const hashMap = new Map<string, string>();
-      for (const entity of otherEntities) {
+
+      // TODO: Ask what we want to do. Copy entire group? Just the parts? Just the nodes? Group if all nodes are selected?
+      // for (const entity of groups) {
+      // }
+
+      for (const entity of nodes) {
         const node = entity.entity as UniversalGraphNode;
         const newHash = uuidv4();
         // This works also for groups, as those inherit from the node

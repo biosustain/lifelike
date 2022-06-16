@@ -5,31 +5,29 @@ import { partition } from 'lodash-es';
 
 import {
   GraphEntity,
-  GraphEntityType,
+  GraphEntityType, UniversalGraphGroup,
   UniversalEdgeStyle,
-  UniversalGraph,
+  KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode,
+  UniversalGraphNode, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
-import {
-  EdgeRenderStyle,
-  NodeRenderStyle,
-  PlacedEdge,
-  PlacedNode,
-} from 'app/graph-viewer/styles/styles';
-import { nullCoalesce } from 'app/shared/utils/types';
+import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
+import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
+import { compileFind, FindOptions } from 'app/shared/utils/find';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
+import { Point } from '../../utils/canvas/shared';
 
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
   edgeRenderStyle: EdgeRenderStyle;
+  groupRenderStyle: GroupRenderStyle;
   backgroundFill?: string;
 }
 
@@ -49,6 +47,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Style used to render edges.
    */
   edgeRenderStyle: EdgeRenderStyle;
+
+  /**
+   * Style used to render group.
+   */
+  groupRenderStyle: GroupRenderStyle;
 
   /**
    * The canvas background, if any.
@@ -324,7 +327,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  setGraph(graph: UniversalGraph): void {
+  setGraph(graph: KnowledgeMapGraph): void {
     super.setGraph(graph);
     this.renderTree.clear();
   }
@@ -429,6 +432,23 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
+  placeGroup(d: UniversalGraphGroup): PlacedGroup {
+    const placedGroup = this.renderTree.get(d) as PlacedGroup;
+    if (placedGroup) {
+      return placedGroup;
+    } else {
+      const ctx = this.canvas.getContext('2d');
+
+      const newGroup = this.groupRenderStyle.placeGroup(d, ctx, {
+        selected: this.isAnySelected(d),
+        highlighted: this.isAnyHighlighted(d),
+      });
+
+      this.renderTree.set(d, newGroup);
+      return newGroup;
+    }
+  }
+
   invalidateAll(): void {
     this.renderTree.clear();
   }
@@ -439,6 +459,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * @param d the node
    */
   invalidateNode(d: UniversalGraphNode): void {
+
     this.renderTree.delete(d);
     for (const edge of this.edges) {
       if (edge.from === d.hash || edge.to === d.hash) {
@@ -457,6 +478,30 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   /**
+   * Invalidate any cache entries for the given group. If changes are made
+   * that might affect how the group is rendered, this method must be called.
+   * @param d the group
+   */
+  invalidateGroup(d: UniversalGraphGroup): void {
+    for (const node of d.members) {
+      this.invalidateNode(node);
+    }
+    this.renderTree.delete(d);
+  }
+
+  /**
+   * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
+   * @param d node or group casted to node.
+   */
+  invalidateNodelike(d: UniversalGraphNodelike): void {
+    if (d.label === GROUP_LABEL) {
+      this.invalidateGroup(d as UniversalGraphGroup);
+    } else {
+      this.invalidateNode(d as UniversalGraphNode);
+    }
+  }
+
+  /**
    * Invalidate any cache entries for the given entity. Helper method
    * that calls the correct invalidation method.
    * @param entity the entity
@@ -466,31 +511,41 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       this.invalidateNode(entity.entity as UniversalGraphNode);
     } else if (entity.type === GraphEntityType.Edge) {
       this.invalidateEdge(entity.entity as UniversalGraphEdge);
+    } else if (entity.type === GraphEntityType.Group) {
+      this.invalidateGroup(entity.entity as UniversalGraphGroup);
     }
   }
 
-  getLocationAtMouse(): [number, number] {
+  /**
+   * Allows checking if node has a group without exposing groupHashMap for modification
+   * @param node - node to check
+   */
+  getNodeGroup(node: UniversalGraphNode): UniversalGraphGroup | undefined {
+    return this.groupHashMap.get(node.hash);
+  }
+
+  getLocationAtMouse(): Point {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
-    return [x, y];
+    return {x, y};
   }
 
   getEntityAtMouse(): GraphEntity | undefined {
-    const [x, y] = this.getLocationAtMouse();
-    return this.getEntityAtPosition(x, y);
+    const position = this.getLocationAtMouse();
+    return this.getEntityAtPosition(position);
   }
 
   /**
    * Graph look-up by position. Returns entity - or undefined. As multiple entities can be there,
    * we need to evaluate the click according to the display order:
    * Images > Nodes > Edges
-   * @param x - x position
-   * @param y - y position
+   * Images > > Nodes > Edges > Groups
+   * @param point - {x, y} of mouse click
    */
-  getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
+  getEntityAtPosition(point: Point): GraphEntity | undefined {
     const [nodes, images] = partition(this.nodes, n => n.image_id == null);
-    const image = this.getNodeAtPosition(images, x, y);
+    const image = this.getNodeAtPosition(images, point);
     if (image) {
       return {
         type: GraphEntityType.Node,
@@ -498,7 +553,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       };
     }
 
-    const node = this.getNodeAtPosition(nodes, x, y);
+
+    const node = this.getNodeAtPosition(nodes, point);
     if (node) {
       return {
         type: GraphEntityType.Node,
@@ -506,12 +562,22 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       };
     }
 
-    const edge = this.getEdgeAtPosition(this.edges, x, y);
+
+    // Check and return edge first
+    const edge = this.getEdgeAtPosition(this.edges, point);
     if (edge) {
       return {
         type: GraphEntityType.Edge,
         entity: edge,
       };
+    }
+
+    const group = this.getGroupAtPosition(this.groups, point);
+    if (group) {
+      return {
+          type: GraphEntityType.Group,
+          entity: group
+        };
     }
     return undefined;
   }
@@ -634,6 +700,41 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.invalidateAll();
+  }
+
+  /**
+   * Get all nodes and edges that match some search terms.
+   * @param terms the terms
+   * @param options additional find options
+   */
+  findMatching(terms: string[], options: FindOptions = {}): GraphEntity[] {
+    const matcher = compileFind(terms, options);
+    const matches: GraphEntity[] = [];
+
+    for (const node of this.nodes) {
+      const data: { detail?: string } = node.data != null ? node.data : {};
+      const text = ((node.display_name ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+
+      if (matcher(text)) {
+        matches.push({
+          type: GraphEntityType.Node,
+          entity: node,
+        });
+      }
+    }
+
+    for (const edge of this.edges) {
+      const data: { detail?: string } = edge.data != null ? edge.data : {};
+      const text = ((edge.label ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+      if (matcher(text)) {
+        matches.push({
+          type: GraphEntityType.Edge,
+          entity: edge,
+        });
+      }
+    }
+
+    return matches;
   }
 
   // ========================================
@@ -815,7 +916,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     yield* this.drawTouchPosition(ctx);
     yield* this.drawSelectionBackground(ctx);
-    yield* this.drawLayoutGroups(ctx);
+    yield* this.drawGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx, nodes);
     yield* this.drawNodes(ctx, images);
@@ -887,22 +988,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawLayoutGroups(ctx: CanvasRenderingContext2D) {
+  private* drawGroups(ctx: CanvasRenderingContext2D) {
     yield null;
 
-    // TODO: This is currently only for demo
-    for (const d of this.layoutGroups) {
-      if (d.leaves.length) {
-        ctx.beginPath();
-        const bbox = this.getNodeBoundingBox(d.leaves.map(entry => entry.reference), 10);
-        ctx.fillStyle = d.color;
-        ctx.strokeStyle = d.color;
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.globalAlpha = 0.1;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.stroke();
-      }
+    for (const group of this.groups) {
+      ctx.beginPath();
+      this.placeGroup(group).draw(this.transform);
     }
   }
 
@@ -968,22 +1059,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+      const source = placedTo.lineIntersectionPoint(from.data as Point);
+      const target = placedFrom.lineIntersectionPoint(to.data as Point);
 
-      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
-      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-      const lineWidth = lineWidthScale * 1 + 20;
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
 
       (new LineEdge(ctx, {
-        source: {
-          x: fromX,
-          y: fromY,
-        },
-        target: {
-          x: toX,
-          y: toY,
-        },
+        source,
+        target,
         stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
           lineCap: 'square',
         }),
@@ -1018,22 +1103,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+      const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
+      const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
 
-      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
-      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-      const lineWidth = lineWidthScale * 1 + 20;
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
 
       (new LineEdge(ctx, {
-        source: {
-          x: fromX,
-          y: fromY,
-        },
-        target: {
-          x: toX,
-          y: toY,
-        },
+        source,
+        target,
         stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),
@@ -1083,7 +1162,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
-    const entityAtMouse = this.getEntityAtPosition(graphX, graphY);
 
     this.hoverPosition = {x: graphX, y: graphY};
 

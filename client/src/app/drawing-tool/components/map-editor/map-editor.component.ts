@@ -1,40 +1,31 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
-import {
-  CompoundAction,
-  GraphAction,
-  GraphActionReceiver,
-} from 'app/graph-viewer/actions/actions';
+import { CompoundAction, GraphAction, GraphActionReceiver, } from 'app/graph-viewer/actions/actions';
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { LockError } from 'app/file-browser/services/filesystem.service';
 import { ObjectLock } from 'app/file-browser/models/object-lock';
-import { MimeTypes } from 'app/shared/constants';
+import { GROUP_LABEL, MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
+import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
+import { uuidv4 } from 'app/shared/utils/identifiers';
+import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 
-import { KnowledgeMap, UniversalGraph } from '../../services/interfaces';
+
+import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -49,7 +40,7 @@ import { extractGraphEntityActions } from '../../utils/data';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
+export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
@@ -129,14 +120,14 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.clearLockInterval();
   }
 
-  getExtraSource(): Observable<UniversalGraph | null> {
+  getExtraSource(): Observable<KnowledgeMapGraph | null> {
     return from([this.locator]).pipe(switchMap(
       locator => this.filesystemService.getBackupContent(locator)
         .pipe(
           switchMap(blob => blob
             ? of(blob).pipe(
               mapBlobToBuffer(),
-              mapBufferToJson<UniversalGraph>(),
+              mapBufferToJson<KnowledgeMapGraph>(),
             )
             : of(null)),
           this.errorHandler.create({label: 'Load map backup'}),
@@ -144,7 +135,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     ));
   }
 
-  handleExtra(backup: UniversalGraph | null) {
+  handleExtra(backup: KnowledgeMapGraph | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
@@ -176,7 +167,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut',
       new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10); // from below
+    this.graphCanvas.behaviors.add('moving', new MovableEntity(this.graphCanvas), -10); // from below
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation',
       new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
@@ -195,7 +186,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     if (this.map) {
       const observable = this.filesystemService.putBackup({
         hashId: this.locator,
-        contentValue: new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+        contentValue: new Blob([JSON.stringify(this.graphCanvas.getExportableGraph())], {
           type: MimeTypes.Map,
         }),
       });
@@ -208,7 +199,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.providerSubscription$ = this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
         readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
-          mapBufferToJson<UniversalGraph>(),
+          mapBufferToJson<KnowledgeMapGraph>(),
           this.errorHandler.create({label: 'Restore map from backup'}),
         ).subscribe(graph => {
           this.graphCanvas.execute(new KnowledgeMapRestore(
@@ -223,6 +214,27 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         });
       });
     });
+  }
+
+  /**
+   * Checks if current selection allows to create a group. For that, we need at least 2 nodes.
+   */
+  canCreateGroupFromSelection() {
+    const selection = this.graphCanvas?.selection.get();
+    if (selection) {
+      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 1 &&
+        selection.filter(entity => entity.type === GraphEntityType.Group).length === 0;
+    }
+    return false;
+  }
+
+  canExtendsGroupFromSelection() {
+    const selection = this.graphCanvas?.selection.get();
+    if (selection) {
+      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 0 &&
+        selection.filter(entity => entity.type === GraphEntityType.Group).length === 1;
+    }
+    return false;
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -395,6 +407,44 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       event.preventDefault();
     }
   }
+
+  createGroup() {
+    this.graphCanvas?.execute(new GroupCreation(
+      'Create group',
+      {
+        members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
+          [entity.entity as UniversalGraphNode] : []),
+        margin: 10,
+        hash: uuidv4(),
+        display_name: '',
+        label: GROUP_LABEL,
+        sub_labels: [],
+        // This data depends on members, so we can't calculate it now
+        data: {
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100
+        }
+      }, true
+    ));
+  }
+
+  addToGroup() {
+    const selection = this.graphCanvas?.selection.get();
+    // TODO: Error on 0 or 2?
+    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as UniversalGraphGroup;
+
+    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []);
+    // No duplicates
+    const newMembers = potentialMembers.filter(node => !group.members.includes(node));
+    this.graphCanvas?.execute(new GroupExtension(
+      'Add new members to group',
+      group,
+      newMembers
+    ));
+  }
+
 }
 
 class KnowledgeMapUpdate implements GraphAction {
@@ -417,8 +467,8 @@ class KnowledgeMapUpdate implements GraphAction {
 class KnowledgeMapRestore implements GraphAction {
   constructor(public description: string,
               public graphCanvas: CanvasGraphView,
-              public updatedData: UniversalGraph,
-              public originalData: UniversalGraph) {
+              public updatedData: KnowledgeMapGraph,
+              public originalData: KnowledgeMapGraph) {
   }
 
   apply(component: GraphActionReceiver) {
