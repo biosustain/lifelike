@@ -1,5 +1,7 @@
 import { Directive, EventEmitter, Input, Output, HostBinding, HostListener } from '@angular/core';
 
+import { pick } from 'lodash-es';
+
 export enum SortDirection {
   asc = 'asc',
   desc = 'desc',
@@ -14,8 +16,8 @@ const rotate: { [key: string]: SortDirectionType } = {
   [SortDirection.none]: SortDirection.asc
 };
 
-export interface SortEvent {
-  id: any;
+export interface SortEvent<ID = string> {
+  id: ID;
   direction: SortDirectionType;
 }
 
@@ -23,15 +25,15 @@ export interface SortEvent {
   selector: 'th[appSortable]',
   exportAs: 'appSortable'
 })
-export class SortableTableHeaderDirective {
+export class SortableTableHeaderDirective<ID = string> {
   // tslint:disable-next-line:no-input-rename
-  @Input() @Input('appSortable') id: any;
+  @Input('appSortable') id: ID;
   @HostBinding('attr.data-sort') @Input() public direction: SortDirectionType = SortDirection.none;
 
-  @Output() sort = new EventEmitter<SortEvent>();
+  @Output() sort = new EventEmitter<SortEvent<ID>>();
 
   @HostListener('click') rotate() {
     this.direction = rotate[this.direction || SortDirection.none];
-    this.sort.emit({...this});
+    this.sort.emit(pick(this, 'id', 'direction'));
   }
 }
