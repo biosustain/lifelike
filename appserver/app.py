@@ -1,3 +1,4 @@
+import sys
 from typing import List
 import click
 import copy
@@ -30,7 +31,8 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
-    LogEventType
+    LogEventType, FILE_MIME_TYPE_DIRECTORY, SEED_FILE_KEY_FILES, SEED_FILE_KEY_USER,
+    SEED_FILE_KEY_FILE_CONTENT
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.exceptions import OutdatedVersionException
@@ -38,7 +40,6 @@ from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
 from neo4japp.models.files import FileContent, Files
-from neo4japp.models import Projects
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
@@ -188,82 +189,82 @@ def seed(filename):
 @click.argument('filenames', nargs=-1)
 def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filenames: tuple):
     if not len(filenames):
-        print('Please specify at least one filename!')
+        print('Please specify at least one filename!', file=sys.stderr)
         return
 
     with open(seed_filename, 'r') as f:
         fixtures = json.load(f)
-        files = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.Files', fixtures)
+        files = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
                      )[0]['records']
-        users = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.AppUser', fixtures)
+        users = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
                      )[0]['records']
         selected_user = list(filter(lambda user: user['id'] == owner, users))
         if not selected_user:
-            print(f"Cannot find user with id {owner} in seed file: {seed_filename}")
+            print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
+                  file=sys.stderr)
             return
         selected_directory = list(filter(lambda file: file['id'] == directory and
                                          file.get('mime_type', '')
-                                         == 'vnd.***ARANGO_DB_NAME***.filesystem/directory', files))
+                                         == FILE_MIME_TYPE_DIRECTORY, files))
         if not selected_directory:
-            print(f"Cannot find directory with id {directory} in seed file: {seed_filename}")
+            print(f"Cannot find directory with id {directory} in seed file: {seed_filename}",
+                  file=sys.stderr)
             return
 
     conn = db.engine.connect()
     trans = conn.begin()
 
-    t_file = Files.__table__.alias('t_file')
-    t_file_content = FileContent.__table__.alias('t_file_content')
-
-    query = select([
-        t_file.c.id,
-        t_file.c.hash_id,
-        t_file.c.filename,
-        t_file.c.mime_type,
-        t_file.c.content_id,
-        t_file_content.c.raw_file,
-    ]).select_from(
-        t_file.join(t_file_content, t_file_content.c.id == t_file.c.content_id)
-    ).where(
-        and_(t_file.c.filename.in_(filenames), t_file.c.deletion_date.is_(None))
+    query = db.session.query(
+        Files.id,
+        Files.hash_id,
+        Files.filename,
+        Files.mime_type,
+        Files.content_id,
+        FileContent.raw_file,
+    ).filter(
+        Files.content_id == FileContent.id
+    ).filter(
+        and_(Files.filename.in_(filenames), Files.deletion_date.is_(None))
     ).group_by(
-        t_file.c.id,
-        t_file.c.hash_id,
-        t_file.c.filename,
-        t_file.c.mime_type,
-        t_file.c.content_id,
-        t_file_content.c.raw_file,
+        Files.id,
+        Files.hash_id,
+        Files.filename,
+        Files.mime_type,
+        Files.content_id,
+        FileContent.raw_file,
     )
 
     results = [
         {
-            'id': id,
+            'id': fid,
             'hash_id': hash_id,
             'filename': filename,
             'mime_type': mime_type,
             'content_id': content_id,
             'raw_file': raw_file,
-        } for id, hash_id, filename, mime_type, content_id, raw_file
+        } for fid, hash_id, filename, mime_type, content_id, raw_file
         in db.session.execute(query).fetchall()]
 
     if not len(results):
-        print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!')
+        print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
+              file=sys.stderr)
         return
 
     if len(results) != len(filenames):
-        print('Could not retrieve some of the files! Was able to retrieve:')
+        print('Could not retrieve some of the files! Was able to retrieve:', file=sys.stderr)
         correct = [res['filename'] for res in results]
-        print(', '.join(correct))
-        print('Missing files:')
+        print(', '.join(correct), file=sys.stderr)
+        print('Missing files:', file=sys.stderr)
         missing = [filename for filename in filenames if filename not in correct]
-        print('', ''.join(missing))
+        print('', ''.join(missing), file=sys.stderr)
         return
 
     with open(seed_filename, 'r') as f:
         fixtures = json.load(f)
-        files = list(filter(lambda fix: fix.get('model') == 'neo4japp.models.Files', fixtures)
+        files = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
                      )[0]['records']
         file_content = list(filter(lambda fix:
-                                   fix.get('model') == 'neo4japp.models.FileContent', fixtures)
+                                   fix.get('model') == SEED_FILE_KEY_FILE_CONTENT, fixtures)
                             )[0]['records']
 
         new_id = max([file['id'] for file in files]) + 1
@@ -401,18 +402,10 @@ def upload_lmdb():
 @app.cli.command('create-lmdb')
 @click.option('--file-type', type=str)
 def create_lmdb_files(file_type):
-    valid_values = set([
-        EntityType.ANATOMY.value,
-        EntityType.CHEMICAL.value,
-        EntityType.COMPOUND.value,
-        EntityType.DISEASE.value,
-        EntityType.FOOD.value,
-        EntityType.GENE.value,
-        EntityType.PHENOMENA.value,
-        EntityType.PHENOTYPE.value,
-        EntityType.PROTEIN.value,
-        EntityType.SPECIES.value
-    ])
+    valid_values = {EntityType.ANATOMY.value, EntityType.CHEMICAL.value, EntityType.COMPOUND.value,
+                    EntityType.DISEASE.value, EntityType.FOOD.value, EntityType.GENE.value,
+                    EntityType.PHENOMENA.value, EntityType.PHENOTYPE.value,
+                    EntityType.PROTEIN.value, EntityType.SPECIES.value}
     if file_type is not None and file_type not in valid_values:
         raise ValueError(f'Only these valid values are accepted: {valid_values}')
     service = get_lmdb_service()
