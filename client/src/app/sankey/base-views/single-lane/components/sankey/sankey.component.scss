@@ -153,6 +153,12 @@ app-sankey-single-lane {
         stroke-dasharray: 4 4;
       }
 
+      @each $type, $color in this.$edge-color-map {
+        &[type=#{$type}] {
+          @include link-color($color);
+        }
+      }
+
       &[highlighted="false"],
       &[selected="false"],
       &[transitively-selected="false"] {

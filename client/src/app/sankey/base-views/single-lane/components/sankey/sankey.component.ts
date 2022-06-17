@@ -236,17 +236,18 @@ export class SankeySingleLaneComponent
           tap(linksSelection => {
               if (colorLinkByType) {
                 linksSelection
-                  .each(function({label}) {
-                    const color = EdgeColorCodes[label.toLowerCase()];
-                    const stroke = color ? d3color(color).darker(0.5) : color;
-                    if (isDevMode()) {
-                      // This warning should not appear in prod "by design", yet it might be important for debugging
-                      warningController.assert(color, ErrorMessages.noColorMapping(label));
-                    }
-                    return d3_select(this)
-                      .style('stroke', stroke)
-                      .style('fill', color);
-                  });
+                  .attr('type', ({label}) => label.toLowerCase());
+                  // .each(function({label}) {
+                  //   const color = EdgeColorCodes[label.toLowerCase()];
+                  //   const stroke = color ? d3color(color).darker(0.5) : color;
+                  //   if (isDevMode()) {
+                  //     // This warning should not appear in prod "by design", yet it might be important for debugging
+                  //     warningController.assert(color, ErrorMessages.noColorMapping(label));
+                  //   }
+                  //   return d3_select(this)
+                  //     .style('stroke', stroke)
+                  //     .style('fill', color);
+                  // });
               } else {
                 linksSelection
                   .style('stroke', undefined)
