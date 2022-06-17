@@ -26,7 +26,7 @@ export class ConstrainToViewportDirective implements AfterViewInit, OnDestroy, O
   private _margin$ = new BehaviorSubject<number>(30);
   private _viewport$$ = new BehaviorSubject<Observable<Viewport>>(windowResizeObservable.pipe(map(size => ({x: 0, y: 0, ...size}))));
   private _viewport$ = this._viewport$$.pipe(switchMap(viewport$ => viewport$));
-  private _resize$$ = new BehaviorSubject(createResizeObservable(this.element.nativeElement));
+  private _resize$$ = new BehaviorSubject(createResizeObservable(this.element.nativeElement, {leading: true}));
   private _resize$ = this._resize$$.pipe(switchMap(resize$ => resize$));
   @Input() resize$;
   @Input() margin;
