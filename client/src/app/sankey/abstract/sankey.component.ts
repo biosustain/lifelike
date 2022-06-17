@@ -720,9 +720,9 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   }
 
   // region Highlight
-  highlightTraces(traces: Set<object>) {
-    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
-  }
+  // highlightTraces(traces: Set<object>) {
+  //   this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
+  // }
 
   highlightNodeGroup(group) {
     this.nodeSelection
