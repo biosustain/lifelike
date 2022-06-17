@@ -420,7 +420,7 @@ ICON_NODES = ['map', 'link', 'note']
 DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
-MAX_ALLOWED_LOGIN_FAILURES = 5
+MAX_ALLOWED_LOGIN_FAILURES = 6
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
