@@ -5,6 +5,14 @@ import { isEqual, partialRight, mapValues } from 'lodash-es';
 import { debug } from './debug';
 import { ExtendedWeakMap } from '../utils/types';
 
+interface CreateResizeObservableConfig {
+  leading: boolean;
+}
+
+const defaultCreateResizeObservableConfig: CreateResizeObservableConfig = {
+  leading: false
+};
+
 /**
  * Returns observable of native element size (might be constant even if window resizes)
  *
@@ -15,8 +23,15 @@ import { ExtendedWeakMap } from '../utils/types';
  *
  * @param element - DOM element to observe
  */
-export function createResizeObservable(element: HTMLElement): Observable<DOMRectReadOnly> {
+export function createResizeObservable(
+  element: HTMLElement,
+  config = defaultCreateResizeObservableConfig
+): Observable<DOMRectReadOnly> {
   return new Observable<DOMRectReadOnly>(subscriber => {
+    if (config.leading) {
+      const size = element.getBoundingClientRect();
+      subscriber.next(size);
+    }
     // @ts-ignore there is not type definition for ResizeObserver in Angular
     const ro = new ResizeObserver(() => {
       const size = element.getBoundingClientRect();
@@ -40,7 +55,7 @@ export function createResizeObservable(element: HTMLElement): Observable<DOMRect
     throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
     // Only actual change
     distinctUntilChanged(isEqual),
-    debug('resize-observable'),
+    debug('resize-observable', element),
     // Do no resize if not displayed
     filter<DOMRect>(({width, height}) => width !== 0 && height !== 0),
     share()
