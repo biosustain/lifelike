@@ -53,7 +53,7 @@
     "moment": "^2.24.0",
     "ng2-charts": "^2.3.0",
     "ngrx-store-localstorage": "9.0.0",
-    "pdfjs-dist": "2.9.359",
+    "pdfjs-dist": "2.14.305",
     "qtip2": "3.0.3",
     "rxjs": "~6.6.7",
     "tslib": "^1.10.0",
