@@ -79,8 +79,9 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     }
 
     // Otherwise, try to create a note or link node from available data
-    // Unless this is an image transfer
-    if (!nodeData && !relationshipData && !imageData) {
+    // Unless this is an image transfer/upload
+    // TODO: This checks gets crazy - what about using the confidence level instead? If there is something with higher conf, do that?
+    if (!nodeData && !relationshipData && !imageData && !dataTransfer.items[0]?.type.startsWith('image/')) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];

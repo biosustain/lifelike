@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
-import { defaultIfEmpty, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { map, switchMap, take, tap } from 'rxjs/operators';
 
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
-import { IMAGE_DEFAULT_SIZE } from 'app/shared/constants';
+import { IMAGE_DEFAULT_SIZE, IMAGE_LABEL, MimeTypes } from 'app/shared/constants';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { DataTransferData } from 'app/shared/services/data-transfer-data.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
+import { Point } from 'app/graph-viewer/utils/canvas/shared';
 
 import { MapImageProviderService } from './map-image-provider.service';
 import { extractGraphEntityActions } from '../utils/data';
 import { IMAGE_TOKEN, ImageTransferData } from '../providers/image-entity-data.provider';
+import { IMAGE_UPLOAD_TOKEN } from '../providers/image-upload-data.provider';
 
 @Injectable()
 export class GraphActionsService {
@@ -21,8 +23,38 @@ export class GraphActionsService {
               readonly filesystemService: FilesystemService) { }
 
   // TODO: Change hoverPosition into point after merge with canvas-refactor PR
-  async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: {x: number, y: number}): Promise<GraphAction[]> {
+  async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point, parentId: string): Promise<GraphAction[]> {
+    console.log(items);
+
     const actions = extractGraphEntityActions(items, hoverPosition);
+    console.log(actions);
+
+
+    const imageUploadItems = items.filter(item => item.token === IMAGE_UPLOAD_TOKEN);
+    for (const imageUploadItem of imageUploadItems) {
+      const file = imageUploadItem.data as File;
+      const res = await this.filesystemService.create({
+        mimeType: file.type,
+        filename: file.name,
+        parentHashId: parentId,
+        contentValue: file as Blob,
+      }).toPromise();
+      items.push({
+        token: IMAGE_TOKEN,
+        data: {
+          node: {
+            display_name: file.name,
+            label: IMAGE_LABEL,
+            sub_labels: [],
+          },
+          hash: res.bodyValue?.hashId
+        },
+        confidence: 100,
+      });
+    }
+
+
+
     const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
     let node;
     const imageId = makeid();
@@ -43,7 +75,7 @@ export class GraphActionsService {
         ...node,
         hash: uuidv4(),
         image_id: imageId,
-        label: 'image',
+        label: IMAGE_LABEL,
         data: {
           x: hoverPosition.x,
           y: hoverPosition.y,
@@ -54,6 +86,8 @@ export class GraphActionsService {
     }),
       tap(action => actions.push(action)),
     ).toPromise();
+
+    console.log(actions);
 
     return actions;
   }
