@@ -29,7 +29,7 @@ export class ImageEntityDataProvider implements DataTransferDataProvider {
           node,
           hash
         },
-        confidence: 0
+        confidence: 100
       }];
     }
     return [];
