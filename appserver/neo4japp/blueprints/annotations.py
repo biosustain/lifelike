@@ -89,7 +89,6 @@ from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMappin
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 
-
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
@@ -114,10 +113,10 @@ class FileAnnotationsView(FilesystemBaseView):
             for annotation in annotations:
                 for exclusion in file.excluded_annotations:
                     if (exclusion.get('type') == annotation['meta']['type'] and
-                            terms_match(
-                                exclusion.get('text', 'True'),
-                                annotation.get('textInDocument', 'False'),
-                                exclusion['isCaseInsensitive'])):
+                        terms_match(
+                            exclusion.get('text', 'True'),
+                            annotation.get('textInDocument', 'False'),
+                            exclusion['isCaseInsensitive'])):
                         annotation['meta']['isExcluded'] = True
                         annotation['meta']['exclusionReason'] = exclusion['reason']
                         annotation['meta']['exclusionComment'] = exclusion['comment']
@@ -308,9 +307,9 @@ class FileAnnotationSortedView(FilesystemBaseView):
         ]
 
         value_keys = sorted(
-                values,
-                key=lambda key: values[key]['value'],
-                reverse=True
+            values,
+            key=lambda key: values[key]['value'],
+            reverse=True
         )
 
         for key in value_keys:
@@ -330,8 +329,8 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
     @use_args({
         "sort": fields.Str(
-                missing=default_sorted_annotation.id,
-                validate=validate.OneOf(sorted_annotations_dict)
+            missing=default_sorted_annotation.id,
+            validate=validate.OneOf(sorted_annotations_dict)
         ),
         "hash_id": fields.Str()
     })
@@ -347,8 +346,8 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
         if file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
             files = self.get_nondeleted_recycled_files(
-                    Files.id == file.id,
-                    lazy_load_content=True
+                Files.id == file.id,
+                lazy_load_content=True
             )
 
             annotation_service = get_sorted_annotation_service(sort, mime_type=file.mime_type)
@@ -356,12 +355,12 @@ class FileAnnotationSortedView(FilesystemBaseView):
                 writer.writerow(row)
         else:
             files = get_nondeleted_recycled_children_query(
-                    Files.id == file.id,
-                    children_filter=and_(
-                            Files.mime_type == 'application/pdf',
-                            Files.recycling_date.is_(None)
-                    ),
-                    lazy_load_content=True
+                Files.id == file.id,
+                children_filter=and_(
+                    Files.mime_type == 'application/pdf',
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
             ).all()
 
             annotation_service = get_sorted_annotation_service(sort)
@@ -371,11 +370,11 @@ class FileAnnotationSortedView(FilesystemBaseView):
         result = buffer.getvalue().encode('utf-8')
 
         return make_cacheable_file_response(
-                request,
-                result,
-                etag=hashlib.sha256(result).hexdigest(),
-                filename=f'{file.filename} - {sort} - Annotations.tsv',
-                mime_type='text/tsv'
+            request,
+            result,
+            etag=hashlib.sha256(result).hexdigest(),
+            filename=f'{file.filename} - {sort} - Annotations.tsv',
+            mime_type='text/tsv'
         )
 
 
@@ -421,8 +420,13 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
 
 class FileAnnotationsGenerationView(FilesystemBaseView):
-    def annotate_files(self, files, user_id, override_organism=None,
-        override_annotation_configs=None):
+    def annotate_files(
+        self,
+        files,
+        user_id,
+        override_organism=None,
+        override_annotation_configs=None
+    ):
         updated_files = []
         versions = []
         results = {}
@@ -472,7 +476,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     enrichment = json.loads(file.content.raw_file_utf8)
                 except JSONDecodeError:
                     current_app.logger.error(
-                        f'Cannot annotate file with invalid content: {file.hash_id}, {file.filename}')  # noqa
+                        f'Cannot annotate file with invalid content: {file.hash_id}, '
+                        f'{file.filename}')  # noqa
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
@@ -497,7 +502,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
+                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename,
+                        e)  # noqa
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
@@ -672,8 +678,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     # first cell will always have the correct index
                     # update index offset to be relative to the cell again
                     # since they're relative to the combined text
-                    anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
-                    anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
+                    anno['loLocationOffset'] = anno['loLocationOffset'] - (
+                        prev_index + 1) - 1  # noqa
+                    anno['hiLocationOffset'] = anno['loLocationOffset'] + anno[
+                        'keywordLength'] - 1  # noqa
 
                 if 'domain' in cell_text:
                     # imported should come first for each row
@@ -690,21 +698,19 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 original_text=cell_text['text'],
                 annotations=annotation_chunk
             )
+            enrichment_genes_index = enrichment['result']['genes'][cell_text['index']]
             if cell_text['domain'] == 'Imported':
-                enrichment['result']['genes'][cell_text[
-                    'index']]['annotatedImported'] = snippet
+                enrichment_genes_index['annotatedImported'] = snippet
             elif cell_text['domain'] == 'Matched':
-                enrichment['result']['genes'][cell_text[
-                    'index']]['annotatedMatched'] = snippet
+                enrichment_genes_index['annotatedMatched'] = snippet
             elif cell_text['domain'] == 'Full Name':
-                enrichment['result']['genes'][cell_text[
-                    'index']]['annotatedFullName'] = snippet
+                enrichment_genes_index['annotatedFullName'] = snippet
             else:
-                enrichment['result'][
-                    'genes'][cell_text[
-                        'index']]['domains'][cell_text[
-                            'domain']][cell_text[
-                                'label']]['annotatedText'] = snippet
+                enrichment_genes_index \
+                    .get('domains') \
+                    .get(cell_text['domain']) \
+                    .get(cell_text['label'])['annotatedText'] = \
+                    snippet
 
             prev_index = index
 
@@ -748,7 +754,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             lo_location_offset = annotation['loLocationOffset']
             hi_location_offset = annotation['hiLocationOffset']
 
-            text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">{term}</annotation>'  # noqa
+            text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
+                   f'{term}</annotation>'  # noqa
 
             if lo_location_offset == 0:
                 prev_ending_index = hi_location_offset
@@ -816,8 +823,10 @@ class GlobalAnnotationExportInclusions(MethodView):
         file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
 
         def get_inclusion_for_review(inclusion, file_uuids_map, graph):
-            user = AppUser.query.filter_by(id=file_uuids_map[inclusion['file_reference']]).one_or_none()  # noqa
-            deleter = f'User with id {file_uuids_map[inclusion["file_reference"]]} does not exist.'  # noqa
+            user = AppUser.query.filter_by(
+                id=file_uuids_map[inclusion['file_reference']]).one_or_none()  # noqa
+            deleter = f'User with id {file_uuids_map[inclusion["file_reference"]]} does not ' \
+                      f'exist.'  # noqa
             if user is None:
                 deleter = None
             elif user:
@@ -838,7 +847,8 @@ class GlobalAnnotationExportInclusions(MethodView):
             }
 
         data = [get_inclusion_for_review(
-            inclusion, file_uuids_map, graph) for inclusion in inclusions if inclusion['file_reference'] in file_uuids_map]  # noqa
+            inclusion, file_uuids_map, graph) for inclusion in inclusions if
+            inclusion['file_reference'] in file_uuids_map]  # noqa
 
         exporter = get_excel_export_service()
         response = make_response(exporter.get_bytes(data), 200)
@@ -899,6 +909,7 @@ class GlobalAnnotationExportExclusions(MethodView):
                 'reason': exclusion.reason,
                 'comment': exclusion.comment
             }
+
         data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
 
         exporter = get_excel_export_service()
@@ -967,7 +978,8 @@ class GlobalAnnotationListView(MethodView):
         else:
             graph = get_annotation_graph_service()
             global_inclusions = graph.exec_read_query_with_params(
-                get_global_inclusions_paginated_query(), {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit})  # noqa
+                get_global_inclusions_paginated_query(),
+                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit})  # noqa
 
             file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
             file_data_query = db.session.query(

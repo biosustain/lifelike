@@ -85,8 +85,9 @@ class AccountView(MethodView):
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
-            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
-                .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
+            t_appuser
+            .join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
+            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
@@ -226,8 +227,11 @@ class AccountView(MethodView):
                             setattr(file, key, value)
                     content_path = INITIAL_PROJECT_PATH / file_metadata['path']
                     file.filename = file.filename or content_path.stem
-                    updated_map_content = mapTypeProvider.update_map({}, content_path,
-                                                                         update_map_links)
+                    updated_map_content = mapTypeProvider.update_map(
+                        {},
+                        content_path,
+                        update_map_links
+                    )
                     file.content_id = FileContent().get_or_create(updated_map_content)
 
                     file.user_id = user.id
@@ -237,7 +241,6 @@ class AccountView(MethodView):
                     file_map[file_metadata['path']] = file
 
         return file_map.values()
-
 
     @use_args(UserCreateSchema)
     def post(self, params: dict):
@@ -428,7 +431,8 @@ def reset_password(email: str):
     random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
     new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
-                 (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + MIN_TEMP_PASS_LENGTH
+        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
+        MIN_TEMP_PASS_LENGTH
     new_password = ''.join(random.sample([secrets.choice(RESET_PASSWORD_SYMBOLS)] +
                                          [secrets.choice(string.ascii_uppercase)] +
                                          [secrets.choice(string.digits)] +

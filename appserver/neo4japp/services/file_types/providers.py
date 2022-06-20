@@ -1216,7 +1216,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.save(result_string)
         return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
 
-    def update_map(self, params: dict, file_content, updater = lambda x: x):
+    def update_map(self, params: dict, file_content, updater=lambda x: x):
         try:
             zip_file = zipfile.ZipFile(file_content)
         except zipfile.BadZipfile:
