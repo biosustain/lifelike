@@ -88,7 +88,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
     const { newImageHashes, deletedImages } = this.graphCanvas.getImageChanges();
     const newImageBlobs = newImageHashes.map(hash => this.mapImageProviderService.getBlob(hash));
-    const graphString = JSON.stringify(this.graphCanvas.getGraph());
+    const graphString = JSON.stringify(this.graphCanvas.getExportableGraph());
     const bytes = new TextEncoder().encode(graphString);
     const content = new Blob([bytes], {
       type: 'application/json;charset=utf-8'
@@ -110,7 +110,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         .subscribe(() => {
           this.graphCanvas.saveImagesState();
           this.isSaving = false;
-          this.emitModuleProperties(); // TODO: what does this do?
+          this.emitModuleProperties();
           this.snackBar.open('Map saved.', null, {
             duration: 2000,
           });

@@ -110,7 +110,8 @@
         "parent_id": null,
         "user_id": 1,
         "public": false,
-        "content_id": null
+        "content_id": null,
+        "path": "/Example"
       },
       {
         "id": 2,
@@ -120,7 +121,8 @@
         "parent_id": null,
         "user_id": 1,
         "public": false,
-        "content_id": null
+        "content_id": null,
+        "path": "/COVID-19"
       },
       {
         "id": 3,
@@ -130,7 +132,8 @@
         "parent_id": null,
         "user_id": 1,
         "public": false,
-        "content_id": null
+        "content_id": null,
+        "path": "/Waterways"
       },
       {
         "id": 4,
@@ -141,7 +144,8 @@
         "parent_id": 1,
         "user_id": 1,
         "public": false,
-        "content_id": 1
+        "content_id": 1,
+        "path": "/Example/Microbiome affect on weight"
       },
       {
         "id": 5,
@@ -152,7 +156,8 @@
         "parent_id": 1,
         "user_id": 1,
         "public": true,
-        "content_id": 2
+        "content_id": 2,
+        "path": "/Example/COVID-19 Vaccine Blueprint"
       },
       {
         "id": 6,
@@ -163,7 +168,8 @@
         "parent_id": 1,
         "user_id": 1,
         "public": true,
-        "content_id": 3
+        "content_id": 3,
+        "path": "/Example/Intersect Metal Ions Reactions"
       },
       {
         "id": 7,
@@ -174,7 +180,8 @@
         "parent_id": 1,
         "user_id": 1,
         "public": true,
-        "content_id": 4
+        "content_id": 4,
+        "path": "/Example/All To All Example"
       },
       {
         "id": 8,
@@ -185,7 +192,8 @@
         "parent_id": 1,
         "user_id": 1,
         "public": true,
-        "content_id": 5
+        "content_id": 5,
+        "path": "/Example/Sample Enrichment Table"
       }
     ]
   },
