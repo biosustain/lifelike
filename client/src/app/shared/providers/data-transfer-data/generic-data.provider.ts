@@ -7,7 +7,6 @@ import {
   DataTransferDataProvider,
   DataTransferToken,
 } from '../../services/data-transfer-data.service';
-import { nullCoalesce } from '../../utils/types';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');
@@ -61,7 +60,7 @@ export class GenericDataProvider implements DataTransferDataProvider {
     for (const [uri, title] of chunk(data.split(/\r?\n/g), 2)) {
       if (uri.match(GenericDataProvider.acceptedUriPattern)) {
         uris.push({
-          title: nullCoalesce(title, fallbackTitle).trim().replace(/ {2,}/g, ' '),
+          title: (title ?? fallbackTitle).trim().replace(/ {2,}/g, ' '),
           uri,
         });
       }

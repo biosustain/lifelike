@@ -223,6 +223,23 @@ class OutdatedVersionException(ServerException):
             code=code)
 
 
+class UnsupportedMediaTypeError(ServerException):
+    """Signals that the client sent a request for an unsupported media type."""
+
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+    ):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
 # TODO: finish this
 # class FilesystemAccessRequestRequired(ServerException):
 #     """

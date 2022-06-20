@@ -1,11 +1,9 @@
 import 'canvas-plus';
 
-import { defaultLabelFontSize } from 'app/shared/constants';
-
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import { visibleTextThreshold } from '../shared';
+import { DEFAULT_LABEL_FONT_SIZE, drawStroke, drawStrokeAndFill, VISIBLE_TEXT_THRESHOLD } from '../shared';
 
 export interface RectangleNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -26,11 +24,14 @@ export class RectangleNode extends BaseRectangleNode {
   readonly stroke: Line | undefined;
   readonly forceVisibleText = false;
 
+  // This controls how 'rounded' the rect is
+  readonly ARC_SIZE = 5;
+
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {
     super(ctx, options);
-    this.nodeWidth = (this.width != null ? this.width : this.textbox.actualWidth) + this.padding;
-    this.nodeHeight = (this.height != null ? this.height : this.textbox.actualHeight) + this.padding;
+    this.nodeWidth = (this.width ?? this.textbox.actualWidth) + this.padding;
+    this.nodeHeight = (this.height ?? this.textbox.actualHeight) + this.padding;
   }
 
   draw(transform: any): void {
@@ -38,26 +39,21 @@ export class RectangleNode extends BaseRectangleNode {
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = parseFloat(this.textbox.font);
     const visibleText = this.forceVisibleText ||
-      transform.k >= visibleTextThreshold * (defaultLabelFontSize / fontSize);
+      transform.k >= VISIBLE_TEXT_THRESHOLD * (DEFAULT_LABEL_FONT_SIZE / fontSize);
 
     // Node shape
     ctx.save();
     (ctx as any).roundedRect(
-      this.nodeX,
-      this.nodeY,
+      this.bbox.minX,
+      this.bbox.minY,
       this.nodeWidth,
       this.nodeHeight,
-      visibleText ? 5 : 3,
+      this.ARC_SIZE,
     );
-    if (this.shapeFillColor) {
-      ctx.fillStyle = this.shapeFillColor;
-      ctx.fill();
-    }
-    if (this.stroke) {
-      this.stroke.setContext(ctx);
-      ctx.lineWidth = zoomResetScale * ctx.lineWidth;
-      ctx.stroke();
-    }
+
+    drawStrokeAndFill(ctx, this.shapeFillColor);
+    drawStroke(ctx, this.stroke, zoomResetScale);
+
     ctx.restore();
 
     // Node text
