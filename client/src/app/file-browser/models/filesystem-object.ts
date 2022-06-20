@@ -1,6 +1,6 @@
 import { isNil, isEmpty, has } from 'lodash-es';
 
-import { KnowledgeMap, Source, UniversalEntityData, UniversalGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
@@ -390,7 +390,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * @deprecated
    */
-  get graph(): UniversalGraph {
+  get graph(): KnowledgeMapGraph {
     return null;
   }
 

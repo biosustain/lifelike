@@ -3,6 +3,7 @@ import { map, mergeMap } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
 import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
@@ -38,6 +39,21 @@ export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBu
       return null;
     }
     return JSON.parse(new TextDecoder(encoding).decode(data)) as T;
+  });
+}
+
+/**
+ * Maps the graph stored in export to the graph suitable for further manipulation.
+ * As nodes are stored groups, we add them to the 'nodes' collection - so we would have them all in one place.
+ */
+export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeMapGraph> {
+  return map( graph => {
+    // TODO: This allows to handle the transition without data migration. Not sure if we want to do that though - maybe migration is better?
+    graph.groups = graph.groups ?? [];
+    graph.groups.forEach(group => {
+      graph.nodes = graph.nodes.concat(group.members);
+    });
+    return graph;
   });
 }
 

@@ -10,8 +10,9 @@ import { MapEditorComponent } from './components/map-editor/map-editor.component
 import { PaletteComponent } from './components/map-editor/palette.component';
 import { InfoPanelComponent } from './components/map-editor/info-panel.component';
 import { MapViewComponent } from './components/map-view.component';
-import { NodeFormComponent } from './components/map-editor/node-form.component';
-import { EdgeFormComponent } from './components/map-editor/edge-form.component';
+import { NodeFormComponent } from './components/map-editor/forms/node-form.component';
+import { EdgeFormComponent } from './components/map-editor/forms/edge-form.component';
+import { GroupFormComponent } from './components/map-editor/forms/group-form.component';
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
 import { MapComponent } from './components/map.component';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
@@ -20,6 +21,7 @@ import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edi
 import { MapImageProviderService } from './services/map-image-provider.service';
 import { ImageEntityDataProvider } from './providers/image-entity-data.provider';
 import { GraphActionsService } from './services/graph-actions.service';
+
 
 @NgModule({
   declarations: [
@@ -33,6 +35,7 @@ import { GraphActionsService } from './services/graph-actions.service';
     MapRestoreDialogComponent,
     InfoViewPanelComponent,
     LinkEditDialogComponent,
+    GroupFormComponent,
   ],
   entryComponents: [
     ConfirmDialogComponent,
