@@ -21,6 +21,7 @@ import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edi
 import { MapImageProviderService } from './services/map-image-provider.service';
 import { ImageEntityDataProvider } from './providers/image-entity-data.provider';
 import { GraphActionsService } from './services/graph-actions.service';
+import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 
 
 @NgModule({
@@ -57,6 +58,11 @@ import { GraphActionsService } from './services/graph-actions.service';
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: ImageEntityDataProvider,
+      multi: true,
+    },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: ImageUploadDataProvider,
       multi: true,
     },
     MapImageProviderService,

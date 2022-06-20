@@ -266,10 +266,17 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
       this.dropTargeted = true;
     });
 
-    if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+    // TODO: This fires on every pixel move - maybe move this to the drop
+    // TODO: Reenable before merge
+    // console.log(event);
+    if (event.dataTransfer.items[0]?.type.startsWith('image/')) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
     }
+    // if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+    //   event.dataTransfer.dropEffect = 'link';
+    //   event.preventDefault();
+    // }
   }
 
   drop(event: DragEvent) {
@@ -283,7 +290,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
 
-      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
+      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition, this.map.parent.hashId);
 
       actionPromise.then(actions => {
         if (actions.length) {
