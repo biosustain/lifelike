@@ -22,14 +22,53 @@ export class GraphActionsService {
   constructor(readonly mapImageProviderService: MapImageProviderService,
               readonly filesystemService: FilesystemService) { }
 
-  // TODO: Change hoverPosition into point after merge with canvas-refactor PR
   async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point, parentId: string): Promise<GraphAction[]> {
-    console.log(items);
 
-    const actions = extractGraphEntityActions(items, hoverPosition);
-    console.log(actions);
+    let actions = extractGraphEntityActions(items, hoverPosition);
+    items = await this.processImageUpload(items, parentId);
+    actions = await this.processImageItems(items, hoverPosition, actions);
 
+    return actions;
+  }
 
+  async processImageItems(items: DataTransferData<any>[], {x, y}: Point, actions: GraphAction[]) {
+    const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
+
+    let node;
+    const imageId = makeid();
+    await of(...imageItems).pipe(
+      switchMap(item => {
+        const data = item.data as ImageTransferData;
+        node = data.node;
+        return this.filesystemService.getContent(data.hash);
+      }),
+      switchMap(blob => {
+          return this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId));
+      }),
+      take(imageItems.length),
+      map(dimensions => {
+      // Scale smaller side up to 300 px
+      const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
+      return (new NodeCreation(`Insert image`, {
+        ...node,
+        hash: uuidv4(),
+        image_id: imageId,
+        label: IMAGE_LABEL,
+        data: {
+          x,
+          y,
+          width: dimensions.width * ratio,
+          height: dimensions.height * ratio,
+        },
+      }, true));
+    }),
+    tap(action => actions.push(action)),
+    ).toPromise();
+
+    return actions;
+  }
+
+  async processImageUpload(items: DataTransferData<any>[], parentId: string) {
     const imageUploadItems = items.filter(item => item.token === IMAGE_UPLOAD_TOKEN);
     for (const imageUploadItem of imageUploadItems) {
       const file = imageUploadItem.data as File;
@@ -52,43 +91,7 @@ export class GraphActionsService {
         confidence: 100,
       });
     }
-
-
-
-    const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
-    let node;
-    const imageId = makeid();
-    await of(...imageItems).pipe(
-      switchMap(item => {
-        const data = item.data as ImageTransferData;
-        node = data.node;
-        return this.filesystemService.getContent(data.hash);
-      }),
-      switchMap(blob => {
-          return this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId));
-      }),
-      take(imageItems.length),
-      map(dimensions => {
-      // Scale smaller side up to 300 px
-      const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
-      return (new NodeCreation(`Insert image`, {
-        ...node,
-        hash: uuidv4(),
-        image_id: imageId,
-        label: IMAGE_LABEL,
-        data: {
-          x: hoverPosition.x,
-          y: hoverPosition.y,
-          width: dimensions.width * ratio,
-          height: dimensions.height * ratio,
-        },
-      }, true));
-    }),
-      tap(action => actions.push(action)),
-    ).toPromise();
-
-    console.log(actions);
-
-    return actions;
+    return items;
   }
+
 }

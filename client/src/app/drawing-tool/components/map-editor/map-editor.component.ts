@@ -266,17 +266,11 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
       this.dropTargeted = true;
     });
 
-    // TODO: This fires on every pixel move - maybe move this to the drop
-    // TODO: Reenable before merge
-    // console.log(event);
-    if (event.dataTransfer.items[0]?.type.startsWith('image/')) {
+    if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
+        this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
     }
-    // if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
-    //   event.dataTransfer.dropEffect = 'link';
-    //   event.preventDefault();
-    // }
   }
 
   drop(event: DragEvent) {
