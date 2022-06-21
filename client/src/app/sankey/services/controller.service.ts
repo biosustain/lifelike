@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit } from 'lodash-es';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 import { max } from 'd3';
 
@@ -87,9 +87,12 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         () => !isNil(delta.networkTraceIdx),
         this.data$.pipe(
           map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
-          map(({sources, targets}) => ({
+          map(({sources, targets, defaults}) => ({
             alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
-            baseViewName: sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+            baseViewName: get(
+              defaults, 'baseViewName',
+              sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+            )
           })),
           map(state => merge({}, state, delta))
         ),
@@ -101,20 +104,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  //   this.delta$.pipe(
-  //   publish(delta$ =>
-  //     combineLatest([,
-  //       delta$,
-  //       this.resolveNetworkTraceAndBaseView(delta$),
-  //       this.resolveNodeAlign(delta$),
-  //       this.resolveView(delta$)
-  //     ])
-  //   ),
-  //   map((deltas) => merge({}, ...deltas)),
-  //   distinctUntilChanged(isEqual),
-  //   debug('state$'),
-  //   shareReplay(1)
-  // );
   networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
   baseViewName$ = this.stateAccessor('baseViewName');
   // do not use standart accessor for this one cause we want null if it wasnt set

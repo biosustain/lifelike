@@ -53,6 +53,8 @@ export interface SankeyState {
 }
 
 export interface SankeyTraceNetwork extends GraphTraceNetwork {
+  default_sizing?: string;
+  defaults?: Record<string, any>;
   _views: SankeyViews;
 }
 
