@@ -1242,7 +1242,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @HostListener('keydown.control.c')
   @HostListener('keydown.meta.c')
   copySelectedText() {
-    this.clipboard.copy(this.allText, {sucess: 'It has been copied to clipboard'});
+    this.clipboard.copy(window.getSelection().toString(), {success: 'It has been copied to clipboard'});
     this.deleteFrictionless();
   }
 
