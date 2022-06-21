@@ -55,8 +55,7 @@ export class GraphActionsService {
         image_id: imageId,
         label: IMAGE_LABEL,
         data: {
-          // REVIEW NOTE: is this || necessery?
-          ...(node.data || {}),
+          ...node.data,
           x,
           y,
           width: dimensions.width * ratio,
@@ -86,7 +85,6 @@ export class GraphActionsService {
           node: {
             display_name: file.name,
             label: IMAGE_LABEL,
-            // TODO: Can we please just remove that?
             sub_labels: [],
             // Review Note: Do we want to remove that? It's not like we can do much with a link to an image
             data: {
