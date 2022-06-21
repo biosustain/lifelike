@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, DoCheck, ChangeDetectorRef } from '@angular/core';
 
 import { tap, map } from 'rxjs/operators';
-import { groupBy, defer } from 'lodash-es';
+import { groupBy, defer, mapValues } from 'lodash-es';
 
 import { SankeyAbstractDetailsPanelComponent } from '../../../../abstract/details-panel.component';
 import { SankeySelectionService } from '../../../../services/selection.service';
@@ -18,20 +18,20 @@ import { getTraces } from '../../utils';
 export class SankeyMutiLaneDetailsPanelComponent extends SankeyAbstractDetailsPanelComponent {
   constructor(
     protected selectionService: SankeySelectionService,
-    public sankeyController: ControllerService,
     protected cdr: ChangeDetectorRef
   ) {
     super(selectionService);
   }
 
-  details$ = this.selectionService.selection$.pipe(
+  details$ = this.details$.pipe(
     map((selection: SelectionEntity[]) => {
-      const nodes = selection
-        .filter(({type}) => type === SelectionType.node)
-        .map(({entity}) => entity);
+      const {[SelectionType.node]: nodes, [SelectionType.link]: links} = mapValues(
+        groupBy(selection, 'type'),
+        selectionGroup => selectionGroup.map(({entity}) => entity)
+      );
       return [
         ...selection,
-        ...getTraces({nodes} as any).map(entity => ({type: SelectionType.trace, entity}))
+        ...getTraces({nodes, links} as any).map(entity => ({type: SelectionType.trace, entity}))
       ] as SelectionEntity[];
     }),
     tap(selection => defer(() => this.cdr.detectChanges()))
