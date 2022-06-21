@@ -1,29 +1,47 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import 'src/scss/variables';
+@use 'variables';
 
-.network-container {
+.overlay-container {
+  display: flex;
+  gap: variables.$spacer;
+  justify-content: space-between;
+  margin: variables.$spacer;
+  pointer-events: none;
   position: absolute;
+  width: calc(100% - #{2*variables.$spacer});
   z-index: 1;
-  margin: $spacer;
 
-  &.navigation {
-    min-width: 6rem;
-    pointer-events: none;
+  > * {
+    pointer-events: all;
+    flex: 0 1 auto;
   }
 
-  &.selection {
+  &.top {
+    top: 0;
+    align-items: flex-start;
+  }
+
+  &.bottom {
+    bottom: 0;
+    align-items: flex-end;
+  }
+
+  .selection {
     max-width: 50%;
+  }
+
+  .legend {
+    min-width: 6rem;
+  }
+
+  .search {
+    background-color: variables.$window-background;
   }
 }
 
 .physics-shadow-on {
-    box-shadow: 0 0 0 0.2rem rgba(12, 140, 170, 0.25);
-}
-.physics-shadow-off {
-    box-shadow: none;
+  box-shadow: 0 0 0 0.2rem rgba(12, 140, 170, 0.25);
 }
 
-.pointer-events-on {
-    pointer-events: all;
+.physics-shadow-off {
+  box-shadow: none;
 }

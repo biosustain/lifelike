@@ -109,5 +109,5 @@ export const getTraceDetailsGraph = (trace: TraceData) => {
         color: isNil(style) ? '#000' : style.color
       };
     })
-  } as GraphData;
+  };
 };

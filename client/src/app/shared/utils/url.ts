@@ -1,6 +1,6 @@
 import { Arguments } from '@angular/cli/models/interface';
 
-import { assign, startsWith, isEmpty, filter, forOwn } from 'lodash-es';
+import { assign, startsWith, isEmpty, filter, forOwn, toPlainObject, fromPairs } from 'lodash-es';
 
 import { isNotEmpty } from '../utils';
 
@@ -36,6 +36,8 @@ interface AppURLInterface {
 /**
  * Working with JS URL class is nice however it's requirement for url to be absolute is sometimes hard to go around.
  * This class implements same interface but deals well with relative URLs and provides convininet property setters.
+ *
+ * For more documentation check: https://url.spec.whatwg.org/#url-class
  */
 export class AppURL implements URL, AppURLInterface {
   constructor(urlString: string, overwrites: Partial<AppURLInterface> = {}) {
@@ -50,6 +52,10 @@ export class AppURL implements URL, AppURLInterface {
   username: string;
   password: string;
   searchParams: URLSearchParams;
+
+  get searchParamsObject() {
+    return Object.fromEntries(this.searchParams.entries());
+  }
 
   pathSegments: string[];
 

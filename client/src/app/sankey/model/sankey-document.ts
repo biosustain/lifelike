@@ -178,6 +178,10 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
       default_sizing: this._defaultSizing,
     };
   }
+
+  toJSON() {
+    return JSON.stringify(this.toDict());
+  }
 }
 
 class NodeSets implements SankeyDocumentPartMixin<GraphNodeSets> {
@@ -440,6 +444,7 @@ export class SankeyFile {
     this.filesystemService = filesystemService;
     this.reload();
   }
+
   private readonly hashId;
   private readonly filesystemService: FilesystemService;
 
