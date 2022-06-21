@@ -84,6 +84,7 @@ import { WarningListComponent } from './components/warning-list/warning-list.com
 import { WarningPillComponent } from './components/warning-pill/warning-pill.component';
 import { BaseControlComponent } from './components/base-control.component';
 import { InternalSearchService } from './services/internal-search.service';
+import { PasswordInputComponent } from './components/form/password-input.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -135,6 +136,7 @@ const components = [
   ObjectPathComponent,
   ObjectMenuComponent,
   ModuleMenuComponent,
+  PasswordInputComponent,
   ProjectIconComponent,
   ProjectMenuComponent,
   WarningListComponent,
@@ -171,6 +173,7 @@ const components = [
     ScrubHtmlPipe,
     AddStatusPipe,
     ModuleHeaderComponent,
+    PasswordInputComponent,
   ],
   providers: [
     TruncatePipe,
