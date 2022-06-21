@@ -1,10 +1,10 @@
-import { Component, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 import visNetwork from 'vis-network';
-import { combineLatest, Subscription, Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { combineLatest, Subscription, Observable, Subject } from 'rxjs';
+import { map, switchMap, takeUntil, tap, shareReplay } from 'rxjs/operators';
 import { truncate } from 'lodash-es';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -34,7 +34,9 @@ import { TraceNode } from './interfaces';
     ModuleContext
   ]
 })
-export class TraceViewComponent implements ModuleAwareComponent {
+export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
+  destroyed = new Subject();
+
   loadTask = new BackgroundTask((id: string) =>
     combineLatest([
       this.filesystemService.get(id),
@@ -51,11 +53,11 @@ export class TraceViewComponent implements ModuleAwareComponent {
           )
         )
       )
-    ])
-  );
-
-  object$: Observable<FilesystemObject> = this.loadTask.results$.pipe(
-    map(({result: [object]}) => object)
+    ]).pipe(
+      takeUntil(this.destroyed),
+      tap(() => this.cdr.detectChanges()),
+      shareReplay({refCount: true, bufferSize: 1})
+    )
   );
 
   data$ = this.loadTask.results$.pipe(
@@ -63,7 +65,16 @@ export class TraceViewComponent implements ModuleAwareComponent {
   );
 
   title$ = this.data$.pipe(
-    map(({startNode: {title: startLabel}, endNode: {title: endLabel}}) => `${startLabel} → ${endLabel}`)
+    map(({startNode, endNode}) => `${startNode.title} → ${endNode.title}`)
+  );
+
+  header$ = combineLatest([
+    this.title$,
+    this.loadTask.results$.pipe(
+      map(({result: [object]}) => object)
+    )
+  ]).pipe(
+    map(([title, object]) => ({title, object}))
   );
 
   modulePropertiesChange = this.title$.pipe(
@@ -79,7 +90,8 @@ export class TraceViewComponent implements ModuleAwareComponent {
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
     protected readonly warningController: WarningControllerService,
-    protected readonly moduleContext: ModuleContext
+    protected readonly moduleContext: ModuleContext,
+    protected readonly cdr: ChangeDetectorRef
   ) {
     moduleContext.register(this);
 
@@ -87,6 +99,10 @@ export class TraceViewComponent implements ModuleAwareComponent {
       this.loadTask.update(hash_id);
       this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`, {search: {network_trace_idx, trace_idx}});
     });
+  }
+
+  ngOnDestroy() {
+    this.destroyed.next();
   }
 
   parseTraceDetails(trace: GraphTrace, mainNodes) {

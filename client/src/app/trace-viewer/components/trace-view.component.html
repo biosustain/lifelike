@@ -8,14 +8,16 @@
             <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
 
-    <ng-template #tabTitle>{{ title$ | async }}</ng-template>
-    <app-module-header *ngIf="object"
-                       [object]="object"
-                       [titleTemplate]="tabTitle"
-                       [showObjectMenu]="false"
-    >
-        <app-warning-pill></app-warning-pill>
-    </app-module-header>
+    <ng-container *ngIf="header$ | async as header">
+        <ng-template #tabTitle>{{ header.title }}</ng-template>
+        <app-module-header
+                [object]="header.object"
+                [titleTemplate]="tabTitle"
+                [showObjectMenu]="false"
+        >
+            <app-warning-pill></app-warning-pill>
+        </app-module-header>
+    </ng-container>
     <div class="position-relative overflow-hidden flex-fill">
         <app-trace-details *ngIf="data$ | async as data" [data]="data"
                            class="flex-fill h-100"></app-trace-details>
