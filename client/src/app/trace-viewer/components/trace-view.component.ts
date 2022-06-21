@@ -19,10 +19,10 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { debug } from 'app/shared/rxjs/debug';
+import { AppURL } from 'app/shared/utils/url';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
-import { AppURL } from '../../shared/utils/url';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -49,8 +49,7 @@ export class TraceViewComponent implements ModuleAwareComponent {
               return getTraceDetailsGraph(parsedTraceData);
             })
           )
-        ),
-        debug('parsedContent')
+        )
       )
     ])
   );

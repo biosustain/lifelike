@@ -5,7 +5,7 @@ import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { TraceNode, TraceData } from './interfaces';
 
-function find(nodeById, id) {
+function find<T, ID>(nodeById: Map<ID, T>, id: ID): T {
   const node = nodeById.get(id);
   if (!node) {
     throw new Error('missing: ' + id);
