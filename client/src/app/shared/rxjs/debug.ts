@@ -96,8 +96,8 @@ const unsubscribed = params => statusMessage({
  *     (level info) UNSUSCRIBED ABC
  * @param params set of params as we would use for console.log
  */
-export const debug: <T>(message?: any, ...optionalParams: any[]) => ReturnType<tap<T>> = (...params) => isDevMode() ?
-  (source: T): Observable<T> => {
+export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = (...params) => isDevMode() ?
+  (source: Observable<T>): Observable<T> => {
     init({params})(source);
     // Makes all debugged observables hot - very useful for debugging
     // source.subscribe(
@@ -113,5 +113,5 @@ export const debug: <T>(message?: any, ...optionalParams: any[]) => ReturnType<t
         completed({params}),
       ),
       finalize(unsubscribed({params}))
-    ) as Observable<T>;
-  } : skipStep;
+    );
+  } : skipStep as MonoTypeOperatorFunction<T>;

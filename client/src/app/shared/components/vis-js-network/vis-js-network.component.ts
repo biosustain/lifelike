@@ -50,8 +50,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   @Input() set data(data: GraphData) {
-    this.networkData.nodes.update(data?.nodes ?? []);
-    this.networkData.edges.update(data?.edges ?? []);
+    this.networkData.nodes.update(data.nodes);
+    this.networkData.edges.update(data.edges);
     if (!isNil(this.networkGraph)) {
       this.setNetworkData();
     }
