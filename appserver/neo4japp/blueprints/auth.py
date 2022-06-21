@@ -241,7 +241,8 @@ def login():
     except NoResultFound:
         raise ServerException(
             title='Failed to Authenticate',
-            message='There was a problem authenticating, please try again.',
+            message='Could not find an account with that username/password combination. Please ' +
+                    'try again.',
             code=404)
     else:
         if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
@@ -287,5 +288,6 @@ def login():
 
             raise ServerException(
                 title='Failed to Authenticate',
-                message='There was a problem authenticating, please try again.',
+                message='Could not find an account with that username/password combination. ' +
+                        'Please try again.',
                 code=404)

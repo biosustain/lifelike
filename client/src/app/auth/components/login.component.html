@@ -21,7 +21,12 @@
     <button (click)="displayResetDialog()" class="btn btn-secondary btn-block mt-3 ">
       Reset password
     </button>
+
+    <div *ngIf="errorMessage" class="alert alert-danger d-flex justify-content-between mt-3" role="alert">
+      <i class="fas fa-exclamation-triangle fa-2xl d-flex align-items-center mr-2"></i>{{ errorMessage }}
+    </div>
   </div>
+
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
       You seem to be using a browser which might provide a diminished experience within Lifelike.
