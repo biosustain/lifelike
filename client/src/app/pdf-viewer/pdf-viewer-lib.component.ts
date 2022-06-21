@@ -635,8 +635,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  selection;
-  selectionWrapper;
+  selection: Selection;
 
   ranges;
 
