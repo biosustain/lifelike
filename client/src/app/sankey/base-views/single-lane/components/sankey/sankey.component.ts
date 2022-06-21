@@ -3,9 +3,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
 import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
-import { forkJoin, combineLatest, merge, of, Observable, zip } from 'rxjs';
+import { forkJoin, combineLatest, merge, of, Observable, zip, iif } from 'rxjs';
 import { first } from 'lodash-es';
 import { color as d3color } from 'd3-color';
+import { selection } from 'd3';
 
 import { mapIterable } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
@@ -164,54 +165,61 @@ export class SankeySingleLaneComponent
   selectionUpdate$ = this.selection.selection$.pipe(
     // this base view operates on sigular selection
     publish((selection$: Observable<SelectionEntity>) => zip(
-      selection$.pipe(
-        map(({type, entity}) => type === SelectionType.node && entity),
-        updateAttrSingular(this.renderedNodes$, 'selected', (entity, {id}) => (entity as Base['node']).id === id),
-        debug('nodeSelection')
-      ),
-      selection$.pipe(
-        map(({type, entity}) => type === SelectionType.link && entity),
-        updateAttrSingular(this.renderedLinks$, 'selected', (entity, {id}) => (entity as Base['link']).id === id),
-        debug('linkSelection')
-      ),
-      // selection$.pipe(
-      //   map(({type, entity}) => type === SelectionType.trace && entity),
-      //   debug('traceSelection')
-      //   // todo
-      // )
-      selection$.pipe(
-        map(({entity}) => entity),
-        this.$getConnectedNodesAndLinks,
-        publish(connectedNodesAndLinks$ => combineLatest([
-          connectedNodesAndLinks$.pipe(
-            map(({nodesIds}) => nodesIds),
-            updateAttr(
-              this.renderedNodes$,
-              'transitively-selected',
-              {
-                accessor: (nodesIds, {id}) => nodesIds.has(id),
-              }
-            ),
-            debug('transnodeSelection')
+        selection$.pipe(
+          map(({type, entity}) => type === SelectionType.node && entity),
+          updateAttrSingular(this.renderedNodes$, 'selected', (entity, {id}) => (entity as Base['node']).id === id),
+          debug('nodeSelection')
+        ),
+        selection$.pipe(
+          map(({type, entity}) => type === SelectionType.link && entity),
+          updateAttrSingular(this.renderedLinks$, 'selected', (entity, {id}) => (entity as Base['link']).id === id),
+          debug('linkSelection')
+        ),
+        selection$.pipe(
+          // Odd requirement but transSelection should be of while colorLinkByType is on (so by default)
+          switchMap(({entity}) =>
+            this.sankey.baseView.colorLinkByType$.pipe(
+              switchMap(colorLinkByType =>
+                iif(
+                  () => colorLinkByType,
+                  of(undefined),
+                  of(entity)
+                )
+              )
+            )
           ),
-          connectedNodesAndLinks$.pipe(
-            map(({linksIds}) => linksIds),
-            updateAttr(
-              this.renderedLinks$,
-              'transitively-selected',
-              {
-                accessor: (linksIds, {id}) => linksIds.has(id),
-                enter: s => s
-                  .attr('transitively-selected', ({graphRelativePosition}) => graphRelativePosition ?? true)
-                  .raise()
-              }
+          this.$getConnectedNodesAndLinks,
+          publish(connectedNodesAndLinks$ => combineLatest([
+            connectedNodesAndLinks$.pipe(
+              map(({nodesIds}) => nodesIds),
+              updateAttr(
+                this.renderedNodes$,
+                'transitively-selected',
+                {
+                  accessor: (nodesIds, {id}) => nodesIds.has(id),
+                }
+              ),
+              debug('transnodeSelection')
             ),
-            debug('translinkSelection')
-          )
-        ])),
-        debug('transSelection')
+            connectedNodesAndLinks$.pipe(
+              map(({linksIds}) => linksIds),
+              updateAttr(
+                this.renderedLinks$,
+                'transitively-selected',
+                {
+                  accessor: (linksIds, {id}) => linksIds.has(id),
+                  enter: s => s
+                    .attr('transitively-selected', ({graphRelativePosition}) => graphRelativePosition ?? true)
+                    .raise()
+                }
+              ),
+              debug('translinkSelection')
+            )
+          ])),
+          debug('transSelection')
+        )
       )
-    )),
+    ),
     debug('selectionUpdate$')
   );
 
@@ -237,17 +245,17 @@ export class SankeySingleLaneComponent
               if (colorLinkByType) {
                 linksSelection
                   .attr('type', ({label}) => label?.toLowerCase());
-                  // .each(function({label}) {
-                  //   const color = EdgeColorCodes[label.toLowerCase()];
-                  //   const stroke = color ? d3color(color).darker(0.5) : color;
-                  //   if (isDevMode()) {
-                  //     // This warning should not appear in prod "by design", yet it might be important for debugging
-                  //     warningController.assert(color, ErrorMessages.noColorMapping(label));
-                  //   }
-                  //   return d3_select(this)
-                  //     .style('stroke', stroke)
-                  //     .style('fill', color);
-                  // });
+                // .each(function({label}) {
+                //   const color = EdgeColorCodes[label.toLowerCase()];
+                //   const stroke = color ? d3color(color).darker(0.5) : color;
+                //   if (isDevMode()) {
+                //     // This warning should not appear in prod "by design", yet it might be important for debugging
+                //     warningController.assert(color, ErrorMessages.noColorMapping(label));
+                //   }
+                //   return d3_select(this)
+                //     .style('stroke', stroke)
+                //     .style('fill', color);
+                // });
               } else {
                 linksSelection
                   .style('stroke', undefined)
