@@ -236,7 +236,7 @@ export class SankeySingleLaneComponent
           tap(linksSelection => {
               if (colorLinkByType) {
                 linksSelection
-                  .attr('type', ({label}) => label.toLowerCase());
+                  .attr('type', ({label}) => label?.toLowerCase());
                   // .each(function({label}) {
                   //   const color = EdgeColorCodes[label.toLowerCase()];
                   //   const stroke = color ? d3color(color).darker(0.5) : color;
