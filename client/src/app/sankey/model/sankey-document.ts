@@ -22,7 +22,7 @@ import { MimeTypes } from 'app/shared/constants';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
-import { SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface, SankeyNodeInterface } from '../interfaces';
+import { SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface, SankeyNodeInterface, SankeyState } from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';
 import { ErrorMessages } from '../constants/error';
@@ -115,6 +115,7 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
   color: string | Color;
   _sources: string;
   _targets: string;
+  defaults: Record<keyof SankeyState, string>;
 
   get views() {
     return this.views$.value;
@@ -122,12 +123,13 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
 
   constructor(
     {
-      traces, sources, targets, default_sizing, name, description, _views
+      traces, sources, targets, default_sizing, defaults, name, description, _views
     }: SankeyTraceNetwork,
     {nodeSets, sizing}: SankeyGraph,
     sankeyDocument
   ) {
     this.sankeyDocument = sankeyDocument;
+    this.defaults = defaults;
     this.traces = traces.map((trace, index) => new Trace(trace, index));
     const tracesWithoutGroups = this.traces.filter(({group}) => !isNumber(group));
     if (isNotEmpty(tracesWithoutGroups)) {

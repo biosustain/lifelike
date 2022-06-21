@@ -6,7 +6,6 @@ import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
 import { forkJoin, combineLatest, merge, of, Observable, zip, iif } from 'rxjs';
 import { first } from 'lodash-es';
 import { color as d3color } from 'd3-color';
-import { selection } from 'd3';
 
 import { mapIterable } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
