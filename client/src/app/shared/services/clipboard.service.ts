@@ -168,7 +168,6 @@ export class ClipboardService extends Clipboard {
   // endregion
 
   private error(message?: string) {
-    console.error(message);
     return this.messageDialog.display({
       type: MessageType.Error,
       title: 'Error',
@@ -177,8 +176,6 @@ export class ClipboardService extends Clipboard {
   }
 
   private success(message?: string) {
-    // Review note: Leftover?
-    console.log('Copied!');
     return this.snackBar.open(message ?? 'Copied to clipboard.', null, {
       duration: 3000,
     });
