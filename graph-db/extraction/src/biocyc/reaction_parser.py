@@ -34,7 +34,7 @@ class ReactionParser(DataFileParser):
     def __init__(self, db_name, tarfile):
         DataFileParser.__init__(self, db_name, tarfile, 'reactions.dat',
                                     NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_DIRECTION, PROP_LOCATION]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_URL, PROP_DIRECTION, PROP_LOCATION]
 
     def parse_data_file(self):
         """

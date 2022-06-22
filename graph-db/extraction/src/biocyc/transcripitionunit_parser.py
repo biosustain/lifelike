@@ -16,7 +16,7 @@ REL_NAMES = {
 class TranscriptionUnitParser(DataFileParser):
     def __init__(self, db_name, tarfile):
         DataFileParser.__init__(self, db_name, tarfile, 'transunits.dat', NODE_TRANS_UNIT, ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
     def write_synonyms_file(self, nodes, outfile):
         return None

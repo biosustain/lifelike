@@ -31,6 +31,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_BIOCYC_ID))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_NAME))
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
+        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
 
     def add_entity_index_queries(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -102,7 +103,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
 
     def generate_init_changelog_file(self):
         self.add_all_change_sets()
-        changelog_file = f"{self.biocyc_dbname}-init-changelog_{self.date_tag.replace('/', '')}.xml"
+        changelog_file = f"changelog-{self.biocyc_dbname}-init-{self.date_tag.replace('/', '-')}.xml"
         self.generate_changelog_file(changelog_file)
 
 
@@ -129,7 +130,27 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if content['type'] in ['post-modification', 'enrichment', 'db-link']:
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"{self.biocyc_dbname}_post_load_changelog_{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-{self.biocyc_dbname}-post-load-{self.date_tag.replace('/', '-')}.xml"
+        self.logger.info("write " + filename)
+        self.generate_changelog_file(filename)
+
+    def generate_gds_non_collapse_changelog_file(self, filename=None):
+        self.change_sets = []
+        for key, content in self.cyphers.items():
+            if 'collapse' not in key:
+                self.change_sets.append(self.create_changeset(key, content))
+        if not filename:
+            filename = f"changelog-{self.biocyc_dbname}-gds-no-collapse-{self.date_tag.replace('/', '-')}.xml"
+        self.logger.info("write " + filename)
+        self.generate_changelog_file(filename)
+
+    def generate_gds_reg_collapse_changelog_file(self, filename=None):
+        self.change_sets = []
+        for key, content in self.cyphers.items():
+            if 'collapse' not in key  or key=='collapse_Regulation_nodes':
+                self.change_sets.append(self.create_changeset(key, content))
+        if not filename:
+            filename = f"changelog-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag.replace('/', '-')}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -138,7 +159,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         for key, content in self.cyphers.items():
             self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"{self.biocyc_dbname}_gds_changelog_{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-{self.biocyc_dbname}-gds-{self.date_tag.replace('/', '-')}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -169,13 +190,17 @@ def generate_changelog_files(zip_datafile, biocyc_dbname):
 
     proc = BioCycCypherChangeLogsGenerator('rcai', biocyc_dbname)
     proc.generate_post_load_changlog_file()
+    proc.generate_gds_non_collapse_changelog_file()
+    proc.generate_gds_reg_collapse_changelog_file()
     proc.generate_gds_changelog_file()
 
 
 if __name__ == "__main__":
     # generate_post_load_changelog_file(DB_YEASTCYC)
-    # generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC)
-    generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC)
+    generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC)
+    # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC)
+    # generate_changelog_files('PaenibacillusCyc-data-25.5.zip', DB_PAENIBACILLUSCYC)
+
 
 
 

@@ -23,7 +23,7 @@ DB_LINK_SOURCES = {'CHEBI':False}
 class CompoundParser(DataFileParser):
     def __init__(self, biocyc_dbname, tarfile):
         DataFileParser.__init__(self, biocyc_dbname, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME,PROP_URL, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
 
     def parse_data_file(self):
         nodes = DataFileParser.parse_data_file(self)
