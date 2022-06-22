@@ -44,7 +44,6 @@ def validate_sankeys(validator):
     )
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
         t_files_content.c.raw_file
     ]).where(
         and_(
@@ -53,10 +52,9 @@ def validate_sankeys(validator):
         )
     ))
 
-    for chunk in window_chunk(files, 25):
-        for id, content in chunk:
-            data = json.loads(content)
-            validator(data)
+    # Seems like window fetch is crashing - just try to iterate db cursor
+    for content in files:
+        validator(json.loads(content))
 
 # endregion
 
@@ -65,7 +63,7 @@ def data_upgrades():
     with open(path.join(directory, '../upgrade_data/graph_v5.json'), 'r') as f:
         # Use this method to validate the content of an enrichment table
         validate_graph = fastjsonschema.compile(json.load(f))
-        validate_sankeys(validate_graph)
+    validate_sankeys(validate_graph)
 
 
 def upgrade():
@@ -78,7 +76,7 @@ def data_downgrades():
     with open(path.join(directory, '../upgrade_data/graph_v4.json'), 'r') as f:
         # Use this method to validate the content of an enrichment table
         validate_graph = fastjsonschema.compile(json.load(f))
-        validate_sankeys(validate_graph)
+    validate_sankeys(validate_graph)
 
 
 def downgrade():
