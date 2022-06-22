@@ -34,6 +34,7 @@ class DataFileParser(BaseParser):
         self.biocyc_dbname = biocyc_dbname
         self.datafile = datafile_name
         self.entity_name = entity_name
+        self.org_id = ''
         self.attr_name_map = attr_names
         self.rel_name_map = rel_names
         self.db_link_sources = db_link_sources
@@ -104,6 +105,8 @@ class DataFileParser(BaseParser):
                     node.add_attribute(prop_name, val, data_type)
                     if attr == UNIQUE_ID:
                         node.add_attribute(PROP_ID, val, data_type)
+                        # add node url
+                        self.add_url(node)
                 elif attr in self.rel_name_map:
                     # some rel could also be an attribute, e.g. types
                     if attr == 'DBLINKS':
@@ -127,6 +130,11 @@ class DataFileParser(BaseParser):
         link_node.update_attribute(PROP_REF_ID, reference_id)
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
+
+    def add_url(self, node:NodeData):
+        if self.org_id:
+            url =  f"https://biocyc.org/{self.org_id}/NEW-IMAGE?object={node.get_attribute(PROP_BIOCYC_ID)}"
+            node.add_attribute(PROP_URL, url)
 
     def write_node_file(self, nodes: [], node_attrs:[], outfile:str):
         if not nodes:

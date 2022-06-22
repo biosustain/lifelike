@@ -201,6 +201,7 @@ PROP_TAX_ID = 'tax_id'
 PROP_TO_ID = 'to_id'
 PROP_TO_NODE = 'to_node'
 PROP_TYPE = 'type'
+PROP_URL = 'url'
 
 '''Edge properties'''
 EDGE_SOURCE = 'source'

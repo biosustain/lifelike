@@ -49,11 +49,8 @@ class ChangeLogFileGenerator(object):
         if not basedir:
             basedir = Config().data_dir
         self.basedir = basedir
-        if db_source:
-            self.processed_data_dir = os.path.join(self.basedir, 'processed', db_source.lower())
-            self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
-        else:
-            self.output_dir = os.path.join(self.basedir, 'changelogs')
+        self.processed_data_dir = os.path.join(self.basedir, 'processed', db_source.lower())
+        self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
         os.makedirs(self.output_dir, 0o777, True)
 
         self.date_tag = datetime.today().strftime('%m/%d/%Y')
@@ -104,18 +101,20 @@ class ChangeLogFileGenerator(object):
         pass
 
     def get_node_changeset(self, df: pd.DataFrame, filename:str,  entity_label: str,
-                            db_label=None, other_labels=[], row_filter_col=None, row_filter_val=None):
+                            db_label=None, other_labels=[], row_filter_col=None, row_filter_val=None, index_db_label=True):
         """
         Generate cypher query for creating nodes. By default, db_label contraint is used for insertion. If use
-        entity, need to override the method to create a different query
+        entity, need to override the paramter index_db_label=False.
+
         """
         id = f'load {entity_label} from {self.zipfile}, date {self.date_tag}'
         comment = f'load {self.db_source} {filename} from {self.zipfile}, {len(df)} rows'
         attrs = list(df.columns)
         if not db_label:
             db_label = 'db_' + self.db_source
-        additional_labels = [entity_label] + other_labels
-        query = get_create_update_nodes_query(db_label, PROP_ID, attrs,
+        index_label = db_label if index_db_label else entity_label
+        additional_labels = [entity_label] + other_labels if index_label else [db_label] + other_labels
+        query = get_create_update_nodes_query(index_label, PROP_ID, attrs,
                                               additional_labels=additional_labels,
                                               datasource=self.db_source,
                                               row_filter_property=row_filter_col,

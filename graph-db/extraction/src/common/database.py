@@ -2,7 +2,7 @@ from common.query_builder import *
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
 
-from config.config import read_config
+from config.config import Config
 import logging
 import pandas as pd
 
@@ -12,7 +12,7 @@ def get_database(dbname: str):
     Get database instance based on environment variables
     :return: database instance
     """
-    config = read_config()
+    config = Config()
     uri = config['neo4j']['uri']
     username = config['neo4j']['user']
     pwd = config['neo4j']['password']
