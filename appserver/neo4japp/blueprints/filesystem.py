@@ -1126,7 +1126,23 @@ class FileSearchView(FilesystemBaseView):
             # Now we get the full file information for this slice of the results
             files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
             total = len(files)
-
+        elif params['type'] == 'pinned':
+            files = self.get_nondeleted_recycled_files(
+                filter=(
+                    and_(
+                        Files.recycling_date.is_(None),
+                        Files.deletion_date.is_(None),
+                        Files.pinned.is_(True)
+                    )
+                ),
+                sort=['pinned']
+            )
+            files = [
+                file for file in files
+                if file.calculated_privileges[current_user.id].readable
+            ]
+            total = len(files)
+            files = files
         else:
             raise NotImplementedError()
 

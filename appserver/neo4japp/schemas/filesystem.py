@@ -219,6 +219,7 @@ class FileSearchRequestSchema(CamelCaseSchema):
     type = fields.String(required=True, validate=marshmallow.validate.OneOf([
         'public',
         'linked',
+        'pinned'
     ]))
     linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     mime_types = fields.List(fields.String(),
