@@ -438,8 +438,8 @@
     "baseViewName": {
       "type": "string",
       "enum": [
-        'sankey',
-        'sankey-many-to-many'
+        "sankey",
+        "sankey-many-to-many"
       ]
     }
   }
