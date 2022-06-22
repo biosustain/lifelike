@@ -1101,33 +1101,22 @@ class FileSearchView(FilesystemBaseView):
             files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
             total = len(files)
         elif params['type'] == 'pinned':
-            query = db.session.query(
-                Files.id,
-            ).filter(
-                Files.recycling_date.is_(None),
-                Files.deletion_date.is_(None),
-                Files.pinned.is_(True)
-            ).order_by(*params['sort'])
-
-            files = self.get_nondeleted_recycled_files(Files.id.in_(query.all()))
-            readable_files = []
-            for file in files:
-                try:
-                    self.check_file_permissions(
-                        [file],
-                        current_user,
-                        ['readable'],
-                        permit_recycled=True
+            files = self.get_nondeleted_recycled_files(
+                filter=(
+                    and_(
+                        Files.recycling_date.is_(None),
+                        Files.deletion_date.is_(None),
+                        Files.pinned.is_(True)
                     )
-                    readable_files.append(file)
-                except AccessRequestRequiredError:
-                    # Discard any files that the user doesn't have access to. Ideally we would just
-                    # join on a permissions table, but since permissions are on projects and not
-                    # files, and there is no simple way to join the two, this way is simpler and
-                    # probably faster.
-                    pass
-            total = len(readable_files)
-            files = readable_files
+                ),
+                sort=['pinned']
+            )
+            files = [
+                file for file in files
+                if file.calculated_privileges[current_user.id].readable
+            ]
+            total = len(files)
+            files = files
         else:
             raise NotImplementedError()
 
