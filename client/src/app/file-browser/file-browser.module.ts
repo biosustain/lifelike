@@ -41,6 +41,7 @@ import { ObjectViewerComponent } from './components/object-viewer.component';
 import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
 import { ObjectUploadDialogComponent } from './components/dialog/object-upload-dialog.component';
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
+import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,7 @@ import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object
     ObjectReannotateResultsDialogComponent,
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
+    BrowserPinnedListComponent,
   ],
   imports: [
     SharedModule,
