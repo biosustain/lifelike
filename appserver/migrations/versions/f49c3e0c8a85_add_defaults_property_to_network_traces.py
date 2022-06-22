@@ -56,10 +56,9 @@ def validate_sankeys(validator):
 
     for chunk in window_chunk(files, 25):
         for content, in chunk:
+            print("check file")
             data = json.loads(content)
             validator(data)
-            # just to be sure
-            del data
 
 # endregion
 
