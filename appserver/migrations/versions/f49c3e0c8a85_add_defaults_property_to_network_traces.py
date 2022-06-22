@@ -43,18 +43,23 @@ def validate_sankeys(validator):
         column('checksum_sha256', sa.Binary)
     )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
+    query = sa.select([
         t_files_content.c.raw_file
     ]).where(
         and_(
             t_files.c.mime_type == 'vnd.lifelike.document/graph',
             t_files.c.content_id == t_files_content.c.id
         )
-    ))
+    )
 
-    # Seems like window fetch is crashing - just try to iterate db cursor
-    for content in files:
-        validator(json.loads(content))
+    files = conn.execution_options(stream_results=True).execute(query)
+
+    for chunk in window_chunk(files, 25):
+        for content, in chunk:
+            data = json.loads(content)
+            validator(data)
+            # just to be sure
+            del data
 
 # endregion
 
