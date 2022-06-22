@@ -18,7 +18,7 @@ class ClassParser(DataFileParser):
     """
     def __init__(self, biocyc_dbname, tarfile):
         DataFileParser.__init__(self, biocyc_dbname, tarfile, 'classes.dat', NODE_CLASS, ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
     def parse_data_file(self):
         nodes = DataFileParser.parse_data_file(self)

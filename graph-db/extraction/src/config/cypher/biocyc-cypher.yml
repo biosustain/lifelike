@@ -90,6 +90,46 @@ set reaction_display_name:
         match(n:Reaction) where n.displayName <> '' set n.displayName = n.displayName + '-RXN';
         match(n:Reaction) where n.displayName='' set n.displayName = n.eid;
 
+collapse_EnzReaction_nodes:
+  type: GDS collapse
+  description: remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS
+  query: >
+    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
+        merge (n)-[:REGULATES]->(rxn) set n.enzreaction_id=e.eid delete r;
+        match(n:Protein)-[:CATALYZES]->(e:EnzReaction)-[:CATALYZES]->(r)
+        merge (n)-[cat:CATALYZES]->(r) set cat.enzreaction_id = e.eid
+        detach delete e;
+
+collapse_Regulation_nodes:
+  type: GDS
+  description: remove Regulation nodes. Connect regulator directly with regulated elements
+  query: >
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+' and exists(r.enzreaction_id)
+        with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+        merge (x)-[rel:ACTIVATES]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='-' and exists(r.enzreaction_id)
+        with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+        merge (x)-[rel:INHIBITS]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='' and exists(r.enzreaction_id)
+                with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+                merge (x)-[rel:REGULATES]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+'
+        with x, y, collect(r.eid) as regIds
+        merge (x)-[rel:ACTIVATES]->(y) set rel.regulation_ids=regIds;
+
+        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='-'
+        with x, y, collect(r.eid) as regIds
+        merge (x)-[rel:INHIBITS]->(y) set rel.regulation_ids=regIds;
+
+        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where not exists(r.mode) or r.mode=''
+        with x, y, collect(r.eid) as regIds
+        merge (x)-[rel:REGULATES]->(y) set rel.regulation_ids=regIds;
+
+        match(n:Regulation) detach delete n;
+
 remove constraint:
   type: GDS
   description: remove constrain so that reversed reactions can be created
@@ -118,6 +158,8 @@ correct_reaction_direction:
         match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2)
         set n.eid = n.biocyc_id + '_r' merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n) delete r1 delete r2;
 
+        match(n:Reaction) where n.eid ends with '_r' and not n.displayName ends with '_r' set n.displayName = n.displayName + '_r';
+
 recreate_constraint:
   type: GDS
   description: recreate constrain for eid
@@ -127,25 +169,6 @@ reverse_Gene_TransUnit_relationship:
   type: GDS
   description: reverse Gene to TransactionUnit relationship.
   query: match(n:TranscriptionUnit:db_BioCyc)-[r:ELEMENT_OF]-(g:Gene) merge (n)-[:HAS_GENE]->(g) delete r
-
-remove_EnzReaction_nodes:
-  type: GDS
-  description: remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS
-  query: >
-    match (n:Regulation)-[r1:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(r:Reaction)
-        merge (n)-[:REGULATES]->(r) delete r1;
-        match(n:Protein)-[:CATALYZES]->(e:EnzReaction)-[:CATALYZES]->(r)
-        merge (n)-[:CATALYZES]->(r)
-        detach delete e;
-
-remove_Regulation_nodes:
-  type: GDS
-  description: remove Regulation nodes. Connect regulator directly with regulated elements
-  query: >
-    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+' merge (x)-[:ACTIVATES]->(y);
-        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='-' merge (x)-[:INHIBITS]->(y);
-        match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where not exists(r.mode) merge (x)-[:REGULATES]->(y);
-        match(n:Regulation) detach delete n;
 
 remove_DNABindingSite_nodes:
   type: GDS

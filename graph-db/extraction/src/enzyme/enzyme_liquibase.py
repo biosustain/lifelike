@@ -45,7 +45,7 @@ class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
 
 
 def main():
-    task = EnzymeChangeLogsGenerator('rcai', "enzyme-data-04052022.zip")
+    task = EnzymeChangeLogsGenerator('rcai', "enzyme-data-05312022.zip")
     task.add_all_change_sets()
     task.generate_changelog_file(f"enzyme_changelog_{task.date_tag.replace('/', '')}.xml")
 

@@ -19,7 +19,7 @@ REL_NAMES = {
 class RnaParser(DataFileParser):
     def __init__(self, db_name, tarfile):
         DataFileParser.__init__(self, db_name, tarfile, 'rnas.dat', NODE_RNA, ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_LOCATION]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_URL, PROP_LOCATION]
 
     def write_synonyms_file(self, nodes, outfile):
         return None

@@ -1,0 +1,5 @@
+set_species_id:
+  description: set species for taxonomy nodes that have rank lower than species
+  query: >
+    MATCH (n:Taxonomy)-[:HAS_PARENT*0..]->(s:Taxonomy {rank: 'species'})
+    set n.species_id = s.eid;

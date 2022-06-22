@@ -17,7 +17,7 @@ REL_NAMES = {
 class PathwayParser(DataFileParser):
     def __init__(self, db_name, tarfile):
         DataFileParser.__init__(self, db_name, tarfile, 'pathways.dat', NODE_PATHWAY, ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME]
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
 
 
