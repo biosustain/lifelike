@@ -31,11 +31,12 @@ from neo4japp.constants import (
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
-     AccessRequestRequiredError,
-     FileUploadError,
-     InvalidArgument,
-     RecordNotFound,
-     NotAuthorized,
+    AccessRequestRequiredError,
+    FileUploadError,
+    InvalidArgument,
+    RecordNotFound,
+    NotAuthorized,
+    UnsupportedMediaTypeError
 )
 from neo4japp.models import (
     Projects,
@@ -1046,9 +1047,20 @@ class FileListView(FilesystemBaseView):
                         'User-Agent': self.url_fetch_user_agent,
                         'Accept': 'application/pdf',
                     }),
+                    req_content_type='application/pdf',
                     max_length=self.file_max_size,
                     timeout=self.url_fetch_timeout,
                     prefer_direct_downloads=True
+                )
+            except UnsupportedMediaTypeError:
+                # The server did not respect our request for a PDF and did not throw a 406, so
+                # here we do it ourselves
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. Please make sure your URL ends ' +
+                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
+                            'problem persists, please download the file to your computer from ' +
+                            'the original website and upload the file from your device.',
                 )
             except HTTPError as http_err:
                 # Should be raised because of the 'Accept' content type header above.
