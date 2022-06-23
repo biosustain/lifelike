@@ -17,6 +17,6 @@ export class ElementObserverDirective {
   ) {
   }
 
-  size$ = createResizeObservable(this._elementRef.nativeElement);
+  size$ = createResizeObservable(this._elementRef.nativeElement, {leading: true});
   scroll$ = createScrollObservable(this._elementRef.nativeElement);
 }

@@ -1,13 +1,13 @@
-import { GraphNode, GraphLink } from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 import { MatchPriority } from 'app/shared/utils/find/prioritised-find';
 
 import { SankeyId } from './pure';
 
-export interface SearchLink extends GraphLink {
+export interface SearchLink extends Graph.Link {
   id: SankeyId;
 }
 
-export interface SearchNode extends GraphNode {
+export interface SearchNode extends Graph.Node {
   id: number;
 }
 

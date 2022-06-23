@@ -134,7 +134,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   // resize and listen to future resize events
   // would be nice to listen on #g but SVG lacks support for that
-  viewBox$ = createResizeObservable(this.wrapper.nativeElement)
+  viewBox$ = createResizeObservable(this.wrapper.nativeElement, {leading: true})
     .pipe(
       takeUntil(this.destroyed$),
       map(viewPort => ({
@@ -720,9 +720,9 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   }
 
   // region Highlight
-  highlightTraces(traces: Set<object>) {
-    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
-  }
+  // highlightTraces(traces: Set<object>) {
+  //   this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
+  // }
 
   highlightNodeGroup(group) {
     this.nodeSelection

@@ -1,7 +1,7 @@
 """introduce links to sankeys
 
 Revision ID: 802652f7bcfd
-Revises: 7c3dc5068fcb
+Revises: f49c3e0c8a85
 Create Date: 2022-06-09 22:45:05.954105
 
 """
@@ -21,14 +21,14 @@ from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = '802652f7bcfd'
-down_revision = '7c3dc5068fcb'
+down_revision = 'f49c3e0c8a85'
 branch_labels = None
 depends_on = None
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
 # region Utils
-with open(path.join(directory, '../upgrade_data/graph_v5.json'), 'r') as f:
+with open(path.join(directory, '../upgrade_data/graph_v6.json'), 'r') as f:
     # Use this method to validate the content of an enrichment table
     validate_graph = fastjsonschema.compile(json.load(f))
 

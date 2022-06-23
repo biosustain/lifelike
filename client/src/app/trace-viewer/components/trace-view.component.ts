@@ -1,9 +1,11 @@
-import { Component, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import * as CryptoJS from 'crypto-js';
 import visNetwork from 'vis-network';
-import { combineLatest, Subscription, Observable } from 'rxjs';
+import { combineLatest, Subscription, Observable, Subject } from 'rxjs';
+import { map, switchMap, takeUntil, tap, shareReplay } from 'rxjs/operators';
+import { truncate } from 'lodash-es';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { UserError } from 'app/shared/exceptions';
@@ -14,8 +16,10 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { TruncatePipe } from 'app/shared/pipes';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { debug } from 'app/shared/rxjs/debug';
+import { AppURL } from 'app/shared/utils/url';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
@@ -30,90 +34,78 @@ import { TraceNode } from './interfaces';
     ModuleContext
   ]
 })
-export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
-  loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
-  sankeyDataSub: Subscription;
+export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
+  destroyed = new Subject();
 
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  loadTask = new BackgroundTask((id: string) =>
+    combineLatest([
+      this.filesystemService.get(id),
+      this.filesystemService.getContent(id).pipe(
+        mapBlobToBuffer(),
+        mapBufferToJson(),
+        switchMap(({graph: {trace_networks}, nodes}: Graph.File) =>
+          this.route.params.pipe(
+            map(({hash_id, network_trace_idx, trace_idx}) => {
+              const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
+              const parsedTraceData = this.parseTraceDetails(traceData, nodes);
+              return getTraceDetailsGraph(parsedTraceData);
+            })
+          )
+        )
+      )
+    ]).pipe(
+      takeUntil(this.destroyed),
+      tap(() => this.cdr.detectChanges()),
+      shareReplay({refCount: true, bufferSize: 1})
+    )
+  );
 
-  data;
-  title: string;
-  error: any;
-  object: FilesystemObject;
+  data$ = this.loadTask.results$.pipe(
+    map(({result: [, fileContent]}) => fileContent)
+  );
 
-  sankeyData: GraphFile;
-  networkTraces: Array<GraphTraceNetwork>;
+  title$ = this.data$.pipe(
+    map(({startNode, endNode}) => `${startNode.title} → ${endNode.title}`)
+  );
 
-  sourceFileURL: string;
+  header$ = combineLatest([
+    this.title$,
+    this.loadTask.results$.pipe(
+      map(({result: [object]}) => object)
+    )
+  ]).pipe(
+    map(([title, object]) => ({title, object}))
+  );
+
+  modulePropertiesChange = this.title$.pipe(
+    map(title => ({
+      title,
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    }))
+  );
+
+  sourceFileURL: AppURL;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
-    protected readonly truncatePipe: TruncatePipe,
     protected readonly warningController: WarningControllerService,
-    protected readonly moduleContext: ModuleContext
+    protected readonly moduleContext: ModuleContext,
+    protected readonly cdr: ChangeDetectorRef
   ) {
-    const projectName = this.route.snapshot.params.project_name;
-    const traceHash = this.route.snapshot.params.trace_hash;
-    const fileId = this.route.snapshot.params.file_id;
+    moduleContext.register(this);
 
-    this.sourceFileURL = `/projects/${projectName}/sankey/${fileId}`;
-
-    this.loadTask = new BackgroundTask((id) => {
-      return combineLatest([
-        this.filesystemService.get(id),
-        this.filesystemService.getContent(id).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson()
-        ) as Observable<GraphFile>
-      ]);
+    this.route.params.subscribe(({hash_id, network_trace_idx, trace_idx}) => {
+      this.loadTask.update(hash_id);
+      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`, {search: {network_trace_idx, trace_idx}});
     });
-
-    this.sankeyDataSub = this.loadTask.results$.subscribe(({result: [object, fileContent]}) => {
-      const {links, graph, nodes, ...data} = fileContent;
-      this.object = object;
-      this.networkTraces = graph.trace_networks;
-      this.sankeyData = {
-        ...data,
-        graph,
-        links,
-        nodes
-      } as GraphFile;
-
-      const traceData = this.getMatchingTrace(this.networkTraces, traceHash);
-      if (traceData !== undefined) {
-        const parsedTraceData = this.parseTraceDetails(traceData);
-        this.data = getTraceDetailsGraph(parsedTraceData);
-        const {startNode: {title: startLabel}, endNode: {title: endLabel}} = this.data;
-        this.title = `${startLabel} → ${endLabel}`;
-      }
-      this.emitModuleProperties();
-    });
-
-    this.loadTask.update(fileId);
   }
 
   ngOnDestroy() {
-    this.sankeyDataSub.unsubscribe();
+    this.destroyed.next();
   }
 
-  emitModuleProperties() {
-    this.modulePropertiesChange.next({
-      title: this.title,
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-    });
-  }
-
-  parseTraceDetails(trace: GraphTrace) {
-    const {
-      sankeyData: {
-        nodes: mainNodes
-      },
-      truncatePipe: {
-        transform: truncate
-      }
-    } = this;
-
+  parseTraceDetails(trace: Graph.Trace, mainNodes) {
     const edges: visNetwork.Edge[] = trace.detail_edges.map(
       ([from, to, d]) => ({
         from,
@@ -137,7 +129,7 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
       const node = mainNodes.find(({id}) => id === nodeId);
       if (node) {
         const label = node.label;
-        const labelShort = truncate(label, 20);
+        const labelShort = truncate(label, {length: 20});
         this.warningController.assert(label, `Node ${node.id} has no label property.`);
         return {
           ...node,
@@ -167,27 +159,16 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
   /**
    * Finds and returns a network trace whose hash matches the given hash string.
    * @param networkTraces list of network trace data
-   * @param traceHash hash string representing a unique node trace
    * @returns the network trace matching the input hash, or undefined if no match
    */
-  getMatchingTrace(networkTraces: GraphTraceNetwork[], traceHash: string) {
-    for (const networkTrace of networkTraces) {
-      for (const trace of networkTrace.traces) {
-        const hash = CryptoJS.MD5(JSON.stringify({
-          ...networkTrace,
-          traces: [],
-          source: trace.source,
-          target: trace.target
-        })).toString();
-        if (hash === traceHash) {
-          return trace;
-        }
-      }
+  getMatchingTrace(networkTraces: Graph.TraceNetwork[], networkTraceIdx: number, traceIdx: number) {
+    const trace = networkTraces[networkTraceIdx]?.traces[traceIdx];
+    if (trace) {
+      return trace;
     }
-    this.error = new UserError({
+    throw new UserError({
       title: 'Could Not Find Trace in Source',
       message: 'This trace could not be found in the source file. Please find the trace in the source, and try again'
     });
-    return undefined;
   }
 }

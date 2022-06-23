@@ -45,23 +45,14 @@
               "targets": {
                 "type": "string"
               },
-              "defaults": {
-                "$comment": "There are more and more ideas of letting file author choosing defaults for view - this object should be used to store defaults for network trace",
-                "type": "object",
-                "properties": {
-                  "baseViewName": {
-                    "$ref": "#/$defs/baseViewName"
-                  }
-                },
-                "required": [
-                  "baseViewName"
-                ]
-              },
               "traces": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
+                    "displayProperties": {
+                      "$ref": "#/$defs/displayProperties"
+                    },
                     "source": {
                       "type": "integer"
                     },
@@ -210,6 +201,9 @@
           "id": {
             "type": "integer"
           },
+          "displayProperties": {
+            "$ref": "#/$defs/displayProperties"
+          },
           "labels": {
             "type": "array",
             "items": {
@@ -334,6 +328,9 @@
           "target": {
             "type": "integer"
           },
+          "displayProperties": {
+            "$ref": "#/$defs/displayProperties"
+          },
           "key": {
             "type": "integer"
           },
@@ -435,12 +432,55 @@
     "links"
   ],
   "$defs": {
-    "baseViewName": {
+    "displayPropertyType": {
       "type": "string",
       "enum": [
-        "sankey",
-        "sankey-many-to-many"
+        "URL"
       ]
+    },
+    "baseDisplayProperty": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/displayPropertyType"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "displayProperties": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/$defs/baseDisplayProperty"
+              }
+            ],
+            "properties": {
+              "type": {
+                "const": "URL"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "title",
+              "href"
+            ]
+          }
+        ]
+      }
     }
   }
 }
