@@ -10,8 +10,8 @@
     "ts-check": "tsc --allowJs --checkJs --noEmit --lib es6,dom"
   },
   "dependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/plugin-proposal-class-properties": "^7.17.12",
+    "@babel/plugin-proposal-decorators": "^7.18.2",
     "bootstrap": "^4.4.1"
   },
   "devDependencies": {
