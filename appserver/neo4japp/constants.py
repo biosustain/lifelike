@@ -455,6 +455,9 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
 
+# Start filesystem API constants
+MAX_FILE_SIZE = 1024 * 1024 * 300
+URL_FETCH_TIMEOUT = 10
 MAX_FILE_DESCRIPTION_LENGTH = 5000
 
 # Start constants for Files updates
