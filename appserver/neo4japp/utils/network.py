@@ -215,6 +215,9 @@ def read_url(
     opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
     opener.add_handler(ControlledHTTPSHandler(debuglevel=debug_level))
 
+    if headers is None:
+        headers = {}
+
     req = Request(url, headers=headers)
     conn = opener.open(req, **kwargs)
 
