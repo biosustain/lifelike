@@ -4,17 +4,7 @@ import { Color } from 'd3-color';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
 import { shareReplay, map, first } from 'rxjs/operators';
 
-import {
-  GraphNodeSets,
-  GraphGraph,
-  GraphTraceNetwork,
-  GraphTrace,
-  GraphDetailEdge,
-  GraphNode,
-  GraphLink,
-  GraphFile,
-  GraphPredefinedSizing
-} from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 import { isNotEmpty } from 'app/shared/utils';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
@@ -64,7 +54,7 @@ export class View implements SankeyDocumentPartMixin<SankeyView> {
   }
 }
 
-export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
+export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   id: number;
   nodePaths: Array<Array<number>>;
   edges: Array<number>;
@@ -72,10 +62,10 @@ export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
   target: number;
   group: number;
 
-  detailEdges?: Array<[number, number, GraphDetailEdge]>;
+  detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
 
-  constructor({node_paths, detail_edges, ...rest}: GraphTrace, id) {
+  constructor({node_paths, detail_edges, ...rest}: Graph.Trace, id) {
     assign(this, rest);
     this.id = id;
     this.nodePaths = node_paths;
@@ -102,7 +92,7 @@ export class Trace implements SankeyDocumentPartMixin<GraphTrace> {
   }
 }
 
-export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> {
+export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork> {
   traces: Trace[];
   views$: BehaviorSubject<Record<string, View>>;
   private sankeyDocument;
@@ -186,10 +176,10 @@ export class TraceNetwork implements SankeyDocumentPartMixin<GraphTraceNetwork> 
   }
 }
 
-class NodeSets implements SankeyDocumentPartMixin<GraphNodeSets> {
-  notMappedNodeSets: GraphNodeSets;
+class NodeSets implements SankeyDocumentPartMixin<Graph.NodeSets> {
+  notMappedNodeSets: Graph.NodeSets;
 
-  constructor(nodeSets: GraphNodeSets, sankeyDocument) {
+  constructor(nodeSets: Graph.NodeSets, sankeyDocument) {
     this.notMappedNodeSets = nodeSets;
     entries(nodeSets).forEach(([key, value]) => {
       this[key] = value.map(id => sankeyDocument.nodeById.get(id));
@@ -201,13 +191,13 @@ class NodeSets implements SankeyDocumentPartMixin<GraphNodeSets> {
   }
 }
 
-class SankeyGraph implements SankeyDocumentPartMixin<GraphGraph> {
+class SankeyGraph implements SankeyDocumentPartMixin<Graph.Graph> {
   traceNetworks: TraceNetwork[];
   private readonly sankeyDocument;
   nodeSets: NodeSets;
   description: string;
   name?: string;
-  sizing?: GraphPredefinedSizing;
+  sizing?: Graph.PredefinedSizing;
   log?: string | Array<string>;
 
   constructor({trace_networks, sizing = {}, node_sets}, sankeyDocument) {
@@ -234,7 +224,7 @@ class SankeyGraph implements SankeyDocumentPartMixin<GraphGraph> {
 }
 
 export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLink | SankeyTraceLink)>
-  implements SankeyDocumentPartMixin<GraphNode>, SankeyNodePosition, SankeyNodeInterface {
+  implements SankeyDocumentPartMixin<Graph.Node>, SankeyNodePosition, SankeyNodeInterface {
   id: number;
   depth: number;
   index: number;
@@ -279,7 +269,7 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   }
 }
 
-export class SankeyLink implements SankeyDocumentPartMixin<GraphLink>, SankeyLinkInterface {
+export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLinkInterface {
   id: any;
   source: any;
   target: any;
@@ -400,7 +390,7 @@ export class SankeyTraceLink implements SankeyLinkInterface {
   }
 }
 
-export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
+export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
   nodes: SankeyNode[];
   links: SankeyLink[];
   graph: SankeyGraph;
@@ -409,7 +399,7 @@ export class SankeyDocument implements SankeyDocumentPartMixin<GraphFile> {
   directed: boolean;
   multigraph: boolean;
 
-  constructor({nodes, links, graph, ...rest}: GraphFile) {
+  constructor({nodes, links, graph, ...rest}: Graph.File) {
     if (!nodes.length) {
       throw Error(ErrorMessages.missingNodes);
     }
@@ -454,7 +444,7 @@ export class SankeyFile {
     hash => this.filesystemService.get(hash)
   );
 
-  contentLoadTask = new BackgroundTask<string, GraphFile>(
+  contentLoadTask = new BackgroundTask<string, Graph.File>(
     hash => this.filesystemService.getContent(hash).pipe(
       mapBlobToBuffer(),
       mapBufferToJson()
@@ -468,7 +458,7 @@ export class SankeyFile {
 
   content$ = this.contentLoadTask.results$.pipe(
     map(({result}) => result),
-    shareReplay<GraphFile>({bufferSize: 1, refCount: true})
+    shareReplay<Graph.File>({bufferSize: 1, refCount: true})
   );
 
   document$ = this.content$.pipe(

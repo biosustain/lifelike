@@ -16,7 +16,7 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { TruncatePipe } from 'app/shared/pipes';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { AppURL } from 'app/shared/utils/url';
@@ -43,7 +43,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
       this.filesystemService.getContent(id).pipe(
         mapBlobToBuffer(),
         mapBufferToJson(),
-        switchMap(({graph: {trace_networks}, nodes}: GraphFile) =>
+        switchMap(({graph: {trace_networks}, nodes}: Graph.File) =>
           this.route.params.pipe(
             map(({hash_id, network_trace_idx, trace_idx}) => {
               const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
@@ -105,7 +105,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     this.destroyed.next();
   }
 
-  parseTraceDetails(trace: GraphTrace, mainNodes) {
+  parseTraceDetails(trace: Graph.Trace, mainNodes) {
     const edges: visNetwork.Edge[] = trace.detail_edges.map(
       ([from, to, d]) => ({
         from,
@@ -161,7 +161,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
    * @param networkTraces list of network trace data
    * @returns the network trace matching the input hash, or undefined if no match
    */
-  getMatchingTrace(networkTraces: GraphTraceNetwork[], networkTraceIdx: number, traceIdx: number) {
+  getMatchingTrace(networkTraces: Graph.TraceNetwork[], networkTraceIdx: number, traceIdx: number) {
     const trace = networkTraces[networkTraceIdx]?.traces[traceIdx];
     if (trace) {
       return trace;

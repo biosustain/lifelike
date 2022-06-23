@@ -3,8 +3,6 @@
  */
 import { Color } from 'd3-color';
 
-import { GraphNode, GraphLink, GraphTrace } from 'app/shared/providers/graph-type/interfaces';
-
 // region Graph as Sankey
 export type SankeyId = string | number;
 

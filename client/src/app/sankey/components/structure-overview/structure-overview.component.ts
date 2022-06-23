@@ -4,7 +4,7 @@ import { NestedTreeControl } from '@angular/cdk/tree';
 import { map, shareReplay } from 'rxjs/operators';
 import { isObject, isBoolean, isArray, has, isNil, isString, isNumber, isUndefined, first } from 'lodash-es';
 
-import { GraphFile, GraphGraph, GraphTraceNetwork, GraphTrace, GraphNodeSets, GraphLink } from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 
 import { ControllerService } from '../../services/controller.service';
 import { NotImplemented } from '../../utils/error';
@@ -107,7 +107,7 @@ const parseNodeSetId = (label, nodeSetId) => ({
   type: OverviewEntityType.nodeSetId,
 });
 
-const parseTrace = ({node_paths, edges, source, target, detail_edges, ...rest}: GraphTrace) => ([
+const parseTrace = ({node_paths, edges, source, target, detail_edges, ...rest}: Graph.Trace) => ([
   property('node_paths', () => parseNodePaths(node_paths)),
   property('edges', () => parseLinkIds(edges)),
   {...parseNodeId(source), label: 'source'},
@@ -118,14 +118,14 @@ const parseTrace = ({node_paths, edges, source, target, detail_edges, ...rest}: 
 
 const parseTraceNetwork = ({
                              sources, targets, traces, ...rest
-                           }: GraphTraceNetwork) => ([
+                           }: Graph.TraceNetwork) => ([
   property('traces', () => parseArray(traces, parseTrace)),
   parseNodeSetId('sources', sources),
   parseNodeSetId('targets', targets),
   ...mapObj(rest)
 ]);
 
-const parseNodeSets = (nodeSets: GraphNodeSets) => Object.entries(nodeSets).map(([label, value]) =>
+const parseNodeSets = (nodeSets: Graph.NodeSets) => Object.entries(nodeSets).map(([label, value]) =>
   property(label, () => parseNodeIds(value))
 );
 
@@ -133,19 +133,19 @@ const parseNode = mapObj;
 
 const parseLink = ({
                      source, target, ...rest
-                   }: GraphLink) => ([
+                   }: Graph.Link) => ([
   {...parseNodeId(source), label: 'source'},
   {...parseNodeId(target), label: 'target'},
   ...mapObj(rest)
 ]);
 
-const parseGraph = ({node_sets, trace_networks, ...rest}: GraphGraph) => ([
+const parseGraph = ({node_sets, trace_networks, ...rest}: Graph.Graph) => ([
   property('trace_networks', () => parseArray(trace_networks, parseTraceNetwork)),
   property('node_sets', () => parseNodeSets(node_sets)),
   ...mapObj(rest)
 ]);
 
-const parseGraphFile = ({graph, nodes, links, ...rest}: GraphFile) => ([
+const parseGraphFile = ({graph, nodes, links, ...rest}: Graph.File) => ([
   property('graph', () => parseGraph(graph)),
   property('nodes', () => parseArray(nodes, parseNode)),
   property('links', () => parseArray(links, parseLink)),
@@ -167,18 +167,18 @@ export class StructureOverviewComponent {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  getNodeById$ = this.common.data$.pipe(
-    map(({nodeById}) => nodeById),
+  getNodeById$ = this.common._data$.pipe(
+    map(({nodes}) => new Map<number, Graph.Node>(nodes.map(node => [node.id, node]))),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  links$ = this.common.data$.pipe(
+  links$ = this.common._data$.pipe(
     map(({links}) => links),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  nodeSets$ = this.common.data$.pipe(
-    map(({graph: {nodeSets}}) => nodeSets),
+  nodeSets$ = this.common._data$.pipe(
+    map(({graph: {node_sets}}) => node_sets),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
@@ -188,7 +188,7 @@ export class StructureOverviewComponent {
     switch (treeNode?.type) {
       case OverviewEntityType.nodeId:
         return this.getNodeById$.pipe(
-          map(nodeById => parseNode(nodeById.get(treeNode.ref)))
+          map(nodeById => parseNode(nodeById.get(treeNode.ref as number)))
         );
       case OverviewEntityType.linkId:
         return this.links$.pipe(
