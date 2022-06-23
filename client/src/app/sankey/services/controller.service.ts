@@ -5,7 +5,7 @@ import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 import { max } from 'd3';
 
-import { GraphPredefinedSizing, GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/providers/graph-type/interfaces';
 import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
@@ -53,7 +53,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  _data$ = new ReplaySubject<GraphFile>(1);
+  _data$ = new ReplaySubject<Graph.File>(1);
 
   state$ = this.delta$.pipe(
     switchMap(delta =>
@@ -201,7 +201,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
 
   // Using setter on private property to ensure that nobody subscribes to raw data
-  set data(data: GraphFile) {
+  set data(data: Graph.File) {
     this._data$.next(data);
   }
 
@@ -322,7 +322,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
   normalizeLinks$ = this.stateAccessor('normalizeLinks');
-  fileUpdated$ = new Subject<GraphFile>();
+  fileUpdated$ = new Subject<Graph.File>();
 
 
   resolveNetworkTraceAndBaseView(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
@@ -405,7 +405,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return this.setState({networkTraceIdx});
   }
 
-  loadData(data: GraphFile) {
+  loadData(data: Graph.File) {
     // this.preprocessData(data);
     this.data = data;
     return of(true);
@@ -501,7 +501,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return nodeValueAccessors;
   }
 
-  private extractPredefinedValueProperties({sizing = {}}: { sizing: GraphPredefinedSizing }) {
+  private extractPredefinedValueProperties({sizing = {}}: { sizing: Graph.PredefinedSizing }) {
     return transform(
       sizing,
       (predefinedValueAccessors, {node_sizing, link_sizing}, name) => {
