@@ -174,7 +174,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         return ChangeSet(id, self.author, desc, query)
 
 
-def generate_changelog_files(zip_datafile, biocyc_dbname):
+def generate_changelog_files(zip_datafile, biocyc_dbname, author):
     """
     The code will generate three changelog files: init_changelog, post_load_changelog and gds_changelog.
     init_changelog loads all the parser output data into neo4j;
@@ -185,10 +185,10 @@ def generate_changelog_files(zip_datafile, biocyc_dbname):
     For individual gds database, we will need init_changelog and gds_changelog.
 
     """
-    proc = BioCycChangeLogsGenerator('rcai', biocyc_dbname, zip_datafile, True)
+    proc = BioCycChangeLogsGenerator(author, biocyc_dbname, zip_datafile, True)
     proc.generate_init_changelog_file()
 
-    proc = BioCycCypherChangeLogsGenerator('rcai', biocyc_dbname)
+    proc = BioCycCypherChangeLogsGenerator(author, biocyc_dbname)
     proc.generate_post_load_changlog_file()
     proc.generate_gds_non_collapse_changelog_file()
     proc.generate_gds_reg_collapse_changelog_file()
@@ -196,10 +196,8 @@ def generate_changelog_files(zip_datafile, biocyc_dbname):
 
 
 if __name__ == "__main__":
-    # generate_post_load_changelog_file(DB_YEASTCYC)
-    generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC)
-    # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC)
-    # generate_changelog_files('PaenibacillusCyc-data-25.5.zip', DB_PAENIBACILLUSCYC)
+    generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'rcai')
+    # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
 
 
 
