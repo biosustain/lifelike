@@ -32,9 +32,7 @@ def test_read_url():
 def test_read_url_has_custom_user_agent():
     with monkey_patch_controlled_conn():
         httpretty.register_uri(httpretty.GET, 'http://example.com', body='hello')
-        read_url(urllib.request.Request('http://example.com', headers={
-            'User-Agent': 'some test',
-        }), max_length=1000)
+        read_url('http://example.com', headers={'User-Agent': 'some test'}, max_length=1000)
         assert 'some test' == httpretty.last_request().headers['User-Agent']
 
 
