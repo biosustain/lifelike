@@ -54,7 +54,9 @@ export class SankeySearch {
   private readonly ignoredLinkProperties: Array<keyof SearchLink> = [
     'source', 'target'
   ];
-  private readonly ignoredTraceProperties: Array<keyof GraphTrace> = [];
+  private readonly ignoredTraceProperties: Array<keyof GraphTrace> = [
+    'node_paths', 'edges'
+  ];
 
   * matchKeyObject(obj, key) {
     for (const match of this.matchObject(obj)) {

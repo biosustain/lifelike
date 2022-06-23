@@ -128,22 +128,13 @@ const routes: Routes = [
       fontAwesomeIcon: 'chart-bar',
     },
   },
-  {
+  { // Project name parameter is no longer used
     path: 'projects/:project_name/sankey/:file_id',
     canActivate: [LifelikeAuthGuard],
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
-    },
-  },
-  {
-    path: 'projects/:project_name/trace/:file_id/:trace_hash',
-    canActivate: [LifelikeAuthGuard],
-    component: TraceViewComponent,
-    data: {
-      title: 'Trace details',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {
@@ -229,6 +220,15 @@ const routes: Routes = [
     data: {
       title: 'File',
       fontAwesomeIcon: 'file',
+    },
+  },
+  {
+    path: 'files/:hash_id/trace/:network_trace_idx/:trace_idx',
+    canActivate: [LifelikeAuthGuard],
+    component: TraceViewComponent,
+    data: {
+      title: 'Trace details',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
   },
   {

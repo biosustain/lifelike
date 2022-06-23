@@ -22,18 +22,10 @@ export abstract class SankeyEntityDetailsComponent {
   parseProperty = parseForRendering;
 
   openTraceView(trace) {
-    return this.common.networkTrace$.pipe(
-      map(networkTrace => {
-        const {project_name, file_id} = this.route.snapshot.params;
-        const hash = CryptoJS.MD5(JSON.stringify({
-          ...(networkTrace as object),
-          traces: [],
-          source: trace.source,
-          target: trace.target
-        })).toString();
-        const url = `/projects/${project_name}/trace/${file_id}/${hash}`;
-        window.open(url);
-        return url;
+    return this.common.networkTraceIdx$.pipe(
+      map(networkTraceIdx => {
+        const {file_id} = this.route.snapshot.params;
+        return window.open(`/files/${file_id}/trace/${networkTraceIdx}/${trace.id}`);
       })
     ).toPromise();
   }

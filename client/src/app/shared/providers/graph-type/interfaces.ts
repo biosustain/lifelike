@@ -97,8 +97,6 @@ export interface GraphTraceNetwork {
 
   method?: string;
 
-  default_sizing?: string;
-
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
 }
@@ -129,3 +127,30 @@ export interface GraphFile {
   // by design all objects can have dynamic properties however this code should not be concerned about them
   // [key: string]: any;
 }
+
+// tslint:disable-next-line:no-namespace
+namespace GraphNS {
+  export type File = GraphFile;
+  export type Graph = GraphGraph;
+  export type NodeSets = GraphNodeSets;
+  export type TraceNetwork = GraphTraceNetwork;
+  export type Trace = GraphTrace;
+  export type DetailEdge = GraphDetailEdge;
+  export type PredefinedSizing = GraphPredefinedSizing;
+  export type SizingGroup = GraphSizingGroup;
+  export type Link = GraphLink;
+  export type LinkEdge = GraphLinkEdge;
+  export type Node = GraphNode;
+}
+
+/**
+ * Allows to import namespace so instead of makeing long list of prefixed interfaces,
+ * you can simply import prefix (namespace)
+ * Example:
+ * import { GraphFile, GraphGraph, GraphTraceNetwork, GraphTrace, GraphNodeSets } from 'app/shared/providers/graph-type/interfaces';
+ * const graphFile: GraphFile;
+ * Into:
+ * import Graph from 'app/shared/providers/graph-type/interfaces';
+ * const graphFile: Graph.File;
+ */
+export default GraphNS;

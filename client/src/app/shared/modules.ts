@@ -10,6 +10,6 @@ export interface ModuleProperties {
 }
 
 export interface ModuleAwareComponent {
-  modulePropertiesChange?: EventEmitter<ModuleProperties>;
+  modulePropertiesChange?: Observable<ModuleProperties>;
   linkParams?: Promise<Record<string, string>>;
 }

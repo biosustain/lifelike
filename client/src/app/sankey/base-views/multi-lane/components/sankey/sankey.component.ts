@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone,
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq, isNil } from 'lodash-es';
+import { flatMap, groupBy, uniq, isNil, mapValues } from 'lodash-es';
 import { combineLatest, forkJoin, iif, zip, of } from 'rxjs';
 import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
 
@@ -23,6 +23,7 @@ import { Base } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { updateAttr } from '../../../../utils/rxjs';
 import { EditService } from '../../../../services/edit.service';
+import { getTraces } from '../../utils';
 
 @Component({
   selector: 'app-sankey-multi-lane',
@@ -101,38 +102,37 @@ export class SankeyMultiLaneComponent
   );
 
   selectionUpdate$ = this.selection.selection$.pipe(
-    map(selection => groupBy(selection, 'type')),
+    map(selection =>
+      mapValues(
+        groupBy(selection, 'type'),
+        group => group.map(({entity}) => entity)
+      )
+    ),
     publish(selection$ => combineLatest([
       selection$.pipe(
-        map(({[SelectionType.node]: nodes = []}) => nodes.map(({entity}) => entity)),
+        map(({[SelectionType.node]: nodes = []}) => nodes),
         updateAttr(this.renderedNodes$, 'selected')
       ),
       selection$.pipe(
-        map(({[SelectionType.link]: links = []}) => links.map(({entity}) => entity)),
+        map(({[SelectionType.link]: links = []}) => links),
         updateAttr(this.renderedLinks$, 'selected')
       ),
       selection$.pipe(
-        map(({[SelectionType.trace]: traces = []}) => traces),
-        // todo
-      )
-    ])),
-    map(([nodes = [], links = [], traces = []]) => uniq(
-        flatMap(
-          nodes as Base['node'][],
-          ({sourceLinks, targetLinks}) => [...sourceLinks, ...targetLinks]
-        )
-          .concat(links as Base['link'][])
-          .map(({trace}) => trace)
-          .concat(traces as any as Base['trace'][])
-      )
-    ),
-    publish(traces$ => combineLatest([
-      traces$.pipe(
-        map(traces => this.calculateNodeGroupFromTraces(traces)),
-        updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
-      ),
-      traces$.pipe(
-        updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {trace}) => arr.includes(trace)})
+        map(({
+               [SelectionType.trace]: traces = [],
+               [SelectionType.link]: links = [],
+               [SelectionType.node]: nodes = []
+             }) => getTraces({nodes, links}).concat(traces),
+        ),
+        publish(traces$ => combineLatest([
+          traces$.pipe(
+            map(traces => this.calculateNodeGroupFromTraces(traces)),
+            updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+          ),
+          traces$.pipe(
+            updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {trace}) => arr.includes(trace)})
+          )
+        ]))
       )
     ]))
   );
@@ -259,9 +259,9 @@ export class SankeyMultiLaneComponent
   // endregion
 
   // region Highlight
-  highlightTraces(traces: Set<object>) {
-    this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
-  }
+  // highlightTraces(traces: Set<object>) {
+  //   this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
+  // }
 
   highlightNodeGroup(group) {
     this.nodeSelection
