@@ -171,7 +171,7 @@ app-sankey-single-lane {
       }
 
       &:hover,
-      &[transitively-selected="true"],
+      //&[transitively-selected="true"],
       &[selected="true"],
       &[highlighted="true"] {
         stroke: sankey.$selection-accent-color;
