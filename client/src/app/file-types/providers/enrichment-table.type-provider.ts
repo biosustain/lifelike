@@ -253,7 +253,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
         }),
       )
     }, {
-        name: 'CSV for Radiate Analysis',
+        name: 'Genes for Graph Analysis CSV',
         export: () => this.filesystemService.getContent(object.hashId).pipe(
           mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
           mergeMap(document => new EnrichmentTable({
@@ -264,7 +264,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           )),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {
-            return new File([blob], object.filename + '_radiate_analysis.csv');
+            return new File([blob], object.filename + '_for_graph_analysis.csv');
           }),
         )
     }, {
