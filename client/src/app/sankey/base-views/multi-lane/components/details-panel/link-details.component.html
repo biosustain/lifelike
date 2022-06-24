@@ -68,12 +68,6 @@
                               }"
                         ><b>{{ property.value.description }}</b>{{parseProperty(entity[property.value.description])}}
                         </li>
-                        <li *ngIf="entity._folded"
-                            class="list-group-item d-flex justify-content-between"
-                        >
-                            <b>Folded</b>
-                            True
-                        </li>
                     </ul>
                 </ng-template>
             </ngb-panel>

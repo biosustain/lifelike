@@ -70,16 +70,10 @@
                               }"
                         ><b>{{ property.value.description }}</b>{{parseProperty(entity[property.value.description])}}
                         </li>
-                        <li *ngIf="entity._folded"
-                            class="list-group-item d-flex justify-content-between"
-                        >
-                            <b>Folded</b>
-                            True
-                        </li>
                     </ul>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel *ngFor="let link of entity.displayProperties | filter: getLink"  [disabled]="true">
+            <ngb-panel *ngFor="let link of  getLinks(entity.displayProperties)"  [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
                     <a [href]="link.href"
                        class="btn btn-link w-100 d-flex align-items-center justify-content-between"
