@@ -4,10 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { select as d3_select } from 'd3-selection';
 import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
 import { forkJoin, combineLatest, merge, of, Observable, zip, iif } from 'rxjs';
-import { first } from 'lodash-es';
+import { first, isEmpty } from 'lodash-es';
 import { color as d3color } from 'd3-color';
 
-import { mapIterable } from 'app/shared/utils';
+import { mapIterable, isNotEmpty } from 'app/shared/utils';
 import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -88,6 +88,14 @@ export class SankeySingleLaneComponent
     const rightNode = ((data as Base['link']).target ?? data) as Base['node'];
 
     return this.sankey.baseView.highlightCircular$.pipe(
+      switchMap(highlightCircular =>
+        this.sankey.graph$.pipe(
+          map(({links}) => {
+            links.forEach(l => delete l.graphRelativePosition);
+            return highlightCircular;
+          })
+        )
+      ),
       map(highlightCircular => {
         if (leftNode !== rightNode) {
           return {
@@ -143,7 +151,6 @@ export class SankeySingleLaneComponent
           });
         }
 
-
         const links = new Set([
           ...helper.left.traversedLinks,
           ...helper.right.traversedLinks
@@ -175,18 +182,7 @@ export class SankeySingleLaneComponent
           debug('linkSelection')
         ),
         selection$.pipe(
-          // Odd requirement but transSelection should be of while colorLinkByType is on (so by default)
-          switchMap(({entity}) =>
-            this.sankey.baseView.colorLinkByType$.pipe(
-              switchMap(colorLinkByType =>
-                iif(
-                  () => colorLinkByType,
-                  of(undefined),
-                  of(entity)
-                )
-              )
-            )
-          ),
+          map(({entity}) => entity),
           this.$getConnectedNodesAndLinks,
           publish(connectedNodesAndLinks$ => combineLatest([
             connectedNodesAndLinks$.pipe(
@@ -202,15 +198,35 @@ export class SankeySingleLaneComponent
             ),
             connectedNodesAndLinks$.pipe(
               map(({linksIds}) => linksIds),
-              updateAttr(
-                this.renderedLinks$,
-                'transitively-selected',
-                {
-                  accessor: (linksIds, {id}) => linksIds.has(id),
-                  enter: s => s
-                    .attr('transitively-selected', ({graphRelativePosition}) => graphRelativePosition ?? true)
-                    .raise()
-                }
+              switchMap(linksIds =>
+                iif(
+                  () => isEmpty(linksIds),
+                  this.renderedLinks$.pipe(
+                    map(renderedLinks =>
+                      renderedLinks
+                        .attr('transitively-selected', undefined)
+                    )
+                  ),
+                  this.renderedLinks$.pipe(
+                    switchMap(renderedLinks =>
+                      this.sankey.baseView.colorLinkByType$.pipe(
+                        map(colorLinkByType => {
+                          if (colorLinkByType) {
+                            // Odd requirement but transSelection should not yellow/blue color while colorLinkByType is on (so by default)
+                            renderedLinks
+                              .attr('transitively-selected', ({graphRelativePosition}) => Boolean(graphRelativePosition));
+                          } else {
+                            renderedLinks
+                              .attr('transitively-selected', ({graphRelativePosition}) => graphRelativePosition ?? false);
+                          }
+                          return renderedLinks
+                            .filter(({graphRelativePosition}) => Boolean(graphRelativePosition))
+                            .raise();
+                        })
+                      )
+                    )
+                  )
+                )
               ),
               debug('translinkSelection')
             )
