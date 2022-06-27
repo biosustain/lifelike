@@ -15,7 +15,6 @@ router-outlet + ::ng-deep * {
 }
 
 footer {
-  display: none;
   background: $gray-300;
   border-top: 1px solid $gray-500;
   box-shadow: 0px -2px 10px rgba(50, 50, 50, 0.15);
