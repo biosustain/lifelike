@@ -10,14 +10,13 @@ import hashlib
 import io
 import json
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 import zipfile
 
 from migrations.utils import window_chunk
 
 from neo4japp.constants import FILE_MIME_TYPE_MAP
-from neo4japp.models.files import FileContent, Files
+from neo4japp.models.files import FileContent
 from neo4japp.schemas.formats.drawing_tool import validate_map
 
 
