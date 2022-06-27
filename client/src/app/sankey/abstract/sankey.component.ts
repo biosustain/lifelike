@@ -363,13 +363,13 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
         })
       ),
       matches$.pipe(
-        map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({id}) => id)),
+        map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({idx}) => idx)),
         updateAttr(this.renderedLinks$, 'searched', {
           // dont update other
           otherOnStart: null,
           // just delete property (don't set it to false)
           exit: s => s.attr('searched', undefined),
-          accessor: (arr, {id}) => arr.includes(id),
+          accessor: (arr, {id, originLink}) => arr.includes(id ?? originLink?.id),
         })
       ),
       matches$.pipe(
