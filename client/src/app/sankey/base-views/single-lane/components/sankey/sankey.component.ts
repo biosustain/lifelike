@@ -273,8 +273,7 @@ export class SankeySingleLaneComponent
                 // });
               } else {
                 linksSelection
-                  .style('stroke', undefined)
-                  .style('fill', undefined);
+                  .attr('type', undefined);
               }
             }
           )
