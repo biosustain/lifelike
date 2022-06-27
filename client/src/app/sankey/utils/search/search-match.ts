@@ -125,19 +125,19 @@ export class SankeySearch {
       omit(trace, this.ignoredTraceProperties)
     );
     const {node_paths, detail_edges, edges} = trace;
-    if (node_paths) {
-      for (const nodeIds of node_paths) {
-        for (const node of this.nodeIdsToNodes(nodeIds)) {
-          for (const match of this.matchNode(node)) {
-            yield {
-              term: match.term,
-              priority: match.priority,
-              path: ['node paths', ...match.path]
-            } as Match;
-          }
-        }
-      }
-    }
+    // if (node_paths) {
+    //   for (const nodeIds of node_paths) {
+    //     for (const node of this.nodeIdsToNodes(nodeIds)) {
+    //       for (const match of this.matchNode(node)) {
+    //         yield {
+    //           term: match.term,
+    //           priority: match.priority,
+    //           path: ['node paths', ...match.path]
+    //         } as Match;
+    //       }
+    //     }
+    //   }
+    // }
     if (detail_edges) {
       for (const detailEdge of detail_edges) {
         for (const node of this.nodeIdsToNodes(slice(detailEdge, 0, 2))) {
@@ -151,17 +151,17 @@ export class SankeySearch {
         }
       }
     }
-    if (edges) {
-      for (const link of this.linkIdxsToLinks(edges)) {
-        for (const match of this.matchLink(link)) {
-          yield {
-            term: match.term,
-            priority: match.priority,
-            path: ['edges', ...match.path]
-          } as Match;
-        }
-      }
-    }
+    // if (edges) {
+    //   for (const link of this.linkIdxsToLinks(edges)) {
+    //     for (const match of this.matchLink(link)) {
+    //       yield {
+    //         term: match.term,
+    //         priority: match.priority,
+    //         path: ['edges', ...match.path]
+    //       } as Match;
+    //     }
+    //   }
+    // }
   }
 
   saveGeneratorResults(iterator): [any[], Generator] {
@@ -212,22 +212,22 @@ export class SankeySearch {
         };
       }
     }
-    for (const trace of traces.entries()) {
-      const matchGenerator = this.matchTrace(trace);
-      const {value, done} = matchGenerator.next();
-      if (!done) {
-        potentialEntitiesWithAdditionalMatches.push({
-          type: EntityType.Trace,
-          id: trace.id,
-          matchGenerator
-        });
-        yield {
-          type: EntityType.Trace,
-          id: trace.id,
-          value
-        };
-      }
-    }
+    // for (const [id, trace] of traces.entries()) {
+    //   const matchGenerator = this.matchTrace(trace);
+    //   const {value, done} = matchGenerator.next();
+    //   if (!done) {
+    //     potentialEntitiesWithAdditionalMatches.push({
+    //       type: EntityType.Trace,
+    //       id,
+    //       matchGenerator
+    //     });
+    //     yield {
+    //       type: EntityType.Trace,
+    //       id,
+    //       value
+    //     };
+    //   }
+    // }
   }
 
   getNetworkTraceData({links, nodes}, traces) {
