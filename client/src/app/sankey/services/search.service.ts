@@ -49,7 +49,7 @@ export class SankeySearchService {
     // limit size of data we operate on
     map(({nodes, links, graph: {trace_networks}}) => ({
       nodes,
-      links,
+      links: links.map((l, id) => ({...l, id})),
       graph: {
         trace_networks
       }
