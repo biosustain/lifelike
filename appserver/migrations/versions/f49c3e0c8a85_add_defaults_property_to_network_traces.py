@@ -29,7 +29,7 @@ directory = path.realpath(path.dirname(__file__))
 
 # region Utils
 def validate_sankeys(validator):
-    conn = op.get_bind(pool_pre_ping=True)
+    conn = op.get_bind()
 
     t_files = table(
         'files',
