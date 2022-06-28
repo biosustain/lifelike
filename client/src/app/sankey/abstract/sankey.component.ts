@@ -5,7 +5,7 @@ import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, 
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
 import { combineLatest, Subject, EMPTY, iif } from 'rxjs';
-import { assign, partial, groupBy } from 'lodash-es';
+import { assign, partial, groupBy, isEmpty } from 'lodash-es';
 import { zoomIdentity, zoomTransform } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -19,7 +19,6 @@ import { representativePositiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
 import { LayoutService } from '../services/layout.service';
-import { updateAttr, updateSingular } from '../utils/rxjs';
 import { Zoom } from '../utils/zoom';
 import { Match, EntityType } from '../interfaces/search';
 import { EditService } from '../services/edit.service';
@@ -68,45 +67,65 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     switchMap(({nodes}) =>
       this.sankey.nodeLabel$.pipe(
         switchMap(({nodeLabelShort}) => this.search.searchFocus$.pipe(
-          map(({type, id}) =>
-            type === EntityType.Node &&
+          map(searchFocus =>
+            searchFocus?.type === EntityType.Node &&
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            nodes.find(({id: nodeId}) => nodeId == id)
+            nodes.find(({id: nodeId}) => nodeId == searchFocus?.id)
           ),
-          updateSingular(this.renderedNodes$, {
-            enter: s => s
-              .attr('focused', true)
-              .call(node => node
-                .select('g')
-                .call(textGroup => {
-                  textGroup
-                    .select('text')
-                    .text(this.sankey.nodeLabel);
-                  // postpone so the size is known
-                  requestAnimationFrame(() => {
+          tap((node: Base['node']) => node && this.panToNode(node as any)),
+          switchMap(node => this.renderedNodes$.pipe(
+            tap(renderedNodes => {
+              if (!node) {
+                renderedNodes.attr('focused', undefined)
+                  .select('g')
+                  .call(textGroup => {
                     textGroup
-                      .each(SankeyAbstractComponent.updateTextShadow);
+                      .select('text')
+                      .text(nodeLabelShort);
+                    // postpone so the size is known
+                    requestAnimationFrame(() => {
+                      textGroup
+                        .each(SankeyAbstractComponent.updateTextShadow);
+                    });
                   });
-                })
-              )
-              .raise(),
-            exit: s => s
-              .attr('focused', false)
-              .select('g')
-              .call(textGroup => {
-                textGroup
-                  .select('text')
-                  .text(nodeLabelShort);
-                // postpone so the size is known
-                requestAnimationFrame(() => {
-                  textGroup
-                    .each(SankeyAbstractComponent.updateTextShadow);
-                });
-              })
-          }),
+              } else {
+                renderedNodes
+                  .filter(d => node !== d)
+                  .call(n => n
+                    .select('g')
+                    .call(textGroup => {
+                      textGroup
+                        .select('text')
+                        .text(nodeLabelShort);
+                      // postpone so the size is known
+                      requestAnimationFrame(() => {
+                        textGroup
+                          .each(SankeyAbstractComponent.updateTextShadow);
+                      });
+                    })
+                  );
+                renderedNodes
+                  .attr('focused', d => node === d)
+                  .filter(d => node === d)
+                  .call(n => n
+                    .select('g')
+                    .call(textGroup => {
+                      textGroup
+                        .select('text')
+                        .text(this.sankey.nodeLabel);
+                      // postpone so the size is known
+                      requestAnimationFrame(() => {
+                        textGroup
+                          .each(SankeyAbstractComponent.updateTextShadow);
+                      });
+                    })
+                  )
+                  .raise();
+              }
+            })
+          ))
         )),
-        tap((node: Base['node']) => node && this.panToNode(node as any)),
       )),
     debug('focusedNode$')
   );
@@ -341,67 +360,76 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     publish(matches$ => combineLatest([
       matches$.pipe(
         map(({[EntityType.Node]: nodes = []}) => (nodes as Match[]).map<SankeyId>(({id}) => id)),
-        updateAttr(this.renderedNodes$, 'searched', {
-          // dont update other
-          otherOnStart: null,
-          enter: s => s
-            .attr('searched', true)
-            .call(node => node
-              .select('g')
-              .call(textGroup => {
-                // postpone so the size is known
-                requestAnimationFrame(() => {
-                  textGroup
-                    .each(SankeyAbstractComponent.updateTextShadow);
-                });
-              })
-            )
-            .raise(),
-          // just delete property (don't set it to false)
-          exit: s => s.attr('searched', undefined),
-          accessor: (arr, {id}) => arr.includes(id),
-        })
+        switchMap(ids => this.renderedNodes$.pipe(
+            tap(renderedNodes => {
+              if (isEmpty(ids)) {
+                renderedNodes.attr('searched', undefined);
+              } else {
+                renderedNodes
+                  .attr('searched', ({id}) => ids.includes(id))
+                  .filter(({id}) => ids.includes(id))
+                  .call(node => node
+                    .select('g')
+                    .call(textGroup => {
+                      // postpone so the size is known
+                      requestAnimationFrame(() => {
+                        textGroup
+                          .each(SankeyAbstractComponent.updateTextShadow);
+                      });
+                    })
+                  )
+                  .raise();
+              }
+            })
+          )
+        )
       ),
       matches$.pipe(
-        map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({idx}) => idx)),
-        updateAttr(this.renderedLinks$, 'searched', {
-          // dont update other
-          otherOnStart: null,
-          // just delete property (don't set it to false)
-          exit: s => s.attr('searched', undefined),
-          accessor: (arr, {id, originLink}) => arr.includes(id ?? originLink?.id),
-        })
+        map(({[EntityType.Link]: links = []}) => (links as Match[]).map<SankeyId>(({id}) => id)),
+        switchMap(ids => this.renderedLinks$.pipe(
+            tap(renderedLinks => {
+              if (isEmpty(ids)) {
+                renderedLinks.attr('searched', undefined);
+              } else {
+                renderedLinks
+                  .attr('searched', ({id, originLink}: any) => ids.includes(id ?? originLink?.id))
+                  .filter(({id, originLink}: any) => ids.includes(id ?? originLink?.id))
+                  .raise();
+              }
+            })
+          )
+        )
       ),
-      matches$.pipe(
-        map(({[EntityType.Trace]: traces = []}) => traces),
-        updateAttr(this.renderedLinks$, 'searched', {
-          // dont update other
-          otherOnStart: null,
-          // just delete property (don't set it to false)
-          exit: s => s.attr('searched', undefined),
-          accessor: (arr, link) => arr.some(trace => link.belongsToTrace(trace.id)),
-        }),
-        updateAttr(this.renderedNodes$, 'searched', {
-          // dont update other
-          otherOnStart: null,
-          enter: s => s
-            .attr('searched', true)
-            .call(node => node
-              .select('g')
-              .call(textGroup => {
-                // postpone so the size is known
-                requestAnimationFrame(() => {
-                  textGroup
-                    .each(SankeyAbstractComponent.updateTextShadow);
-                });
-              })
-            )
-            .raise(),
-          // just delete property (don't set it to false)
-          exit: s => s.attr('searched', undefined),
-          accessor: (arr, {id}) => arr.includes(id),
-        })
-      )
+      // matches$.pipe(
+      //   map(({[EntityType.Trace]: traces = []}) => traces),
+      //   updateAttr(this.renderedLinks$, 'searched', {
+      //     // dont update other
+      //     otherOnStart: null,
+      //     // just delete property (don't set it to false)
+      //     exit: s => s.attr('searched', undefined),
+      //     accessor: (arr, link) => arr.some(trace => link.belongsToTrace(trace.id)),
+      //   }),
+      //   updateAttr(this.renderedNodes$, 'searched', {
+      //     // dont update other
+      //     otherOnStart: null,
+      //     enter: s => s
+      //       .attr('searched', true)
+      //       .call(node => node
+      //         .select('g')
+      //         .call(textGroup => {
+      //           // postpone so the size is known
+      //           requestAnimationFrame(() => {
+      //             textGroup
+      //               .each(SankeyAbstractComponent.updateTextShadow);
+      //           });
+      //         })
+      //       )
+      //       .raise(),
+      //     // just delete property (don't set it to false)
+      //     exit: s => s.attr('searched', undefined),
+      //     accessor: (arr, {id}) => arr.includes(id),
+      //   })
+      // )
     ])),
     debug('updateSearch')
   );

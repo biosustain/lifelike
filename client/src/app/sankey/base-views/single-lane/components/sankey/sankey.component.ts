@@ -2,9 +2,9 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, Element
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select } from 'd3-selection';
-import { map, switchMap, takeUntil, publish, tap } from 'rxjs/operators';
+import { map, switchMap, takeUntil, publish, tap, first } from 'rxjs/operators';
 import { forkJoin, combineLatest, merge, of, Observable, zip, iif } from 'rxjs';
-import { first, isEmpty } from 'lodash-es';
+import { isEmpty, isNil, isNumber } from 'lodash-es';
 import { color as d3color } from 'd3-color';
 
 import { mapIterable, isNotEmpty } from 'app/shared/utils';
@@ -13,7 +13,6 @@ import { LayoutService } from 'app/sankey/services/layout.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
-import { updateAttrSingular, updateAttr } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { SelectionEntity, SelectionType } from 'app/sankey/interfaces/selection';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -60,22 +59,39 @@ export class SankeySingleLaneComponent
   }
 
   focusedLink$ = this.search.searchFocus$.pipe(
-    map(({type, id}) =>
-      type === EntityType.Link && id
+    map(searchFocus =>
+      searchFocus?.type === EntityType.Link && searchFocus?.id
     ),
     debug('focusedLink$'),
-    updateAttrSingular(
-      this.renderedLinks$,
-      'focused',
-      {
-        enter: s => s.attr('focused', true).raise().call(linkElement =>
-          linkElement.size() && this.panToLink(first(linkElement.data()))
+    switchMap(id =>
+      this.sankey.graph$.pipe(
+        first(),
+        // map graph file link to sankey link
+        map(({links}) =>
+          isNumber(id) &&
+          // allow string == number match interpolation ("58" == 58 -> true)
+          // tslint:disable-next-line:triple-equals
+          (links as Base['link'][]).find(link => link.id == id)
         ),
-        // allow string == number match interpolation ("58" == 58 -> true)
-        // tslint:disable-next-line:triple-equals
-        comparator: (id, link) => link.id == id
-      }
-    )
+        tap(current => isNotEmpty(current) && this.panToLink(current)),
+        map(() => id)
+      )
+    ),
+    switchMap(id => this.renderedLinks$.pipe(
+      tap(renderedLinks => {
+        if (!isNumber(id)) {
+          renderedLinks.attr('focused', undefined);
+        } else {
+          // allow string == number match interpolation ("58" == 58 -> true)
+          renderedLinks
+            // tslint:disable-next-line:triple-equals
+            .attr('focused', (link) => link.id == id)
+            // tslint:disable-next-line:triple-equals
+            .filter((link) => link.id == id)
+            .raise();
+        }
+      })
+    ))
   );
   // region Select
 
@@ -173,12 +189,35 @@ export class SankeySingleLaneComponent
     publish((selection$: Observable<SelectionEntity>) => zip(
         selection$.pipe(
           map(({type, entity}) => type === SelectionType.node && entity),
-          updateAttrSingular(this.renderedNodes$, 'selected', (entity, {id}) => (entity as Base['node']).id === id),
+          switchMap(entity => this.renderedNodes$.pipe(
+              tap(renderedNodes => {
+                if (isEmpty(entity)) {
+                  renderedNodes.attr('selected', undefined);
+                } else {
+                  renderedNodes
+                    .attr('selected', ({id}) => (entity as Base['node']).id === id)
+                    .filter(({id}) => (entity as Base['node']).id === id)
+                    .raise();
+                }
+              })
+            )
+          ),
           debug('nodeSelection')
         ),
         selection$.pipe(
           map(({type, entity}) => type === SelectionType.link && entity),
-          updateAttrSingular(this.renderedLinks$, 'selected', (entity, {id}) => (entity as Base['link']).id === id),
+          switchMap(entity => this.renderedLinks$.pipe(
+            tap(renderedLinks => {
+              if (isEmpty(entity)) {
+                renderedLinks.attr('selected', undefined);
+              } else {
+                renderedLinks
+                  .attr('selected', ({id}) => (entity as Base['link']).id === id)
+                  .filter(({id}) => (entity as Base['link']).id === id)
+                  .raise();
+              }
+            })
+          )),
           debug('linkSelection')
         ),
         selection$.pipe(
@@ -187,13 +226,18 @@ export class SankeySingleLaneComponent
           publish(connectedNodesAndLinks$ => combineLatest([
             connectedNodesAndLinks$.pipe(
               map(({nodesIds}) => nodesIds),
-              updateAttr(
-                this.renderedNodes$,
-                'transitively-selected',
-                {
-                  accessor: (nodesIds, {id}) => nodesIds.has(id),
-                }
-              ),
+              switchMap(nodesIds => this.renderedNodes$.pipe(
+                tap(renderedNodes => {
+                  if (isEmpty(nodesIds)) {
+                    renderedNodes.attr('transitively-selected', undefined);
+                  } else {
+                    renderedNodes
+                      .attr('transitively-selected', ({id}) => nodesIds.has(id))
+                      .filter(({id}) => nodesIds.has(id))
+                      .raise();
+                  }
+                })
+              )),
               debug('transnodeSelection')
             ),
             connectedNodesAndLinks$.pipe(
