@@ -1,5 +1,6 @@
 import re
 import socket
+from functools import reduce
 from http.client import HTTPSConnection, HTTPConnection
 from http.cookiejar import CookieJar
 from io import BytesIO, StringIO
@@ -98,7 +99,7 @@ class DirectDownloadDetectorHandler(BaseHandler):
     rewrite_map: List[Tuple[re.Pattern, str]] = [
         # LL-3036 - Force wiley.com links to go to the direct PDF
         (re.compile('^https?://onlinelibrary.wiley.com/doi/epdf/([^?]+)$', re.I),
-         'https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true'),
+        'https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true'),
     ]
 
     @classmethod
@@ -181,7 +182,8 @@ def _check_acceptable_response(accept_header, content_type_header):
             # Reminder that mime-types have this structure: type/subtype;parameter=value
             # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
             # See this list of common types for examples:
-            # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types  # noqa
+            # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+            # /Common_types  # noqa
             acceptable_types = map(
                 lambda type: type.split(';')[0].strip(),
                 accept_header.split(',')
@@ -202,6 +204,18 @@ def _check_acceptable_response(accept_header, content_type_header):
             f'Response Content-Type does not match the requested type: ' +
             f'{content_type_header} vs. {accept_header}'
         )
+
+
+def accepted_type(accept, content_type):
+    accept_mimes = re.split(r'\s*,\s*', accept or '*/*')
+    for accept_mime in accept_mimes:
+        for accept_part, content_part in zip(
+            *map(lambda mime: re.split(r'\s*[/;=]\s*', mime), (accept_mime, content_type or ''))
+        ):
+            if accept_part != content_part and accept_part != '*':
+                break
+        else:
+            return accept_mime
 
 
 def read_url(
@@ -250,10 +264,14 @@ def read_url(
     req = Request(url, headers=headers)
     conn = opener.open(req, **kwargs)
 
-    # First, check the content type returned by the server
-    accept_header = req.headers.get('Accept', None)
-    content_type_header = conn.headers.get('Content-Type', None)
-    _check_acceptable_response(accept_header, content_type_header)
+    accept = req.headers.get('Accept')
+    content_type = conn.headers.get('Content-Type')
+    if not accepted_type(accept, content_type):
+        raise UnsupportedMediaTypeError(
+            f'Response Content-Type does not match the requested type: '
+            f'{content_type} vs. ' +
+            f'{accept}'
+        )
 
     # Then, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
