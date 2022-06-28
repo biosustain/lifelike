@@ -4,7 +4,7 @@ rq = RQ()
 
 
 @rq.job
-def example_long_calculation_job(x, y):
+def example_long_calculation_job(x: int, y: int) -> int:
     """
     This example function can be invoked from anywhere as follows: long_calculation.queue(x, y)
     It will return immediately and it will be queued for a separate worker process to execute.
