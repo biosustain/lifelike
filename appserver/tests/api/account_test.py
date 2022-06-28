@@ -1,5 +1,10 @@
 import json
+import re
+from types import SimpleNamespace
+
 import pytest
+import responses
+
 from neo4japp.models import AppUser
 from tests.helpers.api import generate_jwt_headers
 
@@ -24,9 +29,30 @@ def mock_users(session, fix_user_role):
     return users
 
 
-def test_admin_can_create_user(client, fix_admin_user):
+@pytest.fixture(scope='function')
+def mocked_lmdb_open(monkeypatch):
+    def lmdb_open(*args, **kwargs):
+        return SimpleNamespace(
+            open_db=lambda *args, **kwargs: None,
+            close=lambda *args, **kwargs: None,
+            begin=lambda *args, **kwargs: SimpleNamespace(
+                cursor=lambda *args, **kwargs: SimpleNamespace(
+                    getmulti=lambda *args, **kwargs: [])))
+    monkeypatch.setattr('lmdb.open', lmdb_open)
+
+
+def test_admin_can_create_user(client, fix_admin_user, mocked_responses, mocked_lmdb_open):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    # Mocked responses from pdfparser
+    mocked_responses.add(
+        responses.POST,
+        re.compile('.+/token/rect/.+'),
+        status=201,
+        content_type='application/json',
+        json={'pages': []},
+    )
 
     response = client.post(
         '/accounts/',

@@ -1314,24 +1314,14 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.save(result_string)
         return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
 
-    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
-        """
-        Evaluate the changes in the images and create a new blob to store in the content.
-        Since we cannot delete files from an archive, we need to copy everything (except for
-        graph.json) into a new one.
-        :params:
-        :param buffer: buffer containing request data
-        :param params: request parameters, containing info about images
-        :param file: file which content is being modified
-        """
+    def update_map(self, params: dict, file_content, updater=lambda x: x):
+        try:
+            zip_file = zipfile.ZipFile(file_content)
+        except zipfile.BadZipfile:
+            raise ValidationError('Previous content of the map is corrupted!')
 
         images_to_delete = params.get('deleted_images') or []
         new_images = params.get('new_images') or []
-        previous_content = file.content.raw_file
-        try:
-            zip_file = zipfile.ZipFile(io.BytesIO(previous_content))
-        except zipfile.BadZipfile:
-            raise ValidationError('Previous content of the map is corrupted!')
 
         new_content = io.BytesIO()
         new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
@@ -1346,12 +1336,34 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         for image in new_images:
             new_zip.writestr('images/' + image.filename + '.png', image.read())
-        new_zip.writestr('graph.json', params['content_value'].read())
+        if params.get('content_value') is not None:
+            new_graph = params['content_value'].read()
+        else:
+            graph_json = json.loads(zip_file.read('graph.json'))
+            new_graph_json = updater(graph_json)
+            validate_map(new_graph_json)
+            new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
+
+        new_zip.writestr('graph.json', new_graph)
         new_zip.close()
 
         # Remember to always rewind when working with BufferedIOBase
         new_content.seek(0)
         return typing.cast(BufferedIOBase, new_content)
+
+    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+        """
+        Evaluate the changes in the images and create a new blob to store in the content.
+        Since we cannot delete files from an archive, we need to copy everything (except for
+        graph.json) into a new one.
+        :params:
+        :param buffer: buffer containing request data
+        :param params: request parameters, containing info about images
+        :param file: file which content is being modified
+        """
+        previous_content = file.content.raw_file
+
+        return self.update_map(params, io.BytesIO(previous_content))
 
 
 class GraphTypeProvider(BaseFileTypeProvider):
