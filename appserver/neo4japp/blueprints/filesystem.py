@@ -1054,15 +1054,16 @@ class FileListView(FilesystemBaseView):
                     prefer_direct_downloads=True,
                     timeout=self.url_fetch_timeout
                 )
-            except UnsupportedMediaTypeError:
+            except UnsupportedMediaTypeError as e:
                 # The server did not respect our request for a PDF and did not throw a 406, so
-                # here we do it ourselves
+                # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
                 raise FileUploadError(
                     title='File Upload Error',
                     message='Your file could not be uploaded. Please make sure your URL ends ' +
                             'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
                             'problem persists, please download the file to your computer from ' +
                             'the original website and upload the file from your device.',
+                    code=e.code
                 )
             except HTTPError as http_err:
                 # Should be raised because of the 'Accept' content type header above.
@@ -1076,7 +1077,7 @@ class FileListView(FilesystemBaseView):
                                 'your device.',
                     )
                 else:
-                    # An error occurred that we were not expecting
+                    # An error occurred that we were not expecting.
                     raise FileUploadError(
                         title='File Upload Error',
                         message='Your file could not be uploaded due to an unexpected error, ' +
