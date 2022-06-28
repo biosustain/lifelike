@@ -2,9 +2,9 @@ import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone,
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq, isNil, mapValues } from 'lodash-es';
+import { flatMap, groupBy, uniq, isNil, mapValues, isEmpty } from 'lodash-es';
 import { combineLatest, forkJoin, iif, zip, of } from 'rxjs';
-import { switchMap, map, tap, takeUntil, publish } from 'rxjs/operators';
+import { switchMap, map, tap, takeUntil, publish, first } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
 import { SelectionType } from 'app/sankey/interfaces/selection';
@@ -21,7 +21,6 @@ import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../../color
 import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { Base } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
-import { updateAttr } from '../../../../utils/rxjs';
 import { EditService } from '../../../../services/edit.service';
 import { getTraces } from '../../utils';
 
@@ -61,45 +60,57 @@ export class SankeyMultiLaneComponent
     return super.linkSelection;
   }
 
-  focusedLinks$ = this.sankey.graph$.pipe(
-    switchMap(({links}) =>
-      this.search.searchFocus$.pipe(
+  focusedLinks$ = this.search.searchFocus$.pipe(
+    switchMap(searchFocus =>
+      this.sankey.graph$.pipe(
+        first(),
         // map graph file link to sankey link
-        map(({type, id}) =>
-          type === EntityType.Link ?
+        map(({links}) =>
+          searchFocus?.type === EntityType.Link ?
             // allow string == number match interpolation ("58" == 58 -> true)
             // tslint:disable-next-line:triple-equals
-            (links as Base['link'][]).filter(({originLinkId}) => originLinkId == id) : []
+            (links as Base['link'][]).filter(({originLinkId}) => originLinkId == searchFocus?.id) : []
         ),
-        updateAttr(this.renderedLinks$, 'focused')
-      )
-    ),
-    tap(current => isNotEmpty(current) && this.panToLinks(current))
-  );
-
-  focusedTrace$ = this.sankey.baseView.common.networkTrace$.pipe(
-    switchMap(({traces}) =>
-      this.search.searchFocus$.pipe(
-        map(({type, idx}) => type === EntityType.Trace ? traces[idx] : undefined),
-        switchMap(entity =>
-          iif(
-            () => isNil(entity),
-            zip(
-              of(entity).pipe(
-                tap(e => console.log(e)),
-                updateAttr(this.renderedLinks$, 'focused'),
-                tap(current => isNotEmpty(current) && this.panToLinks(current))
-              ),
-              of(entity).pipe(
-                tap(e => console.log(e)),
-                updateAttr(this.renderedNodes$, 'focused')
-              )
-            )
-          )
-        )
+        tap(current => isNotEmpty(current) && this.panToLinks(current)),
+        switchMap(current => this.renderedLinks$.pipe(
+          tap(renderedLinks => {
+            if (isEmpty(current)) {
+              renderedLinks.attr('focused', undefined);
+            } else {
+              renderedLinks
+                .attr('focused', d => current.includes(d))
+                .filter(d => current.includes(d))
+                .raise();
+            }
+          })
+        ))
       )
     )
   );
+
+  // focusedTrace$ = this.sankey.baseView.common.networkTrace$.pipe(
+  //   switchMap(({traces}) =>
+  //     this.search.searchFocus$.pipe(
+  //       map(({type, idx}) => type === EntityType.Trace ? traces[idx] : undefined),
+  //       switchMap(entity =>
+  //         iif(
+  //           () => isNil(entity),
+  //           zip(
+  //             of(entity).pipe(
+  //               tap(e => console.log(e)),
+  //               updateAttr(this.renderedLinks$, 'focused'),
+  //               tap(current => isNotEmpty(current) && this.panToLinks(current))
+  //             ),
+  //             of(entity).pipe(
+  //               tap(e => console.log(e)),
+  //               updateAttr(this.renderedNodes$, 'focused')
+  //             )
+  //           )
+  //         )
+  //       )
+  //     )
+  //   )
+  // );
 
   selectionUpdate$ = this.selection.selection$.pipe(
     map(selection =>
@@ -111,11 +122,33 @@ export class SankeyMultiLaneComponent
     publish(selection$ => combineLatest([
       selection$.pipe(
         map(({[SelectionType.node]: nodes = []}) => nodes),
-        updateAttr(this.renderedNodes$, 'selected')
+        switchMap(selection => this.renderedNodes$.pipe(
+          tap(renderedNodes => {
+            if (isEmpty(selection)) {
+              renderedNodes.attr('selected', undefined);
+            } else {
+              renderedNodes
+                .attr('selected', d => selection.includes(d))
+                .filter(d => selection.includes(d))
+                .raise();
+            }
+          })
+        ))
       ),
       selection$.pipe(
         map(({[SelectionType.link]: links = []}) => links),
-        updateAttr(this.renderedLinks$, 'selected')
+        switchMap(selection => this.renderedLinks$.pipe(
+          tap(renderedLinks => {
+            if (isEmpty(selection)) {
+              renderedLinks.attr('selected', undefined);
+            } else {
+              renderedLinks
+                .attr('selected', d => selection.includes(d))
+                .filter(d => selection.includes(d))
+                .raise();
+            }
+          })
+        ))
       ),
       selection$.pipe(
         map(({
@@ -127,10 +160,33 @@ export class SankeyMultiLaneComponent
         publish(traces$ => combineLatest([
           traces$.pipe(
             map(traces => this.calculateNodeGroupFromTraces(traces)),
-            updateAttr(this.renderedNodes$, 'transitively-selected', {accessor: (arr, {id}) => arr.includes(id)})
+            switchMap(selection => this.renderedNodes$.pipe(
+              tap(renderedNodes => {
+                if (isEmpty(selection)) {
+                  renderedNodes.attr('transitively-selected', undefined);
+                } else {
+                  renderedNodes
+                    .attr('transitively-selected', ({id}) => selection.includes(id))
+                    .filter( ({id}) => selection.includes(id))
+                    .raise();
+                }
+              })
+            ))
           ),
           traces$.pipe(
-            updateAttr(this.renderedLinks$, 'transitively-selected', {accessor: (arr, {trace}) => arr.includes(trace)})
+            switchMap(traces => this.renderedLinks$.pipe(
+                tap(renderedLinks => {
+                  if (isEmpty(traces)) {
+                    renderedLinks.attr('transitively-selected', undefined);
+                  } else {
+                    renderedLinks
+                      .attr('transitively-selected', ({trace}) => traces.includes(trace))
+                      .filter(({trace}) => traces.includes(trace))
+                      .raise();
+                  }
+                })
+              )
+            )
           )
         ]))
       )
@@ -160,7 +216,7 @@ export class SankeyMultiLaneComponent
     forkJoin(
       this.focusedLinks$,
       this.focusedNode$,
-      this.focusedTrace$
+      // this.focusedTrace$
     ).pipe(
       takeUntil(this.destroyed$)
     ).subscribe();

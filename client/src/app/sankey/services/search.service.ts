@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ReplaySubject, iif, of, Subject, Observable, merge, BehaviorSubject } from 'rxjs';
+import { ReplaySubject, iif, of, Subject, Observable, merge, BehaviorSubject, defer } from 'rxjs';
 import {
   map,
   switchMap,
@@ -155,22 +155,26 @@ export class SankeySearchService {
   searchFocus$ = this.preprocessedMatches$.pipe(
     switchMap(preprocessedMatches => this.focusIdx$.pipe(
         map(focusIdx => preprocessedMatches[focusIdx]),
-        filter(searchFocus => Boolean(searchFocus)),
         switchMap(searchFocus =>
-          this.common.patchState({
-              networkTraceIdx: searchFocus.networkTraceIdx
-            },
-            (current, delta) =>
-              current.networkTraceIdx === delta.networkTraceIdx
-                ? current
-                : {
-                  ...current,
-                  networkTraceIdx: delta.networkTraceIdx,
-                  viewName: undefined
-                }
-          ).pipe(
-            map(() => searchFocus)
-          ))
+          iif(
+            () => Boolean(searchFocus),
+            defer(() => this.common.patchState({
+                networkTraceIdx: searchFocus.networkTraceIdx
+              },
+              (current, delta) =>
+                current.networkTraceIdx === delta.networkTraceIdx
+                  ? current
+                  : {
+                    ...current,
+                    networkTraceIdx: delta.networkTraceIdx,
+                    viewName: undefined
+                  }
+            ).pipe(
+              map(() => searchFocus)
+            )),
+            of(searchFocus)
+          )
+        )
       )
     ),
     shareReplay({bufferSize: 1, refCount: true})
