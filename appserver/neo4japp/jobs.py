@@ -4,15 +4,15 @@ rq = RQ()
 
 
 @rq.job
-def long_calculation(x, y):
+def example_long_calculation_job(x, y):
     """
     This example function can be invoked from anywhere as follows: long_calculation.queue(x, y)
     It will return immediately and it will be queued for a separate worker process to execute.
 
     Example (using a flask shell for demonstration purposes):
         $ flask shell
-        >>> from neo4japp.jobs import long_calculation
-        >>> long_calculation.queue(123, 456)
+        >>> from neo4japp.jobs import example_long_calculation_job
+        >>> example_long_calculation_job.queue(123, 456)
         FlaskJob('e697a984-b38c-4521-a78f-f6fce81a7a5c', enqueued_at=...)
 
     Jobs will be queued until a worker process them. To launch a worker process, run:
@@ -27,7 +27,7 @@ def long_calculation(x, y):
     from random import random
 
     time = random() * 10
-    print(f"Sleeping for {time} seconds to simulate a long calculation...")
+    print(f"Sleeping for {time} seconds to simulate a long running calculation...")
     sleep(time)
 
     return x + y
