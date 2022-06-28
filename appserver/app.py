@@ -14,7 +14,7 @@ import requests
 import zipfile
 
 from collections import namedtuple
-from flask import request
+from flask import current_app, request
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
@@ -29,6 +29,7 @@ from neo4japp.constants import (
     LogEventType
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
+from neo4japp.exceptions import OutdatedVersionException
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
@@ -69,6 +70,20 @@ def default_login_required():
         return
 
     return login_required_dummy_view()
+
+
+@app.before_request
+def check_version_header():
+    """
+    API version content negotiation. Check if the client requested a specific version,
+    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
+    """
+    requested_version = request.headers.get("Accept-Lifelike-Version")
+    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+        raise OutdatedVersionException(
+            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
+            'changes'
+        )
 
 
 @app.cli.command("seed")

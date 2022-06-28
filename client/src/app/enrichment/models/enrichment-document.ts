@@ -2,7 +2,6 @@ import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
-import { nullCoalesce } from 'app/shared/utils/types';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
@@ -11,6 +10,7 @@ import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCB
 export class BaseEnrichmentDocument {
   taxID = '';
   organism = '';
+  values = new Map<string, string>();
   importGenes: string[] = [];
   domains: string[] = [
     'Regulon',
@@ -117,14 +117,15 @@ export class BaseEnrichmentDocument {
     };
   }
 
-  decode({data, ...rest}: EnrichmentData): EnrichmentParsedData {
+  decode({data, result, ...rest}: EnrichmentData): EnrichmentParsedData {
     // parse the file content to get gene list and organism tax id and name
     const importGenes = data.genes.split(',');
     const taxID = data.taxId;
     const organism = data.organism;
     const domains = data.sources.filter(domain => domain.length);
+    const values = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.value || '']));
     return {
-      importGenes, taxID, organism, domains, ...rest
+      importGenes, taxID, organism, domains, values, result, ...rest
     };
   }
 
@@ -270,15 +271,20 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                       fullName: node.full_name || '',
                       annotatedFullName: node.full_name || '',
                       link,
-                      domains: this.generateGeneDomainResults(domains, domainWrapper, node)
+                      domains: this.generateGeneDomainResults(domains, domainWrapper, node),
+                      value: this.values.get(synonym) || '',
                     });
                   }
                 }
 
                 for (const gene of importGenes) {
-                  if (!synonymsSet.has(gene)) {
+                  // Don't add the unmatched gene if we've already seen it.
+                  if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
                     geneMap.add(gene);
-                    genesList.push({imported: gene});
+                    genesList.push({
+                        imported: gene,
+                        value: this.values.get(gene) || '',
+                    });
                   }
                 }
 
@@ -316,7 +322,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('Regulon')) {
       if (wrapper.regulon !== null) {
-        const regulatorText = nullCoalesce(wrapper.regulon.result.regulator_family, '');
+        const regulatorText = wrapper.regulon.result.regulator_family ?? '';
         const activatedText = wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : '';
         const repressedText = wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : '';
 
@@ -442,6 +448,7 @@ export interface EnrichedGene {
   annotatedFullName?: string;
   link?: string;
   domains?: { [domain: string]: EnrichedGeneDomain };
+  value?: string;
 }
 
 export interface EnrichmentResult {
@@ -472,5 +479,6 @@ export interface EnrichmentParsedData {
   taxID: string;
   organism: string;
   domains: string[];
+  values?: Map<string, string>;
   result?: EnrichmentResult;
 }

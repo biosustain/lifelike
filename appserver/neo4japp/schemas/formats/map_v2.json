@@ -79,11 +79,6 @@
       "pattern": "(?i)^#(d62728|ff9800|edc949|bcbd22|4caf50|17becf|0277bd|673ab7|e377c2|CCCCCC|7f7f7f|000000)$",
       "$comment": "only one of the provided colors is acceptable in case we switch to an actual palette system later; note that casing does not matter."
     },
-    "bgPaletteColor": {
-      "type": ["string", "null"],
-      "pattern": "(?i)^#(d627284d|ff98004d|edc9494d|bcbd224d|4caf504d|17becf4d|0277bd4d|673ab74d|e377c24d|CCCCCC4d|7f7f7f4d|0000004d)$",
-      "$comment": "only one of the provided colors is acceptable in case we switch to an actual palette system later; note that casing does not matter."
-    },
     "scalingFactor": {
       "type": "number",
       "minimum": 0.2,
@@ -319,9 +314,6 @@
               },
               "fillColor": {
                 "$ref": "#/definitions/paletteColor"
-              },
-              "bgColor": {
-                "$ref": "#/definitions/bgPaletteColor"
               },
               "strokeColor": {
                 "$ref": "#/definitions/paletteColor"

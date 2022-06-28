@@ -2,28 +2,29 @@ import * as d3 from 'd3';
 import { Subject } from 'rxjs';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
-import { Group, Link } from 'webcola/WebCola/src/layout';
+import { Link } from 'webcola/WebCola/src/layout';
 
 import {
   GraphEntity,
   GraphEntityType,
   Hyperlink,
+  UniversalGraphGroup,
   Source,
-  UniversalGraph,
+  KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode,
+  UniversalGraphNode, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
-import { emptyIfNull } from 'app/shared/utils/types';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
-import { associatedMapsRegex } from 'app/shared/constants';
+import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
 
-import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
+import { PlacedEdge, PlacedGroup, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
+import { BoundingBox, isPointIntersecting, Point } from '../utils/canvas/shared';
 
 /**
  * A rendered view of a graph.
@@ -49,13 +50,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Collection of layout groups on the graph.
    */
-  layoutGroups: GraphLayoutGroup[] = [];
+  groups: UniversalGraphGroup[] = [];
 
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
   protected nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+
+  /**
+   * Maps node's hashes to nodes for O(1) lookup, essential to the speed
+   * of most of this graph code.
+   */
+  protected groupHashMap: Map<string, UniversalGraphGroup> = new Map();
 
   /**
    * Keep track of fixed X/Y positions that come from dragging nodes. These
@@ -92,6 +99,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * webcola object used for automatic layout.
    * Initialized in {@link ngAfterViewInit}.
    */
+    // TODO: Inspect that. Is this deprecated?
   cola: Layout;
 
   /**
@@ -129,7 +137,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Holds currently active behaviors. Behaviors provide UI for the graph.
    */
   readonly behaviors = new BehaviorList<BT>([
-    'isPointIntersectingNode',
+    'isPointIntersectingNodeHandles',
     'isPointIntersectingEdge',
     'isBBoxEnclosingNode',
     'isBBoxEnclosingEdge',
@@ -228,10 +236,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // Filter in links that point to desired files
     return links.filter((source) => {
-      return associatedMapsRegex.test(source.url);
+      return ASSOCIATED_MAPS_REGEX.test(source.url);
     // Return hashId of those files (last element of the url address)
     }).map(source => {
-      return associatedMapsRegex.exec(source.url)[1];
+      return ASSOCIATED_MAPS_REGEX.exec(source.url)[1];
     });
   }
 
@@ -291,16 +299,26 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param graph the graph to replace with
    */
   // NOTE: This is actually called twice when opening a map in read-only mode - why?
-  setGraph(graph: UniversalGraph): void {
-
+  setGraph(graph: KnowledgeMapGraph): void {
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
+    this.groups = [...graph.groups];
 
     this.saveImagesState();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
       (map, node) => map.set(node.hash, node),
+      new Map(),
+    );
+
+    this.groupHashMap = graph.groups.reduce(
+      (map, group) => {
+        group.members.forEach((member) => {
+          map.set(member.hash, group);
+        });
+        return map;
+      },
       new Map(),
     );
 
@@ -312,10 +330,23 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Return a copy of the graph.
    */
-  getGraph(): UniversalGraph {
+  getGraph(): KnowledgeMapGraph {
     return {
       nodes: this.nodes,
       edges: this.edges,
+      groups: this.groups,
+    };
+  }
+
+  /**
+   * Return a copy of the graph that is suited to the export. Filters out the nodes with group out of the
+   * export map, since they are passed in group.members list - no need to duplicate.
+   */
+  getExportableGraph(): KnowledgeMapGraph {
+    return {
+      nodes: this.nodes.filter(node => !this.groupHashMap.has(node.hash)),
+      edges: this.edges,
+      groups: this.groups
     };
   }
 
@@ -352,6 +383,13 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         break;
       }
     }
+    // Terminate early
+    if (!foundNode) {
+      return {
+        found: false,
+        removedEdges: [],
+      };
+    }
 
     let j = this.edges.length;
     while (j--) {
@@ -364,6 +402,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
 
     this.nodeHashMap.delete(node.hash);
+    this.tryRemoveNodeFromGroup(node.hash);
     this.invalidateNode(node);
 
     // TODO: Only adjust selection if needed
@@ -384,6 +423,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
+    if (this.groupHashMap.has(node.hash)) {
+      this.updateGroup(this.groupHashMap.get(node.hash));
+    }
   }
 
   /**
@@ -440,65 +482,159 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Create group of nodes
+   * @param group - data of the group
+   */
+  addGroup(group: UniversalGraphGroup) {
+    group.members.forEach((member) => {
+      this.tryRemoveNodeFromGroup(member.hash);
+      this.groupHashMap.set(member.hash, group);
+    });
+    this.groups.push(this.recalculateGroup(group));
+  }
+
+  /**
+   * As groups don't have their size, we need to recalculate them when members change position
+   * @param group to recalculate
+   */
+  recalculateGroup(group: UniversalGraphGroup): UniversalGraphGroup {
+    const bbox = this.getNodeBoundingBox(group.members || [], group.margin);
+    const { minX, minY, maxX, maxY } = bbox;
+    const width = Math.abs(maxX - minX);
+    const height = Math.abs(maxY - minY);
+    group.data.x = maxX - width / 2.0;
+    group.data.y = maxY - height / 2.0;
+    group.data.width = width;
+    group.data.height = height;
+    return group;
+  }
+
+  /**
+   * Remove node from the group - if node has a group.
+   * @param hash - hash of node to be removed
+   */
+  tryRemoveNodeFromGroup(hash: string) {
+    const group = this.groupHashMap.get(hash);
+
+    if (group) {
+      this.groupHashMap.delete(hash);
+      group.members = group.members.filter(node => node.hash !== hash);
+      if (group.members.length > 1) {
+        this.updateGroup(group);
+      } else {
+        this.removeGroup(group);
+      }
+    }
+  }
+
+  /**
+   * Ungroup nodes
+   * @param group - group to be removed
+   */
+  removeGroup(group: UniversalGraphGroup): boolean {
+    let foundNode = false;
+
+    for (let i = 0; i < this.groups.length; i++) {
+      const g = this.groups[i];
+      if (group.hash === g.hash) {
+        this.groups.splice(i, 1);
+        foundNode = true;
+        break;
+      }
+    }
+
+    group.members.forEach(node => this.groupHashMap.delete(node.hash));
+    this.invalidateGroup(group);
+
+    // TODO: Only adjust selection if needed
+    this.selection.replace([]);
+    this.dragging.replace([]);
+    this.highlighting.replace([]);
+
+    this.requestRender();
+
+    return foundNode;
+  }
+
+  updateGroup(group: UniversalGraphGroup) {
+    this.recalculateGroup(group);
+
+    this.invalidateGroup(group);
+    this.requestRender();
+  }
+
+  /**
+   * Append new members to a group.
+   * @param newMembers New nodes to be added
+   * @param group Group to extend
+   */
+  addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup) {
+    for (const node of newMembers) {
+      this.tryRemoveNodeFromGroup(node.hash);
+      group.members.push(node);
+      this.groupHashMap.set(node.hash, group);
+    }
+    this.updateGroup(group);
+  }
+
+
+  /**
+   * Reverse the actions of addToGroup. No need to update the group, TryRemove does that
+   * @param newMembers nodes to delete
+   * @param group group to delete from
+   */
+  removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup) {
+    for (const node of newMembers) {
+      this.tryRemoveNodeFromGroup(node.hash);
+    }
+  }
+
+  // ========================================
+  // Object accessors
+  // ========================================
+  // Invalidate === remove from cache. Once the Placed version of the object is removed
+  // from RenderTree, it will get 'placed' (transformed into drawable object) during the next render batch.
+  // This means that the visual appearance of the entity will not be modified without invalidating it, hence
+  // we need to call this on (almost) every entity update.
+
+  /**
    * Invalidate the whole renderer cache.
    */
-  invalidateAll(): void {
-  }
+  abstract invalidateAll(): void;
 
   /**
    * Invalidate any cache entries for the given node. If changes are made
    * that might affect how the node is rendered, this method must be called.
    * @param d the node
    */
-  invalidateNode(d: UniversalGraphNode): void {
-    for (const edge of this.edges) {
-      if (edge.from === d.hash || edge.to === d.hash) {
-        this.invalidateEdge(edge);
-      }
-    }
-  }
+  abstract invalidateNode(d: UniversalGraphNode): void;
+
     /**
      * Invalidate any cache entries for the given edge. If changes are made
      * that might affect how the edge is rendered, this method must be called.
      * @param d the edge
      */
-  invalidateEdge(d: UniversalGraphEdge): void {
-  }
+  abstract invalidateEdge(d: UniversalGraphEdge): void;
+
+  /**
+   * Remove group from cache, so its graphical representation would be recomputed.
+   * @param d
+   */
+  abstract invalidateGroup(d: UniversalGraphGroup): void;
+
+
+  /**
+   * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
+   * @param d node or group.
+   */
+  abstract invalidateNodelike(d: UniversalGraphNodelike): void;
 
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms
-   * @param options addiitonal find options
+   * @param options aditional find options
    */
-  findMatching(terms: string[], options: FindOptions = {}): GraphEntity[] {
-    const matcher = compileFind(terms, options);
-    const matches: GraphEntity[] = [];
-
-    for (const node of this.nodes) {
-      const data: { detail?: string } = node.data != null ? node.data : {};
-      const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-
-      if (matcher(text)) {
-        matches.push({
-          type: GraphEntityType.Node,
-          entity: node,
-        });
-      }
-    }
-
-    for (const edge of this.edges) {
-      const data: { detail?: string } = edge.data != null ? edge.data : {};
-      const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-      if (matcher(text)) {
-        matches.push({
-          type: GraphEntityType.Edge,
-          entity: edge,
-        });
-      }
-    }
-
-    return matches;
-  }
+  abstract findMatching(terms: string[], options: FindOptions): GraphEntity[];
 
   /**
    * Get the current position (graph coordinates) where the user is currently
@@ -542,7 +678,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param boundingBoxes bounding boxes to check
    * @param padding padding around all the bounding boxes
    */
-  getGroupBoundingBox(boundingBoxes: { minX: number, maxX: number, minY: number, maxY: number }[],
+  getGroupBoundingBox(boundingBoxes: BoundingBox[],
                       padding = 0) {
     let minX = null;
     let minY = null;
@@ -550,25 +686,25 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     let maxY = null;
 
     for (const bbox of boundingBoxes) {
-      if (minX === null || minX > bbox.minX + padding) {
-        minX = bbox.minX - padding;
+      if (minX === null || minX > bbox.minX) {
+        minX = bbox.minX;
       }
-      if (minY === null || minY > bbox.minY + padding) {
-        minY = bbox.minY - padding;
+      if (minY === null || minY > bbox.minY) {
+        minY = bbox.minY;
       }
-      if (maxX === null || maxX < bbox.maxX + padding) {
-        maxX = bbox.maxX + padding;
+      if (maxX === null || maxX < bbox.maxX) {
+        maxX = bbox.maxX;
       }
-      if (maxY === null || maxY < bbox.maxY + padding) {
-        maxY = bbox.maxY + padding;
+      if (maxY === null || maxY < bbox.maxY) {
+        maxY = bbox.maxY;
       }
     }
 
     return {
-      minX,
-      minY,
-      maxX,
-      maxY,
+      minX: minX - padding,
+      minY: minY - padding,
+      maxX: maxX + padding,
+      maxY: maxY + padding,
     };
   }
 
@@ -595,56 +731,38 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find the best matching node at the given position.
    * @param nodes list of nodes to search through
-   * @param x graph X location
-   * @param y graph Y location
+   * @param position - {x, y} of the position
    */
-  getNodeAtPosition(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
-    const possibleNodes = [];
+  getNodeAtPosition(nodes: UniversalGraphNode[], position: Point): UniversalGraphNode | undefined {
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, x, y);
-      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(x, y)) {
-        const distance = Math.hypot(x - d.data.x, y - d.data.y);
-        // Node is so close, that we are sure it is it. Terminate early.
-        if (distance <= this.MIN_NODE_DISTANCE) {
-          return d;
-        }
-        possibleNodes.push({
-          node: d,
-          distance
-        });
-
+      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedNode, position);
+      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(position)) {
+        return d;
       }
     }
-    if (possibleNodes.length === 0) {
-      return undefined;
-    }
-    possibleNodes.sort((a, b) => {
-      return a.distance - b.distance;
-    });
-    return possibleNodes[0].node;
+    return undefined;
   }
 
   /**
    * Find the best matching edge at the given position.
    * @param edges list of edges to search through
-   * @param x graph X location
-   * @param y graph Y location
+   * @param position - {x, y} coordinated of the position
    */
-  getEdgeAtPosition(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
+  getEdgeAtPosition(edges: UniversalGraphEdge[], position: Point): UniversalGraphEdge | undefined {
     let bestCandidate: { edge: UniversalGraphEdge, distanceUnsq: number } = null;
     const distanceUnsqThreshold = 5 * 5;
 
     for (const d of edges) {
       const placedEdge = this.placeEdge(d);
 
-      const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, x, y);
-      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(x, y)) {
+      const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, position);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(position)) {
         return d;
       }
 
-      const distanceUnsq = placedEdge.getPointDistanceUnsq(x, y);
+      const distanceUnsq = placedEdge.getPointDistanceUnsq(position);
       if (distanceUnsq <= distanceUnsqThreshold) {
         if (bestCandidate == null || bestCandidate.distanceUnsq >= distanceUnsq) {
           bestCandidate = {
@@ -663,20 +781,35 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Find whether there exist a group at position. If 2+ groups share the position, will return newer (top one)
+   * @param groups list of groups to search through
+   * @param position - {x, y} coordinated of the position
+   */
+  getGroupAtPosition(groups: UniversalGraphGroup[], position: Point): UniversalGraphGroup | undefined {
+    for (const group of groups) {
+      const placedGroup = this.placeGroup(group);
+      const bbox = placedGroup.getBoundingBox();
+      // This hook checks whether rescaling handles are created, and if so, if 'position' is within it.
+      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedGroup, position);
+      if ((hookResult !== undefined && hookResult) || isPointIntersecting(bbox, position)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Find all the nodes fully enclosed by the bounding box.
    * @param nodes list of nodes to search through
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
-  getNodesWithinBBox(nodes: UniversalGraphNode[], x0: number, y0: number, x1: number, y1: number): UniversalGraphNode[] {
+  getNodesWithinBBox(nodes: UniversalGraphNode[], bbox: BoundingBox): UniversalGraphNode[] {
     const results = [];
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isBBoxEnclosingNode', placedNode, x0, y0, x1, y1);
-      if ((hookResult !== undefined && hookResult) || placedNode.isBBoxEnclosing(x0, y0, x1, y1)) {
+      const hookResult = this.behaviors.call('isBBoxEnclosingNode', placedNode, bbox);
+      if ((hookResult !== undefined && hookResult) || placedNode.isBBoxEnclosing(bbox)) {
         results.push(d);
       }
     }
@@ -686,18 +819,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Find all the edges fully enclosed by the bounding box.
    * @param edges list of edges to search through
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * @param bbox bounding box to check
    */
-  getEdgesWithinBBox(edges: UniversalGraphEdge[], x0: number, y0: number, x1: number, y1: number): UniversalGraphEdge[] {
+  getEdgesWithinBBox(edges: UniversalGraphEdge[], bbox: BoundingBox): UniversalGraphEdge[] {
     const results = [];
     for (let i = edges.length - 1; i >= 0; --i) {
       const d = edges[i];
       const placedEdge = this.placeEdge(d);
-      const hookResult = this.behaviors.call('isBBoxEnclosingEdge', placedEdge, x0, y0, x1, y1);
-      if ((hookResult !== undefined && hookResult) || placedEdge.isBBoxEnclosing(x0, y0, x1, y1)) {
+      const hookResult = this.behaviors.call('isBBoxEnclosingEdge', placedEdge, bbox);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isBBoxEnclosing(bbox)) {
         results.push(d);
       }
     }
@@ -705,20 +835,37 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Find all the entities fully enclosed by the bounding box.
-   * @param x0 top left
-   * @param y0 top left
-   * @param x1 bottom right
-   * @param y1 bottom right
+   * Find all the groups fully enclosed by the bounding box.
+   * @param groups - list of groups to check
+   * @param bbox bounding box to check
    */
-  getEntitiesWithinBBox(x0: number, y0: number, x1: number, y1: number): GraphEntity[] {
+  getGroupsWithinBBox(groups: UniversalGraphGroup[], bbox: BoundingBox): UniversalGraphGroup[] {
+    const results = [];
+    for (let i = groups.length - 1; i >= 0; --i) {
+      const group = groups[i];
+      if (this.placeGroup(group).isBBoxEnclosing(bbox)) {
+        results.push(group);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Find all the entities fully enclosed by the bounding box.
+   * @param bbox bounding box
+   */
+  getEntitiesWithinBBox(bbox: BoundingBox): GraphEntity[] {
     return [
-      ...this.getNodesWithinBBox(this.nodes, x0, y0, x1, y1).map(entity => ({
+      ...this.getNodesWithinBBox(this.nodes, bbox).map(entity => ({
         type: GraphEntityType.Node,
         entity,
       })),
-      ...this.getEdgesWithinBBox(this.edges, x0, y0, x1, y1).map(entity => ({
+      ...this.getEdgesWithinBBox(this.edges, bbox).map(entity => ({
         type: GraphEntityType.Edge,
+        entity,
+      })),
+      ...this.getGroupsWithinBBox(this.groups, bbox).map(entity => ({
+        type: GraphEntityType.Group,
         entity,
       })),
     ];
@@ -786,17 +933,25 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
   /**
+   * Place (calculate rendering data) the group onto a canvas and store the result in renderTree.
+   * @param d the group
+   */
+  abstract placeGroup(d: UniversalGraphGroup): PlacedGroup;
+
+  /**
    * Place the given entity onto the canvas, which involves calculating the
    * real size of the object as it would appear. Use the returning object
    * to get these metrics or use the object to render the entity. The
    * returned object has the style of the entity baked into it.
-   * @param d the edge
+   * @param d the entity
    */
   placeEntity(d: GraphEntity): PlacedObject {
     if (d.type === GraphEntityType.Node) {
       return this.placeNode(d.entity as UniversalGraphNode);
     } else if (d.type === GraphEntityType.Edge) {
       return this.placeEdge(d.entity as UniversalGraphEdge);
+    } else if (d.type === GraphEntityType.Group) {
+      return this.placeGroup(d.entity as UniversalGraphGroup);
     } else {
       throw new Error('unknown type: ' + d.type);
     }
@@ -1030,37 +1185,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       };
     });
 
-    // TODO: Remove test groups
-    const layoutGroups: GraphLayoutGroup[] = [
-      {
-        name: 'Bands',
-        color: '#740CAA',
-        leaves: [],
-        // groups: [],
-        padding: 10,
-      },
-      {
-        name: 'Things',
-        color: '#0CAA70',
-        leaves: [],
-        // groups: [],
-        padding: 10,
-      },
-    ];
-
-    for (const node of layoutNodes) {
-      const n = Math.floor(Math.random() * (layoutGroups.length + 2));
-      if (n < layoutGroups.length) {
-        layoutGroups[n].leaves.push(node);
-      }
-    }
-
-    this.layoutGroups = layoutGroups;
-
     this.cola
       .nodes(layoutNodes)
       .links(layoutLinks)
-      .groups(layoutGroups)
       .symmetricDiffLinkLengths(50)
       .handleDisconnected(false)
       .size([this.width, this.height])
@@ -1108,16 +1235,3 @@ interface GraphLayoutLink extends Link<GraphLayoutNode> {
   index?: number;
 }
 
-/**
- * Represents a grouping of nodes passed to the layout algorithm.
- */
-interface GraphLayoutGroup extends Group {
-  name: string;
-  color: string;
-  leaves?: GraphLayoutNode[];
-}
-
-enum referenceCheckingMode {
-  nodeAdded = 1,
-  nodeDeleted = -1,
-}

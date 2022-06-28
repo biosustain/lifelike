@@ -4,7 +4,7 @@ import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } f
 import { Observable } from 'rxjs';
 
 import { DataService } from 'app/shared/services/table.service';
-import { SortableTableHeaderDirective, SortEvent } from 'app/shared/directives/table-sortable-header.directive';
+import { SortableTableHeaderDirective, SortEvent, SortDirection } from 'app/shared/directives/table-sortable-header.directive';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 
 
@@ -56,15 +56,15 @@ export class TableCompleteComponent implements OnChanges {
             '***');
   }
 
-  onSort({column, direction}: SortEvent) {
-    // resetting other headers
+  onSort({id, direction}: SortEvent) {
+    // resetting other headers - we could for instance accumulate sort instead
     this.headers.forEach(header => {
-      if (header.sortable !== column) {
-        header.direction = '';
+      if (header.id !== id) {
+        header.direction = SortDirection.none;
       }
     });
 
-    this.service.sortColumn = column;
+    this.service.sortColumn = id;
     this.service.sortDirection = direction;
   }
 }

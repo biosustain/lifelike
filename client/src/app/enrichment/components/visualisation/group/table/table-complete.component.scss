@@ -22,6 +22,26 @@
 .table {
   margin-bottom: 0;
 
+  thead {
+    th {
+      cursor: pointer;
+
+      &[data-sort]:after {
+        display: inline-block;
+        font-family: 'Font Awesome 5 Pro';
+        margin-left: 0.3em;
+      }
+
+      &[data-sort=asc]:after {
+        content: '\f063';
+      }
+
+      &[data-sort=desc]:after {
+        content: '\f062';
+      }
+    }
+  }
+
   tbody > tr {
     & > td > * {
       // clamp by height so no ellipsis is shown

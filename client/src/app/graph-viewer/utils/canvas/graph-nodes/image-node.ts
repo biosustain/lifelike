@@ -4,7 +4,7 @@ import { ResourceManager, ResourceOwner } from '../../resource/resource-manager'
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
 import { Line } from '../lines/lines';
 import { TextElement } from '../text-element';
-import { drawTextNotSmallerThanMin, noTextThreshold } from '../shared';
+import { drawTextNotSmallerThanMin, NO_TEXT_THRESHOLD } from '../shared';
 
 export interface ImageNodeOptions extends BaseRectangleNodeOptions {
   imageManager: ResourceManager<string, CanvasImageSource>;
@@ -54,19 +54,17 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
   draw(transform: any): void {
     const zoomResetScale = 1 / transform.scale(1).k;
     this.ctx.save();
-    // We want to draw images behind current pixels, as they tend to cover the rest of entities
-    this.ctx.globalCompositeOperation = 'destination-over';
     let lineWidth = 0;
     if (this.image) {
-      this.ctx.drawImage(this.image, this.nodeX, this.nodeY, this.nodeWidth, this.nodeHeight);
+      this.ctx.drawImage(this.image, this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
       const ctx = this.ctx;
 
       if (this.stroke) {
         this.stroke.setContext(ctx);
         lineWidth = zoomResetScale * ctx.lineWidth * this.IMAGE_STROKE_FACTOR;
         this.ctx.rect(
-          this.nodeX - lineWidth / 2.0,
-          this.nodeY - lineWidth / 2.0,
+          this.bbox.minX - lineWidth / 2.0,
+          this.bbox.minY - lineWidth / 2.0,
           this.nodeWidth + lineWidth,
           this.nodeHeight + lineWidth
         );
@@ -75,8 +73,8 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
       }
     } else {
       this.ctx.rect(
-        this.nodeX,
-        this.nodeY,
+        this.bbox.minX,
+        this.bbox.minY,
         this.nodeWidth,
         this.nodeHeight
       );
@@ -86,9 +84,9 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
       this.ctx.fill();
       this.ctx.stroke();
     }
-    if (transform.k > noTextThreshold) {
+    if (transform.k > NO_TEXT_THRESHOLD) {
       this.textbox.maxWidth = this.width;
-      drawTextNotSmallerThanMin(this.textbox, transform.k, this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
+      this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
         this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
     }
 

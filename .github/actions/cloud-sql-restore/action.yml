@@ -1,0 +1,30 @@
+name: Cloud SQL restore
+description: Restore a Google Cloud SQL instance backup
+
+inputs:
+  gcp_credentials:
+    description: Google Cloud Platform credentials
+    required: true
+  cloud_sql_backup_id:
+    description: Google Cloud SQL backup ID to restore
+    required: true
+  cloud_sql_restore_instance:
+    description: Google Cloud SQL instance name to restore backup into
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: "${{ inputs.gcp_credentials }}"
+
+    - uses: google-github-actions/setup-gcloud@v0
+
+    - run: |
+        gcloud sql backups restore \
+          --restore-instance="${{ inputs.cloud_sql_restore_instance }}" \
+          ${{ inputs.cloud_sql_backup_id }}
+      shell: bash
+
