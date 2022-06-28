@@ -42,6 +42,17 @@ class Base():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
 
+    RQ_REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
+        host=os.getenv('REDIS_HOST', 'localhost'),
+        port=os.getenv('REDIS_PORT', '6379'),
+        password=os.getenv('REDIS_PASSWORD', ''),
+        db=os.getenv('REDIS_DB', '1')
+    )
+
+    # Uncomment to run jobs synchronously in-process (default is True)
+    # ReF: https://flask-rq2.readthedocs.io/en/latest/#rq-async
+    # RQ_ASYNC = False
+
     SUPPORTED_LOCALES = ['en']
 
 
