@@ -5,7 +5,7 @@ import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, 
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
 import { combineLatest, Subject, EMPTY, iif } from 'rxjs';
-import { assign, partial, groupBy, isEmpty } from 'lodash-es';
+import { assign, partial, groupBy, isEmpty, zip } from 'lodash-es';
 import { zoomIdentity, zoomTransform } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -177,28 +177,28 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   zoomAdjust = this.sankey.isAutoLayout$.pipe(
     switchMap(isAutoLayout =>
-      iif(
-        () => isAutoLayout,
-        EMPTY,
-        this.viewBox$.pipe(
-          pairwise(),
-          map(([prev, next]) => ({
-            widthChange: next.width / prev.width,
-            heightChange: next.height / prev.height,
-            widthDelta: next.width - prev.width,
-            heightDelta: next.height - prev.height
-          }))
-        )
+      this.viewBox$.pipe(
+        pairwise(),
+        map(([prev, next]) => ({
+          widthChange: next.width / prev.width,
+          heightChange: next.height / prev.height,
+          widthDelta: next.width - prev.width,
+          heightDelta: next.height - prev.height,
+          prev
+        }))
       )
     )
-  ).subscribe(({widthDelta, heightDelta, widthChange, heightChange}) => {
+  ).subscribe(({prev, widthDelta, heightDelta, widthChange, heightChange}) => {
     const transform = zoomTransform(this.svg.nativeElement);
-    const k = Math.abs(widthChange - 1) > Math.abs(heightChange - 1) ? widthChange : heightChange;
-    const newTransform = transform.translate(
-      widthDelta / 2 / transform.k,
-      heightDelta / 2 / transform.k
-    );
-    this.zoom.transform(newTransform, undefined, true);
+    const [px, py] = transform.invert([prev.width / 2, prev.height / 2]);
+    let viewChange = Math.min(widthChange, heightChange);
+    viewChange = viewChange === 1 ? Math.max(widthChange, heightChange) : viewChange;
+    const initialTransform = transform.translate(-px, -py);
+    this.zoom.transform(initialTransform, undefined, true);
+    const scaled = initialTransform.scale(viewChange);
+    this.zoom.transform(scaled, undefined, true);
+    const translated = scaled.translate(px, py);
+    this.zoom.transform(translated, undefined, true);
   });
 
   renderedLinks$ = combineLatest([
@@ -579,7 +579,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
         // Translate to center of extent
         .translate(-(x0 + extentWidth / 2), -(y0 + extentHeight / 2));
       // point which should be ~static during transition
-      const p: [number, number] = [x1 - x0, y1 - y0];
+      const p: [number, number] = [(x1 - x0) / 2, (y1 - y0) / 2];
       this.zoom.transform(transform, p, transition);
     });
   }
