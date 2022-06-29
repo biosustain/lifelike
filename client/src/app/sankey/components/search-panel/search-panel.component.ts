@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation, ViewChildren, AfterViewInit, ViewChild } 
 
 import { Observable } from 'rxjs';
 import { groupBy, defer, sortBy } from 'lodash-es';
-import { map } from 'rxjs/operators';
+import { map, filter } from 'rxjs/operators';
 import { NgbAccordion } from '@ng-bootstrap/ng-bootstrap';
 
 import { SankeySearchService } from '../../services/search.service';
@@ -51,7 +51,9 @@ export class SankeySearchPanelComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.search.searchFocus$.subscribe(({networkTraceIdx, idx}) => {
+    this.search.searchFocus$.pipe(
+      filter(d => Boolean(d))
+    ).subscribe(({networkTraceIdx, idx}) => {
       this.accordion.expand(String(networkTraceIdx));
       defer(() => this.scrollIntoView(idx));
     });
