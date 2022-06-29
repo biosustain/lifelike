@@ -192,27 +192,24 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         print('Please specify at least one filename!', file=sys.stderr)
         return
 
-    with open(seed_filename, 'r') as f:
-        fixtures = json.load(f)
-        files = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
-                     )[0]['records']
-        users = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
-                     )[0]['records']
-        selected_user = list(filter(lambda user: user['id'] == owner, users))
-        if not selected_user:
-            print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
-                  file=sys.stderr)
-            return
-        selected_directory = list(filter(lambda file: file['id'] == directory and
-                                         file.get('mime_type', '')
-                                         == FILE_MIME_TYPE_DIRECTORY, files))
-        if not selected_directory:
-            print(f"Cannot find directory with id {directory} in seed file: {seed_filename}",
-                  file=sys.stderr)
-            return
-
-    conn = db.engine.connect()
-    trans = conn.begin()
+    seed_file = open(seed_filename, 'wr')
+    fixtures = json.load(seed_file)
+    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
+                 )['records']
+    users = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
+                 )['records']
+    selected_user = list(filter(lambda user: user['id'] == owner, users))
+    if not selected_user:
+        print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
+              file=sys.stderr)
+        return
+    selected_directory = list(filter(lambda file: file['id'] == directory and
+                                     file.get('mime_type', '')
+                                     == FILE_MIME_TYPE_DIRECTORY, files))
+    if not selected_directory:
+        print(f"Cannot find directory with id {directory} in seed file: {seed_filename}",
+              file=sys.stderr)
+        return
 
     query = db.session.query(
         Files.id,
@@ -234,16 +231,7 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         FileContent.raw_file,
     )
 
-    results = [
-        {
-            'id': fid,
-            'hash_id': hash_id,
-            'filename': filename,
-            'mime_type': mime_type,
-            'content_id': content_id,
-            'raw_file': raw_file,
-        } for fid, hash_id, filename, mime_type, content_id, raw_file
-        in db.session.execute(query).fetchall()]
+    results = db.session.execute(query).fetchall()
 
     if not len(results):
         print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
@@ -259,41 +247,39 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         print('', ''.join(missing), file=sys.stderr)
         return
 
-    with open(seed_filename, 'r') as f:
-        fixtures = json.load(f)
-        files = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
-                     )[0]['records']
-        file_content = list(filter(lambda fix:
-                                   fix.get('model') == SEED_FILE_KEY_FILE_CONTENT, fixtures)
-                            )[0]['records']
+    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
+                 )['records']
+    file_content = next(filter(lambda fix:
+                               fix.get('model') == SEED_FILE_KEY_FILE_CONTENT, fixtures)
+                        )['records']
 
-        new_id = max([file['id'] for file in files]) + 1
-        content_id = max([file['id'] for file in file_content]) + 1
-        taken_hashes = {file['hash_id'] for file in files}
-        for res in results:
-            files.append({
-                'id': new_id,
-                'hash_id': res['hash_id'] if res['hash_id'] not in taken_hashes
-                else timeflake.random().base62,
-                'filename': res['filename'],
-                'mime_type': res['mime_type'],
-                'parent_id': directory,
-                'user_id': owner,
-                'public': False,
-                'content_id': content_id
-            })
-            file_c = {
-                'id': content_id
-            }
-            # # Encode as Base64
-            data = base64.standard_b64encode(res['raw_file'])
-            # # Decode to Base64encoded string
-            file_c['raw_file_base64'] = data.decode('utf-8')
-            file_content.append(file_c)
-            new_id += 1
-            content_id += 1
-        with open(seed_filename, 'w') as outfile:
-            json.dump(fixtures, outfile)
+    new_id = max([file['id'] for file in files]) + 1
+    content_id = max([file['id'] for file in file_content]) + 1
+    taken_hashes = {file['hash_id'] for file in files}
+    for res in results:
+        files.append({
+            'id': new_id,
+            'hash_id': res.hash_id if res.hash_id not in taken_hashes
+            else timeflake.random().base62,
+            'filename': res.filename,
+            'mime_type': res.mime_type,
+            'parent_id': directory,
+            'user_id': owner,
+            'public': False,
+            'content_id': content_id
+        })
+        file_c = {
+            'id': content_id
+        }
+        # # Encode as Base64
+        data = base64.standard_b64encode(res['raw_file'])
+        # # Decode to Base64encoded string
+        file_c['raw_file_base64'] = data.decode('utf-8')
+        file_content.append(file_c)
+        new_id += 1
+        content_id += 1
+    json.dump(fixtures, seed_file)
+    seed_file.close()
 
 
 @app.cli.command("drop_tables")
