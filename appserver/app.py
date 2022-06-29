@@ -273,10 +273,10 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         for res in results:
             files.append({
                 'id': new_id,
-                'hash_id': res['hash_id'] if res['hash_id'] not in taken_hashes
+                'hash_id': res.hash_id if res.hash_id not in taken_hashes
                 else timeflake.random().base62,
-                'filename': res['filename'],
-                'mime_type': res['mime_type'],
+                'filename': res.filename,
+                'mime_type': res.mime_type,
                 'parent_id': directory,
                 'user_id': owner,
                 'public': False,
