@@ -12,6 +12,7 @@ from typing_extensions import TypedDict
 from neo4japp.database import db, jwt_client
 from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
+    AuthenticationError,
     JWTTokenException,
     ServerException,
 )
@@ -239,11 +240,11 @@ def login():
     try:
         user = AppUser.query.filter_by(email=data.get('email')).one()
     except NoResultFound:
-        raise ServerException(
+        raise AuthenticationError(
             title='Failed to Authenticate',
             message='Could not find an account with that username/password combination. Please ' +
-                    'try again.',
-            code=404)
+                    'try again.'
+        )
     else:
         if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
             raise ServerException(
@@ -286,8 +287,8 @@ def login():
                 db.session.rollback()
                 raise
 
-            raise ServerException(
+            raise AuthenticationError(
                 title='Failed to Authenticate',
                 message='Could not find an account with that username/password combination. ' +
-                        'Please try again.',
-                code=404)
+                        'Please try again.'
+            )
