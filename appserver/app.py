@@ -234,16 +234,7 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         FileContent.raw_file,
     )
 
-    results = [
-        {
-            'id': fid,
-            'hash_id': hash_id,
-            'filename': filename,
-            'mime_type': mime_type,
-            'content_id': content_id,
-            'raw_file': raw_file,
-        } for fid, hash_id, filename, mime_type, content_id, raw_file
-        in db.session.execute(query).fetchall()]
+    results = db.session.execute(query).fetchall()
 
     if not len(results):
         print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
