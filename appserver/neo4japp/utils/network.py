@@ -176,32 +176,31 @@ class ContentTooLongError(URLError):
 
 
 def _check_acceptable_response(accept_header, content_type_header):
-    if accept_header is not None:
-        if content_type_header is not None:
-            # Reminder that mime-types have this structure: type/subtype;parameter=value
-            # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
-            # See this list of common types for examples:
-            # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types  # noqa
-            acceptable_types = map(
-                lambda type: type.split(';')[0].strip(),
-                accept_header.split(',')
-            )
-            content_type = content_type_header.split(';')[0].strip()
-
-            def mime_char_repl(matchobj):
-                return f'\\{matchobj.group(0)}' if matchobj.group(0) in ['.', '+'] else '.*'
-
-            for type in acceptable_types:
-                # Substitute regex special characters:
-                # . -> \.
-                # + -> \+
-                # * -> .*
-                if re.fullmatch(re.sub('[\\.\\+\\*]', mime_char_repl, type), content_type):
-                    return content_type
-        raise UnsupportedMediaTypeError(
-            f'Response Content-Type does not match the requested type: ' +
-            f'{content_type_header} vs. {accept_header}'
+    if content_type_header is not None:
+        # Reminder that mime-types have this structure: type/subtype;parameter=value
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+        # See this list of common types for examples:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types  # noqa
+        acceptable_types = map(
+            lambda type: type.split(';')[0].strip(),
+            accept_header.split(',')
         )
+        content_type = content_type_header.split(';')[0].strip()
+
+        def mime_char_repl(matchobj):
+            return f'\\{matchobj.group(0)}' if matchobj.group(0) in ['.', '+'] else '.*'
+
+        for type in acceptable_types:
+            # Substitute regex special characters:
+            # . -> \.
+            # + -> \+
+            # * -> .*
+            if re.fullmatch(re.sub('[\\.\\+\\*]', mime_char_repl, type), content_type):
+                return content_type
+    raise UnsupportedMediaTypeError(
+        f'Response Content-Type does not match the requested type: ' +
+        f'{content_type_header} vs. {accept_header}'
+    )
 
 
 def read_url(
@@ -252,8 +251,11 @@ def read_url(
 
     # First, check the content type returned by the server
     accept_header = req.headers.get('Accept', None)
-    content_type_header = conn.headers.get('Content-Type', None)
-    _check_acceptable_response(accept_header, content_type_header)
+
+    # If there is no accept header, no need to check the response type matches
+    if accept_header is not None:
+        content_type_header = conn.headers.get('Content-Type', None)
+        _check_acceptable_response(accept_header, content_type_header)
 
     # Then, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
