@@ -176,22 +176,22 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       )
     ),
     distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug<ProcessedExtent>('extent$')
+    debug<ProcessedExtent>('extent$'),
+    shareReplay(1)
   );
 
   horizontal$: Observable<Horizontal> = this.extent$.pipe(
     map(({x0, x1, width}) => ({x0, x1, width})),
     distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug('horizontal$')
+    debug('horizontal$'),
+    shareReplay(1)
   );
 
   vertical$: Observable<Vertical> = this.extent$.pipe(
     map(({y0, y1, height}) => ({y0, y1, height})),
     distinctUntilChanged(isEqual),
-    shareReplay(1),
-    debug('vertical$')
+    debug('vertical$'),
+    shareReplay(1)
   );
 
   private calculateLayout$;
@@ -219,6 +219,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
             () => edited,
             of(data),
             this.horizontal$.pipe(
+              first(),
               map(horizontal => {
                 // Absolute node positioning
                 this.positionNodesHorizontaly(data, horizontal, x);
