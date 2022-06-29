@@ -31,8 +31,9 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
-    LogEventType, FILE_MIME_TYPE_DIRECTORY, SEED_FILE_KEY_FILES, SEED_FILE_KEY_USER,
-    SEED_FILE_KEY_FILE_CONTENT
+    LogEventType,
+    FILE_MIME_TYPE_DIRECTORY,
+    SEED_FILE_KEY
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.exceptions import OutdatedVersionException
@@ -194,9 +195,9 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
 
     seed_file = open(seed_filename, 'wr')
     fixtures = json.load(seed_file)
-    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
+    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.FILES, fixtures)
                  )['records']
-    users = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
+    users = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.USER, fixtures)
                  )['records']
     selected_user = list(filter(lambda user: user['id'] == owner, users))
     if not selected_user:
@@ -247,10 +248,10 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         print('', ''.join(missing), file=sys.stderr)
         return
 
-    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
+    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.FILES, fixtures)
                  )['records']
     file_content = next(filter(lambda fix:
-                               fix.get('model') == SEED_FILE_KEY_FILE_CONTENT, fixtures)
+                               fix.get('model') == SEED_FILE_KEY.FILE_CONTENT, fixtures)
                         )['records']
 
     new_id = max([file['id'] for file in files]) + 1
@@ -388,10 +389,16 @@ def upload_lmdb():
 @app.cli.command('create-lmdb')
 @click.option('--file-type', type=str)
 def create_lmdb_files(file_type):
-    valid_values = {EntityType.ANATOMY.value, EntityType.CHEMICAL.value, EntityType.COMPOUND.value,
-                    EntityType.DISEASE.value, EntityType.FOOD.value, EntityType.GENE.value,
-                    EntityType.PHENOMENA.value, EntityType.PHENOTYPE.value,
-                    EntityType.PROTEIN.value, EntityType.SPECIES.value}
+    valid_values = {EntityType.ANATOMY.value,
+                    EntityType.CHEMICAL.value,
+                    EntityType.COMPOUND.value,
+                    EntityType.DISEASE.value,
+                    EntityType.FOOD.value,
+                    EntityType.GENE.value,
+                    EntityType.PHENOMENA.value,
+                    EntityType.PHENOTYPE.value,
+                    EntityType.PROTEIN.value,
+                    EntityType.SPECIES.value}
     if file_type is not None and file_type not in valid_values:
         raise ValueError(f'Only these valid values are accepted: {valid_values}')
     service = get_lmdb_service()
