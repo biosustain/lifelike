@@ -494,8 +494,6 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'organism_taxonomy_id'
 ]
 
-
-class SEED_FILE_KEY(Enum):
-    FILES = 'neo4japp.models.Files'
-    USER = 'neo4japp.models.AppUser'
-    FILE_CONTENT = 'neo4japp.models.FileContent'
+SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
+SEED_FILE_KEY_USER = 'neo4japp.models.AppUser'
+SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
