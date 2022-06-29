@@ -1,5 +1,7 @@
-import pytest
+from http import HTTPStatus
 import json
+import pytest
+
 from neo4japp.models import AppUser
 
 
@@ -36,9 +38,9 @@ def test_can_authenticate_user(client, session, password, login_password):
     )
 
     if password == login_password:
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
     else:
-        assert response.status_code == 404
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_can_authenticate_with_auth_token(client, session):
