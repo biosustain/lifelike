@@ -177,18 +177,14 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   zoomAdjust = this.sankey.isAutoLayout$.pipe(
     switchMap(isAutoLayout =>
-      iif(
-        () => isAutoLayout,
-        EMPTY,
-        this.viewBox$.pipe(
-          pairwise(),
-          map(([prev, next]) => ({
-            widthChange: next.width / prev.width,
-            heightChange: next.height / prev.height,
-            widthDelta: next.width - prev.width,
-            heightDelta: next.height - prev.height
-          }))
-        )
+      this.viewBox$.pipe(
+        pairwise(),
+        map(([prev, next]) => ({
+          widthChange: next.width / prev.width,
+          heightChange: next.height / prev.height,
+          widthDelta: next.width - prev.width,
+          heightDelta: next.height - prev.height
+        }))
       )
     )
   ).subscribe(({widthDelta, heightDelta, widthChange, heightChange}) => {
@@ -579,7 +575,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
         // Translate to center of extent
         .translate(-(x0 + extentWidth / 2), -(y0 + extentHeight / 2));
       // point which should be ~static during transition
-      const p: [number, number] = [x1 - x0, y1 - y0];
+      const p: [number, number] = [(x1 - x0) / 2, (y1 - y0) / 2];
       this.zoom.transform(transform, p, transition);
     });
   }
