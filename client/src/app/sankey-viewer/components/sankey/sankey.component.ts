@@ -460,7 +460,7 @@ export class SankeyComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   async linkClick(element, data) {
     this.linkClicked.emit(data);
-    return this.clipboard.copy(data.path, {sucess: 'Path copied to clipboard'});
+    return this.clipboard.copy(data.path, {success: 'Path copied to clipboard'});
   }
 
   async nodeClick(element, data) {
