@@ -194,10 +194,10 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
 
     with open(seed_filename, 'r') as f:
         fixtures = json.load(f)
-        files = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
-                     )[0]['records']
-        users = list(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
-                     )[0]['records']
+        files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_FILES, fixtures)
+                     )['records']
+        users = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY_USER, fixtures)
+                     )['records']
         selected_user = list(filter(lambda user: user['id'] == owner, users))
         if not selected_user:
             print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
