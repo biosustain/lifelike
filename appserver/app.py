@@ -33,7 +33,9 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_PDF,
     LogEventType,
     FILE_MIME_TYPE_DIRECTORY,
-    SEED_FILE_KEY
+    SEED_FILE_KEY_FILE_CONTENT,
+    SEED_FILE_KEY_USER,
+    SEED_FILE_KEY_FILES
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.exceptions import OutdatedVersionException
@@ -193,12 +195,11 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         print('Please specify at least one filename!', file=sys.stderr)
         return
 
-    seed_file = open(seed_filename, 'wr')
+    seed_file = open(seed_filename, 'r+')
     fixtures = json.load(seed_file)
-    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.FILES, fixtures)
-                 )['records']
-    users = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.USER, fixtures)
-                 )['records']
+
+    files = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILES)['records']
+    users = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_USER)['records']
     selected_user = list(filter(lambda user: user['id'] == owner, users))
     if not selected_user:
         print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
@@ -232,7 +233,8 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         FileContent.raw_file,
     )
 
-    results = db.session.execute(query).fetchall()
+    results = [{column: value for column, value in row_proxy.items()} for row_proxy in
+               db.session.execute(query).fetchall()]
 
     if not len(results):
         print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
@@ -241,17 +243,14 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
 
     if len(results) != len(filenames):
         print('Could not retrieve some of the files! Was able to retrieve:', file=sys.stderr)
-        correct = [res['filename'] for res in results]
+        correct = [res['files_filename'] for res in results]
         print(', '.join(correct), file=sys.stderr)
         print('Missing files:', file=sys.stderr)
         missing = [filename for filename in filenames if filename not in correct]
         print('', ''.join(missing), file=sys.stderr)
         return
 
-    files = next(filter(lambda fix: fix.get('model') == SEED_FILE_KEY.FILES, fixtures)
-                 )['records']
-    file_content = next(filter(lambda fix:
-                               fix.get('model') == SEED_FILE_KEY.FILE_CONTENT, fixtures)
+    file_content = next((fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILE_CONTENT)
                         )['records']
 
     new_id = max([file['id'] for file in files]) + 1
@@ -260,10 +259,10 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
     for res in results:
         files.append({
             'id': new_id,
-            'hash_id': res.hash_id if res.hash_id not in taken_hashes
+            'hash_id': res['files_hash_id'] if res['files_hash_id'] not in taken_hashes
             else timeflake.random().base62,
-            'filename': res.filename,
-            'mime_type': res.mime_type,
+            'filename': res['files_filename'],
+            'mime_type': res['files_mime_type'],
             'parent_id': directory,
             'user_id': owner,
             'public': False,
@@ -273,7 +272,7 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
             'id': content_id
         }
         # # Encode as Base64
-        data = base64.standard_b64encode(res['raw_file'])
+        data = base64.standard_b64encode(res['files_content_raw_file'])
         # # Decode to Base64encoded string
         file_c['raw_file_base64'] = data.decode('utf-8')
         file_content.append(file_c)
