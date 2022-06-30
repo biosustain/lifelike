@@ -1142,7 +1142,6 @@ class FileSearchView(FilesystemBaseView):
                 if file.calculated_privileges[current_user.id].readable
             ]
             total = len(files)
-            files = files
         else:
             raise NotImplementedError()
 

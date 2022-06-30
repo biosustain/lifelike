@@ -1,8 +1,11 @@
 import json
-from datetime import date
+from os import R_OK, access
+from os.path import isfile
+from typing import Dict, List
 
 import pytest
 
+from neo4japp.blueprints.account import INITIAL_PROJECT_PATH
 from neo4japp.models import Files
 from neo4japp.models.auth import (
     AppRole, AppUser,
@@ -59,3 +62,39 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     ).one_or_none()
 
     assert user_role.name == 'project-admin'
+
+
+def test_initial_project_metadata():
+    metadata_file = INITIAL_PROJECT_PATH / 'metadata.json'
+
+    ok = isfile(metadata_file) and access(metadata_file, R_OK)
+    assert ok, f'"{metadata_file}" should be an' 'existing, readable file'
+
+    try:
+        metadata: Dict[str, List] = json.load(open(metadata_file, 'r'))
+    except ValueError:
+        pytest.fail('Metadata file contains invalid JSON')
+
+    ok = isinstance(metadata, dict) and isinstance(metadata['files'], list)
+    assert ok, 'Metadata should be an object containing a "files" array'
+
+    ok = all(isinstance(f, dict) for f in metadata['files'])
+    assert ok, 'All project metadata files should be JSON objects'
+
+    for file in metadata['files']:
+        path = file.pop('path', None)
+
+        ok = isinstance(path, str)
+        assert ok, 'Every file should have a "path" key with a string value'
+
+        ok = 'filename' not in path or '/' not in path['filename']
+        assert ok, 'When filename is present, it should not contain slashes'
+
+        content_path = INITIAL_PROJECT_PATH / path
+        ok = isfile(content_path) and access(content_path, R_OK)
+        assert ok, f'"{content_path}" should be an existing, readable file'
+
+        try:
+            Files(**file)
+        except TypeError as e:
+            pytest.fail(f'Project file metadata contains an invalid key: {e}')

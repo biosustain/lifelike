@@ -17,10 +17,9 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
 from webargs.flaskparser import use_args
 
+from neo4japp.blueprints.annotations import FileAnnotationsGenerationView
 from neo4japp.blueprints.auth import login_exempt
-from neo4japp.database import db, get_authorization_service
-from neo4japp.exceptions import RecordNotFound, ServerException, NotAuthorized
-from neo4japp.models import AppUser, AppRole
+from neo4japp.exceptions import RecordNotFound
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MESSAGE_SENDER_IDENTITY,
@@ -31,12 +30,13 @@ from neo4japp.constants import (
     RESET_PASSWORD_ALPHABET,
     SEND_GRID_API_CLIENT,
     RESET_PASSWORD_EMAIL_TITLE,
-    LogEventType
+    LogEventType, FILE_MIME_TYPE_MAP
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole, Projects, Files, FileContent
 from neo4japp.models.auth import user_role
+from neo4japp.models.files import FileAnnotationsVersion
 from neo4japp.schemas.account import (
     UserListSchema,
     UserProfileSchema,
@@ -47,6 +47,7 @@ from neo4japp.schemas.account import (
     UserChangePasswordSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.services.file_types.providers import MapTypeProvider
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -84,8 +85,9 @@ class AccountView(MethodView):
             func.string_agg(
                 t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
         ]).select_from(
-            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
-                     .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
+            t_appuser
+            .join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
+            .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
         ).group_by(
             t_appuser.c.id,
             t_appuser.c.hash_id,
@@ -158,18 +160,87 @@ class AccountView(MethodView):
         with open(INITIAL_PROJECT_PATH / "metadata.json", "r") as metadata_json:
             metadata = json.load(metadata_json)
 
+            file_map = {}
             for file_metadata in metadata['files']:
-                file = Files()
-                for key, value in file_metadata.items():
-                    if key != 'path':
-                        setattr(file, key, value)
-                content_path = INITIAL_PROJECT_PATH / file_metadata['path']
-                file.filename = file.filename or content_path.stem
-                with open(content_path, "rb") as file_content:
-                    file.content_id = FileContent().get_or_create(file_content)
-                file.user_id = user.id
-                file.parent = project.***ARANGO_USERNAME***
-                db.session.add(file)
+                if file_metadata['mime_type'] != FILE_MIME_TYPE_MAP:
+                    file = Files()
+                    for key, value in file_metadata.items():
+                        if key != 'path':
+                            setattr(file, key, value)
+                    content_path = INITIAL_PROJECT_PATH / file_metadata['path']
+                    file.filename = file.filename or content_path.stem
+                    with open(content_path, "rb") as file_content:
+                        file.content_id = FileContent().get_or_create(file_content)
+
+                    file.user_id = user.id
+                    file.parent = project.***ARANGO_USERNAME***
+                    db.session.add(file)
+                    file_map[file_metadata['path']] = file
+
+            mapTypeProvider = MapTypeProvider()
+            new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
+            db.session.flush()
+
+            def update_map_links(map_json):
+                for node in map_json['nodes']:
+                    for source in node['data'].get('sources', []):
+                        link_search = re.search(new_link_re, source['url'])
+                        if link_search is not None:
+                            project_name = link_search.group(1)
+                            hash_id = link_search.group(2)
+                            if hash_id in metadata['hash_mapping']:
+                                source['url'] = source['url'].replace(
+                                    project_name,
+                                    project.name
+                                ).replace(
+                                    hash_id,
+                                    file_map[
+                                        metadata['hash_mapping'][hash_id]
+                                    ].hash_id
+                                )
+
+                for edge in map_json['edges']:
+                    if 'data' in edge:
+                        for source in edge['data'].get('sources', []):
+                            link_search = re.search(new_link_re, source['url'])
+                            if link_search is not None:
+                                project_name = link_search.group(1)
+                                hash_id = link_search.group(2)
+                                if hash_id in metadata['hash_mapping']:
+                                    source['url'] = source['url'].replace(
+                                        project_name,
+                                        project.name
+                                    ).replace(
+                                        hash_id,
+                                        file_map[
+                                            metadata['hash_mapping'][hash_id]
+                                        ].hash_id
+                                    )
+
+                return map_json
+
+            for file_metadata in metadata['files']:
+                if file_metadata['mime_type'] == FILE_MIME_TYPE_MAP:
+                    file = Files()
+                    for key, value in file_metadata.items():
+                        if key != 'path':
+                            setattr(file, key, value)
+                    content_path = INITIAL_PROJECT_PATH / file_metadata['path']
+                    file.filename = file.filename or content_path.stem
+                    updated_map_content = mapTypeProvider.update_map(
+                        {},
+                        content_path,
+                        update_map_links
+                    )
+                    file.content_id = FileContent().get_or_create(updated_map_content)
+
+                    file.user_id = user.id
+                    file.parent = project.***ARANGO_USERNAME***
+                    db.session.add(file)
+
+                    file_map[file_metadata['path']] = file
+
+        return file_map.values()
 
     @use_args(UserCreateSchema)
     def post(self, params: dict):
@@ -207,12 +278,20 @@ class AccountView(MethodView):
             for role in params['roles']:
                 app_user.roles.append(self.get_or_create_role(role))
         try:
-            self.create_initial_project(app_user)
+            new_files = self.create_initial_project(app_user)
             db.session.add(app_user)
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
+
+        updated_files, versions, results = FileAnnotationsGenerationView().annotate_files(
+            new_files, app_user.id, {})
+
+        db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
+        db.session.bulk_update_mappings(Files, updated_files)
+        db.session.commit()
+
         return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)
@@ -352,7 +431,8 @@ def reset_password(email: str):
     random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
     new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
-        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + MIN_TEMP_PASS_LENGTH
+        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
+        MIN_TEMP_PASS_LENGTH
     new_password = ''.join(random.sample([secrets.choice(RESET_PASSWORD_SYMBOLS)] +
                                          [secrets.choice(string.ascii_uppercase)] +
                                          [secrets.choice(string.digits)] +

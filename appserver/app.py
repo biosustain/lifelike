@@ -39,7 +39,7 @@ from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.utils.logger import EventLog
 
-app_config = os.environ['FLASK_APP_CONFIG']
+app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
 logger = logging.getLogger(__name__)
 
