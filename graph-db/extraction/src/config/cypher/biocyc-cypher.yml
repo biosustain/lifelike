@@ -98,7 +98,7 @@ collapse_EnzReaction_nodes:
         merge (n)-[:REGULATES]->(rxn) set n.enzreaction_id=e.eid delete r;
         match(n:Protein)-[:CATALYZES]->(e:EnzReaction)-[:CATALYZES]->(r)
         merge (n)-[cat:CATALYZES]->(r) set cat.enzreaction_id = e.eid
-        detach delete e;
+        with distinct e as enz detach delete enz;
 
 collapse_Regulation_nodes:
   type: GDS

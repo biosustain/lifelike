@@ -14,7 +14,6 @@ match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
 
 def generate_changelog_files(zip_datafile, biocyc_dbname, author):
     proc = BioCycChangeLogsGenerator(author, biocyc_dbname, zip_datafile, True)
-    proc.add_all_change_sets()
     proc.generate_init_changelog_file()
 
     proc = BioCycCypherChangeLogsGenerator(author, biocyc_dbname, gene_link_cypher)

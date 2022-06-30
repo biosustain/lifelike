@@ -77,6 +77,8 @@ def get_create_update_nodes_query(
     :param additional_labels: other node labels if exists
     :param datasource: e.g. KEGG, NCBI Gene
     :param original_entity_types: e.g. [Gene, Protein, Chemical, Disease]
+    :param row_filter_property: the property name for the filter
+    :param row_filter_value: the property value to load
     """
     query_rows = list()
     query_rows.append("UNWIND $rows as row")
