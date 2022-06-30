@@ -11,10 +11,12 @@ export interface State {
     // first, after which the original requested url should be
     // presented
     targetUrl: string | '/';
+    errorMessage: string;
 }
 
 export const initialState: State = {
     loggedIn: false,
     user: null,
     targetUrl: '/',
+    errorMessage: null,
 };
