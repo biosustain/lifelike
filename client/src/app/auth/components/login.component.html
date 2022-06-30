@@ -8,9 +8,11 @@
         <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')" appAutoFocus>
       </app-form-row>
 
-      <app-form-row for="password" label="Password" [control]="form.get('label')">
-        <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
-      </app-form-row>
+      <app-password-input [formRef]="form"
+                          controlId="password"
+                          controlName="password"
+                          controlLabel="Password"
+      ></app-password-input>
 
       <button type="submit" class="btn btn-primary btn-block">
         Login
@@ -19,7 +21,12 @@
     <button (click)="displayResetDialog()" class="btn btn-secondary btn-block mt-3 ">
       Reset password
     </button>
+
+    <div *ngIf="errorMessage" class="alert alert-danger d-flex justify-content-center mt-3" role="alert">
+      <i class="fas fa-exclamation-triangle fa-2xl d-flex align-items-center mr-3"></i>{{ errorMessage }}
+    </div>
   </div>
+
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
       You seem to be using a browser which might provide a diminished experience within Lifelike.
