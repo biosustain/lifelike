@@ -5,7 +5,6 @@ import json
 import os
 import typing
 from urllib.error import HTTPError
-import urllib.request
 import zipfile
 
 from collections import defaultdict
@@ -24,6 +23,9 @@ from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_MAP,
+    FILE_MIME_TYPE_PDF,
+    MAX_FILE_SIZE,
+    URL_FETCH_TIMEOUT,
     LogEventType,
     MAPS_RE,
     SUPPORTED_MAP_MERGING_FORMATS,
@@ -31,11 +33,12 @@ from neo4japp.constants import (
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
-     AccessRequestRequiredError,
-     FileUploadError,
-     InvalidArgument,
-     RecordNotFound,
-     NotAuthorized,
+    AccessRequestRequiredError,
+    FileUploadError,
+    InvalidArgument,
+    RecordNotFound,
+    NotAuthorized,
+    UnsupportedMediaTypeError
 )
 from neo4japp.models import (
     Projects,
@@ -108,8 +111,8 @@ class FilesystemBaseView(MethodView):
     from hash IDs, checking permissions, and validating input.
     """
 
-    file_max_size = 1024 * 1024 * 300
-    url_fetch_timeout = 10
+    file_max_size = MAX_FILE_SIZE
+    url_fetch_timeout = URL_FETCH_TIMEOUT
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
                            '(KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
@@ -1042,13 +1045,25 @@ class FileListView(FilesystemBaseView):
                 # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
                 # now it is the expectation.
                 buffer = read_url(
-                    urllib.request.Request(url, headers={
+                    url=url,
+                    headers={
                         'User-Agent': self.url_fetch_user_agent,
-                        'Accept': 'application/pdf',
-                    }),
+                        'Accept': FILE_MIME_TYPE_PDF,
+                    },
                     max_length=self.file_max_size,
-                    timeout=self.url_fetch_timeout,
-                    prefer_direct_downloads=True
+                    prefer_direct_downloads=True,
+                    timeout=self.url_fetch_timeout
+                )
+            except UnsupportedMediaTypeError as e:
+                # The server did not respect our request for a PDF and did not throw a 406, so
+                # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. Please make sure your URL ends ' +
+                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
+                            'problem persists, please download the file to your computer from ' +
+                            'the original website and upload the file from your device.',
+                    code=e.code
                 )
             except HTTPError as http_err:
                 # Should be raised because of the 'Accept' content type header above.
@@ -1062,7 +1077,7 @@ class FileListView(FilesystemBaseView):
                                 'your device.',
                     )
                 else:
-                    # An error occurred that we were not expecting
+                    # An error occurred that we were not expecting.
                     raise FileUploadError(
                         title='File Upload Error',
                         message='Your file could not be uploaded due to an unexpected error, ' +
