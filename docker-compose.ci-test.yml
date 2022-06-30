@@ -21,8 +21,6 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTIC_FILE_INDEX_ID=file_ci
       - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-    ports:
-      - 5000:5000
     depends_on:
       - postgres
       - elasticsearch
@@ -30,35 +28,20 @@ services:
 
   postgres:
     image: postgres:13
-    restart: unless-stopped
+    restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - 5431:5432
 
   neo4j:
     image: neo4j:4.4-community
-    restart: unless-stopped
+    restart: on-failure
     environment:
       - NEO4J_AUTH=neo4j/password
-    ports:
-      - 7687:7687
-      - 7474:7474
 
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
-    restart: unless-stopped
+    restart: on-failure
     environment:
       - discovery.type=single-node
-      - http.max_content_length=200mb
       - bootstrap.memory_lock=true
-      - xpack.graph.enabled=false
-      - xpack.watcher.enabled=false
-      - xpack.license.self_generated.type=basic
-    ports:
-      - 9200:9200
-      - 9300:9300
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+
