@@ -248,7 +248,6 @@ def test_direct_download_handler(url_pair):
     ({'Accept': 'image/svg+xml'}, {'Content-Type': 'image/svg+xml'}, 'image/svg+xml'),
     ({'Accept': 'image/*'}, {'Content-Type': 'image/gif'}, 'image/gif'),
     ({'Accept': '*/*'}, {'Content-Type': 'image/jpeg'}, 'image/jpeg'),
-    ({'Accept': None}, {'Content-Type': 'image/svg+xml'}, None),
 ])
 def test_check_acceptable_response_can_match(req_headers, resp_headers, expected):
     accept_header = req_headers.get('Accept', None)
