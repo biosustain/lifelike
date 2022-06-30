@@ -11,6 +11,7 @@ const authReducer = createReducer(
         AuthActions.loginSuccess,
         (state, { user }) => ({
             ...state,
+            errorMessage: null,
             loggedIn: true,
             user,
         })
@@ -20,6 +21,7 @@ const authReducer = createReducer(
       (state, { lifelikeUser, oauthUser }) => ({
           ...state,
           loggedIn: true,
+          errorMessage: null,
           user: {
             // Note: Order is important here!
             ...state.user,
@@ -57,6 +59,13 @@ const authReducer = createReducer(
         () => initialState,
     ),
     on(
+      AuthActions.loginFailureReset,
+      (state) => ({
+        ...state,
+        errorMessage: null
+      }),
+  ),
+    on(
         AuthActions.updateUserSuccess,
         (state, { userUpdateData }) => ({
             ...state,
@@ -81,6 +90,13 @@ const authReducer = createReducer(
           },
       })
   ),
+  on(
+    AuthActions.loginFailure,
+    (state, { message }) => ({
+        ...state,
+        errorMessage: message,
+    })
+),
 );
 
 export function reducer(state: State, action: Action) {
@@ -92,3 +108,5 @@ export const getLoggedIn = (state: State) => state.loggedIn;
 export const getUser = (state: State) => state.user;
 
 export const getTargetUrl = (state: State) => state.targetUrl;
+
+export const getErrorMessage = (state: State) => state.errorMessage;
