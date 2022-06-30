@@ -1,7 +1,7 @@
 """Update all maps to v3 of schema
 
 Revision ID: bcf11df73a79
-Revises: 93b75c6f3f87
+Revises: 9476dd461333
 Create Date: 2022-06-22 22:54:49.855656
 
 """
@@ -21,8 +21,8 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 
 
 # revision identifiers, used by Alembic.
-revision = '9476dd461333'
-down_revision = '93b75c6f3f87'
+revision = 'bcf11df73a79'
+down_revision = '9476dd461333'
 branch_labels = None
 depends_on = None
 
