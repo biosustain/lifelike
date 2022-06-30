@@ -126,7 +126,7 @@ jobs:
           token: ${{ env.INFRA_PAT }}
           submodules: recursive
         env:
-          INFRA_PAT: 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
+          INFRA_PAT: ${{ secrets.INFRA_PAT }}
 
       - name: Set git metadata
         id: git-meta
