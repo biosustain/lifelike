@@ -20,4 +20,5 @@ jobs:
       CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
       CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
       GCP_CREDENTIALS: ${{ secrets.GCE_SA_KEY }}
+      INFRA_PAT: ${{ secrets.INFRA_PAT }}
 
