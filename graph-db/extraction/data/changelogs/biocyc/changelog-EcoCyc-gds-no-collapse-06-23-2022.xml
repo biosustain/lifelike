@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="set_gene_link, date 06/23/2022" author="rcai">
+    <comment>link genes to NCBI gene</comment>
+    <sql>
+    match(n:Gene:db_BioCyc) where size(n.accession)>0 with n match (g:Gene) where g.locus_tag = n.accession merge (n)-[:IS]->(g);
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_displayName, date 06/23/2022" author="rcai">
+    <comment>set biocyc node display name</comment>
+    <sql>
+    match(n:db_BioCyc) set n.displayName = n.name;
+    match(n) where (not exists (n.displayName)) or n.displayName = ''  set n.displayName = n.biocyc_id;
+    match(n:Regulation:db_BioCyc)-[:TYPE_OF]-(t:db_BioCyc) with n,
+    case
+        when n.mode='+' then t.eid + ' (+)'
+        when n.mode='-' then t.eid + ' (-)'
+        else t.eid
+    end as displayName
+    set n.displayName = displayName;
+    match (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene) with n, collect(g.name) as genes
+    with n,
+    case
+        when exists (n.name) then n.name + ' (tu)'
+        else apoc.text.join(apoc.coll.sort(genes), '-') + ' (tu)'
+    end as displayName
+    set n.displayName = displayName;
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_node_description, date 06/23/2022" author="rcai">
+    <comment>set node description</comment>
+    <sql>
+    match (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI) set n.description = g.full_name;
+    match (n:Gene:db_BioCyc) where not exists(n.description) or n.description = '-'
+    with n match (n)-[:ENCODES]-(p) set n.description = p.name;
+    match (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene)
+    with n, collect(g.description) as descs
+    set n.description = 'TranscriptionUnit for ' + apoc.text.join(descs, ' and ');
+    match (n:Promoter:db_BioCyc)-[:ELEMENT_OF]->(tu)-[:ELEMENT_OF]-(g:Gene)
+    with n, collect(g.description) as details set n.description = 'Promoter for ' + apoc.text.join(details, ' and ');
+    match (n:Protein:db_BioCyc)-[:ENCODES]-(g:Gene) where not exists(n.name) set n.name = g.description;
+    match (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein) where not exists(n.name)
+    with n, collect(p.name) as comps set n.name = 'complex of ' + apoc.text.join(comps, ', ');
+    match (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein:db_BioCyc) with n, collect(p.displayName) as comps set n.description = 'complex of ' + apoc.text.join(comps, ' and ') ;
+    match (n:Reaction:db_BioCyc) with n match (x)-[:CONSUMED_BY]-(n)-[:PRODUCES]-(y) with n, collect(distinct x.displayName) as c1, collect(distinct y.displayName) as c2,
+    case when n.direction = 'REVERSIBLE' then ' &lt;=> '
+    when n.direction contains 'RIGHT-TO-LEFT' then ' &lt;= '
+    else ' => ' end as symbol
+    set n.detail = apoc.text.join(c1, ' + ') + symbol + apoc.text.join(c2, ' + ');
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_reaction_enzyme_name, date 06/23/2022" author="rcai">
+    <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
+    <sql>
+    match(n:Reaction)-[:ENZYME_LINK]-(e) with n, collect(e.name) as enzyme_name set n.enzyme_name = enzyme_name;
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_gene_pathways, date 06/23/2022" author="rcai">
+    <comment>set pathways related to a gene.</comment>
+    <sql>
+    match (n:db_EcoCyc:Gene) with n
+    match path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:db_EcoCyc)
+    with n, collect(p.name) as pathways set n.pathways = pathways
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_entity_type, date 06/23/2022" author="rcai">
+    <comment>set entity type for common entities since a node could have many labels</comment>
+    <sql>
+    match(n:Gene:db_BioCyc) set n.entityType='Gene';
+    match(n:Compound) set n.entityType='Chemical';
+    match(n:Protein:db_BioCyc) set n.entityType='Protein';
+    match(n:Reaction) set n.entityType='Reaction';
+    match(n:Pathway) set n.entityType='Pathway';
+    match(n:RNA) set n.entityType='RNA';
+    match(n:Promoter) set n.entityType='Promoter';
+    match(n:TranscriptionUnit) set n.entityType='TranscriptionUnit';
+    MATCH (n:Terminator) set n.entityType = 'Terminator';
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set reaction_display_name, date 06/23/2022" author="rcai">
+    <comment>set displayName as the first enzyme name in the enzyme_name property</comment>
+    <sql>
+    match(n:Reaction) set n.displayName = '';
+    match(n:Reaction) where exists(n.name) set n.displayName = n.name;
+    match(n:Reaction) where exists(n.enzyme_name) and n.displayName = ''
+    set n.displayName = n.enzyme_name[0];
+    match (e:EnzReaction)-[:CATALYZES]->(n:Reaction) where n.displayName='' and exists (e.name)
+    set n.displayName = e.name;
+    match(n:Reaction) where n.displayName &lt;> '' set n.displayName = n.displayName + '-RXN';
+    match(n:Reaction) where n.displayName='' set n.displayName = n.eid;
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove constraint, date 06/23/2022" author="rcai">
+    <comment>remove constrain so that reversed reactions can be created</comment>
+    <sql>
+    DROP CONSTRAINT constraint_db_BioCyc_eid IF EXISTS;
+    </sql>
+  </changeSet>
+
+  <changeSet id="correct_reaction_direction, date 06/23/2022" author="rcai">
+    <comment>correct the input and out directions for reactions, create reversed reaction for each reversible reaction</comment>
+    <sql>
+    match (n:Reaction:db_BioCyc) where n.direction ends with 'RIGHT-TO-LEFT' and not exists(n.reversed) with n
+    match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2)
+    merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n)
+    set n.reversed=True delete r1 delete r2;
+
+    match(n:Reaction:db_BioCyc) where n.direction = 'REVERSIBLE' with n
+    match (n)-[:PRODUCES]-(p), (n)-[:CONSUMED_BY]-(c) where id(p) = id(c)
+    with collect(distinct n) as undirectReactions
+    match(n:Reaction:db_BioCyc) where n.direction = 'REVERSIBLE' and not exists(n.reversed) and not n in undirectReactions
+            set n.reversed=True
+    with collect(n) as inputNodes
+    call apoc.refactor.cloneNodesWithRelationships(inputNodes) yield input, output
+    return count(*);
+
+    match(n:Reaction:db_BioCyc) with n.eid as id, collect(n) as nodes where size(nodes) > 1
+    with nodes[0] as n
+    match (n)-[r1:CONSUMED_BY]-(c1), (n)-[r2:PRODUCES]-(c2)
+    set n.eid = n.biocyc_id + '_r' merge (n)-[:PRODUCES]->(c1) merge (c2)-[:CONSUMED_BY]->(n) delete r1 delete r2;
+
+    match(n:Reaction) where n.eid ends with '_r' and not n.displayName ends with '_r' set n.displayName = n.displayName + '_r';
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="recreate_constraint, date 06/23/2022" author="rcai">
+    <comment>recreate constrain for eid</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
+    </sql>
+  </changeSet>
+
+  <changeSet id="reverse_Gene_TransUnit_relationship, date 06/23/2022" author="rcai">
+    <comment>reverse Gene to TransactionUnit relationship.</comment>
+    <sql>
+    match(n:TranscriptionUnit:db_BioCyc)-[r:ELEMENT_OF]-(g:Gene) merge (n)-[:HAS_GENE]->(g) delete r
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove_DNABindingSite_nodes, date 06/23/2022" author="rcai">
+    <comment>remove DNABindingSite nodes. Most of the nodes are orphan nodes.</comment>
+    <sql>
+    match(n:DNABindingSite) detach delete n;
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove_TYPEOF_relationship, date 06/23/2022" author="rcai">
+    <comment>remove TYPE_OF relationships to BioCycClass.</comment>
+    <sql>
+    match(n)-[r:TYPE_OF]->() delete r;
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove_orphan_Class_nodes, date 06/23/2022" author="rcai">
+    <comment>remove orphan BioCycClass nodes.</comment>
+    <sql>
+    match(n:BioCycClass) where not (n)-[]-() delete n;
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove_Enzyme_nodes, date 06/23/2022" author="rcai">
+    <comment>remove Enzyme nodes.</comment>
+    <sql>
+    match(n:db_Enzyme) detach delete n;
+    </sql>
+  </changeSet>
+
+  <changeSet id="remove_synonym_nodes, date 06/23/2022" author="rcai">
+    <comment>set synonym properties, then remove synonym nodes</comment>
+    <sql>
+    match(n:db_BioCyc)-[:HAS_SYNONYM]-(s:Synonym) with n, collect(s.name) as syns set n.synonyms=syns;
+    match (s:Synonym) detach delete s;
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="label_currency_metabolites, date 06/23/2022" author="rcai">
+    <comment>Label common compound nodes as CurrencyMetabolite</comment>
+    <sql>
+    match(n:db_BioCyc) where n.biocyc_id in ['PROTON', 'WATER', 'OXYGEN-MOLECULE', 'NADP', 'NADPH', 'ATP', 'PPI', 'CARBON-DIOXIDE',
+     'Pi', 'ADP', 'CO-A', 'UDP', 'NAD', 'NADH', 'AMP', 'AMMONIA', 'HYDROGEN-PEROXIDE', 'Acceptor', 'Donor-H2', '3-5-ADP', 'GDP', 'CARBON-MONOXIDE',
+     'GTP', 'FAD', 'NADH-P-OR-NOP', 'NAD-P-OR-NOP', 'AMMONIUM', 'NA+']
+   set n:CurrencyMetabolite;
+
+    </sql>
+  </changeSet>
+
+  <changeSet id="set_detail_property, date 06/23/2022" author="rcai">
+    <comment>change description property to detail since description is used by sankey for other purpose</comment>
+    <sql>
+    match(n) where exists(n.description) set n.detail = n.description remove n.description;
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>
