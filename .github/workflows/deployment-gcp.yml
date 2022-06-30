@@ -37,6 +37,8 @@ on:
         required: true
       GCP_CREDENTIALS:
         required: true
+      INFRA_PAT:
+        required: true
 
 jobs:
   # -------------------------------------------------------------
@@ -123,10 +125,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          token: ${{ env.INFRA_PAT }}
+          token: ${{ secrets.INFRA_PAT }}
           submodules: recursive
-        env:
-          INFRA_PAT: ${{ secrets.INFRA_PAT }}
 
       - name: Set git metadata
         id: git-meta
@@ -169,3 +169,4 @@ jobs:
             --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
             --user ansible
             --verbose
+
