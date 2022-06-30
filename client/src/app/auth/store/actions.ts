@@ -45,6 +45,11 @@ export const oauthLoginSuccess = createAction(
 
 export const loginFailure = createAction(
     '[Auth] Login Failure',
+    props<{message: string}>(),
+);
+
+export const loginFailureReset = createAction(
+  '[Auth] Login Failure Reset'
 );
 
 /** A login redirect carries the original requested url */

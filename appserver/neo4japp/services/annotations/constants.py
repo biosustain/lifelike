@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 from typing import Dict, Union
 
 
@@ -26,8 +27,9 @@ MAX_ENTITY_WORD_LENGTH = 6
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
-REQUEST_TIMEOUT = 60
-NLP_SERVICE_ENDPOINT = 'https://nlp-api.lifelike.bio/v1/predict'
+NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT', 'https://nlp-api.lifelike.bio/v1/predict')
+NLP_SERVICE_SECRET = os.getenv('NLP_SERVICE_SECRET', '')
+REQUEST_TIMEOUT = int(os.getenv('SERVICE_REQUEST_TIMEOUT', '60'))
 PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
 PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
 PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'

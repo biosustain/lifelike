@@ -420,7 +420,8 @@ ICON_NODES = ['map', 'link', 'note']
 DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
-MAX_ALLOWED_LOGIN_FAILURES = 5
+# This can be customized to disable login lockouts by setting the value to <= 0
+MAX_ALLOWED_LOGIN_FAILURES = int(os.getenv('MAX_ALLOWED_LOGIN_FAILURES', '6'))
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'

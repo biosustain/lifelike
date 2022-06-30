@@ -10,7 +10,7 @@ import { MessageArguments, MessageDialog } from './message-dialog.service';
 import { isPromise } from '../utils';
 
 interface StatusMessages {
-  sucess?: string;
+  success?: string;
   intermediate?: string;
 }
 
@@ -38,9 +38,9 @@ export class ClipboardService extends Clipboard {
   private permissionState: PermissionState;
 
   /**
-   * NOTE: Leaving this code as legancy for now. Our aplication no longer is ussing this method (other than for disabled test).
+   * NOTE: Leaving this code as legacy for now. Our application no longer is using this method (other than for disabled test).
    *
-   * Asynchronously retrives the text content of the clipboard.
+   * Asynchronously retrieves the text content of the clipboard.
    *
    * For some browsers this may not be possible, and in such cases this function will return
    * undefined.
@@ -105,17 +105,17 @@ export class ClipboardService extends Clipboard {
     // @ts-ignore
     return navigator.permissions.query({name: 'clipboard-write'}).then(({state}) => {
       this.permissionState = state;
-      return this.hasPermision() || new Error('Permission denied');
+      return this.hasPermission() || new Error('Permission denied');
     });
   }
 
-  hasPermision(): boolean {
+  hasPermission(): boolean {
     return this.permissionState === 'granted' || this.permissionState === 'prompt';
   }
 
-  // ansync on forst attempt, but sychronous on consequtice ones
+  // ansync on the first attempt, but synchronous on consecutive ones
   writeWithPermission(text: string) {
-    if (this.hasPermision()) {
+    if (this.hasPermission()) {
       navigator.clipboard.writeText(text);
     } else {
       return this.getPermission().then(
@@ -127,7 +127,7 @@ export class ClipboardService extends Clipboard {
 
   /**
    * NOTE: It is hard to reason if this method adds any value over Angular CDK's `copy` method.
-   * Ussing it as fallback in case new implemetaintion is failing.
+   * Using it as fallback in case new implementation is failing.
    *
    * Asynchronously writes text content to the clipboard.
    *
@@ -168,7 +168,6 @@ export class ClipboardService extends Clipboard {
   // endregion
 
   private error(message?: string) {
-    console.error(message);
     return this.messageDialog.display({
       type: MessageType.Error,
       title: 'Error',
@@ -176,16 +175,15 @@ export class ClipboardService extends Clipboard {
     } as MessageArguments);
   }
 
-  private sucess(message?: string) {
-    console.log('Copied!');
+  private success(message?: string) {
     return this.snackBar.open(message ?? 'Copied to clipboard.', null, {
       duration: 3000,
     });
   }
 
-  imidiateCopy(text: string, sucessMessage?): boolean | Promise<boolean> {
+  immediateCopy(text: string, successMessage?): boolean | Promise<boolean> {
     if (super.copy(text)) {
-      this.sucess(sucessMessage);
+      this.success(successMessage);
       return true;
     } else {
       return this.writeToClipboard(text);
@@ -193,15 +191,15 @@ export class ClipboardService extends Clipboard {
   }
 
   /**
-   * If obtaning copy value takes longer than 1 animation frame show waiting message
+   * If obtaining copy value takes longer than 1 animation frame show waiting message
    * @param text - promise of text to copy
-   * @param intermidiateMessage - message while waiting
+   * @param intermediateMessage - message while waiting
    */
-  delayedCopy(text: Promise<string>, {sucess, intermediate}: StatusMessages): Promise<boolean> {
-    const intermidiateMessageRef = this.snackBar.open(intermediate ?? 'Copying...');
+  delayedCopy(text: Promise<string>, {success, intermediate}: StatusMessages): Promise<boolean> {
+    const intermediateMessageRef = this.snackBar.open(intermediate ?? 'Copying...');
     return text.then(txt => {
-      intermidiateMessageRef.dismiss();
-      return this.imidiateCopy(txt, sucess);
+      intermediateMessageRef.dismiss();
+      return this.immediateCopy(txt, success);
     });
   }
 
@@ -210,7 +208,7 @@ export class ClipboardService extends Clipboard {
     if (isPromise(text)) {
       return this.delayedCopy(text as Promise<string>, statusMessages);
     } else {
-      return this.imidiateCopy(text as string, statusMessages?.sucess);
+      return this.immediateCopy(text as string, statusMessages?.success);
     }
   }
 }
