@@ -1,3 +1,4 @@
+import sys
 from typing import List
 import click
 import copy
@@ -5,6 +6,10 @@ import hashlib
 import importlib
 import io
 import json
+import base64
+
+import timeflake
+
 import logging
 import math
 import os
@@ -17,7 +22,7 @@ from collections import namedtuple
 from flask import current_app, request
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
-from sqlalchemy.sql.expression import and_, text
+from sqlalchemy.sql.expression import and_, text, select
 from sqlalchemy.exc import IntegrityError
 
 from neo4japp.blueprints.auth import auth
@@ -26,7 +31,11 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
-    LogEventType
+    LogEventType,
+    FILE_MIME_TYPE_DIRECTORY,
+    SEED_FILE_KEY_FILE_CONTENT,
+    SEED_FILE_KEY_USER,
+    SEED_FILE_KEY_FILES
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.exceptions import OutdatedVersionException
@@ -176,6 +185,103 @@ def seed(filename):
         logger.info("Fixtures imported")
 
 
+@app.cli.command("append_seed")
+@click.argument('seed_filename', type=click.Path(exists=True))
+@click.option('-d', '--directory', default=1)
+@click.option('-o', '--owner', default=1)
+@click.argument('filenames', nargs=-1)
+def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filenames: tuple):
+    if not len(filenames):
+        print('Please specify at least one filename!', file=sys.stderr)
+        return
+
+    seed_file = open(seed_filename, 'r+')
+    fixtures = json.load(seed_file)
+
+    files = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILES)['records']
+    users = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_USER)['records']
+    selected_user = list(filter(lambda user: user['id'] == owner, users))
+    if not selected_user:
+        print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
+              file=sys.stderr)
+        return
+    selected_directory = list(filter(lambda file: file['id'] == directory and
+                                     file.get('mime_type', '')
+                                     == FILE_MIME_TYPE_DIRECTORY, files))
+    if not selected_directory:
+        print(f"Cannot find directory with id {directory} in seed file: {seed_filename}",
+              file=sys.stderr)
+        return
+
+    query = db.session.query(
+        Files.id,
+        Files.hash_id,
+        Files.filename,
+        Files.mime_type,
+        Files.content_id,
+        FileContent.raw_file,
+    ).filter(
+        Files.content_id == FileContent.id
+    ).filter(
+        and_(Files.filename.in_(filenames), Files.deletion_date.is_(None))
+    ).group_by(
+        Files.id,
+        Files.hash_id,
+        Files.filename,
+        Files.mime_type,
+        Files.content_id,
+        FileContent.raw_file,
+    )
+
+    results = [{column: value for column, value in row_proxy.items()} for row_proxy in
+               db.session.execute(query).fetchall()]
+
+    if not len(results):
+        print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
+              file=sys.stderr)
+        return
+
+    if len(results) != len(filenames):
+        print('Could not retrieve some of the files! Was able to retrieve:', file=sys.stderr)
+        correct = [res['files_filename'] for res in results]
+        print(', '.join(correct), file=sys.stderr)
+        print('Missing files:', file=sys.stderr)
+        missing = [filename for filename in filenames if filename not in correct]
+        print('', ''.join(missing), file=sys.stderr)
+        return
+
+    file_content = next((fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILE_CONTENT)
+                        )['records']
+
+    new_id = max([file['id'] for file in files]) + 1
+    content_id = max([file['id'] for file in file_content]) + 1
+    taken_hashes = {file['hash_id'] for file in files}
+    for res in results:
+        files.append({
+            'id': new_id,
+            'hash_id': res['files_hash_id'] if res['files_hash_id'] not in taken_hashes
+            else timeflake.random().base62,
+            'filename': res['files_filename'],
+            'mime_type': res['files_mime_type'],
+            'parent_id': directory,
+            'user_id': owner,
+            'public': False,
+            'content_id': content_id
+        })
+        file_c = {
+            'id': content_id
+        }
+        # # Encode as Base64
+        data = base64.standard_b64encode(res['files_content_raw_file'])
+        # # Decode to Base64encoded string
+        file_c['raw_file_base64'] = data.decode('utf-8')
+        file_content.append(file_c)
+        new_id += 1
+        content_id += 1
+    json.dump(fixtures, seed_file)
+    seed_file.close()
+
+
 @app.cli.command("drop_tables")
 def drop_all_tables_and_enums():
     """
@@ -282,18 +388,16 @@ def upload_lmdb():
 @app.cli.command('create-lmdb')
 @click.option('--file-type', type=str)
 def create_lmdb_files(file_type):
-    valid_values = set([
-        EntityType.ANATOMY.value,
-        EntityType.CHEMICAL.value,
-        EntityType.COMPOUND.value,
-        EntityType.DISEASE.value,
-        EntityType.FOOD.value,
-        EntityType.GENE.value,
-        EntityType.PHENOMENA.value,
-        EntityType.PHENOTYPE.value,
-        EntityType.PROTEIN.value,
-        EntityType.SPECIES.value
-    ])
+    valid_values = {EntityType.ANATOMY.value,
+                    EntityType.CHEMICAL.value,
+                    EntityType.COMPOUND.value,
+                    EntityType.DISEASE.value,
+                    EntityType.FOOD.value,
+                    EntityType.GENE.value,
+                    EntityType.PHENOMENA.value,
+                    EntityType.PHENOTYPE.value,
+                    EntityType.PROTEIN.value,
+                    EntityType.SPECIES.value}
     if file_type is not None and file_type not in valid_values:
         raise ValueError(f'Only these valid values are accepted: {valid_values}')
     service = get_lmdb_service()
