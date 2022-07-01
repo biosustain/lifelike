@@ -29,7 +29,13 @@ class ClientErrorLog(ErrorLog):
     """ Used to describe client side errors """
     url: str = attr.ib()
 
-def log_user_action(message, category, action, label, **kwargs):
+def log_user_action(
+        message,
+        category=None,
+        action=None,
+        label=None,
+        **kwargs
+    ):
     """
     Logs a user action
     """
