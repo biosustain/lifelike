@@ -80,7 +80,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.logger import UserEventLog, log_user_action
 from neo4japp.services.file_types.providers import BiocTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -102,7 +102,15 @@ def get_all_enrichment_tables():
     query = db.session.query(Files.hash_id).filter(
         Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
     results = [hash_id[0] for hash_id in query.all()]
-    return jsonify(dict(result=results)), 200
+
+    log_user_action(
+        'Retrieved all enrichment tables',
+        category='filesystem',
+        action="entrichment_tables_retrieved",
+        value=len(results)
+    )
+
+    return jsonify(dict(result=results))
 
 
 class FilesystemBaseView(MethodView):
@@ -688,13 +696,12 @@ class FileHierarchyView(FilesystemBaseView):
 
         results = [generate_node_tree(file_id, ***ARANGO_USERNAME***[file_id]) for file_id in ***ARANGO_USERNAME***]
 
-        current_app.logger.info(
-            f'Generated file hierarchy!',
-            extra=UserEventLog(
-                username=g.current_user.username,
-                event_type=LogEventType.FILESYSTEM.value
-            ).to_dict()
+        log_user_action(
+            'File hierarchy retrieved',
+            category='filesystem',
+            action="file_hierarchy_retrieved"
         )
+
         return jsonify(FileHierarchyResponseSchema(context={
             'user_privilege_filter': g.current_user.id,
         }).dump({
@@ -893,6 +900,15 @@ class FileListView(FilesystemBaseView):
         db.session.commit()
         # rollback in case of error?
 
+        log_user_action(
+            'New file was created',
+            category='filesystem',
+            action="file_created",
+            label=file_name,
+            mime_type=mime_type,
+            is_upload=bool(file.upload_url),
+        )
+
         # ========================================
         # Return new file
         # ========================================
@@ -978,6 +994,14 @@ class FileListView(FilesystemBaseView):
         except SQLAlchemyError:
             db.session.rollback()
             raise
+        else:
+            for file in files:
+                log_user_action(
+                    'A file was updated',
+                    category='filesystem',
+                    action="file_updated",
+                    label=file
+                )
 
         return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
@@ -1021,6 +1045,14 @@ class FileListView(FilesystemBaseView):
                 file.modifier = current_user
 
             file.delete()
+
+            log_user_action(
+                'A file was soft-deleted',
+                category='filesystem',
+                action="file_deleted",
+                label=file.hash_id,
+                details=file.to_dict()
+            )
 
         db.session.commit()
         # rollback in case of error?
@@ -1105,6 +1137,8 @@ class FileSearchView(FilesystemBaseView):
 
     @use_args(FileSearchRequestSchema)
     @use_args(PaginatedRequestSchema)
+
+    # This shouldn't be a POST request
     def post(self, params: dict, pagination: dict):
         current_user = g.current_user
 
@@ -1160,6 +1194,14 @@ class FileSearchView(FilesystemBaseView):
         else:
             raise NotImplementedError()
 
+        # TODO: is this really a search?  What's different from generating a file hierarchy?
+        log_user_action(
+            'A file search was performed',
+            category='filesystem',
+            action="file_search",
+            value=total
+        )
+
         return jsonify(FileListSchema(context={
             'user_privilege_filter': g.current_user.id,
         }, exclude=(
@@ -1175,6 +1217,14 @@ class FileDetailView(FilesystemBaseView):
     def get(self, hash_id: str):
         """Fetch a single file."""
         current_user = g.current_user
+
+        log_user_action(
+            'Single file retrieved',
+            category='filesystem',
+            action="file_retrieved",
+            label=hash_id
+        )
+
         return self.get_file_response(hash_id, current_user)
 
     @use_args(lambda request: FileUpdateRequestSchema(partial=True),
@@ -1212,6 +1262,14 @@ class FileDetailView(FilesystemBaseView):
                 parent_file = file
 
         self.update_files(target_files, parent_file, params, current_user)
+
+        log_user_action(
+            'Single file updated',
+            category='filesystem',
+            action="file_updated",
+            label=hash_id
+        )
+
         return self.get(hash_id)
 
 
@@ -1262,6 +1320,13 @@ class MapContentView(FilesystemBaseView):
                 'Cannot retrieve contents of the file - it might be corrupted')
         etag = hashlib.sha256(json_graph).hexdigest()
 
+        log_user_action(
+            'Map file content retrieved',
+            category='filesystem',
+            action="map_file_content_retrieved",
+            label=hash_id
+        )
+
         return make_cacheable_file_response(
             request,
             json_graph,
@@ -1298,6 +1363,17 @@ class FileExportView(FilesystemBaseView):
 
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
+
+        log_user_action(
+            'File exported',
+            category='filesystem',
+            action="file_exported",
+            label=hash_id,
+            value=len(export_content),
+            filename=export.filename,
+            mime_type=export.mime_type,
+        )
+
         return make_cacheable_file_response(
             request,
             export_content,
@@ -1375,10 +1451,17 @@ class FileBackupView(FilesystemBaseView):
         db.session.commit()
         # rollback in case of error?
 
+        log_user_action(
+            'File backed up',
+            category='filesystem',
+            action="file_backed_up",
+            label=hash_id
+        )
+
         return jsonify({})
 
     def delete(self, hash_id: str):
-        """Get the backup stored for a file for a user."""
+        """Delete the backup stored for a file for a user."""
         current_user = g.current_user
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
@@ -1395,6 +1478,15 @@ class FileBackupView(FilesystemBaseView):
         db.session.commit()
         # rollback in case of error?
 
+        log_user_action(
+            'File backup deleted',
+            category='filesystem',
+            action="file_backup_deleted",
+            label=hash_id
+        )
+
+        # TODO: Best to return a 204 No Content response here?
+        # return '', 204
         return jsonify({})
 
 

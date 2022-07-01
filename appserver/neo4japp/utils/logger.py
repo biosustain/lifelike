@@ -1,5 +1,6 @@
 import attr
 
+from flask import current_app
 
 @attr.s(frozen=True)
 class EventLog():
@@ -27,3 +28,19 @@ class ErrorLog(UserEventLog, EventLog):
 class ClientErrorLog(ErrorLog):
     """ Used to describe client side errors """
     url: str = attr.ib()
+
+def log_user_action(message, category, action, label, **kwargs):
+    """
+    Logs a user action
+    """
+    username = current_app.g.user and current_app.g.username or None
+    current_app.logger.info(
+        message,
+        extra={
+            'category': category,
+            'action': action,
+            'label': label,
+            'username': username,
+            **kwargs,
+        },
+    )

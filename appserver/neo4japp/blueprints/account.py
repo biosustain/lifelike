@@ -48,7 +48,7 @@ from neo4japp.schemas.account import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.services.file_types.providers import MapTypeProvider
-from neo4japp.utils.logger import EventLog, UserEventLog
+from neo4japp.utils.logger import EventLog, UserEventLog, log_user_action
 from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
@@ -68,6 +68,13 @@ class AccountView(MethodView):
             except SQLAlchemyError:
                 db.session.rollback()
                 raise
+            else:
+                log_user_action(
+                    'A new role was created',
+                    category='account',
+                    action="role_created",
+                    label=rolename,
+                )
         return retval
 
     def get(self, hash_id):
@@ -284,6 +291,13 @@ class AccountView(MethodView):
         except SQLAlchemyError:
             db.session.rollback()
             raise
+        else:
+            log_user_action(
+                'New user created',
+                category='account',
+                action="user_created",
+                label=app_user.username,
+            )
 
         updated_files, versions, results = FileAnnotationsGenerationView().annotate_files(
             new_files, app_user.id, {})
@@ -335,6 +349,13 @@ class AccountView(MethodView):
             except SQLAlchemyError:
                 db.session.rollback()
                 raise
+            else:
+                log_user_action(
+                    'A user was updated',
+                    category='account',
+                    action="user_updated",
+                    label=username,
+                )
         return jsonify(dict(result='')), 204
 
     def delete(self):
@@ -403,6 +424,14 @@ def update_password(params: dict, hash_id):
         except SQLAlchemyError:
             db.session.rollback()
             raise
+        else:
+            log_user_action(
+                'A user password was changed',
+                category='account',
+                action="password_changed",
+                # TODO: retrieve real username to be consistent with other actions
+                label=hash_id,
+            )
     return jsonify(dict(result='')), 204
 
 
@@ -460,6 +489,14 @@ def reset_password(email: str):
     except SQLAlchemyError:
         db.session.rollback()
         raise
+    else:
+        log_user_action(
+            'A user password was reseted',
+            category='account',
+            action="password_reseted",
+            # TODO: retrieve real username to be consistent with other actions
+            label=email,
+        )
     return jsonify(dict(result='')), 204
 
 
@@ -478,6 +515,14 @@ def unlock_user(hash_id):
         except SQLAlchemyError:
             db.session.rollback()
             raise
+        else:
+            log_user_action(
+                'A user was unlocked',
+                category='account',
+                action="user_unlocked",
+                # TODO: retrieve real username to be consistent with other actions
+                label=hash_id,
+            )
     return jsonify(dict(result='')), 204
 
 
@@ -485,6 +530,9 @@ class AccountSearchView(MethodView):
 
     @use_args(UserSearchSchema)
     @use_args(PaginatedRequestSchema)
+
+    # TODO: This shouldn't be a post request.
+    #       POST indicates state change on the server, and lack of idempotency
     def post(self, params: dict, pagination: Pagination):
         """
         Endpoint to search for users that match certain criteria.
@@ -517,6 +565,13 @@ class AccountSearchView(MethodView):
             query = query.filter(AppUser.id != current_user.id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
+
+        log_user_action(
+            'A user account search was performed',
+            category='account',
+            action="user_searched",
+            label=query,
+        )
 
         return jsonify(UserListSchema().dump({
             'total': paginated_result.total,
