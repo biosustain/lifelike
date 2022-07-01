@@ -35,6 +35,7 @@ import { CookiePolicyComponent } from 'app/policies/components/cookie-policy.com
 import { CopyrightInfringementPolicyComponent } from 'app/policies/components/copyright-infringement-policy.component';
 import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
 import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
+import { FileViewerComponent } from 'app/file-browser/components/file-viewer.component';
 
 
 const routes: Routes = [
@@ -112,6 +113,117 @@ const routes: Routes = [
     component: ShortestPathComponent,
   },
   {
+    path: 'projects/:project_name/files/:file_id',
+    component: FileViewComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'PDF Viewer',
+      fontAwesomeIcon: 'file-pdf',
+    },
+  },
+  {
+    path: 'files/:hash_id',
+    component: FileViewerComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'File',
+      fontAwesomeIcon: 'file',
+    },
+    children: [
+      {
+        path: '',
+        component: ObjectViewerComponent,
+        canActivate: [LifelikeAuthGuard],
+        data: {
+          title: 'File',
+          fontAwesomeIcon: 'file',
+        }
+      },
+      {
+        path: 'enrichment-table',
+        canActivate: [LifelikeAuthGuard],
+        component: EnrichmentTableViewerComponent,
+        data: {
+          title: 'Enrichment Table',
+          fontAwesomeIcon: 'table',
+        },
+      },
+      {
+        path: 'enrichment-visualisation',
+        canActivate: [LifelikeAuthGuard],
+        component: EnrichmentVisualisationViewerComponent,
+        data: {
+          title: 'Statistical Enrichment',
+          fontAwesomeIcon: 'chart-bar',
+        },
+      },
+      {
+        path: 'sankey',
+        canActivate: [LifelikeAuthGuard],
+        component: SankeyViewComponent,
+        data: {
+          title: 'Sankey',
+          fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+        },
+      },
+      {
+        path: 'sankey-many-to-many',
+        canActivate: [LifelikeAuthGuard],
+        component: SankeyManyToManyViewComponent,
+        data: {
+          title: 'Sankey',
+          fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+        },
+      },
+      {
+        path: 'trace/:trace_hash',
+        canActivate: [LifelikeAuthGuard],
+        component: TraceViewComponent,
+        data: {
+          title: 'Trace details',
+          fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+        },
+      },
+      {
+        path: 'bioc',
+        component: BiocViewComponent,
+        canActivate: [LifelikeAuthGuard],
+        data: {
+          title: 'BioC Viewer',
+          fontAwesomeIcon: 'file-alt',
+        },
+      },
+      {
+        path: 'maps',
+        canActivate: [LifelikeAuthGuard],
+        component: MapViewComponent,
+        data: {
+          title: 'Map',
+          fontAwesomeIcon: 'project-diagram',
+        },
+      },
+      {
+        path: 'maps/edit',
+        component: MapEditorComponent,
+        canActivate: [LifelikeAuthGuard],
+        canDeactivate: [UnloadConfirmationGuard],
+        data: {
+          title: 'Map Editor',
+          fontAwesomeIcon: 'project-diagram',
+        },
+      },
+      {
+        path: 'file-navigator',
+        component: ObjectNavigatorComponent,
+        canActivate: [LifelikeAuthGuard],
+        data: {
+          title: 'File Navigator',
+          fontAwesomeIcon: 'fas fa-compass',
+        },
+      }
+    ]
+  },
+  {
     path: 'projects/:project_name/enrichment-table/:file_id',
     canActivate: [LifelikeAuthGuard],
     component: EnrichmentTableViewerComponent,
@@ -154,6 +266,61 @@ const routes: Routes = [
     data: {
       title: 'Trace details',
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    },
+  },
+  {
+    path: 'projects/:project_name/files/:file_id',
+    component: FileViewComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'PDF Viewer',
+      fontAwesomeIcon: 'file-pdf',
+    },
+  },
+  {
+    path: 'projects/:project_name/bioc/:file_id',
+    component: BiocViewComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'BioC Viewer',
+      fontAwesomeIcon: 'file-alt',
+    },
+  },
+  {
+    path: 'projects/:project_name/maps/:hash_id',
+    canActivate: [LifelikeAuthGuard],
+    component: MapViewComponent,
+    data: {
+      title: 'Map',
+      fontAwesomeIcon: 'project-diagram',
+    },
+  },
+  {
+    path: 'projects/:project_name/maps/:hash_id/edit',
+    component: MapEditorComponent,
+    canActivate: [LifelikeAuthGuard],
+    canDeactivate: [UnloadConfirmationGuard],
+    data: {
+      title: 'Map Editor',
+      fontAwesomeIcon: 'project-diagram',
+    },
+  },
+  {
+    path: 'file-navigator/:project_name/:file_id',
+    component: ObjectNavigatorComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'File Navigator',
+      fontAwesomeIcon: 'fas fa-compass',
+    },
+  },
+  {
+    path: 'enrichment-visualisation/:project_name/:file_id',
+    component: EnrichmentVisualisationViewerComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'Enrichment Visualisation',
+      fontAwesomeIcon: 'chart-bar',
     },
   },
   {
@@ -232,52 +399,6 @@ const routes: Routes = [
       fontAwesomeIcon: 'layer-group',
     },
   },
-  {
-    path: 'files/:hash_id',
-    component: ObjectViewerComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'File',
-      fontAwesomeIcon: 'file',
-    },
-  },
-  {
-    path: 'projects/:project_name/files/:file_id',
-    component: FileViewComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'PDF Viewer',
-      fontAwesomeIcon: 'file-pdf',
-    },
-  },
-  {
-    path: 'projects/:project_name/bioc/:file_id',
-    component: BiocViewComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'BioC Viewer',
-      fontAwesomeIcon: 'file-alt',
-    },
-  },
-  {
-    path: 'projects/:project_name/maps/:hash_id',
-    canActivate: [LifelikeAuthGuard],
-    component: MapViewComponent,
-    data: {
-      title: 'Map',
-      fontAwesomeIcon: 'project-diagram',
-    },
-  },
-  {
-    path: 'projects/:project_name/maps/:hash_id/edit',
-    component: MapEditorComponent,
-    canActivate: [LifelikeAuthGuard],
-    canDeactivate: [UnloadConfirmationGuard],
-    data: {
-      title: 'Map Editor',
-      fontAwesomeIcon: 'project-diagram',
-    },
-  },
   /* TODO Refactor import
   {
     path: 'kg-import',
@@ -294,24 +415,6 @@ const routes: Routes = [
     canActivate: [LifelikeAuthGuard],
     data: {
       fontAwesomeIcon: 'fas fa-chart-bar',
-    },
-  },
-  {
-    path: 'file-navigator/:project_name/:file_id',
-    component: ObjectNavigatorComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'File Navigator',
-      fontAwesomeIcon: 'fas fa-compass',
-    },
-  },
-  {
-    path: 'enrichment-visualisation/:project_name/:file_id',
-    component: EnrichmentVisualisationViewerComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'Enrichment Visualisation',
-      fontAwesomeIcon: 'chart-bar',
     },
   },
   {

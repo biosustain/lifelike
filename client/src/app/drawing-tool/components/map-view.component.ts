@@ -23,6 +23,7 @@ import { ImageBlob } from 'app/shared/utils/forms';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
+import { FileService } from '../../file-browser/services/file.service';
 
 @Component({
   selector: 'app-map-view',
@@ -53,10 +54,11 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
               mapImageProviderService: MapImageProviderService,
-              public readonly progressDialog: ProgressDialog) {
+              public readonly progressDialog: ProgressDialog,
+              protected readonly file: FileService) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
-      mapImageProviderService, objectTypeService);
+      mapImageProviderService, objectTypeService, file);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -84,7 +86,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     this.unsavedChanges$.next(false);
     this.isSaving = true;
 
-    const { newImageHashes, deletedImages } = this.graphCanvas.getImageChanges();
+    const {newImageHashes, deletedImages} = this.graphCanvas.getImageChanges();
     const newImageBlobs = newImageHashes.map(hash => this.mapImageProviderService.getBlob(hash));
     const graphString = JSON.stringify(this.graphCanvas.getExportableGraph());
     const bytes = new TextEncoder().encode(graphString);

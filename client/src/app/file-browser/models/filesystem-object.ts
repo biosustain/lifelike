@@ -474,17 +474,17 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     switch (this.mimeType) {
       case MimeTypes.Directory:
         // TODO: Convert to hash ID
-        return ['/projects', projectName, 'folders', this.hashId];
+        return ['/folders', this.hashId];
       case MimeTypes.EnrichmentTable:
-        return ['/projects', projectName, 'enrichment-table', this.hashId];
+        return ['/files', this.hashId, 'enrichment-table'];
       case MimeTypes.Pdf:
-        return ['/projects', projectName, 'files', this.hashId];
+        return ['files', this.hashId];
       case MimeTypes.BioC:
-        return ['/projects', projectName, 'bioc', this.hashId];
+        return ['/files', this.hashId, 'bioc'];
       case MimeTypes.Map:
-        return ['/projects', projectName, 'maps', this.hashId];
+        return ['/files', this.hashId, 'maps'];
       case MimeTypes.Graph:
-        return ['/projects', projectName, 'sankey', this.hashId];
+        return ['/files', this.hashId, 'sankey'];
       default:
         return ['/files', this.hashId];
     }

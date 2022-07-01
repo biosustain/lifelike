@@ -1,13 +1,3 @@
-<div class="module" *ngIf="(loadTask.status$ | async) as status">
-    <app-module-progress *ngIf="status.running">
-         Downloading file...
-    </app-module-progress>
-
-    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
-        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-    </app-module-error>
-
-    <ng-container *ngIf="status.resultsShown">
         <app-module-header [object]="object"
                            (dragStarted)="dragStarted($event)">
               <app-module-menu *ngIf="object" [object]="object" [forEditing]="true"
@@ -197,5 +187,3 @@
                 </div>
             </div>
         </div>
-    </ng-container>
-</div>

@@ -45,7 +45,6 @@
         </tr>
       </thead>
 
-      <!-- Results -->
       <tbody>
       <!-- Placeholders -->
         <ng-template #placeholders>
@@ -96,6 +95,7 @@
             </td>
           </tr>
         </ng-template>
+      <!-- Results -->
         <ng-container *ngIf="objects; else placeholders">
           <tr *ngFor="let object of objects.view$ | async; index as objectIndex"
               tabindex="0"

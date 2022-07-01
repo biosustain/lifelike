@@ -18,6 +18,7 @@ import { GraphTraceNetwork, GraphFile, GraphTrace } from 'app/shared/providers/g
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
+import { FileService } from 'app/file-browser/services/file.service';
 
 @Component({
   selector: 'app-sankey-viewer',
@@ -48,7 +49,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly filesystemService: FilesystemService,
     protected readonly route: ActivatedRoute,
     protected readonly truncatePipe: TruncatePipe,
-    protected readonly warningController: WarningControllerService
+    protected readonly warningController: WarningControllerService,
+    private file: FileService
   ) {
     const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;
@@ -58,11 +60,8 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask((id) => {
       return combineLatest([
-        this.filesystemService.get(id),
-        this.filesystemService.getContent(id).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson()
-        ) as Observable<GraphFile>
+        this.file.object$,
+        this.file.contentJSON$ as Observable<GraphFile>
       ]);
     });
 

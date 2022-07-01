@@ -1,0 +1,11 @@
+<div class="module" *ngIf="(status$ | async) as status">
+    <app-module-progress *ngIf="status.loading">
+        Loading...
+    </app-module-progress>
+
+    <app-module-error *ngIf="status.error" [error]="status.error">
+        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+
+    <router-outlet *ngIf="status.value"></router-outlet>
+</div>

@@ -21,6 +21,7 @@ import { SelectionManyToManyEntity } from 'app/sankey-many-to-many-viewer/compon
 import { SankeyOptions, SankeyState, SelectionType, SelectionEntity, SankeyURLLoadParam } from 'app/shared-sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { FileService } from 'app/file-browser/services/file.service';
 
 import { CustomisedSankeyLayoutService } from '../services/customised-sankey-layout.service';
 import { SankeyLayoutService } from './sankey/sankey-layout.service';
@@ -70,7 +71,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
     readonly sankeyController: SankeyControllerService,
     readonly warningController: WarningControllerService,
     public sankeySearch: SankeySearchService,
-    readonly viewService: ViewService
+    readonly viewService: ViewService,
+    private file: FileService
   ) {
     this.dataToRender = this.sankeyController.dataToRender;
     this.allData = this.sankeyController.allData;
@@ -79,11 +81,8 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
 
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson()
-        ) as Observable<GraphFile>
+        this.file.object$,
+        this.file.contentJSON$ as Observable<GraphFile>
       ])
     );
 

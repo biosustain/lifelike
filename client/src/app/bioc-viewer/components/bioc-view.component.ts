@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { uniqueId } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -22,6 +22,7 @@ import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { FileService } from 'app/file-browser/services/file.service';
 
 declare var jQuery: any;
 
@@ -31,7 +32,7 @@ declare var jQuery: any;
   styleUrls: ['./bioc-view.component.scss'],
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
     read: SearchControlComponent,
@@ -96,45 +97,47 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
-    protected readonly _elemenetRef: ElementRef
+    protected readonly _elemenetRef: ElementRef,
+    private file: FileService
   ) {
-    this.loadTask = new BackgroundTask(([hashId]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJsons()
-        )
-      );
-    });
+    this.loadTask = combineLatest(
+      this.file.object$.pipe(
+        tap(object => {
+
+          this.object = object;
+          this.emitModuleProperties();
+
+          this.currentFileId = object.hashId;
+        })
+      ),
+      this.file.content$.pipe(
+        mapBlobToBuffer(),
+        mapBufferToJsons(),
+        tap(content => {
+          this.biocData = content.splice(0, 1);
+          const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
+          if (ref > -1) {
+            // then insert here the References Title
+            const referencesTitleObj: any = {};
+            referencesTitleObj.infons = {
+              section_type: 'INTRO',
+              type: 'title_1'
+            };
+            referencesTitleObj.offset = 0;
+            referencesTitleObj.annotations = [];
+            referencesTitleObj.text = 'References';
+            ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
+          }
+        })
+      )
+    );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
     // Listener for file open
-    this.openbiocSub = this.loadTask.results$.subscribe(({
-      result: [object, content],
-      value: [file],
-    }) => {
-      this.biocData = content.splice(0, 1);
-      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
-      if (ref > -1) {
-        // then insert here the References Title
-        const referencesTitleObj: any = {};
-        referencesTitleObj.infons = {
-          section_type: 'INTRO',
-          type: 'title_1'
-        };
-        referencesTitleObj.offset = 0;
-        referencesTitleObj.annotations = [];
-        referencesTitleObj.text = 'References';
-        ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
-      }
-      this.object = object;
-      this.emitModuleProperties();
-
-      this.currentFileId = object.hashId;
+    this.openbiocSub = this.loadTask.subscribe(() => {
       this.ready = true;
     });
 
@@ -263,7 +266,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const query = `span[offset='${params.offset}']`;
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       if (annotationElem) {
-        annotationElem.scrollIntoView({ block: 'center' });
+        annotationElem.scrollIntoView({block: 'center'});
         jQuery(annotationElem).css('border', '2px solid #D62728');
         jQuery(annotationElem).animate({
           borderLeftColor: 'white',
@@ -287,7 +290,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       range.surroundContents(newNode);
       this.createdNode = newNode;
       if (newNode) {
-        newNode.scrollIntoView({ block: 'center' });
+        newNode.scrollIntoView({block: 'center'});
         jQuery(newNode).animate({
           borderLeftColor: 'white',
           borderTopColor: 'white',
@@ -417,7 +420,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
+    this.workSpaceManager.navigateByUrl({url, extras: {sideBySide: true, newTab: true}});
   }
 
   dragStarted(event: DragEvent) {
@@ -442,7 +445,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   @HostListener('dragend', ['$event'])
-  dragEnd(event: (DragEvent & { path: Element[] } )) {
+  dragEnd(event: (DragEvent & { path: Element[] })) {
     const paths = event.path;
     const biocViewer = paths.filter((el) => el.tagName && el.tagName.toLowerCase() === 'app-bioc-viewer');
     if (biocViewer.length > 0) {
@@ -584,7 +587,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const hyperlinks = [];
     const url = src;
     const domain = new URL(src).hostname.replace(/^www\./i, '');
-    hyperlinks.push({ url, domain });
+    hyperlinks.push({url, domain});
     const hyperlink = meta.idHyperlink || '';
     let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
       'bioc', encodeURIComponent(this.object.hashId)].join('/');

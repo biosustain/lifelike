@@ -34,6 +34,7 @@ import { DataTransferDataService } from 'app/shared/services/data-transfer-data.
 import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
+import { FileService } from 'app/file-browser/services/file.service';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -86,12 +87,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
     readonly mapImageProviderService: MapImageProviderService,
-    readonly objectTypeService: ObjectTypeService
+    readonly objectTypeService: ObjectTypeService,
+    protected readonly file: FileService
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId),
+        this.file.object$,
+        this.file.content$,
         this.getExtraSource(),
       ]);
     });
@@ -186,10 +188,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
     this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
-        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
+        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
           mapJsonToGraph(),
-          this.errorHandler.create({ label: 'Parse map data' }),
+          this.errorHandler.create({label: 'Parse map data'}),
         ).subscribe(
           graph => {
             this.graphCanvas.setGraph(graph);
@@ -207,7 +209,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
             if (this.highlightTerms != null && this.highlightTerms.length) {
               this.graphCanvas.highlighting.replace(
-                this.graphCanvas.findMatching(this.highlightTerms, { keepSearchSpecialChars: true, wholeWord: true }),
+                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
               );
             }
           },
@@ -227,9 +229,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    const { historyChangesSubscription, unsavedChangesSubscription } = this;
-    if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
-    if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
+    const {historyChangesSubscription, unsavedChangesSubscription} = this;
+    if (historyChangesSubscription) {
+      historyChangesSubscription.unsubscribe();
+    }
+    if (unsavedChangesSubscription) {
+      unsavedChangesSubscription.unsubscribe();
+    }
     this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
     this.providerSubscription$.unsubscribe();

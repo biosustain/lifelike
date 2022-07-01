@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { finalize, map, tap } from 'rxjs/operators';
+import { finalize, map, tap, first } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -12,27 +12,20 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
+import { FileService } from '../services/file.service';
 
 @Component({
   selector: 'app-object-viewer',
   templateUrl: 'object-viewer.component.html',
 })
-export class ObjectViewerComponent implements OnDestroy {
+export class ObjectViewerComponent {
+  object$ = this.file.object$;
 
-  protected readonly subscriptions = new Subscription();
-  object$: Observable<FilesystemObject>;
-
-  constructor(protected readonly route: ActivatedRoute,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly progressDialog: ProgressDialog) {
-    this.subscriptions.add(this.route.params.subscribe(params => {
-      this.object$ = this.filesystemService.get(params.hash_id);
-    }));
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+  constructor(
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    private file: FileService
+  ) {
   }
 
   downloadObject(target: FilesystemObject) {
@@ -42,7 +35,7 @@ export class ObjectViewerComponent implements OnDestroy {
         status: 'Generating download...',
       }))],
     });
-    this.filesystemService.getContent(target.hashId).pipe(
+    return this.file.content$.pipe(
       map(blob => {
         return new File([blob], target.filename);
       }),
@@ -51,7 +44,8 @@ export class ObjectViewerComponent implements OnDestroy {
       }),
       finalize(() => progressDialogRef.close()),
       this.errorHandler.create({label: 'Download file'}),
-    ).subscribe();
+      first()
+    ).toPromise();
   }
 
 }

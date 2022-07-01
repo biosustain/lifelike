@@ -38,6 +38,7 @@ import {
   AnnotationHighlightResult,
   PdfViewerLibComponent,
 } from '../pdf-viewer-lib.component';
+import { FileService } from '../../file-browser/services/file.service';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -139,13 +140,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
+    private file: FileService
   ) {
     this.loadTask = new BackgroundTask(([hashId, loc]) => {
       return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-        ),
+        this.file.object$,
+        this.file.contentBuffer$,
         this.pdfAnnService.getAnnotations(hashId));
     });
 
