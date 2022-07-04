@@ -23,7 +23,9 @@ migrations:
   - appserver/migrations/versions/*
 
 tests:
+  - appserver/tests/*
   - appserver/tests/**/*
+  - client/e2e/*
   - client/e2e/**/*
 
 docker:
@@ -33,6 +35,7 @@ docker:
   - '**/docker-compose*.yml'
 
 workflow:
+  - .github/*
   - .github/**/*
 
 infrastructure:
