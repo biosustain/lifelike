@@ -3,11 +3,15 @@
 # https://github.com/marketplace/actions/labeler
 
 backend:
+  - appserver/*
   - appserver/**/*
+  - statistical-enrichment/*
   - statistical-enrichment/**/*
+  - cache-invalidator/*
   - cache-invalidator/**/*
 
 frontend:
+  - client/*
   - client/**/*
 
 dependencies:
@@ -33,4 +37,3 @@ workflow:
 
 infrastructure:
   - deployment
-
