@@ -63,7 +63,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
 
     this.paramsSubscription = this.route.params.subscribe(params => {
-      this.locator = params.hash_id;
+      this.locator = params.file_id;
     });
   }
 

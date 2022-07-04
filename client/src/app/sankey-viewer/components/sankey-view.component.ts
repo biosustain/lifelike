@@ -449,8 +449,7 @@ export class SankeyViewComponent implements OnDestroy, ModuleAwareComponent, Aft
         }],
         sources: [{
           domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name),
-            'sankey', encodeURIComponent(this.object.hashId)].join('/'),
+          url: ['/files', encodeURIComponent(this.object.hashId),            'sankey'].join('/'),
         }],
       },
     }));

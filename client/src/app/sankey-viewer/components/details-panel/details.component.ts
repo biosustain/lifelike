@@ -25,14 +25,14 @@ export class SankeyDetailsComponent {
   parseProperty = parseForRendering;
 
   openTraceView(trace) {
-    const {project_name, file_id} = this.route.snapshot.params;
+    const {file_id} = this.route.snapshot.params;
     const hash = CryptoJS.MD5(JSON.stringify({
       ...this.sankeyController.selectedNetworkTrace,
       traces: [],
       source: trace.source,
       target: trace.target
     })).toString();
-    const url = `/projects/${project_name}/trace/${file_id}/${hash}`;
+    const url = `/files/${file_id}/trace/${hash}`;
 
     window.open(url);
   }

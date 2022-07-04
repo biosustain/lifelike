@@ -31,7 +31,7 @@ declare var jQuery: any;
   styleUrls: ['./bioc-view.component.scss'],
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
     read: SearchControlComponent,
@@ -114,9 +114,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openbiocSub = this.loadTask.results$.subscribe(({
-      result: [object, content],
-      value: [file],
-    }) => {
+                                                           result: [object, content],
+                                                           value: [file],
+                                                         }) => {
       this.biocData = content.splice(0, 1);
       const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
       if (ref > -1) {
@@ -263,7 +263,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const query = `span[offset='${params.offset}']`;
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       if (annotationElem) {
-        annotationElem.scrollIntoView({ block: 'center' });
+        annotationElem.scrollIntoView({block: 'center'});
         jQuery(annotationElem).css('border', '2px solid #D62728');
         jQuery(annotationElem).animate({
           borderLeftColor: 'white',
@@ -287,7 +287,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       range.surroundContents(newNode);
       this.createdNode = newNode;
       if (newNode) {
-        newNode.scrollIntoView({ block: 'center' });
+        newNode.scrollIntoView({block: 'center'});
         jQuery(newNode).animate({
           borderLeftColor: 'white',
           borderTopColor: 'white',
@@ -416,8 +416,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
+    const url = `/files/${this.object.hashId}/file-navigator`;
+    this.workSpaceManager.navigateByUrl({url, extras: {sideBySide: true, newTab: true}});
   }
 
   dragStarted(event: DragEvent) {
@@ -434,15 +434,14 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
         sources: [{
           domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
-            'files', encodeURIComponent(this.object.hashId)].join('/'),
+          url: ['/files', encodeURIComponent(this.object.hashId), 'bioc'].join('/'),
         }],
       },
     } as Partial<UniversalGraphNode>));
   }
 
   @HostListener('dragend', ['$event'])
-  dragEnd(event: (DragEvent & { path: Element[] } )) {
+  dragEnd(event: (DragEvent & { path: Element[] })) {
     const paths = event.path;
     const biocViewer = paths.filter((el) => el.tagName && el.tagName.toLowerCase() === 'app-bioc-viewer');
     if (biocViewer.length > 0) {
@@ -538,8 +537,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const position = jQuery(node).parent().attr('position');
       const startIndex = jQuery(node).attr('start');
       const len = jQuery(node).attr('len');
-      let source = ['/projects', encodeURIComponent(this.object.project.name),
-        'bioc', encodeURIComponent(this.object.hashId)].join('/');
+      let source = ['/files', encodeURIComponent(this.object.hashId), 'bioc'].join('/');
       if (position) {
         source += '#';
         source += new URLSearchParams({
@@ -584,10 +582,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const hyperlinks = [];
     const url = src;
     const domain = new URL(src).hostname.replace(/^www\./i, '');
-    hyperlinks.push({ url, domain });
+    hyperlinks.push({url, domain});
     const hyperlink = meta.idHyperlink || '';
-    let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
-      'bioc', encodeURIComponent(this.object.hashId)].join('/');
+    let sourceUrl = ['/files', encodeURIComponent(this.object.hashId), 'bioc'].join('/');
     if (offset) {
       sourceUrl += '#offset=' + offset;
     }

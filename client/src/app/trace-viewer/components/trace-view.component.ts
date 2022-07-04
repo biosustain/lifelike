@@ -50,11 +50,10 @@ export class TraceViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly truncatePipe: TruncatePipe,
     protected readonly warningController: WarningControllerService
   ) {
-    const projectName = this.route.snapshot.params.project_name;
     const traceHash = this.route.snapshot.params.trace_hash;
     const fileId = this.route.snapshot.params.file_id;
 
-    this.sourceFileURL = `/projects/${projectName}/sankey/${fileId}`;
+    this.sourceFileURL = `/files/${fileId}/sankey`;
 
     this.loadTask = new BackgroundTask((id) => {
       return combineLatest([

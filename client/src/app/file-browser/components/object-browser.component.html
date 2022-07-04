@@ -111,13 +111,13 @@
                                 </button>
                                 <div ngbDropdownMenu *ngIf="result.value">
                                     <button ngbDropdownItem
-                                            [appLink]="['/file-navigator', result.value.project.name, result.value.***ARANGO_USERNAME***.hashId]"
+                                            [appLink]="['/files', result.value.***ARANGO_USERNAME***.hashId, 'file-navigator']"
                                             [parentAddress]="['/projects', result.value.project.name]"
                                             [newTab]="true" [sideBySide]="true" [forceWorkbench]="true"
                                             [openParentFirst]="true">For entire project...
                                     </button>
                                     <button ngbDropdownItem
-                                            [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
+                                            [appLink]="['/files', result.value.hashId, '/file-navigator']"
                                             [parentAddress]="['/folders', result.value.hashId]"
                                             [newTab]="true" [sideBySide]="true" [forceWorkbench]="true"
                                             [openParentFirst]="true"

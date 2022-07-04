@@ -11,11 +11,11 @@
         <app-module-header
                 [object]="result.object.value"
                 (dragStarted)="dragStarted($event, result.object.value)">
-                  <app-module-menu [object]="result.object.value" [forEditing]="true"
-                                   [showOpen]="false" [showDelete]="false"
-                                   [showRestore]="true" (objectRestore)="restore($event)"
-                                   (objectUpdate)="objectUpdate()">
-                  </app-module-menu>
+            <app-module-menu [object]="result.object.value" [forEditing]="true"
+                             [showOpen]="false" [showDelete]="false"
+                             [showRestore]="true" (objectRestore)="restore($event)"
+                             (objectUpdate)="objectUpdate()">
+            </app-module-menu>
             <div *ngIf="queuedChanges$.value">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
@@ -54,30 +54,28 @@
             <div class="btn-group ml-auto">
                 <button class="btn btn-secondary"
                         [appLink]="[
-                            '/enrichment-visualisation',
-                            result.object.value.project.name,
-                            result.object.value.hashId
+                            '/files',
+                            result.object.value.hashId,
+                            '/enrichment-visualisation'
                         ]"
-                      [parentAddress]="[
-                            '/projects',
-                            result.object.value.project.name,
-                            'enrichment-table',
-                            result.object.value.hashId
+                        [parentAddress]="[
+                            '/files',
+                            result.object.value.hashId,
+                            'enrichment-table'
                       ]"
-                      [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
-                <i class="fas fa-fw fa-chart-bar"></i> Statistical Enrichment
-              </button>
-              <button class="btn btn-secondary"
-                      [appLink]="[
-                            '/file-navigator',
-                            result.object.value.project.name,
-                            result.object.value.hashId
+                        [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
+                    <i class="fas fa-fw fa-chart-bar"></i> Statistical Enrichment
+                </button>
+                <button class="btn btn-secondary"
+                        [appLink]="[
+                            '/files',
+                            result.object.value.hashId,
+                            'file-navigator'
                         ]"
-                      [parentAddress]="[
-                            '/projects',
-                            result.object.value.project.name,
-                            'enrichment-table',
-                            result.object.value.hashId
+                        [parentAddress]="[
+                            '/files',
+                            result.object.value.hashId,
+                            'enrichment-table'
                       ]"
                         [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
                         ngbTooltip="File Navigator" placement="bottom">

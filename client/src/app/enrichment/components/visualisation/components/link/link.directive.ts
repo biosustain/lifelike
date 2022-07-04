@@ -7,16 +7,13 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 
-export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
+export const paramsToEnrichmentTableLink = ({file_id}) => ({
   appLink: [
-    '/projects',
-    project_name,
-    'enrichment-table',
-    file_id
+    '/files',
+    file_id,
+    'enrichment-table'
   ],
-  matchExistingTab: '^/+projects/[^/]+/enrichment-table/' +
-    file_id +
-    '([?#].*)?'
+  matchExistingTab: '^/+files/' + file_id + '/enrichment-table/([?#].*)?'
 });
 
 // just coping the patter how it has been implemented for file navigator...

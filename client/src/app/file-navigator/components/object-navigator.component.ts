@@ -9,7 +9,7 @@ import { ENRICHMENT_TABLE_MIMETYPE } from 'app/file-types/providers/enrichment-t
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
-import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+import { PDFViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -63,7 +63,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
           sideBySide: true,
           matchExistingTab: `^/*${escapeRegExp(url)}.*`,
           shouldReplaceTab: component => {
-              const fileViewComponent = component as FileViewComponent;
+              const fileViewComponent = component as PDFViewComponent;
               fileViewComponent.highlightAnnotation(annotation.id);
               return false;
           },

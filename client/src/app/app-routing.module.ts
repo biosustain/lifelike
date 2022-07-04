@@ -10,7 +10,7 @@ import { DashboardComponent } from 'app/dashboard.component';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { LifelikeAuthGuard } from 'app/auth/guards/auth-guard.service';
-import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+import { PDFViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from 'app/kg-statistics.component';
 import { TermsOfServiceComponent } from 'app/users/components/terms-of-service.component';
@@ -40,11 +40,8 @@ import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-c
 const routes: Routes = [
   {
     path: '',
-    component: DashboardComponent,
-    data: {
-      title: 'Dashboard',
-      fontAwesomeIcon: 'home',
-    },
+    pathMatch: 'full',
+    redirectTo: 'dashboard'
   },
   {
     path: 'dashboard',
@@ -112,51 +109,6 @@ const routes: Routes = [
     component: ShortestPathComponent,
   },
   {
-    path: 'projects/:project_name/enrichment-table/:file_id',
-    canActivate: [LifelikeAuthGuard],
-    component: EnrichmentTableViewerComponent,
-    data: {
-      title: 'Enrichment Table',
-      fontAwesomeIcon: 'table',
-    },
-  },
-  {
-    path: 'projects/:project_name/enrichment-visualisation/:file_id',
-    canActivate: [LifelikeAuthGuard],
-    component: EnrichmentVisualisationViewerComponent,
-    data: {
-      title: 'Statistical Enrichment',
-      fontAwesomeIcon: 'chart-bar',
-    },
-  },
-  {
-    path: 'projects/:project_name/sankey/:file_id',
-    canActivate: [LifelikeAuthGuard],
-    component: SankeyViewComponent,
-    data: {
-      title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-    },
-  },
-  {
-    path: 'projects/:project_name/sankey-many-to-many/:file_id',
-    canActivate: [LifelikeAuthGuard],
-    component: SankeyManyToManyViewComponent,
-    data: {
-      title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-    },
-  },
-  {
-    path: 'projects/:project_name/trace/:file_id/:trace_hash',
-    canActivate: [LifelikeAuthGuard],
-    component: TraceViewComponent,
-    data: {
-      title: 'Trace details',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
-    },
-  },
-  {
     path: 'kg-visualizer',
     canActivate: [LifelikeAuthGuard],
     children: [
@@ -205,25 +157,6 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name',
-    component: ObjectBrowserComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'Projects',
-      fontAwesomeIcon: 'layer-group',
-    },
-  },
-  {
-    path: 'projects/:project_name/folders',
-    redirectTo: 'projects/:project_name',
-    pathMatch: 'full',
-  },
-  {
-    path: 'projects/:project_name/folders/:dir_id',
-    redirectTo: 'folders/:dir_id',
-    pathMatch: 'full',
-  },
-  {
     path: 'folders/:dir_id',
     component: ObjectBrowserComponent,
     canActivate: [LifelikeAuthGuard],
@@ -233,7 +166,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'files/:hash_id',
+    path: 'files/:file_id',
     component: ObjectViewerComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
@@ -242,8 +175,8 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name/files/:file_id',
-    component: FileViewComponent,
+    path: 'files/:file_id/pdf',
+    component: PDFViewComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
       title: 'PDF Viewer',
@@ -251,7 +184,52 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name/bioc/:file_id',
+    path: 'files/:file_id/enrichment-table',
+    canActivate: [LifelikeAuthGuard],
+    component: EnrichmentTableViewerComponent,
+    data: {
+      title: 'Enrichment Table',
+      fontAwesomeIcon: 'table',
+    },
+  },
+  {
+    path: 'files/:file_id/enrichment-visualisation',
+    canActivate: [LifelikeAuthGuard],
+    component: EnrichmentVisualisationViewerComponent,
+    data: {
+      title: 'Statistical Enrichment',
+      fontAwesomeIcon: 'chart-bar',
+    },
+  },
+  {
+    path: 'files/:file_id/sankey',
+    canActivate: [LifelikeAuthGuard],
+    component: SankeyViewComponent,
+    data: {
+      title: 'Sankey',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    },
+  },
+  {
+    path: 'files/:file_id/sankey-many-to-many',
+    canActivate: [LifelikeAuthGuard],
+    component: SankeyManyToManyViewComponent,
+    data: {
+      title: 'Sankey',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    },
+  },
+  {
+    path: 'files/:file_id/trace/:trace_hash',
+    canActivate: [LifelikeAuthGuard],
+    component: TraceViewComponent,
+    data: {
+      title: 'Trace details',
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+    },
+  },
+  {
+    path: 'files/:file_id/bioc',
     component: BiocViewComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
@@ -260,7 +238,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name/maps/:hash_id',
+    path: 'files/:file_id/maps',
     canActivate: [LifelikeAuthGuard],
     component: MapViewComponent,
     data: {
@@ -269,7 +247,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'projects/:project_name/maps/:hash_id/edit',
+    path: 'files/:file_id/maps/edit',
     component: MapEditorComponent,
     canActivate: [LifelikeAuthGuard],
     canDeactivate: [UnloadConfirmationGuard],
@@ -297,21 +275,12 @@ const routes: Routes = [
     },
   },
   {
-    path: 'file-navigator/:project_name/:file_id',
+    path: 'files/:file_id/file-navigator',
     component: ObjectNavigatorComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
-    },
-  },
-  {
-    path: 'enrichment-visualisation/:project_name/:file_id',
-    component: EnrichmentVisualisationViewerComponent,
-    canActivate: [LifelikeAuthGuard],
-    data: {
-      title: 'Enrichment Visualisation',
-      fontAwesomeIcon: 'chart-bar',
     },
   },
   {
@@ -356,11 +325,79 @@ const routes: Routes = [
     },
   },
   // Old links
+  {
+    path: 'projects/:project_name/folders/:dir_id',
+    redirectTo: 'folders/:dir_id',
+    pathMatch: 'full',
+  },
+  {
+    path: 'projects/:project_name/folders',
+    redirectTo: 'projects/:project_name',
+    pathMatch: 'full',
+  },
+  {
+    path: 'projects/:project_name/enrichment-table/:file_id',
+    redirectTo: 'files/:file_id/enrichment-table/',
+  },
+  {
+    path: 'projects/:project_name/enrichment-visualisation/:file_id',
+    redirectTo: 'files/:file_id/enrichment-visualisation/',
+  },
+  {
+    path: 'projects/:project_name/sankey/:file_id',
+    redirectTo: 'files/:file_id/sankey/',
+  },
+  {
+    path: 'projects/:project_name/sankey-many-to-many/:file_id',
+    redirectTo: 'files/:file_id/sankey-many-to-many/',
+  },
+  {
+    path: 'projects/:project_name/trace/:file_id/:trace_hash',
+    redirectTo: 'files/:file_id/trace/:trace_hash',
+  },
+  {
+    path: 'projects/:project_name',
+    redirectTo: 'folders/:dir_id'
+  },
+  {
+    path: 'projects/:project_name/folders',
+    redirectTo: 'projects/:project_name',
+    pathMatch: 'full',
+  },
+  {
+    path: 'projects/:project_name/folders/:dir_id',
+    redirectTo: 'folders/:dir_id',
+    pathMatch: 'full',
+  },
+  {
+    path: 'projects/:project_name/files/:file_id',
+    redirectTo: 'files/:file_id',
+  },
+  {
+    path: 'projects/:project_name/bioc/:file_id',
+    redirectTo: 'files/:file_id/bioc/',
+  },
+  {
+    path: 'projects/:project_name/maps/:file_id',
+    redirectTo: 'files/:file_id/maps/',
+  },
+  {
+    path: 'projects/:project_name/maps/:file_id/edit',
+    redirectTo: 'files/:file_id/maps/edit',
+  },
+  {
+    path: 'file-navigator/:project_name/:file_id',
+    redirectTo: 'files/:file_id/file-navigator/',
+  },
+  {
+    path: 'enrichment-visualisation/:project_name/:file_id',
+    redirectTo: 'files/:file_id/enrichment-visualisation/',
+  },
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
-  {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
+  {path: 'pdf-viewer/:file_id', redirectTo: 'files/:file_id', pathMatch: 'full'},
   {path: 'dt/map', redirectTo: 'projects', pathMatch: 'full'},
-  {path: 'dt/map/:hash_id', redirectTo: 'projects/beta-project/maps/maps/:hash_id', pathMatch: 'full'},
-  {path: 'dt/map/edit/:hash_id', redirectTo: 'projects/beta-project/maps/:hash_id/edit', pathMatch: 'full'},
+  {path: 'dt/map/:file_id', redirectTo: 'files/:file_id/maps', pathMatch: 'full'},
+  {path: 'dt/map/edit/:file_id', redirectTo: 'files/:file_id/maps/edit', pathMatch: 'full'},
   {path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full'},
   {path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full'},
   {path: 'search', redirectTo: 'search/graph', pathMatch: 'full'},

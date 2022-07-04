@@ -61,7 +61,7 @@ class EntityTypeEntry {
   styleUrls: ['./file-view.component.scss'],
 })
 
-export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
+export class PDFViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
@@ -375,8 +375,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const loc = event.location;
     const meta = event.meta;
 
-    const source = `/projects/${encodeURIComponent(this.object.project.name)}`
-      + `/files/${encodeURIComponent(this.currentFileId)}`
+    const source = `/files/${encodeURIComponent(this.currentFileId)}/pdf`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
     const sources = [{
@@ -673,8 +672,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     const sources: Source[] = [{
       domain: this.object.filename,
-      url: ['/projects', encodeURIComponent(this.object.project.name),
-        'files', encodeURIComponent(this.object.hashId)].join('/'),
+      url: [       '/files', encodeURIComponent(this.object.hashId), 'pdf'].join('/'),
     }];
 
     if (this.object.doi) {

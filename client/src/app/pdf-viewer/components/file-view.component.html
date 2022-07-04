@@ -115,15 +115,14 @@
             <button type="button" class="btn btn-secondary"
                     [disabled]="!ready"
                      [appLink]="[
-                            '/file-navigator',
-                            this.object.project.name,
-                            this.object.hashId
+                            '/files',
+                            this.object.hashId,
+                            '/file-navigator'
                         ]"
                       [parentAddress]="[
-                            '/projects',
-                            this.object.project.name,
-                            'files',
-                            this.object.hashId
+                            '/files',
+                            this.object.hashId,
+                            'pdf'
                       ]"
                       [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
                     ngbTooltip="File Navigator" placement="bottom">

@@ -27,7 +27,7 @@ export class ObjectViewerComponent implements OnDestroy {
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
     this.subscriptions.add(this.route.params.subscribe(params => {
-      this.object$ = this.filesystemService.get(params.hash_id);
+      this.object$ = this.filesystemService.get(params.file_id);
     }));
   }
 

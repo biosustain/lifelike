@@ -448,21 +448,21 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     for (const link of links) {
       try {
         const url = new URL(link.url, window.location.href);
-        if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
+        if (url.pathname.match(/^\/files\/([^\/]+)\/bioc/)) {
           iconCode = Unicodes.BioC;
           break;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+        } else if (url.pathname.match(/^\/files\/([^\/]+)\/enrichment-table/)) {
           iconCode = Unicodes.EnrichmentTable;
           break;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
+        } else if (url.pathname.match(/^\/files\/([^\/]+)\/maps/)) {
           iconCode = Unicodes.Map;
           break;
         } else if (
-          url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//) ||
-          url.pathname.match(/^\/projects\/([^\/]+)\/sankey-many-to-many\//)
+          url.pathname.match(/^\/files\/([^\/]+)\/sankey/) ||
+          url.pathname.match(/^\/files\/([^\/]+)\/sankey-many-to-many/)
         ) {
           iconCode = Unicodes.Graph;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
+        } else if (url.pathname.match(/^\/files\/([^\/]+)\/pdf/)) {
           iconCode = Unicodes.Pdf;
           break;
         } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
