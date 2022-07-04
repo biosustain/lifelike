@@ -1,4 +1,4 @@
-import { Injectable, ComponentRef } from '@angular/core';
+import { Injectable, ComponentRef, Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { get } from 'lodash-es';
@@ -19,9 +19,9 @@ export class ModuleContext {
   ) {
   }
 
-  componentInstance: ModuleAwareComponent;
+  componentInstance;
 
-  register(componentInstance: ModuleAwareComponent) {
+  register(componentInstance) {
     this.componentInstance = componentInstance;
   }
 
