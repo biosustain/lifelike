@@ -29,10 +29,10 @@ jobs:
           type: "${{ steps.reviews.outputs.changes_requested > 0 ? 'add' : 'remove' }}"
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - name: pending review
+      - name: waiting for review
         uses: buildsville/add-remove-label@v1
         with:
-          label: pending review
+          label: waiting for review
           type: "${{ steps.reviews.outputs.pending > 0 ? 'add' : 'remove' }}"
           token: ${{secrets.GITHUB_TOKEN}}
 
