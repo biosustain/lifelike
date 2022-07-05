@@ -1,0 +1,26 @@
+app-sankey-search-panel {
+  .simplified-accordion {
+    border: none;
+
+    [role='tab'] {
+      padding: 0;
+      background: none;
+      border: none;
+
+      button {
+        background: none;
+        border: none;
+        padding: 0.5em;
+        text-align: left;
+      }
+    }
+
+    [role='tabpanel'] {
+      border: none;
+
+      .card-body {
+        padding: 0;
+      }
+    }
+  }
+}

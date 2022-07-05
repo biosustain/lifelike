@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -26,6 +26,7 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import {
   AddedAnnotationExclusion,
@@ -59,9 +60,58 @@ class EntityTypeEntry {
   selector: 'app-pdf-viewer',
   templateUrl: './file-view.component.html',
   styleUrls: ['./file-view.component.scss'],
+  providers: [
+    ModuleContext
+  ]
 })
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
+
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly fileObjectActions: FilesystemObjectActions,
+    protected readonly pdfAnnService: AnnotationsService,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected readonly route: ActivatedRoute,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly workSpaceManager: WorkspaceManager,
+    protected readonly moduleContext: ModuleContext,
+  ) {
+    moduleContext.register(this);
+
+    this.loadTask = new BackgroundTask(([hashId, loc]) => {
+      return combineLatest(
+        this.filesystemService.get(hashId),
+        this.filesystemService.getContent(hashId).pipe(
+          mapBlobToBuffer(),
+        ),
+        this.pdfAnnService.getAnnotations(hashId));
+    });
+
+    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+      this.returnUrl = params.return;
+    });
+
+    // Listener for file open
+    this.openPdfSub = this.loadTask.results$.subscribe(({
+                                                          result: [object, content, ann],
+                                                          value: [file, loc],
+                                                        }) => {
+      this.pdfData = {data: new Uint8Array(content)};
+      this.annotations = ann;
+      this.updateAnnotationIndex();
+      this.updateSortedEntityTypeEntries();
+      this.object = object;
+      this.emitModuleProperties();
+
+      this.currentFileId = object.hashId;
+      this.ready = true;
+    });
+
+    this.loadFromUrl();
+  }
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
@@ -129,48 +179,33 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   };
   searching = false;
 
-  constructor(
-    protected readonly filesystemService: FilesystemService,
-    protected readonly fileObjectActions: FilesystemObjectActions,
-    protected readonly pdfAnnService: AnnotationsService,
-    protected readonly snackBar: MatSnackBar,
-    protected readonly modalService: NgbModal,
-    protected readonly route: ActivatedRoute,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly progressDialog: ProgressDialog,
-    protected readonly workSpaceManager: WorkspaceManager,
-  ) {
-    this.loadTask = new BackgroundTask(([hashId, loc]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-        ),
-        this.pdfAnnService.getAnnotations(hashId));
+  dragTitleData$ = defer(() => {
+    const sources: Source[] = [{
+      domain: this.object.filename,
+      url: ['/projects', encodeURIComponent(this.object.project.name),
+        'files', encodeURIComponent(this.object.hashId)].join('/'),
+    }];
+
+    if (this.object.doi) {
+      sources.push({domain: 'DOI', url: this.object.doi});
+    }
+
+    return of({
+      'text/plain': this.object.filename,
+      'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+        display_name: this.object.filename,
+        label: 'link',
+        sub_labels: [],
+        data: {
+          references: [{
+            type: 'PROJECT_OBJECT',
+            id: this.object.hashId + '',
+          }],
+          sources
+        },
+      } as Partial<UniversalGraphNode>)
     });
-
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
-      this.returnUrl = params.return;
-    });
-
-    // Listener for file open
-    this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [object, content, ann],
-                                                          value: [file, loc],
-                                                        }) => {
-      this.pdfData = {data: new Uint8Array(content)};
-      this.annotations = ann;
-      this.updateAnnotationIndex();
-      this.updateSortedEntityTypeEntries();
-      this.object = object;
-      this.emitModuleProperties();
-
-      this.currentFileId = object.hashId;
-      this.ready = true;
-    });
-
-    this.loadFromUrl();
-  }
+  });
 
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
@@ -666,34 +701,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   isPendingPostLoadAction() {
     return this.isPendingScroll() || this.isPendingJump()
       || this.pendingAnnotationHighlightId != null;
-  }
-
-  dragStarted(event: DragEvent) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-
-    const sources: Source[] = [{
-      domain: this.object.filename,
-      url: ['/projects', encodeURIComponent(this.object.project.name),
-        'files', encodeURIComponent(this.object.hashId)].join('/'),
-    }];
-
-    if (this.object.doi) {
-      sources.push({domain: 'DOI', url: this.object.doi});
-    }
-
-    dataTransfer.setData('text/plain', this.object.filename);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.object.filename,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId + '',
-        }],
-        sources
-      },
-    } as Partial<UniversalGraphNode>));
   }
 
 

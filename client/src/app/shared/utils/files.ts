@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
-import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
+import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 

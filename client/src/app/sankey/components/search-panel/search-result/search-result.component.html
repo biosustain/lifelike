@@ -1,0 +1,18 @@
+<fieldset
+        class="fieldset-properties mt-2"
+        [ngClass]="{focused: focused}"
+>
+    <legend>{{ result.type }}</legend>
+    <dl>
+        <div class="property">
+            <dt>{{result.value.path.join('→')}}</dt>
+            <dd>
+                <app-term-highlight
+                        [text]="result.value.term"
+                        [highlightTerms]="searchTokens"
+                >
+                </app-term-highlight>
+            </dd>
+        </div>
+    </dl>
+</fieldset>

@@ -20,7 +20,7 @@ import { skipStep } from './skipStep';
  * const obs = of(obj).pipe($freezeInDev, tap(obj => obj.prop = true)).subscribe();
  * // Throws an error in development (in strict mode)
  * ```
+ *
+ * PS isDevMode cannot be called on load of this file, as of Angular limitation.
  */
-export const $freezeInDev: MonoTypeOperatorFunction<any> = isDevMode() ?
-  map(partialRight(cloneDeepWith, Object.freeze)) :
-  skipStep;
+export const $freezeInDev: MonoTypeOperatorFunction<any> = map(d => isDevMode() ? cloneDeepWith(d, Object.freeze) : d);

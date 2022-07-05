@@ -1,0 +1,34 @@
+@use '../../' as this;
+@use 'sankey';
+
+:host {
+  @include sankey.legend;
+
+  .link-type {
+    @each $type, $color in this.$edge-color-map {
+      .box[data-type=#{$type}]:before {
+        background-color: $color;
+        border-color: darken($color, 25%);
+      }
+    }
+  }
+
+  .selection {
+    @each $position, $color in this.$link-colors {
+      .box[data-position=#{$position}]:before {
+        background-color: $color;
+        border-color: darken($color, 25%);
+      }
+    }
+  }
+
+  .node-type {
+    @each $position, $color in this.$node-colors {
+      .box[data-position=#{$position}]:before {
+        background-color: $color;
+        border-color: black;
+      }
+    }
+  }
+
+}
