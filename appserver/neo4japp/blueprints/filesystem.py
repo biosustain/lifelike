@@ -904,7 +904,7 @@ class FileListView(FilesystemBaseView):
             'New file was created',
             category='filesystem',
             action="file_created",
-            label=file_name,
+            label=file.file_path,
             mime_type=mime_type,
             is_upload=bool(file.upload_url),
         )
@@ -1199,6 +1199,7 @@ class FileSearchView(FilesystemBaseView):
             'A file search was performed',
             category='filesystem',
             action="file_search",
+            label=json.dumps(params),
             value=total
         )
 
