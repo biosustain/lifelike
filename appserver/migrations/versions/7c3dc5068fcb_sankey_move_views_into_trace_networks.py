@@ -1,7 +1,7 @@
 """Sankey move views into trace networks
 
 Revision ID: 7c3dc5068fcb
-Revises: 3234be6a4bd8
+Revises: bcf11df73a79
 Create Date: 2022-05-10 01:56:40.761309
 
 """
@@ -20,7 +20,7 @@ from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = '7c3dc5068fcb'
-down_revision = '3234be6a4bd8'
+down_revision = 'bcf11df73a79'
 branch_labels = None
 depends_on = None
 # reference to this directory
