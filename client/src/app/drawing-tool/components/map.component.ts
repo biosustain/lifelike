@@ -122,32 +122,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   get locator() {
     return this._locator;
   }
-  @Input() highlightTerms: string[] | undefined;
-  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild('canvas', {static: true}) canvasChild;
-
-  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
-  loadSubscription: Subscription;
-
-  _locator: string | undefined;
-  @Input() map: FilesystemObject | undefined;
-  @Input() contentValue: Blob | undefined;
-  pendingInitialize = false;
-
-  graphCanvas: CanvasGraphView;
-
-  protected readonly subscriptions = new Subscription();
-  historyChangesSubscription: Subscription;
-  unsavedChangesSubscription: Subscription;
-  providerSubscription$ = new Subscription();
-
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
-
-  entitySearchTerm = '';
-  entitySearchList: GraphEntity[] = [];
-  entitySearchListIdx = -1;
 
   dragTitleData$ = defer(() => of(this.map.getTransferData()));
 
@@ -214,10 +189,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
     this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
-        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
+        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
           mapJsonToGraph(),
-          this.errorHandler.create({ label: 'Parse map data' }),
+          this.errorHandler.create({label: 'Parse map data'}),
         ).subscribe(
           graph => {
             this.graphCanvas.setGraph(graph);
@@ -235,7 +210,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
             if (this.highlightTerms != null && this.highlightTerms.length) {
               this.graphCanvas.highlighting.replace(
-                this.graphCanvas.findMatching(this.highlightTerms, { keepSearchSpecialChars: true, wholeWord: true }),
+                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
               );
             }
           },
@@ -255,9 +230,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    const { historyChangesSubscription, unsavedChangesSubscription } = this;
-    if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
-    if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
+    const {historyChangesSubscription, unsavedChangesSubscription} = this;
+    if (historyChangesSubscription) {
+      historyChangesSubscription.unsubscribe();
+    }
+    if (unsavedChangesSubscription) {
+      unsavedChangesSubscription.unsubscribe();
+    }
     this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
     this.providerSubscription$.unsubscribe();

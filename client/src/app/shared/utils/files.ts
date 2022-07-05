@@ -4,12 +4,9 @@ import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
-import { extractDescriptionFromSankey } from 'app/shared-sankey/constants';
-
-import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
-
-import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 import { extractDescriptionFromSankey } from 'app/sankey/utils';
+
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
 export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
   return map(async blob => {

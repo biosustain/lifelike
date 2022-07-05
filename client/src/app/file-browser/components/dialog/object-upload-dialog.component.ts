@@ -8,11 +8,8 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { extractDescriptionFromFile } from 'app/shared/utils/files';
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
-import { extractDescriptionFromSankey } from 'app/sankey/constants';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
-import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';
 import { ObjectCreateRequest } from '../../schema';

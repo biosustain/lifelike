@@ -1,4 +1,4 @@
-import { Match } from '../../services/search-match';
+import { Match } from 'app/sankey/interfaces/search';
 
 export interface SearchEntity {
   nodeId?: string | number;
