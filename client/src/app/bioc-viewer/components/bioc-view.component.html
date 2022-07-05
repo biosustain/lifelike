@@ -10,10 +10,10 @@
     <ng-container *ngIf="status.resultsShown">
         <app-module-header *ngIf="object"
                            [object]="object"
-                           (dragStarted)="dragStarted($event)"
-                           (dragEnd)="dragEnd($event)"
+                           [dragTitleData$]="dragTitleData$"
                            [returnUrl]="returnUrl"
         >
+<!--                           (dragEnd)="dragEnd($event)"-->
             <app-module-menu [object]="object" [forEditing]="true" [showOpen]="false"
                              [showDelete]="false" (objectRefresh)="requestRefresh()">
             </app-module-menu>
