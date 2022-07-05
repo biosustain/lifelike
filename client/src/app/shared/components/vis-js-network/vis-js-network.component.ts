@@ -421,3 +421,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
     });
   }
 }
+
+
+
