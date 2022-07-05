@@ -13,8 +13,8 @@ import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ViewService } from 'app/file-browser/services/view.service';
 
 import { ObjectMenuComponent } from '../object-menu/object-menu.component';
-import { ModuleAwareComponent } from '../../modules';
 import { ClipboardService } from '../../services/clipboard.service';
+import { ModuleContext } from '../../services/module-context.service';
 
 /**
  * app-object-menu in module context
@@ -31,29 +31,15 @@ export class ModuleMenuComponent extends ObjectMenuComponent implements AfterVie
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly actions: FilesystemObjectActions,
               protected readonly objectTypeService: ObjectTypeService,
-              protected readonly viewService: ViewService,
-              protected readonly clipboard: ClipboardService
+              protected readonly clipboard: ClipboardService,
+              private tabUrlService: ModuleContext
   ) {
     super(router, snackBar, errorHandler, route, workspaceManager, actions, objectTypeService);
   }
 
   async openShareDialog(target: FilesystemObject) {
-    let url;
-    let componentInstance: ModuleAwareComponent;
-    const {focusedPane} = this.workspaceManager;
-    if (focusedPane) {
-      const {activeTab} = focusedPane;
-      url = activeTab.url;
-      componentInstance = activeTab.getComponent();
-    } else {
-      // in case of primary outlet
-      url = this.router.url;
-      // @ts-ignore
-      const {contexts} = this.router.rootContexts;
-      componentInstance = get(contexts.get('primary'), 'outlet.component');
-    }
-    return this.clipboard.copy(
-      this.viewService.getShareableLink(componentInstance, url).toPromise().then(({href}) => href),
+    return await this.clipboard.copy(
+      this.tabUrlService.shareableLink,
       {intermediate: 'Generating link...'}
     );
   }

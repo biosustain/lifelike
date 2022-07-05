@@ -1,5 +1,5 @@
 import { Directive, Input } from '@angular/core';
-import {CdkCopyToClipboard} from '@angular/cdk/clipboard';
+import {CdkCopyToClipboard, Clipboard} from '@angular/cdk/clipboard';
 
 import { ClipboardService } from '../services/clipboard.service';
 

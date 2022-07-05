@@ -1,0 +1,27 @@
+<input type="text" [ngClass]="['form-control', searchClass]" (input)="searchChangeCallback($event)" placeholder="Search"
+       (click)="$event.stopPropagation()" #search/>
+<cdk-tree
+        [dataSource]="filteredBranches$"
+        [treeControl]="treeControl"
+        class="overflow-auto">
+    <!--        [trackBy]="trackByFn">-->
+    <!-- This is the tree node template for leaf nodes -->
+    <cdk-tree-node *cdkTreeNodeDef="let node; let index = index; let count = count; let level = level">
+        <ng-container
+                [ngTemplateOutlet]="treeNodeTemplateRef"
+                [ngTemplateOutletContext]="{
+                     $implicit: node, index: index, count: count, level: level, term: search
+                   }"></ng-container>
+    </cdk-tree-node>
+    <!-- This is the tree node template for expandable nodes -->
+    <cdk-nested-tree-node
+            *cdkTreeNodeDef="let node; let index = index; let count = count; let level = level; when: hasChild">
+        <ng-container
+                [ngTemplateOutlet]="treeNestedNodeTemplateRef"
+                [ngTemplateOutletContext]="{
+              $implicit: node, index: index, count: count, level: level, term: search
+            }">
+        </ng-container>
+        <ng-container cdkTreeNodeOutlet></ng-container>
+    </cdk-nested-tree-node>
+</cdk-tree>

@@ -151,7 +151,12 @@
               "src/lifelike-theme.scss",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/scss", "src/app"
+              ]
+            }
           }
         },
         "lint": {

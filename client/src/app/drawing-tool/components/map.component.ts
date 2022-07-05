@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -111,6 +111,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
   }
 
+  @Input()
+  set locator(value: string | undefined) {
+    this._locator = value;
+    if (value != null) {
+      this.loadTask.update(value);
+    }
+  }
+
+  get locator() {
+    return this._locator;
+  }
+
+
+  dragTitleData$ = defer(() => of(this.map.getTransferData()));
+
   getExtraSource(): Observable<ExtraResult> {
     return new BehaviorSubject(null);
   }
@@ -150,18 +165,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
   }
 
-  @Input()
-  set locator(value: string | undefined) {
-    this._locator = value;
-    if (value != null) {
-      this.loadTask.update(value);
-    }
-  }
-
-  get locator() {
-    return this._locator;
-  }
-
   ngOnChanges(changes: SimpleChanges) {
     if ('map' in changes || 'contentValue' in changes) {
       this.initializeMap();
@@ -186,10 +189,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
     this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
-        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], { type: MimeTypes.Map })).pipe(
+        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
           mapJsonToGraph(),
-          this.errorHandler.create({ label: 'Parse map data' }),
+          this.errorHandler.create({label: 'Parse map data'}),
         ).subscribe(
           graph => {
             this.graphCanvas.setGraph(graph);
@@ -207,7 +210,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
             if (this.highlightTerms != null && this.highlightTerms.length) {
               this.graphCanvas.highlighting.replace(
-                this.graphCanvas.findMatching(this.highlightTerms, { keepSearchSpecialChars: true, wholeWord: true }),
+                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
               );
             }
           },
@@ -227,9 +230,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    const { historyChangesSubscription, unsavedChangesSubscription } = this;
-    if (historyChangesSubscription) { historyChangesSubscription.unsubscribe(); }
-    if (unsavedChangesSubscription) { unsavedChangesSubscription.unsubscribe(); }
+    const {historyChangesSubscription, unsavedChangesSubscription} = this;
+    if (historyChangesSubscription) {
+      historyChangesSubscription.unsubscribe();
+    }
+    if (unsavedChangesSubscription) {
+      unsavedChangesSubscription.unsubscribe();
+    }
     this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
     this.providerSubscription$.unsubscribe();
@@ -257,11 +264,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   redo() {
     this.graphCanvas.redo();
-  }
-
-  dragStarted(event: DragEvent) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    this.map.addDataTransferData(dataTransfer);
   }
 
   // ========================================

@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, from } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
+import { AppURL } from 'app/shared/utils/url';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
  */
 @Injectable({providedIn: 'root'})
 export class ViewService {
-  constructor(protected readonly http: HttpClient) {}
+  constructor(protected readonly http: HttpClient) {
+  }
 
   get(viewId: string): Observable<object> {
     return this.http.get(
@@ -33,20 +35,27 @@ export class ViewService {
     );
   }
 
-  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
+  getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
     url = removeViewModeIfPresent(url);
-    const hashUrl = new URL(url.replace(/^\/+/, '/'), window.location.href);
-    const viewParams = (componentInstance || {}).viewParams;
+    const hashUrl = new AppURL(url);
+    const viewParams = componentInstance?.viewParams;
     if (viewParams) {
-      return this.create(viewParams).pipe(
+      return from(viewParams).pipe(
+        switchMap(params => this.create(params)),
         map(viewId => {
           if (viewId) {
-            hashUrl.hash = viewId;
+            hashUrl.fragment = viewId;
           }
           return hashUrl;
         })
       );
     }
     return of(hashUrl);
+  }
+
+  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
+    return this.getAppLink(componentInstance, url).pipe(
+      tap((appUrl: AppURL) => appUrl.origin = window.location.href)
+    );
   }
 }
