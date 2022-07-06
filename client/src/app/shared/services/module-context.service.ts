@@ -19,9 +19,9 @@ export class ModuleContext {
   ) {
   }
 
-  componentInstance: ModuleAwareComponent;
+  componentInstance;
 
-  register(componentInstance: ModuleAwareComponent) {
+  register(componentInstance) {
     this.componentInstance = componentInstance;
   }
 
