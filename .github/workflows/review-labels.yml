@@ -26,14 +26,14 @@ jobs:
         uses: buildsville/add-remove-label@v1
         with:
           label: changes requested
-          type: "${{ steps.reviews.outputs.changes_requested > 0 ? 'add' : 'remove' }}"
+          type: "${{ steps.reviews.outputs.changes_requested > 0 && 'add' || 'remove' }}"
           token: ${{secrets.GITHUB_TOKEN}}
 
       - name: waiting for review
         uses: buildsville/add-remove-label@v1
         with:
           label: waiting for review
-          type: "${{ steps.reviews.outputs.pending > 0 ? 'add' : 'remove' }}"
+          type: "${{ steps.reviews.outputs.pending > 0 && 'add' || 'remove' }}"
           token: ${{secrets.GITHUB_TOKEN}}
 
       - name: approved
