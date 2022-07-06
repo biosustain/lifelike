@@ -40,7 +40,7 @@ jobs:
         uses: buildsville/add-remove-label@v1
         with:
           label: approved
-          type: "${{ steps.reviews.outputs.approved >= 1 && steps.reviews.outputs.changes_requested == 0 ? 'add' : 'remove' }}"
+          type: "${{ steps.reviews.outputs.approved >= 1 && steps.reviews.outputs.changes_requested == 0 && 'add' || 'remove' }}"
           token: ${{secrets.GITHUB_TOKEN}}
 
       - run: echo "::endgroup::"
