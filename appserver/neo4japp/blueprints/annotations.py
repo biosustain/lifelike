@@ -984,6 +984,7 @@ class GlobalAnnotationListView(MethodView):
                 {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit})  # noqa
 
             file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
+
             file_data_query = db.session.query(
                 Files.hash_id.label('file_uuid'),
                 Files.deleter_id.label('file_deleted_by')

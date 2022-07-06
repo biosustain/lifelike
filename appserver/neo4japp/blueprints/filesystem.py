@@ -904,8 +904,8 @@ class FileListView(FilesystemBaseView):
             'New file was created',
             category='filesystem',
             action="file_created",
-            label=file.file_path,
-            mime_type=mime_type,
+            label=file.path,
+            mime_type=file.mime_type,
             is_upload=bool(file.upload_url),
         )
 
@@ -1000,7 +1000,7 @@ class FileListView(FilesystemBaseView):
                     'A file was updated',
                     category='filesystem',
                     action="file_updated",
-                    label=file
+                    label=file.path
                 )
 
         return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
@@ -1199,7 +1199,6 @@ class FileSearchView(FilesystemBaseView):
             'A file search was performed',
             category='filesystem',
             action="file_search",
-            label=json.dumps(params),
             value=total
         )
 
