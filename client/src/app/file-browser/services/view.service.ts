@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable, of, from } from 'rxjs';
@@ -35,10 +35,10 @@ export class ViewService {
     );
   }
 
-  getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
+  getAppLink(componentInstance: Component, url: string): Observable<AppURL> {
     url = removeViewModeIfPresent(url);
     const hashUrl = new AppURL(url);
-    const viewParams = componentInstance?.viewParams;
+    const viewParams = (componentInstance as ModuleAwareComponent)?.viewParams;
     if (viewParams) {
       return from(viewParams).pipe(
         switchMap(params => this.create(params)),
@@ -53,7 +53,7 @@ export class ViewService {
     return of(hashUrl);
   }
 
-  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
+  getShareableLink(componentInstance: Component, url: string): Observable<URL> {
     return this.getAppLink(componentInstance, url).pipe(
       tap((appUrl: AppURL) => appUrl.origin = window.location.href)
     );
