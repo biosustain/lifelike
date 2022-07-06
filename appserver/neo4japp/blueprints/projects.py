@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional, Tuple, Dict, Iterable
 
 from flask import jsonify, Blueprint, g
@@ -33,6 +34,7 @@ from neo4japp.schemas.projects import (
     ProjectCollaboratorListSchema,
     ProjectMultiCollaboratorUpdateRequest
 )
+from neo4japp.utils.logger import log_user_action
 from neo4japp.utils.request import Pagination
 
 
@@ -305,6 +307,13 @@ class ProjectListView(ProjectBaseView):
         db.session.commit()
         # rollback in case of error?
 
+        log_user_action(
+            'New project created',
+            category='projects',
+            action="project_created",
+            label=project.name
+        )
+
         return self.get_project_response(project.hash_id, current_user)
 
     @use_args(lambda request: BulkProjectRequestSchema())
@@ -314,6 +323,16 @@ class ProjectListView(ProjectBaseView):
 
         current_user = g.current_user
         missing_hash_ids = self.update_projects(targets['hash_ids'], params, current_user)
+
+        for hash_id in missing_hash_ids:
+            if hash_id not in missing_hash_ids:
+                log_user_action(
+                    f'Project updated: {hash_id})',
+                    category='projects',
+                    action="project_updated",
+                    label=hash_id
+                )
+
         return self.get_bulk_project_response(targets['hash_ids'], current_user,
                                               missing_hash_ids=missing_hash_ids)
 
@@ -362,6 +381,13 @@ class ProjectListView(ProjectBaseView):
 
         db.session.commit()
 
+        log_user_action(
+            f'Project deleted: {project.hash_id} ({project.name})',
+            category='projects',
+            action="project_deleted",
+            label=project.name
+        )
+
         # ========================================
         # Return changed files
         # ========================================
@@ -388,6 +414,15 @@ class ProjectSearchView(ProjectBaseView):
         )
         # Not necessary (due to accessible_only=True), but check anyway
         self.check_project_permissions(projects, current_user, ['readable'])
+
+        log_user_action(
+            f'Searched for projects: {params["name"]}',
+            category='projects',
+            action='project_search',
+            label=json.dumps(params),
+            value=total,
+            type='api-lowlevel',
+        )
 
         return jsonify(ProjectListSchema(context={
             'user_privilege_filter': g.current_user.id,
