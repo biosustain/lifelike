@@ -1,0 +1,42 @@
+# Pull Request Labeler
+# Automatically label requests based on the paths of files being changed.
+# https://github.com/marketplace/actions/labeler
+
+backend:
+  - appserver/*
+  - appserver/**/*
+  - statistical-enrichment/*
+  - statistical-enrichment/**/*
+  - cache-invalidator/*
+  - cache-invalidator/**/*
+
+frontend:
+  - client/*
+  - client/**/*
+
+dependencies:
+  - '**/package.json'
+  - '**/yarn.lock'
+  - '**/Pipfile*'
+
+migrations:
+  - appserver/migrations/versions/*
+
+tests:
+  - appserver/tests/*
+  - appserver/tests/**/*
+  - client/e2e/*
+  - client/e2e/**/*
+
+docker:
+  - '**/Dockerfile'
+  - '**/*.Dockerfile'
+  - '**/*.dockerignore'
+  - '**/docker-compose*.yml'
+
+workflow:
+  - .github/*
+  - .github/**/*
+
+infrastructure:
+  - deployment
