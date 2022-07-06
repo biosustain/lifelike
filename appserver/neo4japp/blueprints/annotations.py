@@ -547,6 +547,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         if params.get('annotation_configs'):
             override_annotation_configs = params['annotation_configs']
 
+        missing = self.get_missing_hash_ids(targets['hash_ids'], files)
+
         updated_files, versions, results = self.annotate_files(
             files,
             current_user.id,
