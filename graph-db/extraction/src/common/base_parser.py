@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
 """
-Parsers read the downloaded file from download directory, parse and format data, write into tsv files.  
+Parsers read the downloaded file from download directory, parse and format data, write into tsv files.
 Then zip the output tsv files into a zip file
 """
 class BaseParser:
@@ -51,9 +51,13 @@ class BaseParser:
             df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
             df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:, [PROP_ID, PROP_NAME]]
-        df_name = df[[PROP_ID, PROP_NAME]]
+        if PROP_NAME in df.columns:
+            df_name = df[[PROP_ID, PROP_NAME]]
+        else:
+            df_name = pd.DataFrame()
         df_syn = pd.concat([df_name, df_syn]).drop_duplicates()
-        df_syn = df_syn[df_syn[PROP_NAME].str.len() > 1]
+        if not df_syn.empty:
+            df_syn = df_syn[df_syn[PROP_NAME].str.len() > 1]
         return df_syn
 
     def zip_output_files(self, output_files:[], zip_file):

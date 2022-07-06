@@ -75,6 +75,7 @@ class BiocycParser(BaseParser):
                 if nodes:
                     all_files += parser.parse_and_write_data_files(nodes)
         zip_file = self.get_data_output_zip(self.biocyc_dbname, self.version)
+        logging.info(f'create zip file: {zip_file}')
         self.zip_output_files(all_files, zip_file)
 
 
@@ -83,4 +84,5 @@ def main(biocyc_dbname):
     parser.parse_and_write_data_files()
 
 if __name__ == "__main__":
-    main(DB_ECOCYC)
+    # main(DB_ECOCYC)
+    main(DB_PSYRCYC)

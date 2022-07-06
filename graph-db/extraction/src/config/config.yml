@@ -16,5 +16,5 @@ biocycFiles:
   PseudomonasCyc: pput160488cyc_25.5.tar.gz
   BsubCyc: bsub_47.tar.gz
   PaenibacillusCyc: gcf_000981585_25.5.tar.gz
-
+  PsyringaeCyc: gcf_000007805cyc.tar.gz
 

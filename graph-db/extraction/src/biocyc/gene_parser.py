@@ -25,10 +25,15 @@ class GeneParser(DataFileParser):
         """
         extract synonyms from 'synonyms' column, combine with name, return dataframe for id-synonym (columns[ID, NAME])
         """
-        df_syn = df[[PROP_ID, PROP_SYNONYMS]].dropna()
-        df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
-        df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-        df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:, [PROP_ID, PROP_NAME]]
+
+        if PROP_SYNONYMS in df.columns:
+            df_syn = df[[PROP_ID, PROP_SYNONYMS]].dropna()
+            df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
+            df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
+            df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:,
+                     [PROP_ID, PROP_NAME]]
+        else:
+            df_syn = pd.DataFrame()
         df_name = df[[PROP_ID, PROP_NAME]]
         df_accession = df[[PROP_ID, PROP_ACCESSION]]
         df_accession.columns = [PROP_ID, PROP_NAME]
