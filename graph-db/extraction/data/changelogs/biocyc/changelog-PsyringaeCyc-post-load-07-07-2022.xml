@@ -5,24 +5,15 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="set_gene_link, date 06/30/2022" author="rcai">
+  <changeSet id="set_gene_link, date 07/07/2022" author="rcai">
     <comment>link genes to NCBI gene</comment>
     <sql>
-    
-match(n:Gene:db_BsubCyc) where n.accession starts with 'BSU'
-with n, replace(n.accession, 'BSU', 'BSU_') as locus_tag
-match(g:Gene) where g.locus_tag=locus_tag merge (n)-[:IS]->(g);
-
-match(n:Gene:db_BsubCyc) where not (n)-[:HAS_GENE]-() and size(n.accession)>0
-with n match (g:Gene) where g.locus_tag = n.accession merge (n)-[:IS]->(g);
-
-match(n:Gene:db_BsubCyc) where not (n)-[:HAS_GENE]-() and size(n.name)>0 with n
-match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
+    match(n:Gene:db_BioCyc) where size(n.accession)>0 with n match (g:Gene) where g.locus_tag = n.accession merge (n)-[:IS]->(g);
 
     </sql>
   </changeSet>
 
-  <changeSet id="set_displayName, date 06/30/2022" author="rcai">
+  <changeSet id="set_displayName, date 07/07/2022" author="rcai">
     <comment>set biocyc node display name</comment>
     <sql>
     match(n:db_BioCyc) set n.displayName = n.name;
@@ -45,7 +36,7 @@ match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
     </sql>
   </changeSet>
 
-  <changeSet id="set_node_description, date 06/30/2022" author="rcai">
+  <changeSet id="set_node_description, date 07/07/2022" author="rcai">
     <comment>set node description</comment>
     <sql>
     match (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI) set n.description = g.full_name;
@@ -69,24 +60,24 @@ match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
     </sql>
   </changeSet>
 
-  <changeSet id="set_reaction_enzyme_name, date 06/30/2022" author="rcai">
+  <changeSet id="set_reaction_enzyme_name, date 07/07/2022" author="rcai">
     <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
     <sql>
     match(n:Reaction)-[:ENZYME_LINK]-(e) with n, collect(e.name) as enzyme_name set n.enzyme_name = enzyme_name;
     </sql>
   </changeSet>
 
-  <changeSet id="set_gene_pathways, date 06/30/2022" author="rcai">
+  <changeSet id="set_gene_pathways, date 07/07/2022" author="rcai">
     <comment>set pathways related to a gene.</comment>
     <sql>
-    match (n:db_BsubCyc:Gene) with n
-    match path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:db_BsubCyc)
+    match (n:db_PsyringaeCyc:Gene) with n
+    match path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:db_PsyringaeCyc)
     with n, collect(p.name) as pathways set n.pathways = pathways
 
     </sql>
   </changeSet>
 
-  <changeSet id="set_entity_type, date 06/30/2022" author="rcai">
+  <changeSet id="set_entity_type, date 07/07/2022" author="rcai">
     <comment>set entity type for common entities since a node could have many labels</comment>
     <sql>
     match(n:Gene:db_BioCyc) set n.entityType='Gene';
