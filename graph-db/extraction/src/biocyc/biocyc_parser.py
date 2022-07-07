@@ -47,6 +47,7 @@ class BiocycParser(BaseParser):
         self.output_dir = os.path.join(self.output_dir, biocyc_dbname.lower())
         self.tar_data_file = Config().get_biocyc_tar_file(biocyc_dbname)
         self.biocyc_dbname = biocyc_dbname
+        self.org_id = ''
         self.version = ''
         self.logger = logging.getLogger(__name__)
 
@@ -69,7 +70,11 @@ class BiocycParser(BaseParser):
             parser = self.get_parser(entity)
             parser.version = self.version
             if parser:
+                # set parser org_id so that the node can link to the biocyc URL
+                parser.org_id = self.org_id
                 nodes = parser.parse_data_file()
+                if entity == NODE_SPECIES:
+                    self.org_id = nodes[0].get_attribute(PROP_ID)
                 if not self.version and parser.version:
                     self.version = parser.version
                 if nodes:
