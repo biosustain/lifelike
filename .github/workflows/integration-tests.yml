@@ -3,10 +3,6 @@ name: Integration Checks
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - docker-compose.ci-test.yml
-      - appserver/**
-      - client/**
 
 jobs:
   appserver:
