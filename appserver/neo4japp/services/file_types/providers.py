@@ -20,7 +20,7 @@ from flask import current_app
 
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
-from bioc.biocjson import BioCJsonIterWriter, fromJSON as biocFromJSON, toJSON as biocToJSON
+from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 import os
 import bioc

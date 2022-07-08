@@ -49,7 +49,7 @@ class SortedAnnotation:
         return files_annotations, key_map
 
     def get_annotations(self, project_id: List[Files]) -> SortedAnnotationResults:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class SumLogCountSA(SortedAnnotation):

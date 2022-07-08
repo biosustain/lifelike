@@ -44,9 +44,8 @@ class AnnotationIntervalTree(IntervalTree):
             if data_initializer is None:
                 current_reduced[0] = higher.data
                 merged.append(higher)
-                return
-            else:  # data_initializer is not None
-                current_reduced[0] = copy(data_initializer)
+            else:
+                current_reduced[0] = data_initializer.copy()
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
                 merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
 
@@ -91,9 +90,8 @@ class AnnotationIntervalTree(IntervalTree):
             if data_initializer is None:
                 current_reduced[0] = higher.data
                 merged.append(higher)
-                return
-            else:  # data_initializer is not None
-                current_reduced[0] = copy(data_initializer)
+            else:
+                current_reduced[0] = data_initializer.copy()
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
                 merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
 
