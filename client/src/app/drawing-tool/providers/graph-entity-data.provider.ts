@@ -49,7 +49,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
           type: GraphEntityType.Node,
           entity: node,
         }],
-        confidence: 0,
+        confidence: 100,
       });
     }
 
@@ -74,14 +74,12 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
             entity: edge,
           }
         ],
-        confidence: 0,
+        confidence: 100,
       });
     }
 
     // Otherwise, try to create a note or link node from available data
-    // Unless this is an image transfer/upload
-    // TODO: This checks gets crazy - what about using the confidence level instead? If there is something with higher conf, do that?
-    if (!nodeData && !relationshipData && !imageData && !dataTransfer.items[0]?.type.startsWith('image/')) {
+    if (!nodeData && !relationshipData) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];

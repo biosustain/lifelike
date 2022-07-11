@@ -38,5 +38,6 @@ export class ImageEntityDataProvider implements DataTransferDataProvider {
 
 export interface ImageTransferData {
   node: UniversalGraphNode;
-  hash: string;
+  hash?: string;
+  blob?: Blob;
 }
