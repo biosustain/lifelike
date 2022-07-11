@@ -4,6 +4,7 @@ from common.constants import *
 from common.utils import get_data_dir
 from datetime import datetime
 from common.utils import write_compressed_tsv_file_from_dataframe
+import os
 
 def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     """
@@ -11,7 +12,7 @@ def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     Since there are no genes for tax id 160488 (Pseudomonas putida KT2440), we need to get the gene list from biocyc.
     """
     query = f"""
-    match(n:Gene:db_PseudomonasCyc)-[:HAS_SYNONYM]-(s) 
+    match(n:Gene:db_PseudomonasCyc)-[:HAS_SYNONYM]-(s)
     return n.{PROP_ID} as id, n.name as geneName, s.name as synonym, 160488 as tax_id, 'BioCyc' as data_source
     """
     df = database.get_data(query)
@@ -24,7 +25,7 @@ def generate_compound_list_for_LMDB(database, output_dir):
     Compound main change to Chemical in the future
     """
     query = """
-    match(n:Compound)--[:HAS_SYNONYM]-(s) 
+    match(n:Compound)--[:HAS_SYNONYM]-(s)
     return n.eid as id, n.name as name, s.name as synonym,n.data_source as data_source
     """
     df = database.get_data(query)
