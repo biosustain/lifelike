@@ -561,8 +561,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       };
     if (this.mimeType.trim().startsWith('image/')) {
       return {
-        FILESYSTEM_IMAGE_HASHID_TYPE: this.hashId,
-        FILESYSTEM_IMAGE_TRANSFER_TYPE: JSON.stringify(node)
+        [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
+        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node)
       };
     }
     return {

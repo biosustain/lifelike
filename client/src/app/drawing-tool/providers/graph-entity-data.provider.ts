@@ -79,7 +79,8 @@ export class GraphEntityDataProvider implements DataTransferDataProvider {
     }
 
     // Otherwise, try to create a note or link node from available data
-    if (!nodeData && !relationshipData) {
+    // Unless this is an image transfer/upload
+    if (!nodeData && !relationshipData && !imageData && !dataTransfer.items[0]?.type.startsWith('image/')) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];
