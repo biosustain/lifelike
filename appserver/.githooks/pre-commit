@@ -6,6 +6,8 @@ staged_files=$(getStaged appserver '\.(py)$')
 # Turn debugging on by the flag
 if [[ -n $DEBUG_HOOKS ]];
 then
+  echo "> 🐛 flake8 version:"
+  docker exec appserver flake8 --version
   echo "> 🐛 mypy version:"
   docker exec appserver mypy --version
   echo "> 🐛 pycodestyle version:"
@@ -16,6 +18,9 @@ fi
 if [[ -n $staged_files ]];
 then
   (
+    echo "> 🌽 Running flake8..."
+    echo ${staged_files} | xargs docker exec appserver flake8
+  ) && (
     echo "> 🥧 Running mypy..."
     echo ${staged_files} | xargs docker exec appserver mypy
   ) && (
