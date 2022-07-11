@@ -11,9 +11,10 @@ import { CollectionModel } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
+import { FILESYSTEM_IMAGE_HASHID_TYPE, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData, } from '../providers/filesystem-object-data.provider';
+import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
@@ -537,6 +538,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return sources;
   }
 
+
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
@@ -546,20 +548,25 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.name,
-      label: this.type === 'map' ? 'map' : 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.id + '',
-        }],
-        sources,
-      },
-    };
-
+        display_name: this.filename,
+        label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
+        sub_labels: [],
+        data: {
+          references: [{
+            type: 'PROJECT_OBJECT',
+            id: this.hashId + '',
+          }],
+          sources,
+        },
+      };
+    if (this.mimeType.trim().startsWith('image/')) {
+      return {
+        [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
+        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node)
+      };
+    }
     return {
-      'text/plain': this.name,
+      'text/plain': this.filename,
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
       ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node)
     };

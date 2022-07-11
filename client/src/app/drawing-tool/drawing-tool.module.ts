@@ -19,6 +19,9 @@ import { InfoViewPanelComponent } from './components/info-view-panel.component';
 import { GraphEntityDataProvider } from './providers/graph-entity-data.provider';
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
 import { MapImageProviderService } from './services/map-image-provider.service';
+import { ImageEntityDataProvider } from './providers/image-entity-data.provider';
+import { GraphActionsService } from './services/graph-actions.service';
+import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 
 
 @NgModule({
@@ -52,7 +55,18 @@ import { MapImageProviderService } from './services/map-image-provider.service';
       useClass: GraphEntityDataProvider,
       multi: true,
     },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: ImageEntityDataProvider,
+      multi: true,
+    },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: ImageUploadDataProvider,
+      multi: true,
+    },
     MapImageProviderService,
+    GraphActionsService,
   ],
   exports: [
     RouterModule,
