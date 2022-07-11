@@ -49,7 +49,7 @@ export interface UniversalGraphNode {
   };
   image_id?: string;
   label: string;
-  // TODO: We do not use this anywhere, is this needed?
+  // TODO: Remove.
   sub_labels: string[];
   style?: UniversalNodeStyle;
 }

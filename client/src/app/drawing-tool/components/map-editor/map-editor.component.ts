@@ -18,8 +18,8 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
+import {  uuidv4 } from 'app/shared/utils/identifiers';
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
-import { uuidv4 } from 'app/shared/utils/identifiers';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
@@ -31,7 +31,6 @@ import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
-import { extractGraphEntityActions } from '../../utils/data';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -270,11 +269,15 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     this.ngZone.run(() => {
       this.dropTargeted = true;
     });
-
-    if (this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
-      event.dataTransfer.dropEffect = 'link';
-      event.preventDefault();
+    // As this event fire continuously, and we only need to check that once, do not re-check after the first one
+    if (event.dataTransfer.dropEffect !== 'link') {
+      if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
+          this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+        event.dataTransfer.dropEffect = 'link';
+        event.preventDefault();
+      }
     }
+
   }
 
   drop(event: DragEvent) {
@@ -287,12 +290,15 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     const hoverPosition = this.graphCanvas.hoverPosition;
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
-      const actions = extractGraphEntityActions(items, hoverPosition);
 
-      if (actions.length) {
+      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
+
+      actionPromise.then(actions => {
+        if (actions.length) {
         this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
         this.graphCanvas.focus();
       }
+      });
     }
   }
 
