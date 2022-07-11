@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { SankeyAbstractLinkDetailsComponent } from '../../../../abstract/entity-details/link-details.component';
 import { BaseControllerService } from '../../../../services/base-controller.service';
 import { Base } from '../../interfaces';
+import { SankeyTraceLink } from '../../../../model/sankey-document';
 
 @Component({
   selector: 'app-sankey-multi-lane-link-details',
@@ -16,5 +17,7 @@ export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractLinkDetai
   ) {
     super(baseView, route);
   }
+
+  entity: SankeyTraceLink;
 }
 

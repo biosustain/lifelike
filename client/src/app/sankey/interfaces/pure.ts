@@ -26,10 +26,29 @@ export interface SankeyNodeInterface {
   targetLinks: SankeyLinkInterface[];
   value: number;
   layer: number;
+  displayProperties?: DisplayProperty[];
 }
+
+export enum DisplayPropertyType {
+  URL = 'URL'
+}
+
+export interface BaseDisplayProperty {
+  type: DisplayPropertyType;
+}
+
+export interface LinkDisplayProperty extends BaseDisplayProperty {
+  type: DisplayPropertyType.URL;
+  title: string;
+  description?: string;
+  href: string;
+}
+
+export type DisplayProperty = LinkDisplayProperty;
 
 // preping for render
 export interface SankeyLinkInterface {
+  displayProperties?: DisplayProperty[];
   id: SankeyId;
   description: string;
   multipleValues?: [number, number];
