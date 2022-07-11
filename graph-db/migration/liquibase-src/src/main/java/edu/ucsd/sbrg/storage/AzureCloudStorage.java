@@ -62,6 +62,10 @@ public class AzureCloudStorage extends CloudStorage {
      */
     @Override
     public void downloadToFile(String fileName, String saveDir) throws IOException {
+        downloadToFile(fileName, saveDir, true);
+    }
+
+    public void downloadToFile(String fileName, String saveDir, boolean unzip) throws IOException {
         ShareFileClient fileClient = this.initStorageClient().getFileClient(fileName);
 
         // chunk download
@@ -87,9 +91,13 @@ public class AzureCloudStorage extends CloudStorage {
             System.out.printf("Downloaded %s / %s total file size\n", totalFileSize - remainingChunks, totalFileSize);
         } while (remainingChunks > 0);
 
-        ZipFile zip = new ZipFile(saveDir + "/" + fileName);
-        this.unzipFile(zip, saveDir);
+        if (unzip == true) {
+            ZipFile zip = new ZipFile(saveDir + "/" + fileName);
+            this.unzipFile(zip, saveDir);
+        }
     }
+
+
 
     /**
      * Read the byte stream into a zip stream and unzip the file.

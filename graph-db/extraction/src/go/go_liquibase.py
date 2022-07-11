@@ -1,81 +1,62 @@
-import os
-from datetime import datetime
-
+from common.liquibase_changelog_generator import *
 from common.constants import *
-from common.liquibase_utils import *
 from common.query_builder import *
 from go.go_parser import *
-
-# reference to this directory
-directory = os.path.realpath(os.path.dirname(__file__))
-
-# TODO: maybe better to parse the .tsv file in data/processed/go folder?
-NAMESPACES = ['biological_process', 'molecular_function', 'cellular_component']
-GO_EDGES = ['IS_A', 'PART_OF', 'REGULATES', 'HAS_PART', 'REPLACED_BY', 'NEGATIVELY_REGULATES', 'POSITIVELY_REGULATES', 'OCCURS_IN', 'HAPPENS_DURING', 'ENDS_DURING']
+from zipfile import ZipFile
 
 
-class GoChangeLog(ChangeLog):
-    def __init__(self, author: str, change_id_prefix: str):
-        super().__init__(author, change_id_prefix)
-        self.date_tag = datetime.today().strftime('%m%d%Y')
-        self.change_sets = []
+class GoChangeLogsGenerator(ChangeLogFileGenerator):
+    def __init__(self, author, zip_data_file: str, initial_load=True):
+        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_GO, None, initial_load)
+        self.index_quieries = []
+        self.logger = logging.getLogger(__name__)
 
-    def create_change_logs(self, initial_load=False):
-        if initial_load:
-            self.add_index_change_set()
-        self.load_go_nodes()
-        self.load_gosynonym_rels()
-        self.load_gospecific_rels()
+    def get_create_index_queries(self):
+        self.index_quieries.append(get_create_constraint_query(NODE_GO, PROP_ID))
+        self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
+        self.index_quieries.append(get_create_index_query(NODE_GO, PROP_NAME))
+        return self.index_quieries
 
-    def load_go_nodes(self):
-        for ns in NAMESPACES:
-            namespace_str = ns.title().replace('_', '')
-            id = f'load GO {namespace_str} on date {self.date_tag}'
-            if self.id_prefix:
-                id = f'{self.id_prefix} {id}'
-            comment = f'Load GO {namespace_str}'
-            query = get_create_update_nodes_query(NODE_GO, PROP_ID, NODE_ATTRS, namespace_label=ns)
-            changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GO_FILE}')
-            self.change_sets.append(changeset)
+    def add_node_changesets(self):
+        self.logger.info("add node changesets")
+        with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
+            filename = "go.tsv"
+            with zip.open(filename) as f:
+                df = pd.read_csv(f, sep='\t')
+                namespaces = df[PROP_NAMESPACE].drop_duplicates()
+                for namespace in namespaces:
+                    entity_label = namespace.title().replace('_', '')
+                    node_changeset = self.get_node_changeset(df, filename, entity_label, NODE_GO,
+                                                             row_filter_col=PROP_NAMESPACE,
+                                                             row_filter_val=namespace)
+                    self.change_sets.append(node_changeset)
 
-    def load_gosynonym_rels(self):
-        id = f'load GO synonym on date {self.date_tag}'
-        if self.id_prefix:
-            id = f'{self.id_prefix} {id}'
-        comment = f'Load GO synonym relationship'
-        query = get_create_synonym_relationships_query(NODE_GO, PROP_ID, PROP_ID, PROP_NAME)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GO_FILE}')
-        self.change_sets.append(changeset)
+    def add_synonym_changesets(self):
+        self.logger.info('add synonym changesets')
+        with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
+            filenames = zip.namelist()
+            file = "go-synonyms.tsv"
+            if file in filenames:
+                self.change_sets.append(self.get_synonym_changeset(file, NODE_GO))
 
-    def load_gospecific_rels(self):
-        for edge in GO_EDGES:
-            id = f'load GO {edge} on date {self.date_tag}'
-            if self.id_prefix:
-                id = f'{self.id_prefix} {id}'
-            comment = f'Load GO {edge} relationship'
-            query = get_create_relationships_query(NODE_GO, PROP_ID, 'from_id', NODE_GO, PROP_ID, 'to_id', edge, foreach=True, foreach_property='relationship')
-            changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{GO_RELATIONSHIP}')
-            self.change_sets.append(changeset)
+    def add_relationship_changesets(self):
+        self.logger.info('add rel changesets')
+        with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
+            filenames = zip.namelist()
+            file = "go-rels.tsv"
+            if file in filenames:
+                with zip.open(file) as f:
+                    df = pd.read_csv(f, sep='\t')
+                    changesets = self.get_relationships_changesets(df, file, NODE_GO, NODE_GO)
+                    self.change_sets += changesets
 
-    def create_indexes(self):
-        queries = []
-        queries.append(get_create_constraint_query(NODE_GO, PROP_ID, 'constraint_go_id') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name') + ';')
-        queries.append(get_create_index_query(NODE_GO, PROP_NAME, 'index_go_name') + ';')
-        return queries
 
-    def add_index_change_set(self):
-        id = f'GO data constraints on date {self.date_tag}'
-        if self.id_prefix:
-            id = f'{self.id_prefix} {id}'
-        comment = "Create constraints and indexes for GO nodes"
-        queries = self.create_indexes()
-        query_str = '\n'.join(queries)
-        changeset = ChangeSet(id, self.author, comment, query_str)
-        self.change_sets.append(changeset)
+def main():
+    task = GoChangeLogsGenerator('rcai', "go-data-04052022.zip")
+    task.add_all_change_sets()
+    task.generate_changelog_file(f"go_changelog_{task.date_tag.replace('/', '')}.xml")
 
 
 if __name__ == '__main__':
-    task = GoChangeLog('Binh Vu', 'LL-3213')
-    task.create_change_logs(True)
-    task.generate_liquibase_changelog_file('go_changelog.xml', directory)
+    main()
+

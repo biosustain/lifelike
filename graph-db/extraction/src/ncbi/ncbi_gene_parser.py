@@ -3,12 +3,13 @@ from common.constants import *
 from common.query_builder import *
 import pandas as pd
 import logging
+import os
 
 
 """
 Download ncbi genes from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/.  Parse gene_info file, and gene2go.
 
-For gene synonyms, remove any names with only one letter, and remove names that contain no non-digit characters. 
+For gene synonyms, remove any names with only one letter, and remove names that contain no non-digit characters.
 """
 
 GENE_INFO_ATTR_MAP = {

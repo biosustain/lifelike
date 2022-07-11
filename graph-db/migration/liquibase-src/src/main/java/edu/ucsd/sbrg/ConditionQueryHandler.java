@@ -82,16 +82,16 @@ public class ConditionQueryHandler implements CustomTaskChange {
     public void execute(Database database) throws CustomChangeException {
         Neo4jGraph graph = new Neo4jGraph(this.getNeo4jHost(), this.getNeo4jCredentials(), this.getNeo4jDatabase());
         Session session = graph.getSession();
-        System.out.println("Executing condition cypher query: " + this.getConditionQuery());
+        logger.info("Executing condition cypher query: " + this.getConditionQuery());
         int nodeCount = this.graphConditionCount(session, this.getConditionQuery());
-        System.out.printf("Node count before execution %s\n", nodeCount);
-        System.out.println("Executing cypher query: " + this.getQuery());
+        logger.debug(String.format("Node count before execution %s\n", nodeCount));
+        logger.debug("Executing cypher query: " + this.getQuery());
 
         try {
             while (nodeCount > 0) {
                 session.writeTransaction(tx -> tx.run(this.getQuery())).consume();
                 nodeCount = this.graphConditionCount(session, this.getConditionQuery());
-                System.out.printf("Node count after execution %s\n", nodeCount);
+                logger.debug("Node count after execution %s\n", nodeCount);
             }
         } catch (Exception e) {
             e.printStackTrace();
