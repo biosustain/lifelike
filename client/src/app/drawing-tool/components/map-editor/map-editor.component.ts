@@ -288,7 +288,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
 
-      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition, this.map.parent.hashId);
+      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
 
       actionPromise.then(actions => {
         if (actions.length) {
