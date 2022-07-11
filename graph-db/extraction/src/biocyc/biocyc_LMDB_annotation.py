@@ -1,10 +1,7 @@
 import pandas as pd
 from common.database import *
 from common.constants import *
-from common.utils import get_data_dir
-from datetime import datetime
-from common.utils import write_compressed_tsv_file_from_dataframe
-import os
+from common.utils import get_data_dir, write_compressed_tsv_file_from_dataframe
 
 def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     """
@@ -17,7 +14,9 @@ def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     """
     df = database.get_data(query)
     outfile = os.path.join(output_dir, "pseudomonasCyc_genes_for_LMDB.tsv")
+    os.makedirs(output_dir, exist_ok=True)
     df.to_csv(outfile, index=False, sep='\t')
+
 
 def generate_compound_list_for_LMDB(database, output_dir):
     """
@@ -29,17 +28,17 @@ def generate_compound_list_for_LMDB(database, output_dir):
     return n.eid as id, n.name as name, s.name as synonym,n.data_source as data_source
     """
     df = database.get_data(query)
-    datestr = datetime.now().strftime("%m%d%Y")
-    filename = f"Compound_list_for_LMDB_{datestr}.tsv"
+    filename = "Compound_list_for_LMDB.tsv"
     print("write", filename)
-    write_compressed_tsv_file_from_dataframe(df, filename, output_dir)
+    write_compressed_tsv_file_from_dataframe(df, filename, output_dir, zip_file=False)
 
 
-if __name__ == '__main__':
+def main():
     database = get_database()
-    output_dir = get_data_dir()
+    output_dir = f'{get_data_dir()}/processed/biocyc'
     generate_pseudomonas_genelist_for_LMDB(database, output_dir)
     generate_compound_list_for_LMDB(database, output_dir)
     database.close()
 
-
+if __name__ == '__main__':
+    main()

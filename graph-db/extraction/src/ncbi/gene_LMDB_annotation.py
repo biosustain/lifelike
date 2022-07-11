@@ -15,8 +15,7 @@ def write_LMDB_annotation_file(base_data_dir):
     Since the gene.info file is very big, data were loaded and write in chunks
     """
     gene_parser = GeneParser('LL-000', base_data_dir)
-    outfile = os.path.join(gene_parser.output_dir, 'gene_list_for_LMDB.tsv')
-    open(outfile, 'w').close()
+    outfile = os.path.join(gene_parser.output_dir, 'Gene_list_for_LMDB.tsv')
     gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
     geneinfo_chunks = pd.read_csv(gene_parser.gene_info_file, sep='\t', chunksize=200000, usecols=gene_info_cols)
     count = 0

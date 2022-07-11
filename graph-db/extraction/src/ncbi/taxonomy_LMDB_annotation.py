@@ -30,7 +30,7 @@ def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmenta
         replace_id_map[row['parent_id']] = row['tax_id']
     parser = TaxonomyParser('LL-000', base_dir)
     nodes = parser.parse_files()
-    outfile = os.path.join(parser.output_dir, 'species_for_LMDB.tsv')
+    outfile = os.path.join(parser.output_dir, 'Species_list_for_LMDB.tsv')
 
     with open(outfile, 'w') as f:
         f.write('tax_id\trank\tcategory\tname\tname_class\torig_tax_id\tdata_source\n')
@@ -39,7 +39,7 @@ def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmenta
                 _write_node_names(node, f, excluded_names, replace_id_map)
 
 
-def _write_node_names(tax, file, exclude_node_names=[], replace_id_map=None):
+def _write_node_names(tax, file, exclude_node_names=[], replace_id_map={}):
     """
     recursively write node names and children names
     :param tax: tax node
@@ -48,13 +48,10 @@ def _write_node_names(tax, file, exclude_node_names=[], replace_id_map=None):
     :param replace_id_map:
     :return:
     """
-    if exclude_node_names:
-        # if tax name contains the exclude_node_name, return without writing
-        for name in tax.names.keys():
-            for exclude in exclude_node_names:
-                if exclude in name:
-                    return
-    if replace_id_map and tax.tax_id in replace_id_map:
+    if any(name in exclude_node_names for name in tax.names.keys()):
+        return
+
+    if tax.tax_id in replace_id_map:
         tax.orig_id = tax.tax_id
         tax.tax_id = replace_id_map[tax.orig_id]
 
