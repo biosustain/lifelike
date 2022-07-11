@@ -12,7 +12,10 @@ import { MimeTypes } from 'app/shared/constants';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
-import { SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface, SankeyNodeInterface, SankeyState } from '../interfaces';
+import {
+  SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface,
+  SankeyNodeInterface, DisplayProperty, SankeyState
+} from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';
 import { ErrorMessages } from '../constants/error';
@@ -61,6 +64,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   source: number;
   target: number;
   group: number;
+  displayProperties?: DisplayProperty[];
 
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
@@ -242,6 +246,7 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   description?: string;
   value: number;
   order: number;
+  displayProperties?: DisplayProperty[];
 
   constructor(node, id) {
     assign(this, node);
@@ -287,6 +292,7 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
   visited?: string | number;
   order: number;
   readonly adjacentDivider = 1;
+  displayProperties?: DisplayProperty[];
 
   constructor({source, target, ...rest}, id, sankeyDocument) {
     assign(this, rest);
@@ -365,6 +371,10 @@ export class SankeyTraceLink implements SankeyLinkInterface {
 
   get label() {
     return this.originLink.label;
+  }
+
+  get displayProperties() {
+    return this.originLink.displayProperties;
   }
 
   get viewProperties() {

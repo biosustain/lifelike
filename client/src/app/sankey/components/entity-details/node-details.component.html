@@ -23,7 +23,7 @@
                     </app-button-with-selectable-text>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel *ngIf="entity.stId" [disabled]="true">
+            <ngb-panel *ngIf="entity.stId && !entity.displayProperties" [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
                     <a [href]="reactomeLink(entity.stId)"
                        class="btn btn-link w-100 d-flex align-items-center justify-content-between"
@@ -33,13 +33,23 @@
                     </a>
                 </ng-template>
             </ngb-panel>
-            <ngb-panel *ngIf="entity.biocyc_id" [disabled]="true">
+            <ngb-panel *ngIf="entity.biocyc_id && !entity.displayProperties" [disabled]="true">
                 <ng-template disabled="true" ngbPanelHeader>
                     <a [href]="biocycLink(entity.biocyc_id)"
                        class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                        target="_blank">
                         <span>BioCyc</span>
                         {{ entity.biocyc_id }}
+                    </a>
+                </ng-template>
+            </ngb-panel>
+            <ngb-panel *ngFor="let link of getLinks(entity.displayProperties)" [disabled]="true">
+                <ng-template disabled="true" ngbPanelHeader>
+                    <a [href]="link.href"
+                       class="btn btn-link w-100 d-flex align-items-center justify-content-between"
+                       target="_blank">
+                        <span>{{link.title}}</span>
+                        {{ link.description }}
                     </a>
                 </ng-template>
             </ngb-panel>
