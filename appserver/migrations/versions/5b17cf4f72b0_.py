@@ -87,7 +87,6 @@ def data_upgrades():
         for global_annotation in global_list:
             if global_annotation.type != 'inclusion':
                 continue
-            updated_global_inclusions = []
             stored_color = global_annotation['annotation']['meta']['color']
             if stored_color in colors:
                 global_annotation['annotation']['meta']['color'] = colors[stored_color]

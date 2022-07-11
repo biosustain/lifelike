@@ -447,10 +447,7 @@ def reset_password(email: str):
         html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
                                                     lastname=target.last_name,
                                                     password=new_password))
-    try:
-        SEND_GRID_API_CLIENT.send(message)
-    except Exception as e:
-        raise
+    SEND_GRID_API_CLIENT.send(message)
 
     target.set_password(new_password)
     target.forced_password_reset = True

@@ -128,7 +128,7 @@ def test_patch_file_parent_to_self(
 
     assert resp.status_code == 400
 
-    resp_data = resp.get_json()
+    resp.get_json()
 
     updated_file: Files = session.query(Files) \
         .filter(Files.id == file_in_project.id) \
@@ -171,7 +171,7 @@ def test_patch_file_parent_recursively(
 
     assert resp.status_code == 400
 
-    resp_data = resp.get_json()
+    resp.get_json()
 
     updated_parent_folder: Files = session.query(Files) \
         .filter(Files.id == file_in_project.parent.id) \

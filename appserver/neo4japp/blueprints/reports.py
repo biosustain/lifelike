@@ -70,7 +70,7 @@ class CopyrightInfringementReportView(MethodView):
         message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
         try:
             SEND_GRID_API_CLIENT.send(message)
-        except Exception as e:
+        except Exception:
             # If for some reason we cannot send a confirmation email, delete the row we just
             # created and re-raise the error.
             db.session.delete(copyright_infringement_report)

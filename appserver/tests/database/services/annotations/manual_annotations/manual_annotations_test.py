@@ -119,7 +119,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
     }
 
     with pytest.raises(AnnotationError):
-        inclusions = annotation_service.add_inclusions(
+        annotation_service.add_inclusions(
             file=file_in_project,
             user=project_owner,
             custom_annotation=custom,
@@ -148,7 +148,7 @@ def test_add_custom_annotation_inclusion_multi_word_food_limit(
     }
 
     with pytest.raises(AnnotationError):
-        inclusions = annotation_service.add_inclusions(
+        annotation_service.add_inclusions(
             file=file_in_project,
             user=project_owner,
             custom_annotation=custom,

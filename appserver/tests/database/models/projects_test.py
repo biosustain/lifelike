@@ -19,7 +19,7 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 ])
 def test_flag_invalid_projects_name(session, name):
     with pytest.raises(ValueError):
-        project = Projects(
+        Projects(
             name=name,
             description='description',
         )
@@ -48,7 +48,7 @@ def test_can_add_projects(session, name, test_user):
     session.flush()
 
     proj = Projects.query.filter_by(name=name).one()
-    assert project.name == name
+    assert proj.name == name
 
 
 @pytest.mark.parametrize('name, user_fks', [

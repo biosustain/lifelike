@@ -55,7 +55,7 @@ def teardown():
 def create_empty_lmdb(path_to_folder: str, db_name: str):
     map_size = 1099511627776
     env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
-    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    env.open_db(db_name.encode('utf-8'), dupsort=True)
     env.close()
 
 

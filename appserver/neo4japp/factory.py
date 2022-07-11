@@ -297,9 +297,8 @@ def handle_validation_error(code, error: ValidationError, messages=None):
         message = 'An error occurred with the provided input.'
 
     ex = ServerException(message=message, code=code, fields=fields)
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-
     ex.version = GITHUB_HASH
+
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 

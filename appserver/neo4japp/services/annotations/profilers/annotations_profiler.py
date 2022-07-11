@@ -39,20 +39,23 @@ def cprofiled():
     pr.enable()
     yield
     pr.disable()
-    s = io.StringIO()
 
     try:
         log_path = os.path.join(directory, 'results')
         os.makedirs(log_path)
     except FileExistsError:
         pass
-    file_name = f'{log_path}/{datetime.now().isoformat()}-annotations.dmp'
-    # ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
-    ps = pstats.Stats(pr, stream=s).dump_stats(file_name)
-    # ps.print_stats()
-    # uncomment this to see who's calling what
-    # ps.print_callers()
-    # print(s.getvalue())
+
+    """
+    >>> s = io.StringIO()
+    >>> file_name = f'{log_path}/{datetime.now().isoformat()}-annotations.dmp'
+    >>> ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+    >>> ps = pstats.Stats(pr, stream=s).dump_stats(file_name)
+    >>> ps.print_stats()
+    >>> # uncomment this to see who's calling what
+    >>> ps.print_callers()
+    >>> print(s.getvalue())
+    """
 
 
 def main():

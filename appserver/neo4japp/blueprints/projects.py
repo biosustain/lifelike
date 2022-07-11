@@ -244,7 +244,7 @@ class ProjectBaseView(MethodView):
         if len(changed_fields):
             try:
                 db.session.commit()
-            except IntegrityError as e:
+            except IntegrityError:
                 db.session.rollback()
                 raise ValidationError("The project name is already taken.")
 
