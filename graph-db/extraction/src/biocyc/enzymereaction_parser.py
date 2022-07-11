@@ -1,4 +1,4 @@
-from biocyc.base_data_file_parser import BaseDataFileParser
+from biocyc.data_file_parser import DataFileParser
 from common.graph_models import *
 
 
@@ -13,12 +13,12 @@ REL_NAMES = {
 }
 
 
-class EnzymeReactionParser(BaseDataFileParser):
-    def __init__(self, db_name, tarfile, base_data_dir):
-        BaseDataFileParser.__init__(self, base_data_dir,  db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION,ATTR_NAMES, REL_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME]
+class EnzymeReactionParser(DataFileParser):
+    def __init__(self, db_name, tarfile):
+        DataFileParser.__init__(self, db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION,ATTR_NAMES, REL_NAMES)
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
-    def create_synonym_rels(self) -> bool:
-        return True
+    def write_synonyms_file(self, nodes, outfile):
+        return None
 
 

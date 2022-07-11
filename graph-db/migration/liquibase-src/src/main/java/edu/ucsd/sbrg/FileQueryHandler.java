@@ -166,9 +166,9 @@ public class FileQueryHandler implements CustomTaskChange {
                 if (cloudStorage.fileExists(prefixName)) {
                     fileExtract.setFileName(prefixName);
                 }
-                System.out.println("Downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
+                logger.info("Downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
                 cloudStorage.downloadToFile(fileExtract.getFileName(), fileExtract.getFileDir());
-                System.out.println("Finished downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
+                logger.info("Finished downloading file " + fileExtract.getFileName() + " from Azure Cloud.");
             }
             FileInputStream input = new FileInputStream(fileExtract.getFilePath());
             Scanner sc = new Scanner(input);
@@ -191,7 +191,7 @@ public class FileQueryHandler implements CustomTaskChange {
                                 String output = "Encountered error! Set startAt to line " +
                                         (processed + 1) + " (last value processed in file: " + lastProcessedLine +
                                         ") to pick up where left off.";
-                                System.out.println(output);
+                                logger.error(output);
                                 throw new CustomChangeException();
                             }
                             processed += content.size();

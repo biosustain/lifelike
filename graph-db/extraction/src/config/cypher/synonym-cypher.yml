@@ -1,0 +1,3 @@
+synonym_fulltext_index:
+  description: create synonym fulltext index
+  query: call db.index.fulltext.createNodeIndex("synonymIdx", ["Synonym"], ["name"]);

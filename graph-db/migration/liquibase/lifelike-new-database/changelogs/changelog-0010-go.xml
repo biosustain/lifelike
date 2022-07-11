@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="Create GO constraints and indexes" author="rcai">
+    <comment>Create constraints and indexes for GO nodes, created on 04/05/2022</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_db_GO_eid IF NOT EXISTS ON (n:db_GO) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_Synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+CREATE INDEX index_Synonym_lowercase_name IF NOT EXISTS FOR (n:Synonym) ON (n.lowercase_name);
+CREATE INDEX index_db_GO_name IF NOT EXISTS FOR (n:db_GO) ON (n.name);
+    </sql>
+  </changeSet>
+
+  <changeSet id="load BiologicalProcess from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        load GO go.tsv from go-data-04052022.zip, 47273 rows
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+with row where row.namespace='biological_process'
+MERGE (n:db_GO {eid: row.eid})
+SET n:BiologicalProcess,n.name=row.name,n.description=row.description,n.obsolete=row.obsolete,n.alt_id=row.alt_id,n.namespace=row.namespace,n.data_source='GO'
+      "
+      fileName="go.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load MolecularFunction from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        load GO go.tsv from go-data-04052022.zip, 47273 rows
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+with row where row.namespace='molecular_function'
+MERGE (n:db_GO {eid: row.eid})
+SET n:MolecularFunction,n.name=row.name,n.description=row.description,n.obsolete=row.obsolete,n.alt_id=row.alt_id,n.namespace=row.namespace,n.data_source='GO'
+      "
+      fileName="go.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load CellularComponent from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        load GO go.tsv from go-data-04052022.zip, 47273 rows
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+with row where row.namespace='cellular_component'
+MERGE (n:db_GO {eid: row.eid})
+SET n:CellularComponent,n.name=row.name,n.description=row.description,n.obsolete=row.obsolete,n.alt_id=row.alt_id,n.namespace=row.namespace,n.data_source='GO'
+      "
+      fileName="go.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load db_GO synonyms from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load GO go-synonyms.tsv from go-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+MERGE (a:Synonym {name: row.name}) SET a.lowercase_name=toLower(row.name)
+WITH row, a MATCH (b:db_GO {eid: row.eid})
+MERGE (b)-[r:HAS_SYNONYM]->(a)
+      "
+      fileName="go-synonyms.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load IS_A relationship in go-rels.tsv from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load GO IS_A relationships, go-rels.tsv from go-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='IS_A'
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+MERGE (a)-[r:IS_A]->(b)
+RETURN COUNT(*)
+      "
+      fileName="go-rels.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load REPLACED_BY relationship in go-rels.tsv from go-data-04052022.zip, date 04/05/2022" author="rcai">
+    <comment>
+        Load GO REPLACED_BY relationships, go-rels.tsv from go-data-04052022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='REPLACED_BY'
+MATCH (a:db_GO {eid: row.from_id}), (b:db_GO {eid: row.to_id})
+MERGE (a)-[r:REPLACED_BY]->(b)
+RETURN COUNT(*)
+      "
+      fileName="go-rels.tsv"
+      zipFileName="go-data-04052022.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+</databaseChangeLog>

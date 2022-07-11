@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="Create None constraints and indexes" author="rcai">
+    <comment>Create constraints and indexes for None nodes, created on 04/05/2022</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_Synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+CREATE INDEX index_Synonym_lowercase_name IF NOT EXISTS FOR (n:Synonym) ON (n.lowercase_name);
+    </sql>
+  </changeSet>
+
+  <changeSet id="synonym_fulltext_index, data 04/05/2022" author="rcai">
+    <comment>create synonym fulltext index</comment>
+    <sql>
+    call db.index.fulltext.createNodeIndex("synonymIdx", ["Synonym"], ["name"]);
+    </sql>
+  </changeSet>
+</databaseChangeLog>
