@@ -66,7 +66,7 @@ def data_upgrades():
         ).values(annotation=new_annotation))
         logging.debug(f'Modified annotation: {new_annotation}')
 
-    logging.debug(f'Completed modifications')
+    logging.debug('Completed modifications')
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""

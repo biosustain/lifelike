@@ -292,7 +292,7 @@ def test_get_file_missing(
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.get(
-        f'/filesystem/objects/test_get_file_missing',
+        '/filesystem/objects/test_get_file_missing',
         headers=headers,
         content_type='application/json'
     )
@@ -518,7 +518,7 @@ def test_patch_file_missing(
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.patch(
-        f'/filesystem/objects/test_get_file_missing',
+        '/filesystem/objects/test_get_file_missing',
         headers=headers,
         json={
             'filename': 'whatever, man',
@@ -569,7 +569,7 @@ def test_bulk_patch_files_permitted(
     assert original_filename != new_filename
 
     resp = client.patch(
-        f'/filesystem/objects',
+        '/filesystem/objects',
         headers=headers,
         json={
             'hashIds': [
@@ -633,7 +633,7 @@ def test_bulk_patch_files(
     make_transient(original_file)
 
     resp = client.patch(
-        f'/filesystem/objects',
+        '/filesystem/objects',
         headers=headers,
         json={
             'hashIds': [
@@ -664,7 +664,7 @@ def test_bulk_patch_files_missing(
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.patch(
-        f'/filesystem/objects',
+        '/filesystem/objects',
         headers=headers,
         json={
             'hashIds': [

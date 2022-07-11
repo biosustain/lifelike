@@ -61,7 +61,7 @@ def test_upload_file_mime_type_detection(
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.post(
-        f'/filesystem/objects',
+        '/filesystem/objects',
         headers=headers,
         content_type='multipart/form-data',
         data={
@@ -109,7 +109,7 @@ def test_upload_file_with_blocked_ext(
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.post(
-        f'/filesystem/objects',
+        '/filesystem/objects',
         headers=headers,
         content_type='multipart/form-data',
         data={

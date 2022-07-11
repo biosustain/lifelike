@@ -53,7 +53,7 @@ class LMDBConnection(DatabaseConnection):
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message='Encountered unexpected error connecting to LMDB.')
 
         try:
             """
@@ -80,4 +80,4 @@ class LMDBConnection(DatabaseConnection):
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message='Encountered unexpected error connecting to LMDB.')

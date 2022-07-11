@@ -324,7 +324,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                     extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
                 )
                 raise ServerException(
-                    title=f'Cannot Get Filepath',
+                    title='Cannot Get Filepath',
                     message=f'Could not find parent of file {self.filename}.',
                 )
         return file_path[::-1]
@@ -348,7 +348,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                 extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
             )
             raise ServerException(
-                title=f'Cannot Get Project of File',
+                title='Cannot Get Project of File',
                 message=f'Could not find project of file {self.filename}.',
             )
 

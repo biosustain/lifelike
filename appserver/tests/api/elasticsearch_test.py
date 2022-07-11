@@ -72,7 +72,7 @@ def test_user_can_search_content(
         return_value=({'hits': {'hits': [], 'total': 0}}, [], {})
     ) as mock_search:
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': 'BOLA3',
@@ -144,7 +144,7 @@ def test_user_can_search_content_with_advanced_args(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': 'BOLA3',
@@ -220,7 +220,7 @@ def test_user_can_search_content_with_single_types(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': '',
@@ -285,7 +285,7 @@ def test_user_can_search_content_with_multiple_types(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': '',
@@ -358,11 +358,11 @@ def test_user_can_search_content_with_project(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': '',
-                'projects': f'{fix_project.name}',
+                'projects': fix_project.name,
                 'limit': 10,
                 'page': 1
             },
@@ -430,7 +430,7 @@ def test_user_can_search_content_with_phrase(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': '',
@@ -503,7 +503,7 @@ def test_user_can_search_content_with_wildcard(
     ) as mock_search:
 
         resp = client.post(
-            f'/search/content',
+            '/search/content',
             headers=headers,
             data={
                 'q': 'B*3',

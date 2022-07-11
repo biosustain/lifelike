@@ -198,7 +198,7 @@ def _check_acceptable_response(accept_header, content_type_header):
             if re.fullmatch(re.sub('[\\.\\+\\*]', mime_char_repl, type), content_type):
                 return content_type
     raise UnsupportedMediaTypeError(
-        f'Response Content-Type does not match the requested type: ' +
+        'Response Content-Type does not match the requested type: ' +
         f'{content_type_header} vs. {accept_header}'
     )
 

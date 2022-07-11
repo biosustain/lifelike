@@ -571,14 +571,14 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
 
     # Check if the user can even upload this type of file
     if not provider.can_create():
-        raise ValidationError(f"The provided file type is not accepted.")
+        raise ValidationError('The provided file type is not accepted.')
 
     # Validate the content
     try:
         provider.validate_content(buffer)
         buffer.seek(0)  # Must rewind
     except ValueError as e:
-        raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+        raise ValidationError(f'The provided file may be corrupt: {str(e)}')
 
     # Get the DOI
     file.doi = provider.extract_doi(buffer)

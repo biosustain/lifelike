@@ -88,7 +88,7 @@ class VisualizerService(KgService):
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError:
             current_app.logger.warning(
-                f'url_map did not contain the expected key value for node with:\n' +
+                'url_map did not contain the expected key value for node with:\n' +
                 f'\tID: {id}\n'
                 f'\tLabel: {label}\n' +
                 f'\tURI: {entity_id}\n'

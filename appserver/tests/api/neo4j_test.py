@@ -34,7 +34,7 @@ def test_get_reference_table_data(
             'node_edge_pairs': [
                 {
                     'node': {
-                        'id': f'duplicateNode:1',
+                        'id': 'duplicateNode:1',
                         'label': 'Chemical',
                         'data': {},
                         'sub_labels': [],

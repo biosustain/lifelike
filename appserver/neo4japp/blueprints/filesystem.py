@@ -388,7 +388,7 @@ class FilesystemBaseView(MethodView):
             # Prevent recursive parent hash IDs
             if parent_file.hash_id in [file.hash_id for file in target_files]:
                 raise ValidationError(
-                    f'An object cannot be set as the parent of itself.',
+                    'An object cannot be set as the parent of itself.',
                     'parentHashId'
                 )
 
@@ -396,8 +396,8 @@ class FilesystemBaseView(MethodView):
             if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(
                     f'The specified parent ({parent_file.hash_id}) is '
-                    f'not a folder. It is a file, and you cannot make files '
-                    f'become a child of another file.', 'parentHashId'
+                    'not a folder. It is a file, and you cannot make files '
+                    'become a child of another file.', 'parentHashId'
                 )
             files_to_check.append(parent_file)
 
@@ -429,7 +429,7 @@ class FilesystemBaseView(MethodView):
                     # Re-check referential parent
                     if file.id == parent_file.id:
                         raise ValidationError(f'A file or folder ({file.filename}) cannot be '
-                                              f'set as the parent of itself.', "parentHashId")
+                                              'set as the parent of itself.', "parentHashId")
 
                     # TODO: Check max hierarchy depth
 
@@ -627,7 +627,7 @@ class FileHierarchyView(FilesystemBaseView):
         Fetches a representation of the complete file hierarchy accessible by the current user.
         """
         current_app.logger.info(
-            f'Attempting to generate file hierarchy...',
+            'Attempting to generate file hierarchy...',
             extra=UserEventLog(
                 username=g.current_user.username,
                 event_type=LogEventType.FILESYSTEM.value
@@ -689,7 +689,7 @@ class FileHierarchyView(FilesystemBaseView):
         results = [generate_node_tree(file_id, ***ARANGO_USERNAME***[file_id]) for file_id in ***ARANGO_USERNAME***]
 
         current_app.logger.info(
-            f'Generated file hierarchy!',
+            'Generated file hierarchy!',
             extra=UserEventLog(
                 username=g.current_user.username,
                 event_type=LogEventType.FILESYSTEM.value
@@ -824,14 +824,14 @@ class FileListView(FilesystemBaseView):
 
             # Check if the user can even upload this type of file
             if not provider.can_create():
-                raise ValidationError(f"The provided file type is not accepted.")
+                raise ValidationError('The provided file type is not accepted.')
 
             # Validate the content
             try:
                 provider.validate_content(buffer)
                 buffer.seek(0)  # Must rewind
             except ValueError as e:
-                raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+                raise ValidationError(f'The provided file may be corrupt: {str(e)}')
 
             # Get the DOI
             file.doi = provider.extract_doi(buffer)
@@ -918,7 +918,7 @@ class FileListView(FilesystemBaseView):
 
         if parent_hash_id in target_hash_ids:
             raise ValidationError(
-                f'An object cannot be set as the parent of itself.',
+                'An object cannot be set as the parent of itself.',
                 'parentHashId'
             )
         if parent_hash_id is not None:
@@ -1190,7 +1190,7 @@ class FileDetailView(FilesystemBaseView):
 
         if hash_id == parent_hash_id:
             raise ValidationError(
-                f'An object cannot be set as the parent of itself.',
+                'An object cannot be set as the parent of itself.',
                 'parentHashId'
             )
 
@@ -1251,8 +1251,9 @@ class MapContentView(FilesystemBaseView):
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
         if file.mime_type != FILE_MIME_TYPE_MAP:
-            raise ValidationError(f'Cannot retrieve map content from file with mime type: '
-                                  f'{file.mime_type}')
+            raise ValidationError(
+                f'Cannot retrieve map content from file with mime type: {file.mime_type}'
+            )
 
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
@@ -1342,7 +1343,7 @@ class FileExportView(FilesystemBaseView):
                         except RecordNotFound:
                             current_app.logger.info(
                                 f'Map file: {map_hash} requested for linked '
-                                f'export does not exist.',
+                                'export does not exist.',
                                 extra=UserEventLog(
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()

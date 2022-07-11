@@ -61,7 +61,7 @@ class EnrichmentTableService(KgService):
                             cell_texts.append({'text': v['Function']['text'], 'index': i, 'domain': k, 'label': 'Function'})  # noqa
             except KeyError:
                 current_app.logger.error(
-                    f'Missing key when creating enrichment table text row/column mapping.',
+                    'Missing key when creating enrichment table text row/column mapping.',
                     extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
                 )
                 continue

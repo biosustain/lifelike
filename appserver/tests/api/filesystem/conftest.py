@@ -29,10 +29,10 @@ def project_owner_user(
         login_password: str) -> AppUser:
     user = AppUser(
         username='project owner',
-        email=f'somebody@***ARANGO_DB_NAME***.bio',
+        email='somebody@***ARANGO_DB_NAME***.bio',
         first_name='joe',
         last_name='taylor',
-        subject=f'somebody@***ARANGO_DB_NAME***.bio',
+        subject='somebody@***ARANGO_DB_NAME***.bio',
     )
     user.set_password(login_password)
     session.add(user)
@@ -80,10 +80,10 @@ def user_with_project_roles(
 
     user = AppUser(
         username='user_with_project_roles',
-        email=f'somehow@***ARANGO_DB_NAME***.bio',
+        email='somehow@***ARANGO_DB_NAME***.bio',
         first_name='erica',
         last_name='samuel',
-        subject=f'somehow@***ARANGO_DB_NAME***.bio',
+        subject='somehow@***ARANGO_DB_NAME***.bio',
     )
     user.set_password(login_password)
     user.roles.extend([account_user.get_or_create_role(role_name)

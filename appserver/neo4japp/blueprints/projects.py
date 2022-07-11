@@ -469,10 +469,10 @@ class ProjectCollaboratorsListView(ProjectBaseView):
             .all()
 
         if len(target_users) != len(user_hash_ids):
-            raise ValidationError(f"One or more specified users does not exist.")
+            raise ValidationError('One or more specified users does not exist.')
 
         if len(roles) != len(role_names):
-            raise ValidationError(f"One or more specified roles does not exist.")
+            raise ValidationError('One or more specified roles does not exist.')
 
         user_map = {}
         for user in target_users:
@@ -486,7 +486,7 @@ class ProjectCollaboratorsListView(ProjectBaseView):
         if not private_data_access:
             for user in target_users:
                 if user.id == current_user.id:
-                    raise ValidationError(f"You cannot edit yourself.")
+                    raise ValidationError('You cannot edit yourself.')
 
         for entry in params['update_or_create']:
             proj_service.edit_collaborator(user_map[entry['user_hash_id']],

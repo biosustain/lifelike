@@ -89,7 +89,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     @validates('name')
     def validate_name(self, key, name):
         if not re.match(r'^[\w\-()\[\]+{}^%$!.,\'@# ]+$', name) or re.match(r'^\s|\s$', name):
-            raise ValueError(f'incorrect project name format')
+            raise ValueError('incorrect project name format')
         return name
 
     @classmethod
@@ -240,7 +240,7 @@ def after_project_update(mapper: Mapper, connection: Connection, target: Project
         files_to_update = [member.hash_id for member in family]
 
         current_app.logger.info(
-            f'Attempting to update files in elastic with hash_ids: ' +
+            'Attempting to update files in elastic with hash_ids: ' +
             f'{files_to_update}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
