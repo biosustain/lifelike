@@ -37,6 +37,7 @@ import { MimeTypes } from 'app/shared/constants';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
+import { GraphActionsService } from '../services/graph-actions.service';
 
 @Component({
   selector: 'app-map',
@@ -86,7 +87,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
     readonly mapImageProviderService: MapImageProviderService,
-    readonly objectTypeService: ObjectTypeService
+    readonly objectTypeService: ObjectTypeService,
+    readonly graphActionsService: GraphActionsService
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([

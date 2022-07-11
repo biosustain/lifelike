@@ -180,7 +180,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * image status on the server in order to send only new images
    * @private
    */
-  private savedImageHashes: Set<string>;
+  private savedImageHashes: Set<string> = new Set<string>();
 
 
   constructor() {

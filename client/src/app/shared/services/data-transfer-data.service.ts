@@ -18,6 +18,7 @@ export class DataTransferDataService {
     for (const provider of providers) {
       data.push(...provider.extract(dataTransfer));
     }
+
     return data;
   }
 }

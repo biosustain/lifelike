@@ -24,6 +24,7 @@ import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
+import { GraphActionsService } from '../services/graph-actions.service';
 
 @Component({
   selector: 'app-map-view',
@@ -57,11 +58,12 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
               mapImageProviderService: MapImageProviderService,
+              graphActionsService: GraphActionsService,
               public readonly progressDialog: ProgressDialog,
               protected readonly moduleContext: ModuleContext) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
-      mapImageProviderService, objectTypeService);
+      mapImageProviderService, objectTypeService, graphActionsService);
     moduleContext.register(this);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {

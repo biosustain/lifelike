@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
-import { IMAGE_LABEL, SizeUnits } from 'app/shared/constants';
+import { IMAGE_DEFAULT_SIZE, SizeUnits, IMAGE_LABEL } from 'app/shared/constants';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -12,7 +12,6 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
   protected readonly maxFileSize = 20;
-  protected readonly pasteSize = 300;
 
   constructor(protected readonly graphView: CanvasGraphView,
               protected readonly mapImageProvider: MapImageProviderService,
@@ -107,7 +106,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
       const imageId = makeid();
       this.mapImageProvider.doInitialProcessing(imageId, file).subscribe(dimensions => {
         // Scale smaller side up to 300 px
-        const ratio = this.pasteSize / Math.min(dimensions.width, dimensions.height);
+        const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
         this.graphView.execute(new NodeCreation(
         `Insert image`, {
           hash: uuidv4(),
