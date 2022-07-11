@@ -8,7 +8,7 @@
             <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
         </app-module-error>
     </ng-container>
-    <app-module-header *ngIf="map" [object]="map" (dragStarted)="dragStarted($event)">
+    <app-module-header *ngIf="map" [object]="map" [dragTitleData$]="dragTitleData$">
                 <app-module-menu [object]="map" [forEditing]="false"
                                  [showOpen]="false" [showDelete]="false">
                 </app-module-menu>

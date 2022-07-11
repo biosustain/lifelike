@@ -39,3 +39,8 @@ export const selectRoles = createSelector(
         return user ? user.roles : [];
     }
 );
+
+export const selectAuthErrorMessage = createSelector(
+  selectAuthState,
+  fromAuth.getErrorMessage,
+);

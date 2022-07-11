@@ -2,8 +2,8 @@
      appContextMenu
      cdkDrag
      [cdkDragData]="tab"
-     (cdkDragMoved)="cdkDragMoved($event)"
-     (cdkDragReleased)="cdkDragReleased($event)">
+     (cdkDragMoved)="drag.cdkDragMoved($event)"
+     (cdkDragReleased)="drag.cdkDragReleased($event)">
   <div class="nav-link d-flex text-truncate" [class.active]="active" (click)="tabClick.emit()">
     <div class="d-block d-flex align-items-center text-truncate mr-2">
       <span class="d-block text-truncate" [appTextTruncateToTooltip]="tab.title" [scroll$]="scroll$">

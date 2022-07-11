@@ -420,7 +420,8 @@ ICON_NODES = ['map', 'link', 'note']
 DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
-MAX_ALLOWED_LOGIN_FAILURES = 5
+# This can be customized to disable login lockouts by setting the value to <= 0
+MAX_ALLOWED_LOGIN_FAILURES = int(os.getenv('MAX_ALLOWED_LOGIN_FAILURES', '6'))
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
@@ -455,6 +456,9 @@ MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
 BYTE_ENCODING = 'utf-8'
 
+# Start filesystem API constants
+MAX_FILE_SIZE = 1024 * 1024 * 300
+URL_FETCH_TIMEOUT = 10
 MAX_FILE_DESCRIPTION_LENGTH = 5000
 
 # Start constants for Files updates
@@ -493,3 +497,7 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'organism_synonym',
     'organism_taxonomy_id'
 ]
+
+SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
+SEED_FILE_KEY_USER = 'neo4japp.models.AppUser'
+SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'

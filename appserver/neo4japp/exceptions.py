@@ -240,6 +240,23 @@ class UnsupportedMediaTypeError(ServerException):
             code=code)
 
 
+class AuthenticationError(ServerException):
+    """Signals that the client sent a request with invalid credentials."""
+
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.UNAUTHORIZED
+    ):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
 # TODO: finish this
 # class FilesystemAccessRequestRequired(ServerException):
 #     """

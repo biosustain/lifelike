@@ -236,16 +236,7 @@ export class AuthEffects {
       return this.authService.login(email, password).pipe(
         map(user => AuthActions.loginSuccess({user: user.user})),
         catchError((err: HttpErrorResponse) => {
-          const error = (err.error as ErrorResponse).message;
-          return from([
-            SnackbarActions.displaySnackbar({
-              payload: {
-                message: error,
-                action: 'Dismiss',
-                config: {duration: 10000},
-              },
-            }),
-          ]);
+          return from([AuthActions.loginFailure({ message: (err.error as ErrorResponse).message })]);
         }),
       );
     })),

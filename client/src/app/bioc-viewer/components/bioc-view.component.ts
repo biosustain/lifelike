@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -22,6 +22,7 @@ import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 declare var jQuery: any;
 
@@ -29,9 +30,80 @@ declare var jQuery: any;
   selector: 'app-bioc-viewer',
   templateUrl: './bioc-view.component.html',
   styleUrls: ['./bioc-view.component.scss'],
+  providers: [
+    ModuleContext
+  ]
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
-  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
+
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly fileObjectActions: FilesystemObjectActions,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected readonly route: ActivatedRoute,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly workSpaceManager: WorkspaceManager,
+    protected readonly _elemenetRef: ElementRef,
+    protected readonly moduleContext: ModuleContext
+  ) {
+    moduleContext.register(this);
+
+    this.loadTask = new BackgroundTask(([hashId]) => {
+      return combineLatest(
+        this.filesystemService.get(hashId),
+        this.filesystemService.getContent(hashId).pipe(
+          mapBlobToBuffer(),
+          mapBufferToJsons()
+        )
+      );
+    });
+
+    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+      this.returnUrl = params.return;
+    });
+
+    // Listener for file open
+    this.openbiocSub = this.loadTask.results$.subscribe(({
+                                                           result: [object, content],
+                                                           value: [file],
+                                                         }) => {
+      this.biocData = content.splice(0, 1);
+      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
+      if (ref > -1) {
+        // then insert here the References Title
+        const referencesTitleObj: any = {};
+        referencesTitleObj.infons = {
+          section_type: 'INTRO',
+          type: 'title_1'
+        };
+        referencesTitleObj.offset = 0;
+        referencesTitleObj.annotations = [];
+        referencesTitleObj.text = 'References';
+        ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
+      }
+      this.object = object;
+      this.emitModuleProperties();
+
+      this.currentFileId = object.hashId;
+      this.ready = true;
+    });
+
+    this.openStatusSub = this.loadTask.status$.subscribe((data) => {
+      if (data.resultsShown) {
+        const fragment = (this.route.snapshot.fragment || '');
+        if (fragment.indexOf('offset') >= 0) {
+          setTimeout(() => {
+            this.scrollInOffset(this.parseLocationFromUrl(fragment));
+          }, 1000);
+        }
+      }
+    });
+
+    this.loadFromUrl();
+  }
+  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
     read: SearchControlComponent,
@@ -87,70 +159,25 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedText = '';
   createdNode;
 
-  constructor(
-    protected readonly filesystemService: FilesystemService,
-    protected readonly fileObjectActions: FilesystemObjectActions,
-    protected readonly snackBar: MatSnackBar,
-    protected readonly modalService: NgbModal,
-    protected readonly route: ActivatedRoute,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly progressDialog: ProgressDialog,
-    protected readonly workSpaceManager: WorkspaceManager,
-    protected readonly _elemenetRef: ElementRef
-  ) {
-    this.loadTask = new BackgroundTask(([hashId]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJsons()
-        )
-      );
-    });
-
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
-      this.returnUrl = params.return;
-    });
-
-    // Listener for file open
-    this.openbiocSub = this.loadTask.results$.subscribe(({
-      result: [object, content],
-      value: [file],
-    }) => {
-      this.biocData = content.splice(0, 1);
-      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
-      if (ref > -1) {
-        // then insert here the References Title
-        const referencesTitleObj: any = {};
-        referencesTitleObj.infons = {
-          section_type: 'INTRO',
-          type: 'title_1'
-        };
-        referencesTitleObj.offset = 0;
-        referencesTitleObj.annotations = [];
-        referencesTitleObj.text = 'References';
-        ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
-      }
-      this.object = object;
-      this.emitModuleProperties();
-
-      this.currentFileId = object.hashId;
-      this.ready = true;
-    });
-
-    this.openStatusSub = this.loadTask.status$.subscribe((data) => {
-      if (data.resultsShown) {
-        const fragment = (this.route.snapshot.fragment || '');
-        if (fragment.indexOf('offset') >= 0) {
-          setTimeout(() => {
-            this.scrollInOffset(this.parseLocationFromUrl(fragment));
-          }, 1000);
-        }
-      }
-    });
-
-    this.loadFromUrl();
-  }
+  dragTitleData$ = defer(() => of({
+    'text/plain': this.object.filename,
+    'application/lifelike-node': JSON.stringify({
+      display_name: this.object.filename,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.object.hashId + '',
+        }],
+        sources: [{
+          domain: this.object.filename,
+          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
+            'files', encodeURIComponent(this.object.hashId)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>)
+  }));
 
   getFigureCaption(passage) {
     return passage.infons.id || 'Fig';
@@ -418,27 +445,6 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
-  }
-
-  dragStarted(event: DragEvent) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', this.object.filename);
-    dataTransfer.setData('application/lifelike-node', JSON.stringify({
-      display_name: this.object.filename,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId + '',
-        }],
-        sources: [{
-          domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
-            'files', encodeURIComponent(this.object.hashId)].join('/'),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
   }
 
   @HostListener('dragend', ['$event'])

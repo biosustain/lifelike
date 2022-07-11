@@ -1,12 +1,17 @@
-import urllib.request
 from contextlib import contextmanager
-from urllib.error import URLError, HTTPError
-
 import httpretty
 import pytest
+from urllib.error import URLError, HTTPError
 
-from neo4japp.utils.network import URLFixerHandler, DirectDownloadDetectorHandler, read_url, \
-    ControlledConnectionMixin, ContentTooLongError
+from neo4japp.exceptions import UnsupportedMediaTypeError
+from neo4japp.utils.network import (
+    ContentTooLongError,
+    ControlledConnectionMixin,
+    DirectDownloadDetectorHandler,
+    URLFixerHandler,
+    read_url,
+    _check_acceptable_response,
+)
 
 
 @contextmanager
@@ -32,9 +37,7 @@ def test_read_url():
 def test_read_url_has_custom_user_agent():
     with monkey_patch_controlled_conn():
         httpretty.register_uri(httpretty.GET, 'http://example.com', body='hello')
-        read_url(urllib.request.Request('http://example.com', headers={
-            'User-Agent': 'some test',
-        }), max_length=1000)
+        read_url('http://example.com', headers={'User-Agent': 'some test'}, max_length=1000)
         assert 'some test' == httpretty.last_request().headers['User-Agent']
 
 
@@ -223,3 +226,55 @@ def test_direct_download_handler(url_pair):
     assert DirectDownloadDetectorHandler.rewrite_url(url_pair[0]) == url_pair[1]
     # Testing to make should that double rewriting should not rewrite further
     assert DirectDownloadDetectorHandler.rewrite_url(url_pair[1]) == url_pair[1]
+
+
+@pytest.mark.parametrize('req_headers, resp_headers, expected', [
+    ({'Accept': 'a/b;c=d, e/*'}, {'Content-Type': 'a/b;c=d'}, 'a/b'),
+    ({'Accept': 'a/b;c=d,e/*'}, {'Content-Type': 'a/b;c=dd'}, 'a/b'),
+    ({'Accept': 'a/b;c=d, e/*'}, {'Content-Type': 'e/f'}, 'e/f'),
+    ({'Accept': 'application/pdf'}, {'Content-Type': 'application/pdf'}, 'application/pdf'),
+    (
+        {'Accept': 'application/pdf;q=0.7'},
+        {'Content-Type': 'application/pdf;charset=UTF-8'},
+        'application/pdf'
+    ),
+    ({'Accept': 'application/json, text/plain'}, {'Content-Type': 'text/plain'}, 'text/plain'),
+    ({'Accept': 'application/json,text/plain'}, {'Content-Type': 'text/plain'}, 'text/plain'),
+    (
+        {'Accept': 'application/vnd.ms-powerpoint'},
+        {'Content-Type': 'application/vnd.ms-powerpoint'},
+        'application/vnd.ms-powerpoint'
+    ),
+    ({'Accept': 'image/svg+xml'}, {'Content-Type': 'image/svg+xml'}, 'image/svg+xml'),
+    ({'Accept': 'image/*'}, {'Content-Type': 'image/gif'}, 'image/gif'),
+    ({'Accept': '*/*'}, {'Content-Type': 'image/jpeg'}, 'image/jpeg'),
+])
+def test_check_acceptable_response_can_match(req_headers, resp_headers, expected):
+    accept_header = req_headers.get('Accept', None)
+    content_type_header = resp_headers.get('Content-Type', None)
+    assert _check_acceptable_response(accept_header, content_type_header) == expected
+
+
+@pytest.mark.parametrize('req_headers, resp_headers, expected', [
+    ({'Accept': 'a/b;c=d, e/*'}, {'Content-Type': 'a/c'}, 'a/b'),
+    ({'Accept': 'a/b;c=d, e/*'}, {'Content-Type': 'c/d'}, 'a/b'),
+    ({'Accept': 'application/json'}, {'Content-Type': 'text/plain'}, 'application/json'),
+    (
+        {'Accept': 'application/json;q=0.7'},
+        {'Content-Type': 'text/plain;charset=UTF-8'},
+        'application/json'
+    ),
+    (
+        {'Accept': 'application/vnd.ms-powerpoint'},
+        {'Content-Type': 'application/vnd@ms-powerpoint'},
+        'application/vnd.ms-powerpoint'
+    ),
+    ({'Accept': 'image/svg+xml'}, {'Content-Type': 'image/svggggggxml'}, 'image/svg+xml'),
+    ({'Accept': 'image/svg+xml'}, {'Content-Type': 'image/jpeg'}, 'image/svg+xml'),
+    ({'Accept': 'image/svg+xml'}, {'Content-Type': None}, 'image/svg+xml'),
+])
+def test_check_acceptable_response_can_throw(req_headers, resp_headers, expected):
+    with pytest.raises(UnsupportedMediaTypeError):
+        accept_header = req_headers.get('Accept', None)
+        content_type_header = resp_headers.get('Content-Type', None)
+        _check_acceptable_response(accept_header, content_type_header) == expected

@@ -1,0 +1,68 @@
+<form [formGroup]="form">
+    <div formGroupName="nodeHeight">
+        <label formGroupName="min" class="w-100 text-left scrollbar-with-value" ngbButtonLabel>
+            <input formControlName="enabled"
+                   (change)="disableGroup($event.target.checked, 'nodeHeight.min')"
+                   ngbButton
+                   type="checkbox">
+            Min node height
+            <input formControlName="value"
+                   max="20" min="0"
+                   ngbButton
+                   type="range">
+            {{ form.get('nodeHeight.min.value').value }}
+        </label>
+        <label formGroupName="max" class="scrollbar-with-value" ngbButtonLabel>
+            <input formControlName="enabled"
+                   (change)="disableGroup($event.target.checked, 'nodeHeight.max')"
+                   ngbButton
+                   type="checkbox">
+            Max node ratio
+            <input formControlName="ratio"
+                   max="60" min="1"
+                   ngbButton
+                   type="range">
+            {{ form.get('nodeHeight.max.ratio').value }}
+        </label>
+    </div>
+    <!--    <div formControlName="linkPaletteId"-->
+    <!--         ngbRadioGroup-->
+    <!--         title="Link palette"-->
+    <!--    >-->
+    <!--        <div>Link palette:</div>-->
+    <!--        <label ngbButtonLabel *ngFor="let palette of linkPalettes$ | async | keyvalue" class="mb-0"-->
+    <!--               [style.textAlign]="'left'">-->
+    <!--            <input ngbButton type="radio" [value]="palette.key"> {{palette.value.name}}-->
+    <!--        </label>-->
+    <!--    </div>-->
+    <!--    <div         ngbRadioGroup-->
+    <!--         [name]="'link' + uuid"-->
+    <!--         formControlName="linkValueAccessorId"-->
+    <!--         title="Link size"-->
+    <!--    >-->
+    <!--        <div>Link Value Accessor:</div>-->
+    <!--        <label ngbButtonLabel-->
+    <!--               *ngFor="let valueAccessor of linkValueGenerators$ | async | keyvalue">-->
+    <!--            <input ngbButton type="radio" [value]="valueAccessor.key">-->
+    <!--            {{valueAccessor.value.description}}-->
+    <!--        </label>-->
+    <!--        <label ngbButtonLabel-->
+    <!--               *ngFor="let valueAccessor of linkValueAccessors$ | async | keyvalue">-->
+    <!--            <input ngbButton type="radio"-->
+    <!--                   [value]="valueAccessor.key"> {{valueAccessor.value.description}}-->
+    <!--        </label>-->
+    <!--    </div>-->
+    <!--    <div ngbRadioGroup [name]="'node' + uuid"-->
+    <!--         formControlName="nodeValueAccessorId" title="Node fixed size">-->
+    <!--        <div>Node Value Accessor:</div>-->
+    <!--        <label ngbButtonLabel-->
+    <!--               *ngFor="let valueAccessor of nodeValueGenerators$ | async | keyvalue">-->
+    <!--            <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}-->
+    <!--        </label>-->
+    <!--        <label ngbButtonLabel-->
+    <!--               *ngFor="let valueAccessor of nodeValueAccessors$ | async | keyvalue">-->
+    <!--            <input ngbButton type="radio" [value]="valueAccessor.key"> {{valueAccessor.value.description}}-->
+    <!--        </label>-->
+    <!--    </div>-->
+</form>
+<app-sankey-legend></app-sankey-legend>
