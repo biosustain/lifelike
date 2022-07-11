@@ -1,5 +1,7 @@
 import { Injectable, InjectionToken, Injector } from '@angular/core';
 
+import { partition } from 'lodash-es';
+
 export const DATA_TRANSFER_DATA_PROVIDER = new InjectionToken<DataTransferDataProvider[]>('dragDataProvider');
 
 export class DataTransferToken<T> {
@@ -18,7 +20,9 @@ export class DataTransferDataService {
     for (const provider of providers) {
       data.push(...provider.extract(dataTransfer));
     }
-    return data;
+    const [matchedData, lastResortData] = partition(data, item => item.confidence > 0);
+    // If we do not have any data that we are sure about, use "long shot" items.
+    return matchedData || lastResortData;
   }
 }
 

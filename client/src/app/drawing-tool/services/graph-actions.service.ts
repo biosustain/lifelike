@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { of } from 'rxjs';
+import { iif, of } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
 
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
@@ -22,10 +22,9 @@ export class GraphActionsService {
   constructor(readonly mapImageProviderService: MapImageProviderService,
               readonly filesystemService: FilesystemService) { }
 
-  async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point, parentId: string): Promise<GraphAction[]> {
+  async fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point): Promise<GraphAction[]> {
 
     let actions = extractGraphEntityActions(items, hoverPosition);
-    items = await this.processImageUpload(items, parentId);
     actions = await this.processImageItems(items, hoverPosition, actions);
 
     return actions;
@@ -40,7 +39,13 @@ export class GraphActionsService {
       switchMap(item => {
         const data = item.data as ImageTransferData;
         node = data.node;
-        return this.filesystemService.getContent(data.hash);
+        // If the image was dropped, we have the blob inside DataTransfer. If the image was dragged from within the LL,
+        // We need to load it's content.
+        return iif(
+          () => Boolean(data.blob),
+          of(data.blob),
+          this.filesystemService.getContent(data.hash),
+        );
       }),
       switchMap(blob => {
           return this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId));
@@ -67,39 +72,6 @@ export class GraphActionsService {
     ).toPromise();
 
     return actions;
-  }
-
-  async processImageUpload(items: DataTransferData<any>[], parentId: string) {
-    const imageUploadItems = items.filter(item => item.token === IMAGE_UPLOAD_TOKEN);
-    for (const imageUploadItem of imageUploadItems) {
-      const file = imageUploadItem.data as File;
-      const res = await this.filesystemService.create({
-        mimeType: file.type,
-        filename: file.name,
-        parentHashId: parentId,
-        contentValue: file as Blob,
-      }).toPromise();
-      items.push({
-        token: IMAGE_TOKEN,
-        data: {
-          node: {
-            display_name: file.name,
-            label: IMAGE_LABEL,
-            sub_labels: [],
-            // Review Note: Do we want to remove that? It's not like we can do much with a link to an image
-            data: {
-              sources: [{
-                domain: file.name,
-                url: res.bodyValue?.getURL()
-              }]
-            }
-          },
-          hash: res.bodyValue?.hashId
-        },
-        confidence: 100,
-      });
-    }
-    return items;
   }
 
 }

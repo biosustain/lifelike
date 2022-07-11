@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { DataTransferData, DataTransferDataProvider, DataTransferToken } from 'app/shared/services/data-transfer-data.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { IMAGE_LABEL } from 'app/shared/constants';
+
+import { IMAGE_TOKEN, ImageTransferData } from './image-entity-data.provider';
+import { UniversalGraphNode } from '../services/interfaces';
 
 export const IMAGE_UPLOAD_TOKEN = new DataTransferToken<string>('imageBlob');
 
@@ -13,21 +17,25 @@ export class ImageUploadDataProvider implements DataTransferDataProvider {
   }
 
 
-  extract(dataTransfer: DataTransfer): DataTransferData<File>[] {
+  extract(dataTransfer: DataTransfer): DataTransferData<ImageTransferData>[] {
 
     const imageItems = [];
-    // Review note: This is bad, cast this somehow?
-    // dataTransfer.items are not an array, but a specific object that does not implement array properties, so we cannot use
-    // item of items or items.filter()
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < dataTransfer.items.length; ++i) {
-      const item = dataTransfer.items[i];
+    for (const item of Array.from(dataTransfer.items)) {
       if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
         imageItems.push({
-          token: IMAGE_UPLOAD_TOKEN,
-          data: item.getAsFile(),
-          confidence: 80,
-      });
+          token: IMAGE_TOKEN,
+          data: {
+            blob: file as Blob,
+            node: {
+                display_name: file.name,
+                label: IMAGE_LABEL,
+                sub_labels: [],
+                data: {}
+              } as Partial<UniversalGraphNode>,
+          },
+          confidence: 90,
+        });
       }
     }
 
