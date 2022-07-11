@@ -269,12 +269,15 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
     this.ngZone.run(() => {
       this.dropTargeted = true;
     });
-
-    if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
-        this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
-      event.dataTransfer.dropEffect = 'link';
-      event.preventDefault();
+    // As this event fire continuously, and we only need to check that once, do not re-check after the first one
+    if (event.dataTransfer.dropEffect !== 'link') {
+      if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
+          this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+        event.dataTransfer.dropEffect = 'link';
+        event.preventDefault();
+      }
     }
+
   }
 
   drop(event: DragEvent) {
