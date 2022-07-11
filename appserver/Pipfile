@@ -12,6 +12,7 @@ types-redis = "==3.5.8"
 types-requests = "==2.25.8"
 responses = "==0.21.0"
 fakeredis = "==1.8.1"
+flake8 = "*"
 
 [packages]
 attrs = "==20.3.0"
