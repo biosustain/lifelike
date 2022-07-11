@@ -1,7 +1,8 @@
 from common.database import *
 from common.constants import *
 from datetime import datetime
-from common.utils import write_compressed_tsv_file_from_dataframe
+from common.utils import write_compressed_tsv_file_from_dataframe, get_data_dir
+import os
 
 def write_chemical_list_for_LMDB(database: Database, output_dir: str):
     query = f"""
@@ -10,5 +11,16 @@ def write_chemical_list_for_LMDB(database: Database, output_dir: str):
     """
     df = database.get_data(query)
     datestr = datetime.now().strftime("%m%d%Y")
-    filename = f"{NODE_CHEMICAL}_list_for_LMDB_{datestr}.tsv"
+    filename = f"processed/chebi/{NODE_CHEMICAL}_list_for_LMDB_{datestr}.tsv"
+    os.makedirs(f'{output_dir}/{filename}', exist_ok=True)
     write_compressed_tsv_file_from_dataframe(df, filename, output_dir)
+
+
+def main():
+    database = get_database()
+    write_chemical_list_for_LMDB(database, get_data_dir())
+    database.close()
+
+
+if __name__ == "__main__":
+    main()

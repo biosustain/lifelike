@@ -1,7 +1,7 @@
 from common.database import *
 from common.constants import *
 from datetime import datetime
-from common.utils import write_compressed_tsv_file_from_dataframe
+from common.utils import write_compressed_tsv_file_from_dataframe, get_data_dir
 
 
 def _write_entity_list_for_LMDB(entity_node_label: str, database: Database, output_dir: str):
@@ -17,3 +17,13 @@ def write_mesh_annotation_files(database, output_dir):
     _write_entity_list_for_LMDB(NODE_FOOD, database, output_dir)
     _write_entity_list_for_LMDB(NODE_ANATOMY, database, output_dir)
     _write_entity_list_for_LMDB(NODE_PHENOMENA, database, output_dir)
+
+
+def main():
+    database = get_database()
+    write_mesh_annotation_files(database, get_data_dir())
+    database.close()
+
+
+if __name__ == "__main__":
+    main()

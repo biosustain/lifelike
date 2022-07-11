@@ -1,6 +1,7 @@
 from ncbi.ncbi_taxonomy_parser import TaxonomyParser
 from common.database import *
-from config.config import get_data_dir
+from common.utils import get_data_dir
+from common.constants import *
 import os
 
 # default strain for their species for organism searching
@@ -15,11 +16,11 @@ def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmenta
     '''
 
     # find the strains that are used to replace its parent species for annotation
-    query = """
-    match p=(n:Taxonomy)-[:HAS_PARENT*0..]->(:Taxonomy {rank: 'species'}) 
+    query = f"""
+    match p=(n:Taxonomy)-[:HAS_PARENT*0..]->(:Taxonomy {{rank: 'species'}})
     where n.{PROP_ID} in $tax_ids
-    with nodes(p) as nodes, n 
-    unwind nodes as p 
+    with nodes(p) as nodes, n
+    unwind nodes as p
     with n, p where n <> p
     return n.{PROP_ID} as tax_id, p.{PROP_ID} as parent_id, p.name as parent_name
     """
@@ -27,7 +28,7 @@ def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmenta
     replace_id_map = {}
     for index, row in df.iterrows():
         replace_id_map[row['parent_id']] = row['tax_id']
-    parser = TaxonomyParser(base_dir)
+    parser = TaxonomyParser('LL-000', base_dir)
     nodes = parser.parse_files()
     outfile = os.path.join(parser.output_dir, 'species_for_LMDB.tsv')
 

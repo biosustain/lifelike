@@ -1,9 +1,12 @@
+import os
+
 import pandas as pd
-import os, logging
 from common.constants import *
+from common.utils import get_data_dir
 from ncbi.ncbi_gene_parser import GENE_INFO_ATTR_MAP, GeneParser
 
-def write_LMDB_annotation_file(self, base_data_dir):
+
+def write_LMDB_annotation_file(base_data_dir):
     """
     2021-06-08 14:28:36,984 rows processed: 43259367
     LMDB gene annotation file has the following columns:
@@ -11,7 +14,7 @@ def write_LMDB_annotation_file(self, base_data_dir):
 
     Since the gene.info file is very big, data were loaded and write in chunks
     """
-    gene_parser = GeneParser(base_data_dir)
+    gene_parser = GeneParser('LL-000', base_data_dir)
     outfile = os.path.join(gene_parser.output_dir, 'gene_list_for_LMDB.tsv')
     open(outfile, 'w').close()
     gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
@@ -45,3 +48,10 @@ def write_LMDB_annotation_file(self, base_data_dir):
         df_syns.to_csv(outfile, header=header, sep='\t', mode='a', index=False)
         header = False
     gene_parser.logger.info(f"Rows processed: {count}")
+
+def main():
+    write_LMDB_annotation_file(get_data_dir())
+
+
+if __name__ == "__main__":
+    main()
