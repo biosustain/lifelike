@@ -64,6 +64,18 @@ export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
     super.set(key, loadedValue);
     return loadedValue;
   }
+
+  filter(filterCallback) {
+    const iterator = this[Symbol.iterator]();
+    const filtered = new ExtendedMap<K, V>();
+    let currentIndex = 0;
+    for (const value of iterator) {
+      if (filterCallback(value, currentIndex++, this)) {
+        filtered.set(value[0], value[1]);
+      }
+    }
+    return filtered;
+  }
 }
 
 export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {

@@ -1,5 +1,7 @@
 from os import environ
 
+from neo4japp.database import get_neo4j_driver
+
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import AnnotationGraphService
@@ -13,9 +15,6 @@ from .sorted_annotation_service import (
     sorted_annotations_per_file_type_dict
 )
 from .tokenizer import Tokenizer
-
-from neo4japp.database import graph
-
 from .constants import (
     ANATOMY_LMDB,
     CHEMICALS_LMDB,
@@ -56,7 +55,8 @@ def get_annotation_db_service():
 
 
 def get_annotation_graph_service():
-    return AnnotationGraphService(graph)
+    driver = get_neo4j_driver()
+    return AnnotationGraphService(driver)
 
 
 def get_manual_annotation_service():

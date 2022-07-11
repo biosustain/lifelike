@@ -29,6 +29,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -48,9 +49,30 @@ interface AnnotationData {
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
-  providers: [EnrichmentService]
+  providers: [EnrichmentService, ModuleContext]
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
+
+  constructor(protected readonly route: ActivatedRoute,
+              protected readonly worksheetViewerService: EnrichmentTableService,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly enrichmentService: EnrichmentService,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly changeDetectorRef: ChangeDetectorRef,
+              protected readonly elementRef: ElementRef,
+              protected readonly filesystemObjectActions: FilesystemObjectActions) {
+    this.fileId = this.route.snapshot.params.file_id || '';
+    this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
+
+    // If the url fragment contains entity id info, assume we're looking for a specific annotation. Otherwise just search text.
+    this.findController = new AsyncElementFind(
+      null, // We'll update this later, once the table is rendered
+      this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
+    );
+    this.findController.query = this.annotation.id.length ? this.annotation.id : this.annotation.text;
+  }
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
   @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
@@ -73,26 +95,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
    */
   queuedChanges$ = new BehaviorSubject<ObjectUpdateRequest | undefined>(null);
 
-  constructor(protected readonly route: ActivatedRoute,
-              protected readonly worksheetViewerService: EnrichmentTableService,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly modalService: NgbModal,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly enrichmentService: EnrichmentService,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly changeDetectorRef: ChangeDetectorRef,
-              protected readonly elementRef: ElementRef,
-              protected readonly filesystemObjectActions: FilesystemObjectActions) {
-    this.fileId = this.route.snapshot.params.file_id || '';
-    this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
-
-    // If the url fragment contains entity id info, assume we're looking for a specific annotation. Otherwise just search text.
-    this.findController = new AsyncElementFind(
-      null, // We'll update this later, once the table is rendered
-      this.annotation.id.length ? this.generateAnnotationFindQueue : this.generateTextFindQueue
-    );
-    this.findController.query = this.annotation.id.length ? this.annotation.id : this.annotation.text;
-  }
+  dragTitleData$ = this.object$.pipe(
+    map(object => object.getTransferData())
+  );
 
   ngOnInit() {
     this.load();
@@ -308,11 +313,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
         fontAwesomeIcon: 'table',
       });
     });
-  }
-
-  dragStarted(event: DragEvent, object: FilesystemObject) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    object.addDataTransferData(dataTransfer);
   }
 
   objectUpdate() {

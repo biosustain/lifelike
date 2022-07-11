@@ -1,0 +1,37 @@
+<ngb-accordion
+    #acc="ngbAccordion"
+    activeIds="{{networkTraceIdx$ | async}}"
+    *ngIf="{
+        searchTokens: searchTokens$ | async,
+        searchFocus: searchFocus$ | async
+    } as context"
+    closeOthers="true">
+    <ngb-panel *ngFor="let networkTraceMatches of groupedMatches$ | async | keyvalue"
+               [id]="networkTraceMatches.key"
+               cardClass="simplified-accordion">
+        <ng-template ngbPanelHeader let-opened="opened">
+            <button ngbPanelToggle>
+                <i [ngClass]="['fas', opened ? 'fa-angle-down' : 'fa-angle-right']"
+                   [style.verticalAlign]="'middle'"></i>
+                {{networkTraceIdxToName(networkTraceMatches.key) | async}}
+            </button>
+        </ng-template>
+        <ng-template ngbPanelContent>
+            <app-search-result
+                    class="fieldset-properties mt-2"
+                    *ngFor="let match of (networkTraceMatches.value | slice : 0 :100 ); let i = index"
+                    [focused]="match.networkTraceIdx === context.searchFocus?.networkTraceIdx && match.idx ===
+                    context.searchFocus?.idx"
+                    (click)="setFocusIdx(match.idx)"
+                    [result]="match"
+                    [searchTokens]="context.searchTokens"
+            >
+            </app-search-result>
+            <ng-container *ngIf="networkTraceMatches.value.length > 100" class="mt-2">
+                Showing only first 100 results.
+            </ng-container>
+        </ng-template>
+    </ngb-panel>
+</ngb-accordion>
+
+

@@ -1,6 +1,0 @@
-<svg #svg>
-    <g #g>
-        <g #links class="links"></g>
-        <g #nodes class="nodes"></g>
-    </g>
-</svg>

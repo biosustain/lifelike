@@ -6,11 +6,23 @@ from io import BytesIO, StringIO
 from typing import List, Tuple
 from urllib.error import URLError
 from urllib.parse import urlsplit, urlunsplit, quote
-from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, \
-    UnknownHandler, HTTPRedirectHandler, \
-    HTTPDefaultErrorHandler, HTTPErrorProcessor, HTTPCookieProcessor, BaseHandler, Request
+from urllib.request import (
+    HTTPSHandler,
+    HTTPHandler,
+    OpenerDirector,
+    UnknownHandler,
+    HTTPRedirectHandler,
+    HTTPDefaultErrorHandler,
+    HTTPErrorProcessor,
+    HTTPCookieProcessor,
+    BaseHandler,
+    Request
+)
 
 from IPy import IP
+
+from neo4japp.constants import MAX_FILE_SIZE
+from neo4japp.exceptions import UnsupportedMediaTypeError
 
 
 class ControlledConnectionMixin:
@@ -163,13 +175,51 @@ class ContentTooLongError(URLError):
     """Raised when the content is too big."""
 
 
-def read_url(*args, max_length, read_chunk_size=8192, buffer=None,
-             debug_level=0, prefer_direct_downloads=False, **kwargs):
+def _check_acceptable_response(accept_header, content_type_header):
+    if content_type_header is not None:
+        # Reminder that mime-types have this structure: type/subtype;parameter=value
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+        # See this list of common types for examples:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types  # noqa
+        acceptable_types = map(
+            lambda type: type.split(';')[0].strip(),
+            accept_header.split(',')
+        )
+        content_type = content_type_header.split(';')[0].strip()
+
+        def mime_char_repl(matchobj):
+            return f'\\{matchobj.group(0)}' if matchobj.group(0) in ['.', '+'] else '.*'
+
+        for type in acceptable_types:
+            # Substitute regex special characters:
+            # . -> \.
+            # + -> \+
+            # * -> .*
+            if re.fullmatch(re.sub('[\\.\\+\\*]', mime_char_repl, type), content_type):
+                return content_type
+    raise UnsupportedMediaTypeError(
+        f'Response Content-Type does not match the requested type: ' +
+        f'{content_type_header} vs. {accept_header}'
+    )
+
+
+def read_url(
+    url,
+    max_length=MAX_FILE_SIZE,
+    headers=None,
+    read_chunk_size=8192,
+    buffer=None,
+    debug_level=0,
+    prefer_direct_downloads=False,
+    **kwargs
+):
     """
     Get the contents at a URL, while controlling access to some degree.
 
     :param args: arguments for the opener
+    :param url: string representation of the request url
     :param max_length: the maximum length to download
+    :param headers: object representation of the request headers
     :param req_content_type: the expected content type of the response
     :param read_chunk_size: the size of each chunk when downloading
     :param buffer: the buffer object to put the data in -- if None, then a new
@@ -193,9 +243,21 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None,
     opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
     opener.add_handler(ControlledHTTPSHandler(debuglevel=debug_level))
 
-    conn = opener.open(*args, **kwargs)
+    if headers is None:
+        headers = {}
 
-    # First, check the content length returned by the server, if any
+    req = Request(url, headers=headers)
+    conn = opener.open(req, **kwargs)
+
+    # First, check the content type returned by the server
+    accept_header = req.headers.get('Accept', None)
+
+    # If there is no accept header, no need to check the response type matches
+    if accept_header is not None:
+        content_type_header = conn.headers.get('Content-Type', None)
+        _check_acceptable_response(accept_header, content_type_header)
+
+    # Then, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
     if server_length is not None:
         try:

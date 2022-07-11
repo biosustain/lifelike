@@ -1250,8 +1250,3 @@ interface GraphLayoutLink extends Link<GraphLayoutNode> {
   target: GraphLayoutNode;
   index?: number;
 }
-
-enum referenceCheckingMode {
-  nodeAdded = 1,
-  nodeDeleted = -1,
-}

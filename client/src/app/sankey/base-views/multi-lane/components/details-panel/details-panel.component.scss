@@ -1,0 +1,27 @@
+@use 'variables';
+
+app-sankey-multi-lane-details-panel {
+  // The little dot next to each entity type indicating the color
+  .entity-type-legend {
+    border-radius: 10rem;
+    display: inline-block;
+    height: .75rem;
+    width: .75rem;
+  }
+
+  .invalid-input {
+    border-color: variables.$danger;
+  }
+
+  .invalid-input:focus {
+    box-shadow: 0 0 0 .2rem rgba(variables.$danger, .25);
+  }
+
+  .small-font {
+    font-size: variables.$font-size-sm;
+  }
+
+  .filled-card .card-body {
+    padding: 0 !important;
+  }
+}

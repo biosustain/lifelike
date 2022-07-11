@@ -1,0 +1,8 @@
+<svg #svg>
+    <g [style.transform]="'translate('+margin.left+'px, '+margin.top+'px)'">
+        <g #g>
+            <g #links class="links"></g>
+            <g #nodes class="nodes"></g>
+        </g>
+    </g>
+</svg>

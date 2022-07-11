@@ -8,6 +8,8 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ModuleContext } from 'app/shared/services/module-context.service';
+import { ModuleAwareComponent } from 'app/shared/modules';
 
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -16,16 +18,23 @@ import { getObjectLabel } from '../utils/objects';
 @Component({
   selector: 'app-object-viewer',
   templateUrl: 'object-viewer.component.html',
+  providers: [
+    ModuleContext
+  ]
 })
 export class ObjectViewerComponent implements OnDestroy {
 
   protected readonly subscriptions = new Subscription();
   object$: Observable<FilesystemObject>;
 
-  constructor(protected readonly route: ActivatedRoute,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly progressDialog: ProgressDialog) {
+  constructor(
+    protected readonly route: ActivatedRoute,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly progressDialog: ProgressDialog,
+    private readonly moduleContext: ModuleContext
+  ) {
+    moduleContext.register(this);
     this.subscriptions.add(this.route.params.subscribe(params => {
       this.object$ = this.filesystemService.get(params.hash_id);
     }));
@@ -53,5 +62,4 @@ export class ObjectViewerComponent implements OnDestroy {
       this.errorHandler.create({label: 'Download file'}),
     ).subscribe();
   }
-
 }

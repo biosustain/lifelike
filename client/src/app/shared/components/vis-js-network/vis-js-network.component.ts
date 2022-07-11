@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, Input, ContentChild, Output, EventEmitter } from '@angular/core';
 
-
 import { isNil } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -8,8 +7,8 @@ import { DataSet } from 'vis-data/dist/umd';
 import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
-import { isNodeMatching } from 'app/sankey-viewer/components/search-match';
 import { toTitleCase, uuidv4 } from 'app/shared/utils';
+import { isNodeMatching } from 'app/sankey/utils/search/node-vis-search';
 
 import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
 import { FindOptions, compileFind, tokenizeQuery } from '../../utils/find';
@@ -422,3 +421,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
     });
   }
 }
+
+
+

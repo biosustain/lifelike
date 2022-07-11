@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { Store } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -15,7 +15,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { AccountService } from 'app/users/services/account.service';
 
-import { AuthActions } from '../store';
+import { AuthActions, AuthSelectors } from '../store';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
 
 @Component({
@@ -29,6 +29,7 @@ export class LoginComponent {
   });
 
   unsupportedBrowser: boolean;
+  errorMessage: string = null;
 
   constructor(
     private store: Store<State>,
@@ -41,6 +42,12 @@ export class LoginComponent {
     private readonly accountService: AccountService
   ) {
     this.unsupportedBrowser = this.platform.SAFARI; // Add additional browsers here as necessary
+
+    // Reset the login error anytime the login page is loaded
+    this.store.dispatch(AuthActions.loginFailureReset());
+    this.store.pipe(select(AuthSelectors.selectAuthErrorMessage)).subscribe(message => {
+      this.errorMessage = message;
+    });
   }
 
   submit() {
@@ -90,7 +97,6 @@ export class LoginComponent {
             {duration: 5000},
           );
         });
-    }, () => {
-    });
+    }, () => {});
   }
 }
