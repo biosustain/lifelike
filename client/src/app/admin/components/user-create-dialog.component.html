@@ -8,9 +8,11 @@
       <input type="text" formControlName="username" id="username" [appFormInput]="form.get('username')" appAutoFocus>
     </app-form-row>
 
-    <app-form-row for="password" label="Password" [control]="form.get('password')">
-      <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
-    </app-form-row>
+    <app-password-input [formRef]="form"
+                        controlId="password"
+                        controlName="password"
+                        controlLabel="Password"
+    ></app-password-input>
 
     <app-form-row for="email" label="Email" [control]="form.get('email')">
       <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')">

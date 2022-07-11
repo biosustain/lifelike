@@ -138,6 +138,9 @@ export type ObjectContentSource = (ContentValue & Partial<Record<keyof Omit<AllC
 export type ObjectSearchRequest = ({
   type: 'public';
   mimeTypes?: string[];
+} & PaginatedRequestOptions) | ({
+  type: 'pinned';
+  mimeTypes?: string[];
 } & PaginatedRequestOptions) | {
   type: 'linked';
   linkedHashId: string;

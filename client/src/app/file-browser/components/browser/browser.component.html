@@ -9,14 +9,21 @@
   </div>
 
   <div class="flex-fill overflow-auto">
+    <!--
+      TODO: These components are so similar, ideally we would collapse them down into a single one. But, since we're considering
+      refactoring the entire file browser view anyway, it may be unnecessary work to do so at the moment.
+    -->
     <div class="module-body">
       <app-browser-project-list></app-browser-project-list>
     </div>
     <div class="module-body border-top">
-      <app-browser-community-list></app-browser-community-list>
+      <app-browser-pinned-list></app-browser-pinned-list>
     </div>
     <div class="module-body border-top">
       <app-browser-recent-list></app-browser-recent-list>
+    </div>
+    <div class="module-body border-top">
+      <app-browser-community-list></app-browser-community-list>
     </div>
   </div>
 </div>

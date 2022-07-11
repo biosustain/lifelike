@@ -4,6 +4,7 @@ import os
 from flask import request as flask_request
 from flask.app import Flask
 from neo4j import GraphDatabase, Session, Transaction, basic_auth
+import responses
 from neo4j.graph import Node, Relationship
 from pathlib import Path
 from typing import Optional
@@ -1293,3 +1294,9 @@ def gas_gangrene_alleviates_duplicate_edge_data(
 def pdf_dir() -> str:
     """ Returns the directory of the example PDFs """
     return os.path.join(Path(__file__).parent, 'database', 'services', 'annotations', 'pdf_samples')
+
+
+@pytest.fixture
+def mocked_responses():
+    with responses.RequestsMock() as rsps:
+        yield rsps

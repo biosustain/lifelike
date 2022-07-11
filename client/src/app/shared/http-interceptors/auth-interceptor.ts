@@ -90,7 +90,11 @@ export class AuthenticationInterceptor implements HttpInterceptor {
         req = this.addAuthHeader(req);
         return next.handle(req).pipe(
             catchError(error => {
-                if (error instanceof HttpErrorResponse && error.status === 401 && !(req.url.endsWith('/refresh'))) {
+                if (
+                  error instanceof HttpErrorResponse && error.status === 401 &&
+                  !(req.url.endsWith('/refresh')) &&
+                  !(req.url.endsWith('/login'))
+                ) {
                     return this.handleResponseError(req, next);
                 } else {
                     return throwError(error);

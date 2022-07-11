@@ -1,0 +1,212 @@
+@use '../../' as this;
+@use 'variables';
+@use 'sankey';
+
+app-sankey-single-lane {
+  @mixin link-color($color) {
+    fill: $color;
+    stroke: darken($color, this.$darken-link-stroke);
+  }
+
+  @keyframes searchBlink {
+    50% {
+      fill: sankey.$search-accent-color;
+    }
+  }
+
+  @mixin search-blink {
+    animation-duration: 750ms;
+    animation-name: searchBlink;
+  }
+
+  display: block;
+  //touch-action: none;
+  //user-select: none;
+  height: 100%;
+
+  min-height: 100%;
+  overflow: hidden;
+  position: relative;
+  transform-origin: 0 0;
+  width: 100%;
+
+  svg {
+    background-color: variables.$window-background;
+    height: 100%;
+    width: 100%;
+
+    .nodes {
+      shape-rendering: crispEdges;
+      z-index: 1;
+
+      g {
+        .text-shadow {
+          display: none;
+          fill: sankey.$node-label-shadow;
+          filter: blur(.1em);
+          mix-blend-mode: lighten;
+          stroke: none;
+          transform: scaleY(1.5);
+        }
+
+        &[highlighted="false"],
+        &[transitively-selected="false"],
+        &[selected="false"] {
+          > rect {
+            opacity: this.$inactive-opacity;
+          }
+
+          text {
+            opacity: this.$inactive-opacity;
+          }
+        }
+
+        &:hover,
+        &[selected="true"],
+        &[highlighted="true"],
+        &[transitively-selected="true"] {
+          > rect {
+            opacity: 100% !important;
+          }
+
+          text {
+            opacity: this.$active-opacity;
+          }
+        }
+
+        &:hover,
+        &[selected="true"],
+        &[highlighted="true"] {
+          > rect {
+            opacity: 100% !important;
+            stroke: sankey.$selection-accent-color;
+            stroke-opacity: 1;
+            stroke-width: 3;
+          }
+        }
+
+        @each $position, $color in this.$node-colors {
+          &[graphRelativePosition=#{$position}] {
+            > rect {
+              fill: $color;
+            }
+          }
+        }
+
+        rect {
+          cursor: move;
+          fill: this.$node-color;
+          shape-rendering: crispEdges;
+          stroke: this.$node-border-colour;
+        }
+
+        &[highlighted="left"] {
+          > rect {
+            fill: map-get(this.$node-colors, left);
+          }
+        }
+
+        &[searched="true"] .text-shadow {
+          display: initial;
+          fill: opacify(sankey.$active-node-label-shadow, .5);
+          filter: none;
+          mix-blend-mode: normal;
+          stroke: sankey.$search-accent-color;
+          transform: scaleY(1.5) scaleX(1.1);
+          transform-origin: 15px 0;
+        }
+
+        &[focused="true"] {
+          .text-shadow {
+            fill: opacify(sankey.$active-node-label-shadow, .85);
+            @include search-blink();
+          }
+
+          text {
+            fill: variables.$black;
+            font-size: 1em;
+          }
+        }
+
+        &:hover .text-shadow {
+          display: initial;
+        }
+
+        text {
+          font-size: .5em;
+          // todo: reenable when performance improves
+          //transition: font-size 250ms 250ms, fill 250ms 250ms;
+          pointer-events: none;
+        }
+
+        &:hover text {
+          fill: variables.$black;
+          font-size: 1em;
+        }
+      }
+    }
+
+    .links path {
+      @include link-color(this.$link-color);
+
+      &.circular {
+        stroke-dasharray: 4 4;
+      }
+
+      @each $type, $color in this.$edge-color-map {
+        &[type=#{$type}] {
+          @include link-color($color);
+        }
+      }
+
+      &[highlighted="false"],
+      &[selected="false"],
+      &[transitively-selected="false"] {
+        @include link-color(this.$inactive-colour);
+        opacity: this.$inactive-opacity;
+      }
+
+      &[highlighted="true"] {
+        @include link-color(this.$link-color);
+      }
+
+      &:hover,
+      //&[transitively-selected="true"],
+      &[selected="true"],
+      &[highlighted="true"] {
+        stroke: sankey.$selection-accent-color;
+        opacity: 1;
+        stroke-width: 3;
+      }
+
+      @each $position, $color in this.$link-colors {
+        &[highlighted=#{$position}] {
+          @include link-color($color);
+        }
+      }
+
+      &[highlighted="true"],
+      &[selectedTrace="true"] {
+        &[thickness='0'] {
+          stroke: darken(this.$link-color, this.$darken-link-stroke);
+          stroke-width: 3px;
+        }
+      }
+
+      @each $position, $color in this.$link-colors {
+        &[transitively-selected=#{$position}] {
+          @include link-color($color);
+        }
+      }
+
+      &[searched="true"] {
+        stroke: sankey.$search-accent-color;
+      }
+
+      &[focused="true"] {
+        fill: sankey.$search-accent-color;
+        @include search-blink();
+      }
+    }
+  }
+}

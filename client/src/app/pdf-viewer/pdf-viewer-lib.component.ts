@@ -635,8 +635,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  selection;
-  selectionWrapper;
+  selection: Selection;
 
   ranges;
 
@@ -1242,7 +1241,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @HostListener('keydown.control.c')
   @HostListener('keydown.meta.c')
   copySelectedText() {
-    this.clipboard.copy(this.allText, {sucess: 'It has been copied to clipboard'});
+    if (!this.selection) {
+      return;
+    }
+    this.clipboard.copy(this.selection.toString(), {success: 'It has been copied to clipboard'});
     this.deleteFrictionless();
   }
 

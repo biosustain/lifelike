@@ -172,6 +172,9 @@ def create_app(name='neo4japp', config='config.Development'):
     ma.init_app(app)
     migrate.init_app(app, db)
 
+    from neo4japp.jobs import rq
+    rq.init_app(app)
+
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
     cache_config = {

@@ -1,47 +1,61 @@
-import json
 import multiprocessing as mp
-import requests
-import time
-
+from http import HTTPStatus
 from typing import Dict, Set
 
-from ..constants import NLP_SERVICE_ENDPOINT, REQUEST_TIMEOUT, EntityType
-from ..data_transfer_objects import NLPResults
+import requests
 
 from neo4japp.exceptions import ServerException
+from ..constants import (
+    NLP_SERVICE_ENDPOINT,
+    NLP_SERVICE_SECRET,
+    REQUEST_TIMEOUT,
+    EntityType
+)
+from ..data_transfer_objects import NLPResults
 
 
-def call_nlp_service(model: str, text: str) -> dict:
+def _call_nlp_service(model: str, text: str) -> dict:
     try:
         req = requests.post(
             NLP_SERVICE_ENDPOINT,
-            data=json.dumps({'model': model, 'sentence': text}),
-            headers={
-                'Content-type': 'application/json',
-                # TODO: replace this with real one in envs
-                # Need JIRA to create/add to ansible vault
-                'secret': 'dGhpcyBpcyB2ZXJ5IHNlY3JldCBmb3IgbmxwIGFwaQ=='},
+            json={'model': model, 'sentence': text},
+            headers={'secret': NLP_SERVICE_SECRET},
             timeout=REQUEST_TIMEOUT)
+        req.raise_for_status()
+        return req.json()
 
-        resp = req.json()
-        req.close()
-    except requests.exceptions.ConnectTimeout:
+    # Got a non-2xx response
+    except requests.exceptions.HTTPError as e:
         raise ServerException(
-            'Service Error',
-            'The request timed out while trying to connect to the NLP service.')
+            'NLP Service Error',
+            'An unexpected error occurred with the NLP service.',
+            additional_msgs=f'Status: {e.response.status_code}, Body: {e.response.text}',
+            code=e.response.status_code)
+
+    # Timeout either when connecting or reading response
     except requests.exceptions.Timeout:
         raise ServerException(
-            'Service Error',
-            'The request to the NLP service timed out.')
-    except (requests.exceptions.RequestException, Exception):
+            'NLP Service timeout',
+            'Request to NLP service timed out.',
+            code=HTTPStatus.GATEWAY_TIMEOUT)
+
+    # Could not decode JSON response
+    except ValueError:
         raise ServerException(
-            'Service Error',
-            'An unexpected error occurred with the NLP service.')
-    return resp
+            'NLP Service Error',
+            'Error while parsing JSON response from NLP Service')
+
+    # Other request errors
+    except requests.exceptions.RequestException:
+        raise ServerException(
+            'NLP Service Error',
+            'An unexpected error occurred with the NLP service.',
+            code=HTTPStatus.SERVICE_UNAVAILABLE)
 
 
 def predict(text: str, entities: Set[str]):
-    """Makes a call to the NLP service.
+    """
+    Makes a call to the NLP service.
     Returns the set of entity types in which the token was found.
     """
     if not entities:
@@ -76,22 +90,15 @@ def predict(text: str, entities: Set[str]):
     }
 
     models = []
-    # start = time.time()
     if all([model in entities for model in nlp_models]):
-        req = call_nlp_service(model='all', text=text)
-        models = [req]
+        models.append(_call_nlp_service(model='all', text=text))
     else:
         with mp.Pool(processes=4) as pool:
             models = pool.starmap(
-                call_nlp_service, [(
+                _call_nlp_service, [(
                     nlp_models[model],
                     text
-                ) for model in entities if nlp_models.get(model, None)])
-
-    # current_app.logger.info(
-    #     f'Total NLP time {time.time() - start}',
-    #     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-    # )
+                ) for model in entities if nlp_models.get(model)])
 
     for model in models:
         for results in model['results']:

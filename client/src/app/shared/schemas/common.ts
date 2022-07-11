@@ -1,3 +1,5 @@
+export type Many<T> = T | Array<T>;
+
 export type RecursivePartial<T> = {
     [P in keyof T]?: RecursivePartial<T[P]>;
 };
@@ -73,4 +75,8 @@ export interface ErrorLog extends ErrorLogMeta {
   additionalMsgs?: string[];
   stacktrace?: string;
   transactionId?: string;
+}
+
+export interface ServiceOnInit {
+  onInit(): void;
 }
