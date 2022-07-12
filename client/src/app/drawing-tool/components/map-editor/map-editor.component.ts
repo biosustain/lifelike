@@ -6,7 +6,7 @@ import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, mapJsonToGraph, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CompoundAction, GraphAction, GraphActionReceiver, } from 'app/graph-viewer/actions/actions';
 import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -203,6 +203,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
       await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
         readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
+          mapJsonToGraph(),
           this.errorHandler.create({label: 'Restore map from backup'}),
         ).subscribe(graph => {
           this.graphCanvas.execute(new KnowledgeMapRestore(
