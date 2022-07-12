@@ -25,6 +25,7 @@ import { ModuleContext } from 'app/shared/services/module-context.service';
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
+import { Source } from '../services/interfaces';
 
 @Component({
   selector: 'app-map-view',
@@ -126,6 +127,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         });
     });
 
+  }
+
+  getExportableLink(): Source[] {
+    return this.map.getGraphEntitySources();
   }
 
   openCloneDialog() {
