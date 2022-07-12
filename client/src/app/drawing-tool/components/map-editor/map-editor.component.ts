@@ -485,10 +485,12 @@ class KnowledgeMapRestore implements GraphAction {
   apply(component: GraphActionReceiver) {
     this.graphCanvas.setGraph(cloneDeep(this.updatedData));
     this.graphCanvas.zoomToFit(0);
+    this.graphCanvas.selection.replace([]);
   }
 
   rollback(component: GraphActionReceiver) {
     this.graphCanvas.setGraph(cloneDeep(this.originalData));
     this.graphCanvas.zoomToFit(0);
+    this.graphCanvas.selection.replace([]);
   }
 }
