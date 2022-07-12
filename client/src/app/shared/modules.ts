@@ -1,6 +1,6 @@
-import { EventEmitter } from '@angular/core';
-
 import { Observable } from 'rxjs';
+
+import { Source } from 'app/drawing-tool/services/interfaces';
 
 export interface ModuleProperties {
   title: string;
@@ -12,4 +12,5 @@ export interface ModuleProperties {
 export interface ModuleAwareComponent {
   modulePropertiesChange?: Observable<ModuleProperties>;
   viewParams?: Promise<object>;
+  getExportableLink(): Source[] | Promise<Source[]>;
 }

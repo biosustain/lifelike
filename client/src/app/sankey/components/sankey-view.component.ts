@@ -36,7 +36,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { SankeySearchService } from '../services/search.service';
@@ -341,6 +341,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       )
     )
   );
+
+  getExportableLink(): Promise<Source[]> {
+    return this.object$.pipe(map(object => object.getGraphEntitySources())).toPromise();
+  }
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
