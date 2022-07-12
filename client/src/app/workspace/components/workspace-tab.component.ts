@@ -35,33 +35,24 @@ export class WorkspaceTabComponent implements OnChanges {
     protected readonly clipboard: ClipboardService
   ) {}
 
-  dragData$ = defer(() =>
-    this.viewService.getShareableLink(
-      this.tab.getComponent(), this.tab.url
-    ).toPromise().then(url => {
-      const sources: Source[] = [];
-
-      const doi = this.tab.getComponent()?.object?.doi;
-      if (doi) {
-        sources.push({domain: 'DOI', url: doi});
-      }
+  dragData$ = defer(() => {
+    const sources = Promise.resolve(this.tab.getComponent()?.getExportableLink());
+    return sources.then(src => {
       return {
         'application/lifelike-node': JSON.stringify({
           display_name: this.tab.title,
           label: this.tab.getComponent()?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
-            sources: [
-              ...sources,
-              {
-                domain: this.tab.title,
-                url
-              }
-            ]
+            sources: src ?? [{
+              url: this.tab.url,
+              domain: this.tab.title
+            } as Source]
           }
         } as Partial<UniversalGraphNode>)
       };
-    }));
+    });
+  });
 
   drag = new CdkNativeDragItegration(this.dragData$);
 
