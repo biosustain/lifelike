@@ -83,7 +83,7 @@ export class Container<T> {
     if (!this.createdComponentRef) {
       const factory: ComponentFactory<T> = this.componentFactoryResolver.resolveComponentFactory(this.component);
       this.createdComponentRef = factory.create(this.injector);
-      const instance = this.createdComponentRef.instance as ModuleAwareComponent;
+      const instance = this.createdComponentRef.instance as unknown as ModuleAwareComponent;
       const subscriptions: Subscription[] = [];
       if (instance.modulePropertiesChange) {
         subscriptions.push(instance.modulePropertiesChange.subscribe(properties => {
