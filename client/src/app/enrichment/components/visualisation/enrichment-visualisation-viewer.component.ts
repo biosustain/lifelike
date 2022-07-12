@@ -8,6 +8,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { EnrichmentService } from '../../services/enrichment.service';
 
@@ -48,6 +49,10 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
   loadTask: BackgroundTask<string, EnrichWithGOTermsResult[]>;
 
   loadSubscription: Subscription;
+
+  getExportableLink(): Source[] {
+    return this.object.getGraphEntitySources();
+  }
 
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {
