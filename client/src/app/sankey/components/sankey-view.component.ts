@@ -152,6 +152,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         if (this.sanityChecks(content)) {
           this.fileContent = content;
           return this.sankeyController.loadData(content);
+        } else {
+          return of(null);
         }
       })
     ).subscribe(() => {
