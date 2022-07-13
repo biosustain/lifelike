@@ -21,7 +21,7 @@ import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
-import { FileViewComponent } from './components/file-view.component';
+import { PdfViewComponent } from './components/pdf-view.component';
 import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
 
 @NgModule({
@@ -29,7 +29,7 @@ import { AnnotationToolbarComponent } from './components/annotation-toolbar.comp
     PdfViewerLibComponent,
     AnnotationEditDialogComponent,
     AnnotationExcludeDialogComponent,
-    FileViewComponent,
+    PdfViewComponent,
     AnnotationToolbarComponent,
   ],
   imports: [
@@ -52,13 +52,13 @@ import { AnnotationToolbarComponent } from './components/annotation-toolbar.comp
     RouterModule.forRoot([]),
   ],
   entryComponents: [
-    FileViewComponent,
+    PdfViewComponent,
     AnnotationEditDialogComponent,
     AnnotationExcludeDialogComponent,
   ],
   exports: [
     PdfViewerLibComponent,
-    FileViewComponent,
+    PdfViewComponent,
   ],
 })
 export class PdfViewerLibModule {

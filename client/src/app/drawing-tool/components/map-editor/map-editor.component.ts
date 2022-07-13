@@ -24,7 +24,7 @@ import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entit
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-
+import { ShouldConfirmUnload } from 'app/shared/modules';
 
 import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -43,7 +43,9 @@ import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
     ModuleContext
   ]
 })
-export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
+export class MapEditorComponent
+  extends MapViewComponent<KnowledgeMapGraph | undefined>
+  implements OnInit, OnDestroy, AfterViewInit, ShouldConfirmUnload {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
@@ -201,7 +203,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
   restore(version: ObjectVersion) {
     this.providerSubscription$ = this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
       await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
-        readBlobAsBuffer(new Blob([unzippedGraph], { type: MimeTypes.Map })).pipe(
+        readBlobAsBuffer(new Blob([unzippedGraph], {type: MimeTypes.Map})).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
           this.errorHandler.create({label: 'Restore map from backup'}),
         ).subscribe(graph => {
@@ -241,10 +243,12 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMapGraph | und
   }
 
   @HostListener('window:beforeunload', ['$event'])
-  handleBeforeUnload(event) {
-    if (this.shouldConfirmUnload()) {
-      event.returnValue = 'Leave page? Changes you made may not be saved';
-    }
+  handleBeforeUnload(event: BeforeUnloadEvent) {
+    return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
+      if (shouldConfirmUnload) {
+        event.returnValue = 'Leave page? Changes you made may not be saved';
+      }
+    });
   }
 
   dragEnd(event: DragEvent) {
