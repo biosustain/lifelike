@@ -58,14 +58,13 @@ class EntityTypeEntry {
 
 @Component({
   selector: 'app-pdf-viewer',
-  templateUrl: './file-view.component.html',
-  styleUrls: ['./file-view.component.scss'],
+  templateUrl: './pdf-view.component.html',
+  styleUrls: ['./pdf-view.component.scss'],
   providers: [
     ModuleContext
   ]
 })
-
-export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
+export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
   constructor(
     protected readonly filesystemService: FilesystemService,

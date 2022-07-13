@@ -9,6 +9,8 @@ import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
+import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
+import { MapComponent } from 'app/drawing-tool/components/map.component';
 
 @Component({
   selector: 'app-workspace-tab',
@@ -33,22 +35,23 @@ export class WorkspaceTabComponent implements OnChanges {
   constructor(
     protected readonly viewService: ViewService,
     protected readonly clipboard: ClipboardService
-  ) {}
+  ) {
+  }
 
-  dragData$ = defer(() =>
+  dragData$ = defer<Promise<Record<string, string>>>(() =>
     this.viewService.getShareableLink(
-      this.tab.getComponent(), this.tab.url
+      this.tab.component, this.tab.url
     ).toPromise().then(url => {
       const sources: Source[] = [];
 
-      const doi = this.tab.getComponent()?.object?.doi;
+      const doi = (this.tab.component as PdfViewComponent)?.object?.doi;
       if (doi) {
         sources.push({domain: 'DOI', url: doi});
       }
       return {
         'application/lifelike-node': JSON.stringify({
           display_name: this.tab.title,
-          label: this.tab.getComponent()?.map ? 'map' : 'link',
+          label: (this.tab.component as MapComponent)?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
             sources: [
@@ -73,7 +76,7 @@ export class WorkspaceTabComponent implements OnChanges {
 
   openCopyLinkDialog() {
     return this.clipboard.copy(
-      this.viewService.getShareableLink(this.tab.getComponent(), this.tab.url).toPromise()
+      this.viewService.getShareableLink(this.tab.component, this.tab.url).toPromise()
         .then((url) => {
           this.tab.url = url.pathname + url.search + url.hash;
           return url.href;

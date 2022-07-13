@@ -7,7 +7,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
 
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent, ShouldConfirmUnload } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -38,14 +38,6 @@ import { GraphActionsService } from '../services/graph-actions.service';
 })
 export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
   implements OnDestroy, AfterViewInit, ModuleAwareComponent {
-  @Input() titleVisible = true;
-
-  paramsSubscription: Subscription;
-  queryParamsSubscription: Subscription;
-
-  isSaving = false;
-
-  returnUrl: string;
 
   constructor(filesystemService: FilesystemService,
               objectTypeService: ObjectTypeService,
@@ -75,14 +67,23 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
   }
 
+  @Input() titleVisible = true;
+
+  paramsSubscription: Subscription;
+  queryParamsSubscription: Subscription;
+
+  isSaving = false;
+
+  returnUrl: string;
+
+  get shouldConfirmUnload() {
+    return this.unsavedChanges$.getValue();
+  }
+
   ngOnDestroy() {
     super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
     this.paramsSubscription.unsubscribe();
-  }
-
-  shouldConfirmUnload() {
-    return this.unsavedChanges$.getValue();
   }
 
   /**
@@ -167,12 +168,8 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   }
 
   goToReturnUrl() {
-    if (this.shouldConfirmUnload()) {
-      if (confirm('Leave editor? Changes you made may not be saved.')) {
-        this.workspaceManager.navigateByUrl({url: this.returnUrl});
-      }
-    } else {
-      this.workspaceManager.navigateByUrl({url: this.returnUrl});
-    }
+    return Promise.resolve(this.shouldConfirmUnload)
+      .then(shouldConfirmUnload => shouldConfirmUnload ? confirm('Leave editor? Changes you made may not be saved.') : true)
+      .then(navigate => navigate && this.workspaceManager.navigateByUrl({url: this.returnUrl}));
   }
 }
