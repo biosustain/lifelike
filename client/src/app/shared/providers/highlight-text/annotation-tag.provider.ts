@@ -22,6 +22,7 @@ import { annotationTypesMap } from '../../annotation-styles';
 import { TagHandler } from '../../services/highlight-text.service';
 import { InternalSearchService } from '../../services/internal-search.service';
 import { isCtrlOrMetaPressed } from '../../DOMutils';
+import { composeInternalLink } from '../../workspace-manager';
 
 @Injectable()
 export class AnnotationTagHandler extends TagHandler {
@@ -270,11 +271,20 @@ export class AnnotationTagHandler extends TagHandler {
         <div>
     `;
     const visLink = this.internalSearch.getVisualizerLink(meta.allText);
-    htmlLinks += `<a target="_blank" href="${visLink}">Knowledge Graph</a><br>`;
+    htmlLinks += composeInternalLink(
+      'Knowledge Graph',
+      {url: String(visLink), extras: {sideBySide: true, newTab: true}}
+    ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(meta.allText);
-    htmlLinks += `<a target="_blank" href="${contLink}">File Content</a><br>`;
+    htmlLinks += composeInternalLink(
+      'File Content',
+      {url: String(contLink), extras: {sideBySide: true, newTab: true}}
+    ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(meta.allText, {types: ['map']});
-    htmlLinks += `<a target="_blank" href="${mapLink}">Map Content</a><br>`;
+    htmlLinks += composeInternalLink(
+      'Map Content',
+      {url: String(mapLink), extras: {sideBySide: true, newTab: true}}
+    ) + '<br>';
     htmlLinks += `</div></div>`;
 
     base.push(htmlLinks);

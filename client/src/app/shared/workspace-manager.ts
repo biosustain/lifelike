@@ -13,7 +13,7 @@ import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
-import { cloneDeep, flatMap, assign } from 'lodash-es';
+import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
@@ -492,6 +492,7 @@ export class WorkspaceManager {
       }))
     ).subscribe(activeTabChange => {
     });
+    (document as any).navigateByUrl = this.navigateByUrl.bind(this);
   }
 
   isWithinWorkspace() {
@@ -817,6 +818,12 @@ export class WorkspaceManager {
       return snapshot;
     }
   }
+}
+
+// Horrible fix just so we can still compose components as strings and eval it into DOM instead of fixing old implementation
+// Don't use arbitrary urls - this method is not is not safe in terms of XSS
+export function composeInternalLink(text, navigationData: NavigationData) {
+  return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationData)})'>${escape(text)}</a>`;
 }
 
 export interface WorkspaceNavigationExtras {
