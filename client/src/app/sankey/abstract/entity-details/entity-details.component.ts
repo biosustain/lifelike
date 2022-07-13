@@ -33,7 +33,7 @@ export abstract class SankeyEntityDetailsComponent {
 
   getNodeById(nodeId) {
     return this.common.data$.pipe(
-      map(({nodeById}) => nodeById.get(nodeId) ?? {} as GraphNode)
+      map(({getNodeById}) => getNodeById(nodeId) ?? {} as GraphNode)
     );
   }
 
