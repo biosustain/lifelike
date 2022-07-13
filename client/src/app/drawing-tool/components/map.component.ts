@@ -49,7 +49,6 @@ import { GraphActionsService } from '../services/graph-actions.service';
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
-  // TODO: Are we listening to this anywhere? Or is this some leftover code?
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @ViewChild('canvas', {static: true}) canvasChild;
