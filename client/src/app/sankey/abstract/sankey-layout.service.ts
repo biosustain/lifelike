@@ -122,13 +122,13 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * this function resets these lists and repopulates them
    * based on list of links.
    */
-  computeNodeLinks = tap(({nodes, links, nodeById}) => {
+  computeNodeLinks = tap(({nodes, links}) => {
     for (const [i, node] of nodes.entries()) {
       node.index = i;
       node.sourceLinks = [];
       node.targetLinks = [];
     }
-    this.registerLinks({links, nodeById});
+    this.registerLinks({links});
   });
 
   /**
@@ -238,21 +238,11 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     }
   }
 
-  static find(nodeById, id) {
-    const node = nodeById.get(id);
-    if (!node) {
-      throw Error(ErrorMessages.missingNode(id));
-    }
-    return node as SankeyNode;
-  }
-
   /**
    * Given list of links resolve their source/target node id to actual object
    * and register this link to input/output link list in node.
    */
-  registerLinks({links, nodeById}) {
-    const {find} = SankeyAbstractLayoutService;
-
+  registerLinks({links}) {
     for (const [i, link] of links.entries()) {
       link.index = i;
       const {source, target} = link;
