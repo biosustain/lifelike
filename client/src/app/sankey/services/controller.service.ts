@@ -210,7 +210,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       Math.min(sources.length, targets.length) === 1
     )
   );
-
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', 'id']);
 
   prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');

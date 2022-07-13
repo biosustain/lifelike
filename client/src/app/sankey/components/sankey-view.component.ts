@@ -8,18 +8,18 @@ import {
   AfterViewInit,
   getModuleFactory,
   NgZone,
-  OnInit
+  OnInit, HostListener
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
 import { isNil, pick, flatMap, zip, entries, omitBy } from 'lodash-es';
 
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -80,7 +80,7 @@ interface BaseViewContext {
     ModuleContext
   ]
 })
-export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy {
+export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy, ShouldConfirmUnload {
 
   get viewParams() {
     return this.sankeyController.state$.pipe(
@@ -238,7 +238,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  pandingChanges$ = defer(() => this.baseView$.pipe(
+  pendingChanges$ = defer(() => this.baseView$.pipe(
     switchMap(baseView => baseView.hasPendingChanges$)
   ));
 
@@ -342,11 +342,39 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     )
   );
 
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event) {
+    return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
+      if (shouldConfirmUnload) {
+        event.returnValue = 'Leave page? Changes you made may not be saved';
+      }
+    });
+  }
+
+  get shouldConfirmUnload() {
+    return this.pendingChanges$.pipe(
+      first()
+    ).toPromise();
+  }
+
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
+
+  confirmUnloadWrapper = <T>(project: Observable<T>) =>
+    this.pendingChanges$.pipe(
+      first(),
+      switchMap(pendingChanges =>
+        iif(
+          () => pendingChanges,
+          defer(() => this.confirmUnloadView()),
+          of({})
+        )
+      ),
+      switchMap(() => project)
+    )
 
   selectView({networkTraceIdx, viewName}) {
     return this.baseViewContext$.pipe(
-      first(),
+      this.confirmUnloadWrapper,
       tap(({baseView, layout, selection}) => {
         baseView.delta$.next({});
         selection.reset();
@@ -355,8 +383,17 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.viewController.selectView(networkTraceIdx, viewName)
       ),
-      tap(() => this.resetZoom(false))
+      tap(() => this.resetZoom(false)),
+      take(1),
+      catchError(() => of({}))
     ).toPromise();
+  }
+
+  confirmUnloadView(): Promise<any> {
+    return this.confirm({
+      header: 'Confirm navigation',
+      body: `Are you sure you want to drop unsaved changes in open view?`
+    });
   }
 
   confirmDeleteView({networkTraceIdx, viewName}): Promise<any> {
@@ -453,7 +490,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   selectNetworkTraceIdx(networkTraceIdx) {
     return this.baseViewContext$.pipe(
-      first(),
+      this.confirmUnloadWrapper,
       tap(({baseView, layout, selection}) => {
         baseView.delta$.next({});
         selection.reset();
@@ -462,7 +499,9 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.sankeyController.selectNetworkTrace(networkTraceIdx)
       ),
-      tap(() => this.resetZoom(false))
+      tap(() => this.resetZoom(false)),
+      take(1),
+      catchError(() => of({}))
     ).toPromise();
   }
 
@@ -541,7 +580,12 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   }
 
   openBaseView(baseViewName: ViewBase): Promise<any> {
-    return this.viewController.openBaseView(baseViewName).toPromise();
+    return this.confirmUnloadWrapper(
+      this.viewController.openBaseView(baseViewName),
+    ).pipe(
+      take(1),
+      catchError(() => of({}))
+    ).toPromise();
   }
 
   open(content) {

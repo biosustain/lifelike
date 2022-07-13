@@ -38,7 +38,7 @@ export class WorkspacePaneComponent {
   }
 
   addTab(tab: TabDefaults) {
-    this.workspaceManager.openTabByUrl(this.pane, tab.url, undefined, tab);
+    return this.workspaceManager.openTabByUrl(this.pane, tab.url, undefined, tab);
   }
 
   setActiveTab(tab: Tab) {
@@ -47,25 +47,25 @@ export class WorkspacePaneComponent {
   }
 
   duplicateTab(tab: Tab) {
-    this.workspaceManager.navigateByUrl({
+    return this.workspaceManager.navigateByUrl({
       url: tab.url,
       extras: {newTab: true}
     });
   }
 
   closeTab(tab: Tab) {
-    this.workspaceManager.closeTab(this.pane, tab);
+    return this.workspaceManager.closeTab(this.pane, tab);
   }
 
   closeOtherTabs(tab: Tab) {
-    this.workspaceManager.closeTabs(this.pane, this.pane.tabs.filter(o => o !== tab));
+    return this.workspaceManager.closeTabs(this.pane, this.pane.tabs.filter(o => o !== tab));
   }
 
   closeAllTabs() {
-    this.workspaceManager.closeTabs(this.pane, this.pane.tabs.slice());
+    return this.workspaceManager.closeTabs(this.pane, this.pane.tabs.slice());
   }
 
   clearWorkbench() {
-    this.workspaceManager.clearWorkbench();
+    return this.workspaceManager.clearWorkbench();
   }
 }

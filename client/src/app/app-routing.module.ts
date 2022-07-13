@@ -10,7 +10,7 @@ import { DashboardComponent } from 'app/dashboard.component';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { LifelikeAuthGuard } from 'app/auth/guards/auth-guard.service';
-import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from 'app/kg-statistics.component';
 import { TermsOfServiceComponent } from 'app/users/components/terms-of-service.component';
@@ -136,6 +136,7 @@ const routes: Routes = [
       title: 'Sankey',
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
     },
+    canDeactivate: [UnloadConfirmationGuard],
   },
   {
     // Left as legacy link support
@@ -239,7 +240,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/files/:file_id',
-    component: FileViewComponent,
+    component: PdfViewComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
       title: 'PDF Viewer',

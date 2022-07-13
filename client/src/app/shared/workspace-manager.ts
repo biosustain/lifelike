@@ -11,11 +11,11 @@ import {
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
+import { filter, switchMap, first, map } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge, from as rxjs_from } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
-import { ModuleAwareComponent, ModuleProperties } from './modules';
+import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
@@ -125,9 +125,8 @@ export class Tab {
   fontAwesomeIcon: string = null;
   badge: string = null;
   loading = false;
-  component: Type<any>;
   providers: StaticProvider[] = [];
-  container: Container<any>;
+  container: Container<ModuleAwareComponent>;
 
   pendingProperties: ModuleProperties | undefined;
 
@@ -167,10 +166,10 @@ export class Tab {
    * @param component the component
    * @param providers optional providers for the injector
    */
-  replaceComponent(component: Type<any>, providers: StaticProvider[] = []) {
+  replaceComponent(component: Type<ModuleAwareComponent>, providers: StaticProvider[] = []) {
     this.destroy();
 
-    this.container = new Container<any>(
+    this.container = new Container<ModuleAwareComponent>(
       this,
       Injector.create({
         parent: this.injector,
@@ -209,16 +208,15 @@ export class Tab {
   destroy() {
     if (this.container) {
       this.container.destroy();
-      this.container = null;
+      this.container = undefined;
     }
   }
 
   /**
    * Get the underlying component, if it has been created.
    */
-  getComponent(): any | undefined {
-    const componentRef = this.container ? this.container.lazyComponentRef : null;
-    return componentRef ? componentRef.instance : null;
+  get component(): ModuleAwareComponent | undefined {
+    return this.container?.lazyComponentRef?.instance;
   }
 }
 
@@ -301,7 +299,7 @@ export class Pane {
   createTab(defaults?: TabDefaults): Tab {
     const tab = new Tab(
       this.injector,
-      this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any),
+      this.injector.get(ComponentFactoryResolver),
       defaults,
     );
     this.tabs.unshift(tab);
@@ -446,7 +444,7 @@ export class PaneManager {
   /**
    * Get all the tabs within all the panes.
    */
-  * allTabs(): IterableIterator<{ pane: Pane, tab: Tab }> {
+  *allTabs(): IterableIterator<{ pane: Pane, tab: Tab }> {
     for (const pane of this.panes) {
       for (const tab of pane.tabs) {
         yield {
@@ -544,7 +542,7 @@ export class WorkspaceManager {
             urlTree.fragment = routeSnapshot.fragment;
             tab.url = urlTree.toString();
             // TODO: Component may be a string
-            tab.replaceComponent(routeSnapshot.component as Type<any>, [{
+            tab.replaceComponent(routeSnapshot.component as Type<ModuleAwareComponent>, [{
               // Provide our custom ActivatedRoute with the params
               provide: ActivatedRoute,
               useValue: activatedRoute,
@@ -575,29 +573,35 @@ export class WorkspaceManager {
     this.emitEvents();
   }
 
-  closeTab(pane: Pane, tab: Tab) {
-    const needConfirmation = this.shouldConfirmTabUnload(tab);
-    return Promise.resolve(
-      !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
-    ).then(shouldDeleteTab => {
-      if (shouldDeleteTab) {
-        pane.deleteTab(tab);
-        this.save();
-        this.emitEvents();
-      }
-    });
+  closeTab(pane: Pane, tab: Tab): Promise<boolean> {
+    return this.shouldConfirmTabUnload(tab)
+      .then(needConfirmation =>
+        !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
+      )
+      .then(shouldDeleteTab => {
+        if (shouldDeleteTab) {
+          pane.deleteTab(tab);
+          this.save();
+          this.emitEvents();
+        }
+        return shouldDeleteTab;
+      });
   }
 
   closeTabs(pane: Pane, tabs: Tab[]) {
-    for (const tab of tabs) {
-      this.closeTab(pane, tab);
-    }
+    return Promise.all(
+      tabs.map(tab =>
+        this.closeTab(pane, tab)
+      )
+    );
   }
 
   clearWorkbench() {
-    for (const pane of this.paneManager.panes) {
-      this.closeTabs(pane, pane.tabs.slice());
-    }
+    return Promise.all(
+      this.paneManager.panes.map(pane =>
+        this.closeTabs(pane, pane.tabs.slice())
+      )
+    );
   }
 
   openTabByUrl(pane: Pane | string,
@@ -789,18 +793,18 @@ export class WorkspaceManager {
     this.sessionService.save(this.paneManager.panes);
   }
 
-  shouldConfirmUnload(): { pane: Pane, tab: Tab } | undefined {
+  async shouldConfirmUnload(): Promise<{ pane: Pane, tab: Tab } | null> {
     for (const {pane, tab} of this.paneManager.allTabs()) {
-      if (this.shouldConfirmTabUnload(tab)) {
+      if (await this.shouldConfirmTabUnload(tab)) {
         return {pane, tab};
       }
     }
     return null;
   }
 
-  shouldConfirmTabUnload(tab: Tab) {
-    const component = tab.getComponent();
-    return !!(component && component.shouldConfirmUnload && component.shouldConfirmUnload());
+  shouldConfirmTabUnload(tab: Tab): Promise<boolean> {
+    const component = tab.component as Partial<ShouldConfirmUnload>;
+    return Promise.resolve(component?.shouldConfirmUnload);
   }
 
   applyPendingChanges() {
