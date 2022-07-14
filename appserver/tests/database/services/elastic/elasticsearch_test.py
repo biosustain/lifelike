@@ -1997,6 +1997,99 @@ def test_pre_process_query(
                 }
             },
         ),
+        (
+            'edinburgh AND nottingham',
+            {
+                'bool': {
+                    'must': [
+                        {
+                            'multi_match': {
+                                'query': 'edinburgh',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                        {
+                            'multi_match': {
+                                'query': 'nottingham',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                    ]
+                }
+            },
+        ),
+        (
+            'parallel or orthogonal',
+            {
+                'bool': {
+                    'should': [
+                        {
+                            'multi_match': {
+                                'query': 'parallel',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                        {
+                            'multi_match': {
+                                'query': 'orthogonal',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                    ]
+                }
+            },
+        ),
+        (
+            'marcus AND andrew',
+            {
+                'bool': {
+                    'must': [
+                        {
+                            'multi_match': {
+                                'query': 'marcus',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                        {
+                            'multi_match': {
+                                'query': 'andrew',
+                                'type': 'phrase',
+                                'fields': [
+                                    'description^1',
+                                    'data.content^1',
+                                    'filename^3',
+                                ]
+                            }
+                        },
+                    ]
+                }
+            },
+        )
     ],
 )
 def test_user_query_parser(
