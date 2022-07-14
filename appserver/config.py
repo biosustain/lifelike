@@ -80,6 +80,7 @@ class Testing(Base):
     """Functional test configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
+    RQ_CONNECTION_CLASS = 'fakeredis.FakeStrictRedis'
 
 
 class Production(Base):
