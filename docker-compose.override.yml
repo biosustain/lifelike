@@ -36,11 +36,11 @@ x-appserver: &appserver
     - SE_PORT=5010
     # Other
     - DOMAIN=http://localhost:4200
-    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+    - LMDB_HOME_FOLDER=/lmdb
     - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
     - ./appserver:/home/n4j
-    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+    - lmdb:/lmdb
   depends_on:
     - elasticsearch
     - graphdatabase
@@ -203,14 +203,8 @@ services:
 
 volumes:
   lmdb:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: './appserver/neo4japp/services/annotations/lmdb'
 
 networks:
   frontend:
   backend:
   elastic:
-
