@@ -203,6 +203,11 @@ services:
 
 volumes:
   lmdb:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: './appserver/neo4japp/services/annotations/lmdb'
 
 networks:
   frontend:
