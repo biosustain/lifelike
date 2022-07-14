@@ -61,7 +61,7 @@ services:
   worker:
     <<: *appserver
     container_name: worker
-    command: flask rq worker
+    command: rq worker -c rq_config
     networks:
       - backend
 
@@ -208,4 +208,3 @@ networks:
   frontend:
   backend:
   elastic:
-
