@@ -1,4 +1,4 @@
-import { assign, mapValues, entries, max, isNumber, omit, zip, flatMap } from 'lodash-es';
+import { assign, mapValues, entries, max, isNumber, omit, zip, flatMap, isNil } from 'lodash-es';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Color } from 'd3-color';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
@@ -11,6 +11,7 @@ import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
   SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface,
@@ -186,7 +187,7 @@ class NodeSets implements SankeyDocumentPartMixin<Graph.NodeSets> {
   constructor(nodeSets: Graph.NodeSets, sankeyDocument) {
     this.notMappedNodeSets = nodeSets;
     entries(nodeSets).forEach(([key, value]) => {
-      this[key] = value.map(id => sankeyDocument.nodeById.get(id));
+      this[key] = value.map(id => sankeyDocument.getNodeById(id));
     });
   }
 
@@ -297,8 +298,8 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
   constructor({source, target, ...rest}, id, sankeyDocument) {
     assign(this, rest);
     this.id = id;
-    this.source = sankeyDocument.nodeById.get(source);
-    this.target = sankeyDocument.nodeById.get(target);
+    this.source = sankeyDocument.getNodeById(source);
+    this.target = sankeyDocument.getNodeById(target);
   }
 
   toDict() {
@@ -404,12 +405,23 @@ export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
   nodes: SankeyNode[];
   links: SankeyLink[];
   graph: SankeyGraph;
-  nodeById: Map<SankeyId, SankeyNode>;
+  private nodeById: Map<SankeyId, SankeyNode>;
   isDirty$: BehaviorSubject<boolean>;
   directed: boolean;
   multigraph: boolean;
+  warningController: WarningControllerService;
 
-  constructor({nodes, links, graph, ...rest}: Graph.File) {
+  getNodeById = (id: SankeyId) => {
+    const node = this.nodeById.get(id);
+    if (isNil(node)) {
+      this.warningController.warn(ErrorMessages.missingNode(id));
+    }
+    return node;
+  }
+
+  constructor({nodes, links, graph, ...rest}: Graph.File, warningController: WarningControllerService) {
+    this.warningController = warningController;
+
     if (!nodes.length) {
       throw Error(ErrorMessages.missingNodes);
     }
@@ -440,6 +452,7 @@ export class SankeyFile {
 
   constructor(
     filesystemService: FilesystemService,
+    private warningController: WarningControllerService,
     hashId: string
   ) {
     this.hashId = hashId;
@@ -472,7 +485,7 @@ export class SankeyFile {
   );
 
   document$ = this.content$.pipe(
-    map(raw => new SankeyDocument(raw)),
+    map(raw => new SankeyDocument(raw, this.warningController)),
     shareReplay({bufferSize: 1, refCount: true})
   );
 

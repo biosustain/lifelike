@@ -13,7 +13,7 @@ import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
 import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
@@ -204,8 +204,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       matchExistingTab: getObjectMatchExistingTab(object),
       shouldReplaceTab: component => {
         if (object.type === 'file') {
-          const fileViewComponent = component as FileViewComponent;
-          fileViewComponent.scrollInPdf({
+          const pdfViewComponent = component as PdfViewComponent;
+          pdfViewComponent.scrollInPdf({
             pageNumber: null,
             rect: null,
             jumpText: text,

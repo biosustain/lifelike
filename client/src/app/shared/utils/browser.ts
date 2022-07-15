@@ -1,7 +1,7 @@
 import { escapeRegExp } from 'lodash-es';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
-import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
+import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 
 import { WorkspaceManager } from '../workspace-manager';
@@ -108,7 +108,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager,
           matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
           shouldReplaceTab: component => {
             if (m[1] === 'files') {
-              const fileViewComponent = component as FileViewComponent;
+              const fileViewComponent = component as PdfViewComponent;
               const fragmentMatch = url.match(/^[^#]+#(.+)$/);
               if (fragmentMatch) {
                 fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));

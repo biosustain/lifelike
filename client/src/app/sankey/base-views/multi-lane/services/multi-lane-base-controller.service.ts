@@ -111,16 +111,16 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
   );
 
   networkTraceData$ = this.common.data$.pipe(
-    switchMap(({links, nodes, nodeById}) => this.common.networkTrace$.pipe(
+    switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
         map((tn) => {
           const {traces, sources, targets} = tn;
           const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
-          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
+          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
           this.colorNodes(networkTraceNodes);
           return {
             nodes: networkTraceNodes,
             links: networkTraceLinks,
-            nodeById, sources, targets
+            getNodeById, sources, targets
           };
         }),
         debug('MultiLaneBaseControllerService.networkTraceData$'),

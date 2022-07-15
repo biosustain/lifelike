@@ -13,7 +13,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
@@ -146,6 +146,7 @@ class FilesystemBaseView(MethodView):
             lazy_load_content=False,
             require_hash_ids: List[str] = None,
             sort: List[str] = [],
+            sort_direction: List[str] = [],
             attr_excl: List[str] = None
     ) -> List[Files]:
         """
@@ -179,13 +180,24 @@ class FilesystemBaseView(MethodView):
         # up the hierarchy to the top most folder to figure out the associated project, which
         # the following generated query does. In the future, we MAY want to cache the project of
         # a file on every file row to make a lot of queries a lot simpler.
+
+        if len(sort) != len(sort_direction):
+            raise ValueError(
+                'Arguments `sort` and `sort_direction` should have an equal number' +
+                'of elements.'
+            )
+        sort_direction_fns = map(
+            lambda direction: desc if direction == 'desc' else asc, sort_direction
+        )
+        sort_map = zip(sort, sort_direction_fns)
+
         query = build_file_hierarchy_query(and_(
             filter,
             Files.deletion_date.is_(None)
         ), t_project, t_file, file_attr_excl=attr_excl) \
             .options(raiseload('*'),
                      joinedload(t_file.user)) \
-            .order_by(*[text(f'_file.{col}') for col in sort])
+            .order_by(*[dir_fn(text(f'_file.{col}')) for col, dir_fn in sort_map])
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
         # etc.) for the current user, which then can be read later by FileHierarchy or manually.
@@ -1150,7 +1162,8 @@ class FileSearchView(FilesystemBaseView):
                         Files.pinned.is_(True)
                     )
                 ),
-                sort=['pinned']
+                sort=['modified_date'],
+                sort_direction=['desc']
             )
             files = [
                 file for file in files
