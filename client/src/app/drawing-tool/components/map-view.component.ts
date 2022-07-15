@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, defer, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
@@ -76,6 +76,8 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
   }
 
+  getExportableLink$ = defer(() => of(this.map?.getGraphEntitySources()));
+
   ngOnDestroy() {
     super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
@@ -127,10 +129,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         });
     });
 
-  }
-
-  getExportableLink(): Source[] {
-    return this.map.getGraphEntitySources();
   }
 
   openCloneDialog() {

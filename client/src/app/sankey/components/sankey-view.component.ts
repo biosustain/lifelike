@@ -342,9 +342,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     )
   );
 
-  getExportableLink(): Promise<Source[]> {
-    return this.object$.pipe(map(object => object.getGraphEntitySources())).toPromise();
-  }
+  getExportableLink$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
