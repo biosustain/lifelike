@@ -4,8 +4,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
 import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
-import { combineLatest, Subject, EMPTY, iif } from 'rxjs';
-import { assign, partial, groupBy, isEmpty } from 'lodash-es';
+import { combineLatest, Subject, EMPTY, iif, Observable, BehaviorSubject } from 'rxjs';
+import { assign, partial, groupBy, isEmpty, mapValues } from 'lodash-es';
 import { zoomIdentity, zoomTransform } from 'd3';
 
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -151,6 +151,8 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   width: number;
   height: number;
 
+  horizontalStretch$ = this.sankey.horizontalStretch$;
+
   // resize and listen to future resize events
   // would be nice to listen on #g but SVG lacks support for that
   viewBox$ = createResizeObservable(this.wrapper.nativeElement, {leading: true})
@@ -175,18 +177,14 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       });
     });
 
-  zoomAdjust = this.sankey.isAutoLayout$.pipe(
-    switchMap(isAutoLayout =>
-      this.viewBox$.pipe(
-        pairwise(),
-        map(([prev, next]) => ({
-          widthChange: next.width / prev.width,
-          heightChange: next.height / prev.height,
-          widthDelta: next.width - prev.width,
-          heightDelta: next.height - prev.height
-        }))
-      )
-    )
+  zoomAdjust = this.viewBox$.pipe(
+    pairwise(),
+    map(([prev, next]) => ({
+      widthChange: next.width / prev.width,
+      heightChange: next.height / prev.height,
+      widthDelta: next.width - prev.width,
+      heightDelta: next.height - prev.height
+    }))
   ).subscribe(({widthDelta, heightDelta, widthChange, heightChange}) => {
     const transform = zoomTransform(this.svg.nativeElement);
     const k = Math.abs(widthChange - 1) > Math.abs(heightChange - 1) ? widthChange : heightChange;
@@ -806,7 +804,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   updateNodeRect(rects) {
     return rects
       .attr('height', ({y1, y0}) => representativePositiveNumber(y1 - y0))
-      .attr('width', ({x1, x0}) => x1 - x0)
       .attr('width', ({x1, x0}) => x1 - x0);
   }
 
