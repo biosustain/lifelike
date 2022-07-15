@@ -12,5 +12,5 @@ export interface ModuleProperties {
 export interface ModuleAwareComponent {
   modulePropertiesChange?: Observable<ModuleProperties>;
   viewParams?: Promise<object>;
-  getExportableLink(): Source[] | Promise<Source[]>;
+  getExportableLink$?: Observable<Source[]>;
 }

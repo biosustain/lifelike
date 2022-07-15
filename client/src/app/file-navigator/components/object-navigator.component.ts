@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { escapeRegExp } from 'lodash-es';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, defer, of, Subscription } from 'rxjs';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 import { ENRICHMENT_TABLE_MIMETYPE } from 'app/file-types/providers/enrichment-table.type-provider';
@@ -60,9 +60,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     this.loadTask.update(this.route.snapshot.params.file_id);
   }
 
-  getExportableLink(): Source[] {
-    return this.object.getGraphEntitySources();
-  }
+  getExportableLink$ = defer(() => of(this.object.getGraphEntitySources()));
 
   openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
     if (this.object.mimeType === MimeTypes.Pdf) {
