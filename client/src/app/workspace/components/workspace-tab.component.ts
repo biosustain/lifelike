@@ -38,7 +38,7 @@ export class WorkspaceTabComponent implements OnChanges {
   }
 
   dragData$ = defer(() => {
-    this.tab.component?.getExportableLink$.pipe(
+    this.tab.component?.sourceData$.pipe(
       switchMap(sources =>
         iif(
           () => Boolean(sources),

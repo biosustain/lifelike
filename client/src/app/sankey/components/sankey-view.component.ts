@@ -345,7 +345,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
 
 
-  getExportableLink$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
+  sourceData$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
 
 
   @HostListener('window:beforeunload', ['$event'])

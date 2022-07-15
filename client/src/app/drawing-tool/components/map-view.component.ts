@@ -78,7 +78,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  getExportableLink$ = defer(() => of(this.map?.getGraphEntitySources()));
+  sourceData$ = defer(() => of(this.map?.getGraphEntitySources()));
 
 
   get shouldConfirmUnload() {
