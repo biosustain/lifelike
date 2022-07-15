@@ -1,5 +1,5 @@
 # CI Test
-version: "3.8"
+version: "3.9"
 
 services:
   appserver:
@@ -27,7 +27,7 @@ services:
       - neo4j
 
   postgres:
-    image: postgres:13
+    image: postgres:14
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -44,4 +44,3 @@ services:
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-
