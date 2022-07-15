@@ -99,7 +99,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     });
   }
 
-  getExportableLink$ = defer(() => of([{
+  sourceData$ = defer(() => of([{
       domain: 'Source File',
       url: this.sourceFileURL.toString()
     }]));

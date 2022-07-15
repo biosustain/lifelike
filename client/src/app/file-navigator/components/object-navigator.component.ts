@@ -60,7 +60,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     this.loadTask.update(this.route.snapshot.params.file_id);
   }
 
-  getExportableLink$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
 
   openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
     if (this.object.mimeType === MimeTypes.Pdf) {

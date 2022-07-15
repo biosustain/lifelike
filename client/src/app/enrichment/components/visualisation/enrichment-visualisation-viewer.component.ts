@@ -50,7 +50,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadSubscription: Subscription;
 
-  getExportableLink$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
 
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {
