@@ -385,7 +385,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.viewController.selectView(networkTraceIdx, viewName)
       ),
-      tap(() => this.resetZoom(false)),
+      tap(() => {
+        this.resetZoom(false);
+        this.resetStretch();
+      }),
       take(1),
       catchError(() => of({}))
     ).toPromise();
@@ -501,7 +504,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.sankeyController.selectNetworkTrace(networkTraceIdx)
       ),
-      tap(() => this.resetZoom(false)),
+      tap(() => {
+        this.resetZoom(false);
+        this.resetStretch();
+      }),
       take(1),
       catchError(() => of({}))
     ).toPromise();
@@ -552,7 +558,9 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(overwrite =>
         iif(
           () => overwrite,
-          defer(() => this.viewController.createView(viewName)),
+          defer(() => this.viewController.createView(viewName)).pipe(
+            tap(() => this.resetStretch())
+          ),
           of(false)
         )
       )
@@ -569,7 +577,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
           defer(() => this.saveViewAs())
         )
       )
-    ).toPromise();
+    ).toPromise().then(() => this.resetStretch());
   }
 
   saveViewAs(): Promise<any> {
@@ -648,6 +656,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         })
       )
     ]).toPromise();
+    this.resetStretch();
     this.resetZoom();
   }
 
@@ -667,6 +676,27 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   zoomOut() {
     if (this.sankeySlot) {
       this.sankey.zoom.scaleBy(.8, undefined, true);
+    }
+  }
+
+  // endregion
+
+  // region Stretch
+  resetStretch() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(1);
+    }
+  }
+
+  stretch() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * 1.25);
+    }
+  }
+
+  shrink() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * .8);
     }
   }
 
