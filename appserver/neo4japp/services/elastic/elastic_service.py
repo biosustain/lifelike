@@ -7,7 +7,7 @@ from io import BytesIO
 import json
 
 from pyparsing import (
-    CaselessLiteral,
+    CaselessKeyword,
     Optional,
     ParserElement,
     QuotedString,
@@ -566,9 +566,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         boolExpr = infixNotation(
             boolOperand,
             [
-                (CaselessLiteral('not'), 1, opAssoc.RIGHT, BoolMustNot),
-                (CaselessLiteral('and'), 2, opAssoc.LEFT, BoolMust),
-                (CaselessLiteral('or'), 2, opAssoc.LEFT, BoolShould),
+                (CaselessKeyword('not'), 1, opAssoc.RIGHT, BoolMustNot),
+                (CaselessKeyword('and'), 2, opAssoc.LEFT, BoolMust),
+                (CaselessKeyword('or'), 2, opAssoc.LEFT, BoolShould),
             ],
         )
 
