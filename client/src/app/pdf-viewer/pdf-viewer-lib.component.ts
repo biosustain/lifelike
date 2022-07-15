@@ -29,6 +29,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { NavigationData, composeInternalLink } from 'app/shared/workspace-manager';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -503,11 +504,20 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
     `;
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
-    htmlLinks += `<a target="_blank" href="${visLink}">Knowledge Graph</a><br>`;
+    htmlLinks += composeInternalLink(
+      'Knowledge Graph',
+      { url: String(visLink), extras: { sideBySide: true, newTab: true } },
+    ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
-    htmlLinks += `<a target="_blank" href="${contLink}">File Content</a><br>`;
+    htmlLinks += composeInternalLink(
+      'File Content',
+      { url: String(contLink), extras: { sideBySide: true, newTab: true }}
+    ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
-    htmlLinks += `<a target="_blank" href="${mapLink}">Map Content</a><br>`;
+    htmlLinks += composeInternalLink(
+      'Map Content',
+      { url: String(mapLink), extras: { sideBySide: true, newTab: true }}
+    ) + '<br>';
     htmlLinks += `</div></div>`;
 
     base.push(htmlLinks);

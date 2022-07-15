@@ -114,7 +114,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   data$ = this._data$.pipe(
     $freezeInDev,
-    map(file => new SankeyDocument(file)),
+    map(file => new SankeyDocument(file, this.warningController)),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
@@ -210,23 +210,28 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       Math.min(sources.length, targets.length) === 1
     )
   );
-
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', 'id']);
 
   prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
   align$ = this.optionStateAccessor<Align>('aligns', 'alignId');
 
   pathReports$ = this.data$.pipe(
-    map(({nodes, nodeById, links, graph: {traceNetworks}}) =>
+    map(({nodes, getNodeById, links, graph: {traceNetworks}}) =>
       transform(
         traceNetworks,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
-          const traceNodes = this.getNetworkTraceNodes(traceLinks, nodeById).map(clone);
+          const traceNodes = this.getNetworkTraceNodes(traceLinks).map(clone);
           const traceNodesById = this.getNodeById(traceNodes);
 
           const source = traceNodesById.get(trace.source);
           const target = traceNodesById.get(trace.target);
+          if (isNil(source)) {
+            this.warningController.warn(ErrorMessages.missingNode(trace.source));
+          }
+          if (isNil(target)) {
+            this.warningController.warn(ErrorMessages.missingNode(trace.target));
+          }
 
           const report: SankeyPathReportEntity[] = [];
           const traversed = new WeakSet();
@@ -438,8 +443,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
    * Should return copy of nodes Objects (do not mutate nodes!)
    */
   getNetworkTraceNodes(
-    networkTraceLinks,
-    nodeById: Map<SankeyId, Readonly<SankeyNode>>
+    networkTraceLinks
   ) {
     return uniq(
       flatMap(networkTraceLinks, ({source, target}) => [source, target])

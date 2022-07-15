@@ -10,13 +10,12 @@
     </ng-container>
     <ng-container *ngIf="object$ | async as object">
         <app-module-header [dragTitleData$]="dragTitleData$"
-                           *ngIf="(data$ | async) as data"
                            [object]="object">
             <app-module-menu (objectRefresh)="requestRefresh()" *ngIf="object" [forEditing]="true"
                              [object]="object" [showDelete]="false"
                              [showOpen]="false">
             </app-module-menu>
-            <div *ngIf="pandingChanges$ | async">
+            <div *ngIf="pendingChanges$ | async">
             <span class="badge badge-danger badge-pill ml-1"
                   ngbTooltip="Has unsaved changes" container="body">
               <i class="fa fa-pencil-alt"></i>
@@ -34,65 +33,67 @@
             </div>
             <ng-container moduleMenuAdditions>
                 <div class="dropdown-divider"></div>
-                <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
-                    Open logs
-                    <ng-template #logModal let-modal>
-                        <div class="modal-header">
-                            <h4 class="modal-title">Logs</h4>
-                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                    type="button">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body p-0 pb-1">
-                            <ng-container
-                                    *ngIf="isArray(data.graph.log); else justText">
+                <ng-container *ngIf="(data$ | async) as data">
+                    <button (click)="open(logModal)" *ngIf="data?.graph.log" ngbDropdownItem>
+                        Open logs
+                        <ng-template #logModal let-modal>
+                            <div class="modal-header">
+                                <h4 class="modal-title">Logs</h4>
+                                <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                        type="button">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body p-0 pb-1">
+                                <ng-container
+                                        *ngIf="isArray(data.graph.log); else justText">
 
-                                <ul class="list-group list-group-flush">
-                                    <li *ngFor="let log of data?.graph.log"
-                                        class="list-group-item"
-                                    >{{ log }}</li>
-                                </ul>
-                            </ng-container>
-                            <ng-template #justText>
-                                {{ data.graph.log }}
-                            </ng-template>
-                        </div>
-                    </ng-template>
-                </button>
-                <button (click)="open(descriptionModal)" ngbDropdownItem>
-                    Open description
-                    <ng-template #descriptionModal let-modal>
-                        <div class="modal-header">
-                            <h4 class="modal-title">Description</h4>
-                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                    type="button">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div [style.whiteSpace]="'pre-line'" class="modal-body">
-                            {{ data.graph.description }}
-                        </div>
-                    </ng-template>
-                </button>
-                <button (click)="openPathReport()" ngbDropdownItem>
-                    Open path report
-                </button>
-                <button (click)="open(fileStructureOverview)" ngbDropdownItem>
-                    Open structure overview
-                    <ng-template #fileStructureOverview let-modal>
-                        <div class="modal-header">
-                            <h4 class="modal-title">Structure Overview</h4>
-                            <button (click)="modal.dismiss()" aria-label="Close" class="close"
-                                    type="button">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <app-sankey-structure-overview></app-sankey-structure-overview>
-                        </div>
-                    </ng-template>
-                </button>
+                                    <ul class="list-group list-group-flush">
+                                        <li *ngFor="let log of data?.graph.log"
+                                            class="list-group-item"
+                                        >{{ log }}</li>
+                                    </ul>
+                                </ng-container>
+                                <ng-template #justText>
+                                    {{ data.graph.log }}
+                                </ng-template>
+                            </div>
+                        </ng-template>
+                    </button>
+                    <button (click)="open(descriptionModal)" ngbDropdownItem>
+                        Open description
+                        <ng-template #descriptionModal let-modal>
+                            <div class="modal-header">
+                                <h4 class="modal-title">Description</h4>
+                                <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                        type="button">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div [style.whiteSpace]="'pre-line'" class="modal-body">
+                                {{ data.graph.description }}
+                            </div>
+                        </ng-template>
+                    </button>
+                    <button (click)="openPathReport()" ngbDropdownItem>
+                        Open path report
+                    </button>
+                    <button (click)="open(fileStructureOverview)" ngbDropdownItem>
+                        Open structure overview
+                        <ng-template #fileStructureOverview let-modal>
+                            <div class="modal-header">
+                                <h4 class="modal-title">Structure Overview</h4>
+                                <button (click)="modal.dismiss()" aria-label="Close" class="close"
+                                        type="button">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <app-sankey-structure-overview></app-sankey-structure-overview>
+                            </div>
+                        </ng-template>
+                    </button>
+                </ng-container>
                 <button (click)="open(warningList)" ngbDropdownItem>
                     Warning List
                     <ng-template #warningList let-modal>
