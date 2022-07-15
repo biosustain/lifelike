@@ -240,6 +240,8 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   y1: number;
   reversedDepth: number;
   height: number;
+  initialX0: number;
+  initialX1: number;
   x0: number;
   x1: number;
   label?: string;

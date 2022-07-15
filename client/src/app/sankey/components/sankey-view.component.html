@@ -151,6 +151,19 @@
                     <i class="fas fa-search-minus"></i>
                 </button>
             </div>
+
+            <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
+                <button (click)="stretch()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Stretch" placement="bottom"
+                        type="button">
+                    <i class="fas fa-expand-alt" [appRotate]="45"></i>
+                </button>
+                <button (click)="shrink()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Shrink" placement="bottom"
+                        type="button">
+                    <i class="fas fa-compress-alt" [appRotate]="45"></i>
+                </button>
+            </div>
             <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"
                  class="btn-group-toggle flex-wrap">
                 <div class="btn-group d-inline-block" ngbDropdown
