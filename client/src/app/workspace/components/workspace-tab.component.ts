@@ -1,7 +1,5 @@
-import { CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
-import { isNil } from 'lodash';
 import { Observable, defer, of, iif } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -10,6 +8,8 @@ import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
+import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
+import { MapComponent } from 'app/drawing-tool/components/map.component';
 
 @Component({
   selector: 'app-workspace-tab',
@@ -34,15 +34,16 @@ export class WorkspaceTabComponent implements OnChanges {
   constructor(
     protected readonly viewService: ViewService,
     protected readonly clipboard: ClipboardService
-  ) {}
+  ) {
+  }
 
   dragData$ = defer(() => {
-    this.tab.getComponent()?.getExportableLink().pipe(
+    this.tab.component?.getExportableLink$.pipe(
       switchMap(sources =>
         iif(
           () => Boolean(sources),
           of(sources),
-          of( () => this.viewService.getShareableLink(this.tab.getComponent(), this.tab.url).pipe(
+          of( () => this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
             map(url => [{
             url: url.href,
             domain: this.tab.title,
@@ -52,7 +53,7 @@ export class WorkspaceTabComponent implements OnChanges {
       map(sources => {
         return { 'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
-          label: this.tab.getComponent()?.map ? 'map' : 'link',
+          label: (this.tab.component as MapComponent)?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
             sources
@@ -71,7 +72,7 @@ export class WorkspaceTabComponent implements OnChanges {
 
   openCopyLinkDialog() {
     return this.clipboard.copy(
-      this.viewService.getShareableLink(this.tab.getComponent(), this.tab.url).toPromise()
+      this.viewService.getShareableLink(this.tab.component, this.tab.url).toPromise()
         .then((url) => {
           this.tab.url = url.pathname + url.search + url.hash;
           return url.href;

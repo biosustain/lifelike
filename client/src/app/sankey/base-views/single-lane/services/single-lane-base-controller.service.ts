@@ -104,17 +104,17 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   colorLinkByType$ = this.stateAccessor('colorLinkByType');
 
   networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
-    switchMap(({links, nodes, nodeById}) => this.common.networkTrace$.pipe(
+    switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
         map(({sources, targets, traces}) => {
           const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks, nodeById);
+          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
 
           // move this to run in pararell with positioning
-          this.colorNodes(networkTraceNodes, sources as any, targets as any, nodeById);
+          this.colorNodes(networkTraceNodes, sources as any, targets as any);
           return {
             nodes: networkTraceNodes,
             links: networkTraceLinks,
-            nodeById, sources, targets
+            getNodeById, sources, targets
           };
         }),
         debug('SingleLaneBaseControllerService.networkTraceData$'),
@@ -158,7 +158,7 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   /**
    * Color nodes if they are in source or target set.
    */
-  colorNodes(nodes, sources: Array<Base['node']>, targets: Array<Base['node']>, nodeById) {
+  colorNodes(nodes, sources: Array<Base['node']>, targets: Array<Base['node']>) {
     nodes.forEach(node => node.color = undefined);
     const mapNodePositionToColor = (nodesToColor: Array<Base['node']>, position: NodePosition) =>
       nodesToColor.forEach(node => {

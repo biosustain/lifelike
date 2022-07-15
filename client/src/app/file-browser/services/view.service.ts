@@ -35,7 +35,7 @@ export class ViewService {
     );
   }
 
-  getAppLink(componentInstance: Component, url: string): Observable<AppURL> {
+  getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
     url = removeViewModeIfPresent(url);
     const hashUrl = new AppURL(url);
     const viewParams = (componentInstance as ModuleAwareComponent)?.viewParams;
@@ -53,7 +53,7 @@ export class ViewService {
     return of(hashUrl);
   }
 
-  getShareableLink(componentInstance: Component, url: string): Observable<URL> {
+  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
     return this.getAppLink(componentInstance, url).pipe(
       tap((appUrl: AppURL) => appUrl.origin = window.location.href)
     );

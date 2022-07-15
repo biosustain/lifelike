@@ -12,6 +12,7 @@ import {
 import { Observable } from 'rxjs';
 
 import { Pane, WorkspaceManager } from 'app/shared/workspace-manager';
+import { ShouldConfirmUnload } from 'app/shared/modules';
 
 import { SplitComponent } from 'angular-split';
 
@@ -21,7 +22,7 @@ import { SplitComponent } from 'angular-split';
   styleUrls: ['./workspace.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked {
+export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked, ShouldConfirmUnload {
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
   @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
@@ -60,19 +61,20 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     this.workspaceManager.save();
   }
 
-  shouldConfirmUnload(): boolean {
-    const result = this.workspaceManager.shouldConfirmUnload();
-    if (result) {
-      result.pane.activeTab = result.tab;
-      return true;
-    } else {
-      return false;
-    }
+  get shouldConfirmUnload(): Promise<boolean> {
+    return this.workspaceManager.shouldConfirmUnload().then(result => {
+      if (result) {
+        result.pane.activeTab = result.tab;
+        return true;
+      } else {
+        return false;
+      }
+    });
   }
 
   @HostListener('window:beforeunload', ['$event'])
-  handleBeforeUnload(event) {
-    if (this.shouldConfirmUnload()) {
+  async handleBeforeUnload(event) {
+    if (await this.shouldConfirmUnload) {
       event.returnValue = 'Leave page? Changes you made may not be saved';
     }
   }

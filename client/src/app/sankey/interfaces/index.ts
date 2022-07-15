@@ -76,7 +76,7 @@ export interface TypeContext {
 export interface NetworkTraceData<Base extends TypeContext> {
   links: Array<Base['link']>;
   nodes: Array<Base['node']>;
-  nodeById: Map<string, Base['node']>;
+  getNodeById: (id: string) => Base['node'];
   sources: Array<Base['node']>;
   targets: Array<Base['node']>;
 }
