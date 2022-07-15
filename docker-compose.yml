@@ -145,6 +145,11 @@ services:
     image: postgres:14
     environment:
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-q"]
+      start_period: 10s
     networks:
       - backend
 
@@ -171,11 +176,7 @@ services:
       context: elasticsearch
     environment:
       - discovery.type=single-node
-      - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
       - bootstrap.memory_lock=true
-      - xpack.graph.enabled=false
-      - xpack.watcher.enabled=false
-      - xpack.license.self_generated.type=basic
     ulimits:
       memlock:
         soft: -1
@@ -184,6 +185,9 @@ services:
       - backend
 
 volumes:
+  postgres:
+  neo4j:
+  elasticsearch:
   lmdb:
 
 networks:
