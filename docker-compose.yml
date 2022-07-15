@@ -1,7 +1,7 @@
 version: "3.9"
 
 x-appserver: &appserver
-  build: ../appserver
+  build: ./appserver
   environment:
     # Log Services
     - FORMAT_AS_JSON=false
@@ -37,50 +37,43 @@ x-appserver: &appserver
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
     - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
-    - ../appserver:/home/n4j
+    - ./appserver:/home/n4j
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
-    - postgres
-    - neo4j
-    - elasticsearch
-    - redis
-    - pdfparser
+    postgres:
+      condition: service_healthy
+    neo4j:
+      condition: service_healthy
+    elasticsearch:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    pdfparser:
+      condition: service_started
 
 services:
-  appserver:
-    <<: *appserver
-    ports:
-      - 5000:5000
-    networks:
-      - backend
-      - frontend
-
-  worker:
-    <<: *appserver
-    command: flask rq worker
-    networks:
-      - backend
-
   webserver:
     build:
-      context: ../client
+      context: ./client
       dockerfile: Dockerfile
       target: angular-deps
     command: yarn dev-start
     volumes:
-      - ../client:/app
-      # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
-      # Helps not overwrite the node_modules with host
+      - ./client:/app
       - /app/node_modules
     ports:
       - 4200:4200
-    networks:
-      - frontend
+  appserver:
+    <<: *appserver
+    ports:
+      - 5000:5000
+
+  worker:
+    <<: *appserver
+    command: flask rq worker
 
   statistical-enrichment:
-    build: ../statistical-enrichment
-    ports:
-      - 5010:5010
+    build: ./statistical-enrichment
     environment:
       # Flask
       - FLASK_APP=statistical_enrichment
@@ -97,20 +90,16 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=password
       - REDIS_SSL=false
-    # Allow debugging w/ IPython or pdb
-    stdin_open: true
-    tty: true
-    # End debugging section
     volumes:
-      - ../statistical-enrichment:/home/user
-    networks:
-      - backend
+      - ./statistical-enrichment:/home/user
+    ports:
+      - 5010:5010
     depends_on:
-      - graphdatabase
+      - neo4j
       - redis
 
   cache-invalidator:
-    build: ../cache-invalidator
+    build: ./cache-invalidator
     environment:
       - LOG_LEVEL=debug
       # Neo4j
@@ -124,12 +113,10 @@ services:
       - REDIS_PASSWORD=password
       - REDIS_SSL=false
     volumes:
-      - ../cache-invalidator:/app
-    networks:
-      - backend
+      - ./cache-invalidator:/app
     depends_on:
+      - neo4j
       - redis
-      - graphdatabase
 
   pdfparser:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser:latest
@@ -138,8 +125,6 @@ services:
     # tty: true - this is a hack for grizzly as it expects input;
     # without it, container will exit right away due to docker not accepting input by default
     tty: true
-    networks:
-      - backend
 
   postgres:
     image: postgres:14
@@ -148,27 +133,35 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-q"]
-      start_period: 10s
-    networks:
-      - backend
+      test: ["CMD-SHELL", "pg_isready"]
+      start_period: 5s
+      timeout: 1s
+      interval: 3s
+      retries: 5
 
   neo4j:
     image: neo4j:4.4-community
     environment:
       - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+    volumes:
+      - neo4j:/var/lib/neo4j/data
     ports:
       - 7474:7474
       - 7687:7687
-    networks:
-      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "/var/lib/neo4j/bin/neo4j status"]
+      start_period: 60s
+      timeout: 3s
+      interval: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass password
-    networks:
-      - backend
+    environment:
+      - REDIS_PASSWORD=password
+    volumes:
+      - redis:/data
 
   elasticsearch:
     build:
@@ -177,19 +170,16 @@ services:
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    networks:
-      - backend
 
 volumes:
   postgres:
   neo4j:
   elasticsearch:
   lmdb:
-
-networks:
-  frontend:
-  backend:
+  redis:
