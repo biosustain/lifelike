@@ -797,7 +797,7 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
         if not os.path.exists(image_filename):
             original_image: Image = Image.open(f'{ASSETS_PATH}{label}.png', 'r')
             orig_color = COLOR_TO_REPLACE
-            replacement_color = ImageColor.getcolor(image_filename, 'RGBA')
+            replacement_color = ImageColor.getcolor(fill_color, 'RGBA')
             data = np.array(original_image.convert("RGBA"))
             data[(data == orig_color).all(axis=-1)] = replacement_color
             colored_image = Image.fromarray(data, mode='RGBA')
