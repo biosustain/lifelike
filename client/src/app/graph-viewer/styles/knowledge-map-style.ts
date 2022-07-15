@@ -244,7 +244,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     const styleData: UniversalEdgeStyle = d.style ?? {};
     const fontSizeScale = styleData.fontSizeScale ?? 1;
     const strokeColor = styleData.strokeColor ?? BORDER_BLUE_COLOR;
-    const lineType = styleData.lineType ?? connectedToNotes ? LineTypes.Dashed : this.STANDARD_BORDER;
+    const defaultLineType = connectedToNotes ? LineTypes.Dashed : this.STANDARD_BORDER;
+    const lineType = styleData.lineType ?? defaultLineType;
     const lineWidth = styleData.lineWidthScale ?? 1;
     const sourceHeadType = styleData.sourceHeadType;
     const targetHeadType = styleData.targetHeadType;
