@@ -71,15 +71,21 @@ export class AppURL implements URL, AppURLInterface {
     return this.pathSegments.map(segment => `/${segment}`).join('');
   }
 
-  // @ts-ignore : follows js inteface
-  set search(value: string[][] | Record<string, string> | string | URLSearchParams) {
+  set search(value: string) {
     this.searchParams = new URLSearchParams(value);
   }
 
-  // @ts-ignore : follows js inteface
   get search(): string {
     const search = this.searchParams.toString();
     return search ? `?${search}` : '';
+  }
+
+  /**
+   * Typescript does not allow different type for setter&getter
+   * As workaround providing custom setter to be used with other types
+   */
+  setSearch(value: string[][] | Record<string, string> | string | URLSearchParams) {
+    this.searchParams = new URLSearchParams(value);
   }
 
   set hash(value: string) {
