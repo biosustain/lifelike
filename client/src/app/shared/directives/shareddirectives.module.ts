@@ -15,6 +15,7 @@ import { TextTruncateToTooltipDirective } from './text-truncate-to-tooltip.direc
 import { ElementObserverDirective } from './element-observer.directive';
 import { ConstrainToViewportDirective } from './constrain-to-viewport.directive';
 import { CopyToClipboardDirective } from './copy-to-clipboard.directive';
+import { RotateDirective } from './rotate.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -35,7 +36,8 @@ const directives = [
   FilesystemObjectTargetDirective,
   TextTruncateToTooltipDirective,
   CopyToClipboardDirective,
-    ConstrainToViewportDirective,
+  ConstrainToViewportDirective,
+  RotateDirective,
   ElementObserverDirective
 ];
 
