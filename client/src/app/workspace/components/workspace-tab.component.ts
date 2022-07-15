@@ -2,7 +2,8 @@ import { CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { isNil } from 'lodash';
-import { Observable, defer, of } from 'rxjs';
+import { Observable, defer, of, iif } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
@@ -36,22 +37,28 @@ export class WorkspaceTabComponent implements OnChanges {
   ) {}
 
   dragData$ = defer(() => {
-    const sources = Promise.resolve(this.tab.getComponent()?.getExportableLink());
-    return sources.then(src => {
-      return {
-        'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+    this.tab.getComponent()?.getExportableLink().pipe(
+      switchMap(sources =>
+        iif(
+          () => Boolean(sources),
+          of(sources),
+          of( () => this.viewService.getShareableLink(this.tab.getComponent(), this.tab.url).pipe(
+            map(url => [{
+            url: url.href,
+            domain: this.tab.title,
+          } as Source])))
+        )
+      ),
+      map(sources => {
+        return { 'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
           label: this.tab.getComponent()?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
-            sources: src ?? [{
-              url: this.tab.url,
-              domain: this.tab.title
-            } as Source]
+            sources
           }
-        } as Partial<UniversalGraphNode>)
-      };
-    });
+        } as Partial<UniversalGraphNode>)};
+      }));
   });
 
   drag = new CdkNativeDragItegration(this.dragData$);

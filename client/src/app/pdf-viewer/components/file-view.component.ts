@@ -199,9 +199,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   });
 
-  getExportableLink(): Source[] | Promise<Source[]> {
-    return this.object.getGraphEntitySources();
-  }
+  getExportableLink$ = defer(() => of(this.object.getGraphEntitySources()));
 
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId

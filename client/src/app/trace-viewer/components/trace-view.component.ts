@@ -2,7 +2,7 @@ import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import visNetwork from 'vis-network';
-import { combineLatest, Subject } from 'rxjs';
+import { combineLatest, defer, of, Subject } from 'rxjs';
 import { map, switchMap, takeUntil, tap, shareReplay } from 'rxjs/operators';
 import { truncate } from 'lodash-es';
 
@@ -99,12 +99,11 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     });
   }
 
-  getExportableLink(): Source[] {
-    return [{
+  getExportableLink$ = defer(() => of([{
       domain: 'Source File',
       url: this.sourceFileURL.toString()
-    }];
-  }
+    }]));
+
 
   ngOnDestroy() {
     this.destroyed.next();
