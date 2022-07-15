@@ -13,8 +13,7 @@ import { AppURL } from 'app/shared/utils/url';
  */
 @Injectable({providedIn: 'root'})
 export class ViewService {
-  constructor(protected readonly http: HttpClient) {
-  }
+  constructor(protected readonly http: HttpClient) {}
 
   get(viewId: string): Observable<object> {
     return this.http.get(
@@ -38,14 +37,11 @@ export class ViewService {
   getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
     url = removeViewModeIfPresent(url);
     const hashUrl = new AppURL(url);
-    const viewParams = (componentInstance as ModuleAwareComponent)?.viewParams;
-    if (viewParams) {
-      return from(viewParams).pipe(
-        switchMap(params => this.create(params)),
-        map(viewId => {
-          if (viewId) {
-            hashUrl.fragment = viewId;
-          }
+    const linkParamsPromise = (componentInstance as ModuleAwareComponent)?.linkParams;
+    if (linkParamsPromise) {
+      return from(linkParamsPromise).pipe(
+        map(linkParams => {
+          hashUrl.setSearch(linkParams);
           return hashUrl;
         })
       );

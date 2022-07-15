@@ -291,23 +291,12 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     }
   };
 
-  positionNodesHorizontaly(data, {x1, x0, width}, x) {
+  positionNodesHorizontaly(data, {x1, x0, width}: Horizontal, x: number) {
     const {dx} = this;
     const kx = (width - dx) / (x - 1);
     for (const node of data.nodes) {
-      node.x0 = x0 + node.layer * kx;
-      node.x1 = node.x0 + dx;
+      node.initialX0 = x0 + node.layer * kx;
+      node.initialX1 = node.initialX0 + dx;
     }
   }
-
-  // Solved by adjusting zoom instead
-  // repositionNodesHorizontaly(data, {x0}, widthChangeRatio) {
-  //   const {dx} = this;
-  //   if (widthChangeRatio !== 1) {
-  //     for (const node of data.nodes) {
-  //       node.x0 = (node.x0 - x0) * widthChangeRatio + x0;
-  //       node.x1 = node.x0 + dx;
-  //     }
-  //   }
-  // }
 }
