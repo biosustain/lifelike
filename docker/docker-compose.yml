@@ -1,9 +1,7 @@
-version: "3.8"
+version: "3.9"
 
 x-appserver: &appserver
-  build: ./appserver
-  env_file:
-    - azure-secrets.env
+  build: ../appserver
   environment:
     # Log Services
     - FORMAT_AS_JSON=false
@@ -39,54 +37,50 @@ x-appserver: &appserver
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
     - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
-    - ./appserver:/home/n4j
+    - ../appserver:/home/n4j
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
+    - postgres
+    - neo4j
     - elasticsearch
-    - graphdatabase
-    - pgdatabase
     - redis
     - pdfparser
 
 services:
   appserver:
     <<: *appserver
-    container_name: appserver
     ports:
-      - "5000:5000"
+      - 5000:5000
     networks:
       - backend
       - frontend
 
   worker:
     <<: *appserver
-    container_name: worker
     command: flask rq worker
     networks:
       - backend
 
   webserver:
-    container_name: client
     build:
-      context: ./client
+      context: ../client
       dockerfile: Dockerfile
       target: angular-deps
     command: yarn dev-start
     volumes:
-      - ./client:/app
+      - ../client:/app
       # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
       # Helps not overwrite the node_modules with host
       - /app/node_modules
     ports:
-      - "4200:4200"
+      - 4200:4200
     networks:
       - frontend
 
   statistical-enrichment:
-    container_name: statistical-enrichment
-    build: ./statistical-enrichment
+    build: ../statistical-enrichment
     ports:
-      - "5010:5010"
+      - 5010:5010
     environment:
       # Flask
       - FLASK_APP=statistical_enrichment
@@ -108,7 +102,7 @@ services:
     tty: true
     # End debugging section
     volumes:
-      - ./statistical-enrichment:/home/user
+      - ../statistical-enrichment:/home/user
     networks:
       - backend
     depends_on:
@@ -116,8 +110,7 @@ services:
       - redis
 
   cache-invalidator:
-    container_name: cache-invalidator
-    build: ./cache-invalidator
+    build: ../cache-invalidator
     environment:
       - LOG_LEVEL=debug
       # Neo4j
@@ -131,7 +124,7 @@ services:
       - REDIS_PASSWORD=password
       - REDIS_SSL=false
     volumes:
-      - ./cache-invalidator:/app
+      - ../cache-invalidator:/app
     networks:
       - backend
     depends_on:
@@ -139,47 +132,40 @@ services:
       - graphdatabase
 
   pdfparser:
-    container_name: pdfparser
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser:latest
     ports:
-      - "7600:7600"
+      - 7600:7600
     # tty: true - this is a hack for grizzly as it expects input;
     # without it, container will exit right away due to docker not accepting input by default
     tty: true
     networks:
       - backend
 
-  pgdatabase:
-    image: postgres:11
-    container_name: pgdatabase
-    command: postgres -c max_wal_size=2GB -c log_statement='all'
+  postgres:
+    image: postgres:14
     environment:
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5431:5432"
     networks:
       - backend
 
-  graphdatabase:
-    container_name: graphdatabase
-    build: ./graph-db/neo4j
+  neo4j:
+    image: neo4j:4.4-community
     environment:
       - NEO4J_AUTH=neo4j/password
-    volumes:
-      - ./graph-db/neo4j/logs:/logs
+      - NEO4JLABS_PLUGINS=["apoc"]
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - 7474:7474
+      - 7687:7687
     networks:
       - backend
 
   redis:
-    image: redis:6-alpine
+    image: redis:7-alpine
     command: redis-server --requirepass password
     networks:
       - backend
 
   elasticsearch:
-    container_name: elasticsearch
     build:
       dockerfile: Dockerfile
       context: elasticsearch
@@ -194,12 +180,8 @@ services:
       memlock:
         soft: -1
         hard: -1
-    ports:
-      - "9200:9200"
-      - "9300:9300"
     networks:
       - backend
-      - elastic
 
 volumes:
   lmdb:
@@ -207,5 +189,3 @@ volumes:
 networks:
   frontend:
   backend:
-  elastic:
-
