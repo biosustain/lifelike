@@ -366,7 +366,8 @@ def update_or_create_index(index_id, index_mapping_file):
 def load_lmdb():
     """ Downloads LMDB files from Cloud to Local for application """
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
-    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
+    lmdb_dir_path = os.getenv('LMDB_HOME_FOLDER',
+                              os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb'))
     manager.download_all(lmdb_dir_path)
     manager.update_all_dates(lmdb_dir_path)
 
@@ -381,7 +382,8 @@ def upload_lmdb():
     to the correct versions
     """
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
-    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
+    lmdb_dir_path = os.getenv('LMDB_HOME_FOLDER',
+                              os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb'))
     manager.upload_all(lmdb_dir_path)
 
 
