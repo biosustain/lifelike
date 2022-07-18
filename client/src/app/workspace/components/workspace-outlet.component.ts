@@ -22,12 +22,36 @@ import { Container } from 'app/shared/workspace-manager';
     <ng-container #child></ng-container>`,
 })
 export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnInit, OnDestroy {
+  @Input() set container(container) {
+    this._container = container;
+    if (this.active) {
+      this.attachComponent();
+    }
+  }
+
+  get container() {
+    return this._container;
+  }
+
+  @Input() set active(active: boolean) {
+    this._active = active;
+    if (active && !this.previouslyActive) {
+      this.previouslyActive = true;
+      this.attachComponent();
+    }
+  }
+
+  get active(): boolean {
+    return this._active;
+  }
+
   @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
-  private currentActive = false;
+
+  private _active = false;
+  private _container: Container<any>;
   private previouslyActive = false;
-  private currentContainer: Container<any>;
 
   constructor(private changeDetectorRef: ChangeDetectorRef,
               private ngZone: NgZone,
@@ -42,31 +66,8 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   ngOnDestroy(): void {
-    // This will detach and destroy both the viewContainerRef AND the componentRef
-    this.currentContainer.destroy();
-  }
-
-  get container() {
-    return this.currentContainer;
-  }
-
-  @Input() set container(container) {
-    this.currentContainer = container;
-    if (this.active) {
-      this.attachComponent();
-    }
-  }
-
-  get active(): boolean {
-    return this.currentActive;
-  }
-
-  @Input() set active(active: boolean) {
-    this.currentActive = active;
-    if (active && !this.previouslyActive) {
-      this.previouslyActive = true;
-      this.attachComponent();
-    }
+    // Detach the viewRef from the componentRef. This allows us to move tabs around without reloading the associated component.
+    this.viewComponentRef.detach();
   }
 
   ngAfterViewInit(): void {
@@ -76,7 +77,7 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   ngOnChanges(): void {
-    if (this.active && this.viewComponentRef && this.currentContainer && !this.currentContainer.attached) {
+    if (this.active && this.viewComponentRef && this.container && !this.container.attached) {
       this.attachComponent();
     }
   }
@@ -84,8 +85,8 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   private attachComponent(): void {
     if (this.viewComponentRef) {
       this.viewComponentRef.detach();
-      if (this.currentContainer) {
-        this.currentContainer.attach(this.viewComponentRef);
+      if (this.container) {
+        this.container.attach(this.viewComponentRef);
         this.changeDetectorRef.detectChanges();
       }
     }

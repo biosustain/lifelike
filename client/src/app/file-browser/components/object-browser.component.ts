@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -97,6 +97,7 @@ export class ObjectBrowserComponent {
       ))
     )
   );
+
   load(hashId: string) {
     this._hashId$.next(hashId);
   }
