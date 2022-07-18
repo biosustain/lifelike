@@ -1023,7 +1023,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         nodes = content_json.get('nodes', [])
         for group in content_json.get('groups', []):
-            nodes.push(group)
+            nodes.append(group)
             nodes += group.get('members', [])
 
         for node in nodes:
