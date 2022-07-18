@@ -1,7 +1,7 @@
 """Add path column to files
 
 Revision ID: 93b75c6f3f87
-Revises: 3234be6a4bd8
+Revises: 802652f7bcfd
 Create Date: 2022-05-23 23:38:47.777414
 
 """
@@ -16,7 +16,7 @@ from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = '93b75c6f3f87'
-down_revision = '3234be6a4bd8'
+down_revision = '802652f7bcfd'
 branch_labels = None
 depends_on = None
 
