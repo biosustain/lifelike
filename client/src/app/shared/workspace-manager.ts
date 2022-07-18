@@ -316,6 +316,7 @@ export class Pane {
       if (this.tabs[i] === tab) {
         this.tabs.splice(i, 1);
         this.activeTabHistory.delete(tab);
+        tab.destroy();
         return true;
       }
     }
@@ -471,7 +472,6 @@ export class WorkspaceManager {
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
-  private loaded = false;
 
   constructor(private readonly router: Router,
               private readonly injector: Injector,
@@ -737,13 +737,6 @@ export class WorkspaceManager {
 
   emitEvents(): void {
     this.panes$.next(this.buildPanesSnapshot());
-  }
-
-  initialLoad() {
-    if (!this.loaded) {
-      this.loaded = true;
-      this.load();
-    }
   }
 
   load() {
