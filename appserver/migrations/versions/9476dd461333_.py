@@ -1,7 +1,7 @@
 """Update all enrichment tables to v6 of schema
 
 Revision ID: 9476dd461333
-Revises: 93b75c6f3f87
+Revises: 3234be6a4bd8
 Create Date: 2022-06-09 20:53:49.869308
 
 """
@@ -21,7 +21,7 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 
 # revision identifiers, used by Alembic.
 revision = '9476dd461333'
-down_revision = '93b75c6f3f87'
+down_revision = '3234be6a4bd8'
 branch_labels = None
 depends_on = None
 
