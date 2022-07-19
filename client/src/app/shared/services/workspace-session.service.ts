@@ -61,9 +61,12 @@ export class WorkspaceSessionService {
         loader.createPane(pane.id, {
           size: pane.size,
         });
-        for (const tab of pane.tabs) {
+
+        // Tabs are saved in the correct order, but will be in reverse order if we don't preemptively reverse them when loading.
+        for (const tab of pane.tabs.reverse()) {
           loader.loadTab(pane.id, tab);
         }
+
         loader.setPaneActiveTabHistory(pane.id, pane.activeTabHistory);
       }
       return true;
