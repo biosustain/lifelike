@@ -39,6 +39,9 @@ export class WorkspaceTabComponent implements OnChanges {
 
   dragData$ = defer(() => {
     const sources$ = this.tab.component?.sourceData$ ?? of(null);
+
+    console.log(this.tab.component);
+    console.log(this.tab.component.sourceData$);
     return sources$.pipe(
       switchMap(sources =>
         iif(
@@ -48,7 +51,7 @@ export class WorkspaceTabComponent implements OnChanges {
             map(({href}) => [{
             url: href,
             domain: this.tab.title,
-          } as Source]))
+          } as Source])),
         )
       ),
       map(sources => {
