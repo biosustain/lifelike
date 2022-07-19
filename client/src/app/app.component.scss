@@ -2,6 +2,9 @@
 
 // Make the content fill the whole screen
 // There's no better way to do this due to limitations in Angular
+
+$footer-height: 24px;
+
 router-outlet + ::ng-deep * {
   height: 100%;
 }
@@ -14,18 +17,22 @@ router-outlet + ::ng-deep * {
   z-index: 1045;
 }
 
-footer {
+div.module-content {
+  margin-bottom: $footer-height;
+}
+
+footer.module-footer {
+  height: $footer-height;
   background: $gray-300;
-  border-top: 1px solid $gray-500;
   box-shadow: 0px -2px 10px rgba(50, 50, 50, 0.15);
-  height: 24px;
-  line-height: 23px;
+  border-top: 1px solid $gray-500;
+  line-height: $footer-height - 1;
   font-size: 12px;
   text-align: right;
 
   span {
     display: inline-block;
-    height: 23px;
+    height: $footer-height - 1;
     overflow: hidden;
     padding-right: 1.5em;
 

@@ -103,9 +103,11 @@
 
   <!-- Module content -->
   <div class="flex-fill overflow-auto">
-    <router-outlet></router-outlet>
+    <div class="module-content">
+      <router-outlet></router-outlet>
+    </div>
 
-    <footer class="fixed-bottom">
+    <footer class="module-footer fixed-bottom">
       <span>
         This project uses code provided by
         <img src="/favicon.ico" alt="Lifelike Logo" class="logo">
