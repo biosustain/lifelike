@@ -1,7 +1,8 @@
 import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, NavigationExtras, QueryParamsHandling, Router, UrlTree } from '@angular/router';
 import { LocationStrategy } from '@angular/common';
 
+import { isNil } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
 import { WorkspaceManager } from '../workspace-manager';
@@ -97,15 +98,21 @@ export class AbstractLinkDirective {
 
 
   get urlTree(): UrlTree {
-    return this.router.createUrlTree(this.commands, {
+    const navExtras: NavigationExtras = {
       relativeTo: this.route,
       queryParams: this.queryParams,
-      fragment: this.fragment || '',
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
-    });
-  }
+    };
 
+    // Only set the `fragment` option if it is a non-nil value. This prevents an issue where an empty fragment (e.g. 'parent/child#') is
+    // added to the URL
+    if (!isNil(this.fragment)) {
+      navExtras.fragment = this.fragment;
+    }
+
+    return this.router.createUrlTree(this.commands, navExtras);
+  }
 }
 
 @Directive({
