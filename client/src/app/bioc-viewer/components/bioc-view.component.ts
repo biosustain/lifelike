@@ -179,7 +179,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>)
   }));
 
-  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   getFigureCaption(passage) {
     return passage.infons.id || 'Fig';
