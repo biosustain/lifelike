@@ -22,6 +22,7 @@ from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
     MAX_FILE_SIZE,
@@ -1169,6 +1170,8 @@ class FileSearchView(FilesystemBaseView):
                 file for file in files
                 if file.calculated_privileges[current_user.id].readable
             ]
+            # Ensure directories appear at the top of the list
+            files.sort(key=lambda f: not (f.mime_type == FILE_MIME_TYPE_DIRECTORY))
             total = len(files)
         else:
             raise NotImplementedError()
