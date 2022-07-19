@@ -79,6 +79,8 @@ export abstract class PlacedObject {
   private placedObjectRenderer: PlacedObjectRenderer;
   protected children: PlacedObject[] = [];
 
+  selectionMargin = 10;
+
   /**
    * Binds an object to a context.
    * @param renderer the renderer
@@ -111,8 +113,14 @@ export abstract class PlacedObject {
   /**
    * Render the object on the canvas.
    * @param transform the zoom and pan transform
+   * @param selected is object selected
    */
-  abstract draw(transform: any): void;
+  abstract draw(transform: any, selected: boolean): void;
+
+  /**
+   * Render the selection shadow below object.
+   */
+  abstract drawSelection();
 
   /**
    * Called after the object has been bound to a renderer.

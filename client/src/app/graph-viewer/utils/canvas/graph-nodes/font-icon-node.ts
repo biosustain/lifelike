@@ -85,9 +85,13 @@ export class FontIconNode extends PlacedNode {
     return {x: this.x, y: this.y};
   }
 
-  draw(transform: any): void {
+  draw(transform: any, selected: boolean): void {
     const ctx = this.ctx;
     const highDetailLevel = transform.k >= 0.35 || this.forceVisibleText;
+
+    if (selected) {
+      this.drawSelection();
+    }
 
     ctx.save();
     ctx.beginPath();
