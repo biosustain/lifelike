@@ -59,8 +59,6 @@ jobs:
             path: ./cache-invalidator
           - image: kg-statistical-enrichment
             path: ./statistical-enrichment
-          - image: kg-liquibase
-            path: ./graph-db
           - image: filebeat
             path: ./filebeat
           - image: metricbeat
