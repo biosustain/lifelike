@@ -412,7 +412,7 @@ export class PaneManager {
   /**
    * Get the first pane or created one if one doesn't exist.
    */
-  getFirstOrCreate() {
+  getFirstOrCreate(): Pane {
     const it = this.panes.values().next();
     return !it.done ? it.value : this.create('left');
   }
@@ -662,7 +662,7 @@ export class WorkspaceManager {
 
               // This mechanism allows us to update an existing tab in a one-way data coupling
               if (extras.shouldReplaceTab != null) {
-                const component = tab.getComponent();
+                const component = tab.component;
                 if (component != null) {
                   if (!extras.shouldReplaceTab(component)) {
                     return;
