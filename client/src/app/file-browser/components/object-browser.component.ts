@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Subscription, throwError, iif, of, ReplaySubject, merge } from 'rxjs';
+import { Subscription, throwError, iif, of, ReplaySubject, merge, defer } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map, switchMap, tap, first } from 'rxjs/operators';
 
@@ -11,10 +11,11 @@ import { CreateActionOptions, CreateDialogAction } from 'app/file-types/provider
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
@@ -26,7 +27,7 @@ import { ProjectsService } from '../services/projects.service';
   selector: 'app-object-browser',
   templateUrl: './object-browser.component.html',
 })
-export class ObjectBrowserComponent {
+export class ObjectBrowserComponent implements ModuleAwareComponent {
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -97,6 +98,18 @@ export class ObjectBrowserComponent {
       ))
     )
   );
+
+  sourceData$ = defer(() => this.object$.pipe(
+    tap(object => console.log(object)),
+    switchMap(object => iif(() => (object.isDirectory && !object.parent),
+      of([{
+        url: `/projects/${object.project.name}`,
+        domain: object.project.name,
+      } as Source]),
+      of(object.getGraphEntitySources())
+    ))
+  ));
+
   load(hashId: string) {
     this._hashId$.next(hashId);
   }
