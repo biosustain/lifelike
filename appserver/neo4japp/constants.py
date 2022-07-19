@@ -47,6 +47,11 @@ FILE_MIME_TYPE_GRAPH = 'vnd.lifelike.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
 
 
+class SortDirection(Enum):
+    ASC = 'asc'
+    DESC = 'desc'
+
+
 # enrichment labels
 class EnrichmentDomain(Enum):
     UNIPROT = 'UniProt'
