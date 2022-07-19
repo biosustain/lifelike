@@ -38,16 +38,17 @@ export class WorkspaceTabComponent implements OnChanges {
   }
 
   dragData$ = defer(() => {
-    this.tab.component?.sourceData$.pipe(
+    const sources$ = this.tab.component?.sourceData$ ?? of(null);
+    return sources$.pipe(
       switchMap(sources =>
         iif(
           () => Boolean(sources),
           of(sources),
-          of( () => this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
-            map(url => [{
-            url: url.href,
+          this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
+            map(({href}) => [{
+            url: href,
             domain: this.tab.title,
-          } as Source])))
+          } as Source]))
         )
       ),
       map(sources => {

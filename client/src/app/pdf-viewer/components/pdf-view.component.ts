@@ -198,7 +198,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   });
 
-  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
