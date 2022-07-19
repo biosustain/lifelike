@@ -84,7 +84,8 @@ from neo4japp.constants import (
     IMAGE_BORDER_SCALE,
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
-    WATERMARK_ICON_SIZE, COLOR_TO_REPLACE
+    WATERMARK_ICON_SIZE,
+    COLOR_TO_REPLACE
 )
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -795,6 +796,8 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
         icon_params['image'] = image_filename
         # If a file with such color x label combination was not created, create it
         if not os.path.exists(image_filename):
+            # NOTE: If this turns out to be too time-consuming, switch to PNGs should be considered,
+            # as those require much less modification.
             original_image: Image = Image.open(f'{ASSETS_PATH}{label}.png', 'r')
             orig_color = COLOR_TO_REPLACE
             replacement_color = ImageColor.getcolor(fill_color, 'RGBA')
