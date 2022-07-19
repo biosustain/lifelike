@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { Subscription, throwError, iif, of, ReplaySubject, merge, defer } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { map, switchMap, tap, first } from 'rxjs/operators';
+import { map, switchMap, tap, first, shareReplay } from 'rxjs/operators';
 
 import { CreateActionOptions, CreateDialogAction } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
@@ -91,23 +91,17 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     switchMap(hashId => this.filesystemService.get(hashId).pipe(
       tap(object =>
         this.modulePropertiesChange.emit({
-          title: object.isDirectory && !object.parent ? object.project.name
+          title: object.isProject ? object.project.name
             : `${object.project.name} - ${object.filename}`,
           fontAwesomeIcon: 'folder',
         })
       ))
-    )
+    ),
+    shareReplay(1)
   );
 
   sourceData$ = defer(() => this.object$.pipe(
-    tap(object => console.log(object)),
-    switchMap(object => iif(() => (object.isDirectory && !object.parent),
-      of([{
-        url: `/projects/${object.project.name}`,
-        domain: object.project.name,
-      } as Source]),
-      of(object.getGraphEntitySources())
-    ))
+    map(object => object.getGraphEntitySources())
   ));
 
   load(hashId: string) {
