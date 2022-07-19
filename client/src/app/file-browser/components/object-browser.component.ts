@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -15,7 +15,6 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
@@ -85,7 +84,6 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
   );
 
   protected subscriptions = new Subscription();
-  protected annotationSubscription: Subscription;
 
   object$ = this.hashId$.pipe(
     switchMap(hashId => this.filesystemService.get(hashId).pipe(
