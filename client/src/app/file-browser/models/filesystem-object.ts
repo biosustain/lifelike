@@ -151,6 +151,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.mimeType === MimeTypes.Directory;
   }
 
+  /**
+   * Top directories (without parents) are projects.
+   */
+  get isProject() {
+    return this.isDirectory && !this.parent;
+  }
+
   get isFile() {
     return !this.isDirectory;
   }
@@ -474,7 +481,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        // TODO: Convert to hash ID
+        // TODO: Convert to hash ID - is this still valid? There is a hash id.
+        if (this.isProject) {
+          return ['/projects', projectName];
+        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
