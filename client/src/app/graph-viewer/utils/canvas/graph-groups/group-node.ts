@@ -4,7 +4,7 @@ import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
 import { PlacedGroup } from '../../../styles/styles';
-import { BoundingBox, drawStroke, drawStrokeAndFill, isBBoxEnclosing, Point } from '../shared';
+import { BoundingBox, drawStroke, drawStrokeAndFill, getRectWithMargin, isBBoxEnclosing, Point } from '../shared';
 
 export interface GroupNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -45,8 +45,12 @@ export class GroupNode extends PlacedGroup {
     };
   }
 
-  draw(transform: any): void {
+  draw(transform: any, selected: boolean): void {
+    if (selected) {
+      this.drawSelection();
+    }
     const ctx = this.ctx;
+    ctx.beginPath();
     const zoomResetScale = 1 / transform.scale(1).k;
 
       // Node shape
@@ -66,6 +70,17 @@ export class GroupNode extends PlacedGroup {
     // Group label - above the group
     this.textbox.drawCenteredAt(this.x, this.y - (this.height / 2) - this.LABEL_OFFSET -
       this.textbox.actualHeightWithInsets / 2.0 - zoomResetScale * ctx.lineWidth);
+  }
+
+  drawSelection() {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.save();
+    const {x, y, width, height} = getRectWithMargin(this.boundingBox, this.selectionMargin);
+    ctx.rect(x, y, width, height);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+    ctx.fill();
+    ctx.restore();
   }
 
   getBoundingBox(): BoundingBox {

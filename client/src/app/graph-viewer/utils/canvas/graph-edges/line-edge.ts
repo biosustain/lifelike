@@ -5,6 +5,7 @@ import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
 import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point } from '../shared';
+import { SolidLine } from '../lines/solid';
 
 export interface StandardEdgeOptions {
   source: Point;
@@ -123,7 +124,10 @@ export class LineEdge extends PlacedEdge {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  draw(transform: any): void {
+  draw(transform: any, selected: boolean = false): void {
+    if (selected) {
+      this.drawSelection();
+    }
     const ctx = this.ctx;
 
     if (this.sourceLineEnd) {
@@ -154,6 +158,26 @@ export class LineEdge extends PlacedEdge {
       ctx.stroke();
       ctx.restore();
     }
+  }
+
+
+  drawSelection() {
+    const ctx = this.ctx;
+
+    const lineWidth = 20;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(this.source.x, this.source.y);
+    ctx.lineTo(this.target.x, this.target.y);
+    ctx.lineJoin = 'miter';
+    ctx.lineCap = 'butt';
+    const stroke = new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+          lineCap: 'square',
+        });
+    stroke.setContext(ctx);
+    ctx.stroke();
+    ctx.restore();
   }
 
   /**

@@ -64,6 +64,23 @@ export function drawStroke(ctx: CanvasRenderingContext2D, stroke: Line, zoomRese
   }
 }
 
+export function getRectWithMargin(bbox: BoundingBox, margin: number = 0): Rect {
+  const {minX, minY, maxX, maxY} = bbox;
+  return {
+    x: minX - margin,
+    y: minY - margin,
+    width: maxX - minX + margin * 2,
+    height: maxY - minY + margin * 2
+  };
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface BoundingBox {
   minX: number;
   minY: number;
