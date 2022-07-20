@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { forEachRight } from 'lodash-es';
+
 import { Pane } from '../workspace-manager';
 
 const LOCAL_STORAGE_KEY = 'lifelike_workspace_session';
@@ -63,9 +65,9 @@ export class WorkspaceSessionService {
         });
 
         // Tabs are saved in the correct order, but will be in reverse order if we don't preemptively reverse them when loading.
-        for (const tab of pane.tabs.reverse()) {
+        forEachRight(pane.tabs, (tab) => {
           loader.loadTab(pane.id, tab);
-        }
+        });
 
         loader.setPaneActiveTabHistory(pane.id, pane.activeTabHistory);
       }
