@@ -391,6 +391,7 @@ IMAGE_BORDER_SCALE = 4
 WATERMARK_DISTANCE = 100.0
 WATERMARK_WIDTH = 160.0
 WATERMARK_ICON_SIZE = 15
+COLOR_TO_REPLACE = (0, 0, 0, 255)
 
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
@@ -445,7 +446,7 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER')
+ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
