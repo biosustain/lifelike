@@ -1,50 +1,29 @@
-@import "src/scss/variables";
-
-// Make the content fill the whole screen
-// There's no better way to do this due to limitations in Angular
-
-$footer-height: 24px;
-
-router-outlet + ::ng-deep * {
-  height: 100%;
-}
+@import 'src/scss/variables';
 
 .button-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba($white, .2);
 }
 
 .vertical-nav {
   z-index: 1045;
 }
 
-div.module-content {
-  margin-bottom: $footer-height;
-}
-
-footer.module-footer {
-  height: $footer-height;
+footer {
+  align-items: baseline;
   background: $gray-300;
-  box-shadow: 0px -2px 10px rgba(50, 50, 50, 0.15);
   border-top: 1px solid $gray-500;
-  line-height: $footer-height - 1;
-  font-size: 12px;
-  text-align: right;
+  box-shadow: 0 -2px 10px rgba($gray-700, .15);
+  display: flex;
+  font-size: $font-size-sm;
+  gap: 1.5em;
+  justify-content: flex-end;
+  line-height: 1;
+  padding: .2em 1.5em;
 
-  span {
-    display: inline-block;
-    height: $footer-height - 1;
-    overflow: hidden;
-    padding-right: 1.5em;
-
-    &.repo {
-      margin-top: 2px;
-    }
-  }
-
-  img.logo {
-    height: 16px;
-    width: 16px;
-    opacity: 0.7;
+  .logo {
+    height: 1.3em;
+    opacity: .7;
     vertical-align: text-bottom;
+    width: 1.3em;
   }
 }
