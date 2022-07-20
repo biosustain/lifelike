@@ -13,7 +13,7 @@ export abstract class AttributeAccessors<Base extends TypeContext> {
   }
 
   get nodeLabel(): ValueFn<any, Base['node'], string> {
-    return ({label = ''}) => label;
+    return ({order = ''}) => String(order);
   }
 
   // color can be object with toString method
@@ -34,7 +34,7 @@ export abstract class AttributeAccessors<Base extends TypeContext> {
   }
 
   get linkTitle(): ValueFn<any, Base['link'], string> {
-    return ({description}) => description;
+    return ({order}) => order;
   }
 
   get value(): (node: Base['node']) => number {
