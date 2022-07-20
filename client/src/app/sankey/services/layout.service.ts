@@ -1,38 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import {
-  merge,
-  omit,
-  isNil,
-  clone,
-  range,
-  isEqual,
-  assign,
-  groupBy,
-  mapValues,
-  flatMap,
-  sortBy,
-  chain,
-  reduce,
-  meanBy,
-  mean,
-  map as lodashMap
-} from 'lodash-es';
-import {
-  map,
-  tap,
-  switchMap,
-  shareReplay,
-  filter,
-  startWith,
-  pairwise,
-  takeUntil,
-  catchError,
-  first,
-  distinctUntilChanged
-} from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, defer, BehaviorSubject } from 'rxjs';
+import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain, map as lodashMap } from 'lodash-es';
+import { map, tap, switchMap, shareReplay, filter, takeUntil, catchError, first, distinctUntilChanged } from 'rxjs/operators';
+import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, BehaviorSubject, OperatorFunction } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -41,6 +12,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
+import { median } from 'app/shared/utils/math';
 
 import { SankeyBaseState, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
@@ -48,7 +20,6 @@ import { normalizeGenerator } from '../utils';
 import { SankeyAbstractLayoutService, LayoutData, ProcessedExtent, Horizontal, Vertical } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
-import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
 import { EditService } from './edit.service';
 import { View, SankeyNode, SankeyDocument } from '../model/sankey-document';
 
@@ -59,21 +30,6 @@ interface LayerPlaceholder {
   order?: number;
   y0?: number;
   y1?: number;
-}
-
-function medianBy<T>(arr: T[], fn: (e: T) => number): number {
-  const sortedArray = lodashMap(arr, fn).sort((a, b) => a - b);
-  const middleIndex = arr.length / 2;
-  if (middleIndex % 1 === 0) {
-    return sortedArray[middleIndex];
-  } else {
-    return mean(
-      sortedArray.slice(
-        Math.floor(middleIndex),
-        Math.ceil(middleIndex)
-      )
-    );
-  }
 }
 
 export const groupByTraceGroupWithAccumulation = (nextNodeCallback) => {
@@ -90,7 +46,7 @@ export const groupByTraceGroupWithAccumulation = (nextNodeCallback) => {
       .values()
       .map(nodeLinks => ({
         nodeLinks,
-        avgGroup: medianBy(nodeLinks, ({trace}) => groups.indexOf(trace.group))
+        avgGroup: median(lodashMap(nodeLinks, ({trace}) => groups.indexOf(trace.group)))
       }))
       .sortBy('avgGroup')
       .flatMap(({nodeLinks}) => nodeLinks)
@@ -433,7 +389,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     });
   }
 
-  computeNodeBreadths(data, columns) {
+  computeNodeBreadths(data, columns): OperatorFunction<any, any> {
     throw new Error();
   }
 
@@ -639,7 +595,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                       of(verticalContext).pipe(
                         // Calculate the nodes' and links' vertical position within their respective column
                         //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-                        tap(() => this.computeNodeBreadths(data, columnsWithLinkPlaceholders)),
+                        this.computeNodeBreadths(data, columns),
                         tap(() => {
                           if (this.nodeSort) {
                             for (const column of columnsWithLinkPlaceholders) {

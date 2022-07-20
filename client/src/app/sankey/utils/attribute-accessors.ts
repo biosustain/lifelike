@@ -34,7 +34,7 @@ export abstract class AttributeAccessors<Base extends TypeContext> {
   }
 
   get linkTitle(): ValueFn<any, Base['link'], string> {
-    return ({order}) => order;
+    return ({order}: any) => order;
   }
 
   get value(): (node: Base['node']) => number {
