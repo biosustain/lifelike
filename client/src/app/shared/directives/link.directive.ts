@@ -1,9 +1,10 @@
 import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, NavigationExtras, QueryParamsHandling, Router, UrlTree } from '@angular/router';
 import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
+import { assignDefined } from '../utils/types';
 import { WorkspaceManager } from '../workspace-manager';
 
 /**
@@ -97,15 +98,17 @@ export class AbstractLinkDirective {
 
 
   get urlTree(): UrlTree {
-    return this.router.createUrlTree(this.commands, {
+    // Only keep defined properties. For example, `this.fragment` is often undefined, and including it can produce undesired URLs.
+    const navExtras: NavigationExtras = assignDefined({}, {
       relativeTo: this.route,
       queryParams: this.queryParams,
-      fragment: this.fragment || '',
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
+      fragment: this.fragment
     });
-  }
 
+    return this.router.createUrlTree(this.commands, navExtras);
+  }
 }
 
 @Directive({

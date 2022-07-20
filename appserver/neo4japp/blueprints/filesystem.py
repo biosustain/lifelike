@@ -13,7 +13,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
@@ -31,6 +31,7 @@ from neo4japp.constants import (
     MAPS_RE,
     SUPPORTED_MAP_MERGING_FORMATS,
     UPDATE_DATE_MODIFIED_COLUMNS,
+    SortDirection,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -188,7 +189,8 @@ class FilesystemBaseView(MethodView):
                 'of elements.'
             )
         sort_direction_fns = map(
-            lambda direction: desc if direction == 'desc' else asc, sort_direction
+            lambda dirxn: (desc_ if dirxn == SortDirection.DESC.value else asc_),
+            sort_direction
         )
         sort_map = zip(sort, sort_direction_fns)
 
@@ -654,7 +656,8 @@ class FileHierarchyView(FilesystemBaseView):
 
         hierarchy = self.get_nondeleted_recycled_files(
             and_(*filters),
-            sort=['path']
+            sort=['path'],
+            sort_direction=[SortDirection.ASC.value]
         )
 
         # Ignoring type annotation to appease mypy, since nested dicts are tricky to type
@@ -1164,7 +1167,7 @@ class FileSearchView(FilesystemBaseView):
                     )
                 ),
                 sort=['modified_date'],
-                sort_direction=['desc']
+                sort_direction=[SortDirection.DESC.value]
             )
             files = [
                 file for file in files
@@ -1430,7 +1433,7 @@ class FileBackupContentView(FilesystemBaseView):
             .options(raiseload('*')) \
             .filter(FileBackup.file_id == file.id,
                     FileBackup.user_id == current_user.id) \
-            .order_by(desc(FileBackup.creation_date)) \
+            .order_by(desc_(FileBackup.creation_date)) \
             .first()
 
         if backup is None:
@@ -1465,7 +1468,7 @@ class FileVersionListView(FilesystemBaseView):
             .options(raiseload('*'),
                      joinedload(FileVersion.user)) \
             .filter(FileVersion.file_id == file.id) \
-            .order_by(desc(FileVersion.creation_date))
+            .order_by(desc_(FileVersion.creation_date))
 
         result = query.paginate(pagination['page'], pagination['limit'])
 
@@ -1516,7 +1519,7 @@ class FileLockBaseView(FilesystemBaseView):
             .options(contains_eager(FileLock.user, alias=t_lock_user)) \
             .filter(FileLock.hash_id == file.hash_id,
                     FileLock.acquire_date >= cutoff_date) \
-            .order_by(desc(FileLock.acquire_date))
+            .order_by(desc_(FileLock.acquire_date))
 
         results = query.all()
 
@@ -1606,7 +1609,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
         query = db.session.query(FileAnnotationsVersion) \
             .filter(FileAnnotationsVersion.file == file) \
-            .order_by(desc(FileAnnotationsVersion.creation_date)) \
+            .order_by(desc_(FileAnnotationsVersion.creation_date)) \
             .options(joinedload(FileAnnotationsVersion.user))
 
         per_page = pagination['limit']
