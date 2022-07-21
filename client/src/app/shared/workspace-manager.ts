@@ -11,8 +11,8 @@ import {
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, switchMap, first, map } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge, from as rxjs_from } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, merge, Subject } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
@@ -220,6 +220,11 @@ export class Tab {
   }
 }
 
+export enum PaneIDs {
+  LEFT = 'left',
+  RIGHT = 'right'
+}
+
 /**
  * Represents a pane that has a collection of tabs. A pane might
  * be part of a split view or a pane might be a sidebar window.
@@ -414,7 +419,7 @@ export class PaneManager {
    */
   getFirstOrCreate(): Pane {
     const it = this.panes.values().next();
-    return !it.done ? it.value : this.create('left');
+    return !it.done ? it.value : this.create(PaneIDs.LEFT);
   }
 
   /**
@@ -468,6 +473,7 @@ export class PaneManager {
 export class WorkspaceManager {
   paneManager: PaneManager;
   readonly workspaceUrl = '/workspaces/local';
+  tabCreationTargetPane: Pane | undefined;
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
@@ -516,7 +522,7 @@ export class WorkspaceManager {
             const routeSnapshot: ActivatedRouteSnapshot = this.getDeepestChild(event.state.root);
             const queryParams = routeSnapshot.queryParams;
 
-            const pane = this.focusedPane || this.paneManager.getFirstOrCreate();
+            const pane = this.tabCreationTargetPane || this.paneManager.getFirstOrCreate();
             const tab = pane.getActiveTabOrCreate();
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
@@ -611,7 +617,7 @@ export class WorkspaceManager {
     if (typeof pane === 'string') {
       pane = this.paneManager.getOrCreate(pane);
     }
-    this.focusedPane = pane;
+    this.tabCreationTargetPane = pane;
     pane.createTab({...tabDefaults, url: String(url)});
     return this.navigateByUrl({url, extras});
   }
@@ -624,6 +630,9 @@ export class WorkspaceManager {
     if (withinWorkspace) {
       let targetPane = this.focusedPane || this.paneManager.getFirstOrCreate();
 
+      // Set the initial target as the currently focused pane. We may change the target to the other pane, depending on the extras.
+      this.tabCreationTargetPane = targetPane;
+
       if (extras.newTab) {
         if (extras.sideBySide) {
           let sideBySidePane = null;
@@ -635,10 +644,10 @@ export class WorkspaceManager {
           }
 
           if (sideBySidePane == null) {
-            if (targetPane.id === 'left') {
-              targetPane = this.paneManager.create('right');
+            if (targetPane.id === PaneIDs.LEFT) {
+              targetPane = this.paneManager.create(PaneIDs.RIGHT);
             } else {
-              targetPane = this.paneManager.create('left');
+              targetPane = this.paneManager.create(PaneIDs.LEFT);
             }
           } else {
             targetPane = sideBySidePane;
@@ -685,7 +694,12 @@ export class WorkspaceManager {
           targetPane.createTab();
         }
 
-        this.focusedPane = targetPane;
+        this.tabCreationTargetPane = targetPane;
+
+        // // Determines whether the newly created tab is focused
+        if (!extras.keepFocus) {
+          this.focusedPane = targetPane;
+        }
       }
 
       this.interceptNextRoute = true;
@@ -702,14 +716,14 @@ export class WorkspaceManager {
             const parentExtras = {
               ...extras,
               openParentFirst: false,
-              preferPane: 'left',
+              preferPane: PaneIDs.LEFT,
               matchExistingTab: extras.parentAddress.toString(),
               shouldReplaceTab: true
             };
             extras = {
               ...extras,
               openParentFirst: false,
-              preferPane: 'right'
+              preferPane: PaneIDs.RIGHT
             };
             navigationArray.push({url: extras.parentAddress, extras: parentExtras});
           }
@@ -787,8 +801,8 @@ export class WorkspaceManager {
         return previousTask.then(task);
       }, Promise.resolve());
     } else {
-      const leftPane = this.paneManager.create('left');
-      this.paneManager.create('right');
+      const leftPane = this.paneManager.create(PaneIDs.LEFT);
+      this.paneManager.create(PaneIDs.RIGHT);
       this.openTabByUrl(leftPane, '/projects');
     }
   }
@@ -839,6 +853,7 @@ export interface WorkspaceNavigationExtras extends NavigationExtras {
   preferStartupPane?: string;
   newTab?: boolean;
   sideBySide?: boolean;
+  keepFocus?: boolean;
   matchExistingTab?: string | RegExp;
   shouldReplaceTab?: (component: any) => boolean;
   forceWorkbench?: boolean;
