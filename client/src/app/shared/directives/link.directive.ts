@@ -4,7 +4,9 @@ import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
-import { WorkspaceManager } from '../workspace-manager';
+import { openPotentialInternalLink } from '../utils/browser';
+import { assignDefined } from '../utils/types';
+import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load
@@ -25,8 +27,9 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
-  @Input() matchExistingTab: string;
-  @Input() handleClick = true;
+  @Input() matchExistingTab: string | RegExp;
+  @Input() shouldReplaceTab: (component: any) => boolean;
+  @Input() handleClick = true; // TODO: Really should refactor this out, it's only used as a sort of kludge in one place
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
   @Input() preferStartupPane: string;
@@ -57,10 +60,6 @@ export class AbstractLinkDirective {
     }
   }
 
-  shouldReplaceTab(component) {
-    return true;
-  }
-
   @HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey'])
   onClick(button: number, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean): boolean {
     if (!this.handleClick) {
@@ -75,7 +74,9 @@ export class AbstractLinkDirective {
       return true;
     }
 
-    const extras = {
+    // Create an object with only the properties which are defined. Avoids including unused properties, which is particular useful when
+    // expanding the object.
+    const extras: WorkspaceNavigationExtras = assignDefined({}, {
       skipLocationChange: attrBoolValue(this.skipLocationChange),
       replaceUrl: attrBoolValue(this.replaceUrl),
       state: this.state,
@@ -88,9 +89,9 @@ export class AbstractLinkDirective {
       shouldReplaceTab: this.shouldReplaceTab,
       openParentFirst: attrBoolValue(this.openParentFirst),
       parentAddress: this.router.createUrlTree(this.parentCommands)
-    };
+    });
 
-    this.workspaceManager.navigateByUrl({url: this.urlTree, extras});
+    openPotentialInternalLink(this.workspaceManager, this.urlTree.toString(), extras);
 
     return false;
   }
