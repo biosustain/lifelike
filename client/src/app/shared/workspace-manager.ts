@@ -606,7 +606,7 @@ export class WorkspaceManager {
 
   openTabByUrl(pane: Pane | string,
                url: string | UrlTree,
-               extras?: NavigationExtras & WorkspaceNavigationExtras,
+               extras?: WorkspaceNavigationExtras,
                tabDefaults?: TabDefaults): Promise<boolean> {
     if (typeof pane === 'string') {
       pane = this.paneManager.getOrCreate(pane);
@@ -667,6 +667,10 @@ export class WorkspaceManager {
                   if (!extras.shouldReplaceTab(component)) {
                     return;
                   }
+                } else {
+                  // If we found a match, but it's not loaded, swap to it and reload with the new URL.
+                  this.interceptNextRoute = true;
+                  return this.router.navigateByUrl(navigationData.url, extras);
                 }
               }
 
@@ -731,7 +735,7 @@ export class WorkspaceManager {
 
   }
 
-  navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
+  navigate(commands: any[], extras: WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl({url: this.router.createUrlTree(commands, extras), extras});
   }
 
@@ -830,7 +834,7 @@ export function composeInternalLink(text, navigationData: NavigationData) {
   return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationData)})'>${escape(text)}</a>`;
 }
 
-export interface WorkspaceNavigationExtras {
+export interface WorkspaceNavigationExtras extends NavigationExtras {
   preferPane?: string;
   preferStartupPane?: string;
   newTab?: boolean;
@@ -846,9 +850,5 @@ export interface WorkspaceNavigationExtras {
 // of missing extras in navigateByUrls
 export interface NavigationData {
   url: string | UrlTree;
-  extras?: NavigationExtras & WorkspaceNavigationExtras;
-}
-
-function getQueryString(params: { [key: string]: string }) {
-  return Object.entries(params).map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value)).join('&');
+  extras?: WorkspaceNavigationExtras;
 }
