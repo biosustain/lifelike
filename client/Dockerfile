@@ -51,7 +51,7 @@ RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 # ========================================
 # Runtime stage - NGINX
 # ========================================
-FROM nginx:1.21
+FROM nginx:1.23.0
 LABEL app=kg-prototypes
 WORKDIR /usr/share/nginx/html
 
