@@ -1,4 +1,4 @@
-<div class="h-100 d-flex flex-column">
+<div class="h-100 d-flex flex-column" (click)="setFocus()">
   <div class="nav-workspace-tabs flex-shrink-0 align-items-start" appElementObserver
        #tabBar="appElementObserver">
     <div class="nav flex-fill"
@@ -69,7 +69,7 @@
             </ng-template>
           </div>
         </div>
-        <div class="mx-2" *ngIf="pane.id === 'right'">
+        <div class="mx-2" *ngIf="pane.id === rightPaneId">
           <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
             <div class="d-flex flex-column align-items-center">
               <div>

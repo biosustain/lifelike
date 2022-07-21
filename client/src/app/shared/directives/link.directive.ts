@@ -27,6 +27,7 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
+  @Input() keepFocus: boolean;
   @Input() matchExistingTab: string | RegExp;
   @Input() shouldReplaceTab: (component: any) => boolean;
   @Input() handleClick = true; // TODO: Really should refactor this out, it's only used as a sort of kludge in one place
@@ -82,6 +83,7 @@ export class AbstractLinkDirective {
       state: this.state,
       newTab: attrBoolValue(this.newTab),
       sideBySide: attrBoolValue(this.sideBySide),
+      keepFocus: attrBoolValue(this.keepFocus),
       matchExistingTab: this.matchExistingTab,
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,

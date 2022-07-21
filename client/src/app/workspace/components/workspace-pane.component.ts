@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input } from '@angular/core';
 
-import { Pane, Tab, TabDefaults, WorkspaceManager } from 'app/shared/workspace-manager';
+import { Pane, PaneIDs, Tab, TabDefaults, WorkspaceManager } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-workspace-pane',
@@ -18,12 +18,16 @@ export class WorkspacePaneComponent {
       { title: 'Search', fontAwesomeIcon: 'fa fa-search', url: '/search/content' },
   ];
 
+  get rightPaneId(): string {
+    return PaneIDs.RIGHT;
+  }
+
   constructor(
     protected readonly workspaceManager: WorkspaceManager
   ) {}
 
   closeRightPane() {
-    this.workspaceManager.paneManager.delete(this.workspaceManager.paneManager.get('right'));
+    this.workspaceManager.paneManager.delete(this.workspaceManager.paneManager.get(PaneIDs.RIGHT));
     this.workspaceManager.save();
   }
 
