@@ -273,17 +273,17 @@ export class AnnotationTagHandler extends TagHandler {
     const visLink = this.internalSearch.getVisualizerLink(meta.allText);
     htmlLinks += composeInternalLink(
       'Knowledge Graph',
-      {url: String(visLink), extras: {sideBySide: true, newTab: true}}
+      {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(meta.allText);
     htmlLinks += composeInternalLink(
       'File Content',
-      {url: String(contLink), extras: {sideBySide: true, newTab: true}}
+      {url: String(contLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(meta.allText, {types: ['map']});
     htmlLinks += composeInternalLink(
       'Map Content',
-      {url: String(mapLink), extras: {sideBySide: true, newTab: true}}
+      {url: String(mapLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     htmlLinks += `</div></div>`;
 
