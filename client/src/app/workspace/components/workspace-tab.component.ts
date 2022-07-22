@@ -1,8 +1,6 @@
-import { CdkDragMove, CdkDragRelease } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
-import { isNil } from 'lodash';
-import { Observable, defer, of } from 'rxjs';
+import { Observable, defer } from 'rxjs';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
