@@ -267,7 +267,7 @@ export class AnnotationTagHandler extends TagHandler {
     const searchInternalLinkCollapseTargetId = uniqueId('enrichment-tooltip-internal-collapse-target');
     htmlLinks += `
       <div>
-        <div>Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        <div>Search internal links</div>
         <div>
     `;
     const visLink = this.internalSearch.getVisualizerLink(meta.allText);
