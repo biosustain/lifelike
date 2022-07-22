@@ -75,8 +75,8 @@ export class ObjectListComponent {
     if (this.appLinks) {
       if (target.isOpenable) {
         // TODO: Normally this would just be handled by the `appLink` directive. Really, we should update the template to either:
-          // - Use appLink
-          // - Use a callback that does the download portion of the `else` block below
+        //  - Use appLink
+        //  - Use a callback that does the download portion of the `else` block below
         openPotentialInternalLink(
           this.workspaceManager,
           this.router.createUrlTree(target.getCommands()).toString(),
