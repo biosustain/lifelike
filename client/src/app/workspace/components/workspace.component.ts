@@ -1,10 +1,11 @@
 import {
   AfterContentChecked,
-  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
   OnChanges,
+  OnDestroy,
+  OnInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -22,7 +23,7 @@ import { SplitComponent } from 'angular-split';
   styleUrls: ['./workspace.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked, ShouldConfirmUnload {
+export class WorkspaceComponent implements OnInit, OnChanges, AfterContentChecked, ShouldConfirmUnload {
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
   @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
@@ -33,16 +34,16 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     this.panes$ = this.workspaceManager.panes$;
   }
 
+  ngOnInit() {
+    this.workspaceManager.load();
+  }
+
   ngOnChanges() {
     this.workspaceManager.save();
   }
 
   ngAfterContentChecked() {
     this.workspaceManager.applyPendingChanges();
-  }
-
-  ngAfterViewInit() {
-    this.workspaceManager.initialLoad();
   }
 
   splitterDragEnded(result) {

@@ -64,7 +64,7 @@ export class Container<T> {
    */
   detach() {
     if (this.viewContainerRef) {
-      this.viewContainerRef.detach(0);
+      this.viewContainerRef.detach();
       this.viewContainerRef = null;
     }
   }
@@ -208,8 +208,8 @@ export class Tab {
   destroy() {
     if (this.container) {
       this.container.destroy();
-      this.container = undefined;
     }
+    this.container = undefined;
   }
 
   /**
@@ -316,6 +316,7 @@ export class Pane {
       if (this.tabs[i] === tab) {
         this.tabs.splice(i, 1);
         this.activeTabHistory.delete(tab);
+        tab.destroy();
         return true;
       }
     }
@@ -354,7 +355,8 @@ export class Pane {
    * Destroy all tabs and unload their components.
    */
   destroy() {
-    for (const tab of this.tabs) {
+    // Make a copy of the tabs list, since `deleteTab` mutates it
+    for (const tab of this.tabs.slice()) {
       this.deleteTab(tab);
     }
   }
@@ -436,7 +438,8 @@ export class PaneManager {
    * Delete all panes.
    */
   clear() {
-    for (const pane of this.panes) {
+    // Make a copy of the panes list since `delete` mutates it
+    for (const pane of this.panes.slice()) {
       this.delete(pane);
     }
   }
@@ -471,7 +474,6 @@ export class WorkspaceManager {
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
-  private loaded = false;
 
   constructor(private readonly router: Router,
               private readonly injector: Injector,
@@ -737,13 +739,6 @@ export class WorkspaceManager {
 
   emitEvents(): void {
     this.panes$.next(this.buildPanesSnapshot());
-  }
-
-  initialLoad() {
-    if (!this.loaded) {
-      this.loaded = true;
-      this.load();
-    }
   }
 
   load() {
