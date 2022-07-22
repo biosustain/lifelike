@@ -3,17 +3,14 @@
     <h4 *ngIf="name">
       "{{ name }}"
     </h4>
-    <div *ngIf="isNode" class="text-muted">
-      <div class="mb-2">Type: {{ selected.entity.label | titlecase }}</div>
+    <div class="text-muted">
+      <div class="mb-2">Type: {{ selectedType | titlecase }}</div>
     </div>
-    <div *ngIf="!isNode" class="text-muted">
-      Type: Connection
-    </div>
-    <div *ngIf="selected.entity.data.subtype" class="text-muted">
+    <div *ngIf="selected.entity.data?.subtype" class="text-muted">
       Type: {{ selected.entity.data.subtype | titlecase }}
     </div>
 
-    <div *ngIf="selected.entity.data.detail" class="mt-4 card" style="white-space: pre-line">
+    <div *ngIf="selected.entity.data?.detail" class="mt-4 card" style="white-space: pre-line">
       <div class="card-body p-3 bg-light">
         {{ selected.entity.data.detail }}
       </div>

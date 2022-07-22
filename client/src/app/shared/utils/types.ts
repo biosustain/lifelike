@@ -122,5 +122,6 @@ export function assignDefined(target, source) {
     }
   });
 
+
   return target;
 }
