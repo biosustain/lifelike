@@ -11,8 +11,8 @@ import {
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, switchMap, first, map } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge, from as rxjs_from } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
