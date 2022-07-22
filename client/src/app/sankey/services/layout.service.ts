@@ -175,23 +175,6 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     })
   );
 
-  nodeLabel$ = this.baseView.common.labelEllipsis$.pipe(
-    map(({value, enabled}) => {
-      const {nodeLabel, truncatePipe: {transform}} = this;
-      if (enabled) {
-        return {
-          nodeLabelShort: (d, i?, n?) => transform(nodeLabel(d, i, n), value),
-          nodeLabelShouldBeShorted: (d, i?, n?) => nodeLabel(d, i, n).length > value
-        };
-      } else {
-        return {
-          nodeLabelShort: (d, i?, n?) => nodeLabel(d, i, n),
-          nodeLabelShouldBeShorted: () => false
-        };
-      }
-    }),
-  );
-
   fontSize$ = this.baseView.common.fontSizeScale$.pipe(
     map(fontSizeScale =>
       // noinspection JSUnusedLocalSymbols

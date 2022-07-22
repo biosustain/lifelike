@@ -1,8 +1,8 @@
-<svg #svg>
+<svg #svg xmlns="http://www.w3.org/2000/svg">
     <g [style.transform]="'translate('+margin.left+'px, '+margin.top+'px)'">
-        <g #g>
+        <g #g [style.--ellipsis-after-X-characters.ch]="ellipsisAfterXCharacters$ | async">
             <g #links class="links"></g>
-            <g #nodes class="nodes"></g>
+            <g #nodes class="nodes" [style.font-size.em]="fontSizeScale$ | async"></g>
         </g>
     </g>
 </svg>
