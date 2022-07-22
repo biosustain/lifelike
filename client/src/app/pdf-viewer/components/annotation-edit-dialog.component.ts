@@ -3,7 +3,7 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/links';
@@ -104,6 +104,21 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
+    const annoId = this.form.get('id').value ?? '';
+    const type = this.form.get('entityType').value;
+    // Review note: Do we need this check? Type is drop-down selectable item.
+    if (ENTITY_TYPE_MAP.hasOwnProperty(type)) {
+      const source = ENTITY_TYPE_MAP[type] as EntityType;
+      const idType = this.form.get('source').value;
+      const idLink = source.links.filter(link => link.name === idType)[0];
+      const url = `${idLink.url}${annoId}`;
+      // Add this as a first item, as this is an expected convention
+      this.sourceLinks.unshift({
+        domain: idType,
+        url
+      });
+
+    }
     const links = {};
     // getRawValue will return values of disabled controls too
     const formRawValues = this.form.getRawValue();
@@ -120,8 +135,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }),
       meta: {
         id: this.form.value.id || '',
-        idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(
-          link => JSON.stringify({label: link.domain, url: link.url})) : [],
+        idHyperlinks: (this.sourceLinks ?? []).map(
+          link => JSON.stringify({label: link.domain, url: link.url})),
         idType: this.form.value.source || '',
         type: this.form.value.entityType,
         links,
