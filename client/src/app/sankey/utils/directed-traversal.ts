@@ -66,7 +66,5 @@ export class DirectedTraversal {
     return node[this.direction.prevLinksAccessor];
   }
 
-  nextNode(link) {
-    return link[this.direction.nodeAccessor];
-  }
+  nextNode = link => link[this.direction.nodeAccessor];
 }
