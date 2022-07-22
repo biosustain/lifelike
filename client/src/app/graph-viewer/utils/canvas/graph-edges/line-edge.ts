@@ -181,7 +181,7 @@ export class LineEdge extends PlacedEdge {
     ctx.lineTo(this.target.x, this.target.y);
     ctx.lineJoin = 'miter';
     ctx.lineCap = 'butt';
-    const stroke = new SolidLine(this.lineWidth + EDGE_SELECTION_WIDTH, SELECTION_SHADOW_COLOR, {
+    const stroke = new SolidLine((this.lineWidth ?? 1) + EDGE_SELECTION_WIDTH, SELECTION_SHADOW_COLOR, {
           lineCap: 'square',
         });
     stroke.setContext(ctx);
