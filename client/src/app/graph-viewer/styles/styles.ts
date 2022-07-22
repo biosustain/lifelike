@@ -1,6 +1,6 @@
 import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
-import { BoundingBox, Point } from '../utils/canvas/shared';
+import { BoundingBox, DEFAULT_SELECTION_MARGIN, Point } from '../utils/canvas/shared';
 
 /**
  * A style of node rendering, used to render different shapes of nodes.
@@ -79,7 +79,8 @@ export abstract class PlacedObject {
   private placedObjectRenderer: PlacedObjectRenderer;
   protected children: PlacedObject[] = [];
 
-  selectionMargin = 10;
+  // NOTE: We might want to adjust just based on the entity type, for example, we can do smaller for icons.
+  selectionMargin = DEFAULT_SELECTION_MARGIN;
 
   /**
    * Binds an object to a context.
@@ -132,18 +133,6 @@ export abstract class PlacedObject {
    * Called before the object is unbound.
    */
   objectWillUnbind(): void {
-  }
-
-  /**
-   * Called to see if the object should be re-rendered.
-   */
-  shouldObjectRender(): boolean {
-    for (const child of this.children) {
-      if (child.shouldObjectRender()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

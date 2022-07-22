@@ -15,6 +15,9 @@ export const NO_TEXT_THRESHOLD = 0.15;
 export const DEFAULT_LABEL_FONT_SIZE = 16;
 export const BORDER_BLUE_COLOR = '#2B7CE9';
 
+export const SELECTION_SHADOW_COLOR = 'rgba(0, 0, 0, 0.075)';
+export const DEFAULT_SELECTION_MARGIN = 10;
+
 
 export enum LineTypes {
   Dashed = 'dashed',
