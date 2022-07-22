@@ -20,7 +20,7 @@ import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { Point } from '../../utils/canvas/shared';
+import { Point, SELECTION_SHADOW_COLOR } from '../../utils/canvas/shared';
 
 
 export interface CanvasGraphViewOptions {
@@ -927,11 +927,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       // Either we highlight the 'touched entity' if we have one (because the user just
       // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        this.drawEntityBackground(ctx, touchPositionEntity, 'rgba(0, 0, 0, 0.075)');
+        this.drawEntityBackground(ctx, touchPositionEntity, SELECTION_SHADOW_COLOR);
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fillStyle = SELECTION_SHADOW_COLOR;
         ctx.fill();
       }
     }
@@ -953,7 +953,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     const selected = this.selection.get();
     for (const selectedEntity of selected) {
-      this.drawEntityBackground(ctx, selectedEntity, 'rgba(0, 0, 0, 0.075)');
+      this.drawEntityBackground(ctx, selectedEntity, SELECTION_SHADOW_COLOR);
     }
   }
 

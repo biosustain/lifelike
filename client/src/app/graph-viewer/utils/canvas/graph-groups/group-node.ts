@@ -4,7 +4,7 @@ import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
 import { BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
 import { PlacedGroup } from '../../../styles/styles';
-import { BoundingBox, drawStroke, drawStrokeAndFill, getRectWithMargin, isBBoxEnclosing, Point } from '../shared';
+import { BoundingBox, drawStroke, drawStrokeAndFill, getRectWithMargin, isBBoxEnclosing, Point, SELECTION_SHADOW_COLOR } from '../shared';
 
 export interface GroupNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -78,7 +78,7 @@ export class GroupNode extends PlacedGroup {
     ctx.save();
     const {x, y, width, height} = getRectWithMargin(this.boundingBox, this.selectionMargin);
     ctx.rect(x, y, width, height);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+    ctx.fillStyle = SELECTION_SHADOW_COLOR;
     ctx.fill();
     ctx.restore();
   }

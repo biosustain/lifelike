@@ -4,7 +4,7 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point } from '../shared';
+import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point, SELECTION_SHADOW_COLOR } from '../shared';
 import { SolidLine } from '../lines/solid';
 
 export interface StandardEdgeOptions {
@@ -172,7 +172,7 @@ export class LineEdge extends PlacedEdge {
     ctx.lineTo(this.target.x, this.target.y);
     ctx.lineJoin = 'miter';
     ctx.lineCap = 'butt';
-    const stroke = new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+    const stroke = new SolidLine(lineWidth, SELECTION_SHADOW_COLOR, {
           lineCap: 'square',
         });
     stroke.setContext(ctx);
