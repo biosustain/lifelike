@@ -1,7 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { TextElement } from '../text-element';
-import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
+import { BoundingBox, getRectWithMargin, isBBoxEnclosing, Point } from '../shared';
 
 
 export interface IconNodeOptions {
@@ -129,4 +129,16 @@ export class FontIconNode extends PlacedNode {
 
     ctx.restore();
   }
+
+  drawSelection() {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.save();
+    const {x, y, width, height} = getRectWithMargin(this.bbox, this.selectionMargin);
+    ctx.rect(x, y, width, height);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+    ctx.fill();
+    ctx.restore();
+  }
+
 }
