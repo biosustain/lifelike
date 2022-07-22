@@ -21,7 +21,7 @@ export interface StandardEdgeOptions {
   textbox?: TextElement;
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
-  lineWidth: number;
+  lineWidth?: number;
   stroke?: Line;
   forceVisibleText?: boolean;
 }
@@ -35,7 +35,7 @@ export class LineEdge extends PlacedEdge {
   readonly textbox: TextElement | undefined;
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;
-  readonly lineWidth: number;
+  readonly lineWidth: number | undefined;
   readonly stroke: Line | undefined;
   // Review note: Do we want this? It seems like a generally useless idea
   readonly forceVisibleText = false;
