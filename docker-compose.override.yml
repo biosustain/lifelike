@@ -207,4 +207,3 @@ networks:
   frontend:
   backend:
   elastic:
-
