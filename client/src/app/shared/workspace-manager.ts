@@ -610,18 +610,6 @@ export class WorkspaceManager {
     );
   }
 
-  openTabByUrl(pane: Pane | string,
-               url: string | UrlTree,
-               extras?: WorkspaceNavigationExtras,
-               tabDefaults?: TabDefaults): Promise<boolean> {
-    if (typeof pane === 'string') {
-      pane = this.paneManager.getOrCreate(pane);
-    }
-    this.tabCreationTargetPane = pane;
-    pane.createTab({...tabDefaults, url: String(url)});
-    return this.navigateByUrl({url, extras});
-  }
-
   navigateByUrl(navigationData: NavigationData): Promise<boolean> {
     let extras = navigationData.extras || {};
 
@@ -776,10 +764,7 @@ export class WorkspaceManager {
 
       loadTab(id: string, data: TabData): void {
         tasks.push(() => {
-          parent.openTabByUrl(id, data.url, null, {
-            title: data.title,
-            fontAwesomeIcon: data.fontAwesomeIcon,
-          });
+          parent.navigateByUrl({url: data.url, extras: { newTab: true, preferPane: id}});
         });
       }
 
@@ -801,7 +786,7 @@ export class WorkspaceManager {
     } else {
       const leftPane = this.paneManager.create(PaneIDs.LEFT);
       this.paneManager.create(PaneIDs.RIGHT);
-      this.openTabByUrl(leftPane, '/projects');
+      parent.navigateByUrl({url: '/projects', extras: { newTab: true, preferPane: leftPane.id}});
     }
   }
 

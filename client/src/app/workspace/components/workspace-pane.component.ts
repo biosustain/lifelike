@@ -42,19 +42,15 @@ export class WorkspacePaneComponent {
   }
 
   addTab(tab: TabDefaults) {
-    return this.workspaceManager.openTabByUrl(this.pane, tab.url, undefined, tab);
+    return this.workspaceManager.navigateByUrl({
+      url: tab.url,
+      extras: {newTab: true}
+    });
   }
 
   setActiveTab(tab: Tab) {
     this.pane.activeTab = tab;
     this.workspaceManager.save();
-  }
-
-  duplicateTab(tab: Tab) {
-    return this.workspaceManager.navigateByUrl({
-      url: tab.url,
-      extras: {newTab: true}
-    });
   }
 
   closeTab(tab: Tab) {
