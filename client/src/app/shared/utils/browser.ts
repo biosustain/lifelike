@@ -89,7 +89,7 @@ export function openPotentialInternalLink(
     // You can verify this behavior by opening a folder and a file in the workspace and clicking the "Share" button in the tab options
     // for each.
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
-    if (m != null) {
+    if (m) {
       workspaceManager.navigateByUrl({
         url: pathSearchHash,
         extras: {
@@ -103,7 +103,7 @@ export function openPotentialInternalLink(
 
     // Match a full file path (e.g. /projects/MyProject/files/myFileHash123XYZ)
     m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
-    if (m != null) {
+    if (m) {
       let shouldReplaceTab;
 
       switch (m[1]) {
@@ -173,7 +173,7 @@ export function openPotentialInternalLink(
 
     // Match a root folder with the `projects` root path
     m = pathSearchHash.match(/^\/projects\/([^\/]+)/);
-    if (m != null) {
+    if (m) {
       workspaceManager.navigateByUrl({
         url: pathSearchHash,
         extras: {
@@ -188,7 +188,7 @@ export function openPotentialInternalLink(
 
     // Match a root folder with the `folders` root path
     m = pathSearchHash.match(/^\/folders\/([^\/]+)/);
-    if (m != null) {
+    if (m) {
       workspaceManager.navigateByUrl({
         url: pathSearchHash,
         extras: {
@@ -203,7 +203,7 @@ export function openPotentialInternalLink(
 
     // Match a deprecated pdf link
     m = pathSearchHash.match(/^\/dt\/pdf/);
-    if (m != null) {
+    if (m) {
       const [
         fileId,
         page,
@@ -226,7 +226,7 @@ export function openPotentialInternalLink(
 
     // Match a deprecated map link
     m = pathSearchHash.match(/^\/dt\/map\/([0-9a-f]+)$/);
-    if (m != null) {
+    if (m) {
       workspaceManager.navigateByUrl({
         url: `/dt/map/${m[1]}`,
         extras: {
