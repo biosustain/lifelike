@@ -4,7 +4,15 @@ import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
-import { BoundingBox, drawTextNotSmallerThanMin, isBBoxEnclosing, NO_TEXT_THRESHOLD, Point, SELECTION_SHADOW_COLOR } from '../shared';
+import {
+  BoundingBox,
+  drawTextNotSmallerThanMin,
+  EDGE_SELECTION_WIDTH,
+  isBBoxEnclosing,
+  NO_TEXT_THRESHOLD,
+  Point,
+  SELECTION_SHADOW_COLOR
+} from '../shared';
 import { SolidLine } from '../lines/solid';
 
 export interface StandardEdgeOptions {
@@ -13,6 +21,7 @@ export interface StandardEdgeOptions {
   textbox?: TextElement;
   sourceLineEnd?: LineHead;
   targetLineEnd?: LineHead;
+  lineWidth: number;
   stroke?: Line;
   forceVisibleText?: boolean;
 }
@@ -26,7 +35,9 @@ export class LineEdge extends PlacedEdge {
   readonly textbox: TextElement | undefined;
   readonly sourceLineEnd: LineHead | undefined;
   readonly targetLineEnd: LineHead | undefined;
+  readonly lineWidth: number;
   readonly stroke: Line | undefined;
+  // Review note: Do we want this? It seems like a generally useless idea
   readonly forceVisibleText = false;
 
   readonly labelX: number;
@@ -164,15 +175,13 @@ export class LineEdge extends PlacedEdge {
   drawSelection() {
     const ctx = this.ctx;
 
-    const lineWidth = 20;
-
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(this.source.x, this.source.y);
     ctx.lineTo(this.target.x, this.target.y);
     ctx.lineJoin = 'miter';
     ctx.lineCap = 'butt';
-    const stroke = new SolidLine(lineWidth, SELECTION_SHADOW_COLOR, {
+    const stroke = new SolidLine(this.lineWidth + EDGE_SELECTION_WIDTH, SELECTION_SHADOW_COLOR, {
           lineCap: 'square',
         });
     stroke.setContext(ctx);

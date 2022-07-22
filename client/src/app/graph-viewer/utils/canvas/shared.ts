@@ -17,6 +17,8 @@ export const BORDER_BLUE_COLOR = '#2B7CE9';
 
 export const SELECTION_SHADOW_COLOR = 'rgba(0, 0, 0, 0.075)';
 export const DEFAULT_SELECTION_MARGIN = 10;
+// Review note: Move to the PlacedEdge?
+export const EDGE_SELECTION_WIDTH = 20;
 
 
 export enum LineTypes {
