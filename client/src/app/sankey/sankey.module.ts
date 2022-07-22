@@ -36,6 +36,7 @@ import { StructureOverviewComponent } from './components/structure-overview/stru
 import {
   NetworktraceViewDropdownContentComponent
 } from './components/networktrace-view-dropdown-content/networktrace-view-dropdown-content.component';
+import { SankeyAbstractComponent } from './abstract/sankey.component';
 
 @NgModule({
   declarations: [

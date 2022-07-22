@@ -1,27 +1,22 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone, isDevMode } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, ElementRef, NgZone } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { select as d3_select } from 'd3-selection';
 import { map, switchMap, takeUntil, publish, tap, first } from 'rxjs/operators';
-import { forkJoin, combineLatest, merge, of, Observable, zip, iif } from 'rxjs';
-import { isEmpty, isNil, isNumber } from 'lodash-es';
-import { color as d3color } from 'd3-color';
+import { forkJoin, combineLatest, of, Observable, zip, iif } from 'rxjs';
+import { isEmpty, isNumber } from 'lodash-es';
 
 import { mapIterable, isNotEmpty } from 'app/shared/utils';
-import { d3EventCallback } from 'app/shared/utils/d3';
 import { LayoutService } from 'app/sankey/services/layout.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { SankeySearchService } from 'app/sankey/services/search.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { SelectionEntity, SelectionType } from 'app/sankey/interfaces/selection';
-import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
+import { SankeyAbstractComponent } from 'app/sankey/abstract/sankey.component';
 
-import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { SingleLaneLayoutService } from '../../services/single-lane-layout.service';
 import { EntityType } from '../../../../interfaces/search';
-import { ErrorMessages } from '../../../../constants/error';
 import { EditService } from '../../../../services/edit.service';
 import { Base } from '../../interfaces';
 
@@ -353,45 +348,4 @@ export class SankeySingleLaneComponent
       true
     );
   }
-
-  @d3EventCallback
-  async pathMouseOver(element, data) {
-    this.highlightLink(element);
-  }
-
-  @d3EventCallback
-  async pathMouseOut(_element, _data) {
-    this.unhighlightNodes();
-    this.unhighlightLinks();
-  }
-
-  @d3EventCallback
-  async nodeMouseOut(element, _data) {
-    this.unhighlightNode(element);
-    this.unhighlightNodes();
-    this.unhighlightLinks();
-  }
-
-  // region Highlight
-  highlightLink(element) {
-    d3_select(element)
-      .raise()
-      .attr('highlighted', true);
-  }
-
-
-  highlightNode(element) {
-    const selection = d3_select(element)
-      .raise()
-      .attr('highlighted', true)
-      .select('g')
-      .call(this.extendNodeLabel);
-    // postpone so the size is known
-    requestAnimationFrame(() =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    );
-  }
-
-  // endregion
 }
