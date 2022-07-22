@@ -104,20 +104,21 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
-    const annoId = this.form.get('id').value ?? '';
     const type = this.form.get('entityType').value;
     // Review note: Do we need this check? Type is drop-down selectable item.
     if (ENTITY_TYPE_MAP.hasOwnProperty(type)) {
       const source = ENTITY_TYPE_MAP[type] as EntityType;
       const idType = this.form.get('source').value;
       const idLink = source.links.filter(link => link.name === idType)[0];
-      const url = `${idLink.url}${annoId}`;
-      // Add this as a first item, as this is an expected convention
-      this.sourceLinks.unshift({
-        domain: idType,
-        url
-      });
-
+      const annoId = this.form.get('id').value ?? '';
+      if (idLink?.url && annoId) {
+        const url = `${idLink.url}${annoId}`;
+        // Add this as a first item, as this is an expected convention
+        this.sourceLinks.unshift({
+          domain: idType,
+          url
+        });
+      }
     }
     const links = {};
     // getRawValue will return values of disabled controls too
