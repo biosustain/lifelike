@@ -1,12 +1,9 @@
-import { Injectable, ComponentRef } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-
-import { get } from 'lodash-es';
 
 import { ViewService } from 'app/file-browser/services/view.service';
 
 import { WorkspaceManager } from '../workspace-manager';
-import { ModuleAwareComponent } from '../modules';
 import { getURLFromSnapshot } from '../utils/router';
 
 @Injectable()
