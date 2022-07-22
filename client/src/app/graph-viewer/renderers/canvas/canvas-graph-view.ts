@@ -907,12 +907,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const ctx = this.canvas.getContext('2d');
 
     yield* this.drawTouchPosition(ctx);
-    // yield* this.drawSelectionBackground(ctx);
     yield* this.drawGroups();
     yield* this.drawEdges();
     yield* this.drawNodes();
     yield* this.drawHighlightBackground(ctx);
-    yield* this.drawSearchHighlightBackground(ctx);
+    yield* this.drawSearchHighlightBox(ctx);
     yield* this.drawSearchFocusBackground(ctx);
     yield* this.drawActiveBehaviors(ctx);
   }
@@ -948,16 +947,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     ctx.restore();
   }
 
-  private* drawSelectionBackground(ctx: CanvasRenderingContext2D) {
-    yield null;
-
-    const selected = this.selection.get();
-    for (const selectedEntity of selected) {
-      this.drawEntityBackground(ctx, selectedEntity, SELECTION_SHADOW_COLOR);
-    }
-  }
-
-  private* drawSearchHighlightBackground(ctx: CanvasRenderingContext2D) {
+  private* drawSearchHighlightBox(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (!this.touchPosition) {
