@@ -12,7 +12,7 @@ import {
 
 import { Observable } from 'rxjs';
 
-import { Pane, WorkspaceManager } from 'app/shared/workspace-manager';
+import { Pane, PaneIDs, WorkspaceManager } from 'app/shared/workspace-manager';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 
 import { SplitComponent } from 'angular-split';
@@ -58,7 +58,7 @@ export class WorkspaceComponent implements OnInit, OnChanges, AfterContentChecke
   }
 
   addPane() {
-    this.workspaceManager.paneManager.getOrCreate('right');
+    this.workspaceManager.paneManager.getOrCreate(PaneIDs.RIGHT);
     this.workspaceManager.save();
   }
 

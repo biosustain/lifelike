@@ -90,6 +90,16 @@ export const IMAGE_DEFAULT_SIZE = 300;
 export const MAX_DESCRIPTION_LENGTH = 5000;
 export const FORMATS_WITH_POSSIBLE_DESCRIPTION = ['graph'];
 
+// TODO: Need to implement these across the app, currently only used in the browser.ts util
+export enum FileTypeShorthand {
+  Map = 'maps',
+  EnrichmentTable = 'enrichment-table',
+  Directory = 'folders',
+  Graph = 'sankey',
+  Pdf = 'files',
+  BioC = 'bioc'
+}
+
 export enum MimeTypes {
   Map = 'vnd.lifelike.document/map',
   EnrichmentTable = 'vnd.lifelike.document/enrichment-table',
