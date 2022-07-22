@@ -644,11 +644,9 @@ export class WorkspaceManager {
           }
 
           if (sideBySidePane == null) {
-            if (targetPane.id === PaneIDs.LEFT) {
-              targetPane = this.paneManager.create(PaneIDs.RIGHT);
-            } else {
-              targetPane = this.paneManager.create(PaneIDs.LEFT);
-            }
+            targetPane = this.paneManager.create(
+              targetPane.id === PaneIDs.LEFT ? PaneIDs.RIGHT : PaneIDs.LEFT
+            );
           } else {
             targetPane = sideBySidePane;
           }
