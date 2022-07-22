@@ -16,7 +16,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escapeRegExp, isNil } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -81,9 +81,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   annotation: AnnotationData;
 
   fileId: string;
-  object$: Observable<FilesystemObject> = new Subject();
-  document$: Observable<EnrichmentDocument> = new Subject();
-  table$: Observable<EnrichmentTable> = new Subject();
+  object$: Observable<FilesystemObject>;
+  document$: Observable<EnrichmentDocument>;
+  table$: Observable<EnrichmentTable>;
   scrollTopAmount: number;
   findController: AsyncElementFind;
   findTargetChangesSub: Subscription;
@@ -95,9 +95,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
    */
   queuedChanges$ = new BehaviorSubject<ObjectUpdateRequest | undefined>(null);
 
-  dragTitleData$ = this.object$.pipe(
+  dragTitleData$ = defer(() => this.object$.pipe(
     map(object => object.getTransferData())
-  );
+  ));
 
   ngOnInit() {
     this.load();

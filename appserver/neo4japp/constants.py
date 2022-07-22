@@ -47,6 +47,11 @@ FILE_MIME_TYPE_GRAPH = 'vnd.***ARANGO_DB_NAME***.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
 
 
+class SortDirection(Enum):
+    ASC = 'asc'
+    DESC = 'desc'
+
+
 # enrichment labels
 class EnrichmentDomain(Enum):
     UNIPROT = 'UniProt'
@@ -391,6 +396,7 @@ IMAGE_BORDER_SCALE = 4
 WATERMARK_DISTANCE = 100.0
 WATERMARK_WIDTH = 160.0
 WATERMARK_ICON_SIZE = 15
+COLOR_TO_REPLACE = (0, 0, 0, 255)
 
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
@@ -445,7 +451,7 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER')
+ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
