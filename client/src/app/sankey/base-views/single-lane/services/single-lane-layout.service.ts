@@ -15,6 +15,7 @@ import { SingleLaneBaseControllerService } from './single-lane-base-controller.s
 import { Base } from '../interfaces';
 import { EditService } from '../../../services/edit.service';
 import { debug } from 'app/shared/rxjs/debug';
+import { Vertical } from '../../../abstract/sankey-layout.service';
 
 type SinglelaneDataWithContext = LayersContext<Base>;
 
@@ -44,23 +45,16 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
   computeNodeBreadths(data, columns) {
     const iterations = 10;
     return source => source.pipe(
-      switchMap((verticalContext: any) => interval(500).pipe(
-          take(iterations),
-          takeUntil(this.destroyed$),
-          map(iteration => {
-            if (iteration === 0) {
-              this.initializeNodeBreadths(columns, verticalContext);
-            } else {
-              const alpha = Math.pow(0.99, iteration);
-              const beta = Math.max(1 - alpha, (iteration + 1) / iterations);
-              this.relaxRightToLeft(columns, alpha, beta, verticalContext);
-              this.relaxLeftToRight(columns, alpha, beta, verticalContext);
-            }
-            return verticalContext;
-          }),
-          tap(() => this.reorderLinks(data.nodes)),
-        )
-      )
+      tap((verticalContext: any) => {
+        this.initializeNodeBreadths(columns, verticalContext);
+        for (let i = 0; i < iterations; i++) {
+          const alpha = Math.pow(0.99, i);
+          const beta = Math.max(1 - alpha, (i + 1) / iterations);
+          this.relaxRightToLeft(columns, alpha, beta, verticalContext);
+          this.relaxLeftToRight(columns, alpha, beta, verticalContext);
+        }
+        this.reorderLinks(data.nodes);
+      })
     );
   }
 
