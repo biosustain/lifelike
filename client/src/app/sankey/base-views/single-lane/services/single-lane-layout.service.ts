@@ -14,6 +14,7 @@ import { ServiceOnInit } from 'app/shared/schemas/common';
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
 import { Base } from '../interfaces';
 import { EditService } from '../../../services/edit.service';
+import { debug } from 'app/shared/rxjs/debug';
 
 type SinglelaneDataWithContext = LayersContext<Base>;
 
@@ -41,9 +42,9 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
    * iteratively figuring order of the nodes.
    */
   computeNodeBreadths(data, columns) {
-    const iterations = 100;
+    const iterations = 10;
     return source => source.pipe(
-      switchMap((verticalContext: any) => interval(1, animationFrame).pipe(
+      switchMap((verticalContext: any) => interval(500).pipe(
           take(iterations),
           takeUntil(this.destroyed$),
           map(iteration => {
@@ -56,7 +57,8 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
               this.relaxLeftToRight(columns, alpha, beta, verticalContext);
             }
             return verticalContext;
-          })
+          }),
+          tap(() => this.reorderLinks(data.nodes)),
         )
       )
     );
@@ -182,11 +184,9 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
   }
 
   reorderLinks(nodes) {
-    if (this.linkSort === undefined) {
-      for (const {sourceLinks, targetLinks} of nodes) {
-        sourceLinks.sort(SingleLaneLayoutService.ascendingTargetBreadth);
-        targetLinks.sort(SingleLaneLayoutService.ascendingSourceBreadth);
-      }
+    for (const {sourceLinks, targetLinks} of nodes) {
+      sourceLinks.sort(SingleLaneLayoutService.ascendingTargetBreadth);
+      targetLinks.sort(SingleLaneLayoutService.ascendingSourceBreadth);
     }
   }
 
