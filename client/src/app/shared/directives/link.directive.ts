@@ -4,7 +4,7 @@ import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
-import { openPotentialInternalLink } from '../utils/browser';
+import { openInternalLink, toValidUrl } from '../utils/browser';
 import { assignDefined } from '../utils/types';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
@@ -93,8 +93,7 @@ export class AbstractLinkDirective {
       parentAddress: this.router.createUrlTree(this.parentCommands)
     });
 
-    openPotentialInternalLink(this.workspaceManager, this.urlTree.toString(), extras);
-
+    openInternalLink(this.workspaceManager, toValidUrl(this.urlTree.toString()), extras);
     return false;
   }
 
