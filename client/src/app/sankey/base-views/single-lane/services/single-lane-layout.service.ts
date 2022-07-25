@@ -1,12 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
-import { first, last, sum, sumBy } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, startWith, map, take, takeUntil } from 'rxjs/operators';
-import { interval, animationFrame } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { TruncatePipe } from 'app/shared/pipes';
-import { DirectedTraversal } from 'app/sankey/utils/directed-traversal';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { LayoutService, LayersContext } from 'app/sankey/services/layout.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
@@ -14,8 +11,6 @@ import { ServiceOnInit } from 'app/shared/schemas/common';
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
 import { Base } from '../interfaces';
 import { EditService } from '../../../services/edit.service';
-import { debug } from 'app/shared/rxjs/debug';
-import { Vertical } from '../../../abstract/sankey-layout.service';
 
 type SinglelaneDataWithContext = LayersContext<Base>;
 

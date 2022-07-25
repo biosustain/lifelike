@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain, map as lodashMap } from 'lodash-es';
+import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, takeUntil, catchError, first, distinctUntilChanged } from 'rxjs/operators';
 import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, BehaviorSubject, OperatorFunction } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -12,7 +12,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
-import { median } from 'app/shared/utils/math';
+import { medianBy } from 'app/shared/utils/math';
 
 import { SankeyBaseState, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
@@ -30,21 +30,6 @@ interface LayerPlaceholder {
   order?: number;
   y0?: number;
   y1?: number;
-}
-
-function medianBy<T>(arr: T[], fn: (e: T) => number): number {
-  const sortedArray = lodashMap(arr, fn).sort((a, b) => a - b);
-  const middleIndex = sortedArray.length / 2;
-  if (middleIndex % 1 === 0) {
-      // Two middle numbers (e.g. [1, 2, 3, 4]), so to get the median take the average of the two
-      return sortedArray.slice(
-          middleIndex - 1,
-          middleIndex + 1 // slice end is exclusive
-      ).reduce((a, b) => a + b) / 2;
-  } else {
-      // middleIndex is "X.5", where the median index of the set is "X"
-      return sortedArray[Math.floor(middleIndex)];
-  }
 }
 
 export const groupByTraceGroupWithAccumulation = (nextNodeCallback) => {
