@@ -735,3 +735,11 @@ class FileLock(RDBMSBase, TimestampMixin):
                         index=True, nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
     acquire_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+
+
+class StarredFile(RDBMSBase, TimestampMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
