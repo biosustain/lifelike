@@ -161,11 +161,10 @@ services:
 
   graphdatabase:
     container_name: graphdatabase
-    build: ./graph-db/neo4j
+    image: neo4j:4.4-community
     environment:
       - NEO4J_AUTH=neo4j/password
-    volumes:
-      - ./graph-db/neo4j/logs:/logs
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -208,4 +207,3 @@ networks:
   frontend:
   backend:
   elastic:
-

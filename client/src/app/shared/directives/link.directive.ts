@@ -1,10 +1,12 @@
 import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, NavigationExtras, QueryParamsHandling, Router, UrlTree } from '@angular/router';
 import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
-import { WorkspaceManager } from '../workspace-manager';
+import { openPotentialInternalLink } from '../utils/browser';
+import { assignDefined } from '../utils/types';
+import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load
@@ -25,8 +27,10 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
-  @Input() matchExistingTab: string;
-  @Input() handleClick = true;
+  @Input() keepFocus: boolean;
+  @Input() matchExistingTab: string | RegExp;
+  @Input() shouldReplaceTab: (component: any) => boolean;
+  @Input() handleClick = true; // TODO: Really should refactor this out, it's only used as a sort of kludge in one place
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
   @Input() preferStartupPane: string;
@@ -57,10 +61,6 @@ export class AbstractLinkDirective {
     }
   }
 
-  shouldReplaceTab(component) {
-    return true;
-  }
-
   @HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey'])
   onClick(button: number, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean): boolean {
     if (!this.handleClick) {
@@ -75,12 +75,15 @@ export class AbstractLinkDirective {
       return true;
     }
 
-    const extras = {
+    // Create an object with only the properties which are defined. Avoids including unused properties, which is particular useful when
+    // expanding the object.
+    const extras: WorkspaceNavigationExtras = assignDefined({}, {
       skipLocationChange: attrBoolValue(this.skipLocationChange),
       replaceUrl: attrBoolValue(this.replaceUrl),
       state: this.state,
       newTab: attrBoolValue(this.newTab),
       sideBySide: attrBoolValue(this.sideBySide),
+      keepFocus: attrBoolValue(this.keepFocus),
       matchExistingTab: this.matchExistingTab,
       forceWorkbench: attrBoolValue(this.forceWorkbench),
       preferPane: this.preferPane,
@@ -88,24 +91,26 @@ export class AbstractLinkDirective {
       shouldReplaceTab: this.shouldReplaceTab,
       openParentFirst: attrBoolValue(this.openParentFirst),
       parentAddress: this.router.createUrlTree(this.parentCommands)
-    };
+    });
 
-    this.workspaceManager.navigateByUrl({url: this.urlTree, extras});
+    openPotentialInternalLink(this.workspaceManager, this.urlTree.toString(), extras);
 
     return false;
   }
 
 
   get urlTree(): UrlTree {
-    return this.router.createUrlTree(this.commands, {
+    // Only keep defined properties. For example, `this.fragment` is often undefined, and including it can produce undesired URLs.
+    const navExtras: NavigationExtras = assignDefined({}, {
       relativeTo: this.route,
       queryParams: this.queryParams,
-      fragment: this.fragment || '',
       queryParamsHandling: this.queryParamsHandling,
       preserveFragment: attrBoolValue(this.preserveFragment),
+      fragment: this.fragment
     });
-  }
 
+    return this.router.createUrlTree(this.commands, navExtras);
+  }
 }
 
 @Directive({

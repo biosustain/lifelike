@@ -433,12 +433,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
       const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === an.meta.idType)[0];
+      idLink = source.links.find(link => link.name === an.meta.idType);
     }
 
     // null/undefined because a data source did not match
     // e.g we use "Custom" for phenotype
-    if (idLink !== null && idLink !== undefined) {
+    if (idLink) {
       base.push(
         annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` :
           'Id: None');
@@ -500,23 +500,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           data-target="#${searchInternalLinkCollapseTargetId}"
           aria-expanded="false"
           aria-controls="${searchInternalLinkCollapseTargetId}"
-        >Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        >Search internal links</div>
         <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
     `;
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'Knowledge Graph',
-      { url: String(visLink), extras: { sideBySide: true, newTab: true } },
+      { url: String(visLink), extras: { sideBySide: true, newTab: true, keepFocus: true } },
     ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'File Content',
-      { url: String(contLink), extras: { sideBySide: true, newTab: true }}
+      { url: String(contLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
     ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
     htmlLinks += composeInternalLink(
       'Map Content',
-      { url: String(mapLink), extras: { sideBySide: true, newTab: true }}
+      { url: String(mapLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
     ) + '<br>';
     htmlLinks += `</div></div>`;
 
