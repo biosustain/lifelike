@@ -1,7 +1,7 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
 import { switchMap, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
-import { merge, isNil, uniq } from 'lodash-es';
+import { merge, isNil, uniq, isEmpty } from 'lodash-es';
 import { of, iif, defer, combineLatest } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
@@ -112,8 +112,12 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
 
   networkTraceData$ = this.common.data$.pipe(
     switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
-        map((tn) => {
-          const {traces, sources, targets} = tn;
+        switchMap(({traces, sources, targets}) => this.stateAccessor('traceGroups').pipe(
+          map(traceGroups => ({
+            sources, targets, traces: isEmpty(traceGroups) ? traces : traces.filter(({group}) => traceGroups[group] ?? true)
+          }))
+        )),
+        map(({traces, sources, targets}) => {
           const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
           const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
           this.colorNodes(networkTraceNodes);

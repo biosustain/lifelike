@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, isNil } from 'lodash-es';
+import { flatMap, groupBy, intersection, merge, isNil, isEmpty } from 'lodash-es';
 import { switchMap, map, shareReplay } from 'rxjs/operators';
 import { of, Observable, defer, iif } from 'rxjs';
 
@@ -105,6 +105,11 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
     switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
+        switchMap(({traces, sources, targets}) => this.stateAccessor('traceGroups').pipe(
+          map(traceGroups => ({
+            sources, targets, traces: isEmpty(traceGroups) ? traces : traces.filter(({group}) => traceGroups[group] ?? true)
+          }))
+        )),
         map(({sources, targets, traces}) => {
           const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
           const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
