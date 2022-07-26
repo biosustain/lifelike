@@ -54,9 +54,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   private readonly DEFAULT_LIMIT = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
 
-  // Review note: What about that?
-  sourceData$ = defer(() => of(null));
-
   results = new CollectionModel<RankedItem<FilesystemObject>>([], { multipleSelection: false });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightTerms: string[] = [];

@@ -7,7 +7,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
 
-import { ModuleAwareComponent, ShouldConfirmUnload } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -25,7 +25,6 @@ import { ModuleContext } from 'app/shared/services/module-context.service';
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
-import { Source } from '../services/interfaces';
 
 @Component({
   selector: 'app-map-view',

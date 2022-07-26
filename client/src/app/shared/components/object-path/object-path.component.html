@@ -17,11 +17,16 @@
     </ng-template>
     <ng-container *ngIf="path; else placeholders">
         <li class="breadcrumb-item" *ngFor="let item of path" appContextMenu>
-            <a [appLink]="item.getCommands(forEditing)" [newTab]="newTab"
-               [appFSObjectTarget]="item.isDirectory ? item : null" (refreshRequest)="refreshRequest.emit()">
-                <app-project-icon *ngIf="!item.parent"
-                                  [project]="item.project" size="16" class="mr-1"></app-project-icon>
-                {{ item.isDirectory && item.parent == null && rootName ? rootName : item.effectiveName }}
+            <a [appLink]="item.getCommands(forEditing)"
+               [newTab]="newTab"
+               [appFSObjectTarget]="item.isDirectory ? item : null"
+               (refreshRequest)="refreshRequest.emit()">
+              <app-project-icon *ngIf="!item.parent"
+                                class="mr-1"
+                                size="16"
+                                [project]="item.project">
+              </app-project-icon>
+              {{ item.isDirectory && item.parent == null && rootName ? rootName : item.effectiveName }}
             </a>
             <div appContextMenuBody>
                 <ng-container *ngIf="item.parent; else noParentMenu">
