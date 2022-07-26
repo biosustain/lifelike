@@ -1,0 +1,46 @@
+name: Frontend PR Preview
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  preview:
+    if: contains(github.event.pull_request.labels.*.name, 'frontend-preview')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+          cache-dependency-path: client/yarn.lock
+      - run: yarn install
+      - run: yarn build
+
+      - name: Set preview URL
+        id: set-preview-url
+        run: echo '::set-output name=url::pr-${{ github.event.pull_request.number }}.frontend-dev.***ARANGO_DB_NAME***.bio'
+
+      - name: Publish preview site
+        uses: dswistowski/surge-sh-action@v1
+        with:
+          project: client/dist/client
+          domain: ${{ steps.set-preview-url.outputs.url }}
+          # TODO: Expire and add a non-hardcoded creds
+          # login: ${{ secrets.surge_login }}
+          # token: ${{ secrets.surge_token }}
+          login: darede@biosustain.***ARANGO_DB_NAME***.bio
+          token: ***REMOVED***
+
+      - name: Comment back to PR
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            :rocket: Preview frontend website published at:
+            https://${{ steps.set-preview-url.outputs.url }}
