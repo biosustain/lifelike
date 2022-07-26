@@ -46,14 +46,18 @@
             <legend>Label Style</legend>
 
             <div class="form-group d-flex align-items-center">
-              <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
+              <label [for]="fontSize.uid" class="my-0 mr-2" ngbTooltip="Font size" container="body">
                 <i class="fa fa-fw fa-text-height"></i>
               </label>
-              <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                                 [(ngModel)]="edge.style.fontSizeScale" (change)="doSave()"
-                                 id="font-size"
-                                 [style.width]="'6rem'"></app-percent-input>
-              %
+                        <app-percent-input
+                            #fontSize="uid" appUid
+                            [min]="20" [max]="1000" [step]="20" class="mr-1"
+                            #model="ngModel"
+                            [ngModel]="edge.style.fontSizeScale || 1"
+                            (ngModelChange)="model.valid && edge.style.fontSizeScale = $event"
+                            (change)="model.valid && doSave()"
+                            [style.width.rem]="6"
+                        ></app-percent-input>
             </div>
 
           </fieldset>
@@ -84,15 +88,19 @@
             </div>
 
             <div class="form-group d-flex align-items-center">
-              <label for="line-width-scale" class="my-0 mr-2" ngbTooltip="Edge line thickness"
+              <label [for]="lineWidthScale.uid" class="my-0 mr-2" ngbTooltip="Edge line thickness"
                      container="body">
                 <i class="fa fa-fw fa-window-minimize"></i>
               </label>
-              <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                                 [(ngModel)]="edge.style.lineWidthScale" (change)="doSave()"
-                                 id="line-width-scale"
-                                 [style.width]="'6rem'"></app-percent-input>
-              %
+                        <app-percent-input
+                            #lineWidthScale="uid" appUid
+                            [min]="20" [max]="1000" [step]="20" class="mr-1"
+                            #model="ngModel"
+                            [ngModel]="edge.style.lineWidthScale || 1"
+                            (ngModelChange)="model.valid && edge.style.lineWidthScale = $event"
+                            (change)="model.valid && doSave()"
+                            [style.width.rem]="6"
+                        ></app-percent-input>
             </div>
           </fieldset>
 

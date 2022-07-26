@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
-import { Observable, defer, of, iif } from 'rxjs';
+import { Observable, defer, of, iif, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
@@ -8,7 +8,6 @@ import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
-import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
 
 @Component({
@@ -37,9 +36,8 @@ export class WorkspaceTabComponent implements OnChanges {
   ) {
   }
 
-  dragData$ = defer(() => {
-    const sources$ = this.tab.component?.sourceData$ ?? of(null);
-    return sources$.pipe(
+  dragData$ = defer(() =>
+    from(this.tab.component?.sourceData$).pipe(
       switchMap(sources =>
         iif(
           () => Boolean(sources),
@@ -60,8 +58,7 @@ export class WorkspaceTabComponent implements OnChanges {
             sources
           }
         } as Partial<UniversalGraphNode>)};
-      }));
-  });
+      })));
 
   drag = new CdkNativeDragItegration(this.dragData$);
 

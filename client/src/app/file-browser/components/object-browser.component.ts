@@ -102,6 +102,7 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     map(object => object.getGraphEntitySources())
   ));
 
+
   load(hashId: string) {
     this._hashId$.next(hashId);
   }

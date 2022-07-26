@@ -16,6 +16,7 @@ import { ElementObserverDirective } from './element-observer.directive';
 import { ConstrainToViewportDirective } from './constrain-to-viewport.directive';
 import { CopyToClipboardDirective } from './copy-to-clipboard.directive';
 import { RotateDirective } from './rotate.directive';
+import { UidDirective } from './uid.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -38,7 +39,8 @@ const directives = [
   CopyToClipboardDirective,
   ConstrainToViewportDirective,
   RotateDirective,
-  ElementObserverDirective
+  ElementObserverDirective,
+  UidDirective,
 ];
 
 @NgModule({

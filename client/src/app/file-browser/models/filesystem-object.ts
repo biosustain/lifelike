@@ -481,7 +481,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        // TODO: Convert to hash ID - is this still valid? There is a hash id.
         if (this.isProject) {
           return ['/projects', projectName];
         }

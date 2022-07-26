@@ -5,6 +5,7 @@ export const ErrorMessages = {
   missingNetworkTraces: 'File does not contain any network traces',
   missingNodes: 'File does not contain any nodes',
   missingLinks: 'File does not contain any links',
+  missingLinkTrace: 'Link trace is missing',
   missingEntityType: type => `Entity type ${type} is not supported`,
   missingEntity: id =>
     `No entity found for id ${id}`,
