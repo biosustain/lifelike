@@ -1,9 +1,20 @@
-<input type="number"
-       [ngModel]="value * 100"
-       (ngModelChange)="change($event / 100)"
-       class="form-control mr-1"
-       [id]="id"
-       [min]="min"
-       [max]="max"
-       [step]="step"
-/>
+<div class="input-group">
+    <input #input
+           type="number"
+           class="form-control"
+           (input)="onChange($event.target.value)"
+           [placeholder]="placeholder"
+           [min]="min"
+           [max]="max"
+           [step]="step"
+           [disabled]="disabled"
+           [value]="formatter.format(value)"
+           [attr.aria-describedby]="validationTooltipUsernamePrepend.uid"
+    >
+    <div class="input-group-append">
+        <span class="input-group-text" #validationTooltipUsernamePrepend="uid" appUid>%</span>
+    </div>
+</div>
+<div class="invalid-feedback d-block" *ngIf="errors">
+    Provide number between {{min}} and {{max}}.
+</div>
