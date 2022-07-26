@@ -125,11 +125,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
 
-  // parseDelta$ = this.delta$.pipe(
-  //   // @ts-ignore
-  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
-  // );
-
   ngOnDestroy() {
     super.ngOnDestroy();
   }
