@@ -622,7 +622,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                       of(verticalContext).pipe(
                         // Calculate the nodes' and links' vertical position within their respective column
                         //     Also readjusts sankeyCircular size if circular links are needed, and node x's
-                        tap(() => this.computeNodeBreadths(data, columnsWithLinkPlaceholders)),
+                        tap(() => this.computeNodeBreadths(data, columns)),
                         tap(() => {
                           if (this.nodeSort) {
                             for (const column of columnsWithLinkPlaceholders) {
