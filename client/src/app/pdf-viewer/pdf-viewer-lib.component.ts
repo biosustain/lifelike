@@ -500,7 +500,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           data-target="#${searchInternalLinkCollapseTargetId}"
           aria-expanded="false"
           aria-controls="${searchInternalLinkCollapseTargetId}"
-        >Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        >Search internal links</div>
         <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
     `;
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
