@@ -211,10 +211,12 @@ export class AnnotationTagHandler extends TagHandler {
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(meta.type)) {
       const source = ENTITY_TYPE_MAP[meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === meta.idType)[0];
+      idLink = source.links.find(link => link.name === meta.idType);
     }
 
-    if (idLink !== null) {
+    // null/undefined because a data source did not match
+    // e.g we use "Custom" for phenotype
+    if (idLink) {
       // tslint:disable-next-line:max-line-length
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
     } else {
