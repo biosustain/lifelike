@@ -433,12 +433,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(an.meta.type)) {
       const source = ENTITY_TYPE_MAP[an.meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === an.meta.idType)[0];
+      idLink = source.links.find(link => link.name === an.meta.idType);
     }
 
     // null/undefined because a data source did not match
     // e.g we use "Custom" for phenotype
-    if (idLink !== null && idLink !== undefined) {
+    if (idLink) {
       base.push(
         annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` :
           'Id: None');
