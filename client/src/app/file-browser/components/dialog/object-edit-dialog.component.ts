@@ -115,6 +115,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       mimeType: value.mimeType,
       organism: value.fallbackOrganism,
     });
+    this.form.get('filename').markAsDirty();
 
     if (!value.parent) {
       this.promptParent = true;
