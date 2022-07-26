@@ -286,6 +286,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       textbox,
       sourceLineEnd,
       targetLineEnd,
+      lineWidth,
       stroke: this.createLine(
         lineType,
         lineWidth,
