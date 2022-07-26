@@ -14,6 +14,7 @@ export interface SankeyBaseOptions {
 }
 
 export interface SankeyBaseState {
+  traceGroups: string[];
   nodeHeight: SankeyNodeHeight;
   nodeValueAccessorId?: string;
   linkValueAccessorId?: string;

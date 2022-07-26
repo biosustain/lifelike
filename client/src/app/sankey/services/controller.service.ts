@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get } from 'lodash-es';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
+import {
+  SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase,
+  SankeyId, SankeyOptions, SankeyTraceNetwork
+} from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
@@ -78,7 +81,10 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           enabled: true,
           value: LayoutService.labelEllipsis
         },
-        fontSizeScale: 1.0
+        fontSizeScale: 1.0,
+        traceGroups: {
+          0: true
+        }
       },
       delta
     )),
@@ -523,11 +529,12 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return max(nodes, ({label = ''}) => label.length);
   }
 
-  private extractTraceGroups({trace_networks}: { trace_networks: Array<SankeyTraceNetwork> }) {
-    return flatMap(
-      trace_networks,
-      ({traces}) => traces.map(({group}) => String(group))
-    );
+  private extractTraceGroups({traceNetworks}: { traceNetworks: Array<SankeyTraceNetwork> }) {
+    return chain(traceNetworks)
+      .flatMap(({traces}) => traces.map(({group}) => String(group)))
+      .tap(traceGroups => traceGroups.sort())
+      .sortedUniq()
+      .value();
   }
 
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {

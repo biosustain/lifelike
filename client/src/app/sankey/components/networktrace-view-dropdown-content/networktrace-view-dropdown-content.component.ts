@@ -143,6 +143,6 @@ export class NetworktraceViewDropdownContentComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.blockInitialRenderAnimation = false;
+    // this.blockInitialRenderAnimation = false;
   }
 }
