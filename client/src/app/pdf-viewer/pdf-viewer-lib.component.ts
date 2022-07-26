@@ -817,6 +817,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @HostListener('dragend', ['$event'])
   dragEnd(event: DragEvent) {
+    // TODO: This causes an error on drop of (custom?) annotation due to the undefined this.firstAnnotationRange
     let page = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
     page.classList.remove('dragged');
   }
