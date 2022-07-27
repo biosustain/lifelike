@@ -116,10 +116,9 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           map(shortestPathPlusN => ({
             sources,
             targets,
-            traces: isEmpty(shortestPathPlusN) ? traces :
-              traces.filter((trace) =>
-                trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
-              )
+            traces: traces.filter((trace) =>
+              trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
+            )
           }))
         )),
         map(({traces, sources, targets}) => {

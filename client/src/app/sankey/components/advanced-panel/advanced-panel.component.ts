@@ -25,7 +25,7 @@ export class SankeyAdvancedPanelComponent
   }
 
   form = this.formBuilder.group({
-    shortestPathPlusN: [0, []],
+    shortestPathPlusN: [1, []],
     alignId: [undefined, []],
     normalizeLinks: ['', []],
     fontSizeScale: [1, []],
@@ -40,10 +40,6 @@ export class SankeyAdvancedPanelComponent
   maximumLabelLength$ = this.common.maximumLabelLength$;
   maximumShortestPathPlusN$ = this.common.maximumShortestPathPlusN$;
   aligns$ = this.common.aligns$;
-
-  get shortestPathPlusNControls() {
-    return (this.form.get('shortestPathPlusN') as FormGroup).controls;
-  }
 
   ngOnInit() {
     super.ngOnInit();

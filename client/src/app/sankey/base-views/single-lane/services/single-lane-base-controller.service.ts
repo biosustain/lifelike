@@ -105,16 +105,17 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
     switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
-        switchMap(({traces, sources, targets}) => this.common.stateAccessor('shortestPathPlusN').pipe(
+        switchMap(({traces, sources, targets}) =>
+          this.common.stateAccessor('shortestPathPlusN').pipe(
           map(shortestPathPlusN => ({
             sources,
             targets,
-            traces: isEmpty(shortestPathPlusN) ? traces :
-              traces.filter((trace) =>
+            traces: traces.filter((trace) =>
                 trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
               )
           }))
-        )),
+        )
+        ),
         map(({sources, targets, traces}) => {
           const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
           const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);

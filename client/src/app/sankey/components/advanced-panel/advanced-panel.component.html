@@ -1,7 +1,7 @@
 <form [formGroup]="form">
     <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
         Visible shortest path plus
-        <input formGroupName="shortestPathPlusN"
+        <input formControlName="shortestPathPlusN"
                [max]="maximumShortestPathPlusN$ | async" min="0" step="1"
                ngbButton
                type="range">
