@@ -96,6 +96,7 @@ export interface FilesystemObjectData {
   recycled: boolean;
   effectivelyRecycled: boolean;
   highlight?: string[];
+  starred?: boolean;
   fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigurations;
   // TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists

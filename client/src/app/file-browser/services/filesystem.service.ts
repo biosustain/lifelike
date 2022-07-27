@@ -355,6 +355,13 @@ export class FilesystemService {
       }
     );
   }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.http.patch<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/star`,
+      { starred }
+    ).pipe(map(data => data.result));
+  }
 }
 
 export class LockError {
