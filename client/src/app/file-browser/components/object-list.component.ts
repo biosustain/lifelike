@@ -9,7 +9,7 @@ import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { openPotentialExternalLink } from 'app/shared/utils/browser';
+import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -77,9 +77,9 @@ export class ObjectListComponent {
         // TODO: Normally this would just be handled by the `appLink` directive. Really, we should update the template to either:
         //  - Use appLink
         //  - Use a callback that does the download portion of the `else` block below
-        openPotentialExternalLink(
+        openInternalLink(
           this.workspaceManager,
-          this.router.createUrlTree(target.getCommands()).toString(),
+          toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
           {newTab: !target.isDirectory}
         );
       } else {
