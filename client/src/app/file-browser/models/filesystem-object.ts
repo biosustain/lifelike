@@ -146,6 +146,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   // tslint:disable-next-line:variable-name
   annotations_date_tooltip?: string;
   annotationsTooltipContent: string;
+  starred?: boolean;
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;
@@ -622,7 +623,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       'pinned', 'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
-      'trueFilename']) {
+      'trueFilename', 'starred']) {
       if (key in data) {
         this[key] = data[key];
       }

@@ -17,6 +17,7 @@ from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
@@ -50,7 +51,7 @@ from neo4japp.models import (
     FileVersion,
     FileBackup
 )
-from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks
+from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks, StarredFile
 from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
@@ -73,6 +74,7 @@ from neo4japp.schemas.filesystem import (
     FileLockListResponse,
     FileResponseSchema,
     FileSearchRequestSchema,
+    FileStarUpdateRequest,
     FileUpdateRequestSchema,
     FileVersionHistorySchema,
     MultipleFileResponseSchema
@@ -241,6 +243,18 @@ class FilesystemBaseView(MethodView):
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
             files.append(hierarchy.file)
+
+        # Calculate the starred status of each file
+        starred_query = db.session.query(StarredFile.file_id).filter(
+            and_(
+                StarredFile.file_id.in_([file.id for file in files]),
+                StarredFile.user_id == current_user.id
+            )
+        )
+
+        starred_query_results = set([starred_file for starred_file, in starred_query.all()])
+        for file in files:
+            file.calculated_starred = file.id in starred_query_results
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
         # actually appeared in the results
@@ -1685,6 +1699,80 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         changes[id]['instances'].append(annotation)
 
 
+class StarredFileListView(FilesystemBaseView):
+    def get(self):
+        user = g.current_user
+
+        query = db.session.query(StarredFile).filter(
+            StarredFile.user_id == user.id,
+        )
+        starred_files = query.all()
+        total = query.count()
+
+        return jsonify(FileListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'results.children',
+        )).dump({
+            'total': total,
+            'results': starred_files,
+        }))
+
+
+class FileStarUpdateView(FilesystemBaseView):
+    @use_args(lambda request: FileStarUpdateRequest(partial=True))
+    def patch(self, params: dict, hash_id: str):
+        user = g.current_user
+        starred = params['starred']
+
+        try:
+            result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
+            result.calculated_starred = starred
+        except NoResultFound:
+            raise RecordNotFound(
+                title='Failed to Update File',
+                message=f'Could not identify file with hash id {hash_id}',
+            )
+
+        # If the user doesn't have permission to read the file they want to star, we throw
+        self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
+
+        # Get the starred file row if it exists already
+        starred_file = db.session.query(StarredFile).filter(
+            and_(
+                StarredFile.user_id == user.id,
+                StarredFile.file_id == result.id
+            )
+        ).one_or_none()
+
+        if starred:
+            # Don't need to update if the file is already starred by this user
+            if starred_file is None:
+                starred_file = StarredFile()
+                starred_file.user_id = user.id
+                starred_file.file_id = result.id
+
+                db.session.add(starred_file)
+        # Delete the row only if it exists
+        elif starred_file is not None:
+            db.session.delete(starred_file)
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+
+        return jsonify(FileResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'result.parent',
+            'result.children',  # We aren't loading sub-children
+        )).dump({
+            'result': result,
+        }))
+
+
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
 bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
@@ -1706,3 +1794,7 @@ bp.add_url_rule('/objects/<string:hash_id>/locks',
                 view_func=FileLockListView.as_view('file_lock_list'))
 bp.add_url_rule('/objects/<string:hash_id>/annotation-history',
                 view_func=FileAnnotationHistoryView.as_view('file_annotation_history'))
+bp.add_url_rule('/objects/starred',
+                view_func=StarredFileListView.as_view('file_star_list'))
+bp.add_url_rule('/objects/<string:hash_id>/star',
+                view_func=FileStarUpdateView.as_view('file_star_update'))
