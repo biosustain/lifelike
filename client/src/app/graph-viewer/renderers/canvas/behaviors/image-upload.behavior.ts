@@ -7,6 +7,7 @@ import { IMAGE_DEFAULT_SIZE, SizeUnits, IMAGE_LABEL } from 'app/shared/constants
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
+import { filter } from 'lodash-es';
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 
@@ -20,28 +21,11 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   private containsFiles(dataTransfer: DataTransfer) {
-    if (dataTransfer.types) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let i = 0; i < dataTransfer.types.length; i++) {
-        if (dataTransfer.types[i] === 'Files') {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return dataTransfer.types?.includes('Files');
   }
 
   private getFiles(dataTransfer: DataTransfer): File[] {
-    const result: File[] = [];
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < dataTransfer.files.length; i++) {
-      const file = dataTransfer.files[i];
-      if (this.isSupportedFile(file)) {
-        result.push(file);
-      }
-    }
-    return result;
+    return filter(dataTransfer.files, file => this.isSupportedFile(file));
   }
 
   private isSupportedFile(file: File) {

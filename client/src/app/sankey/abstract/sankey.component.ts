@@ -389,7 +389,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     this.zoom = new Zoom(
       this.svg, {
         scaleExtent: [0.1, 8],
-        // @ts-ignore
         extent: () => {
           const {x, y, width, height} = this.g.nativeElement.getBBox();
           return [[x, y], [x + width, y + height]];

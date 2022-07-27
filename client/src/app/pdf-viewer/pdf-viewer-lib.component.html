@@ -1,18 +1,23 @@
 <div class="pdf-viewer-container position-relative" [class.debugmode]="debugMode" #container>
-  <div class="pdf-viewer-document">
-    <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation"
-                        [original-size]="originalSize"
-                        [fit-to-page]="fitToPage"
-                        (after-load-complete)="afterLoadComplete($event)" [zoom]="zoom"
-                        [show-all]="showAll"
-                        [stick-to-page]="stickToPage"
-                        [render-text]="renderText"
-                        [render-text-mode]="renderTextMode"
-                        [external-link-target]="'blank'" [autoresize]="autoresize"
-                        (error)="onError($event)"
-                        (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"
-                        (matches-count-updated)="matchesCountUpdated.emit($event)"
-                        (find-control-state-updated)="findControlStateUpdated($event)">
-    </app-pdf-viewer-lib>
-  </div>
+    <div class="pdf-viewer-document">
+        <app-pdf-viewer-lib [src]="pdfSrc"
+                            [(page)]="page"
+                            [rotation]="rotation"
+                            [originalSize]="originalSize"
+                            [fitToPage]="fitToPage"
+                            (afterLoadComplete)="afterLoadComplete($event)"
+                            [zoom]="zoom"
+                            [showAll]="showAll"
+                            [stickToPage]="stickToPage"
+                            [renderText]="renderText"
+                            [renderTextMode]="renderTextMode"
+                            [externalLinkTarget]="'blank'"
+                            [autoresize]="autoresize"
+                            (onError)="onError($event)"
+                            (onProgress)="onProgress($event)"
+                            (pageRendered)="pageRendered($event)"
+                            (matchesCountUpdated)="matchesCountUpdated.emit($event)"
+                            (findControlStateUpdated)="findControlStateUpdated($event)">
+        </app-pdf-viewer-lib>
+    </div>
 </div>

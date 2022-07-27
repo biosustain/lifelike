@@ -369,9 +369,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     // do not update to initial position
     const {x, y, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
     const nodeColor = (nodeToHighlight.color as Color);
-    // @ts-ignore
     nodeToHighlight._initialBorderWidth = nodeToHighlight.borderWidth;
-    // @ts-ignore
     nodeToHighlight._initialColor = nodeColor;
     nodeToHighlight.borderWidth = 2;
     nodeToHighlight.color = {

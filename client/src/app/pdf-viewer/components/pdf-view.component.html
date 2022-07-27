@@ -166,7 +166,7 @@
             <div class="flex-fill overflow-auto pdf-viewer-lib-wrapper" [id]="id + '-pdf-viewer-lib-wrapper'">
                 <div *ngIf="ready">
                     <!-- PDF Viewer -->
-                    <lib-pdf-viewer-lib
+                    <app-lib-pdf-viewer-lib
                             tabindex=0
                             id='pdf-viewer'
                             appPdfViewer
@@ -193,7 +193,7 @@
                             (searchChange)="searchQueryChangedFromViewer($event)"
                             (annotationHighlightChange)="annotationHighlightChangedFromViewer($event)"
                     >
-                    </lib-pdf-viewer-lib>
+                    </app-lib-pdf-viewer-lib>
                 </div>
             </div>
         </div>

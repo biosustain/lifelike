@@ -44,8 +44,7 @@ import { AnnotationToolbarComponent } from './components/annotation-toolbar.comp
 declare var jQuery: any;
 
 @Component({
-  // tslint:disable-next-line:component-selector
-  selector: 'lib-pdf-viewer-lib',
+  selector: 'app-lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -107,7 +106,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  // tslint:disable-next-line: variable-name
   private _showExcludedAnnotations: boolean;
   @Input()
   set showExcludedAnnotations(showExcludedAnnotations: boolean) {
@@ -121,11 +119,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @Output() loadCompleted = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
-  // tslint:disable
-  @Output('custom-annotation-created') annotationCreated = new EventEmitter();
-  @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
-  @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
-  @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
+  @Output() annotationCreated = new EventEmitter();
+  @Output() annotationRemoved = new EventEmitter();
+  @Output() annotationExclusionAdded = new EventEmitter();
+  @Output() annotationExclusionRemoved = new EventEmitter();
   @Output() searchChange = new EventEmitter<string>();
   @Output() annotationHighlightChange = new EventEmitter<AnnotationHighlightResult>();
   @Output() goToPositionVisit = new EventEmitter<Location>();
@@ -423,8 +420,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * TODO: Make a reuseable function to create this tooltip to keep things consistent.
    * Currently also used in AnnotationTagHandler.prepareTooltipContent()
    *  - collapsing does not work there, maybe has to do with using Renderer2Factory and stopPropagation
-   * @param an
-   * @returns
    */
   prepareTooltipContent(an: Annotation): string {
     let base = [`Type: ${an.meta.type}`];
@@ -506,17 +501,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'Knowledge Graph',
-      { url: String(visLink), extras: { sideBySide: true, newTab: true, keepFocus: true } },
+      {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}},
     ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'File Content',
-      { url: String(contLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
+      {url: String(contLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
     htmlLinks += composeInternalLink(
       'Map Content',
-      { url: String(mapLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
+      {url: String(mapLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     htmlLinks += `</div></div>`;
 
@@ -552,8 +547,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       };
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(
-        JSON.stringify(annExclusion))})">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(JSON.stringify(annExclusion))})">
             <i class="fas fa-fw fa-minus-circle"></i>
             <span>Mark for Exclusion</span>
           </button>
@@ -562,8 +559,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
     base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(
-      JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
+          <button
+            type="button"
+            class="btn btn-secondary btn-block"
+            onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
             <i class="fas fa-fw fa-search"></i>
             <span>Find Occurrences</span>
           </button>
