@@ -82,9 +82,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           value: LayoutService.labelEllipsis
         },
         fontSizeScale: 1.0,
-        traceGroups: {
-          0: true
-        }
+        shortestPathPlusN: 0
       },
       delta
     )),
@@ -327,6 +325,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
   maximumLabelLength$ = unifiedSingularAccessor(this.options$, 'maximumLabelLength');
+  maximumShortestPathPlusN$ = unifiedSingularAccessor(this.options$, 'maximumShortestPathPlusN');
   aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
   linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
   linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
@@ -529,18 +528,18 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return max(nodes, ({label = ''}) => label.length);
   }
 
-  private extractTraceGroups({traceNetworks}: { traceNetworks: Array<SankeyTraceNetwork> }) {
+  private extractshortestPathPlusN({traceNetworks}: { traceNetworks: Array<SankeyTraceNetwork> }) {
     return chain(traceNetworks)
-      .flatMap(({traces}) => traces.map(({group}) => String(group)))
-      .tap(traceGroups => traceGroups.sort())
-      .sortedUniq()
+      .flatMap(({traces}) => traces)
+      .map(({shortestPathPlusN}) => shortestPathPlusN)
+      .max()
       .value();
   }
 
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
       networkTraces: graph.traceNetworks,
-      traceGroups: this.extractTraceGroups(graph),
+      maximumShortestPathPlusN: this.extractshortestPathPlusN(graph),
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph}),

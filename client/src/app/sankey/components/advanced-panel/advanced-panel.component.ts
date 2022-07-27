@@ -25,7 +25,7 @@ export class SankeyAdvancedPanelComponent
   }
 
   form = this.formBuilder.group({
-    traceGroups: this.formBuilder.group({}),
+    shortestPathPlusN: [0, []],
     alignId: [undefined, []],
     normalizeLinks: ['', []],
     fontSizeScale: [1, []],
@@ -38,34 +38,15 @@ export class SankeyAdvancedPanelComponent
 
   prescalers$ = this.common.prescalers$;
   maximumLabelLength$ = this.common.maximumLabelLength$;
+  maximumShortestPathPlusN$ = this.common.maximumShortestPathPlusN$;
   aligns$ = this.common.aligns$;
-  traceGroups$ = this.common.options$.pipe(
-    map(options => options.traceGroups),
-    // distinctUntilChanged(isEqual),
-    // shareReplay({ bufferSize: 1, refCount: true })
-  );
 
-  get traceGroupsControls() {
-    return (this.form.get('traceGroups') as FormGroup).controls;
+  get shortestPathPlusNControls() {
+    return (this.form.get('shortestPathPlusN') as FormGroup).controls;
   }
 
   ngOnInit() {
     super.ngOnInit();
-
-    this.traceGroups$.subscribe(traceGroups => {
-      const traceGroupsFormGroup = this.form.get('traceGroups') as FormGroup;
-      const currentTraceGroups = keys(traceGroupsFormGroup.controls);
-      const [dropedTraceGroups, newTraceGroups] = partition(
-        traceGroups,
-        traceGroup => currentTraceGroups.includes(traceGroup)
-      );
-      newTraceGroups.forEach(traceGroup => {
-        traceGroupsFormGroup.addControl(traceGroup, new FormControl(true));
-      });
-      dropedTraceGroups.forEach(traceGroup => {
-        traceGroupsFormGroup.removeControl(traceGroup);
-      });
-    });
   }
 
   ngOnDestroy() {

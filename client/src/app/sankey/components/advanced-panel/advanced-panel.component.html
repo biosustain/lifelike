@@ -1,12 +1,12 @@
 <form [formGroup]="form">
-    <div class="form-group" formGroupName="traceGroups" title="Align">
-        <div class="mb-1">Visible trace groups:</div>
-        <label ngbButtonLabel *ngFor="let traceGroupControl of traceGroupsControls | keyvalue"
-               [title]="traceGroupControl.key"
-               class="mb-0 d-block">
-            <input [formControl]="traceGroupControl.value" ngbButton type="checkbox"> {{traceGroupControl.key}}
-        </label>
-    </div>
+    <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
+        Visible shortest path plus
+        <input formGroupName="shortestPathPlusN"
+               [max]="maximumShortestPathPlusN$ | async" min="0" step="1"
+               ngbButton
+               type="range">
+        {{ form.get('shortestPathPlusN').value }}
+    </label>
     <div class="form-group" ngbRadioGroup formControlName="alignId" title="Align">
         <div class="mb-1">Align:</div>
         <label ngbButtonLabel *ngFor="let align of aligns$ | async | keyvalue"
@@ -52,12 +52,12 @@
             {{ form.get('labelEllipsis.value').value }}
         </label>
     </div>
-<!--    <div class="form-group" ngbRadioGroup formControlName="prescalerId" title="Prescaler">-->
-<!--        <div class="mb-1">Prescaler:</div>-->
-<!--        <label ngbButtonLabel *ngFor="let prescaler of prescalers$ | async | keyvalue"-->
-<!--               [title]="prescaler.value.description"-->
-<!--               class="mb-0">-->
-<!--            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}-->
-<!--        </label>-->
-<!--    </div>-->
+    <!--    <div class="form-group" ngbRadioGroup formControlName="prescalerId" title="Prescaler">-->
+    <!--        <div class="mb-1">Prescaler:</div>-->
+    <!--        <label ngbButtonLabel *ngFor="let prescaler of prescalers$ | async | keyvalue"-->
+    <!--               [title]="prescaler.value.description"-->
+    <!--               class="mb-0">-->
+    <!--            <input ngbButton type="radio" [value]="prescaler.key"> {{prescaler.value.name}}-->
+    <!--        </label>-->
+    <!--    </div>-->
 </form>

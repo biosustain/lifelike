@@ -66,6 +66,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   target: number;
   group: number;
   displayProperties?: DisplayProperty[];
+  shortestPathPlusN?: number;
 
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
