@@ -1,4 +1,4 @@
-import { assign, mapValues, entries, max, isNumber, omit, zip, flatMap, isNil } from 'lodash-es';
+import { assign, mapValues, entries, max, isNumber, omit, zip, flatMap, isNil, partition, uniq } from 'lodash-es';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Color } from 'd3-color';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
@@ -64,7 +64,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   edges: Array<number>;
   source: number;
   target: number;
-  group: number;
+  group: number | string;
   displayProperties?: DisplayProperty[];
 
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
@@ -126,13 +126,17 @@ export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork>
     this.sankeyDocument = sankeyDocument;
     this.defaults = defaults;
     this.traces = traces.map((trace, index) => new Trace(trace, index));
-    const tracesWithoutGroups = this.traces.filter(({group}) => !isNumber(group));
+    const [tracesWithoutGroups, tracesWithGroups] = partition(this.traces, ({group}) => isNil(group));
     if (isNotEmpty(tracesWithoutGroups)) {
-      let maxVal = max(traces.map(({group}) => group ?? -1));
-      if (!isFinite(maxVal)) {
-        maxVal = Math.random();
-      }
-      tracesWithoutGroups.forEach(trace => trace.group = ++maxVal);
+      let autoGroup = 0;
+      const usedGroups = uniq(tracesWithGroups.map(({group}) => group));
+      tracesWithoutGroups.forEach(trace => {
+        // tslint:disable-next-line:triple-equals // wanna match ex "0" = 0
+        while (usedGroups.find(group => group == autoGroup)) {
+          autoGroup++;
+        }
+        trace.group = autoGroup;
+      });
     }
     this._defaultSizing = default_sizing;
     this.defaultSizing = sizing[default_sizing];
