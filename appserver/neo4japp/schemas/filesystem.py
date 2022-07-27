@@ -143,6 +143,7 @@ class FileSchema(CamelCaseSchema):
     project = fields.Method('get_project', exclude='***ARANGO_USERNAME***')
     privileges = fields.Method('get_privileges')
     highlight = fields.Method('get_highlight')
+    starred = fields.Method('get_starred')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     file_path = fields.String()
@@ -168,6 +169,9 @@ class FileSchema(CamelCaseSchema):
 
     def get_highlight(self, obj: Files):
         return obj.calculated_highlight
+
+    def get_starred(self, obj: Files):
+        return obj.calculated_starred
 
     def get_project(self, obj: Files):
         return ProjectSchema(context=self.context, exclude=(
@@ -388,3 +392,13 @@ class FileLockDeleteRequest(CamelCaseSchema):
 
 class FileLockListResponse(ResultListSchema):
     results = fields.List(fields.Nested(FileLockSchema))
+
+
+# ========================================
+# Starred Files
+# ========================================
+
+# Requests
+# ----------------------------------------
+class FileStarUpdateRequest(CamelCaseSchema):
+    starred = fields.Boolean(required=True)

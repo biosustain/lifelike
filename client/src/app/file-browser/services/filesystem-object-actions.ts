@@ -260,4 +260,8 @@ export class FilesystemObjectActions {
       this.errorHandler.create({label: 'Re-annotate object'}),
     ).toPromise();
   }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.filesystemService.updateStarred(hashId, starred).toPromise();
+  }
 }

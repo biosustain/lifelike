@@ -2,7 +2,6 @@ import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, Simpl
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { Observable } from 'rxjs';
 import { mergeMap, shareReplay } from 'rxjs/operators';
@@ -139,5 +138,10 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
 
   openLink(url: string) {
     window.open(url);
+  }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.actions.updateStarred(hashId, starred)
+      .then((result) => this.object.update(result));
   }
 }

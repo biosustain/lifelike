@@ -266,6 +266,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
     calculated_parent_recycled: Optional[bool] = None  # whether a parent is recycled
     calculated_highlight: Optional[str] = None  # highlight used in the content search
+    calculated_starred: Optional[bool] = None  # whether this file is starred by the current user
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
