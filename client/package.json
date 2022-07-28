@@ -50,7 +50,7 @@
     "jquery": "^3.5.0",
     "jszip": "^3.7.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "ng2-charts": "^2.3.0",
     "ngrx-store-localstorage": "9.0.0",
     "pdfjs-dist": "2.9.359",
