@@ -235,8 +235,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
     // Add any new words
     return d3.select(this.g.nativeElement)
       .selectAll('text')
-      // @ts-ignore
-      .data<WordCloudAnnotationFilterEntityWithLayout>(words, d => d.text)
+      .data(words, (d: WordCloudAnnotationFilterEntityWithLayout) => d.text)
       .join(
         enter => enter
           .append('text')

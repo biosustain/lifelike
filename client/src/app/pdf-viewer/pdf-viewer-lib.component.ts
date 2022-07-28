@@ -51,24 +51,6 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
-  @ViewChild('container', {static: true}) containerRef: ElementRef;
-
-  @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
-  private searchChangedSub: Subscription;
-  @Input() pdfSrc: PDFSource;
-  @Input() annotations: Annotation[];
-  @Input() goToPosition: Subject<Location>;
-  @Input() highlightAnnotations: Observable<string>;
-  @Input() debugMode: boolean;
-  @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
-  @Input() filterChanges: Observable<void>;
-  renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
-  currentHighlightAnnotationId: string | undefined;
-  foundHighlightAnnotations: Annotation[] = [];
-  currentHighlightAnnotationsIndex = 0;
-  private filterChangeSubscription: Subscription;
-  searching = false;
-
   @Input()
   set addedAnnotations(annotations: Annotation[]) {
     if (annotations) {
@@ -105,8 +87,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.unmarkAnnotationExclusions(exclusionData);
     }
   }
-
-  private _showExcludedAnnotations: boolean;
   @Input()
   set showExcludedAnnotations(showExcludedAnnotations: boolean) {
     this._showExcludedAnnotations = showExcludedAnnotations;
@@ -116,6 +96,61 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   get showExcludedAnnotations() {
     return this._showExcludedAnnotations;
   }
+
+  constructor(
+    protected readonly elementRef: ElementRef,
+    protected readonly modalService: NgbModal,
+    private cfr: ComponentFactoryResolver,
+    private appRef: ApplicationRef,
+    private injector: Injector,
+    protected readonly zone: NgZone,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly internalSearch: InternalSearchService,
+    protected readonly clipboard: ClipboardService
+  ) {
+  }
+
+  get pdfViewerRef() {
+    return 'pdfViewerRef' in (window as any) ?
+      (window as any).pdfViewerRef :
+      (window as any).pdfViewerRef = {};
+  }
+  private set focusedTextLayer(textLayer) {
+    if (textLayer) {
+      textLayer.style.zIndex = 100;
+      this._focusedTextLayer = textLayer;
+    } else {
+      if (this._focusedTextLayer) {
+        this._focusedTextLayer.style.zIndex = null;
+      }
+      this._focusedTextLayer = undefined;
+    }
+  }
+
+  private get focusedTextLayer() {
+    return this._focusedTextLayer;
+  }
+
+  @ViewChild('container', {static: true}) containerRef: ElementRef;
+
+  @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
+  private searchChangedSub: Subscription;
+  @Input() pdfSrc: PDFSource;
+  @Input() annotations: Annotation[];
+  @Input() goToPosition: Subject<Location>;
+  @Input() highlightAnnotations: Observable<string>;
+  @Input() debugMode: boolean;
+  @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
+  @Input() filterChanges: Observable<void>;
+  renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
+  currentHighlightAnnotationId: string | undefined;
+  foundHighlightAnnotations: Annotation[] = [];
+  currentHighlightAnnotationsIndex = 0;
+  private filterChangeSubscription: Subscription;
+  searching = false;
+
+  private _showExcludedAnnotations: boolean;
 
   @Output() loadCompleted = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
@@ -187,19 +222,26 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
-  constructor(
-    protected readonly elementRef: ElementRef,
-    protected readonly modalService: NgbModal,
-    private cfr: ComponentFactoryResolver,
-    private appRef: ApplicationRef,
-    private injector: Injector,
-    protected readonly zone: NgZone,
-    protected readonly snackBar: MatSnackBar,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly internalSearch: InternalSearchService,
-    protected readonly clipboard: ClipboardService
-  ) {
-  }
+  private _focusedTextLayer;
+
+  selection: Selection;
+
+  ranges;
+
+  annotationToolbarPortal = new ComponentPortal(AnnotationToolbarComponent);
+  annotationToolbarRef;
+  /**
+   * Flag used to distinguish deselection and selection end
+   * based on selectionchange and mouseup events
+   */
+  selecting = false;
+  usedTextLayerPortalOutlet;
+
+  selectionDragContainer;
+
+  textLayerPortalOutlets: Map<number, DomPortalOutlet> = new Map();
+
+  @Output() matchesCountUpdated = new EventEmitter<any>();
 
   ngOnInit() {
     this.pdfViewerRef[this.pdfViewerId] = {
@@ -275,12 +317,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.textLayerPortalOutlets.forEach(p => p.dispose());
 
     delete this.pdfViewerRef[this.pdfViewerId];
-  }
-
-  get pdfViewerRef() {
-    return 'pdfViewerRef' in (window as any) ?
-      (window as any).pdfViewerRef :
-      (window as any).pdfViewerRef = {};
   }
 
   renderFilterSettings() {
@@ -562,7 +598,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           <button
             type="button"
             class="btn btn-secondary btn-block"
-            onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
+            onclick="window.pdfViewerRef['${
+              this.pdfViewerId
+            }'].highlightAllAnnotations(${
+              escape(JSON.stringify(an.meta.id))
+            }, false);jQuery('.system-annotation').qtip('hide')"
+          >
             <i class="fas fa-fw fa-search"></i>
             <span>Find Occurrences</span>
           </button>
@@ -581,8 +622,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${escape(an.meta.exclusionComment)}</span>` : ''}
           </div>
           <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(
-        JSON.stringify(annExclusion))})">
+            <button
+                type="button"
+                class="btn btn-primary btn-block"
+                onclick="window.pdfViewerRef['${
+                  this.pdfViewerId
+                }'].removeAnnotationExclusion(${
+                  escape(        JSON.stringify(annExclusion))
+                })"
+            >
               <i class="fas fa-fw fa-undo"></i>
               <span>Unmark Exclusion</span>
             </button>
@@ -600,27 +648,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  private _focusedTextLayer;
-  private set focusedTextLayer(textLayer) {
-    if (textLayer) {
-      textLayer.style.zIndex = 100;
-      this._focusedTextLayer = textLayer;
-    } else {
-      if (this._focusedTextLayer) {
-        this._focusedTextLayer.style.zIndex = null;
-      }
-      this._focusedTextLayer = undefined;
-    }
-  };
-
-  private get focusedTextLayer() {
-    return this._focusedTextLayer;
-  };
-
   @HostListener('window:mousedown', ['$event'])
   mouseDown(event: MouseEvent) {
-    let target = event.target as any;
-    let parent = this.getClosestTextLayer(target);
+    const target = event.target as any;
+    const parent = this.getClosestTextLayer(target);
     if (parent) {
       this.focusedTextLayer = parent;
       // coming from pdf-viewer
@@ -644,19 +675,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  selection: Selection;
-
-  ranges;
-
-  annotationToolbarPortal = new ComponentPortal(AnnotationToolbarComponent);
-  annotationToolbarRef;
-  /**
-   * Flag used to distinguish deselection and selection end
-   * based on selectionchange and mouseup events
-   */
-  selecting = false;
-  usedTextLayerPortalOutlet;
-
   detachFromUsedTextLayerPortalOutlet() {
     if (this.usedTextLayerPortalOutlet && this.usedTextLayerPortalOutlet.hasAttached()) {
       this.usedTextLayerPortalOutlet.detach();
@@ -669,7 +687,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.selection = null;
     this.firstAnnotationRange = null;
     // taking parent as to not start with Text node which does not have 'closest' method
-    let pageNumber = this.getClosestPageNumber(event.target as Node);
+    const pageNumber = this.getClosestPageNumber(event.target as Node);
     // not selecting outside pdf viewer
     if (pageNumber > -1) {
       this.selecting = true;
@@ -719,11 +737,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   /**
    * Clone elements and reposition them to match originals
-   * @param range
    */
   cloneRangeContents(range: Range) {
     const {startOffset, endOffset} = range;
-    let rangeDocumentFragment = range.cloneContents();
+    const rangeDocumentFragment = range.cloneContents();
     // if selection is within singular span and not empty
     if (!rangeDocumentFragment.children.length && !range.collapsed) {
       const clonedElement = range.commonAncestorContainer.parentElement.cloneNode(true) as HTMLElement;
@@ -746,8 +763,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
     return rangeDocumentFragment;
   }
-
-  selectionDragContainer;
 
   /** Implement natively missing selection end event
    *  Although it does not exist in Selection API it
@@ -783,7 +798,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * @param event - event to decorate
    */
   setDragImage(node, event) {
-    let draggedElementRef = IS_MAC ? this.selectionDragContainer :
+    const draggedElementRef = IS_MAC ? this.selectionDragContainer :
       this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
 
     draggedElementRef.classList.add('dragged');
@@ -816,11 +831,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @HostListener('dragend', ['$event'])
   dragEnd(event: DragEvent) {
-    let page = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+    const page = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
     page.classList.remove('dragged');
   }
 
-  //endregion
+  // endregion
 
   deleteFrictionless() {
     const annotationRef = jQuery('.frictionless-annotation');
@@ -877,8 +892,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   /** Get the closest DOM element by selector
    * This helper method allows for search starting on Node
    * not only on Element (extending Element.closest() capabilities)
-   * @param node
-   * @param selector
    */
   getClosest(node: Node, selector: string) {
     // fail fast - don't search outside of view
@@ -896,7 +909,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   /**
    * Helper to have mapping by '.page' declared only once
-   * @param node
    */
   getClosestPage(node: Node) {
     return this.getClosest(node, '.page');
@@ -904,17 +916,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   /**
    * Helper to have mapping by '.page' declared only once
-   * @param node
    */
   getClosestPageNumber(node: Node): number {
     const page = this.getClosestPage(node);
     const pageView = Object.entries(this.pageRef).find(([pageNumber, p]) => p.div === page);
-    return pageView ? parseInt(pageView[0]) : -1;
+    return pageView ? parseInt(pageView[0], 10) : -1;
   }
 
   /**
    * Helper to have mapping by '.textLayer' declared only once
-   * @param node
    */
   getClosestTextLayer(node: Node) {
     return this.getClosest(node, '.textLayer');
@@ -940,7 +950,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   isSelectionAnnotatable(): boolean {
     const text = window.getSelection().toString();
-    return text.trim() != '';
+    return text.trim() !== '';
   }
 
   copySelectionText() {
@@ -1199,8 +1209,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  textLayerPortalOutlets: Map<number, DomPortalOutlet> = new Map();
-
   createTextLayerPortalOutlet({pageNumber, textLayerDiv}: TextLayerBuilder) {
     const portalOutlet = new DomPortalOutlet(
       textLayerDiv,
@@ -1296,8 +1304,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     });
     this.renderFilterSettings();
   }
-
-  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
 
   findControlStateUpdated(event) {
     if (this.goToPositionVisitAfterFind != null) {

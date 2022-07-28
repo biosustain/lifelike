@@ -13,8 +13,8 @@
                             [renderTextMode]="renderTextMode"
                             [externalLinkTarget]="'blank'"
                             [autoresize]="autoresize"
-                            (onError)="onError($event)"
-                            (onProgress)="onProgress($event)"
+                            (errorCallback)="onError($event)"
+                            (progressCallback)="onProgress($event)"
                             (pageRendered)="pageRendered($event)"
                             (matchesCountUpdated)="matchesCountUpdated.emit($event)"
                             (findControlStateUpdated)="findControlStateUpdated($event)">

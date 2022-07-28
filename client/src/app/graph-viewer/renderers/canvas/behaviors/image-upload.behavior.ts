@@ -1,5 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { filter } from 'lodash-es';
+
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
@@ -7,7 +9,6 @@ import { IMAGE_DEFAULT_SIZE, SizeUnits, IMAGE_LABEL } from 'app/shared/constants
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { filter } from 'lodash-es';
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
 

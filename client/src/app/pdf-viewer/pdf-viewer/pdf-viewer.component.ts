@@ -223,8 +223,8 @@ export class PdfViewerComponent
   @Output() textLayerRendered = new EventEmitter<CustomEvent>();
   @Output() matchesCountUpdated = new EventEmitter();
   @Output() findControlStateUpdated = new EventEmitter();
-  @Output() onError = new EventEmitter<any>();
-  @Output() onProgress = new EventEmitter<PDFProgressData>();
+  @Output() errorCallback = new EventEmitter<any>();
+  @Output() progressCallback = new EventEmitter<PDFProgressData>();
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
   @Input()
   src: PDFSource;
@@ -592,7 +592,7 @@ export class PdfViewerComponent
     });
 
     this.loadingTask.onProgress = (progressData: PDFProgressData) => {
-      this.onProgress.emit(progressData);
+      this.progressCallback.emit(progressData);
     };
 
     const src = this.src;
@@ -610,7 +610,7 @@ export class PdfViewerComponent
 
         return this.update();
       },
-      this.onError.emit
+      this.errorCallback.emit
     );
   }
 

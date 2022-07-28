@@ -1,5 +1,5 @@
 import { DataSet } from 'vis-data';
-import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-network';
+import { Color, Edge, Network, Node, Options } from 'vis-network';
 
 export interface NodeWithCustomParameters extends Node {
   _initialBorderWidth?: number;
