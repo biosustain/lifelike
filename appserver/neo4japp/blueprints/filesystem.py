@@ -1703,10 +1703,11 @@ class StarredFileListView(FilesystemBaseView):
     def get(self):
         user = g.current_user
 
-        query = db.session.query(StarredFile).filter(
+        query = db.session.query(StarredFile.file_id).filter(
             StarredFile.user_id == user.id,
         )
-        starred_files = query.all()
+        query_result = [id for id, in query.all()]
+        starred_files = self.get_nondeleted_recycled_files(Files.id.in_(query_result))
         total = query.count()
 
         return jsonify(FileListSchema(context={
