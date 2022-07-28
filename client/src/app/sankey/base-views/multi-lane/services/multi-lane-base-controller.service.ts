@@ -118,7 +118,6 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           }))
         )),
         map(({traces, sources, targets}) => {
-          console.log("astgeradft");
           const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
           const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
           this.colorNodes(networkTraceNodes);
