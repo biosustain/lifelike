@@ -661,9 +661,7 @@ export class WorkspaceManager {
               if (extras.shouldReplaceTab != null) {
                 const component = tab.component;
                 if (component != null) {
-                  if (!extras.shouldReplaceTab(component)) {
-                    return;
-                  }
+                  return new Promise(() => extras.shouldReplaceTab(tab.component));
                 } else {
                   // If we found a match, but it's not loaded, swap to it and reload with the new URL.
                   this.interceptNextRoute = true;
