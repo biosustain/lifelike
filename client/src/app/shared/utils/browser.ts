@@ -140,9 +140,12 @@ export function openInternalLink(
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
-          const {hash, searchParams} = new URL(pathSearchHash, 'http://abc.def');
-          if (isNotEmpty(searchParams)) {
-            component.route.queryParams.next(searchParams);
+          const {hash, search, searchParams} = toValidUrl(pathSearchHash);
+          if (search) {
+            component.route.queryParams.next({
+              ...Object.fromEntries((new URLSearchParams(search.slice(1)))),
+              ...searchParams
+            });
           }
           if (hash) {
             component.route.fragment.next(hash.slice(1));
