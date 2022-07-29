@@ -83,14 +83,3 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
     });
   }
 }
-
-
-export interface EnrichmentVisualisationParameters {
-  genes: any;
-  domains?: any;
-  organism?: any;
-}
-
-export interface EnrichmentVisualisationData {
-  parameters: EnrichmentVisualisationParameters;
-}

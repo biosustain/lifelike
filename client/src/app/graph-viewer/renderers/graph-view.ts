@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { ZoomBehavior } from 'd3';
 import { Subject } from 'rxjs';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
@@ -13,9 +14,10 @@ import {
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode, UniversalGraphNodelike,
+  UniversalGraphNode,
+  UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
-import { compileFind, FindOptions } from 'app/shared/utils/find';
+import { FindOptions } from 'app/shared/utils/find';
 import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
 import { setDifference } from 'app/shared/utils';
 
@@ -83,7 +85,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   protected renderingRequested = false;
 
-  abstract renderTree: RenderTree;
+  abstract renderTree: RenderTree<UniversalGraphNode|UniversalGraphEdge|UniversalGraphGroup>;
 
   /**
    * Indicates where a mouse button is currently down.
@@ -93,7 +95,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * d3-zoom object used to handle zooming.
    */
-  protected zoom: any;
+  protected zoom: ZoomBehavior<Element, unknown>;
 
   /**
    * webcola object used for automatic layout.
@@ -163,12 +165,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Stream of events when history changes in any way.
    */
-  historyChanges$ = new Subject<any>();
+  historyChanges$ = new Subject<void>();
 
   /**
    * Stream of events when a graph entity needs to be focused.
    */
-  editorPanelFocus$ = new Subject<any>();
+  editorPanelFocus$ = new Subject<void>();
 
   /**
    * Defines how close to the node we have to click to terminate the node search early.

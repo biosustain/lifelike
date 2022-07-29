@@ -6,10 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from 'app/file-browser/components/dialog/object-edit-dialog.component';
+import { ObjectEditDialogComponent, ObjectEditDialogValue, } from 'app/file-browser/components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -87,7 +84,7 @@ export interface ObjectTypeProvider {
    * @param options options for the dialog
    * @return a promise that resolves after edit or fails if editing is cancelled
    */
-  openEditDialog(target: FilesystemObject, options?: {}): Promise<any>;
+  openEditDialog(target: FilesystemObject, options?: {}): Promise<ObjectEditDialogValue>;
 
   /**
    * Get a list of search types for the content search.
@@ -121,7 +118,7 @@ export class AbstractObjectTypeProviderHelper {
               protected readonly ngZone: NgZone) {
   }
 
-  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<ObjectEditDialogValue> {
     const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
@@ -164,7 +161,7 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
     return [];
   }
 
-  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<ObjectEditDialogValue> {
     return this.helper.openEditDialog(target, options);
   }
 

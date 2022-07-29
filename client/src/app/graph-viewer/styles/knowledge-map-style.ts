@@ -75,7 +75,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
 
 
-    let iconCode: any = annotationStyle?.iconCode;
+    let iconCode: Unicodes = annotationStyle?.iconCode;
 
     // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
     // Relation nodes have their font color stored elsewhere, so we need to check that first
@@ -286,6 +286,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       textbox,
       sourceLineEnd,
       targetLineEnd,
+      lineWidth,
       stroke: this.createLine(
         lineType,
         lineWidth,
@@ -444,7 +445,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     );
   }
 
-  private getIconCode(iconCode: string, links): {iconCode: string, specialIconColor: string } {
+  private getIconCode(iconCode: string, links): {iconCode: Unicodes, specialIconColor: string } {
     let specialIconColor;
     for (const link of links) {
       try {
@@ -481,10 +482,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
           }
         }
       } catch (e) {
-        return {iconCode, specialIconColor};
+        return {iconCode, specialIconColor} as {iconCode: Unicodes, specialIconColor: string };
       }
     }
-    return {iconCode, specialIconColor};
+    return {iconCode, specialIconColor} as {iconCode: Unicodes, specialIconColor: string };
   }
 
 }

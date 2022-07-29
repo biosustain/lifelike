@@ -253,14 +253,14 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * of properties for rendering the network graph.
    * @param result - a list of nodes and edges for conversion
    */
-  convertToVisJSFormat(results: Neo4jResults): Neo4jResults {
-    let {nodes, edges} = results;
-    nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n)).filter(val => val !== null);
-    edges = edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e));
-    return {nodes, edges};
+  convertToVisJSFormat({nodes, edges}: Neo4jResults) {
+    return {
+      nodes: nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n)).filter(val => val !== null),
+      edges: edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e))
+    };
   }
 
-  convertNodeToVisJSFormat(n: GraphNode) {
+  convertNodeToVisJSFormat(n: GraphNode): VisNode {
     if (isNil(n.displayName) || isNil(n.label)) {
       console.error(`Node does not have expected label and displayName properties ${n}`);
       return null;
@@ -290,7 +290,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     };
   }
 
-  convertEdgeToVisJSFormat(e: GraphRelationship) {
+  convertEdgeToVisJSFormat(e: GraphRelationship): VisEdge {
     return {
       ...e,
       color: {

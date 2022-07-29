@@ -1,17 +1,19 @@
 import * as d3 from 'd3';
+import { Transition, Selection } from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { Transition, Selection } from 'd3';
 import { BaseType } from 'd3-selection';
 
 import {
   GraphEntity,
-  GraphEntityType, UniversalGraphGroup,
+  GraphEntityType,
+  UniversalGraphGroup,
   UniversalEdgeStyle,
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode, UniversalGraphNodelike,
+  UniversalGraphNode,
+  UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
@@ -23,7 +25,7 @@ import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
-import { Point } from '../../utils/canvas/shared';
+import { Point, SELECTION_SHADOW_COLOR } from '../../utils/canvas/shared';
 
 type SelectionOrTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum> =
   Selection<GElement, Datum, PElement, PDatum> |
@@ -145,7 +147,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Holds a queue of things to render to allow spreading rendering over several ticks.
    * Cleared when {@link requestRender} is called and re-created in {@link render}.
    */
-  private renderQueue: IterableIterator<any>;
+  private renderQueue: IterableIterator<void>;
 
   // Events
   // ---------------------------------
@@ -194,7 +196,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       .on('end', this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
-    const canvasMouseMoveSubject = new Subject<any>();
+    const canvasMouseMoveSubject = new Subject<void>();
 
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))
@@ -835,7 +837,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   render() {
     // Since we're rendering in one shot, clear any queue that we may have started
     this.renderQueue = null;
-
     // Clears canvas
     this.emptyCanvas();
 
@@ -902,21 +903,20 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * start of every rendering batch and then at the end of any batch,
    * call {@link endCurrentRenderBatch}.
    */
-  *generateRenderQueue() {
+  * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
 
-    yield*this.drawTouchPosition(ctx);
-    yield*this.drawSelectionBackground(ctx);
-    yield*this.drawGroups(ctx);
-    yield*this.drawEdges(ctx);
-    yield*this.drawNodes(ctx);
-    yield*this.drawHighlightBackground(ctx);
-    yield*this.drawSearchHighlightBackground(ctx);
-    yield*this.drawSearchFocusBackground(ctx);
-    yield*this.drawActiveBehaviors(ctx);
+    yield* this.drawTouchPosition(ctx);
+    yield* this.drawGroups();
+    yield* this.drawEdges();
+    yield* this.drawNodes();
+    yield* this.drawHighlightBackground(ctx);
+    yield* this.drawSearchHighlightBox(ctx);
+    yield* this.drawSearchFocusBackground(ctx);
+    yield* this.drawActiveBehaviors(ctx);
   }
 
-  private*drawTouchPosition(ctx: CanvasRenderingContext2D) {
+  private* drawTouchPosition(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (this.touchPosition) {
@@ -926,17 +926,17 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       // Either we highlight the 'touched entity' if we have one (because the user just
       // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        this.drawEntityBackground(ctx, touchPositionEntity, 'rgba(0, 0, 0, 0.075)');
+        this.drawEntityBackground(ctx, touchPositionEntity, SELECTION_SHADOW_COLOR);
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fillStyle = SELECTION_SHADOW_COLOR;
         ctx.fill();
       }
     }
   }
 
-  private*drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+  private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     ctx.save();
@@ -947,16 +947,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     ctx.restore();
   }
 
-  private*drawSelectionBackground(ctx: CanvasRenderingContext2D) {
-    yield null;
-
-    const selected = this.selection.get();
-    for (const selectedEntity of selected) {
-      this.drawEntityBackground(ctx, selectedEntity, 'rgba(0, 0, 0, 0.075)');
-    }
-  }
-
-  private*drawSearchHighlightBackground(ctx: CanvasRenderingContext2D) {
+  private* drawSearchHighlightBox(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (!this.touchPosition) {
@@ -967,7 +958,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private*drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
+  private* drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (!this.touchPosition) {
@@ -978,20 +969,22 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private*drawGroups(ctx: CanvasRenderingContext2D) {
+  private* drawGroups() {
     yield null;
+    const selection = this.selection.getEntitySet();
 
     for (const group of this.groups) {
-      ctx.beginPath();
-      this.placeGroup(group).draw(this.transform);
+      this.placeGroup(group).draw(this.transform, selection.has(group));
     }
   }
 
-  private*drawEdges(ctx: CanvasRenderingContext2D) {
+  private* drawEdges() {
     yield null;
 
     const transform = this.transform;
     const placeEdge = this.placeEdge.bind(this);
+
+    const selected = this.selection.getEntitySet();
 
     // We need to turn edges into PlacedEdge objects before we can render them,
     // but the process involves calculating various metrics, which we don't
@@ -1008,7 +1001,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     for (const {d, placedEdge} of edgeRenderObjects) {
       yield null;
-      placedEdge.draw(transform);
+      placedEdge.draw(transform, selected.has(d));
     }
 
     for (const {d, placedEdge} of edgeRenderObjects) {
@@ -1017,11 +1010,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private*drawNodes(ctx: CanvasRenderingContext2D) {
+  private* drawNodes() {
+    const selection = this.selection.getEntitySet();
     for (const d of this.nodes) {
       yield null;
-      ctx.beginPath();
-      this.placeNode(d).draw(this.transform);
+      this.placeNode(d).draw(this.transform, selection.has(d));
     }
   }
 

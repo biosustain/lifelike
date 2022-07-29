@@ -10,7 +10,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
   selector: 'app-reset-password-dialog',
   templateUrl: './reset-password-dialog.component.html'
 })
-export class ResetPasswordDialogComponent  extends CommonFormDialogComponent {
+export class ResetPasswordDialogComponent<Value extends object> extends CommonFormDialogComponent<Value> {
 
   readonly form: FormGroup = new FormGroup({
         email: new FormControl('', [Validators.required, Validators.email]),
@@ -19,11 +19,9 @@ export class ResetPasswordDialogComponent  extends CommonFormDialogComponent {
     super(modal, messageDialog);
   }
 
-  getValue(): any {
+  getValue(): Value {
     return {
       ...this.form.value,
     };
   }
-
-
 }

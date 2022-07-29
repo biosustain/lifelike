@@ -24,7 +24,7 @@ export class VisualizationService {
     constructor(private http: HttpClient) { }
 
     getBatch(query: string) {
-        return this.http.get<{result: Neo4jResults}>(
+        return this.http.get<{result: Neo4jResults<any, any>}>(
             `${this.baseUrl}/batch`,
             {params: {data: query}}
         ).pipe(map(resp => resp.result));
@@ -36,7 +36,7 @@ export class VisualizationService {
      * @param nodeId the node id from the database
      */
     expandNode(nodeId: number, filterLabels: string[]) {
-        return this.http.post<{result: Neo4jResults}>(
+        return this.http.post<{result: Neo4jResults<any, any>}>(
             `${this.baseUrl}/expand`,
             {nodeId, filterLabels},
         ).pipe(map(resp => resp.result));
