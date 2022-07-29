@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationCancel, NavigationEnd, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { select, Store } from '@ngrx/store';
@@ -60,7 +60,7 @@ export class AppComponent {
 
     // Set the title of the document based on the route
     this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
+      if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
         const child = this.activatedRoute.firstChild;
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
         this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
