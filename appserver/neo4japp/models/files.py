@@ -192,6 +192,14 @@ class FilePrivileges:
     commentable: bool
 
 
+class StarredFile(RDBMSBase, TimestampMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+
+
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # type: ignore
     MAX_DEPTH = 50
 
@@ -266,7 +274,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
     calculated_parent_recycled: Optional[bool] = None  # whether a parent is recycled
     calculated_highlight: Optional[str] = None  # highlight used in the content search
-    calculated_starred: Optional[bool] = None  # whether this file is starred by the current user
+    calculated_starred: Optional[StarredFile] = None  # whether this file is starred by the user
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -736,11 +744,3 @@ class FileLock(RDBMSBase, TimestampMixin):
                         index=True, nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
     acquire_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-
-
-class StarredFile(RDBMSBase, TimestampMixin):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
-                        index=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
-                        index=True, nullable=False)

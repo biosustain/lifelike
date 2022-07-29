@@ -171,7 +171,9 @@ class FileSchema(CamelCaseSchema):
         return obj.calculated_highlight
 
     def get_starred(self, obj: Files):
-        return obj.calculated_starred
+        if obj.calculated_starred is not None:
+            return StarredSchema(context=self.context).dump(obj.calculated_starred)
+        return None
 
     def get_project(self, obj: Files):
         return ProjectSchema(context=self.context, exclude=(
@@ -397,6 +399,13 @@ class FileLockListResponse(ResultListSchema):
 # ========================================
 # Starred Files
 # ========================================
+
+
+class StarredSchema(CamelCaseSchema):
+    id = fields.Integer()
+    file_id = fields.Integer()
+    user_id = fields.Integer()
+
 
 # Requests
 # ----------------------------------------
