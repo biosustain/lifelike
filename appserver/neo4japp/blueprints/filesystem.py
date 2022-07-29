@@ -146,7 +146,7 @@ class FilesystemBaseView(MethodView):
 
     def get_nondeleted_recycled_files(
             self,
-            filter,
+            filter=None,
             lazy_load_content=False,
             require_hash_ids: List[str] = None,
             sort: List[str] = [],
@@ -185,6 +185,10 @@ class FilesystemBaseView(MethodView):
         # the following generated query does. In the future, we MAY want to cache the project of
         # a file on every file row to make a lot of queries a lot simpler.
 
+        filters = [Files.deletion_date.is_(None)]
+        if filter is not None:
+            filters.append(filter)
+
         if len(sort) != len(sort_direction):
             raise ValueError(
                 'Arguments `sort` and `sort_direction` should have an equal number' +
@@ -196,13 +200,16 @@ class FilesystemBaseView(MethodView):
         )
         sort_map = zip(sort, sort_direction_fns)
 
-        query = build_file_hierarchy_query(and_(
-            filter,
-            Files.deletion_date.is_(None)
-        ), t_project, t_file, file_attr_excl=attr_excl) \
-            .options(raiseload('*'),
-                     joinedload(t_file.user)) \
-            .order_by(*[dir_fn(text(f'_file.{col}')) for col, dir_fn in sort_map])
+        query = build_file_hierarchy_query(
+            and_(*filters),
+            t_project,
+            t_file,
+            file_attr_excl=attr_excl
+        ).options(
+            raiseload('*'), joinedload(t_file.user)
+        ).order_by(
+            *[dir_fn(text(f'_file.{col}')) for col, dir_fn in sort_map]
+        )
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
         # etc.) for the current user, which then can be read later by FileHierarchy or manually.
@@ -245,16 +252,16 @@ class FilesystemBaseView(MethodView):
             files.append(hierarchy.file)
 
         # Calculate the starred status of each file
-        starred_query = db.session.query(StarredFile.file_id).filter(
+        starred_query = db.session.query(StarredFile).filter(
             and_(
                 StarredFile.file_id.in_([file.id for file in files]),
                 StarredFile.user_id == current_user.id
             )
         )
+        starred_query_results = {starred.file_id: starred for starred in starred_query.all()}
 
-        starred_query_results = set([starred_file for starred_file, in starred_query.all()])
         for file in files:
-            file.calculated_starred = file.id in starred_query_results
+            file.calculated_starred = starred_query_results.get(file.id, None)
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
         # actually appeared in the results
@@ -1701,14 +1708,12 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
 class StarredFileListView(FilesystemBaseView):
     def get(self):
-        user = g.current_user
-
-        query = db.session.query(StarredFile.file_id).filter(
-            StarredFile.user_id == user.id,
-        )
-        query_result = [id for id, in query.all()]
-        starred_files = self.get_nondeleted_recycled_files(Files.id.in_(query_result))
-        total = query.count()
+        starred_files = [
+            file for file in self.get_nondeleted_recycled_files()
+            if file.calculated_starred is not None
+        ]
+        starred_files.sort(key=lambda f: f.calculated_starred.modified_date, reverse=True)
+        total = len(starred_files)
 
         return jsonify(FileListSchema(context={
             'user_privilege_filter': g.current_user.id,
