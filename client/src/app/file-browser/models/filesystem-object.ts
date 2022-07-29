@@ -463,10 +463,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   filterChildren(filter: string) {
-    const normalizedFilter = this.normalizeFilter(filter);
+    const normalizedFilter = normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => this.normalizeFilter(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => normalizeFilename(item.name).includes(normalizedFilter)
     );
   }
 
@@ -597,10 +597,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  private normalizeFilter(filter: string): string {
-    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
-  }
-
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
     return (
       // Sort pinned files first
@@ -685,4 +681,8 @@ export function createProjectDragImage(project: ProjectImpl): DragImage {
 
 export function createObjectDragImage(object: FilesystemObject): DragImage {
   return createDragImage(object.filename, object.fontAwesomeIconCode);
+}
+
+export function normalizeFilename(filter: string): string {
+  return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
 }
