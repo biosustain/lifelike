@@ -18,7 +18,7 @@ import { Annotation } from '../annotation-type';
   // needed to make links inside *ngFor to work and be clickable
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationEditDialogComponent extends CommonFormDialogComponent<Annotation> {
+export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() pageNumber: number;
   @Input() keywords: string[];
   @Input() coords: number[][];

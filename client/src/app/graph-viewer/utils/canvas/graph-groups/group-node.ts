@@ -1,5 +1,4 @@
 import 'canvas-plus';
-import { ZoomTransform } from 'd3-zoom';
 
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
@@ -46,7 +45,7 @@ export class GroupNode extends PlacedGroup {
     };
   }
 
-  draw(transform: ZoomTransform, selected: boolean): void {
+  draw(transform: any, selected: boolean): void {
     if (selected) {
       this.drawSelection();
     }
@@ -56,7 +55,7 @@ export class GroupNode extends PlacedGroup {
 
       // Node shape
     ctx.save();
-    ctx.rect(
+    (ctx as any).rect(
         this.boundingBox.minX,
         this.boundingBox.minY,
         this.width,

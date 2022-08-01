@@ -16,7 +16,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escapeRegExp, isNil } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subscription, defer } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -289,7 +289,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   /**
    * Edit enrichment params (essentially the file content) and updates table.
    */
-  openEnrichmentTableEditDialog(object: FilesystemObject, document: EnrichmentDocument): Promise<void> {
+  openEnrichmentTableEditDialog(object: FilesystemObject, document: EnrichmentDocument): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.promptObject = false;
     dialogRef.componentInstance.object = object;

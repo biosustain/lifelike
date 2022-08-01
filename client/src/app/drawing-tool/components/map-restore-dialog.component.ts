@@ -11,7 +11,7 @@ import { KnowledgeMap, } from '../services/interfaces';
   selector: 'app-map-restore-dialog',
   templateUrl: './map-restore-dialog.component.html',
 })
-export class MapRestoreDialogComponent extends CommonDialogComponent<boolean> {
+export class MapRestoreDialogComponent extends CommonDialogComponent {
   @Input() map: KnowledgeMap;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {

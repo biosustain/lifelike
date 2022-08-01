@@ -35,6 +35,9 @@ export class ObjectAnnotationHistoryComponent {
     return this._object;
   }
 
+  getValue(): any {
+  }
+
   refresh() {
     this.log$ = this.object ? this.filesystemService.getAnnotationHistory(this.object.id, {
       page: this.page,

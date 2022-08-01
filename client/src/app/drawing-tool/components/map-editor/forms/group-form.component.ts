@@ -98,8 +98,8 @@ export class GroupFormComponent extends EntityForm  {
 
 
   // TODO: Refactor it into its own component?
-  updateMargin(event: Event) {
-    this.updatedGroup.margin = +(event.target as HTMLInputElement).value;
+  updateMargin(event: any) {
+    this.updatedGroup.margin = +event.target.value;
     this.doSave();
   }
 

@@ -8,15 +8,13 @@
 // - con
 // - inv
 
-import { Unicodes } from './constants';
-
 interface AnnotationStyle {
   // Mandatory fields
 
   label: string;
   color: string;
   // Optional fields
-  iconCode?: Unicodes;
+  iconCode?: string;
   subtypes?: string[];
   style?: {
     // Override the border-color of the node on vis-network
@@ -139,7 +137,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'link',
     color: LINK,
-    iconCode: Unicodes.Link
+    iconCode: '\uf0c1'
   },
   {
     label: 'entity',
@@ -148,12 +146,12 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'map',
     color: MAP,
-    iconCode: Unicodes.Map
+    iconCode: '\uf542'
   },
   {
     label: 'note',
     color: NOTE,
-    iconCode: Unicodes.Note
+    iconCode: '\uf249'
   },
   // Non-Entity types
   {

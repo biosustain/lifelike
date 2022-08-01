@@ -40,7 +40,7 @@ export class AnnotationToolbarComponent {
 
   @Output() annotationCreated = new EventEmitter();
 
-  @HostBinding('style') style: { [klass: string]: string } | null;
+  @HostBinding('style') style: { [klass: string]: any } | null;
 
   copySelectionText(event) {
     event.preventDefault();

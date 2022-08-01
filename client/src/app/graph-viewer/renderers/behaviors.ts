@@ -1,8 +1,6 @@
 /**
  * Keeps track of a set of behaviors and provides methods to call them.
  */
-import { ZoomTransform } from 'd3-zoom';
-
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 export class BehaviorList<T extends Behavior> {
@@ -195,7 +193,7 @@ export interface CanvasBehavior extends Behavior {
   dragOver(event: BehaviorEvent<DragEvent>);
   drop(event: BehaviorEvent<DragEvent>);
   paste(event: BehaviorEvent<ClipboardEvent>);
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform);
+  draw(ctx: CanvasRenderingContext2D, transform: any);
 }
 
 /**
@@ -252,7 +250,7 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
+  draw(ctx: CanvasRenderingContext2D, transform: any) {
   }
 }
 

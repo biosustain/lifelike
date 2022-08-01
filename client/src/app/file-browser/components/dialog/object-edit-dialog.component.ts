@@ -15,11 +15,6 @@ import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectCreateRequest } from '../../schema';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 
-interface CreateObjectRequest extends Omit<ObjectCreateRequest, 'parentHashId'|'fallbackOrganism'> {
-  parent?: FilesystemObject;
-  organism?: OrganismAutocomplete;
-}
-
 @Component({
   selector: 'app-object-edit-dialog',
   templateUrl: './object-edit-dialog.component.html',
@@ -155,7 +150,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   getValue(): ObjectEditDialogValue {
-    const value = this.form.value as CreateObjectRequest;
+    const value = this.form.value;
 
     const objectChanges: Partial<FilesystemObject> = {
       parent: value.parent,
@@ -178,10 +173,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     };
   }
 
-  createObjectRequest(value: CreateObjectRequest): ObjectCreateRequest {
+  createObjectRequest(value): ObjectCreateRequest {
     const object = {
       filename: value.filename,
-      parentHashId: value.parent?.hashId ?? null,
+      parentHashId: value.parent ? value.parent.hashId : null,
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,

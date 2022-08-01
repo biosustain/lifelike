@@ -10,12 +10,13 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
   selector: 'app-deletion-result-dialog',
   templateUrl: './object-deletion-result-dialog.component.html',
 })
-export class ObjectDeletionResultDialogComponent extends CommonDialogComponent<void> {
+export class ObjectDeletionResultDialogComponent extends CommonDialogComponent {
   @Input() failed: { object: DirectoryObject, message: string }[];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  getValue() {}
+  getValue(): any {
+  }
 }

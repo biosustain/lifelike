@@ -12,7 +12,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
   templateUrl: './enrichment-table-order-dialog.component.html',
   styleUrls: ['./enrichment-table-order-dialog.component.scss'],
 })
-export class EnrichmentTableOrderDialogComponent extends CommonFormDialogComponent<string[]> implements OnInit {
+export class EnrichmentTableOrderDialogComponent extends CommonFormDialogComponent implements OnInit {
   @Input() domains: string[];
 
   form: FormGroup = new FormGroup({

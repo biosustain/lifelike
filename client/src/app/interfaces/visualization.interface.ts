@@ -5,8 +5,7 @@ import {
     VisEdge,
     VisNode,
     DuplicateVisNode,
-    DuplicateVisEdge,
-    DefaultNodeData
+    DuplicateVisEdge
 } from './neo4j.interface';
 
 // Begin Misc. Interfaces
@@ -61,9 +60,9 @@ export interface NodePair {
   node2Id: number;
 }
 
-export interface DuplicateNodeEdgePair<NodeData = object, EdgeData = object> {
-    node: DuplicateVisNode<NodeData>;
-    edge: DuplicateVisEdge<EdgeData>;
+export interface DuplicateNodeEdgePair {
+    node: DuplicateVisNode;
+    edge: DuplicateVisEdge;
 }
 
 export interface EdgeConnectionData {
@@ -74,22 +73,24 @@ export interface EdgeConnectionData {
     label: string;
 }
 
-export interface Publication extends GraphNode<{
+export interface Publication extends GraphNode {
+    data: {
         journal: string;
         title: string;
         pmid: string;
         pubYear: number;
-    }> {
+    };
 }
 
-export interface Reference extends GraphNode<{
+export interface Reference extends GraphNode {
+    data: {
         entry1Text: string;
         entry2Text: string;
         entry1Type: string;
         entry2Type: string;
         id: string;
         sentence: string;
-    }> {
+    };
 }
 
 export interface ReferenceTablePair {
@@ -143,14 +144,14 @@ export interface SidenavEdgeEntity {
     totalResults: number;
 }
 
-export interface SidenavNodeEntity<NodeData = object, EdgeData = object> {
-    data: VisNode<NodeData>;
-    edges: VisEdge<EdgeData>[];
+export interface SidenavNodeEntity {
+    data: VisNode;
+    edges: VisEdge[];
 }
 
-export interface SidenavTypeEntity<Data = DefaultNodeData> {
-    sourceNode: VisNode<Data>;
-    connectedNodes: VisNode<Data>[];
+export interface SidenavTypeEntity {
+    sourceNode: VisNode;
+    connectedNodes: VisNode[];
     type: AssociatedType;
 }
 
@@ -213,10 +214,10 @@ export interface AssociatedTypeSnippetCountRequest {
 
 // Begin Response Interfaces
 
-export interface ExpandNodeResult<NodeData = object, EdgeData = object> {
+export interface ExpandNodeResult {
     expandedNode: number;
-    nodes: VisNode<NodeData>[];
-    edges: VisEdge<EdgeData>[];
+    nodes: VisNode[];
+    edges: VisEdge[];
 }
 
 export interface GetEdgeSnippetsResult {

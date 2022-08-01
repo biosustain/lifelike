@@ -1,19 +1,17 @@
 import * as d3 from 'd3';
-import { Transition, Selection } from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+import { Transition, Selection } from 'd3';
 import { BaseType } from 'd3-selection';
 
 import {
   GraphEntity,
-  GraphEntityType,
-  UniversalGraphGroup,
+  GraphEntityType, UniversalGraphGroup,
   UniversalEdgeStyle,
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode,
-  UniversalGraphNodelike,
+  UniversalGraphNode, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
@@ -147,7 +145,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Holds a queue of things to render to allow spreading rendering over several ticks.
    * Cleared when {@link requestRender} is called and re-created in {@link render}.
    */
-  private renderQueue: IterableIterator<void>;
+  private renderQueue: IterableIterator<any>;
 
   // Events
   // ---------------------------------
@@ -196,7 +194,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       .on('end', this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
-    const canvasMouseMoveSubject = new Subject<void>();
+    const canvasMouseMoveSubject = new Subject<any>();
 
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))
@@ -903,20 +901,20 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * start of every rendering batch and then at the end of any batch,
    * call {@link endCurrentRenderBatch}.
    */
-  * generateRenderQueue() {
+  *generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
 
-    yield* this.drawTouchPosition(ctx);
+    yield*this.drawTouchPosition(ctx);
     yield* this.drawGroups();
     yield* this.drawEdges();
     yield* this.drawNodes();
-    yield* this.drawHighlightBackground(ctx);
+    yield*this.drawHighlightBackground(ctx);
     yield* this.drawSearchHighlightBox(ctx);
-    yield* this.drawSearchFocusBackground(ctx);
-    yield* this.drawActiveBehaviors(ctx);
+    yield*this.drawSearchFocusBackground(ctx);
+    yield*this.drawActiveBehaviors(ctx);
   }
 
-  private* drawTouchPosition(ctx: CanvasRenderingContext2D) {
+  private*drawTouchPosition(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (this.touchPosition) {
@@ -936,7 +934,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+  private*drawHighlightBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     ctx.save();
@@ -958,7 +956,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private* drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
+  private*drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     if (!this.touchPosition) {

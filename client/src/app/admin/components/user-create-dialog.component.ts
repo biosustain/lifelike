@@ -16,7 +16,7 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from 'app/shared/constants';
   selector: 'app-user-create-dialog',
   templateUrl: 'user-create-dialog.component.html',
 })
-export class UserCreateDialogComponent extends CommonFormDialogComponent<UserCreationRequest> {
+export class UserCreateDialogComponent extends CommonFormDialogComponent {
   readonly form: FormGroup = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),

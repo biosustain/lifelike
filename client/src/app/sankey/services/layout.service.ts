@@ -1,9 +1,38 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain, map as lodashMap } from 'lodash-es';
-import { map, tap, switchMap, shareReplay, filter, takeUntil, catchError, first, distinctUntilChanged } from 'rxjs/operators';
-import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, BehaviorSubject } from 'rxjs';
+import {
+  merge,
+  omit,
+  isNil,
+  clone,
+  range,
+  isEqual,
+  assign,
+  groupBy,
+  mapValues,
+  flatMap,
+  sortBy,
+  chain,
+  reduce,
+  meanBy,
+  mean,
+  map as lodashMap
+} from 'lodash-es';
+import {
+  map,
+  tap,
+  switchMap,
+  shareReplay,
+  filter,
+  startWith,
+  pairwise,
+  takeUntil,
+  catchError,
+  first,
+  distinctUntilChanged
+} from 'rxjs/operators';
+import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, defer, BehaviorSubject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { TruncatePipe } from 'app/shared/pipes';
@@ -19,6 +48,7 @@ import { normalizeGenerator } from '../utils';
 import { SankeyAbstractLayoutService, LayoutData, ProcessedExtent, Horizontal, Vertical } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
+import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
 import { EditService } from './edit.service';
 import { View, SankeyNode, SankeyDocument } from '../model/sankey-document';
 

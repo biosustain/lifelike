@@ -1,5 +1,3 @@
-import { ColorObject } from 'vis-network/dist/types/network/gephiParser';
-
 export interface NodeLegend {
     [key: string]: {
         color: string;
@@ -7,12 +5,11 @@ export interface NodeLegend {
     };
 }
 
-export type DefaultNodeData = Record<string, any>&{eid: any};
 /** Node representation from the backend */
-export interface GraphNode<Data = DefaultNodeData> {
+export interface GraphNode {
   id: number;
   label: string;
-  data: Data;
+  data: {[key: string]: any};
   subLabels: Array<string>;
   displayName: string;
   domainLabels: string[];
@@ -20,10 +17,10 @@ export interface GraphNode<Data = DefaultNodeData> {
 }
 
 /** Edge represenattion from the backend */
-export interface GraphRelationship<Data = Record<string, any>> {
+export interface GraphRelationship {
   id: number;
   label: string;
-  data: Data;
+  data: {[key: string]: any};
   to: number;
   from: number;
   toLabel: string;
@@ -31,36 +28,36 @@ export interface GraphRelationship<Data = Record<string, any>> {
 }
 
 /** VisJS Node Representations for Client */
-export interface VisNode<Data = DefaultNodeData> extends GraphNode<Data> {
+export interface VisNode extends GraphNode {
   primaryLabel?: string; // Label to display in VisJS
-  color: ColorObject; // VisJS color options
+  color: any; // VisJS color options
   font: any; // VisJS font options
   expanded?: boolean; // Whether a node has been expanded
 }
 
-export interface DuplicateVisNode<Data = DefaultNodeData> extends VisNode<Data> {
+export interface DuplicateVisNode extends VisNode {
     id: any;
     duplicateOf: number;
 }
 
 /** VisJS Edge Representations for Client */
-export interface VisEdge<Data = Record<string, any>> extends GraphRelationship<Data> {
+export interface VisEdge extends GraphRelationship {
   arrows?: string;
   color: any;
 }
 
 // TODO: For DuplicateVisEdge, `to` and `from` are actually string types in the shape 'duplicateEdge:{hash}'.
 // We may want to update this interface so the type is reflected properly.
-export interface DuplicateVisEdge<Data = Record<string, any>> extends VisEdge<Data> {
+export interface DuplicateVisEdge extends VisEdge {
     id: any;
     duplicateOf: number | null;
     originalFrom: number | null;
     originalTo: number | null;
 }
 
-export interface Neo4jResults<NodeData = DefaultNodeData, EdgeData = Record<string, any>> {
-  nodes: Array<GraphNode<NodeData> | VisNode<NodeData>>;
-  edges: Array<GraphRelationship<EdgeData> | VisEdge<EdgeData>>;
+export interface Neo4jResults {
+  nodes: Array<GraphNode | VisNode>;
+  edges: Array<GraphRelationship | VisEdge>;
 }
 
 // Used for vis.js configuration
@@ -76,25 +73,25 @@ export interface AssociationSentence {
     sentence: string;
 }
 
-export interface FTSQueryRecord<Data = Record<string, any>> {
-  node: GraphNode<Data>;
+export interface FTSQueryRecord {
+  node: GraphNode;
   taxonomyId?: number;
   taxonomyName?: string;
   goClass?: string;
 }
 
-export interface FTSReferenceRecord<Data = DefaultNodeData> extends FTSQueryRecord<Data> {
+export interface FTSReferenceRecord extends FTSQueryRecord {
   publicationTitle: string;
   publicationYear: number;
   publicationId: number;
   relationship: string;
-  chemical?: GraphNode<Data>;
-  disease?: GraphNode<Data>;
+  chemical?: GraphNode;
+  disease?: GraphNode;
 }
 
-export interface FTSResult<Data = Record<string, any>> {
+export interface FTSResult {
   query: string;
-  nodes: Array<FTSQueryRecord<Data>>;
+  nodes: Array<FTSQueryRecord>;
   total: number;
   page: number;
   limit: number;

@@ -1,6 +1,5 @@
 import { cloneDeep } from 'lodash-es';
-import { ZoomTransform } from 'd3-zoom';
-import { mouse } from 'd3';
+import * as d3 from 'd3';
 
 import { GraphEntityType, UniversalGraphGroup, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
@@ -28,7 +27,7 @@ export class MovableEntity extends AbstractCanvasBehavior {
   }
 
   dragStart(event: DragBehaviorEvent): BehaviorResult {
-    const [mouseX, mouseY] = mouse(this.graphView.canvas);
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const transform = this.graphView.transform;
     const entity = event.entity;
 
@@ -53,7 +52,7 @@ export class MovableEntity extends AbstractCanvasBehavior {
 
   drag(event: DragBehaviorEvent): BehaviorResult {
     // TODO: cache
-    const [mouseX, mouseY] = mouse(this.graphView.canvas);
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const transform = this.graphView.transform;
 
     if (this.target) {
@@ -178,6 +177,6 @@ export class MovableEntity extends AbstractCanvasBehavior {
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
+  draw(ctx: CanvasRenderingContext2D, transform: any) {
   }
 }

@@ -4,11 +4,11 @@ import { debounceTime, map } from 'rxjs/operators';
 import { PlacedObject, PlacedObjectRenderer } from '../../styles/styles';
 import { RenderTree } from '../render-tree';
 
-export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTree<T> {
+export class PlacedObjectRenderTree<T = any> implements PlacedObjectRenderer, RenderTree {
 
   private readonly children: Map<T, PlacedObject> = new Map();
   private renderQueue: Map<PlacedObject, boolean> = new Map();
-  private readonly renderStart$ = new Subject<void>();
+  private readonly renderStart$ = new Subject<any>();
   readonly renderRequest$: Observable<[PlacedObject, boolean][]> = this.renderStart$.pipe(
     debounceTime(100),
     map(() => {

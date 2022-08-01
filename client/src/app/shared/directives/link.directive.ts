@@ -4,7 +4,7 @@ import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
-import { openPotentialInternalLink } from '../utils/browser';
+import { openInternalLink, toValidUrl } from '../utils/browser';
 import { assignDefined } from '../utils/types';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
@@ -29,7 +29,7 @@ export class AbstractLinkDirective {
   @Input() sideBySide: boolean;
   @Input() keepFocus: boolean;
   @Input() matchExistingTab: string | RegExp;
-  @Input() shouldReplaceTab: (component: any) => boolean;
+  @Input() shouldReplaceTab: (component: any) => any;
   @Input() handleClick = true; // TODO: Really should refactor this out, it's only used as a sort of kludge in one place
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
@@ -93,8 +93,7 @@ export class AbstractLinkDirective {
       parentAddress: this.router.createUrlTree(this.parentCommands)
     });
 
-    openPotentialInternalLink(this.workspaceManager, this.urlTree.toString(), extras);
-
+    openInternalLink(this.workspaceManager, toValidUrl(this.urlTree.toString()), extras);
     return false;
   }
 

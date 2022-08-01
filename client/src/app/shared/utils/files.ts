@@ -57,7 +57,7 @@ export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeM
   });
 }
 
-export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T[]> {
+export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, any | undefined> {
   return map((data: ArrayBuffer | undefined) => {
     if (data == null) {
       return null;
@@ -66,10 +66,10 @@ export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayB
     const jsonLines = text.split('\n');
     return jsonLines.reduce((o, n) => {
       if (n) {
-        o.push(JSON.parse(n) as T);
+        o.push(JSON.parse(n));
       }
       return o;
-    }, [] as T[]);
+    }, []);
   });
 }
 

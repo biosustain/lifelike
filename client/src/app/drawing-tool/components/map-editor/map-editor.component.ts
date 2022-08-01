@@ -18,7 +18,7 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import { uuidv4 } from 'app/shared/utils/identifiers';
+import {  uuidv4 } from 'app/shared/utils/identifiers';
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
@@ -187,7 +187,7 @@ export class MapEditorComponent
       .subscribe(); // Need to subscribe so it actually runs
   }
 
-  saveBackup(): Observable<{}> {
+  saveBackup(): Observable<any> {
     if (this.map) {
       const observable = this.filesystemService.putBackup({
         hashId: this.locator,

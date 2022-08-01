@@ -7,7 +7,7 @@ import { MessageDialog } from '../../services/message-dialog.service';
 /**
  * An abstract component for dialogs.
  */
-export abstract class CommonDialogComponent<T, V = T> {
+export abstract class CommonDialogComponent<T = any, V = T> {
   form: AbstractControl;
   /**
    * If you perform an action after the dialog returns a value via NgbModal.result,

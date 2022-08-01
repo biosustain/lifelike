@@ -13,7 +13,7 @@ import { ObjectVersion } from '../../models/object-version';
   selector: 'app-object-version-history-dialog',
   templateUrl: './object-version-history-dialog.component.html',
 })
-export class ObjectVersionHistoryDialogComponent extends CommonFormDialogComponent<ObjectVersion> {
+export class ObjectVersionHistoryDialogComponent extends CommonFormDialogComponent {
   @Input() object: FilesystemObject;
   @Input() promptRestore = false;
 

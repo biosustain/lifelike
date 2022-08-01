@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 
 import { chunk } from 'lodash-es';
 
-import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from '../../services/data-transfer-data.service';
+import {
+  DataTransferData,
+  DataTransferDataProvider,
+  DataTransferToken,
+} from '../../services/data-transfer-data.service';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');
@@ -13,7 +17,7 @@ export class URIData {
 }
 
 @Injectable()
-export class GenericDataProvider implements DataTransferDataProvider<URIData[]|string> {
+export class GenericDataProvider implements DataTransferDataProvider {
 
   private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');
 
@@ -65,8 +69,8 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[]|s
     return uris;
   }
 
-  extract(dataTransfer: DataTransfer): DataTransferData<URIData[]|string>[] {
-    const results: DataTransferData<URIData[]|string>[] = [];
+  extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
+    const results: DataTransferData<any>[] = [];
     let text = '';
 
     if (dataTransfer.types.includes('text/plain')) {

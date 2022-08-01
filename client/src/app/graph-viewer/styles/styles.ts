@@ -1,5 +1,3 @@
-import { ZoomTransform } from 'd3-zoom';
-
 import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 import { BoundingBox, DEFAULT_SELECTION_MARGIN, Point } from '../utils/canvas/shared';
@@ -118,7 +116,7 @@ export abstract class PlacedObject {
    * @param transform the zoom and pan transform
    * @param selected is object selected
    */
-  abstract draw(transform: ZoomTransform, selected: boolean): void;
+  abstract draw(transform: any, selected: boolean): void;
 
   /**
    * Render the selection shadow below object.
@@ -188,7 +186,7 @@ export abstract class PlacedEdge extends PlacedObject {
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */
-  abstract drawLayer2(transform: ZoomTransform): void;
+  abstract drawLayer2(transform: any): void;
 }
 
 /**

@@ -7,9 +7,9 @@ import { SidenavNodeEntity } from 'app/interfaces';
     templateUrl: './sidenav-node-view.component.html',
     styleUrls: ['./sidenav-node-view.component.scss']
 })
-export class SidenavNodeViewComponent<Data extends {eid: any}> {
+export class SidenavNodeViewComponent {
     @Input() legend: Map<string, string[]>;
-    @Input() nodeEntity: SidenavNodeEntity<Data>;
+    @Input() nodeEntity: SidenavNodeEntity;
 
     constructor() { }
 }

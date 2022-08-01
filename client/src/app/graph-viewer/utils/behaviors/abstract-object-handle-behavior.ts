@@ -1,5 +1,4 @@
 import * as d3 from 'd3'; // TODO: Maybe limit that import
-import { ZoomTransform } from 'd3-zoom';
 
 import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { BLACK_COLOR, WHITE_COLOR } from 'app/shared/constants';
@@ -94,7 +93,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     return null;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
+  draw(ctx: CanvasRenderingContext2D, transform: any) {
     const placedNode = this.graphView.placeNode(this.target);
 
     for (const handle of Object.values(this.getHandleBoundingBoxes(placedNode))) {
@@ -102,7 +101,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     }
   }
 
-  drawHandle(ctx: CanvasRenderingContext2D, transform: ZoomTransform, {minX, minY, maxX, maxY, displayColor}: T) {
+  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY, displayColor}: T) {
     ctx.beginPath();
     ctx.lineWidth = 1 / transform.scale(1).k;
     if (document.activeElement === this.graphView.canvas) {

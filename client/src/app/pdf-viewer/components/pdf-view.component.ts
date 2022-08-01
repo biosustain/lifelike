@@ -462,7 +462,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
           // assumes first link will be main database source link
           // tslint ignore cause other option is destructuring and that
           // also gets name shadowing error
-          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
+          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])?.url : '',
         }],
         hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',

@@ -29,7 +29,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { composeInternalLink } from 'app/shared/workspace-manager';
+import { NavigationData, composeInternalLink } from 'app/shared/workspace-manager';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
@@ -537,17 +537,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'Knowledge Graph',
-      { url: String(visLink), extras: { sideBySide: true, newTab: true, keepFocus: true } },
+      {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}},
     ) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
     htmlLinks += composeInternalLink(
       'File Content',
-      { url: String(contLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
+      {url: String(contLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
     htmlLinks += composeInternalLink(
       'Map Content',
-      { url: String(mapLink), extras: { sideBySide: true, newTab: true, keepFocus: true }}
+      {url: String(mapLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
     ) + '<br>';
     htmlLinks += `</div></div>`;
 

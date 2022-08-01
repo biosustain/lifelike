@@ -72,12 +72,11 @@ export class FilesystemService {
   }> {
     return this.http.post(
       `/api/filesystem/objects`,
-      objectToMixedFormData(request),
-      {
+      objectToMixedFormData(request), {
         observe: 'events',
         reportProgress: true,
         responseType: 'json',
-      }
+      },
     ).pipe(
       map(event => {
         if (event.type === HttpEventType.Response) {

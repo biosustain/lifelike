@@ -8,6 +8,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';
@@ -28,8 +29,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   // TODO: We can think about removing this after we add task queue for annotations
   readonly maxFileCount = 5;
 
-  fileList: FileInput<any>[] = [];
-  selectedFile: FileInput<any> = null;
+  fileList: FileInput[] = [];
+  selectedFile: FileInput = null;
   selectedFileIndex;
 
   invalidInputs = false;
@@ -79,7 +80,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
       await extractDescriptionFromFile(targetFile).then(description => {
-        const fileEntry: FileInput<any> = {
+        const fileEntry: FileInput = {
           formState: {
             contentValue: targetFile,
             filename,
@@ -174,9 +175,9 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   }
 }
 
-export interface FileInput<FormState> {
+export interface FileInput {
   filename: string;
-  formState: FormState;
+  formState: any;
   hasErrors: boolean;
   filePossiblyAnnotatable: boolean;
 }

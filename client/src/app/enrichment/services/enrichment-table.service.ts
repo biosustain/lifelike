@@ -4,16 +4,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { TextAnnotationGenerationRequest, AnnotationGenerationResultSchema } from 'app/file-browser/schema';
-import { ResultMapping } from 'app/shared/schemas/common';
+import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 import { EnrichmentParsedData } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentTableService {
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) { }
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
@@ -25,7 +23,7 @@ export class EnrichmentTableService {
       '/api/enrichment-table/match-ncbi-nodes',
       {geneNames, organism},
     ).pipe(
-      map(resp => resp.result),
+      map((resp: any) => resp.result),
     );
   }
 
@@ -35,7 +33,7 @@ export class EnrichmentTableService {
    * @param taxID tax id of organism
    */
   getNCBIEnrichmentDomains(nodeIds, taxID: string, domains: string[]): Observable<EnrichmentWrapper> {
-    return this.http.post<{ result: EnrichmentWrapper }>(
+    return this.http.post<{result: EnrichmentWrapper}>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
       {nodeIds, taxID, domains},
     ).pipe(
@@ -43,25 +41,26 @@ export class EnrichmentTableService {
     );
   }
 
-  annotateEnrichment(hashIds: string[],
-                     request: TextAnnotationGenerationRequest): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
-    return this.http.post<ResultMapping<AnnotationGenerationResultSchema>>(
+  annotateEnrichment(hashIds: string[], request: TextAnnotationGenerationRequest): Observable<any> {
+    return this.http.post(
       `/api/filesystem/annotations/generate`,
-      {hashIds, ...request}
+      {hashIds, ...request},
+    ).pipe(
+      map((resp: any) => resp.results)
     );
   }
 
-  refreshEnrichmentAnnotations(hashIds: string[]): Observable<'Success'> {
-    return this.http.post<{ 'results': 'Success' }>(
+  refreshEnrichmentAnnotations(hashIds: string[]): Observable<any> {
+    return this.http.post(
       `/api/filesystem/annotations/refresh`,
       {hashIds},
     ).pipe(
-      map(resp => resp.results)
+      map((resp: any) => resp.results)
     );
   }
 
   getAnnotatedEnrichment(hashId: string): Observable<EnrichmentParsedData> {
-    return this.http.get<{ results: EnrichmentParsedData }>(
+    return this.http.get<{results: EnrichmentParsedData}>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
     ).pipe(
       map(resp => resp.results),

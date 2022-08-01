@@ -11,11 +11,14 @@ export const FILESYSTEM_IMAGE_HASHID_TYPE = 'vnd.***ARANGO_DB_NAME***.transfer/i
 
 
 @Injectable()
-export class ImageEntityDataProvider implements DataTransferDataProvider<ImageTransferData> {
+export class ImageEntityDataProvider implements DataTransferDataProvider {
+
   constructor(protected readonly genericDataProvider: GenericDataProvider) {
   }
 
+
   extract(dataTransfer: DataTransfer): DataTransferData<ImageTransferData>[] {
+
     const imageData = dataTransfer.getData(FILESYSTEM_IMAGE_TRANSFER_TYPE);
     const hash = dataTransfer.getData(FILESYSTEM_IMAGE_HASHID_TYPE);
     if (imageData) {

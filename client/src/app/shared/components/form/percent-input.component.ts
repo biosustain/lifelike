@@ -1,6 +1,20 @@
-import { Component, Input, ViewEncapsulation, forwardRef, Renderer2 } from '@angular/core';
+import {
+  Component,
+  Input,
+  ViewEncapsulation,
+  forwardRef,
+  Directive,
+  Self,
+  HostListener,
+  ViewChild,
+  ElementRef,
+  Renderer2,
+  HostBinding
+} from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
+  NumberValueAccessor,
+  NgControl,
   ControlValueAccessor,
   NG_VALIDATORS,
   Validator,
@@ -11,6 +25,7 @@ import {
 
 import { isEmpty } from 'lodash-es';
 
+import { AbstractControlValueAccessor } from '../../utils/forms/abstract-control-value-accessor';
 import { isNotEmpty } from '../../utils';
 
 export const PERCENT_VALUE_ACCESSOR: any = {

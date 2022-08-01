@@ -132,8 +132,6 @@ export enum Unicodes {
   BioC = '\uf15b',
   Mail = '\uf0e0',
   Project = '\uf5fd',
-  Link = '\uf0c1',
-  Note = '\uf249',
   Default = '\uf15b',
   // Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
 // with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any

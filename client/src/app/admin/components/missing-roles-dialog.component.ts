@@ -17,7 +17,7 @@ import { AccountService } from 'app/users/services/account.service';
   selector: 'app-missing-roles-dialog',
   templateUrl: './missing-roles-dialog.component.html'
 })
-export class MissingRolesDialogComponent extends CommonFormDialogComponent<boolean> {
+export class MissingRolesDialogComponent extends CommonFormDialogComponent {
 
   users: AppUser[];
   modified = false;

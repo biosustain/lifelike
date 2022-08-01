@@ -1,6 +1,6 @@
 import { Injectable, InjectionToken, Injector } from '@angular/core';
 
-export const DATA_TRANSFER_DATA_PROVIDER = new InjectionToken<DataTransferDataProvider<any>[]>('dragDataProvider');
+export const DATA_TRANSFER_DATA_PROVIDER = new InjectionToken<DataTransferDataProvider[]>('dragDataProvider');
 
 export class DataTransferToken<T> {
   constructor(readonly description: string) {
@@ -23,8 +23,8 @@ export class DataTransferDataService {
   }
 }
 
-export interface DataTransferDataProvider<Data> {
-  extract(dataTransfer: DataTransfer): DataTransferData<Data>[];
+export interface DataTransferDataProvider {
+  extract(dataTransfer: DataTransfer): DataTransferData<any>[];
 }
 
 export interface DataTransferData<T> {

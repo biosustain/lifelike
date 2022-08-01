@@ -77,7 +77,7 @@ type Key = string;
 //
 // <!ELEMENT infon (#PCDATA)>
 // <!ATTLIST infon key CDATA #REQUIRED >
-export interface Infon {
+interface Infon {
   [key: string]: string;
 
   // dynamic
@@ -93,7 +93,7 @@ export interface Infon {
 // stand-alone document as described by its parent source.
 //
 // <!ELEMENT document ( id, infon*, passage+, relation* ) >
-export interface Document {
+interface Document {
   id: Id;
   infons: Infon;
   passages: Passage[];
@@ -128,7 +128,7 @@ type Text = string;
 // infon values.
 //
 // <!ELEMENT passage ( infon*, offset, ( ( text?, annotation* ) | sentence* ), relation* ) >
-export interface Passage {
+interface Passage {
   infons: Infon;
   // offset: Where the passage occurs in the parent document. Depending
   // on the source corpus, this might be a very relevant number.  They
