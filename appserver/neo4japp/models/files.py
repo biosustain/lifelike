@@ -8,6 +8,7 @@ import sqlalchemy
 from dataclasses import dataclass
 from flask import current_app
 from sqlalchemy import (
+    UniqueConstraint,
     and_,
     bindparam,
     column,
@@ -198,6 +199,10 @@ class StarredFile(RDBMSBase, TimestampMixin):
                         index=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('file_id', 'user_id', name='uq_starred_file_unique_user_file'),
+    )
 
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # type: ignore
