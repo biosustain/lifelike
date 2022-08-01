@@ -1753,10 +1753,10 @@ class FileStarUpdateView(FilesystemBaseView):
         if starred:
             # Don't need to update if the file is already starred by this user
             if starred_file is None:
-                starred_file = StarredFile()
-                starred_file.user_id = user.id
-                starred_file.file_id = result.id
-
+                starred_file = StarredFile(
+                    user_id=user.id,
+                    file_id=result.id
+                )
                 db.session.add(starred_file)
         # Delete the row only if it exists
         elif starred_file is not None:
