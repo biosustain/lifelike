@@ -141,7 +141,11 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   updateStarred(hashId: string, starred: boolean) {
-    return this.actions.updateStarred(hashId, starred)
-      .then((result) => this.object.update(result));
+    return this.actions.updateStarred(hashId, starred).then(
+      (result) => {
+        this.object.update(result);
+        this.objectUpdate.emit(this.object);
+      }
+    );
   }
 }
