@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
+import { isNil } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -29,6 +30,7 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
       this.list = list;
+      this.list.results.setFilter((item: FilesystemObject) => !isNil(item.starred));
     });
 
     this.refresh();
@@ -44,6 +46,8 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
 
   applyFilter(filter: string) {
     const normalizedFilter = normalizeFilename(filter);
-    this.list.results.setFilter((item: FilesystemObject) => normalizeFilename(item.name).includes(normalizedFilter));
+    this.list.results.setFilter(
+      (item: FilesystemObject) => !isNil(item.starred) && normalizeFilename(item.name).includes(normalizedFilter)
+    );
   }
 }
