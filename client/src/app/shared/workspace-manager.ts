@@ -529,7 +529,7 @@ export class WorkspaceManager {
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
             // from the URL -- this part is a little hacky
-            // @ts-ignore
+            // @ts-ignore // todo: this hack has far reaching consequences limiting most of routing features
             const activatedRoute = new ActivatedRoute(new BehaviorSubject(routeSnapshot.url),
               new BehaviorSubject(routeSnapshot.params), new BehaviorSubject(queryParams),
               new BehaviorSubject(routeSnapshot.fragment), new BehaviorSubject(routeSnapshot.data),

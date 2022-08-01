@@ -166,7 +166,7 @@
             <div class="flex-fill overflow-auto pdf-viewer-lib-wrapper" [id]="id + '-pdf-viewer-lib-wrapper'">
                 <div *ngIf="ready">
                     <!-- PDF Viewer -->
-                    <lib-pdf-viewer-lib
+                    <app-lib-pdf-viewer-lib
                             tabindex=0
                             id='pdf-viewer'
                             appPdfViewer
@@ -183,17 +183,17 @@
                             [searchChanged]="searchChanged"
                             [showExcludedAnnotations]="showExcludedAnnotations"
                             [removedAnnotationExclusion]="removedAnnotationExclusion"
-                            (matches-count-updated)="matchesCountUpdated($event)"
+                            (matchesCountUpdated)="matchesCountUpdated($event)"
                             (annotationDragStart)="addAnnotationDragData($event)"
-                            (annotation-exclusion-added)="annotationExclusionAdded($event)"
-                            (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
-                            (custom-annotation-created)="annotationCreated($event)"
+                            (annotationExclusionAdded)="annotationExclusionAdded($event)"
+                            (annotationExclusionRemoved)="annotationExclusionRemoved($event)"
+                            (customAnnotationCreated)="annotationCreated($event)"
                             (loadCompleted)="loadCompleted($event)"
-                            (custom-annotation-removed)="annotationRemoved($event)"
+                            (customAnnotationRemoved)="annotationRemoved($event)"
                             (searchChange)="searchQueryChangedFromViewer($event)"
                             (annotationHighlightChange)="annotationHighlightChangedFromViewer($event)"
                     >
-                    </lib-pdf-viewer-lib>
+                    </app-lib-pdf-viewer-lib>
                 </div>
             </div>
         </div>
