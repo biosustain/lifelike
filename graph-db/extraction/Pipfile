@@ -16,6 +16,7 @@ pyyaml = "==6.*"
 
 [dev-packages]
 black = "*"
+notebook = "*"
 
 [requires]
 python_version = "3"

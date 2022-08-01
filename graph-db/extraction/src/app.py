@@ -1,10 +1,11 @@
-import argparse
+
 import logging
 import logging.handlers
 import sys
-from pathlib import Path
 
 import coloredlogs
+
+from arg_parser import arg_parser
 
 import biocyc.biocyc_parser as biocyc_parser
 import chebi.chebi_parser as chebi_parser
@@ -15,7 +16,7 @@ import mesh.mesh_parser as mesh_parser
 import mesh.add_disease_synonyms_by_pruning_disease as add_disease_synonyms_by_pruning_disease
 import mesh.mesh_annotations as mesh_annotations
 import ncbi.ncbi_gene_parser as ncbi_gene_parser
-import ncbi.ncbi_taxonomy_parser as ncbi_taxonomy_parser
+import ncbi.taxonomy_parser as ncbi_taxonomy_parser
 import literature.literature_data_parser as literature_data_parser
 import regulondb.regulondb_parser as regulondb_parser
 import stringdb.stringdb_parser as stringdb_parser
@@ -43,52 +44,10 @@ DOMAIN_PARSERS = {
 }
 
 
-def get_domain_parser(domain: str):
-    return DOMAIN_PARSERS[domain]
-
-
-def parse_args(argv):
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        '--log-file',
-        help='Append log messages to file; files are rotated at 1MB',
-        type=Path,
-    )
-    parser.add_argument(
-        '--log-level',
-        default='INFO',
-        choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
-    )
-    parser.add_argument('--prefix', help='The JIRA card numeric number; e.g LL-1234')
-
-    subparser = parser.add_subparsers(dest='domain', required=True)
-    biocyc_parser = subparser.add_parser('biocyc')
-    biocyc_parser.add_argument(
-        '--data-sources',
-        nargs='*',
-        help='A list of data sources to load, e.g. PseudomonasCyc YeastCyc EcoCyc HumanCyc',
-    )
-
-    # parsers with no additional arguments
-    subparser.add_parser('chebi')
-    subparser.add_parser('enzyme')
-    subparser.add_parser('go')
-    subparser.add_parser('kegg')
-    subparser.add_parser('mesh')
-    subparser.add_parser('mesh-add-disease-synonyms')
-    subparser.add_parser('mesh-annotations')
-    subparser.add_parser('ncbi-gene')
-    subparser.add_parser('ncbi-taxonomy')
-    subparser.add_parser('regulondb')
-    subparser.add_parser('stringdb')
-    subparser.add_parser('uniprot')
-    subparser.add_parser('zenodo-literature')
-
-    return parser.parse_args(argv)
-
-
 def setup_logging(args):
+    """
+    Setup logging.
+    """
     coloredlogs.install(fmt=_LOG_FORMAT, level=args.log_level)
 
     ***ARANGO_USERNAME***_log = logging.getLogger()
@@ -100,13 +59,16 @@ def setup_logging(args):
 
         ***ARANGO_USERNAME***_log.addHandler(handler)
 
+    return ***ARANGO_USERNAME***_log
+
 
 def main(argv):
-    args = parse_args(argv)
+    """
+    Main entry point.
+    """
+    args = arg_parser.parse_args(argv)
 
-    setup_logging(args)
-
-    logger = logging.getLogger('main')
+    logger = setup_logging(args)
     logger.info(
         'Executing '
         + __file__
@@ -114,13 +76,8 @@ def main(argv):
         + ', '.join(['%s=%s' % (key, value) for (key, value) in args.__dict__.items()])
     )
 
-    try:
-        int(args.prefix.split('-')[1])
-    except Exception:
-        raise ValueError('The argument change_id_prefix must be the JIRA card number; e.g LL-1234')
-
     # get parser function using args.domain
-    parser = get_domain_parser(args.domain)
+    parser = DOMAIN_PARSERS[args.domain]
 
     # call main function and pass arguments
     parser.main(args)

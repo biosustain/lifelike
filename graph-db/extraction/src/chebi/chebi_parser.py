@@ -33,7 +33,7 @@ class ChebiOboParser(OboParser):
         self.logger = logging.getLogger(__name__)
 
 
-def main():
+def main(args=None):
     parser = ChebiOboParser('chebi.obo.gz')
     date_tag = datetime.today().strftime('%m%d%Y')
     outfile = f"chebi-data-{date_tag}.zip"
