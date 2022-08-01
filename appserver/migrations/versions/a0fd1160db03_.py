@@ -36,7 +36,8 @@ def upgrade():
             name=op.f('fk_starred_file_user_id_appuser'),
             ondelete='CASCADE'
         ),
-        sa.PrimaryKeyConstraint('id', name=op.f('pk_starred_file'))
+        sa.PrimaryKeyConstraint('id', name=op.f('pk_starred_file')),
+        sa.UniqueConstraint('file_id', 'user_id', name='uq_starred_file_unique_user_file'),
     )
     op.create_index(op.f('ix_starred_file_file_id'), 'starred_file', ['file_id'], unique=False)
     op.create_index(op.f('ix_starred_file_user_id'), 'starred_file', ['user_id'], unique=False)
