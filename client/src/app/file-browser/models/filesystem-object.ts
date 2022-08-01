@@ -143,8 +143,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
-  // tslint:disable-next-line:variable-name
-  annotations_date_tooltip?: string;
   annotationsTooltipContent: string;
 
   get isDirectory() {

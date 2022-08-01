@@ -217,8 +217,12 @@ export class AnnotationTagHandler extends TagHandler {
     // null/undefined because a data source did not match
     // e.g we use "Custom" for phenotype
     if (idLink) {
-      // tslint:disable-next-line:max-line-length
-      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
+      base.push(
+        annoId && annoId.indexOf('NULL') === -1 ?
+          `Id: <a href=${escape(`${idLink.url}${annoId}`)}
+           target="_blank">${escape(annoId)}</a>`
+          : 'Id: None'
+      );
     } else {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
     }
