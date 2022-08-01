@@ -8,7 +8,7 @@ import pandas as pd
 import os
 
 UNIQUE_ID = 'UNIQUE-ID'
-NODE_LABEL = 'node_label'
+NODE.LABEL = 'node_label'
 LABEL = ':LABEL'
 
 
@@ -19,7 +19,7 @@ class DataFileParser(BaseParser):
     def __init__(self, biocyc_dbname, tar_file, datafile_name, entity_name, attr_names:dict, rel_names:dict,
                  db_link_sources: dict=None):
         """
-        :param biocyc_dbname: biocyc database name, eg. DB_ECOCYC, DB_HUMANCYC
+        :param biocyc_dbname: biocyc database name, eg. DB.ECOCYC, DB.HUMANCYC
         :param tar_file: tar file downloaded from biocyc website
         :param datafile_name: the data file name to process (in tar_file), e.g. genes.dat
         :param entity_name: The entity to process, e.g. Gene, Protein etc.
@@ -27,7 +27,7 @@ class DataFileParser(BaseParser):
         :param rel_names:  mapping for tagName and relName
         :param db_link_sources:  mapping for tagName and linkRel
         """
-        BaseParser.__init__(self, DB_BIOCYC.lower())
+        BaseParser.__init__(self, DB.BIOCYC.lower())
         self.input_zip = os.path.join(self.download_dir, tar_file)
         self.output_dir = os.path.join(self.output_dir, biocyc_dbname.lower())
         os.makedirs(self.output_dir, 0o777, True)
@@ -124,7 +124,7 @@ class DataFileParser(BaseParser):
         return node
 
     def add_dblink(self, node:NodeData, db_name, reference_id):
-        link_node = NodeData(NODE_DBLINK, PROP_REF_ID)
+        link_node = NodeData(NODE.DBLINK, PROP_REF_ID)
         if reference_id.startswith(db_name):
             reference_id = reference_id[len(db_name)+1:]  # remove db prefix
         link_node.update_attribute(PROP_REF_ID, reference_id)

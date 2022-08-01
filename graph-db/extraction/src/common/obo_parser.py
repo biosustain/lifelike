@@ -135,6 +135,7 @@ class OboParser(BaseParser):
         if relfile:
             outfiles.append(relfile)
         self.zip_output_files(outfiles, output_zip_file)
+        return output_zip_file
 
 
 

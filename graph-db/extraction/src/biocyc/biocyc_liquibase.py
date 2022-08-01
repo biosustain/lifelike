@@ -11,7 +11,7 @@ from zipfile import ZipFile
 class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author:str, biocyc_dbname:str, zip_data_file:str,
                  initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_BIOCYC, None, initial_load)
+        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB.BIOCYC, None, initial_load)
         self.processed_data_dir = os.path.join(self.processed_data_dir, biocyc_dbname.lower())
         self.biocyc_dbname = biocyc_dbname
         self.biocycdb_label = 'db_' + self.biocyc_dbname
@@ -24,14 +24,14 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
         return self.index_quieries
 
     def add_common_index_queries(self):
-        self.index_quieries.append(get_create_constraint_query(NODE_BIOCYC, PROP_ID))
-        self.index_quieries.append(get_create_index_query(NODE_BIOCYC, PROP_BIOCYC_ID))
-        self.index_quieries.append(get_create_index_query(NODE_BIOCYC, PROP_NAME))
+        self.index_quieries.append(get_create_constraint_query(NODE.BIOCYC, PROP_ID))
+        self.index_quieries.append(get_create_index_query(NODE.BIOCYC, PROP_BIOCYC_ID))
+        self.index_quieries.append(get_create_index_query(NODE.BIOCYC, PROP_NAME))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_ID))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_BIOCYC_ID))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_NAME))
-        self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
+        self.index_quieries.append(get_create_constraint_query(NODE.SYNONYM, PROP_NAME))
+        self.index_quieries.append(get_create_index_query(NODE.SYNONYM, PROP_LOWERCASE_NAME))
 
     def add_entity_index_queries(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -52,7 +52,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets.append(self.get_node_changeset(df, file, entity, NODE_BIOCYC,
+                        self.change_sets.append(self.get_node_changeset(df, file, entity, NODE.BIOCYC,
                                                                         ['db_'+self.biocyc_dbname]))
 
     def add_synonym_changesets(self):
@@ -75,7 +75,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets += self.get_relationships_changesets(df, file, NODE_BIOCYC, NODE_BIOCYC)
+                        self.change_sets += self.get_relationships_changesets(df, file, NODE.BIOCYC, NODE.BIOCYC)
                 file = f"{entity}-dblinks.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
@@ -91,7 +91,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
             dbnode = 'db_' + dbname
             id = f'load {entity} {rel} from {self.zipfile}, date {self.date_tag}'
             comment = f'Load {entity} {rel}: {file} from {self.zipfile}'
-            query = get_create_relationships_query(NODE_BIOCYC, PROP_ID, PROP_FROM_ID,
+            query = get_create_relationships_query(NODE.BIOCYC, PROP_ID, PROP_FROM_ID,
                                                    dbnode, PROP_ID, PROP_TO_ID, rel,
                                                    row_filter_property=PROP_DB_NAME, row_filter_value=dbname)
             changeset = CustomChangeSet(id, self.author, comment, query,
@@ -115,7 +115,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         """
         if genelink_cypher is not empty, use it to create gene-ndbi_gene links. Otherwise, use the cypher query in biocyc_cypher.yml file
         """
-        ChangeLogFileGenerator.__init__(self, author, None, DB_BIOCYC, '')
+        ChangeLogFileGenerator.__init__(self, author, None, DB.BIOCYC, '')
         self.biocyc_dbname = biocyc_dbname
         self.genelink_cypher = genelink_cypher
         config = Config()
@@ -197,7 +197,7 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 
 if __name__ == "__main__":
     generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'rcai')
-    # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
+    # generate_changelog_files('BsubCyc-data-47.zip', DB.BSUBCYC, 'rcai')
 
 
 

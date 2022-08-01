@@ -17,7 +17,7 @@ ATTR_NAMES = {
 
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, dict())
+        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE.GENE, ATTR_NAMES, dict())
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_URL, PROP_ACCESSION2, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
         self.logger = logging.getLogger(__name__)
 

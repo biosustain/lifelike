@@ -55,6 +55,7 @@ biocyc_parser = subparser.add_parser('biocyc')
 biocyc_parser.add_argument(
     '--data-sources',
     nargs='*',
+    required=True,
     help='A list of data sources to load, e.g. PseudomonasCyc YeastCyc EcoCyc HumanCyc',
 )
 

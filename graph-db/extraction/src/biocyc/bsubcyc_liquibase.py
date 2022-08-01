@@ -24,5 +24,5 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 
 
 if __name__ == "__main__":
-    generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
+    generate_changelog_files('BsubCyc-data-47.zip', DB.BSUBCYC, 'rcai')
 

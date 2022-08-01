@@ -60,14 +60,17 @@ class BaseParser:
             df_syn = df_syn[df_syn[PROP_NAME].str.len() > 1]
         return df_syn
 
-    def zip_output_files(self, output_files:[], zip_file):
+    def zip_output_files(self, output_files:[], zip_file: os.PathLike):
         os.chdir(self.output_dir)
         with ZipFile(zip_file, 'w') as zipfile:
             for f in output_files:
                 zipfile.write(f)
 
-    def parse_and_write_data_files(self):
-        pass
+    def parse_and_write_data_files(self) -> os.PathLike:
+        """
+        This is the main function to parse and write data files.
+        """
+        raise NotImplementedError()
 
     def write_node_file(self, nodes: [], node_attrs:[], outfile:str):
         if not nodes:

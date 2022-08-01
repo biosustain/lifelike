@@ -72,6 +72,8 @@ class GeneParser(BaseParser):
             df.to_csv(outfile, header=(i==0), mode='a', sep='\t', index=False)
             df_syn.to_csv(syn_outfile, header=(i==0), mode='a', sep='\t', index=False)
 
+        return outfile
+
     def _load_gene2go_to_neo4j(self):
         chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])
         outfile = os.path.join(self.output_dir, self.file_prefix + NCBI_GENE_GO_FILE)
@@ -80,6 +82,8 @@ class GeneParser(BaseParser):
         for i, chunk in enumerate(chunks):
             df = chunk.astype('str')
             df.to_csv(outfile, header=(i==0), mode='a', sep='\t', index=False)
+
+        return outfile
 
 
 def main(args):
