@@ -75,18 +75,13 @@ class KeggParser(BaseParser):
         return ''
 
     def parse_and_write_data_files(self):
-        outfiles = []
         df_pathway = self.parse_pathway_file()
         logging.info('kegg pathways: ' + str(len(df_pathway)))
-        path = os.path.join(self.output_dir, self.file_prefix + PATHWAY_FILE)
-        df_pathway.to_csv(path, sep='\t', index=False)
-        outfiles.append(path)
+        df_pathway.to_csv(os.path.join(self.output_dir, self.file_prefix + PATHWAY_FILE), sep='\t', index=False)
 
         df_ko = self.parse_ko_file()
         logging.info('kegg ko: ' + str(len(df_ko)))
-        path = os.path.join(self.output_dir, self.file_prefix + KO_FILE)
-        df_ko.to_csv(path, sep='\t', index=False)
-        outfiles.append(path)
+        df_ko.to_csv(os.path.join(self.output_dir, self.file_prefix + KO_FILE), sep='\t', index=False)
 
         # Write gene data file
         outfile = os.path.join(self.output_dir, self.file_prefix + GENE_FILE)
@@ -103,7 +98,6 @@ class KeggParser(BaseParser):
             chunk['genome'] = chunk[PROP_ID].str.split(':', 1, True)[0]
             chunk.to_csv(outfile, header=header, mode='a', sep='\t', index=False)
             header = False
-        outfiles.append(outfile)
         logging.info('total genes: ' + str(total))
 
         ko2pathway = self.parse_pathway2ko_file()
@@ -131,7 +125,6 @@ class KeggParser(BaseParser):
             chunk.to_csv(outfile, header=header, columns=['gene', 'ko'], mode='a', sep='\t', index=False)
             header = False
         logging.info('total gene2ko: ' + str(total))
-        return outfile
 
 
 def main(args):

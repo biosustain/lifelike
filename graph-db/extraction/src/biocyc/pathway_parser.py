@@ -20,5 +20,11 @@ class PathwayParser(DataFileParser):
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
 
+    def parse_line(self, line, node, nodes):
+        node = DataFileParser.parse_line(self, line, node, nodes)
+        print(node)
+        return node
+
+
 
 

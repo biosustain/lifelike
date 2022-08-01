@@ -24,7 +24,7 @@ REL_ATTRS = {
 }
 
 # False means not adding prefix 'Enzyme' to reference id
-DB.LINK_SOURCES = {DB.ENZYME: False}
+DB_LINK_SOURCES = {DB_ENZYME: False}
 
 CHEM_REACTIONS = 'Chemical-Reactions'
 SMALL_MOL_REACTIONS = 'Small-Molecule-Reactions'
@@ -53,7 +53,7 @@ class ReactionParser(DataFileParser):
             if ec_number_str:
                 ec_numbers = ec_number_str.split('|')
                 for ec in ec_numbers:
-                    self.add_dblink(node, DB.ENZYME, ec)
+                    self.add_dblink(node, DB_ENZYME, ec)
         return nodes
 
 

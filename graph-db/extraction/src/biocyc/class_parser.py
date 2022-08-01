@@ -7,7 +7,7 @@ ATTR_NAMES = {
     'SYNONYMS': (PROP_SYNONYMS, 'str'),
 }
 REL_NAMES = {
-    'TYPES': RelationshipType(REL_TYPE, 'to', NODE.CLASS, PROP_BIOCYC_ID),
+    'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
 }
 
 FRAMES = 'FRAMES'
@@ -17,7 +17,7 @@ class ClassParser(DataFileParser):
     The classes.dat file contains list of terms for biocyc classification, including some go terms and taxonomy.
     """
     def __init__(self, biocyc_dbname, tarfile):
-        DataFileParser.__init__(self, biocyc_dbname, tarfile, 'classes.dat', NODE.CLASS, ATTR_NAMES, REL_NAMES)
+        DataFileParser.__init__(self, biocyc_dbname, tarfile, 'classes.dat', NODE_CLASS, ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
     def parse_data_file(self):

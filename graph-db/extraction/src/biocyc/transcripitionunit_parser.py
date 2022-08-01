@@ -9,7 +9,7 @@ ATTR_NAMES = {
     'COMMON-NAME': (PROP_NAME, 'str')
 }
 REL_NAMES = {
-    'COMPONENTS': RelationshipType(REL_IS_ELEMENT, 'from', DB.BIOCYC, PROP_BIOCYC_ID)
+    'COMPONENTS': RelationshipType(REL_IS_ELEMENT, 'from', DB_BIOCYC, PROP_BIOCYC_ID)
 }
 
 

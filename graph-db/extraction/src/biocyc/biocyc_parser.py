@@ -13,26 +13,26 @@ from biocyc import (class_parser, compound_parser, dnabindsite_parser,
                     regulation_parser, rna_parser, species_parser,
                     terminator_parser,transcripitionunit_parser)
 
-ENTITIES = [NODE.SPECIES, NODE.CLASS, NODE.COMPOUND, NODE.DNA_BINDING_SITE,
-            NODE.GENE, NODE.TERMINATOR, NODE.PROMOTER,
-            NODE.TRANS_UNIT, NODE.RNA, NODE.PROTEIN,
-            NODE.REACTION, NODE.PATHWAY, NODE.ENZ_REACTION, NODE.REGULATION]
+ENTITIES = [NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
+            NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
+            NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
+            NODE_REACTION, NODE_PATHWAY, NODE_ENZ_REACTION, NODE_REGULATION]
 
 PARSERS = {
-    NODE.CLASS: class_parser.ClassParser,
-    NODE.COMPOUND: compound_parser.CompoundParser,
-    NODE.DNA_BINDING_SITE: dnabindsite_parser.DnaBindSiteParser,
-    NODE.ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
-    NODE.GENE: gene_parser.GeneParser,
-    NODE.PATHWAY: pathway_parser.PathwayParser,
-    NODE.PROMOTER: promoter_parser.PromoterParser,
-    NODE.PROTEIN: protein_parser.ProteinParser,
-    NODE.REACTION: reaction_parser.ReactionParser,
-    NODE.REGULATION: regulation_parser.RegulationParser,
-    NODE.RNA: rna_parser.RnaParser,
-    NODE.SPECIES: species_parser.SpeciesParser,
-    NODE.TERMINATOR: terminator_parser.TerminatorParser,
-    NODE.TRANS_UNIT: transcripitionunit_parser.TranscriptionUnitParser,
+    NODE_CLASS: class_parser.ClassParser,
+    NODE_COMPOUND: compound_parser.CompoundParser,
+    NODE_DNA_BINDING_SITE: dnabindsite_parser.DnaBindSiteParser,
+    NODE_ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
+    NODE_GENE: gene_parser.GeneParser,
+    NODE_PATHWAY: pathway_parser.PathwayParser,
+    NODE_PROMOTER: promoter_parser.PromoterParser,
+    NODE_PROTEIN: protein_parser.ProteinParser,
+    NODE_REACTION: reaction_parser.ReactionParser,
+    NODE_REGULATION: regulation_parser.RegulationParser,
+    NODE_RNA: rna_parser.RnaParser,
+    NODE_SPECIES: species_parser.SpeciesParser,
+    NODE_TERMINATOR: terminator_parser.TerminatorParser,
+    NODE_TRANS_UNIT: transcripitionunit_parser.TranscriptionUnitParser,
 }
 
 
@@ -43,7 +43,7 @@ class BiocycParser(BaseParser):
         @param is_independent_db: if True, the database is not independent, not part of bigger database,
         then we don't need the db_BioCyc labels for all nodes
         """
-        BaseParser.__init__(self, DB.BIOCYC.lower())
+        BaseParser.__init__(self, DB_BIOCYC.lower())
         self.output_dir = os.path.join(self.output_dir, biocyc_dbname.lower())
         self.tar_data_file = Config().get_biocyc_tar_file(biocyc_dbname)
         self.biocyc_dbname = biocyc_dbname
@@ -55,7 +55,7 @@ class BiocycParser(BaseParser):
         return PARSERS[entity_name](self.biocyc_dbname, self.tar_data_file)
 
     @classmethod
-    def get_data_output_zip(cls, biocyc_dbname, version) -> str:
+    def get_data_output_zip(cls, biocyc_dbname, version):
         return f"{biocyc_dbname}-data-{version}.zip"
 
     def parse_and_write_data_files(self):
@@ -73,7 +73,7 @@ class BiocycParser(BaseParser):
                 # set parser org_id so that the node can link to the biocyc URL
                 parser.org_id = self.org_id
                 nodes = parser.parse_data_file()
-                if entity == NODE.SPECIES:
+                if entity == NODE_SPECIES:
                     self.org_id = nodes[0].get_attribute(PROP_ID)
                 if not self.version and parser.version:
                     self.version = parser.version
@@ -83,13 +83,12 @@ class BiocycParser(BaseParser):
         logging.info(f'create zip file: {zip_file}')
         self.zip_output_files(all_files, zip_file)
 
-        return zip_file
-
 
 def main(biocyc_dbname):
-    parser = BiocycParser(biocyc_dbname)
-    parser.parse_and_write_data_files()
+    for biocyc_dbname in biocyc_dbname.data_sources:
+        parser = BiocycParser(biocyc_dbname)
+        parser.parse_and_write_data_files()
 
 if __name__ == "__main__":
-    # main(DB.ECOCYC)
-    main(DB.PSYRCYC)
+    # main([DB_ECOCYC])
+    main([DB_PSYRCYC])

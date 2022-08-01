@@ -1,6 +1,4 @@
 """NODES"""
-from dataclasses import dataclass
-
 NODE_ANATOMY = 'Anatomy'
 NODE_ASSOCIATION = 'Association'
 # Rename 'Class' to 'BioCycClass'
@@ -43,46 +41,49 @@ NODE_TREENUMBER = 'TreeNumber'
 NODE_TAXONOMY = 'Taxonomy'
 NODE_TOPICALDESC = 'TopicalDescriptor'
 
+DB_REGULONDB = 'RegulonDB'
+DB_BIOCYC = 'BioCyc'
+DB_ECOCYC = 'EcoCyc'
+DB_YEASTCYC = 'YeastCyc'
+DB_HUMANCYC = 'HumanCyc'
+DB_METACYC = 'MetaCyc'
+# DB_PPUT = 'Pput160488cyc'
+DB_PPUT = 'PseudomonasCyc'
+DB_BSUBCYC = 'BsubCyc'
+DB_PAENIBACILLUSCYC = 'PaenibacillusCyc'
+DB_PSYRCYC = 'PsyringaeCyc'
 
-class DB(dataclass):
-    """
-    Collection of sub-databases
-    """
-    REGULONDB = 'RegulonDB'
-    BIOCYC = 'BioCyc'
-    ECOCYC = 'EcoCyc'
-    YEASTCYC = 'YeastCyc'
-    HUMANCYC = 'HumanCyc'
-    METACYC = 'MetaCyc'
-    # PPUT = 'Pput160488cyc'
-    PPUT = 'PseudomonasCyc'
-    BSUBCYC = 'BsubCyc'
-    PAENIBACILLUSCYC = 'PaenibacillusCyc'
-    PSYRCYC = 'PsyringaeCyc'
+DB_ARO = 'ARO'  # antibiotic resistance ontology
+DB_NCBI = 'NCBI'
+DB_CHEBI = 'CHEBI'
+DB_ENZYME = 'Enzyme'
+DB_GO = 'GO'
+DB_KEGG = 'KEGG'
+DB_LITERATURE = 'Literature'
+DB_MESH = 'MESH'
+DB_PUBMED = 'PubMed'
+DB_STRING = 'STRING'
+DB_UNIPROT = 'UniProt'
 
-    ARO = 'ARO'  # antibiotic resistance ontology
-    NCBI = 'NCBI'
-    CHEBI = 'CHEBI'
-    ENZYME = 'Enzyme'
-    GO = 'GO'
-    KEGG = 'KEGG'
-    LITERATURE = 'Literature'
-    MESH = 'MESH'
-    PUBMED = 'PubMed'
-    STRING = 'STRING'
-    UNIPROT = 'UniProt'
-
-
-class NODE(dataclass):
-    """
-    Collection of node types
-    """
-    DB_PREFIX = 'db_'
-
-    def __getattribute__(self, db):
-        if DB.hasattr(db):
-            return f'{self.DB_PREFIX}{DB.getattr(db)}'
-
+DB_PREFIX = 'db_'
+NODE_BIOCYC = DB_PREFIX + DB_BIOCYC
+NODE_BSUBCYC = DB_PREFIX + DB_BSUBCYC
+NODE_ECOCYC = DB_PREFIX + DB_ECOCYC
+NODE_HUMANCYC = DB_PREFIX + DB_HUMANCYC
+NODE_YEASTCYC = DB_PREFIX + DB_YEASTCYC
+NODE_PPUTCYC = DB_PREFIX + DB_PPUT
+NODE_PSYRCYC = DB_PREFIX + DB_PSYRCYC
+NODE_CHEBI = DB_PREFIX + DB_CHEBI
+NODE_ENZYME = DB_PREFIX + DB_ENZYME
+NODE_GO = DB_PREFIX + DB_GO
+NODE_KEGG = DB_PREFIX + DB_KEGG
+NODE_MESH = DB_PREFIX + DB_MESH
+NODE_NCBI = DB_PREFIX + DB_NCBI
+NODE_PUBMED = DB_PREFIX + DB_PUBMED
+NODE_REGULONDB = DB_PREFIX + DB_REGULONDB
+NODE_STRING = DB_PREFIX + DB_STRING
+NODE_UNIPROT = DB_PREFIX + DB_UNIPROT
+NODE_LITERATURE = DB_PREFIX + DB_LITERATURE
 
 """Relationships"""
 REL_ACTIVATORS = "HAS_ACTIVATOR"
@@ -216,14 +217,14 @@ INDEXED_FIELDS = [PROP_ACCESSION, PROP_ALT_ID, PROP_BIOCYC_ID, PROP_CHEBI_ID, PR
 
 
 NODE_ID_INDEX_MAP = {
-    DB.GO: 'GO-ID',
-    DB.CHEBI: 'MESH-ID',  # to ensure chemical in literature matches either chebi or mesh
-    DB.REGULONDB: 'REGULONDB-ID',
-    DB.ECOCYC: 'BIOCYC-ID',
-    DB.ENZYME: 'Enzyme-ID',
-    DB.METACYC: 'BIOCYC-ID',
-    DB.MESH: 'MESH-ID',
-    DB.UNIPROT: 'UniProt-ID',
+    DB_GO: 'GO-ID',
+    DB_CHEBI: 'MESH-ID',  # to ensure chemical in literature matches either chebi or mesh
+    DB_REGULONDB: 'REGULONDB-ID',
+    DB_ECOCYC: 'BIOCYC-ID',
+    DB_ENZYME: 'Enzyme-ID',
+    DB_METACYC: 'BIOCYC-ID',
+    DB_MESH: 'MESH-ID',
+    DB_UNIPROT: 'UniProt-ID',
     NODE_GENE: 'Gene-ID',
     NODE_SYNONYM: 'Synonym-ID',
     NODE_TAXONOMY: 'Taxonomy-ID',

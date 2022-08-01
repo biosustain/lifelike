@@ -8,14 +8,14 @@ ATTR_NAMES = {
     'SYNONYMS': (PROP_SYNONYMS, 'str')
 }
 REL_NAMES = {
-    'ENZYME': RelationshipType(REL_CATALYZE, 'from', NODE.BIOCYC, PROP_BIOCYC_ID),
-    'REACTION': RelationshipType(REL_CATALYZE, 'to', NODE.BIOCYC, PROP_BIOCYC_ID),
+    'ENZYME': RelationshipType(REL_CATALYZE, 'from', NODE_BIOCYC, PROP_BIOCYC_ID),
+    'REACTION': RelationshipType(REL_CATALYZE, 'to', NODE_BIOCYC, PROP_BIOCYC_ID),
 }
 
 
 class EnzymeReactionParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION, ATTR_NAMES, REL_NAMES)
+        DataFileParser.__init__(self, db_name, tarfile, 'enzrxns.dat', NODE_ENZ_REACTION,ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_URL]
 
     def write_synonyms_file(self, nodes, outfile):
