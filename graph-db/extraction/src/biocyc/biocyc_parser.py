@@ -11,7 +11,7 @@ from biocyc import (class_parser, compound_parser, dnabindsite_parser,
                     enzymereaction_parser, gene_parser, pathway_parser,
                     promoter_parser, protein_parser, reaction_parser,
                     regulation_parser, rna_parser, species_parser,
-                    terminator_parser,transcripitionunit_parser)
+                    terminator_parser, transcripitionunit_parser)
 
 ENTITIES = [NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
             NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
@@ -84,10 +84,16 @@ class BiocycParser(BaseParser):
         self.zip_output_files(all_files, zip_file)
 
 
-def main(biocyc_dbname):
+def parse(biocyc_dbname):
     parser = BiocycParser(biocyc_dbname)
     parser.parse_and_write_data_files()
 
+
+def main(args):
+    for biocyc_dbname in args.data_sources:
+        parse(biocyc_dbname)
+
+
 if __name__ == "__main__":
-    # main(DB_ECOCYC)
-    main(DB_PSYRCYC)
+    # parse(DB_ECOCYC)
+    parse(DB_PSYRCYC)
