@@ -52,15 +52,15 @@ export class EdgeFormComponent implements AfterViewInit {
   ngAfterViewInit() {
   }
 
-  get edge() {
-    return this.updatedEdge;
-  }
 
   get hyperlinks() {
     return isNil(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
-  // tslint:disable-next-line: adjacent-overload-signatures
+  get edge() {
+    return this.updatedEdge;
+  }
+
   @Input()
   set edge(edge) {
     this.originalEdge = cloneDeep(edge);
