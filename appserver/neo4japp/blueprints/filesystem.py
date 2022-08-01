@@ -1733,7 +1733,6 @@ class FileStarUpdateView(FilesystemBaseView):
 
         try:
             result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
-            result.calculated_starred = starred
         except NoResultFound:
             raise RecordNotFound(
                 title='Failed to Update File',
@@ -1762,15 +1761,16 @@ class FileStarUpdateView(FilesystemBaseView):
         # Delete the row only if it exists
         elif starred_file is not None:
             db.session.delete(starred_file)
-
         try:
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
 
+        result.calculated_starred = starred_file if starred else None
+
         return jsonify(FileResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
+            'user_privilege_filter': user.id,
         }, exclude=(
             'result.parent',
             'result.children',  # We aren't loading sub-children
