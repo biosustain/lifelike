@@ -1708,10 +1708,19 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
 class StarredFileListView(FilesystemBaseView):
     def get(self):
-        starred_files = [
-            file for file in self.get_nondeleted_recycled_files()
-            if file.calculated_starred is not None
-        ]
+        user = g.current_user
+        starred_file_ids = db.session.query(
+            StarredFile.file_id
+        ).filter(
+            StarredFile.user_id == user.id
+        ).all()
+
+        starred_files = self.get_nondeleted_recycled_files(
+            filter=Files.id.in_([file_id for file_id, in starred_file_ids])
+        )
+
+        # TODO: Need to update get_nondeleted_recycled_files so that we can sort on these
+        # calculated properties. For instance, we also cannnot sort/filter by project name.
         starred_files.sort(key=lambda f: f.calculated_starred.creation_date, reverse=True)
         total = len(starred_files)
 
@@ -1742,25 +1751,22 @@ class FileStarUpdateView(FilesystemBaseView):
         # If the user doesn't have permission to read the file they want to star, we throw
         self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
 
-        # Get the starred file row if it exists already
-        starred_file = db.session.query(StarredFile).filter(
-            and_(
-                StarredFile.user_id == user.id,
-                StarredFile.file_id == result.id
-            )
-        ).one_or_none()
-
         if starred:
             # Don't need to update if the file is already starred by this user
-            if starred_file is None:
+            if result.calculated_starred is None:
                 starred_file = StarredFile(
                     user_id=user.id,
                     file_id=result.id
                 )
                 db.session.add(starred_file)
         # Delete the row only if it exists
-        elif starred_file is not None:
-            db.session.delete(starred_file)
+        elif result.calculated_starred is not None:
+            db.session.query(
+                StarredFile
+            ).filter(
+                StarredFile.id == result.calculated_starred.id
+            ).delete()
+
         try:
             db.session.commit()
         except SQLAlchemyError:
