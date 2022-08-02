@@ -1712,7 +1712,7 @@ class StarredFileListView(FilesystemBaseView):
             file for file in self.get_nondeleted_recycled_files()
             if file.calculated_starred is not None
         ]
-        starred_files.sort(key=lambda f: f.calculated_starred.modified_date, reverse=True)
+        starred_files.sort(key=lambda f: f.calculated_starred.creation_date, reverse=True)
         total = len(starred_files)
 
         return jsonify(FileListSchema(context={
