@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
@@ -137,14 +137,14 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   }
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
+    const subject = this.graphView.getEntityAtMouse();
 
-    if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-      if (node !== this.from) {
+    if (subject && (subject.type === GraphEntityType.Group || subject.type === GraphEntityType.Node)) {
+      const entity = subject.entity as UniversalGraphNodelike;
+      if (entity !== this.from) {
         this.graphView.execute(new EdgeCreation('Create connection', {
           from: this.from.hash,
-          to: node.hash,
+          to: entity.hash,
           label: null,
         }, true));
         this.graphView.requestRender();
