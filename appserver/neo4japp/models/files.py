@@ -193,12 +193,13 @@ class FilePrivileges:
     commentable: bool
 
 
-class StarredFile(RDBMSBase, TimestampMixin):
+class StarredFile(RDBMSBase):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
                         index=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True, nullable=False)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
 
     __table_args__ = (
         UniqueConstraint('file_id', 'user_id', name='uq_starred_file_unique_user_file'),
