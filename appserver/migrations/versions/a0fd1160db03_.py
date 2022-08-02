@@ -20,7 +20,6 @@ def upgrade():
     op.create_table(
         'starred_file',
         sa.Column('creation_date', sa.TIMESTAMP(timezone=True), nullable=False),
-        sa.Column('modified_date', sa.TIMESTAMP(timezone=True), nullable=False),
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('file_id', sa.Integer(), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
