@@ -486,6 +486,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     for (const node of d.members) {
       this.invalidateNode(node);
     }
+    for (const edge of this.edges) {
+      if (edge.from === d.hash || edge.to === d.hash) {
+        this.invalidateEdge(edge);
+      }
+    }
     this.renderTree.delete(d);
   }
 
