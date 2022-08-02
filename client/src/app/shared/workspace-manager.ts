@@ -12,7 +12,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, Route
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, merge, Subject } from 'rxjs';
+import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';

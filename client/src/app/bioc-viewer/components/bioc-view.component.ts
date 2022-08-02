@@ -18,7 +18,7 @@ import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { Location, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -178,6 +178,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>)
   }));
+
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   getFigureCaption(passage) {
     return passage.infons.id || 'Fig';

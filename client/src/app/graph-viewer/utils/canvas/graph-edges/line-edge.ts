@@ -37,7 +37,7 @@ export class LineEdge extends PlacedEdge {
   readonly targetLineEnd: LineHead | undefined;
   readonly lineWidth: number | undefined;
   readonly stroke: Line | undefined;
-  // Review note: Do we want this? It seems like a generally useless idea
+  // TODO: Do we want this? It seems like a generally useless idea
   readonly forceVisibleText = false;
 
   readonly labelX: number;
