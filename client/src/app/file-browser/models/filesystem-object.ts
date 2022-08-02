@@ -462,11 +462,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.creationDate === this.modifiedDate;
   }
 
+  static normalizeFilename(filter: string): string {
+    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+  }
+
   filterChildren(filter: string) {
-    const normalizedFilter = normalizeFilename(filter);
+    const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => normalizeFilename(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
     );
   }
 
@@ -581,22 +585,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     toPairs(dragData).forEach(args => dataTransfer.setData(...args));
   }
 
-  private getId(): any {
-    switch (this.type) {
-      case 'dir':
-        const directory = this.data as Directory;
-        return directory.id;
-      case 'file':
-        const file = this.data as PdfFile;
-        return file.file_id;
-      case 'map':
-        const _map = this.data as KnowledgeMap;
-        return _map.hash_id;
-      default:
-        throw new Error(`unknown directory object type: ${this.type}`);
-    }
-  }
-
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
     return (
       // Sort pinned files first
@@ -681,8 +669,4 @@ export function createProjectDragImage(project: ProjectImpl): DragImage {
 
 export function createObjectDragImage(object: FilesystemObject): DragImage {
   return createDragImage(object.filename, object.fontAwesomeIconCode);
-}
-
-export function normalizeFilename(filter: string): string {
-  return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
 }
