@@ -203,8 +203,12 @@ export class LineEdge extends PlacedEdge {
     }
   }
 
-  // TODO: Evaluate what to do with that
   lineIntersectionPoint(lineOrigin: Point): Point {
-    return this.source;
+    return pointOnRect(
+      lineOrigin,
+      this.boundingBox,
+      true,
+    );
   }
+
 }
