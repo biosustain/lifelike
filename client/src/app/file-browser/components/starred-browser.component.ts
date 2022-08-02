@@ -7,7 +7,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
-import { FilesystemObject, normalizeFilename } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-starred-browser',
@@ -45,9 +45,9 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(filter: string) {
-    const normalizedFilter = normalizeFilename(filter);
+    const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.list.results.setFilter(
-      (item: FilesystemObject) => !isNil(item.starred) && normalizeFilename(item.name).includes(normalizedFilter)
+      (item: FilesystemObject) => !isNil(item.starred) && FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
     );
   }
 }
