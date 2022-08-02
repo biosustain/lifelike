@@ -1,4 +1,4 @@
-import { isNil, isEmpty, has, toPairs } from 'lodash-es';
+import { isNil, isEmpty, has, toPairs, assign, pick } from 'lodash-es';
 
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
@@ -602,16 +602,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     if (data == null) {
       return this;
     }
-    for (const key of [
-      'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'pinned', 'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
-      'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
-      'trueFilename', 'starred']) {
-      if (key in data) {
-        this[key] = data[key];
-      }
-    }
+
+    assign(this, pick(
+      data,
+      [
+        'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
+        'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
+        'fallbackOrganism', 'annotationConfigs', 'filePath', 'trueFilename', 'starred'
+      ]
+    ));
+
     if (has(data, 'modifiedDate')) {
       this.updatedTimestamp = Date.parse(data.modifiedDate);
     } else if (has(data, 'creationDate')) {
