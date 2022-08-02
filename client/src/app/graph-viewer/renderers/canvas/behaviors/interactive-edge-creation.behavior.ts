@@ -28,11 +28,12 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   setup() {
     this.selectionChangeSubscription = this.graphView.selection.changeObservable.subscribe(
       ([newSelection, oldSelection]) => {
-        if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node) {
+        if (newSelection.length === 1 && (newSelection[0].type === GraphEntityType.Node ||
+                                          newSelection[0].type === GraphEntityType.Group)) {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
 
           this.graphView.behaviors.add(HANDLE_BEHAVIOR_KEY,
-            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNode), 2);
+            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNodelike), 2);
         } else {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
         }
@@ -52,10 +53,11 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
   }
 
   protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
-    if (subject != null && subject.type === GraphEntityType.Node) {
+    if (subject != null && (subject.type === GraphEntityType.Node ||
+                            subject.type === GraphEntityType.Group)) {
       this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
       this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
-        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
+        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNodelike), 10);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
@@ -106,7 +108,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   } = null;
 
   constructor(private readonly graphView: CanvasGraphView,
-              private readonly from: UniversalGraphNode) {
+              private readonly from: UniversalGraphNodelike) {
     super();
   }
 
