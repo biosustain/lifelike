@@ -168,15 +168,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   searching = false;
 
   dragTitleData$ = defer(() => {
-    const sources: Source[] = [{
-      domain: this.object.filename,
-      url: ['/projects', encodeURIComponent(this.object.project.name),
-        'files', encodeURIComponent(this.object.hashId)].join('/'),
-    }];
-
-    if (this.object.doi) {
-      sources.push({domain: 'DOI', url: this.object.doi});
-    }
+    const sources: Source[] = this.object.getGraphEntitySources();
 
     return of({
       'text/plain': this.object.filename,
@@ -194,6 +186,8 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
       } as Partial<UniversalGraphNode>)
     });
   });
+
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
