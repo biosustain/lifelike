@@ -185,7 +185,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'starred',
+    path: 'files/starred',
     component: StarredBrowserComponent,
     canActivate: [LifelikeAuthGuard],
     data: {
