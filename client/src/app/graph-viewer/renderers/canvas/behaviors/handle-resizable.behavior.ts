@@ -189,7 +189,6 @@ export class ActiveNodeResize extends ActiveResize {
 }
 
 // TODO: Update the width parameters of all the nodes so they would not be recalculated?
-// TODO: Update Actions that allow rollbacks
 export class ActiveGroupResize extends ActiveResize {
   private originalGroup: UniversalGraphGroup;
   private readonly targetGroup: UniversalGraphGroup;
@@ -256,21 +255,7 @@ export class ActiveGroupResize extends ActiveResize {
             this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
           }
         }),
-      // Top - one-dim scaling
-      this.sideHandleMaker(
-        bbox.minX + (bbox.maxX - bbox.minX) / 2,
-        bbox.minY,
-        halfSize,
-        (target, originalData, dragStartPosition, graphPosition) => {
-          const distance = (graphPosition.y - this.dragStartPosition.y) * noZoomScale;
-          this.targetGroup.data.height = Math.abs(this.originalGroup.data.height - distance);
-          this.targetGroup.data.y = this.originalGroup.data.y + distance / 2.0;
-          for (let i = 0; i < this.targetGroup.members.length; i++) {
-            this.targetGroup.members[i].data.height = Math.abs((this.originalGroup.members[i].data.height ||
-              this.getNodeSize(this.originalGroup.members[i]).height) - distance);
-            this.targetGroup.members[i].data.y = this.originalGroup.members[i].data.y + distance / 2.0;
-          }
-        }),
+      // There is no top one since the interactive edge creation button takes its place
     ];
     const cornerHandleMaker = (posX, posY) => ({
       execute,
