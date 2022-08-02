@@ -58,11 +58,8 @@
   <button *ngIf="object.doi" ngbDropdownItem (click)="openLink(object.doi)">
     Open DOI...
   </button>
-  <button *ngIf="object.starred" ngbDropdownItem (click)="updateStarred(object.hashId, false)">
-    Remove from Starred
-  </button>
-  <button *ngIf="!object.starred" ngbDropdownItem (click)="updateStarred(object.hashId, true)">
-    Add to Starred
+  <button ngbDropdownItem (click)="updateStarred(object.hashId, !object.starred)">
+    {{ object.starred ? 'Remove from' : 'Add to' }} starred
   </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
