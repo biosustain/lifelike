@@ -3,8 +3,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
-import { combineLatest, Subject } from 'rxjs';
+import { map, switchMap, first, tap, publish, takeUntil, shareReplay, pairwise, throttleTime } from 'rxjs/operators';
+import { combineLatest, Subject, animationFrameScheduler } from 'rxjs';
 import { assign, partial, groupBy, isEmpty } from 'lodash-es';
 import { zoomIdentity, zoomTransform } from 'd3';
 
@@ -38,12 +38,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   ) {
   }
 
-  ellipsisAfterXCharacters$ = this.sankey.baseView.common.labelEllipsis$.pipe(
-    map(({enabled, value}) => enabled ? value : null)
-  );
-
-  fontSizeScale$ = this.sankey.baseView.common.fontSizeScale$;
-
   // region D3Selection
   get linkSelection(): d3_Selection<any, Base['link'], any, any> {
     // returns empty selection if DOM struct was not initialised
@@ -66,6 +60,12 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   get sankeySelection() {
     return d3_select(this.svg && this.svg.nativeElement);
   }
+
+  ellipsisAfterXCharacters$ = this.sankey.baseView.common.labelEllipsis$.pipe(
+    map(({enabled, value}) => enabled ? value : null)
+  );
+
+  fontSizeScale$ = this.sankey.baseView.common.fontSizeScale$;
 
   focusedNode$ = this.sankey.graph$.pipe(
     switchMap(({nodes}) => this.search.searchFocus$.pipe(
@@ -366,6 +366,42 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     debug('updateSearch')
   );
 
+  lastHoveredLink$ = new Subject();
+  lastHoveredNode$ = new Subject();
+
+  hoverUpdate$ = combineLatest([
+    this.lastHoveredLink$.pipe(
+      throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+      switchMap(({data, element}) =>
+        // raise link and it's siblings (same source and target)
+        this.renderedLinks$.pipe(
+          tap(linkSelection => {
+            linkSelection
+              .filter(({source, target}) => data.source === source && data.target === target)
+              .sort((a, b) => Number(a === data))
+              .raise();
+          })
+        )
+      )
+    ),
+    this.lastHoveredNode$.pipe(
+      throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+      switchMap(({data, element}) => {
+        const {sourceLinks, targetLinks} = data;
+        const links = sourceLinks.concat(targetLinks);
+        // raise node and it's links
+        return this.renderedLinks$.pipe(
+          tap(linkSelection => {
+            linkSelection
+              .filter(link => links.includes(link))
+              .raise();
+            d3_select(element).raise();
+          })
+        );
+      })
+    )
+  ]);
+
   // endregion
 
 
@@ -541,46 +577,16 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     return this.selection.toggleNode(data);
   }
 
-  /**
-   * Callback that dims any nodes/links not connected through the hovered path.
-   * @param element the svg element being hovered over
-   * @param data object representing the link data
-   */
   @d3EventCallback
   pathMouseOver(element, data) {
-    // raise link and it's siblings (same source and target)
-    return this.renderedLinks$.pipe(
-      first(),
-      tap(linkSelection => {
-        linkSelection
-          .filter(({source, target}) => data.source === source && data.target === target)
-          .sort((a, b) => Number(a === data))
-          .raise();
-      })
-    ).toPromise();
+    return this.lastHoveredLink$.next({element, data});
   }
 
-  /**
-   * Callback that dims any nodes/links not connected through the hovered node.
-   * styling on the hovered node.
-   * @param element the svg element being hovered over
-   * @param data object representing the node data
-   */
   @d3EventCallback
-  async nodeMouseOver(element, data) {
-    const {sourceLinks, targetLinks} = data;
-    const links = sourceLinks.concat(targetLinks);
-    // raise node and it's links
-    return this.renderedLinks$.pipe(
-      first(),
-      tap(linkSelection => {
-        linkSelection
-          .filter(link => links.includes(link))
-          .raise();
-        d3_select(element).raise();
-      })
-    ).toPromise();
+  nodeMouseOver(element, data) {
+    return this.lastHoveredNode$.next({element, data});
   }
+
 
   // the function for moving the nodes
   dragmove(element, d) {
