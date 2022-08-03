@@ -70,8 +70,8 @@ export class AnnotationTagHandler extends TagHandler {
   }
 
   start(element: Element): string {
-    return `<span data-annotation-meta="${escape(element.getAttribute('meta'))}"` +
-      ` style="background: ${this.toAnnotationBackgroundColor(this.getAnnotationColor(element))}">`;
+    return `<span draggable="true" data-annotation-meta="${escape(element.getAttribute('meta'))}"` +
+      ` style="user-select: text; background: ${this.toAnnotationBackgroundColor(this.getAnnotationColor(element))}">`;
   }
 
   end(element: Element): string {
