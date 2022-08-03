@@ -333,6 +333,7 @@ class FileHierarchyResponseSchema(CamelCaseSchema):
 
 class FileBackupCreateRequestSchema(CamelCaseSchema):
     content_value = FileUploadField(required=True)
+    new_images = fields.List(fields.Field, required=False)
 
 
 # ========================================

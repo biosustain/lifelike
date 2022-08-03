@@ -295,6 +295,16 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
+   * Set the graph and store the image state. Called only when a map is loaded from server, so that the image state
+   * would reflect the state there, allowing us to properly propagate image changes.
+   * @param graph
+   */
+  initializeGraph(graph) {
+    this.setGraph(graph);
+    this.saveImagesState();
+  }
+
+  /**
    * Replace the graph that is being rendered by the drawing tool.
    * @param graph the graph to replace with
    */
@@ -304,7 +314,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
 
-    this.saveImagesState();
 
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(

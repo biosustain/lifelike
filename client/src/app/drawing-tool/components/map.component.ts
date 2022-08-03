@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -196,7 +197,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           this.errorHandler.create({label: 'Parse map data'}),
         ).subscribe(
           graph => {
-            this.graphCanvas.setGraph(graph);
+            this.graphCanvas.initializeGraph(graph);
             for (const node of graph.nodes) {
               if (node.image_id !== undefined) {
                 // put image nodes back into renderTree, doesn't seem to make a difference though
@@ -223,6 +224,25 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         ));
       });
     });
+  }
+
+  openMap(mapBlob: Blob): Observable<KnowledgeMapGraph> {
+    return this.objectTypeService.get(this.map).pipe(
+      switchMap(typeProvider => typeProvider.unzipContent(mapBlob)),
+      switchMap(graphRepr =>
+        readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
+          mapBufferToJson<KnowledgeMapGraph>(),
+          mapJsonToGraph(),
+          tap(x => console.log(x)),
+          this.errorHandler.create({label: 'Parse map data'}),
+        )
+      ),
+      catchError(e => {
+        // Data is corrupt
+        // TODO: Prevent the user from editing or something so the user doesnt lose data?
+        throw e;
+      })
+    );
   }
 
   registerGraphBehaviors() {

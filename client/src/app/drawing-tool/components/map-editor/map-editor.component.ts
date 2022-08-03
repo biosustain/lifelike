@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, } from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
-import { from, Observable, of, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
+import { forkJoin, from, Observable, of, Subscription, throwError } from 'rxjs';
+import { auditTime, catchError, defaultIfEmpty, finalize, map, switchMap, tap } from 'rxjs/operators';
 
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
@@ -25,8 +25,9 @@ import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/ca
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ShouldConfirmUnload } from 'app/shared/modules';
+import { ImageBlob } from 'app/shared/utils/forms';
 
-import { GraphEntityType, KnowledgeMap, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
+import { GraphEntityType, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
@@ -44,7 +45,7 @@ import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
   ]
 })
 export class MapEditorComponent
-  extends MapViewComponent<KnowledgeMapGraph | undefined>
+  extends MapViewComponent<Blob | undefined>
   implements OnInit, OnDestroy, AfterViewInit, ShouldConfirmUnload {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
@@ -73,7 +74,7 @@ export class MapEditorComponent
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
-        this.saveBackup();
+        this.saveBackup().subscribe();
       }
     });
 
@@ -125,32 +126,31 @@ export class MapEditorComponent
     this.clearLockInterval();
   }
 
-  getExtraSource(): Observable<KnowledgeMapGraph | null> {
+  getExtraSource(): Observable<Blob | null> {
     return from([this.locator]).pipe(switchMap(
       locator => this.filesystemService.getBackupContent(locator)
         .pipe(
           switchMap(blob => blob
-            ? of(blob).pipe(
-              mapBlobToBuffer(),
-              mapBufferToJson<KnowledgeMapGraph>(),
-            )
+            ? of(blob)
             : of(null)),
           this.errorHandler.create({label: 'Load map backup'}),
         ),
     ));
   }
 
-  handleExtra(backup: KnowledgeMapGraph | null) {
+  handleExtra(backup: Blob | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
-      }).result.then(() => {
-        this.graphCanvas.execute(new KnowledgeMapRestore(
-          `Restore map to backup`,
-          this.graphCanvas,
-          backup,
-          cloneDeep(this.graphCanvas.getGraph()),
-        ));
+      }).result.then(async () => {
+        this.openMap(backup).subscribe(graph => {
+          this.graphCanvas.execute(new KnowledgeMapRestore(
+            `Restore map to backup`,
+            this.graphCanvas,
+            graph,
+            cloneDeep(this.graphCanvas.getGraph()),
+          ));
+        });
       }, () => {
         this.filesystemService.deleteBackup(this.locator)
           .subscribe(); // Need to subscribe so it actually runs
@@ -187,16 +187,30 @@ export class MapEditorComponent
       .subscribe(); // Need to subscribe so it actually runs
   }
 
-  saveBackup(): Observable<any> {
+  saveBackup() {
     if (this.map) {
-      const observable = this.filesystemService.putBackup({
-        hashId: this.locator,
-        contentValue: new Blob([JSON.stringify(this.graphCanvas.getExportableGraph())], {
-          type: MimeTypes.Map,
-        }),
-      });
-      observable.subscribe(); // Need to subscribe so it actually runs
-      return observable;
+      return forkJoin(
+        this.graphCanvas?.getImageChanges().newImageHashes.map(hash =>
+          this.mapImageProviderService.getBlob(hash).pipe(
+            map(blob => ({
+              blob,
+              filename: hash,
+            })),
+            tap(imageHash => console.log(imageHash))
+          )
+        )
+      ).pipe(
+        defaultIfEmpty([]),
+        switchMap((newImages: ImageBlob[]) =>
+          this.filesystemService.putBackup({
+            hashId: this.locator,
+            contentValue: new Blob([JSON.stringify(this.graphCanvas.getExportableGraph())], {
+              type: MimeTypes.Map,
+            }),
+            newImages,
+          })
+        )
+      );
     }
   }
 
@@ -460,22 +474,6 @@ export class MapEditorComponent
     ));
   }
 
-}
-
-class KnowledgeMapUpdate implements GraphAction {
-  constructor(public description: string,
-              public map: KnowledgeMap,
-              public updatedData: Partial<KnowledgeMap>,
-              public originalData: Partial<KnowledgeMap>) {
-  }
-
-  apply(component: GraphActionReceiver) {
-    mergeDeep(this.map, this.updatedData);
-  }
-
-  rollback(component: GraphActionReceiver) {
-    mergeDeep(this.map, this.originalData);
-  }
 }
 
 
