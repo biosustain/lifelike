@@ -5,6 +5,7 @@ import { Line } from '../lines/lines';
 import { BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
 import { PlacedGroup } from '../../../styles/styles';
 import { BoundingBox, drawStroke, drawStrokeAndFill, getRectWithMargin, isBBoxEnclosing, Point, SELECTION_SHADOW_COLOR } from '../shared';
+import { pointOnRect } from '../../geometry';
 
 export interface GroupNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -29,7 +30,7 @@ export class GroupNode extends PlacedGroup {
   readonly x: number;
   readonly y: number;
 
-  readonly boundingBox: BoundingBox;
+  readonly bbox: BoundingBox;
 
   constructor(private readonly ctx: CanvasRenderingContext2D, options: GroupNodeOptions) {
     super();
@@ -37,7 +38,7 @@ export class GroupNode extends PlacedGroup {
 
     const minX = this.x - this.width / 2;
     const minY = this.y - this.height / 2;
-    this.boundingBox = {
+    this.bbox = {
       minX,
       minY,
       maxX: minX + this.width,
@@ -56,8 +57,8 @@ export class GroupNode extends PlacedGroup {
       // Node shape
     ctx.save();
     (ctx as any).rect(
-        this.boundingBox.minX,
-        this.boundingBox.minY,
+        this.bbox.minX,
+        this.bbox.minY,
         this.width,
         this.height,
     );
@@ -76,7 +77,7 @@ export class GroupNode extends PlacedGroup {
     const ctx = this.ctx;
     ctx.beginPath();
     ctx.save();
-    const {x, y, width, height} = getRectWithMargin(this.boundingBox, this.selectionMargin);
+    const {x, y, width, height} = getRectWithMargin(this.bbox, this.selectionMargin);
     ctx.rect(x, y, width, height);
     ctx.fillStyle = SELECTION_SHADOW_COLOR;
     ctx.fill();
@@ -84,7 +85,7 @@ export class GroupNode extends PlacedGroup {
   }
 
   getBoundingBox(): BoundingBox {
-    return this.boundingBox;
+    return this.bbox;
   }
 
   isBBoxEnclosing(bbox: BoundingBox): boolean {
@@ -92,10 +93,18 @@ export class GroupNode extends PlacedGroup {
   }
 
   isPointIntersecting({x, y}: Point): boolean {
-    return x >= this.boundingBox.minX &&
-           x <= this.boundingBox.maxX &&
-           y >= this.boundingBox.minY &&
-           y <= this.boundingBox.maxY;
+    return x >= this.bbox.minX &&
+           x <= this.bbox.maxX &&
+           y >= this.bbox.minY &&
+           y <= this.bbox.maxY;
+  }
+
+  lineIntersectionPoint(lineOrigin: Point): Point {
+    return pointOnRect(
+      lineOrigin,
+      this.bbox,
+      true,
+    );
   }
 
 }

@@ -1,6 +1,6 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 
-import { distanceUnsq, getLinePointIntersectionDistance } from '../../geometry';
+import { distanceUnsq, getLinePointIntersectionDistance, pointOnRect } from '../../geometry';
 import { TextElement } from '../text-element';
 import { LineHead } from '../line-heads/line-heads';
 import { Line } from '../lines/lines';
@@ -202,4 +202,13 @@ export class LineEdge extends PlacedEdge {
       drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }
   }
+
+  lineIntersectionPoint(lineOrigin: Point): Point {
+    return pointOnRect(
+      lineOrigin,
+      this.boundingBox,
+      true,
+    );
+  }
+
 }
