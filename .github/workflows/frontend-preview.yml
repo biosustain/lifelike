@@ -24,7 +24,7 @@ jobs:
 
       - name: Set preview URL
         id: set-preview-url
-        run: echo '::set-output name=url::pr-${{ github.event.pull_request.number }}.frontend-dev.***ARANGO_DB_NAME***.bio'
+        run: echo '::set-output name=url::***ARANGO_DB_NAME***-pr-${{ github.event.pull_request.number }}.surge.sh'
 
       - name: Publish preview site
         uses: dswistowski/surge-sh-action@v1
