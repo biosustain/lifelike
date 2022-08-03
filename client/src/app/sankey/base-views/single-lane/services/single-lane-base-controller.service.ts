@@ -125,11 +125,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
 
-  // parseDelta$ = this.delta$.pipe(
-  //   // @ts-ignore
-  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
-  // );
-
   ngOnDestroy() {
     super.ngOnDestroy();
   }
@@ -170,7 +165,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     mapNodePositionToColor(targets, NodePosition.right);
     const reused = intersection(sources, targets);
     if (isNotEmpty(reused)) {
-      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reused));
       mapNodePositionToColor(reused, NodePosition.multi);
     }
   }
