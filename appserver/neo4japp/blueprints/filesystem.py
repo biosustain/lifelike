@@ -53,6 +53,7 @@ from neo4japp.models import (
 )
 from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks, StarredFile
 from neo4japp.models.files_queries import (
+    add_file_starred_columns,
     add_file_user_role_columns,
     build_file_hierarchy_query,
     FileHierarchy,
@@ -225,6 +226,7 @@ class FilesystemBaseView(MethodView):
                                               access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
+        query = add_file_starred_columns(query, t_file, current_user.id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
@@ -249,19 +251,8 @@ class FilesystemBaseView(MethodView):
             hierarchy = FileHierarchy(rows, t_file, t_project)
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
+            hierarchy.calculate_starred_files()
             files.append(hierarchy.file)
-
-        # Calculate the starred status of each file
-        starred_query = db.session.query(StarredFile).filter(
-            and_(
-                StarredFile.file_id.in_([file.id for file in files]),
-                StarredFile.user_id == current_user.id
-            )
-        )
-        starred_query_results = {starred.file_id: starred for starred in starred_query.all()}
-
-        for file in files:
-            file.calculated_starred = starred_query_results.get(file.id, None)
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
         # actually appeared in the results
@@ -1721,7 +1712,7 @@ class StarredFileListView(FilesystemBaseView):
 
         # TODO: Need to update get_nondeleted_recycled_files so that we can sort on these
         # calculated properties. For instance, we also cannnot sort/filter by project name.
-        starred_files.sort(key=lambda f: f.calculated_starred.creation_date, reverse=True)
+        starred_files.sort(key=lambda f: f.calculated_starred['creation_date'], reverse=True)
         total = len(starred_files)
 
         return jsonify(FileListSchema(context={
@@ -1764,7 +1755,7 @@ class FileStarUpdateView(FilesystemBaseView):
             db.session.query(
                 StarredFile
             ).filter(
-                StarredFile.id == result.calculated_starred.id
+                StarredFile.id == result.calculated_starred['id']
             ).delete()
 
         try:
