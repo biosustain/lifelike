@@ -114,7 +114,8 @@
                     "node_paths",
                     "edges",
                     "source",
-                    "target"
+                    "target",
+                    "group"
                   ]
                 }
               },
