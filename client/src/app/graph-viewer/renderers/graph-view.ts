@@ -495,6 +495,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       this.groupHashMap.set(member.hash, group);
     });
     this.groups.push(this.recalculateGroup(group));
+    this.nodelikeHashMap(group.hash, group);
   }
 
   /**
