@@ -405,6 +405,7 @@ class StarredSchema(CamelCaseSchema):
     id = fields.Integer()
     file_id = fields.Integer()
     user_id = fields.Integer()
+    creation_date = fields.DateTime()
 
 
 # Requests
