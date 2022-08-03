@@ -1116,6 +1116,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             nodes += group.get('members', [])
             group_params, label_params = create_group_node(group)
             graph.node(**group_params)
+            node_hash_type_dict[group['hash']] = group['label']
+
             if label_params:
                 graph.node(**label_params)
 
