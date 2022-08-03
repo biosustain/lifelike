@@ -126,7 +126,7 @@ export class MapEditorComponent
     this.clearLockInterval();
   }
 
-  getExtraSource(): Observable<Blob | null> {
+  getBackupBlob(): Observable<Blob | null> {
     return from([this.locator]).pipe(switchMap(
       locator => this.filesystemService.getBackupContent(locator)
         .pipe(
@@ -138,12 +138,12 @@ export class MapEditorComponent
     ));
   }
 
-  handleExtra(backup: Blob | null) {
+  handleBackupBlob(backup: Blob | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
       }).result.then(async () => {
-        this.openMap(backup).subscribe(graph => {
+        this.openMap(backup, this.map).subscribe(graph => {
           this.graphCanvas.execute(new KnowledgeMapRestore(
             `Restore map to backup`,
             this.graphCanvas,
@@ -215,25 +215,14 @@ export class MapEditorComponent
   }
 
   restore(version: ObjectVersion) {
-    this.providerSubscription$ = this.objectTypeService.get(version.originalObject).pipe().subscribe(async (typeProvider) => {
-      await typeProvider.unzipContent(version.contentValue).pipe().subscribe(unzippedGraph => {
-        readBlobAsBuffer(new Blob([unzippedGraph], {type: MimeTypes.Map})).pipe(
-          mapBufferToJson<KnowledgeMapGraph>(),
-          mapJsonToGraph(),
-          this.errorHandler.create({label: 'Restore map from backup'}),
-        ).subscribe(graph => {
-          this.graphCanvas.execute(new KnowledgeMapRestore(
-            `Restore map to '${version.hashId}'`,
-            this.graphCanvas,
-            graph,
-            cloneDeep(this.graphCanvas.getGraph()),
-          ));
-        }, e => {
-          // Data is corrupt
-          // TODO: Prevent the user from editing or something so the user doesnt lose data?
-        });
+    this.providerSubscription$ = this.openMap(version.contentValue, version.originalObject).subscribe(graph => {
+        this.graphCanvas.execute(new KnowledgeMapRestore(
+          `Restore map to '${version.hashId}'`,
+          this.graphCanvas,
+          graph,
+          cloneDeep(this.graphCanvas.getGraph()),
+        ));
       });
-    });
   }
 
   /**
