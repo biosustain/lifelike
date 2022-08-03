@@ -416,8 +416,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       return placedEdge;
     } else {
       const ctx = this.canvas.getContext('2d');
-      const from = this.expectNodeByHash(d.from);
-      const to = this.expectNodeByHash(d.to);
+      const from = this.expectNodelikeByHash(d.from);
+      const to = this.expectNodelikeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
@@ -485,6 +485,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   invalidateGroup(d: UniversalGraphGroup): void {
     for (const node of d.members) {
       this.invalidateNode(node);
+    }
+    for (const edge of this.edges) {
+      if (edge.from === d.hash || edge.to === d.hash) {
+        this.invalidateEdge(edge);
+      }
     }
     this.renderTree.delete(d);
   }
@@ -614,8 +619,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       select = select.transition().duration(duration);
     }
 
-    const from: UniversalGraphNode = this.nodeHashMap.get(edge.from);
-    const to: UniversalGraphNode = this.nodeHashMap.get(edge.to);
+    const from: UniversalGraphNode = this.nodelikeHashMap.get(edge.from);
+    const to: UniversalGraphNode = this.nodelikeHashMap.get(edge.to);
 
     const {minX, minY, maxX, maxY} = this.getEdgeBoundingBox([edge], padding);
 
@@ -1035,8 +1040,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   private drawEntityHighlightBox(ctx: CanvasRenderingContext2D, entity: GraphEntity, strong: boolean) {
     if (entity.type === GraphEntityType.Edge) {
       const d = entity.entity as UniversalGraphEdge;
-      const from = this.expectNodeByHash(d.from);
-      const to = this.expectNodeByHash(d.to);
+      const from = this.expectNodelikeByHash(d.from);
+      const to = this.expectNodelikeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
@@ -1079,8 +1084,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
                                fillColor: string) {
     if (entity.type === GraphEntityType.Edge) {
       const d = entity.entity as UniversalGraphEdge;
-      const from = this.expectNodeByHash(d.from);
-      const to = this.expectNodeByHash(d.to);
+      const from = this.expectNodelikeByHash(d.from);
+      const to = this.expectNodelikeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 

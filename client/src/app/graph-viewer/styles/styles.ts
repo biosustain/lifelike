@@ -136,6 +136,14 @@ export abstract class PlacedObject {
   }
 
   /**
+   * Get the first intersection point of a line coming from outside this object
+   * to the center of the object.
+   * @param lineOrigin the line's origin point
+   * @return Point
+   */
+  abstract lineIntersectionPoint(lineOrigin: Point): Point;
+
+  /**
    * Force this object to be re-rendered at some point.
    */
   forceRender(): void {
@@ -163,13 +171,6 @@ export abstract class PlacedNode extends PlacedObject {
   resizable: boolean;
   uniformlyResizable: boolean;
 
-  /**
-   * Get the first intersection point of a line coming from outside this object
-   * to the center of the object.
-   * @param lineOrigin the line's origin point
-   * @return Point
-   */
-  abstract lineIntersectionPoint(lineOrigin: Point): Point;
 }
 
 /**
