@@ -165,7 +165,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     mapNodePositionToColor(targets, NodePosition.right);
     const reused = intersection(sources, targets);
     if (isNotEmpty(reused)) {
-      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reused));
       mapNodePositionToColor(reused, NodePosition.multi);
     }
   }
