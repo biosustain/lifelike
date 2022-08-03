@@ -57,17 +57,16 @@
     <div class="form-group">
         <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <div class="d-flex align-items-center mx-0">
-                <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size" container="body">
+                <label [for]="fontSize.uid" class="my-0 mr-2" ngbTooltip="Font size" container="body">
                     Font Size
                 </label>
-                <app-percent-input formControlName="fontSizeScale"
-                                   default="100"
-                                   min="20"
-                                   max="1000"
-                                   step="20"
-                                   inputId="font-size"
+                <app-percent-input
+                        formControlName="fontSizeScale"
+                        #fontSize="uid" appUid
+                        [min]="20"
+                        [max]="1000"
+                        [step]="20"
                 ></app-percent-input>
-                %
             </div>
         </label>
         <label formGroupName="labelEllipsis" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
