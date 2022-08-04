@@ -1,0 +1,3 @@
+# Filterspec to checkout only grapg-db from this monorepo
+
+graph-db/
