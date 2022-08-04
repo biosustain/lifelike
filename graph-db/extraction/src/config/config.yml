@@ -17,4 +17,5 @@ biocycFiles:
   BsubCyc: bsub_47.tar.gz
   PaenibacillusCyc: gcf_000981585_25.5.tar.gz
   PsyringaeCyc: gcf_000007805cyc.tar.gz
+  PseudomonasAeruginosaPAO1: "Pseudomonas aeruginosa PAO1/gcf_000006765cyc.tar.gz"
 
