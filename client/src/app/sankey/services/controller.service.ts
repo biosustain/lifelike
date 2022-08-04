@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get } from 'lodash-es';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
 import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
-import { SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase, SankeyId, SankeyOptions } from 'app/sankey/interfaces';
+import {
+  SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase,
+  SankeyId, SankeyOptions, SankeyTraceNetwork
+} from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
@@ -78,7 +81,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           enabled: true,
           value: LayoutService.labelEllipsis
         },
-        fontSizeScale: 1.0
+        fontSizeScale: 1.0,
+        shortestPathPlusN: 0
       },
       delta
     )),
@@ -321,6 +325,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
   maximumLabelLength$ = unifiedSingularAccessor(this.options$, 'maximumLabelLength');
+  maximumShortestPathPlusN$ = unifiedSingularAccessor(this.options$, 'maximumShortestPathPlusN');
   aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
   linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
   linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
@@ -523,9 +528,18 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     return max(nodes, ({label = ''}) => label.length);
   }
 
+  private extractshortestPathPlusN({traceNetworks}: { traceNetworks: Array<SankeyTraceNetwork> }) {
+    return chain(traceNetworks)
+      .flatMap(({traces}) => traces)
+      .map(({shortestPathPlusN}) => shortestPathPlusN)
+      .max()
+      .value();
+  }
+
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {
     return {
       networkTraces: graph.traceNetworks,
+      maximumShortestPathPlusN: this.extractshortestPathPlusN(graph),
       predefinedValueAccessors: this.extractPredefinedValueProperties(graph),
       linkValueAccessors: this.extractLinkValueProperties({links, graph}),
       nodeValueAccessors: this.extractNodeValueProperties({nodes, graph}),
