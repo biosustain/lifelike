@@ -271,7 +271,7 @@ def add_file_starred_columns(query, file_table, user_id):
                 t_starred_file.user_id == user_id
             )
         ) \
-        .add_column(t_starred_file.file_id.label('starred_id')) \
+        .add_column(t_starred_file.id.label('starred_id')) \
         .add_column(t_starred_file.file_id.label('starred_file_id')) \
         .add_column(t_starred_file.user_id.label('starred_user_id')) \
         .add_column(t_starred_file.creation_date.label('starred_creation_date'))
