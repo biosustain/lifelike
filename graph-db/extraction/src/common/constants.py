@@ -52,6 +52,7 @@ DB_PPUT = 'PseudomonasCyc'
 DB_BSUBCYC = 'BsubCyc'
 DB_PAENIBACILLUSCYC = 'PaenibacillusCyc'
 DB_PSYRCYC = 'PsyringaeCyc'
+DB_PSEUDOMONAS_PUTIDA_KT_2440 = 'PseudomonasPutidaKT2440'
 
 DB_ARO = 'ARO'  # antibiotic resistance ontology
 DB_NCBI = 'NCBI'

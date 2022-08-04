@@ -1,4 +1,5 @@
 import os.path
+import sys
 
 from common.liquibase_changelog_generator import *
 from common.constants import *
@@ -196,8 +197,9 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 
 
 if __name__ == "__main__":
-    generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'rcai')
+    # generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'rcai')
     # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
+    generate_changelog_files('PseudomonasPutidaKT2440-data-24.0.zip', DB_PSEUDOMONAS_PUTIDA_KT_2440, 'dommas')
 
 
 

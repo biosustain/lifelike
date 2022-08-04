@@ -17,4 +17,4 @@ biocycFiles:
   BsubCyc: bsub_47.tar.gz
   PaenibacillusCyc: gcf_000981585_25.5.tar.gz
   PsyringaeCyc: gcf_000007805cyc.tar.gz
-
+  PseudomonasPutidaKT2440: "Pseudomonas putida KT2440/pput160488cyc.tar.gz"
