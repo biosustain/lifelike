@@ -539,6 +539,28 @@ def before_file_insert(mapper: Mapper, connection: Connection, target: Files):
         target = _update_path_of_file(connection, target)
 
 
+def _after_file_insert(target: Files):
+    from app import app
+
+    # This will be called by the Redis queue service outside of the normal flask app context, so
+    # here we manually ensure there is a context.
+    with app.app_context():
+        try:
+            elastic_service = get_elastic_service()
+            current_app.logger.info(
+                f'Attempting to index newly created file with hash_id: {target.hash_id}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            elastic_service.index_files([target.hash_id])
+        except Exception as e:
+            current_app.logger.error(
+                f'Elastic index failed for file with hash_id: {target.hash_id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            )
+            raise
+
+
 @event.listens_for(Files, 'after_insert')
 def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     """
@@ -546,18 +568,10 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     file insert will be rolled back.
     """
     try:
-        elastic_service = get_elastic_service()
-        current_app.logger.info(
-            f'Attempting to index newly created file with hash_id: {target.hash_id}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-        )
-        elastic_service.index_files([target.hash_id])
-    except Exception as e:
-        current_app.logger.error(
-            f'Elastic index failed for file with hash_id: {target.hash_id}',
-            exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-        )
+        from neo4japp.services.redis.redis_queue_service import RedisQueueService
+        rq_service = RedisQueueService()
+        rq_service.enqueue(_after_file_insert, 'default', target)
+    except Exception:
         raise ServerException(
             title='Failed to Create File',
             message='Something unexpected occurred while creating your file! Please try again ' +
@@ -580,18 +594,15 @@ def before_file_update(mapper: Mapper, connection: Connection, target: Files):
         orm.attributes.flag_modified(target, 'modified_date')
 
 
-@event.listens_for(Files, 'after_update')
-def file_update(mapper: Mapper, connection: Connection, target: Files):
-    """
-    Handles updating this document in elastic. Note: if this fails, the file update will be rolled
-    back.
-    """
-    # Only do re-indexing if any of the specified columns changed
-    if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
-        # Import what we need, when we need it (Helps to avoid circular dependencies)
-        from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-        from neo4japp.services.file_types.providers import DirectoryTypeProvider
+def _after_file_update(target: Files, changes: dict):
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from app import app
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
+    # This will be called by the Redis queue service outside of the normal flask app context, so
+    # here we manually ensure there is a context.
+    with app.app_context():
         try:
             elastic_service = get_elastic_service()
             files_to_update = [target.hash_id]
@@ -605,7 +616,6 @@ def file_update(mapper: Mapper, connection: Connection, target: Files):
                 ).all()
                 files_to_update = [member.hash_id for member in family]
 
-            changes = get_model_changes(target)
             # Only delete a file when it changes from "not-deleted" to "deleted"
             if 'deletion_date' in changes and changes['deletion_date'][0] is None and \
                     changes['deletion_date'][1] is not None:  # noqa
@@ -635,48 +645,77 @@ def file_update(mapper: Mapper, connection: Connection, target: Files):
                 exc_info=e,
                 extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
-            raise ServerException(
+            raise
+
+
+@event.listens_for(Files, 'after_update')
+def after_file_update(mapper: Mapper, connection: Connection, target: Files):
+    """
+    Handles updating this document in elastic. Note: if this fails, the file update will be rolled
+    back.
+    """
+    try:
+        # Only do re-indexing if any of the specified columns changed
+        if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
+            from neo4japp.services.redis.redis_queue_service import RedisQueueService
+            rq_service = RedisQueueService()
+            rq_service.enqueue(_after_file_update, 'default', target, get_model_changes(target))
+    except Exception:
+        raise ServerException(
                 title='Failed to Update File',
                 message='Something unexpected occurred while updating your file! Please try ' +
                         'again later.'
             )
 
 
+def _after_file_delete(target: Files):
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from app import app
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
+    # This will be called by the Redis queue service outside of the normal flask app context, so
+    # here we manually ensure there is a context.
+    with app.app_context():
+        try:
+            elastic_service = get_elastic_service()
+            files_to_delete = [target.hash_id]
+            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+                family = get_nondeleted_recycled_children_query(
+                    Files.id == target.id,
+                    children_filter=and_(
+                        Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+                ).all()
+                files_to_delete = [member.hash_id for member in family]
+            current_app.logger.info(
+                f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            elastic_service.delete_files(files_to_delete)
+        except Exception as e:
+            current_app.logger.error(
+                f'Elastic search delete failed for file with hash_id: {target.hash_id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            )
+            raise
+
+
 @event.listens_for(Files, 'after_delete')
-def file_delete(mapper: Mapper, connection: Connection, target: Files):
+def after_file_delete(mapper: Mapper, connection: Connection, target: Files):
     """
     Handles deleting this document from elastic. Note: if this fails, the file deletion will be
     rolled back.
     """
-    # Import what we need, when we need it (Helps to avoid circular dependencies)
-    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.file_types.providers import DirectoryTypeProvider
-
     # NOTE: This event is rarely triggered, because we're currently flagging files for deletion
     # rather than removing them outright. See the `after_update` event for Files.
     try:
-        elastic_service = get_elastic_service()
-        files_to_delete = [target.hash_id]
-        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-            family = get_nondeleted_recycled_children_query(
-                Files.id == target.id,
-                children_filter=and_(
-                    Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
-            ).all()
-            files_to_delete = [member.hash_id for member in family]
-        current_app.logger.info(
-            f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-        )
-        elastic_service.delete_files(files_to_delete)
-    except Exception as e:
-        current_app.logger.error(
-            f'Elastic search delete failed for file with hash_id: {target.hash_id}',
-            exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-        )
+        from neo4japp.services.redis.redis_queue_service import RedisQueueService
+        rq_service = RedisQueueService()
+        rq_service.enqueue(_after_file_delete, 'default', target)
+    except Exception:
         raise ServerException(
             title='Failed to Delete File',
             message='Something unexpected occurred while updating your file! Please try again ' +
