@@ -1,6 +1,8 @@
-from rq import Queue, Worker
+from flask import current_app
+from rq import Queue, Retry, Worker
 from rq.command import send_shutdown_command
 from rq.job import Job
+from rq.registry import FailedJobRegistry
 from typing import Iterable
 
 from neo4japp.database import get_redis_connection
@@ -19,51 +21,73 @@ class RedisQueueService():
 
     def enqueue(self, f, queue='default', *args, **kwargs) -> Job:
         q = self.get_queue(queue)
-        return q.enqueue(f, *args, **kwargs)
+        job = q.enqueue(f, retry=Retry(max=1, interval=60), *args, **kwargs)
+        current_app.logger.info(f'Job enqueued to redis: {job.to_dict()}')
+        return job
 
     def empty_queue(self, queue: str) -> int:
-        return self.get_queue(queue).empty()
+        retval = self.get_queue(queue).empty()
+        current_app.logger.info(f'Redis queue {queue} emptied')
+        return retval
 
     def delete_queue(self, queue: str, delete_jobs=True):
         self.get_queue(queue).delete(delete_jobs)
+        current_app.logger.info(f'Redis queue {queue} deleted')
 
     def delete_all_queues(self):
         for q in Queue.all(connection=self._redis_conn):
             self.delete_queue(q.name)
 
     def get_job_in_queue(self, queue: str, job_id) -> Job:
-        return self.get_queue(queue).fetch_job(job_id)
+        job = self.get_queue(queue).fetch_job(job_id)
+        current_app.logger.info(f'Job fetched from queue {queue}: {job.to_dict()}')
+        return job
 
     def get_all_jobs_in_queue(self, queue: str) -> Iterable[Job]:
-        return self.get_queue(queue).jobs
+        jobs = self.get_queue(queue).jobs
+        for job in jobs:
+            current_app.logger.info(f'Job fetched from queue {queue}: {job.to_dict()}')
+        return jobs
 
     def get_job(self, job_id) -> Job:
-        return Job.fetch(job_id, connection=self._redis_conn)
+        job = Job.fetch(job_id, connection=self._redis_conn)
+        current_app.logger.info(f'Job fetched: {job.to_dict()}')
+        return job
 
     def create_worker(self, queues, name, **kwargs) -> Worker:
-        return Worker(
+        worker = Worker(
             queues=queues,
             name=name,
             connection=self._redis_conn,
             **kwargs
         )
+        current_app.logger.info(f'Redis worker {worker.name} created')
+        return worker
 
     def get_worker(self, name) -> Worker:
         for w in Worker.all(connection=self._redis_conn):
             if w.name == name:
+                current_app.logger.info(f'Redis worker {w.name} fetched')
                 return w
 
     def get_all_workers(self) -> Iterable[Worker]:
-        return Worker.all(connection=self._redis_conn)
+        workers = Worker.all(connection=self._redis_conn)
+        current_app.logger.info(f'Redis workers fetched: {[w.name for w in workers]}')
+        return workers
 
     def get_worker_count(self) -> int:
         return Worker.count(connection=self._redis_conn)
 
     def get_queue_workers(self, queue: str) -> Iterable[Worker]:
         q = self.get_queue(queue)
-        return Worker.all(queue=q)
+        queue_workers = Worker.all(queue=q)
+        current_app.logger.info(
+            f'Redis queue {queue} workers fetched: {[w.name for w in queue_workers]}'
+        )
+        return queue_workers
 
     def shutdown_worker(self, worker_name: str):
+        current_app.logger.info(f'Redis worker {worker_name} shut down')
         send_shutdown_command(self._redis_conn, worker_name)
 
     def shutdown_all_workers(self):
