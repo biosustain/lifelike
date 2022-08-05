@@ -21,7 +21,7 @@ class RedisQueueService():
 
     def enqueue(self, f, queue='default', *args, **kwargs) -> Job:
         q = self.get_queue(queue)
-        job = q.enqueue(f, retry=Retry(max=1, interval=60), *args, **kwargs)
+        job = q.enqueue(f, retry=Retry(max=10, interval=60), *args, **kwargs)
         current_app.logger.info(f'Job enqueued to redis: {job.to_dict()}')
         return job
 
