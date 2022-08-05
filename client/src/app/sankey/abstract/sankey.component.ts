@@ -415,6 +415,12 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       .attr('label-anchor', ({x0}) => x0 < width / 2 ? 'right' : 'left');
   }
 
+  initHover() {
+    this.hoverUpdate$.pipe(
+      takeUntil(this.destroyed$)
+    ).subscribe();
+  }
+
   initSearch() {
     this.updateSearch$.pipe(
       takeUntil(this.destroyed$)
@@ -434,6 +440,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     this.initSelection();
     this.initFocus();
     this.initSearch();
+    this.initHover();
     this.initStateUpdate();
 
     this.updateDOM$.subscribe(() => {
