@@ -93,3 +93,22 @@ class RedisQueueService():
     def shutdown_all_workers(self):
         for w in Worker.all(connection=self._redis_conn):
             self.shutdown_worker(w.name)
+
+    def get_failed_jobs(self, queue: str) -> Iterable[Job]:
+        q = self.get_queue(queue)
+
+        # Note that with our current configuration, failed jobs are immediately retried several
+        # times. So, this list represents all jobs that did not succeed after being retried!
+        registry = FailedJobRegistry(queue=q)
+        return [self.get_job(job_id) for job_id in registry.get_job_ids()]
+
+    def log_failed_jobs(self, queue: str):
+        for job in self.get_failed_jobs(queue):
+            current_app.logger.info(f'Failed Redis Job {job.id}: {job.exc_info}')
+
+    def retry_failed_jobs(self, queue: str):
+        q = self.get_queue(queue)
+        registry = FailedJobRegistry(queue=q)
+        for job in self.get_failed_jobs(queue):
+            registry.requeue(job)
+            current_app.logger.info(f'Failed Redis Job {job.id} requeued')
