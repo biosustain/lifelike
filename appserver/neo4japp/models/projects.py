@@ -255,6 +255,7 @@ def _after_project_update(target: Projects):
                 exc_info=e,
                 extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
+            raise
 
 
 @event.listens_for(Projects, 'after_update')
@@ -265,7 +266,7 @@ def after_project_update(mapper: Mapper, connection: Connection, target: Project
     try:
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_project_update, 'default', target)
-    except Exception as e:
+    except Exception:
         raise ServerException(
             title='Failed to Update Project',
             message='Something unexpected occurred while updating your file! Please try again ' +
