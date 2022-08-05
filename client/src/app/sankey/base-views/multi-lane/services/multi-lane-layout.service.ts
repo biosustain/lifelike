@@ -92,7 +92,7 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
         // decide on direction
         const dt = new DirectedTraversal([first(columns), last(columns)]);
         // order next related nodes in order this group first appeared
-        const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation(dt.nextNode);
+        const sortByTrace: (links) => any = groupByTraceGroupWithAccumulation();
         const visited = new Set();
         let order = 0;
         const traceOrder = new Set();
@@ -108,7 +108,7 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
             }
             visited.add(node);
             node.order = order++;
-            const sortedLinks = sortByTrace.call(this, dt.nextLinks(node));
+            const sortedLinks = sortByTrace(dt.nextLinks(node));
             relayoutLinks(sortedLinks);
           });
         // traverse tree of connections
