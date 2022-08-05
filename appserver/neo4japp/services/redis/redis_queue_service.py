@@ -40,7 +40,8 @@ class RedisQueueService():
 
     def get_job_in_queue(self, queue: str, job_id) -> Job:
         job = self.get_queue(queue).fetch_job(job_id)
-        current_app.logger.info(f'Job fetched from queue {queue}: {job.to_dict()}')
+        if job is not None:
+            current_app.logger.info(f'Job fetched from queue {queue}: {job.to_dict()}')
         return job
 
     def get_all_jobs_in_queue(self, queue: str) -> Iterable[Job]:
@@ -51,7 +52,8 @@ class RedisQueueService():
 
     def get_job(self, job_id) -> Job:
         job = Job.fetch(job_id, connection=self._redis_conn)
-        current_app.logger.info(f'Job fetched: {job.to_dict()}')
+        if job is not None:
+            current_app.logger.info(f'Job fetched: {job.to_dict()}')
         return job
 
     def create_worker(self, queues, name, **kwargs) -> Worker:
