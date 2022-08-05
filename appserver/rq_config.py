@@ -1,9 +1,10 @@
 from os import getenv
 
-REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
+REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
         host=getenv('REDIS_HOST', 'localhost'),
         port=getenv('REDIS_PORT', '6379'),
-        password=getenv('REDIS_PASSWORD', ''),
+        username=getenv('REDIS_USERNAME', 'default'),
+        password=getenv('REDIS_PASSWORD', 'password'),
         db=getenv('REDIS_DB', '1')
     )
 
