@@ -62,7 +62,7 @@ services:
   worker:
     <<: *appserver
     container_name: worker
-    command: rq worker -c rq_config
+    command: rq worker -c rq_config --with-scheduler
     networks:
       - backend
 
