@@ -1,30 +1,44 @@
 # CI Test
 version: "3.8"
 
+x-appserver: &appserver
+  image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
+  environment:
+    - NEO4J_HOST=neo4j
+    - NEO4J_AUTH=neo4j/password
+    - NEO4J_PORT=7687
+    - FLASK_DEBUG=1
+    - FLASK_ENV=development
+    - FLASK_APP=app
+    - FLASK_APP_CONFIG=Development
+    - POSTGRES_HOST=postgres
+    - POSTGRES_PORT=5432
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=postgres
+    # Redis
+    - REDIS_HOST=redis
+    - REDIS_PORT=6379
+    - REDIS_USERNAME=default
+    - REDIS_PASSWORD=password
+    - REDIS_SSL=false
+    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    - ELASTIC_FILE_INDEX_ID=file_ci
+    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+  depends_on:
+    - postgres
+    - elasticsearch
+    - neo4j
+    - redis
+
 services:
   appserver:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
-    environment:
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
-      - FLASK_DEBUG=1
-      - FLASK_ENV=development
-      - FLASK_APP=app
-      - FLASK_APP_CONFIG=Development
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-      - REDIS_PORT=6379
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTIC_FILE_INDEX_ID=file_ci
-      - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-    depends_on:
-      - postgres
-      - elasticsearch
-      - neo4j
+    <<: *appserver
+    container_name: appserver
+
+  worker:
+    <<: *appserver
+    command: rq worker -c rq_config --with-scheduler
 
   postgres:
     image: postgres:13
@@ -45,3 +59,7 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
 
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    command: redis-server --requirepass password
