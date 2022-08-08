@@ -97,7 +97,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.getBackupBlob(),
       ]);
     });
-    // Review Note: why do we do this?
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [mapFile, mapBlob, backupBlob], value}) => {
