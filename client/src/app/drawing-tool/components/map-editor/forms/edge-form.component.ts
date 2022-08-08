@@ -3,7 +3,7 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, View
 import { cloneDeep, isNil } from 'lodash-es';
 
 import { RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
 import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
@@ -52,15 +52,15 @@ export class EdgeFormComponent implements AfterViewInit {
   ngAfterViewInit() {
   }
 
-  get edge() {
-    return this.updatedEdge;
-  }
 
   get hyperlinks() {
     return isNil(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
-  // tslint:disable-next-line: adjacent-overload-signatures
+  get edge() {
+    return this.updatedEdge;
+  }
+
   @Input()
   set edge(edge) {
     this.originalEdge = cloneDeep(edge);
@@ -120,7 +120,7 @@ export class EdgeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
+    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
   }
 
   /**

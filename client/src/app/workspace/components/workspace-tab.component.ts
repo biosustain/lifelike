@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
-import { Observable, defer } from 'rxjs';
+import { Observable, defer, of, iif, from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
-import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
 
 @Component({
@@ -36,33 +36,29 @@ export class WorkspaceTabComponent implements OnChanges {
   ) {
   }
 
-  dragData$ = defer<Promise<Record<string, string>>>(() =>
-    this.viewService.getShareableLink(
-      this.tab.component, this.tab.url
-    ).toPromise().then(url => {
-      const sources: Source[] = [];
-
-      const doi = (this.tab.component as PdfViewComponent)?.object?.doi;
-      if (doi) {
-        sources.push({domain: 'DOI', url: doi});
-      }
-      return {
-        'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+  dragData$ = defer(() =>
+    from(this.tab.component?.sourceData$).pipe(
+      switchMap(sources =>
+        iif(
+          () => Boolean(sources),
+          of(sources),
+          this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
+            map(({href}) => [{
+            url: href,
+            domain: this.tab.title,
+          } as Source])),
+        )
+      ),
+      map(sources => {
+        return { 'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
           label: (this.tab.component as MapComponent)?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
-            sources: [
-              ...sources,
-              {
-                domain: this.tab.title,
-                url
-              }
-            ]
+            sources
           }
-        } as Partial<UniversalGraphNode>)
-      };
-    }));
+        } as Partial<UniversalGraphNode>)};
+      })));
 
   drag = new CdkNativeDragItegration(this.dragData$);
 

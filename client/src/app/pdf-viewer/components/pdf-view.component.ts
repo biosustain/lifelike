@@ -40,17 +40,6 @@ import {
   PdfViewerLibComponent,
 } from '../pdf-viewer-lib.component';
 
-class DummyFile implements PdfFile {
-  constructor(
-    // tslint:disable-next-line
-    public file_id: string,
-    public filename: string = null,
-    // tslint:disable-next-line
-    public creation_date: string = null,
-    public username: string = null) {
-  }
-}
-
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
   }
@@ -179,15 +168,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   searching = false;
 
   dragTitleData$ = defer(() => {
-    const sources: Source[] = [{
-      domain: this.object.filename,
-      url: ['/projects', encodeURIComponent(this.object.project.name),
-        'files', encodeURIComponent(this.object.hashId)].join('/'),
-    }];
-
-    if (this.object.doi) {
-      sources.push({domain: 'DOI', url: this.object.doi});
-    }
+    const sources: Source[] = this.object.getGraphEntitySources();
 
     return of({
       'text/plain': this.object.filename,
@@ -205,6 +186,8 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
       } as Partial<UniversalGraphNode>)
     });
   });
+
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
@@ -473,8 +456,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
           // assumes first link will be main database source link
           // tslint ignore cause other option is destructuring and that
           // also gets name shadowing error
-          /* tslint:disable-next-line */
-          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])['url'] : '',
+          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])?.url : '',
         }],
         hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',

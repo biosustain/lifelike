@@ -6,7 +6,7 @@ import {
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
-  UniversalNodeStyle,
+  UniversalNodeStyle, UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import {
   EdgeRenderStyle,
@@ -235,7 +235,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
   placeEdge(d: UniversalGraphEdge,
             from: UniversalGraphNode,
-            to: UniversalGraphNode,
+            to: UniversalGraphNodelike,
             placedFrom: PlacedNode,
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
@@ -286,6 +286,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       textbox,
       sourceLineEnd,
       targetLineEnd,
+      lineWidth,
       stroke: this.createLine(
         lineType,
         lineWidth,

@@ -53,10 +53,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   groups: UniversalGraphGroup[] = [];
 
   /**
-   * Maps node's hashes to nodes for O(1) lookup, essential to the speed
+   * Maps node's and groups hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
-  protected nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+  protected nodelikeHashMap: Map<string, UniversalGraphNode> = new Map();
 
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
@@ -306,10 +306,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
     this.saveImagesState();
 
-    // We need O(1) lookup of nodes
-    this.nodeHashMap = graph.nodes.reduce(
+    // We need O(1) lookup of nodes and groups
+    const nodelikeMap = graph.nodes.reduce(
       (map, node) => map.set(node.hash, node),
       new Map(),
+    );
+    this.nodelikeHashMap = graph.groups.reduce(
+      (map, group) => map.set(group.hash, group),
+      nodelikeMap,
     );
 
     this.groupHashMap = graph.groups.reduce(
@@ -355,11 +359,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param node the node
    */
   addNode(node: UniversalGraphNode): void {
-    if (this.nodeHashMap.has(node.hash)) {
+    if (this.nodelikeHashMap.has(node.hash)) {
       throw new Error('trying to add a node that already is in the node list is bad');
     }
     this.nodes.push(node);
-    this.nodeHashMap.set(node.hash, node);
+    this.nodelikeHashMap.set(node.hash, node);
     this.requestRender();
   }
 
@@ -394,14 +398,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     let j = this.edges.length;
     while (j--) {
       const edge = this.edges[j];
-      if (this.expectNodeByHash(edge.from) === node
-        || this.expectNodeByHash(edge.to) === node) {
+      if (this.expectNodelikeByHash(edge.from) === node
+        || this.expectNodelikeByHash(edge.to) === node) {
         removedEdges.push(edge);
         this.edges.splice(j, 1);
       }
     }
 
-    this.nodeHashMap.delete(node.hash);
+    this.nodelikeHashMap.delete(node.hash);
     this.tryRemoveNodeFromGroup(node.hash);
     this.invalidateNode(node);
 
@@ -433,8 +437,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param edge the edge
    */
   addEdge(edge: UniversalGraphEdge): void {
-    const from = this.expectNodeByHash(edge.from);
-    const to = this.expectNodeByHash(edge.to);
+    const from = this.expectNodelikeByHash(edge.from);
+    const to = this.expectNodelikeByHash(edge.to);
     this.edges.push(edge);
     this.invalidateNode(from);
     this.invalidateNode(to);
@@ -447,8 +451,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   removeEdge(edge: UniversalGraphEdge): boolean {
     let foundNode = false;
-    const from = this.expectNodeByHash(edge.from);
-    const to = this.expectNodeByHash(edge.to);
+    const from = this.expectNodelikeByHash(edge.from);
+    const to = this.expectNodelikeByHash(edge.to);
 
     let j = this.edges.length;
     while (j--) {
@@ -491,6 +495,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       this.groupHashMap.set(member.hash, group);
     });
     this.groups.push(this.recalculateGroup(group));
+    this.nodelikeHashMap.set(group.hash, group);
   }
 
   /**
@@ -709,23 +714,23 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   /**
-   * Grab the node referenced by the given hash.
+   * Grab the node/group referenced by the given hash.
    * @param hash the hash
    */
-  getNodeByHash(hash: string): UniversalGraphNode | undefined {
-    return this.nodeHashMap.get(hash);
+  getNodelikeByHash(hash: string): UniversalGraphNodelike | undefined {
+    return this.nodelikeHashMap.get(hash);
   }
 
   /**
-   * Grab the node referenced by the given hash. Throws an error if not found.
+   * Grab the node/group referenced by the given hash. Throws an error if not found.
    * @param hash the hash
    */
-  expectNodeByHash(hash: string): UniversalGraphNode {
-    const node = this.getNodeByHash(hash);
-    if (node == null) {
-      throw new Error('missing node link');
+  expectNodelikeByHash(hash: string): UniversalGraphNodelike {
+    const result = this.getNodelikeByHash(hash);
+    if (result == null) {
+      throw new Error('Could not find the node/group by hash!');
     }
-    return node;
+    return result;
   }
 
   /**
@@ -1186,11 +1191,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }, new Map());
 
     const layoutLinks: GraphLayoutLink[] = this.edges.map(d => {
-      const source = layoutNodeHashMap.get(this.expectNodeByHash(d.from).hash);
+      const source = layoutNodeHashMap.get(this.expectNodelikeByHash(d.from).hash);
       if (!source) {
         throw new Error('state error - source did not link up');
       }
-      const target = layoutNodeHashMap.get(this.expectNodeByHash(d.to).hash);
+      const target = layoutNodeHashMap.get(this.expectNodelikeByHash(d.to).hash);
       if (!target) {
         throw new Error('state error - source did not link up');
       }

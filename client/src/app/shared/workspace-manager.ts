@@ -12,7 +12,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, Route
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, merge, Subject } from 'rxjs';
+import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
@@ -529,7 +529,7 @@ export class WorkspaceManager {
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
             // from the URL -- this part is a little hacky
-            // @ts-ignore
+            // @ts-ignore // todo: this hack has far reaching consequences limiting most of routing features
             const activatedRoute = new ActivatedRoute(new BehaviorSubject(routeSnapshot.url),
               new BehaviorSubject(routeSnapshot.params), new BehaviorSubject(queryParams),
               new BehaviorSubject(routeSnapshot.fragment), new BehaviorSubject(routeSnapshot.data),
@@ -661,9 +661,7 @@ export class WorkspaceManager {
               if (extras.shouldReplaceTab != null) {
                 const component = tab.component;
                 if (component != null) {
-                  if (!extras.shouldReplaceTab(component)) {
-                    return;
-                  }
+                  return new Promise(() => extras.shouldReplaceTab(tab.component));
                 } else {
                   // If we found a match, but it's not loaded, swap to it and reload with the new URL.
                   this.interceptNextRoute = true;

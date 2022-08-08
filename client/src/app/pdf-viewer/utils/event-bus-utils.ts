@@ -5,6 +5,22 @@ export function _createEventBus(pdfJsViewer) {
   return globalEventBus;
 }
 
+interface ScaleChangedEvent extends UIEvent {
+  scale: number;
+  presetValue: number;
+  source: any;
+}
+
+interface UpdateViewareaEvent extends UIEvent {
+  location: any;
+  source: any;
+}
+
+interface PageChangingEvent extends UIEvent {
+  pageNumber: number;
+  source: any;
+}
+
 function attachDOMEventsToEventBus(eventBus: any) {
   eventBus.on('documentload', () => {
     const event = document.createEvent('CustomEvent');
@@ -26,10 +42,9 @@ function attachDOMEventsToEventBus(eventBus: any) {
     });
     evt.source.textLayerDiv.dispatchEvent(event);
   });
-  eventBus.on('pagechanging', evt => {
-    const event = document.createEvent('UIEvents');
+  eventBus.on('pagechanging', (evt: PageChangingEvent) => {
+    const event = document.createEvent('UIEvents') as PageChangingEvent;
     event.initEvent('pagechanging', true, true);
-    // @ts-ignore
     event.pageNumber = evt.pageNumber;
     evt.source.container.dispatchEvent(event);
   });
@@ -45,19 +60,16 @@ function attachDOMEventsToEventBus(eventBus: any) {
     });
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('scalechange', evt => {
-    const event = document.createEvent('UIEvents');
+  eventBus.on('scalechange', (evt: ScaleChangedEvent) => {
+    const event = document.createEvent('UIEvents') as ScaleChangedEvent;
     event.initEvent('scalechange', true, true);
-    // @ts-ignore
     event.scale = evt.scale;
-    // @ts-ignore
     event.presetValue = evt.presetValue;
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('updateviewarea', evt => {
-    const event = document.createEvent('UIEvents');
+  eventBus.on('updateviewarea', (evt: UpdateViewareaEvent) => {
+    const event = document.createEvent('UIEvents') as UpdateViewareaEvent;
     event.initEvent('updateviewarea', true, true);
-    // @ts-ignore
     event.location = evt.location;
     evt.source.container.dispatchEvent(event);
   });

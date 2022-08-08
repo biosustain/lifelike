@@ -217,9 +217,7 @@ $trasition: 100ms;
     height: 100%;
     width: 100%;
 
-    g {
-      will-change: transform;
-
+    > g {
       .nodes {
         $label-margin: 2*$active-stroke-width;
         $node-width: 10px;
@@ -229,7 +227,6 @@ $trasition: 100ms;
 
         g {
           //transition: opacity $trasition, font-size $trasition;
-          will-change: opacity, font-size;
 
           rect {
             cursor: move;
@@ -243,7 +240,6 @@ $trasition: 100ms;
             div {
               // actual label (dynamically sized)
               //transition: background-color $trasition, max-width $trasition;
-              will-change: background-color, max-width;
               border-radius: $active-stroke-width;
               display: inline-block;
               overflow: hidden;
@@ -322,7 +318,6 @@ $trasition: 100ms;
 
       .links path {
         //transition: opacity $trasition, fill $trasition;
-        will-change: opacity, fill;
 
         &.circular {
           stroke-dasharray: 4 4;

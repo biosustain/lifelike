@@ -70,8 +70,8 @@ export class AnnotationTagHandler extends TagHandler {
   }
 
   start(element: Element): string {
-    return `<span data-annotation-meta="${escape(element.getAttribute('meta'))}"` +
-      ` style="background: ${this.toAnnotationBackgroundColor(this.getAnnotationColor(element))}">`;
+    return `<span draggable="true" data-annotation-meta="${escape(element.getAttribute('meta'))}"` +
+      ` style="user-select: text; background: ${this.toAnnotationBackgroundColor(this.getAnnotationColor(element))}">`;
   }
 
   end(element: Element): string {
@@ -182,7 +182,7 @@ export class AnnotationTagHandler extends TagHandler {
     if (element != null) {
       // Janky - move to new PopoverController or something later
       this.popoverElement.getElementsByClassName('popover-header')[0].innerHTML = escape(element.textContent);
-      this.popoverElement.getElementsByClassName('popover-body')[0].innerHTML = this.prepareTooltipContent(meta);
+      this.popoverElement.getElementsByClassName('popover-body')[0].innerHTML = this.prepareTooltipContent(meta, detail);
       this.popoverElement.style.display = 'block';
 
       this.dropdownController.openRelative(element, {
@@ -202,7 +202,7 @@ export class AnnotationTagHandler extends TagHandler {
     selection.addRange(range);
   }
 
-  private prepareTooltipContent(meta: Meta): string {
+  private prepareTooltipContent(meta: Meta, detail: { [key: string]: any }): string {
     // Copied from pdf-viewer-lib.component.ts :(
     // TODO: Move somewhere else
     let base = [`Type: ${meta.type}`];
@@ -211,12 +211,18 @@ export class AnnotationTagHandler extends TagHandler {
 
     if (ENTITY_TYPE_MAP.hasOwnProperty(meta.type)) {
       const source = ENTITY_TYPE_MAP[meta.type] as EntityType;
-      idLink = source.links.filter(link => link.name === meta.idType)[0];
+      idLink = source.links.find(link => link.name === meta.idType);
     }
 
-    if (idLink !== null) {
-      // tslint:disable-next-line:max-line-length
-      base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: <a href=${escape(`${idLink.url}${annoId}`)} target="_blank">${escape(annoId)}</a>` : 'Id: None');
+    // null/undefined because a data source did not match
+    // e.g we use "Custom" for phenotype
+    if (idLink) {
+      base.push(
+        annoId && annoId.indexOf('NULL') === -1 ?
+          `Id: <a href=${escape(`${idLink.url}${annoId}`)}
+           target="_blank">${escape(annoId)}</a>`
+          : 'Id: None'
+      );
     } else {
       base.push(annoId && annoId.indexOf('NULL') === -1 ? `Id: ${escape(annoId)}` : 'Id: None');
     }
@@ -267,10 +273,11 @@ export class AnnotationTagHandler extends TagHandler {
     const searchInternalLinkCollapseTargetId = uniqueId('enrichment-tooltip-internal-collapse-target');
     htmlLinks += `
       <div>
-        <div>Search internal links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
+        <div>Search internal links</div>
         <div>
     `;
-    const visLink = this.internalSearch.getVisualizerLink(meta.allText);
+    const organism = detail.object?.fallbackOrganism?.tax_id;
+    const visLink = this.internalSearch.getVisualizerLink(meta.allText, {organism});
     htmlLinks += composeInternalLink(
       'Knowledge Graph',
       {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}

@@ -36,7 +36,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { SankeySearchService } from '../services/search.service';
@@ -369,6 +369,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     )
   );
 
+
+  sourceData$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
+
+
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {
     return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
@@ -383,6 +387,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       first()
     ).toPromise();
   }
+
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 

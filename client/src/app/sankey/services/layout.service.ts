@@ -19,7 +19,6 @@ import { normalizeGenerator } from '../utils';
 import { SankeyAbstractLayoutService, LayoutData, ProcessedExtent, Horizontal, Vertical } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
-import { SankeyNodesOverwrites, SankeyLinksOverwrites } from '../interfaces/view';
 import { EditService } from './edit.service';
 import { View, SankeyNode, SankeyDocument } from '../model/sankey-document';
 
@@ -364,7 +363,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     });
   }
 
-  computeNodeBreadths(data, columns) {
+  computeNodeBreadths(data, columns): OperatorFunction<any, any> {
     throw new Error();
   }
 
