@@ -1500,17 +1500,36 @@ def get_content_offsets(file):
         json_graph = json.loads(zip_file.read('graph.json'))
     except KeyError:
         raise ValidationError
-    for node in json_graph['nodes']:
+
+    nodes = json_graph['nodes']
+    for node in nodes:
         x_values.append(node['data']['x'])
-        y_values.append(-node['data']['y'])
+
+        y = node['data']['y']
         if node['label'] in ICON_NODES:
             # If the node is icon node, we have to consider that the label is lower that pos
             # indicates due to the addition of the icon node
-            y_values[-1] -= BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
+            y += BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
                 node['display_name']) // 3, MAX_LINE_WIDTH)) \
                             * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
                             (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
+        y_values.append(-y)
+
+    lower_ys = list(
+        map(
+            lambda n: - n['data']['y'] - n['data'].get('height', DEFAULT_NODE_HEIGHT) / 2.0,
+            nodes
+        )
+    )
+    max_x = max(x_values, default=0)
+    min_x = min(x_values, default=0)
+    x_center = min_x + (max_x - min_x) / 2.0
+
+    x_values.append(x_center)
+    y_values.append(min(lower_ys) + WATERMARK_DISTANCE)
+
     x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
-        MAP_ICON_OFFSET + HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
+               MAP_ICON_OFFSET + \
+               HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
     return (min(x_values), min(y_values)), (x_offset, y_offset)
