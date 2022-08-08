@@ -1529,7 +1529,7 @@ def get_content_offsets(file):
     y_values.append(min(lower_ys) + WATERMARK_DISTANCE)
 
     x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
-               MAP_ICON_OFFSET + \
-               HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
+        MAP_ICON_OFFSET + \
+        HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
     y_offset = VERTICAL_NODE_PADDING
     return (min(x_values), min(y_values)), (x_offset, y_offset)
