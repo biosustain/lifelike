@@ -1388,7 +1388,26 @@ class FileBackupView(FilesystemBaseView):
 
         backup = FileBackup()
         backup.file = file
-        backup.raw_value = params['content_value'].read()
+
+        # TODO: Make this into a function? @staticmethod of MapTypeProvider
+        # or should I get the instance here?
+        # Alternatively, we can zip those on the client side - but the JZip was working really slow
+        if params['content_value'].content_type == FILE_MIME_TYPE_MAP:
+            new_content = io.BytesIO()
+            zip_content = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
+            # NOTE: The trick here is that when we unpack zip on the client-side, we are not
+            # resetting the image manager memory - we are only appending new stuff to it. This is
+            # why we do not need to store all images within the backup - just the unsaved ones.
+            zip_content.writestr('graph.json', params['content_value'].read())
+            new_images = params.get('new_images') or []
+            for image in new_images:
+                zip_content.writestr('images/' + image.filename + '.png', image.read())
+            zip_content.close()
+            # Always seek before the read
+            new_content.seek(0)
+            backup.raw_value = new_content.read()
+        else:
+            backup.raw_value = params['content_value'].read()
         backup.user = current_user
         db.session.add(backup)
         db.session.commit()

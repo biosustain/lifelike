@@ -216,20 +216,15 @@ export class FilesystemService {
   }
 
   putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
-    return this.http.put<unknown>(
+    return this.http.put<{}>(
       `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
-      objectToMixedFormData(request),
-    ).pipe(
-      map(() => ({})),
-    );
+      objectToMixedFormData(request));
   }
 
   deleteBackup(hashId: string): Observable<{}> {
-    return this.http.delete<unknown>(
+    return this.http.delete<{}>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
       },
-    ).pipe(
-      map(() => ({})),
     );
   }
 
