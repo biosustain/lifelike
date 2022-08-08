@@ -363,7 +363,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     });
   }
 
-  computeNodeBreadths(data, columns): OperatorFunction<any, any> {
+  computeNodeBreadths(data, columns) {
     throw new Error();
   }
 
