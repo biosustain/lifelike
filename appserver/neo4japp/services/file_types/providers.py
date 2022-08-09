@@ -1,6 +1,5 @@
 import io
 import json
-import math
 import os
 import re
 import tempfile
@@ -16,6 +15,7 @@ import graphviz
 import numpy as np
 import requests
 import svg_stack
+from PyPDF4.generic import DictionaryObject
 from PIL import Image, ImageColor
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
@@ -74,7 +74,7 @@ from neo4japp.constants import (
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
     WATERMARK_ICON_SIZE,
-    COLOR_TO_REPLACE
+    COLOR_TO_REPLACE, IMAGE_HEIGHT_INCREMENT
 )
 from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
@@ -847,11 +847,11 @@ def get_node_href(node: dict):
         href = node['data']['sources'][0].get('url')
 
     # Whitespaces will break the link if we prepend the domain
-    current_link = href.strip()
+    href = href.strip()
     # If url points to internal file, prepend it with the domain address
-    if current_link.startswith('/'):
+    if href.startswith('/'):
         # Remove Lifelike links to files that we do not create - due to the possible copyrights
-        if ANY_FILE_RE.match(current_link):
+        if ANY_FILE_RE.match(href):
             # Remove the link from the dictionary
             if node.get('link'):
                 del node['link']
@@ -862,7 +862,7 @@ def get_node_href(node: dict):
             # And search again
             href = get_node_href(node)
         else:
-            href = LIFELIKE_DOMAIN or '' + current_link
+            href = (LIFELIKE_DOMAIN or '') + href
     # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
     return href.replace("'", '%27')
 
@@ -1161,6 +1161,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                     params = create_detail_node(node, params)
                 else:
                     params, icon_params, node_height = create_icon_node(node, params, folder)
+                    icon_params['href'] = get_node_href(node)
                     # We need to set this to ensure that watermark is not intersect some edge cases
                     nodes[i]['data']['height'] = node_height
                     # Create separate node with the icon
@@ -1286,30 +1287,45 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_im.save(final_bytes, format='PNG')
         return final_bytes
 
-    def merge_pdfs(self, files: list, links=None):
+    def merge_pdfs(self, files: list, link_to_page_map=None):
         """ Merge pdfs and add links to map.
         params:
         :param files: list of files to export.
-        :param links: list of dicts describing internal map links
+        :param link_to_page_map: dict mapping url to pdf page number
         """
-        links = links or []
+        link_to_page_map = link_to_page_map or dict()
         final_bytes = io.BytesIO()
         writer = PdfFileWriter()
-        half_size = int(ICON_SIZE) * DEFAULT_DPI / 2.0
-        for i, out_file in enumerate(files):
+        links = []
+        for origin_page, out_file in enumerate(files):
             out_file = self.get_file_export(out_file, 'pdf')
             reader = PdfFileReader(out_file, strict=False)
+            # region Find internal links in pdf
+            for page in map(reader.getPage, range(reader.getNumPages())):
+                for annot in filter(
+                    lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
+                    map(
+                        lambda o: reader.getObject(o),
+                        page.get('/Annots', [])
+                    )
+                ):
+                    annotation = annot.get('/A')
+                    if annotation:
+                        uri = annotation.get('/URI')
+                        print(uri)
+                        rect = annot.get('/Rect')
+                        destination_page = link_to_page_map.get(uri)
+                        if destination_page is not None:
+                            links.append(dict(
+                                pagenum=origin_page,
+                                pagedest=destination_page,
+                                rect=rect
+                            ))
+            # endregion
             writer.appendPagesFromReader(reader)
+        # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:
-            file_index = link['page_origin']
-            coord_offset, pixel_offset = get_content_offsets(files[file_index])
-            x_base = ((link['x'] - coord_offset[0]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
-                PDF_MARGIN * DEFAULT_DPI + pixel_offset[0]
-            y_base = ((-1 * link['y'] - coord_offset[1]) / SCALING_FACTOR * POINT_TO_PIXEL) + \
-                PDF_MARGIN * DEFAULT_DPI - pixel_offset[1]
-            writer.addLink(file_index, link['page_destination'],
-                           [x_base - half_size, y_base - half_size - LABEL_OFFSET,
-                            x_base + half_size, y_base + half_size])
+            writer.addLink(**link)
         writer.write(final_bytes)
         return final_bytes
 
@@ -1482,54 +1498,3 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def handle_content_update(self, file: Files):
         file.enrichment_annotations = None
-
-
-def get_content_offsets(file):
-    """ Gets offset box of the map, allowing to translate the coordinates to the pixels of the
-        pdf generated by graphviz.
-        *params*
-        file: A Files object of map that is supposed to be analyzed
-        Return: two pairs of coordinates: x & y.
-        First denotes the offset to the pdf origin (in the units used by front-end renderer)
-        Second denotes the offset created by the map name node (from which the margin is
-        calculated) in pixels.
-    """
-    x_values, y_values = [], []
-    zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
-    try:
-        json_graph = json.loads(zip_file.read('graph.json'))
-    except KeyError:
-        raise ValidationError
-
-    nodes = json_graph['nodes']
-    for node in nodes:
-        x_values.append(node['data']['x'])
-
-        y = node['data']['y']
-        if node['label'] in ICON_NODES:
-            # If the node is icon node, we have to consider that the label is lower that pos
-            # indicates due to the addition of the icon node
-            y += BASE_ICON_DISTANCE + math.ceil(len(node['display_name']) / min(15 + len(
-                node['display_name']) // 3, MAX_LINE_WIDTH)) \
-                            * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * \
-                            (node.get('style', {}).get('fontSizeScale', 1.0) - 1.0)
-        y_values.append(-y)
-
-    lower_ys = list(
-        map(
-            lambda n: - n['data']['y'] - n['data'].get('height', DEFAULT_NODE_HEIGHT) / 2.0,
-            nodes
-        )
-    )
-    max_x = max(x_values, default=0)
-    min_x = min(x_values, default=0)
-    x_center = min_x + (max_x - min_x) / 2.0
-
-    x_values.append(x_center)
-    y_values.append(min(lower_ys) + WATERMARK_DISTANCE)
-
-    x_offset = max(len(file.filename), 0) * NAME_LABEL_FONT_AVERAGE_WIDTH / 2.0 - \
-        MAP_ICON_OFFSET + \
-        HORIZONTAL_TEXT_PADDING * NAME_LABEL_PADDING_MULTIPLIER
-    y_offset = VERTICAL_NODE_PADDING
-    return (min(x_values), min(y_values)), (x_offset, y_offset)

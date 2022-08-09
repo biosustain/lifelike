@@ -387,6 +387,7 @@ MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
 NAME_NODE_OFFSET = 100
 TRANSPARENT_PIXEL = (0, 0, 0, 0)
 FILENAME_LABEL_MARGIN = 0.165
+VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN
 NAME_LABEL_FONT_AVERAGE_WIDTH = 18
 NAME_LABEL_PADDING_MULTIPLIER = 7
 FILENAME_LABEL_FONT_SIZE = 40.0
@@ -396,7 +397,6 @@ IMAGE_BORDER_SCALE = 4
 WATERMARK_DISTANCE = 100.0
 WATERMARK_WIDTH = 160.0
 WATERMARK_ICON_SIZE = 15
-VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN + WATERMARK_DISTANCE
 COLOR_TO_REPLACE = (0, 0, 0, 255)
 
 BORDER_STYLES_DICT = {
@@ -457,7 +457,7 @@ ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
-MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
+MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
