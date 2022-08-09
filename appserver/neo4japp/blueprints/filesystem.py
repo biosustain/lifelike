@@ -32,7 +32,8 @@ from neo4japp.constants import (
     MAPS_RE,
     SUPPORTED_MAP_MERGING_FORMATS,
     UPDATE_DATE_MODIFIED_COLUMNS,
-    SortDirection, LIFELIKE_DOMAIN,
+    SortDirection,
+    LIFELIKE_DOMAIN,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -146,13 +147,13 @@ class FilesystemBaseView(MethodView):
         return files[0]
 
     def get_nondeleted_recycled_files(
-        self,
+            self,
             filter=None,
-        lazy_load_content=False,
-        require_hash_ids: List[str] = None,
-        sort: List[str] = [],
-        sort_direction: List[str] = [],
-        attr_excl: List[str] = None
+            lazy_load_content=False,
+            require_hash_ids: List[str] = None,
+            sort: List[str] = [],
+            sort_direction: List[str] = [],
+            attr_excl: List[str] = None
     ) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
@@ -344,12 +345,12 @@ class FilesystemBaseView(MethodView):
         return [row[0] for row in query.all()]
 
     def check_file_permissions(
-        self,
-        files: List[Files],
-        user: AppUser,
-        require_permissions: List[str],
-        *,
-        permit_recycled: bool
+            self,
+            files: List[Files],
+            user: AppUser,
+            require_permissions: List[str],
+            *,
+            permit_recycled: bool
     ):
         """
         Helper method to check permissions on the provided files and other properties
@@ -595,10 +596,10 @@ class FilesystemBaseView(MethodView):
         }))
 
     def get_bulk_file_response(
-        self,
-        hash_ids,
-        user: AppUser,
-        missing_hash_ids: Iterable[str] = None
+            self,
+            hash_ids,
+            user: AppUser,
+            missing_hash_ids: Iterable[str] = None
     ):
         """
         Fetch several files and return a response that can be sent to the client. Could
@@ -1704,11 +1705,11 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         return changes.values()
 
     def _add_change(
-        self,
-        changes: Dict[str, Dict],
-        action: str,
-        annotation: Dict,
-        type: Union[Literal['inclusion'], Literal['exclusion']]
+            self,
+            changes: Dict[str, Dict],
+            action: str,
+            annotation: Dict,
+            type: Union[Literal['inclusion'], Literal['exclusion']]
     ) -> None:
         meta = annotation['meta'] if type == 'inclusion' else annotation
         id = meta['id'] if len(meta['id']) else f"@@{meta['allText']}"

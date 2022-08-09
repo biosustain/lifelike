@@ -74,7 +74,7 @@ from neo4japp.constants import (
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
     WATERMARK_ICON_SIZE,
-    COLOR_TO_REPLACE, IMAGE_HEIGHT_INCREMENT
+    COLOR_TO_REPLACE
 )
 from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
