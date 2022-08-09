@@ -1319,7 +1319,7 @@ class FileExportView(FilesystemBaseView):
         file_type = file_type_service.get(file)
 
         if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
-            link_to_page_map = dict()
+            link_to_page_map: Dict[str, int] = dict()
             files = self.get_all_linked_maps(file, {file.hash_id}, [file], link_to_page_map)
             export = file_type.merge(files, params['format'], link_to_page_map)
         else:
