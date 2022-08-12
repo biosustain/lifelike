@@ -62,7 +62,7 @@
     "vis-util": "5.0.2",
     "web-animations-js": "^2.3.2",
     "webcola": "^3.4.0",
-    "zone.js": "~0.10.2"
+    "zone.js": "~0.11.7"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.15",
