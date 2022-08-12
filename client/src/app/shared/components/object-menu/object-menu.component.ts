@@ -27,7 +27,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   @Input() showOpen = true;
   @Input() showRestore = false;
   @Input() showDelete = false;
-  @Input() showTools = true;
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   @Output() objectRefresh = new EventEmitter<FilesystemObject>();
@@ -147,5 +146,9 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
         this.objectUpdate.emit(this.object);
       }
     );
+  }
+
+  updatePinned(target: FilesystemObject) {
+    return this.actions.updatePinned(target).then(() => this.objectUpdate.emit(this.object));
   }
 }
