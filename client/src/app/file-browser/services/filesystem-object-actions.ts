@@ -264,4 +264,16 @@ export class FilesystemObjectActions {
   updateStarred(hashId: string, starred: boolean) {
     return this.filesystemService.updateStarred(hashId, starred).toPromise();
   }
+
+  updatePinned(object: FilesystemObject) {
+    if (object.privileges.writable) {
+      return this.filesystemService.save(
+        [object.hashId],
+        { pinned: !object.pinned, parentHashId: object.parent.hashId },
+        {[object.hashId]: object}
+      ).pipe(
+        this.errorHandler.create({label: 'Edit object'}),
+      ).toPromise();
+    }
+  }
 }
