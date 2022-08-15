@@ -78,7 +78,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                 return
 
         try:
-            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            self.elastic_client.indices.create(
+                index=index_id,
+                body=index_definition,
+                include_type_name=True
+            )
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
