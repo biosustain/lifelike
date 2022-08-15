@@ -11,8 +11,8 @@ def example_long_calculation_job(x: int, y: int) -> int:
         >>> rq_service = RedisQueueService()
         >>> rq_service.enqueue(
             example_long_calculation_job,
-            'default',
             123, 456,
+            queue='default',
             job_id='example_long_calculation_job'
         )
         Job('example_long_calculation_job', ...)
@@ -33,3 +33,27 @@ def example_long_calculation_job(x: int, y: int) -> int:
     sleep(time)
 
     return x + y
+
+# ========================================
+# Unit Test Helpers
+# ========================================
+
+
+def easy_job():
+    return sum([i for i in range(0, 10)])
+
+
+def hard_job():
+    return sum([i for i in range(0, int(1e7))])
+
+
+def bad_job():
+    raise Exception('Oops!')
+
+
+# Note that this should only be run exactly twice per unit test, it is meant to mock a bad job
+# which has been fixed
+def bad_then_good_job(mutable_arg=[True]):
+    if mutable_arg[0]:
+        mutable_arg[0] = False
+        raise Exception('Oops!')

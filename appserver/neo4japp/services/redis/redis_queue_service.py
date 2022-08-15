@@ -19,9 +19,12 @@ class RedisQueueService():
     def get_all_queues(self) -> Iterable[Queue]:
         return Queue.all(connection=self._redis_conn)
 
-    def enqueue(self, f, queue='default', *args, **kwargs) -> Job:
+    def enqueue(self, f, *args, queue='default', max_retry=10, retry_interval=60, **kwargs) -> Job:
         q = self.get_queue(queue)
-        job = q.enqueue(f, retry=Retry(max=10, interval=60), *args, **kwargs)
+
+        retry = Retry(max=max_retry, interval=retry_interval) if max_retry is not None else None
+
+        job = q.enqueue(f, *args, retry=retry, **kwargs)
         current_app.logger.info(f'Job enqueued to redis: {job.to_dict()}')
         return job
 
@@ -96,12 +99,14 @@ class RedisQueueService():
         for w in Worker.all(connection=self._redis_conn):
             self.shutdown_worker(w.name)
 
-    def get_failed_jobs(self, queue: str) -> Iterable[Job]:
+    def get_failed_job_registry(self, queue) -> FailedJobRegistry:
         q = self.get_queue(queue)
+        return FailedJobRegistry(queue=q)
 
+    def get_failed_jobs(self, queue: str) -> Iterable[Job]:
         # Note that with our current configuration, failed jobs are immediately retried several
         # times. So, this list represents all jobs that did not succeed after being retried!
-        registry = FailedJobRegistry(queue=q)
+        registry = self.get_failed_job_registry(queue)
         return [self.get_job(job_id) for job_id in registry.get_job_ids()]
 
     def log_failed_jobs(self, queue: str):
@@ -109,8 +114,22 @@ class RedisQueueService():
             current_app.logger.info(f'Failed Redis Job {job.id}: {job.exc_info}')
 
     def retry_failed_jobs(self, queue: str):
-        q = self.get_queue(queue)
-        registry = FailedJobRegistry(queue=q)
+        registry = self.get_failed_job_registry(queue)
         for job in self.get_failed_jobs(queue):
             registry.requeue(job)
             current_app.logger.info(f'Failed Redis Job {job.id} requeued')
+
+    def cleanup_failed_job(self, queue: str, job_id: str):
+        registry = self.get_failed_job_registry(queue)
+        registry.remove(self.get_job(job_id))
+
+    def cleanup_all_failed_jobs(self, queue: str):
+        registry = self.get_failed_job_registry(queue)
+        for job in self.get_failed_jobs(queue):
+            registry.remove(job)
+
+    # Note that expired jobs are automatically cleaned up when calling certain helpers of the failed
+    # job registry, the `get_job_ids` method for example.
+    def cleanup_expired_failed_jobs(self, queue: str, timestamp=None):
+        registry = self.get_failed_job_registry(queue)
+        registry.cleanup(timestamp)

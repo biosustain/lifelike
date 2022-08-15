@@ -2,11 +2,10 @@ import pytest
 from rq import Queue
 
 from neo4japp.factory import create_app
-from neo4japp.services.redis.redis_queue_service import RedisQueueService
-
 # rq.Queue.enqueue does not seem to play nice with anonymous functions, so we import test jobs
 # from a separate module
-from .jobs import easy_job, hard_job
+from neo4japp.jobs import easy_job, hard_job
+from neo4japp.services.redis.redis_queue_service import RedisQueueService
 
 
 @pytest.fixture(scope='session')
@@ -57,6 +56,9 @@ def default_queue(rq_service: RedisQueueService):
     # Make sure the default queue is empty, but not deleted at the end of each test
     q.empty()
 
+    # Also make sure any failed jobs are cleaned up.
+    rq_service.cleanup_all_failed_jobs(q.name)
+
 
 @pytest.fixture(scope='function')
 def queue_A(rq_service: RedisQueueService):
@@ -66,12 +68,15 @@ def queue_A(rq_service: RedisQueueService):
 
     q.delete()
 
+    # Also make sure any failed jobs are cleaned up.
+    rq_service.cleanup_all_failed_jobs(q.name)
+
 
 @pytest.fixture(scope='function')
 def easy_job_A(rq_service: RedisQueueService, queue_A: Queue):
     yield rq_service.enqueue(
         easy_job,
-        queue_A.name,
+        queue=queue_A.name,
         job_id='easy_job_A'
     )
 
@@ -80,7 +85,7 @@ def easy_job_A(rq_service: RedisQueueService, queue_A: Queue):
 def hard_job_A(rq_service: RedisQueueService, queue_A: Queue):
     yield rq_service.enqueue(
         hard_job,
-        queue_A.name,
+        queue=queue_A.name,
         job_id='hard_job_A'
     )
 
