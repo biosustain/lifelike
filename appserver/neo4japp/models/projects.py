@@ -265,7 +265,7 @@ def after_project_update(mapper: Mapper, connection: Connection, target: Project
 
     try:
         rq_service = RedisQueueService()
-        rq_service.enqueue(_after_project_update, 'default', target)
+        rq_service.enqueue(_after_project_update, target)
     except Exception:
         raise ServerException(
             title='Failed to Update Project',

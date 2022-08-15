@@ -570,7 +570,7 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     try:
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
-        rq_service.enqueue(_after_file_insert, 'default', target)
+        rq_service.enqueue(_after_file_insert, target)
     except Exception:
         raise ServerException(
             title='Failed to Create File',
@@ -659,7 +659,7 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
         if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
             from neo4japp.services.redis.redis_queue_service import RedisQueueService
             rq_service = RedisQueueService()
-            rq_service.enqueue(_after_file_update, 'default', target, get_model_changes(target))
+            rq_service.enqueue(_after_file_update, target, get_model_changes(target))
     except Exception:
         raise ServerException(
                 title='Failed to Update File',
@@ -714,7 +714,7 @@ def after_file_delete(mapper: Mapper, connection: Connection, target: Files):
     try:
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
-        rq_service.enqueue(_after_file_delete, 'default', target)
+        rq_service.enqueue(_after_file_delete, target)
     except Exception:
         raise ServerException(
             title='Failed to Delete File',
