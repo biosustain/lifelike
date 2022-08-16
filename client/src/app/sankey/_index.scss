@@ -6,9 +6,10 @@
 
 $search-accent-color: variables.$red;
 $selection-accent-color: #ff0;
-$node-label-shadow: #bbb;
-$active-node-label-shadow: rgb(187, 187, 187);
+$node-label-shadow: rgba(187, 187, 187, .9);
 $input-spacing: map-get(variables.$spacers, 2);
+$active-stroke-width: 3px;
+$trasition: 100ms;
 
 @mixin panel-divider {
   width: 100%;
@@ -95,7 +96,7 @@ $input-spacing: map-get(variables.$spacers, 2);
 
   fieldset {
     padding: map-get(variables.$spacers, 2) map-get(variables.$spacers, 3);
-    margin: map-get(variables.$spacers, 2);// 0;
+    margin: map-get(variables.$spacers, 2); // 0;
 
     legend {
       margin: 0 - map-get(variables.$spacers, 2);
@@ -162,6 +163,197 @@ $input-spacing: map-get(variables.$spacers, 2);
     .box:before {
       border-color: black;
       border-style: dashed;
+    }
+  }
+}
+
+@mixin search-blink($what) {
+  @keyframes searchBlink#{$what} {
+    50% {
+      #{$what}: $search-accent-color;
+    }
+  }
+  animation-duration: 750ms;
+  animation-name: searchBlink#{$what};
+}
+
+@mixin labelShadow {
+  foreignObject div {
+    box-shadow: 0 0 $active-stroke-width $active-stroke-width $node-label-shadow;
+    background-color: $node-label-shadow;
+  }
+}
+
+
+@mixin active($active) {
+  @if ($active) {
+    opacity: var(--active-opacity);
+  } @else {
+    opacity: var(--inactive-opacity);
+  }
+}
+
+
+@mixin focused {
+  rect {
+    stroke: $selection-accent-color;
+    stroke-width: $active-stroke-width;
+  }
+}
+
+@mixin sankey {
+  display: block;
+  height: 100%;
+
+  min-height: 100%;
+  overflow: hidden;
+  position: relative;
+  transform-origin: 0 0;
+  width: 100%;
+
+  svg {
+    background-color: variables.$window-background;
+    font-size: .6em;
+    height: 100%;
+    width: 100%;
+
+    > g {
+      .nodes {
+        $label-margin: 2*$active-stroke-width;
+        $node-width: 10px;
+
+        shape-rendering: crispEdges;
+        z-index: 1;
+
+        g {
+          //transition: opacity $trasition, font-size $trasition;
+
+          rect {
+            cursor: move;
+            shape-rendering: crispEdges;
+          }
+
+          foreignObject {
+            // 1x1 px - just for positioning
+            overflow: visible;
+
+            div {
+              // actual label (dynamically sized)
+              //transition: background-color $trasition, max-width $trasition;
+              border-radius: $active-stroke-width;
+              display: inline-block;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              // ellipsis itself is about 1.2ch wide
+              max-width: calc(var(--ellipsis-after-x-characters) + 1.2ch);
+              pointer-events: none;
+              padding: 0 .3em;
+            }
+
+            &[label-anchor='left'] div {
+              transform: translate(calc(-100% - #{$node-width / 2 + $label-margin}), -50%);
+            }
+
+            &[label-anchor='right'] div {
+              transform: translate(#{$node-width / 2 + $label-margin}, -50%);
+            }
+          }
+
+
+          &[highlighted="false"],
+          &[transitively-selected="false"],
+          &[selected="false"] {
+            // fade away other nodes
+            @include active($active: false);
+          }
+
+          &:hover,
+          &[selected="true"],
+          &[transitively-selected="true"] {
+            // mark nodes to not fade away
+            @include active($active: true);
+          }
+
+          &:hover,
+          &[selected="true"] {
+            // add focus border
+            @include focused;
+            // render label shadow
+            @include labelShadow;
+          }
+
+          &[searched="true"] {
+            // render label shadow
+            @include labelShadow;
+
+            foreignObject div {
+              // render red border on searched labels
+              box-shadow: 0 0 0 $active-stroke-width $search-accent-color;
+            }
+          }
+
+          &:hover,
+          &[focused="true"],
+          &[selected="true"] {
+            // enlarge text on interaction
+            font-size: 2em;
+          }
+
+          &:hover,
+          &[focused="true"],
+          &[selected="true"] {
+            foreignObject div {
+              // allow for whole label to be visible
+              max-width: fit-content;
+            }
+          }
+
+          &[focused="true"] foreignObject div {
+            // blink background when focused
+            @include search-blink("background-color");
+          }
+        }
+      }
+
+      .links path {
+        //transition: opacity $trasition, fill $trasition;
+
+        &.circular {
+          stroke-dasharray: 4 4;
+        }
+
+        &[thickness="0"] {
+          // Try preventing drawing line like this -=-=-=-=-=-=-
+          fill: transparent;
+        }
+
+        &[selected="false"],
+        &[transitively-selected="false"] {
+          @include active($active: false);
+        }
+
+        &:hover,
+        &[selected="true"] {
+          stroke: $selection-accent-color;
+          stroke-width: $active-stroke-width;
+        }
+
+        &:hover,
+        &[selected="true"],
+        &[transitively-selected="true"] {
+          @include active($active: true);
+        }
+
+        &[searched="true"] {
+          stroke: $search-accent-color;
+        }
+
+        &[focused="true"] {
+          fill: $search-accent-color;
+          @include search-blink("fill");
+        }
+      }
     }
   }
 }

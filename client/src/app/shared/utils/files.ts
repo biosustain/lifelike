@@ -57,20 +57,19 @@ export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeM
   });
 }
 
-export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, any | undefined> {
+export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T[]> {
   return map((data: ArrayBuffer | undefined) => {
     if (data == null) {
       return null;
     }
     const text = new TextDecoder(encoding).decode(data);
     const jsonLines = text.split('\n');
-    // @ts-ignore
     return jsonLines.reduce((o, n) => {
       if (n) {
-        o.push(JSON.parse(n));
+        o.push(JSON.parse(n) as T);
       }
       return o;
-    }, []);
+    }, [] as T[]);
   });
 }
 

@@ -139,6 +139,20 @@ class FileUploadError(ServerException):
             code=code)
 
 
+class ContentValidationError(ServerException):
+    def __init__(
+        self,
+        message=None,
+        additional_msgs=[],
+        code=HTTPStatus.INTERNAL_SERVER_ERROR
+    ):
+        super().__init__(
+            title='Content validation error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
 class NotAuthorized(ServerException):
     def __init__(self, title=None, message=None, additional_msgs=[], code=HTTPStatus.FORBIDDEN):
         super().__init__(

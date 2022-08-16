@@ -5,9 +5,4 @@ export enum SankeyURLLoadParam {
   SEARCH_TERMS = 'search_terms',
 }
 
-export interface SankeyURLLoadParams {
-  [SankeyURLLoadParam.NETWORK_TRACE_IDX]: number;
-  [SankeyURLLoadParam.VIEW_NAME]?: string;
-  [SankeyURLLoadParam.BASE_VIEW_NAME]?: string;
-  [SankeyURLLoadParam.SEARCH_TERMS]?: string;
-}
+export type SankeyURLLoadParams = Record<SankeyURLLoadParam, string>;

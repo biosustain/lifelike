@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -93,22 +94,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return combineLatest([
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId),
-        this.getExtraSource(),
+        this.getBackupBlob(),
       ]);
     });
-
     const isInEditMode = this.isInEditMode.bind(this);
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, blob, extra], value}) => {
-      this.map = result;
+    this.loadSubscription = this.loadTask.results$.subscribe(({result: [mapFile, mapBlob, backupBlob], value}) => {
+      this.map = mapFile;
 
-      if (result.new && result.privileges.writable && !isInEditMode()) {
+      if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
         this.workspaceManager.navigate(['/projects', this.map.project.name, 'maps', this.map.hashId, 'edit']);
       }
 
-      this.contentValue = blob;
+      this.contentValue = mapBlob;
       this.initializeMap();
-      this.handleExtra(extra);
+      this.handleBackupBlob(backupBlob);
     });
   }
 
@@ -127,11 +127,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   dragTitleData$ = defer(() => of(this.map.getTransferData()));
 
-  getExtraSource(): Observable<ExtraResult> {
+  getBackupBlob(): Observable<ExtraResult> {
     return new BehaviorSubject(null);
   }
 
-  handleExtra(data: ExtraResult) {
+  handleBackupBlob(data: ExtraResult) {
   }
 
   // ========================================
@@ -188,41 +188,35 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     this.emitModuleProperties();
-    this.providerSubscription$ = this.objectTypeService.get(this.map).pipe().subscribe(async (typeProvider) => {
-      await typeProvider.unzipContent(this.contentValue).subscribe(graphRepr => {
-        this.subscriptions.add(readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
+    this.providerSubscription$ = this.openMap(this.contentValue, this.map).subscribe(
+      graph => {
+        this.graphCanvas.initializeGraph(graph);
+        this.graphCanvas.zoomToFit(0);
+
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+          );
+        }
+    });
+  }
+
+  openMap(mapBlob: Blob, mapFile: FilesystemObject): Observable<KnowledgeMapGraph> {
+    return this.objectTypeService.get(mapFile).pipe(
+      switchMap(typeProvider => typeProvider.unzipContent(mapBlob)),
+      switchMap(graphRepr =>
+        readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
           mapBufferToJson<KnowledgeMapGraph>(),
           mapJsonToGraph(),
           this.errorHandler.create({label: 'Parse map data'}),
-        ).subscribe(
-          graph => {
-            this.graphCanvas.setGraph(graph);
-            for (const node of graph.nodes) {
-              if (node.image_id !== undefined) {
-                // put image nodes back into renderTree, doesn't seem to make a difference though
-                this.graphCanvas.renderTree.set(node, this.graphCanvas.placeNode(node));
-              }
-            }
-            // Sometimes, we can observe that the map renders before the images are loaded, resulting
-            // in grey placeholders instead of images. Re-rendering the map after all the images are unzipped and loaded
-            // should solve this issue. If the issue is solved in some other way, this render call might be safely removed.
-            this.graphCanvas.render();
-            this.graphCanvas.zoomToFit(0);
-
-            if (this.highlightTerms != null && this.highlightTerms.length) {
-              this.graphCanvas.highlighting.replace(
-                this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
-              );
-            }
-          },
-          e => {
-            console.error(e);
-            // Data is corrupt
-            // TODO: Prevent the user from editing or something so the user doesnt lose data?
-          }
-        ));
-      });
-    });
+        )
+      ),
+      catchError(e => {
+        // Data is corrupt
+        // TODO: Prevent the user from editing or something so the user doesnt lose data?
+        throw e;
+      })
+    );
   }
 
   registerGraphBehaviors() {

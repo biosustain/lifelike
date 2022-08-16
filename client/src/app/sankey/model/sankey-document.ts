@@ -66,6 +66,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   target: number;
   group: number;
   displayProperties?: DisplayProperty[];
+  shortestPathPlusN?: number;
 
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
@@ -240,6 +241,8 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   y1: number;
   reversedDepth: number;
   height: number;
+  initialX0: number;
+  initialX1: number;
   x0: number;
   x1: number;
   label?: string;

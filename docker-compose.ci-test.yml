@@ -51,6 +51,7 @@ services:
     restart: on-failure
     environment:
       - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
 
   elasticsearch:
     image: ghcr.io/sbrg/lifelike-elasticsearch:latest

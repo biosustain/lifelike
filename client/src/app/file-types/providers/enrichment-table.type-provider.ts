@@ -124,7 +124,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     }];
   }
 
-  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<EnrichmentTableEditDialogValue> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Edit Enrichment Table',
       progressObservables: [new BehaviorSubject<Progress>(new Progress({

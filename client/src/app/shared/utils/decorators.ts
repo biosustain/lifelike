@@ -43,8 +43,7 @@ export function bind<T extends object>(target: T, propertyKey: keyof T,
 export function enumerable(valueOrTarget: any, propertyKey: string, descriptor: PropertyDescriptor);
 export function enumerable(valueOrTarget: boolean = true, propertyKey?: string, descriptor?: PropertyDescriptor) {
   if (isBoolean(valueOrTarget)) {
-    // tslint:disable-next-line:only-arrow-functions
-    return function(_target: any, _propertyKey: string, _descriptor: PropertyDescriptor) {
+    return (_target: any, _propertyKey: string, _descriptor: PropertyDescriptor) => {
       _descriptor.enumerable = valueOrTarget;
     };
   }

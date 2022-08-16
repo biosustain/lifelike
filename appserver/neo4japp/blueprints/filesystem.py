@@ -13,15 +13,17 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
     MAX_FILE_SIZE,
@@ -30,6 +32,7 @@ from neo4japp.constants import (
     MAPS_RE,
     SUPPORTED_MAP_MERGING_FORMATS,
     UPDATE_DATE_MODIFIED_COLUMNS,
+    SortDirection,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -48,8 +51,9 @@ from neo4japp.models import (
     FileVersion,
     FileBackup
 )
-from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks
+from neo4japp.models.files import FileLock, FileAnnotationsVersion, MapLinks, StarredFile
 from neo4japp.models.files_queries import (
+    add_file_starred_columns,
     add_file_user_role_columns,
     build_file_hierarchy_query,
     FileHierarchy,
@@ -71,6 +75,7 @@ from neo4japp.schemas.filesystem import (
     FileLockListResponse,
     FileResponseSchema,
     FileSearchRequestSchema,
+    FileStarUpdateRequest,
     FileUpdateRequestSchema,
     FileVersionHistorySchema,
     MultipleFileResponseSchema
@@ -142,10 +147,11 @@ class FilesystemBaseView(MethodView):
 
     def get_nondeleted_recycled_files(
             self,
-            filter,
+            filter=None,
             lazy_load_content=False,
             require_hash_ids: List[str] = None,
             sort: List[str] = [],
+            sort_direction: List[str] = [],
             attr_excl: List[str] = None
     ) -> List[Files]:
         """
@@ -179,13 +185,32 @@ class FilesystemBaseView(MethodView):
         # up the hierarchy to the top most folder to figure out the associated project, which
         # the following generated query does. In the future, we MAY want to cache the project of
         # a file on every file row to make a lot of queries a lot simpler.
-        query = build_file_hierarchy_query(and_(
-            filter,
-            Files.deletion_date.is_(None)
-        ), t_project, t_file, file_attr_excl=attr_excl) \
-            .options(raiseload('*'),
-                     joinedload(t_file.user)) \
-            .order_by(*[text(f'_file.{col}') for col in sort])
+
+        filters = [Files.deletion_date.is_(None)]
+        if filter is not None:
+            filters.append(filter)
+
+        if len(sort) != len(sort_direction):
+            raise ValueError(
+                'Arguments `sort` and `sort_direction` should have an equal number' +
+                'of elements.'
+            )
+        sort_direction_fns = map(
+            lambda dirxn: (desc_ if dirxn == SortDirection.DESC.value else asc_),
+            sort_direction
+        )
+        sort_map = zip(sort, sort_direction_fns)
+
+        query = build_file_hierarchy_query(
+            and_(*filters),
+            t_project,
+            t_file,
+            file_attr_excl=attr_excl
+        ).options(
+            raiseload('*'), joinedload(t_file.user)
+        ).order_by(
+            *[dir_fn(text(f'_file.{col}')) for col, dir_fn in sort_map]
+        )
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
         # etc.) for the current user, which then can be read later by FileHierarchy or manually.
@@ -201,6 +226,7 @@ class FilesystemBaseView(MethodView):
                                               access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
+        query = add_file_starred_columns(query, t_file, current_user.id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
@@ -225,6 +251,7 @@ class FilesystemBaseView(MethodView):
             hierarchy = FileHierarchy(rows, t_file, t_project)
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
+            hierarchy.calculate_starred_files()
             files.append(hierarchy.file)
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
@@ -641,7 +668,8 @@ class FileHierarchyView(FilesystemBaseView):
 
         hierarchy = self.get_nondeleted_recycled_files(
             and_(*filters),
-            sort=['path']
+            sort=['path'],
+            sort_direction=[SortDirection.ASC.value]
         )
 
         # Ignoring type annotation to appease mypy, since nested dicts are tricky to type
@@ -1150,12 +1178,15 @@ class FileSearchView(FilesystemBaseView):
                         Files.pinned.is_(True)
                     )
                 ),
-                sort=['pinned']
+                sort=['modified_date'],
+                sort_direction=[SortDirection.DESC.value]
             )
             files = [
                 file for file in files
                 if file.calculated_privileges[current_user.id].readable
             ]
+            # Ensure directories appear at the top of the list
+            files.sort(key=lambda f: not (f.mime_type == FILE_MIME_TYPE_DIRECTORY))
             total = len(files)
         else:
             raise NotImplementedError()
@@ -1369,7 +1400,26 @@ class FileBackupView(FilesystemBaseView):
 
         backup = FileBackup()
         backup.file = file
-        backup.raw_value = params['content_value'].read()
+
+        # TODO: Make this into a function? @staticmethod of MapTypeProvider
+        # or should I get the instance here?
+        # Alternatively, we can zip those on the client side - but the JZip was working really slow
+        if params['content_value'].content_type == FILE_MIME_TYPE_MAP:
+            new_content = io.BytesIO()
+            zip_content = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
+            # NOTE: The trick here is that when we unpack zip on the client-side, we are not
+            # resetting the image manager memory - we are only appending new stuff to it. This is
+            # why we do not need to store all images within the backup - just the unsaved ones.
+            zip_content.writestr('graph.json', params['content_value'].read())
+            new_images = params.get('new_images') or []
+            for image in new_images:
+                zip_content.writestr('images/' + image.filename + '.png', image.read())
+            zip_content.close()
+            # Always seek before the read
+            new_content.seek(0)
+            backup.raw_value = new_content.read()
+        else:
+            backup.raw_value = params['content_value'].read()
         backup.user = current_user
         db.session.add(backup)
         db.session.commit()
@@ -1414,7 +1464,7 @@ class FileBackupContentView(FilesystemBaseView):
             .options(raiseload('*')) \
             .filter(FileBackup.file_id == file.id,
                     FileBackup.user_id == current_user.id) \
-            .order_by(desc(FileBackup.creation_date)) \
+            .order_by(desc_(FileBackup.creation_date)) \
             .first()
 
         if backup is None:
@@ -1449,7 +1499,7 @@ class FileVersionListView(FilesystemBaseView):
             .options(raiseload('*'),
                      joinedload(FileVersion.user)) \
             .filter(FileVersion.file_id == file.id) \
-            .order_by(desc(FileVersion.creation_date))
+            .order_by(desc_(FileVersion.creation_date))
 
         result = query.paginate(pagination['page'], pagination['limit'])
 
@@ -1500,7 +1550,7 @@ class FileLockBaseView(FilesystemBaseView):
             .options(contains_eager(FileLock.user, alias=t_lock_user)) \
             .filter(FileLock.hash_id == file.hash_id,
                     FileLock.acquire_date >= cutoff_date) \
-            .order_by(desc(FileLock.acquire_date))
+            .order_by(desc_(FileLock.acquire_date))
 
         results = query.all()
 
@@ -1590,7 +1640,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
         query = db.session.query(FileAnnotationsVersion) \
             .filter(FileAnnotationsVersion.file == file) \
-            .order_by(desc(FileAnnotationsVersion.creation_date)) \
+            .order_by(desc_(FileAnnotationsVersion.creation_date)) \
             .options(joinedload(FileAnnotationsVersion.user))
 
         per_page = pagination['limit']
@@ -1666,6 +1716,85 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         changes[id]['instances'].append(annotation)
 
 
+class StarredFileListView(FilesystemBaseView):
+    def get(self):
+        user = g.current_user
+        starred_file_ids = db.session.query(
+            StarredFile.file_id
+        ).filter(
+            StarredFile.user_id == user.id
+        ).all()
+
+        starred_files = self.get_nondeleted_recycled_files(
+            filter=Files.id.in_([file_id for file_id, in starred_file_ids])
+        )
+
+        # TODO: Need to update get_nondeleted_recycled_files so that we can sort on these
+        # calculated properties. For instance, we also cannnot sort/filter by project name.
+        starred_files.sort(key=lambda f: f.calculated_starred['creation_date'], reverse=True)
+        total = len(starred_files)
+
+        return jsonify(FileListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'results.children',
+        )).dump({
+            'total': total,
+            'results': starred_files,
+        }))
+
+
+class FileStarUpdateView(FilesystemBaseView):
+    @use_args(lambda request: FileStarUpdateRequest(partial=True))
+    def patch(self, params: dict, hash_id: str):
+        user = g.current_user
+        starred = params['starred']
+
+        try:
+            result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
+        except NoResultFound:
+            raise RecordNotFound(
+                title='Failed to Update File',
+                message=f'Could not identify file with hash id {hash_id}',
+            )
+
+        # If the user doesn't have permission to read the file they want to star, we throw
+        self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
+
+        if starred:
+            # Don't need to update if the file is already starred by this user
+            if result.calculated_starred is None:
+                starred_file = StarredFile(
+                    user_id=user.id,
+                    file_id=result.id
+                )
+                db.session.add(starred_file)
+        # Delete the row only if it exists
+        elif result.calculated_starred is not None:
+            db.session.query(
+                StarredFile
+            ).filter(
+                StarredFile.id == result.calculated_starred['id']
+            ).delete()
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
+
+        result.calculated_starred = starred_file if starred else None
+
+        return jsonify(FileResponseSchema(context={
+            'user_privilege_filter': user.id,
+        }, exclude=(
+            'result.parent',
+            'result.children',  # We aren't loading sub-children
+        )).dump({
+            'result': result,
+        }))
+
+
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
 bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
@@ -1687,3 +1816,7 @@ bp.add_url_rule('/objects/<string:hash_id>/locks',
                 view_func=FileLockListView.as_view('file_lock_list'))
 bp.add_url_rule('/objects/<string:hash_id>/annotation-history',
                 view_func=FileAnnotationHistoryView.as_view('file_annotation_history'))
+bp.add_url_rule('/objects/starred',
+                view_func=StarredFileListView.as_view('file_star_list'))
+bp.add_url_rule('/objects/<string:hash_id>/star',
+                view_func=FileStarUpdateView.as_view('file_star_update'))

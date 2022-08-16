@@ -43,6 +43,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   unzipContent(contentValue: Blob) {
     const imageIds: string[] = [];
     const imageProms: Promise<Blob>[] = [];
+
     return from((async () => {
       const unzipped = await JSZip.loadAsync(contentValue).then(zip => {
         const imageFolder = zip.folder('images');

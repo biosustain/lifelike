@@ -14,6 +14,7 @@ import { wrapExceptions } from 'app/shared/rxjs/wrapExceptions';
 import { State } from 'app/root-store';
 import { AuthSelectors } from 'app/auth/store';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
 
 import { ProjectsService } from './projects.service';
 import { ProjectImpl } from '../models/filesystem-object';
@@ -97,7 +98,7 @@ export class ProjectActions {
    * Open a dialog to modify a project's collaborators.
    * @param project the project to edit
    */
-  openCollaboratorsDialog(project: ProjectImpl): Promise<any> {
+  openCollaboratorsDialog(project: ProjectImpl): Promise<void> {
     const dialogRef = this.modalService.open(ProjectCollaboratorsDialogComponent);
     dialogRef.componentInstance.project = project;
     return dialogRef.result;
@@ -107,7 +108,7 @@ export class ProjectActions {
    * Open a dialog to delete a project.
    * @param project the project to delete
    */
-  openDeleteDialog(project: ProjectImpl): Promise<any> {
+  openDeleteDialog(project: ProjectImpl): Promise<DirectoryObject[]> {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = [project];
     dialogRef.componentInstance.accept = () =>
@@ -146,7 +147,7 @@ export class ProjectActions {
     return dialogRef.result;
   }
 
-  openShareDialog(project: ProjectImpl): Promise<any> {
+  openShareDialog(project: ProjectImpl): Promise<boolean> {
     return Promise.resolve(
       this.clipboard.copy(`${window.location.origin}/${project.getURL()}`),
     );

@@ -5,7 +5,7 @@ import { EdgeDeletion } from 'app/graph-viewer/actions/edges';
 import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { GroupDeletion } from 'app/graph-viewer/actions/groups';
 
 import { GraphEntity, GraphEntityType } from '../../services/interfaces';
@@ -57,6 +57,6 @@ export class InfoPanelComponent {
    * Bring user to original source of node information
    */
   openSource(source: string): void {
-    openPotentialInternalLink(this.workspaceManager, source);
+    openPotentialExternalLink(this.workspaceManager, source, {newTab: true, sideBySide: true});
   }
 }

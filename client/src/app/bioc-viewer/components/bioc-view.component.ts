@@ -3,9 +3,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash-es';
+import { uniqueId, first } from 'lodash-es';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import jQueryType from 'jquery';
 
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -24,7 +25,9 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
-declare var jQuery: any;
+import { Document, Passage, Infon } from './bioc.format';
+
+declare var jQuery: typeof jQueryType;
 
 @Component({
   selector: 'app-bioc-viewer',
@@ -55,7 +58,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         this.filesystemService.get(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
-          mapBufferToJsons()
+          mapBufferToJsons<Document>()
         )
       );
     });
@@ -70,18 +73,22 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
                                                            value: [file],
                                                          }) => {
       this.biocData = content.splice(0, 1);
-      const ref = (this.biocData[0] as any).passages.findIndex((p: any) => p.infons.section_type === 'REF');
+      const firstDoc = first(this.biocData);
+      const ref = firstDoc.passages.findIndex(p => p.infons.section_type === 'REF');
       if (ref > -1) {
         // then insert here the References Title
-        const referencesTitleObj: any = {};
-        referencesTitleObj.infons = {
-          section_type: 'INTRO',
-          type: 'title_1'
+        const referencesTitleObj: Passage = {
+          infons: {
+            section_type: 'INTRO',
+            type: 'title_1'
+          },
+          offset: 0,
+          annotations: [],
+          text: 'References',
+          sentences: [],
+          relations: []
         };
-        referencesTitleObj.offset = 0;
-        referencesTitleObj.annotations = [];
-        referencesTitleObj.text = 'References';
-        ((this.biocData[0] as any).passages as any[]).splice(ref, 0, referencesTitleObj);
+        firstDoc.passages.splice(ref, 0, referencesTitleObj);
       }
       this.object = object;
       this.emitModuleProperties();
@@ -129,7 +136,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
     map((value) => value ? value.id : null),
   );
-  loadTask: any;
+  loadTask: BackgroundTask<[string], [FilesystemObject, Document[]]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
   openbiocSub: Subscription;
@@ -178,6 +185,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>)
   }));
+
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   getFigureCaption(passage) {
     return passage.infons.id || 'Fig';
@@ -531,8 +540,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     // I will replace this code
     const meta: any = {};
     const dataTransfer: DataTransfer = event.dataTransfer;
-    const txt = (event.target as any).innerHTML;
-    const clazz = (event.target as any).classList;
+    const txt = (event.target as Element).innerHTML;
+    const clazz = (event.target as Element).classList;
     const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
     const pmcidFomDoc = this.pmid(this.biocData[0]);
     const pmcid = ({
@@ -579,13 +588,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       } as Partial<UniversalGraphNode>));
       return;
     }
-    const id = ((event.target as any).attributes[`identifier`] || {}).nodeValue;
-    const annType = ((event.target as any).attributes[`annType`] || {}).nodeValue;
+    const id = ((event.target as Element).attributes[`identifier`] || {}).nodeValue;
+    const annType = ((event.target as Element).attributes[`annType`] || {}).nodeValue;
     const src = this.getSource({
       identifier: id,
       type: annType
     });
-    const offset = ((event.target as any).attributes[`offset`] || {}).nodeValue;
+    const offset = ((event.target as Element).attributes[`offset`] || {}).nodeValue;
     const search = [];
     const hyperlinks = [];
     const url = src;
@@ -625,7 +634,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     event.stopPropagation();
   }
 
-  getSource(payload: any = {}) {
+  getSource(payload: Infon = {}) {
     // I will replace this code
     const identifier = payload.identifier || payload.Identifier;
     const type = payload.type;

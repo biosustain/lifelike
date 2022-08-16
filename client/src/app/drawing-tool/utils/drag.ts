@@ -29,7 +29,7 @@ export function createNodeDragImage(d: UniversalGraphNode): DragImage {
   canvas.width = width + 20; // Make extra space just in case
   canvas.height = height + 20;
   ctx.translate(width / 2 + 1, height / 2 + 1);
-  placedNode.draw(d3.zoomIdentity);
+  placedNode.draw(d3.zoomIdentity, false);
 
   return new DragImage(canvas, width / 2, height / 2);
 }

@@ -1,5 +1,7 @@
 import { Observable } from 'rxjs';
 
+import { Source } from 'app/drawing-tool/services/interfaces';
+
 export interface ModuleProperties {
   title: string;
   fontAwesomeIcon: string;
@@ -18,5 +20,6 @@ export interface ShouldConfirmUnload {
 
 export interface ModuleAwareComponent {
   modulePropertiesChange?: Observable<ModuleProperties>;
-  viewParams?: Promise<object>;
+  sourceData$?: Observable<Source[]>;
+  linkParams?: Promise<Record<string, string>>;
 }

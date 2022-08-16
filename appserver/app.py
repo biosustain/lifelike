@@ -309,9 +309,18 @@ def drop_all_tables_and_enums():
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
 
 
+def validate_email(email):
+    if not re.match(
+        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+        email
+    ):
+        raise ValueError('Invalid email address')
+    return email
+
+
 @app.cli.command("create-user")
 @click.argument("name", nargs=1)
-@click.argument("email", nargs=1)
+@click.argument("email", nargs=1, callback=validate_email)
 def create_user(name, email):
     user = AppUser(
         username=name,

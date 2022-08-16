@@ -7,7 +7,7 @@ from io import BytesIO
 import json
 
 from pyparsing import (
-    CaselessLiteral,
+    CaselessKeyword,
     Optional,
     ParserElement,
     QuotedString,
@@ -78,7 +78,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                 return
 
         try:
-            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            self.elastic_client.indices.create(
+                index=index_id,
+                body=index_definition,
+                include_type_name=True
+            )
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
@@ -566,9 +570,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         boolExpr = infixNotation(
             boolOperand,
             [
-                (CaselessLiteral('not'), 1, opAssoc.RIGHT, BoolMustNot),
-                (CaselessLiteral('and'), 2, opAssoc.LEFT, BoolMust),
-                (CaselessLiteral('or'), 2, opAssoc.LEFT, BoolShould),
+                (CaselessKeyword('not'), 1, opAssoc.RIGHT, BoolMustNot),
+                (CaselessKeyword('and'), 2, opAssoc.LEFT, BoolMust),
+                (CaselessKeyword('or'), 2, opAssoc.LEFT, BoolShould),
             ],
         )
 

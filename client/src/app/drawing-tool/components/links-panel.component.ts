@@ -11,7 +11,7 @@ import {
   URI_TOKEN,
   URIData,
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { openPotentialInternalLink, toValidLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -184,7 +184,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
   linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
-      openPotentialInternalLink(this.workspaceManager, link.url);
+      openPotentialExternalLink(this.workspaceManager, link.url, {newTab: true, sideBySide: true});
     } catch (e) {
       this.messageDialog.display({
         title: 'Invalid Link',

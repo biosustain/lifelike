@@ -51,7 +51,6 @@ export class SELinkDirective extends LinkWithoutHrefDirective {
   sideBySide = true;
   newTab = true;
 
-  // @ts-ignore
   get shouldReplaceTab() {
     return triggerSearchOnShouldReplaceTab(this.appSELink);
   }
