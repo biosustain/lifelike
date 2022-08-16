@@ -18,9 +18,9 @@ export class FilesystemObjectTransferData {
 }
 
 @Injectable()
-export class FilesystemObjectDataProvider implements DataTransferDataProvider {
+export class FilesystemObjectDataProvider implements DataTransferDataProvider<FilesystemObjectTransferData[]> {
 
-  extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
+  extract(dataTransfer: DataTransfer): DataTransferData<FilesystemObjectTransferData[]>[] {
     const results: DataTransferData<FilesystemObjectTransferData[]>[] = [];
 
     const data = dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
