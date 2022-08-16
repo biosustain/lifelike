@@ -1,7 +1,7 @@
 """add version property to graph file
 
 Revision ID: fbfb28a836c6
-Revises: 93b75c6f3f87
+Revises: a0fd1160db03
 Create Date: 2022-08-10 14:30:25.373955
 
 """
@@ -21,13 +21,14 @@ from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'fbfb28a836c6'
-down_revision = '93b75c6f3f87'
+down_revision = 'a0fd1160db03'
 branch_labels = None
 depends_on = None
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
 # region Utils
+
 
 def validate_sankeys(validate_graph):
     conn = op.get_bind()
@@ -63,6 +64,7 @@ def validate_sankeys(validate_graph):
 
 # endregion
 
+
 # region Upgrade
 def data_upgrades():
     with open(path.join(directory, '../upgrade_data/graph_v7.json'), 'r') as f:
@@ -70,10 +72,12 @@ def data_upgrades():
         validate_graph = fastjsonschema.compile(json.load(f))
         validate_sankeys(validate_graph)
 
+
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
 # endregion
+
 
 # region Downgrade
 def data_downgrade():
@@ -81,6 +85,7 @@ def data_downgrade():
         # Use this method to validate the content of an enrichment table
         validate_graph = fastjsonschema.compile(json.load(f))
         validate_sankeys(validate_graph)
+
 
 def downgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
