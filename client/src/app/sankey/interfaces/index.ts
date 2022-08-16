@@ -30,6 +30,7 @@ export interface SankeyStaticOptions {
 
 export interface SankeyFileOptions {
   networkTraces: Array<TraceNetwork>;
+  maximumShortestPathPlusN: number;
   nodeValueAccessors: NodeValueAccessor;
   linkValueAccessors: LinkValueAccessor;
   predefinedValueAccessors: PREDEFINED_VALUE_ACCESSORS;
@@ -39,6 +40,7 @@ export interface SankeyFileOptions {
 export type SankeyOptions = SankeyStaticOptions & Partial<SankeyFileOptions>;
 
 export interface SankeyState {
+  shortestPathPlusN?: number;
   networkTraceIdx?: number;
   prescalerId?: string;
   normalizeLinks?: boolean;

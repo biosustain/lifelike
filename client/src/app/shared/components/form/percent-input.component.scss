@@ -1,0 +1,116 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import '~bootstrap/scss/mixins';
+
+app-percent-input {
+  .invalid-feedback {
+    @include font-size($form-feedback-font-size);
+    color: $form-feedback-invalid-color;
+    display: none;
+    margin-top: $form-feedback-margin-top;
+    width: 100%;
+  }
+
+  .invalid-tooltip {
+    background-color: rgba($form-feedback-invalid-color, $form-feedback-tooltip-opacity);
+    color: color-yiq($form-feedback-invalid-color);
+    display: none;
+    left: 0;
+    line-height: $form-feedback-tooltip-line-height;
+    margin-top: .1rem; // Contain to parent when possible
+    max-width: 100%;
+    padding: $form-feedback-tooltip-padding-y $form-feedback-tooltip-padding-x;
+    @include font-size($form-feedback-tooltip-font-size);
+    position: absolute;
+    top: 100%;
+    z-index: 5;
+    @include border-radius($form-feedback-tooltip-border-radius);
+
+    // See https://github.com/twbs/bootstrap/pull/31557
+    // Align tooltip to form elements
+    .form-row > .col > &,
+    .form-row > [class*="col-"] > & {
+      left: $form-grid-gutter-width * .5;
+    }
+  }
+
+  &.ng-invalid {
+    > .input-group {
+      > .invalid-feedback,
+      > .invalid-tooltip {
+        display: block;
+      }
+    }
+
+    .form-control {
+      border-color: $form-feedback-invalid-color;
+
+      &:focus {
+        border-color: $form-feedback-invalid-color;
+        box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+      }
+    }
+
+    .custom-select {
+      border-color: $form-feedback-invalid-color;
+
+      &:focus {
+        border-color: $form-feedback-invalid-color;
+        box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+      }
+    }
+
+    .form-check-input {
+      ~ .form-check-label {
+        color: $form-feedback-invalid-color;
+      }
+
+      ~ .#{invalid}-feedback,
+      ~ .#{invalid}-tooltip {
+        display: block;
+      }
+    }
+
+    .custom-control-input {
+      ~ .custom-control-label {
+        color: $form-feedback-invalid-color;
+
+        &::before {
+          border-color: $form-feedback-invalid-color;
+        }
+      }
+
+      &:checked {
+        ~ .custom-control-label::before {
+          border-color: lighten($form-feedback-invalid-color, 10%);
+          @include gradient-bg(lighten($form-feedback-invalid-color, 10%));
+        }
+      }
+
+      &:focus {
+        ~ .custom-control-label::before {
+          box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+        }
+
+        &:not(:checked) ~ .custom-control-label::before {
+          border-color: $form-feedback-invalid-color;
+        }
+      }
+    }
+
+    // custom file
+    .custom-file-input {
+      ~ .custom-file-label {
+        border-color: $form-feedback-invalid-color;
+      }
+
+      &:focus {
+        ~ .custom-file-label {
+          border-color: $form-feedback-invalid-color;
+          box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+        }
+      }
+    }
+  }
+}
+

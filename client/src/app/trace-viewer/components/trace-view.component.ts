@@ -1,25 +1,23 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import * as CryptoJS from 'crypto-js';
 import visNetwork from 'vis-network';
-import { combineLatest, Subscription, Observable, Subject } from 'rxjs';
+import { combineLatest, defer, of, Subject } from 'rxjs';
 import { map, switchMap, takeUntil, tap, shareReplay } from 'rxjs/operators';
 import { truncate } from 'lodash-es';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { UserError } from 'app/shared/exceptions';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent} from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { TruncatePipe } from 'app/shared/pipes';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { debug } from 'app/shared/rxjs/debug';
 import { AppURL } from 'app/shared/utils/url';
+import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
@@ -100,6 +98,12 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
       this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`, {search: {network_trace_idx, trace_idx}});
     });
   }
+
+  sourceData$ = defer(() => of([{
+      domain: 'Source File',
+      url: this.sourceFileURL.toString()
+    }]));
+
 
   ngOnDestroy() {
     this.destroyed.next();

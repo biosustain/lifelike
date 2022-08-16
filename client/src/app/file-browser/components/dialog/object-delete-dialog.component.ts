@@ -12,7 +12,7 @@ import { FilesystemObject } from '../../models/filesystem-object';
   selector: 'app-dialog-confirm-deletion',
   templateUrl: './object-delete-dialog.component.html',
 })
-export class ObjectDeleteDialogComponent extends CommonDialogComponent {
+export class ObjectDeleteDialogComponent extends CommonDialogComponent<DirectoryObject[]> {
   @Input() objects: FilesystemObject[];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {

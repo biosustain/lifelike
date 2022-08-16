@@ -1,10 +1,10 @@
-import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';
 import { drag as d3_drag } from 'd3-drag';
-import { map, switchMap, first, filter, tap, publish, takeUntil, shareReplay, pairwise } from 'rxjs/operators';
-import { combineLatest, Subject, EMPTY, iif } from 'rxjs';
+import { map, switchMap, first, tap, publish, takeUntil, shareReplay, pairwise, throttleTime } from 'rxjs/operators';
+import { combineLatest, Subject, animationFrameScheduler } from 'rxjs';
 import { assign, partial, groupBy, isEmpty } from 'lodash-es';
 import { zoomIdentity, zoomTransform } from 'd3';
 
@@ -13,7 +13,6 @@ import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyId, TypeContext, SankeyLinkInterface } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
-import { isNotEmpty } from 'app/shared/utils';
 
 import { representativePositiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
@@ -25,7 +24,6 @@ import { EditService } from '../services/edit.service';
 
 export type DefaultSankeyAbstractComponent = SankeyAbstractComponent<TypeContext>;
 
-@Component({templateUrl: './sankey.component.svg'})
 export abstract class SankeyAbstractComponent<Base extends TypeContext>
   implements OnInit, AfterViewInit, OnDestroy {
   constructor(
@@ -63,70 +61,34 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     return d3_select(this.svg && this.svg.nativeElement);
   }
 
+  ellipsisAfterXCharacters$ = this.sankey.baseView.common.labelEllipsis$.pipe(
+    map(({enabled, value}) => enabled ? value : null)
+  );
+
+  fontSizeScale$ = this.sankey.baseView.common.fontSizeScale$;
+
   focusedNode$ = this.sankey.graph$.pipe(
-    switchMap(({nodes}) =>
-      this.sankey.nodeLabel$.pipe(
-        switchMap(({nodeLabelShort}) => this.search.searchFocus$.pipe(
-          map(searchFocus =>
-            searchFocus?.type === EntityType.Node &&
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            nodes.find(({id: nodeId}) => nodeId == searchFocus?.id)
-          ),
-          tap((node: Base['node']) => node && this.panToNode(node as any)),
-          switchMap(node => this.renderedNodes$.pipe(
-            tap(renderedNodes => {
-              if (!node) {
-                renderedNodes.attr('focused', undefined)
-                  .select('g')
-                  .call(textGroup => {
-                    textGroup
-                      .select('text')
-                      .text(nodeLabelShort);
-                    // postpone so the size is known
-                    requestAnimationFrame(() => {
-                      textGroup
-                        .each(SankeyAbstractComponent.updateTextShadow);
-                    });
-                  });
-              } else {
-                renderedNodes
-                  .filter(d => node !== d)
-                  .call(n => n
-                    .select('g')
-                    .call(textGroup => {
-                      textGroup
-                        .select('text')
-                        .text(nodeLabelShort);
-                      // postpone so the size is known
-                      requestAnimationFrame(() => {
-                        textGroup
-                          .each(SankeyAbstractComponent.updateTextShadow);
-                      });
-                    })
-                  );
-                renderedNodes
-                  .attr('focused', d => node === d)
-                  .filter(d => node === d)
-                  .call(n => n
-                    .select('g')
-                    .call(textGroup => {
-                      textGroup
-                        .select('text')
-                        .text(this.sankey.nodeLabel);
-                      // postpone so the size is known
-                      requestAnimationFrame(() => {
-                        textGroup
-                          .each(SankeyAbstractComponent.updateTextShadow);
-                      });
-                    })
-                  )
-                  .raise();
-              }
-            })
-          ))
-        )),
-      )),
+    switchMap(({nodes}) => this.search.searchFocus$.pipe(
+      map(searchFocus =>
+        searchFocus?.type === EntityType.Node &&
+        // allow string == number match interpolation ("58" == 58 -> true)
+        // tslint:disable-next-line:triple-equals
+        nodes.find(({id: nodeId}) => nodeId == searchFocus?.id)
+      ),
+      tap((node: Base['node']) => node && this.panToNode(node as any)),
+      switchMap(node => this.renderedNodes$.pipe(
+        tap(renderedNodes => {
+          if (!node) {
+            renderedNodes.attr('focused', undefined);
+          } else {
+            renderedNodes
+              .attr('focused', d => node === d)
+              .filter(d => node === d)
+              .raise();
+          }
+        })
+      ))
+    )),
     debug('focusedNode$')
   );
 
@@ -150,6 +112,8 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   zoom: Zoom<SVGElement, number>;
   width: number;
   height: number;
+
+  horizontalStretch$ = this.sankey.horizontalStretch$;
 
   // resize and listen to future resize events
   // would be nice to listen on #g but SVG lacks support for that
@@ -175,18 +139,14 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       });
     });
 
-  zoomAdjust = this.sankey.isAutoLayout$.pipe(
-    switchMap(isAutoLayout =>
-      this.viewBox$.pipe(
-        pairwise(),
-        map(([prev, next]) => ({
-          widthChange: next.width / prev.width,
-          heightChange: next.height / prev.height,
-          widthDelta: next.width - prev.width,
-          heightDelta: next.height - prev.height
-        }))
-      )
-    )
+  zoomAdjust = this.viewBox$.pipe(
+    pairwise(),
+    map(([prev, next]) => ({
+      widthChange: next.width / prev.width,
+      heightChange: next.height / prev.height,
+      widthDelta: next.width - prev.width,
+      heightDelta: next.height - prev.height
+    }))
   ).subscribe(({widthDelta, heightDelta, widthChange, heightChange}) => {
     const transform = zoomTransform(this.svg.nativeElement);
     const k = Math.abs(widthChange - 1) > Math.abs(heightChange - 1) ? widthChange : heightChange;
@@ -251,10 +211,9 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   renderedNodes$ = combineLatest([
     this.sankey.graph$,
-    this.sankey.fontSize$,
-    this.sankey.nodeLabel$
+    this.sankey.fontSize$
   ]).pipe(
-    map(([{nodes}, fontSize, {nodeLabelShort}]) => {
+    map(([{nodes}, fontSize]) => {
       const {
         updateNodeRect,
         sankey: {
@@ -281,13 +240,12 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
             .attr('transform', ({x0, y0}) => `translate(${x0},${y0})`)
             .call(enterNode =>
               updateNodeText(
-                fontSize,
                 enterNode
-                  .append('g')
+                  .append('foreignObject')
+                  .attr('width', 1)
+                  .attr('height', 1)
                   .call(textGroup => {
-                    textGroup.append('rect')
-                      .classed('text-shadow', true);
-                    textGroup.append('text');
+                    textGroup.append('xmlns:div');
                   })
               )
             )
@@ -305,9 +263,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
                 // .transition().duration(RELAYOUT_DURATION)
               );
               updateNodeText(
-                fontSize,
-                enterNode.select('g')
-                  .attr('dy', '0.35em')
+                enterNode.select('foreignObject')
                   .attr('text-anchor', 'end')
                 // todo: reenable when performance improves
                 // .transition().duration(RELAYOUT_DURATION)
@@ -324,10 +280,10 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
               .select('rect')
               .style('fill', nodeColor as d3_ValueFn<any, Base['node'], string>)
           );
-          joined.select('g')
+          joined.select('foreignObject')
             .call(textGroup => {
-              textGroup.select('text')
-                .text(nodeLabelShort);
+              textGroup.select('div')
+                .text(this.sankey.nodeLabel);
             });
         });
     }),
@@ -364,16 +320,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
                 renderedNodes
                   .attr('searched', ({id}) => ids.includes(id))
                   .filter(({id}) => ids.includes(id))
-                  .call(node => node
-                    .select('g')
-                    .call(textGroup => {
-                      // postpone so the size is known
-                      requestAnimationFrame(() => {
-                        textGroup
-                          .each(SankeyAbstractComponent.updateTextShadow);
-                      });
-                    })
-                  )
                   .raise();
               }
             })
@@ -410,16 +356,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       //     otherOnStart: null,
       //     enter: s => s
       //       .attr('searched', true)
-      //       .call(node => node
-      //         .select('g')
-      //         .call(textGroup => {
-      //           // postpone so the size is known
-      //           requestAnimationFrame(() => {
-      //             textGroup
-      //               .each(SankeyAbstractComponent.updateTextShadow);
-      //           });
-      //         })
-      //       )
       //       .raise(),
       //     // just delete property (don't set it to false)
       //     exit: s => s.attr('searched', undefined),
@@ -430,62 +366,59 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     debug('updateSearch')
   );
 
-  // endregion
+  lastHoveredLink$ = new Subject();
+  lastHoveredNode$ = new Subject();
 
-
-  // endregion
-
-  static updateTextShadow(this: SVGElement, _) {
-    // this contains ref to textGroup
-    const [shadow, text] = this.children as any as [SVGRectElement, SVGTextElement];
-    const {x, y, width, height} = text.getBBox();
-    d3_select(shadow)
-      .attr('x', x)
-      .attr('y', y)
-      .attr('width', width)
-      .attr('height', height);
-  }
-
-  @d3Callback
-  extendNodeLabel() {
-    const {nodeLabel} = this.sankey;
-    return textGroup => this.sankey.nodeLabel$.pipe(
-      first(),
-      tap(({nodeLabelShort, nodeLabelShouldBeShorted}) => {
-        textGroup
-          .select('text')
-          .text(nodeLabelShort)
-          .filter(nodeLabelShouldBeShorted)
-          // todo: reenable when performance improves
-          // .transition().duration(RELAYOUT_DURATION)
-          // .textTween(n => {
-          //   const label = nodeLabelAccessor(n);
-          //   const length = label.length;
-          //   const interpolator = d3Interpolate.interpolateRound(INITIALLY_SHOWN_CHARS, length);
-          //   return t => t === 1 ? label :
-          //     (label.slice(0, interpolator(t)) + '...').slice(0, length);
-          // })
-          .text(nodeLabel);
+  hoverUpdate$ = combineLatest([
+    this.lastHoveredLink$.pipe(
+      throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+      switchMap(({data, element}) =>
+        // raise link and it's siblings (same source and target)
+        this.renderedLinks$.pipe(
+          tap(linkSelection => {
+            linkSelection
+              .filter(({source, target}) => data.source === source && data.target === target)
+              .sort((a, b) => Number(a === data))
+              .raise();
+          })
+        )
+      )
+    ),
+    this.lastHoveredNode$.pipe(
+      throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+      switchMap(({data, element}) => {
+        const {sourceLinks, targetLinks} = data;
+        const links = sourceLinks.concat(targetLinks);
+        // raise node and it's links
+        return this.renderedLinks$.pipe(
+          tap(linkSelection => {
+            linkSelection
+              .filter(link => links.includes(link))
+              .raise();
+            d3_select(element).raise();
+          })
+        );
       })
-    ).toPromise();
-  }
+    )
+  ]);
+
+  // endregion
+
+
+  // endregion
 
   @d3Callback
-  updateNodeText(fontSize, texts) {
+  updateNodeText(texts) {
     const {width} = this;
     return texts
-      .attr('transform', ({x0, x1, y0, y1}) =>
-        `translate(${x0 < width / 2 ? (x1 - x0) + 6 : -6} ${(y1 - y0) / 2})`
-      )
-      .attr('text-anchor', 'end')
-      .attr('font-size', fontSize)
-      .call(textGroup =>
-        textGroup.select('text')
-          .attr('dy', '0.35em')
-      )
-      .filter(({x0}) => x0 < width / 2)
-      .attr('text-anchor', 'start')
-      .attr('font-size', fontSize);
+      .attr('transform', ({x0, x1, y0, y1}) => `translate(${(x1 - x0) / 2}, ${(y1 - y0) / 2})`)
+      .attr('label-anchor', ({x0}) => x0 < width / 2 ? 'right' : 'left');
+  }
+
+  initHover() {
+    this.hoverUpdate$.pipe(
+      takeUntil(this.destroyed$)
+    ).subscribe();
   }
 
   initSearch() {
@@ -498,7 +431,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     this.zoom = new Zoom(
       this.svg, {
         scaleExtent: [0.1, 8],
-        // @ts-ignore
         extent: () => {
           const {x, y, width, height} = this.g.nativeElement.getBBox();
           return [[x, y], [x + width, y + height]];
@@ -508,6 +440,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     this.initSelection();
     this.initFocus();
     this.initSearch();
+    this.initHover();
     this.initStateUpdate();
 
     this.updateDOM$.subscribe(() => {
@@ -590,8 +523,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   attachLinkEvents(d3Links) {
     d3Links
       .on('click', this.linkClick)
-      .on('mouseover', this.pathMouseOver)
-      .on('mouseout', this.pathMouseOut);
+      .on('mouseover', this.pathMouseOver);
   }
 
   @d3EventCallback
@@ -626,7 +558,6 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     const delta = {dx: 0, dy: 0};
     d3Nodes
       .on('mouseover', this.nodeMouseOver)
-      .on('mouseout', this.nodeMouseOut)
       .call(
         d3_drag()
           .on('start', this.dragWithDeltaFactory(delta, this.dragStart))
@@ -653,40 +584,16 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     return this.selection.toggleNode(data);
   }
 
-  /**
-   * Callback that dims any nodes/links not connected through the hovered path.
-   * @param element the svg element being hovered over
-   * @param data object representing the link data
-   */
-  // @d3EventCallback
-  abstract async pathMouseOver(element, data);
-
-  /**
-   * Callback that undims all nodes/links.
-   * @param element the svg element being hovered over
-   * @param data object representing the link data
-   */
-  // @d3EventCallback
-  abstract async pathMouseOut(element, data);
-
-  /**
-   * Callback that dims any nodes/links not connected through the hovered node.
-   * styling on the hovered node.
-   * @param element the svg element being hovered over
-   * @param data object representing the node data
-   */
   @d3EventCallback
-  async nodeMouseOver(element, data) {
-    this.highlightNode(element);
+  pathMouseOver(element, data) {
+    return this.lastHoveredLink$.next({element, data});
   }
 
-  /**
-   * Callback that undims all nodes/links. Also unsets hover styling on the hovered node.
-   * @param element the svg element being hovered over
-   * @param data object representing the node data
-   */
-  // @d3EventCallback
-  abstract async nodeMouseOut(element, data);
+  @d3EventCallback
+  nodeMouseOver(element, data) {
+    return this.lastHoveredNode$.next({element, data});
+  }
+
 
   // the function for moving the nodes
   dragmove(element, d) {
@@ -743,70 +650,11 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       .call(e => e.raise());
   }
 
-  // region Highlight
-  // highlightTraces(traces: Set<object>) {
-  //   this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
-  // }
-
-  highlightNodeGroup(group) {
-    this.nodeSelection
-      .attr('highlighted', ({id}) => group.has(id));
-  }
-
-  unhighlightLinks() {
-    this.linkSelection
-      .attr('highlighted', undefined);
-  }
-
-  unhighlightNodes() {
-    this.nodeSelection
-      .attr('highlighted', undefined);
-  }
-
-  // endregion
-
-  abstract highlightNode(element);
-
-  unhighlightNode(element) {
-    return this.sankey.nodeLabel$.pipe(
-      map(({nodeLabelShort, nodeLabelShouldBeShorted}) => {
-        const selection = d3_select(element);
-        selection.select('text')
-          .filter(nodeLabelShouldBeShorted)
-          // todo: reenable when performance improves
-          // .transition().duration(RELAYOUT_DURATION)
-          // .textTween(n => {
-          //   const label = nodeLabelAccessor(n);
-          //   const length = label.length;
-          //   const interpolator = d3Interpolate.interpolateRound(length, INITIALLY_SHOWN_CHARS);
-          //   return t => (label.slice(0, interpolator(t)) + '...').slice(0, length);
-          // });
-          .text(nodeLabelShort);
-        return selection;
-      }),
-      switchMap(selection => this.search.preprocessedMatches$.pipe(
-          first(),
-          // resize shadow back to shorter test when it is used as search result
-          filter(isNotEmpty),
-          tap(matches =>
-            // postpone so the size is known
-            requestAnimationFrame(_ =>
-              (selection as any).select('g')
-                .each(SankeyAbstractComponent.updateTextShadow)
-            )
-          ),
-        )
-      ),
-      first()
-    ).toPromise();
-  }
-
   // region Render
 
   updateNodeRect(rects) {
     return rects
       .attr('height', ({y1, y0}) => representativePositiveNumber(y1 - y0))
-      .attr('width', ({x1, x0}) => x1 - x0)
       .attr('width', ({x1, x0}) => x1 - x0);
   }
 

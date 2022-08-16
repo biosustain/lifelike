@@ -34,6 +34,7 @@ import { CookiePolicyComponent } from 'app/policies/components/cookie-policy.com
 import { CopyrightInfringementPolicyComponent } from 'app/policies/components/copyright-infringement-policy.component';
 import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
 import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
+import { StarredBrowserComponent } from 'app/file-browser/components/starred-browser.component';
 
 
 const routes: Routes = [
@@ -181,6 +182,15 @@ const routes: Routes = [
     data: {
       title: 'Community Content',
       fontAwesomeIcon: 'globe',
+    },
+  },
+  {
+    path: 'files/starred',
+    component: StarredBrowserComponent,
+    canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'Starred Content',
+      fontAwesomeIcon: 'star',
     },
   },
   {

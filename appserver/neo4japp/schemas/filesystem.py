@@ -143,6 +143,7 @@ class FileSchema(CamelCaseSchema):
     project = fields.Method('get_project', exclude='***ARANGO_USERNAME***')
     privileges = fields.Method('get_privileges')
     highlight = fields.Method('get_highlight')
+    starred = fields.Method('get_starred')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     file_path = fields.String()
@@ -168,6 +169,11 @@ class FileSchema(CamelCaseSchema):
 
     def get_highlight(self, obj: Files):
         return obj.calculated_highlight
+
+    def get_starred(self, obj: Files):
+        if obj.calculated_starred is not None:
+            return StarredSchema(context=self.context).dump(obj.calculated_starred)
+        return None
 
     def get_project(self, obj: Files):
         return ProjectSchema(context=self.context, exclude=(
@@ -333,6 +339,7 @@ class FileHierarchyResponseSchema(CamelCaseSchema):
 
 class FileBackupCreateRequestSchema(CamelCaseSchema):
     content_value = FileUploadField(required=True)
+    new_images = fields.List(fields.Field, required=False)
 
 
 # ========================================
@@ -388,3 +395,21 @@ class FileLockDeleteRequest(CamelCaseSchema):
 
 class FileLockListResponse(ResultListSchema):
     results = fields.List(fields.Nested(FileLockSchema))
+
+
+# ========================================
+# Starred Files
+# ========================================
+
+
+class StarredSchema(CamelCaseSchema):
+    id = fields.Integer()
+    file_id = fields.Integer()
+    user_id = fields.Integer()
+    creation_date = fields.DateTime()
+
+
+# Requests
+# ----------------------------------------
+class FileStarUpdateRequest(CamelCaseSchema):
+    starred = fields.Boolean(required=True)

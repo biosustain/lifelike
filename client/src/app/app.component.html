@@ -5,8 +5,14 @@
     <div class="d-flex flex-column">
       <!-- If a file is in standalone mode, workbench button opens it as tab -->
       <ng-container *ngIf="isStandaloneFileOpen; else goToWorkbench">
-        <a [appLink]="mainUrl" placement="right" ngbTooltip="Workbench" [forceWorkbench]="true" [newTab]="true"
-           [fragment]="fragment" preferPane="left">
+        <a [appLink]="mainUrl"
+           [forceWorkbench]="true"
+           [newTab]="true"
+           [fragment]="fragment"
+           [queryParams]="queryParams"
+           preferPane="left"
+           placement="right"
+           ngbTooltip="Workbench">
           <i class="far fa-window-restore"></i>
         </a>
       </ng-container>
@@ -25,6 +31,9 @@
       </a>
       <a appLink="/search/content" placement="right" ngbTooltip="Search" [forceWorkbench]="true" [newTab]="true" preferPane="left">
         <i class="fa fa-search"></i>
+      </a>
+      <a routerLink="/files/starred" placement="right" ngbTooltip="Starred Content">
+        <i class="fas fa-star"></i>
       </a>
       <div class="button-divider"></div>
       <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->

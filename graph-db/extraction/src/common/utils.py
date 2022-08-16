@@ -39,10 +39,12 @@ def get_node_version(data_source_version):
     git_commit_sha = get_git_version(7)
     return f"etl:{git_commit_sha};source:{data_source_version}"
 
-def write_compressed_tsv_file_from_dataframe(dataframe, tsv_filename, outdir):
-    zipfile = os.path.join(outdir, tsv_filename.replace('.tsv', '.zip'))
-    compression_opts = dict(method='zip', archive_name=tsv_filename)
-    dataframe.to_csv(zipfile, sep='\t', index=False, compression=compression_opts)
+
+def write_compressed_tsv_file_from_dataframe(dataframe, tsv_filename, outdir, zip_file=True):
+    os.makedirs(outdir, exist_ok=True)
+    path = os.path.join(outdir, tsv_filename.replace('.tsv', '.zip') if zip_file else tsv_filename)
+    compression_opts = dict(method='zip', archive_name=tsv_filename) if zip_file else None
+    dataframe.to_csv(path, sep='\t', index=False, compression=compression_opts)
 
 def get_data_dir():
     return Config().data_dir

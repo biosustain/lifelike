@@ -1,17 +1,17 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Subscription, throwError, iif, of, ReplaySubject, merge } from 'rxjs';
+import { Subscription, throwError, iif, of, ReplaySubject, merge, defer } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { map, switchMap, tap, first } from 'rxjs/operators';
+import { map, switchMap, tap, first, shareReplay } from 'rxjs/operators';
 
 import { CreateActionOptions, CreateDialogAction } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -26,7 +26,7 @@ import { ProjectsService } from '../services/projects.service';
   selector: 'app-object-browser',
   templateUrl: './object-browser.component.html',
 })
-export class ObjectBrowserComponent {
+export class ObjectBrowserComponent implements ModuleAwareComponent {
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -84,19 +84,25 @@ export class ObjectBrowserComponent {
   );
 
   protected subscriptions = new Subscription();
-  protected annotationSubscription: Subscription;
 
   object$ = this.hashId$.pipe(
     switchMap(hashId => this.filesystemService.get(hashId).pipe(
       tap(object =>
         this.modulePropertiesChange.emit({
-          title: object.isDirectory && !object.parent ? object.project.name
+          title: object.isProject ? object.project.name
             : `${object.project.name} - ${object.filename}`,
           fontAwesomeIcon: 'folder',
         })
       ))
-    )
+    ),
+    shareReplay(1)
   );
+
+  sourceData$ = defer(() => this.object$.pipe(
+    map(object => object.getGraphEntitySources())
+  ));
+
+
   load(hashId: string) {
     this._hashId$.next(hashId);
   }

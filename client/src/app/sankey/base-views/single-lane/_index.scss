@@ -4,11 +4,11 @@
 @import 'sankey';
 
 $active-opacity: 1;
+$inactive-opacity: .1;
 $darken-link-stroke: 5%;
 $link-lightness: 65%;
 $link-color: hsl(0, 0, $link-lightness);
 $inactive-colour: lighten($link-color, 25%);
-$inactive-opacity: .1;
 $link-saturation: 30%;
 
 $link-colors: (

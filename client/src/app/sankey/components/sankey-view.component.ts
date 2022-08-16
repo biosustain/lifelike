@@ -17,7 +17,7 @@ import { KeyValue } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
-import { isNil, pick, flatMap, zip, entries, omitBy } from 'lodash-es';
+import { isNil, pick, flatMap, zip, entries, omitBy, toPlainObject, fromPairs, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -36,7 +36,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { SankeySearchService } from '../services/search.service';
@@ -53,7 +53,7 @@ import { DefaultLayoutService } from '../services/layout.service';
 import { ViewControllerService } from '../services/view-controller.service';
 import { SankeySelectionService } from '../services/selection.service';
 import { ErrorMessages } from '../constants/error';
-import { SankeyURLLoadParam } from '../interfaces/url';
+import { SankeyURLLoadParam, SankeyURLLoadParams } from '../interfaces/url';
 import { EditService } from '../services/edit.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
@@ -80,24 +80,22 @@ interface BaseViewContext {
     ModuleContext
   ]
 })
-export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, OnDestroy, ShouldConfirmUnload {
+export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterViewInit, ShouldConfirmUnload {
+  searchParams$ = this.sankeyController.state$.pipe(
+    map(({networkTraceIdx, viewName, baseView}) =>
+      omitBy(
+        {
+          [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
+          [SankeyURLLoadParam.VIEW_NAME]: viewName,
+          [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView
+        },
+        isNil
+      ) as SankeyURLLoadParams
+    )
+  );
 
-  get viewParams() {
-    return this.sankeyController.state$.pipe(
-      first(),
-      map(state =>
-        omitBy(
-          pick(
-            state,
-            [
-              'networkTraceIdx',
-              'viewName'
-            ]
-          ),
-          isNil
-        )
-      )
-    ).toPromise();
+  get linkParams() {
+    return this.searchParams$.pipe(first()).toPromise();
   }
 
   get sankey() {
@@ -110,6 +108,11 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
   get advanced() {
     return this.dynamicComponentRef.get('advanced').instance;
+  }
+
+  get isStandalone() {
+    // No idea for better check
+    return !this.workSpaceManager.panes$.value.length;
   }
 
   constructor(
@@ -159,29 +162,51 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     ).subscribe(() => {
     });
 
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
-      this.returnUrl = params.return;
-    });
-
-    this.route.fragment.pipe(
-      switchMap(fragment =>
-        // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
-        // (do not kill route observable)
-        this.parseUrlFragmentToState(fragment).pipe(          // set base view from content if not given in url
-          catchError((err, o) => {
-            this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
-            // return empty observable so does not continue with that one
-            return EMPTY;
+    // Does work only in standalone view cause current tab implementation only mockups some router options
+    if (this.isStandalone) {
+      this.searchParams$.subscribe(queryParams =>
+        this.workSpaceManager.navigate(
+          [],
+          {
+            relativeTo: this.route,
+            queryParams
+            // queryParamsHandling: 'merge'
           })
-        )
-      ),
-      tap(stateDelta => this.sankeyController.delta$.next(stateDelta))
-    ).subscribe(state => {
-    });
+      );
+    }
 
-    this.route.params.subscribe(({file_id}: { file_id: string }) => {
-      this.currentFileId = null;
-      this.openSankey(file_id);
+    this.route.params.pipe(
+      tap(({file_id}: { file_id: string }) => {
+        this.currentFileId = null;
+        this.openSankey(file_id);
+      }),
+      switchMap(() =>
+        combineLatest([
+          this.route.queryParams.pipe(
+            map(({return: returnUrl, ...params}) => {
+              this.returnUrl = returnUrl;
+              return this.parseUrlQueryParamsToState(params as SankeyURLLoadParams);
+            })
+          ),
+          this.route.fragment.pipe(
+            switchMap(fragment =>
+              // pipe on this.parseUrlFragmentToState, so it does only kill its observable upon error
+              // (do not kill route observable)
+              this.parseUrlFragmentToState(fragment).pipe(          // set base view from content if not given in url
+                catchError((err, o) => {
+                  this.snackBar.open('Referenced view could not be found.', null, {duration: 2000});
+                  // return empty observable so does not continue with that one
+                  return EMPTY;
+                })
+              )
+            )
+          )
+        ]).pipe(
+          map(deltas => assign({}, ...deltas))
+        )
+      )
+    ).subscribe(delta => {
+      this.sankeyController.delta$.next(delta);
     });
 
     this.sankeyController.viewsUpdate$.pipe(
@@ -344,6 +369,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     )
   );
 
+
+  sourceData$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
+
+
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {
     return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
@@ -358,6 +387,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       first()
     ).toPromise();
   }
+
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
@@ -385,7 +415,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.viewController.selectView(networkTraceIdx, viewName)
       ),
-      tap(() => this.resetZoom(false)),
+      tap(() => {
+        this.resetZoom(false);
+        this.resetStretch();
+      }),
       take(1),
       catchError(() => of({}))
     ).toPromise();
@@ -501,7 +534,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(() =>
         this.sankeyController.selectNetworkTrace(networkTraceIdx)
       ),
-      tap(() => this.resetZoom(false)),
+      tap(() => {
+        this.resetZoom(false);
+        this.resetStretch();
+      }),
       take(1),
       catchError(() => of({}))
     ).toPromise();
@@ -552,7 +588,9 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       switchMap(overwrite =>
         iif(
           () => overwrite,
-          defer(() => this.viewController.createView(viewName)),
+          defer(() => this.viewController.createView(viewName)).pipe(
+            tap(() => this.resetStretch())
+          ),
           of(false)
         )
       )
@@ -569,7 +607,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
           defer(() => this.saveViewAs())
         )
       )
-    ).toPromise();
+    ).toPromise().then(() => this.resetStretch());
   }
 
   saveViewAs(): Promise<any> {
@@ -599,34 +637,24 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     return modalRef;
   }
 
+  parseUrlQueryParamsToState({
+                               [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
+                               [SankeyURLLoadParam.VIEW_NAME]: viewName,
+                               [SankeyURLLoadParam.BASE_VIEW_NAME]: baseView,
+                               [SankeyURLLoadParam.SEARCH_TERMS]: searchTerms
+                             }: SankeyURLLoadParams): Partial<SankeyState> {
+    return omitBy({
+      networkTraceIdx: networkTraceIdx ? Number(networkTraceIdx) : null,
+      viewName,
+      baseView
+    }, isNil);
+  }
+
   parseUrlFragmentToState(fragment: string): Observable<Partial<SankeyState>> {
-    const state = {} as Partial<SankeyState>;
-    const params = new URLSearchParams(fragment ?? '');
-    let viewId;
-    for (const [param, value] of (params as any).entries()) {
-      switch (param) {
-        case SankeyURLLoadParam.NETWORK_TRACE_IDX:
-          state.networkTraceIdx = parseInt(value, 10) || 0;
-          break;
-        case SankeyURLLoadParam.VIEW_NAME:
-          state.viewName = value;
-          break;
-        case SankeyURLLoadParam.BASE_VIEW_NAME:
-          state.baseViewName = value;
-          break;
-        case SankeyURLLoadParam.SEARCH_TERMS:
-          // todo: parse search terms
-          break;
-        default:
-          viewId = param;
-      }
+    if (isNil(fragment)) {
+      return of({});
     }
-    if (!isNil(viewId)) {
-      return this.viewService.get(viewId).pipe(
-        tap(view => Object.assign(view, state))
-      );
-    }
-    return of(state);
+    return this.viewService.get(fragment);
   }
 
   openPathReport() {
@@ -648,6 +676,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
         })
       )
     ]).toPromise();
+    this.resetStretch();
     this.resetZoom();
   }
 
@@ -667,6 +696,27 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   zoomOut() {
     if (this.sankeySlot) {
       this.sankey.zoom.scaleBy(.8, undefined, true);
+    }
+  }
+
+  // endregion
+
+  // region Stretch
+  resetStretch() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(1);
+    }
+  }
+
+  stretch() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * 1.25);
+    }
+  }
+
+  shrink() {
+    if (this.sankeySlot) {
+      this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * .8);
     }
   }
 
@@ -701,10 +751,6 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     if (confirm('There have been some changes. Would you like to refresh this open document?')) {
       this.openSankey(this.currentFileId);
     }
-  }
-
-  ngOnDestroy() {
-    this.paramsSubscription.unsubscribe();
   }
 
   openNewWindow() {
