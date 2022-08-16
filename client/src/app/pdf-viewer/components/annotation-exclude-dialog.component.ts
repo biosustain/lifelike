@@ -7,12 +7,20 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { AnnotationType } from 'app/shared/constants';
 
+interface Result {
+  reason: string;
+  comment: string;
+  isCaseInsensitive: boolean;
+  excludeGlobally: boolean;
+}
+
 @Component({
   selector: 'app-annotation-exclude-dialog',
   templateUrl: './annotation-exclude-dialog.component.html',
 })
-export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent {
+export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent<Result> {
   @Input() text: string;
+
   @Input() set type(type: AnnotationType) {
     if (type === AnnotationType.Gene || type === AnnotationType.Protein) {
       this.isGeneOrProtein = true;
@@ -21,6 +29,7 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent 
       });
     }
   }
+
   readonly reasonChoices = [
     'Not an entity',
     'Wrong annotation type',
