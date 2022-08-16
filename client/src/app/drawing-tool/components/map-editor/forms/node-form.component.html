@@ -101,7 +101,7 @@
                             [ngModel]="node.style.fontSizeScale || 1"
                             (ngModelChange)="model.valid && node.style.fontSizeScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
                     </div>
 
@@ -163,7 +163,7 @@
                             [ngModel]="node.style.lineWidthScale || 1"
                             (ngModelChange)="model.valid && node.style.lineWidthScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
                     </div>
                 </fieldset>
