@@ -29,6 +29,7 @@ x-appserver: &appserver
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
+    - REDIS_USERNAME=default
     - REDIS_PASSWORD=password
     - REDIS_SSL=false
     # StatisticalEnrichment
@@ -61,7 +62,7 @@ services:
   worker:
     <<: *appserver
     container_name: worker
-    command: flask rq worker
+    command: rq worker -c rq_config --with-scheduler
     networks:
       - backend
 
@@ -172,8 +173,11 @@ services:
       - backend
 
   redis:
+    container_name: redis
     image: redis:6-alpine
     command: redis-server --requirepass password
+    ports:
+      - "6379:6379"
     networks:
       - backend
 

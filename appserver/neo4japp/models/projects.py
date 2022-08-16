@@ -221,37 +221,52 @@ def before_project_update(mapper: Mapper, connection: Connection, target: Projec
         _update_path_of_***ARANGO_USERNAME***_and_descendants(connection, deleted[0], added[0])
 
 
-@event.listens_for(Projects, 'after_update')
-def after_project_update(mapper: Mapper, connection: Connection, target: Projects):
-    # Import what we need, when we need it (Helps to avoid circular dependencies)
+def _after_project_update(target: Projects):
+    from app import app
     from neo4japp.database import get_elastic_service
     from neo4japp.models.files import Files
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
 
-    try:
-        elastic_service = get_elastic_service()
-        family = get_nondeleted_recycled_children_query(
-            Files.id == target.***ARANGO_USERNAME***_id,
-            children_filter=and_(
-                Files.recycling_date.is_(None)
-            ),
-            lazy_load_content=True
-        ).all()
-        files_to_update = [member.hash_id for member in family]
+    # This will be called by the Redis queue service outside of the normal flask app context, so
+    # here we manually ensure there is a context.
+    with app.app_context():
+        try:
+            family = get_nondeleted_recycled_children_query(
+                Files.id == target.***ARANGO_USERNAME***_id,
+                children_filter=and_(
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
+            ).all()
+            files_to_update = [member.hash_id for member in family]
 
-        current_app.logger.info(
-            f'Attempting to update files in elastic with hash_ids: ' +
-            f'{files_to_update}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-        )
-        # TODO: Change this to an update operation, and only update file path
-        elastic_service.index_files(files_to_update)
-    except Exception as e:
-        current_app.logger.error(
-            f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
-            exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-        )
+            current_app.logger.info(
+                f'Attempting to update files in elastic with hash_ids: ' +
+                f'{files_to_update}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+
+            elastic_service = get_elastic_service()
+            # TODO: Change this to an update operation, and only update file path
+            elastic_service.index_files(files_to_update)
+        except Exception as e:
+            current_app.logger.error(
+                f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
+                exc_info=e,
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            )
+            raise
+
+
+@event.listens_for(Projects, 'after_update')
+def after_project_update(mapper: Mapper, connection: Connection, target: Projects):
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.services.redis.redis_queue_service import RedisQueueService
+
+    try:
+        rq_service = RedisQueueService()
+        rq_service.enqueue(_after_project_update, target)
+    except Exception:
         raise ServerException(
             title='Failed to Update Project',
             message='Something unexpected occurred while updating your file! Please try again ' +
