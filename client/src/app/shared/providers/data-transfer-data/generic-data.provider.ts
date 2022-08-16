@@ -17,7 +17,7 @@ export class URIData {
 }
 
 @Injectable()
-export class GenericDataProvider implements DataTransferDataProvider {
+export class GenericDataProvider implements DataTransferDataProvider<URIData[]|string> {
 
   private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');
 
@@ -69,8 +69,8 @@ export class GenericDataProvider implements DataTransferDataProvider {
     return uris;
   }
 
-  extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
-    const results: DataTransferData<any>[] = [];
+  extract(dataTransfer: DataTransfer): DataTransferData<URIData[]|string>[] {
+    const results: DataTransferData<URIData[]|string>[] = [];
     let text = '';
 
     if (dataTransfer.types.includes('text/plain')) {
