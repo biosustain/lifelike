@@ -9,7 +9,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
   selector: 'app-terms-of-service-dialog',
   templateUrl: './terms-of-service-dialog.component.html',
 })
-export class TermsOfServiceDialogComponent extends CommonDialogComponent {
+export class TermsOfServiceDialogComponent extends CommonDialogComponent<boolean> {
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }

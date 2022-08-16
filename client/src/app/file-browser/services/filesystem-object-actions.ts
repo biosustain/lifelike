@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
-import { finalize, map, mergeMap, take } from 'rxjs/operators';
+import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { clone, first } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
@@ -25,15 +25,13 @@ import { FilesystemService } from './filesystem.service';
 import { getObjectLabel } from '../utils/objects';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
-import {
-  ObjectExportDialogComponent,
-  ObjectExportDialogValue,
-} from '../components/dialog/object-export-dialog.component';
+import { ObjectExportDialogComponent, ObjectExportDialogValue, } from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
+import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -105,7 +103,7 @@ export class FilesystemObjectActions {
    * Open a dialog to upload a file.
    * @param parent the folder to put the new file in
    */
-  openUploadDialog(parent: FilesystemObject): Promise<any> {
+  openUploadDialog(parent: FilesystemObject): Promise<FilesystemObject[]> {
     const object = new FilesystemObject();
     object.parent = parent;
     return this.objectCreationService.openCreateDialog(object, {
@@ -171,14 +169,14 @@ export class FilesystemObjectActions {
    * Open a dialog to edit the provided file.
    * @param target the file to edit
    */
-  openEditDialog(target: FilesystemObject): Promise<any> {
+  openEditDialog(target: FilesystemObject): Promise<ObjectEditDialogValue> {
     return this.objectTypeService.get(target).pipe(
       mergeMap(typeProvider => from(typeProvider.openEditDialog(target))),
       take(1),
     ).toPromise();
   }
 
-  openDeleteDialog(targets: FilesystemObject[]): Promise<any> {
+  openDeleteDialog(targets: FilesystemObject[]): Promise<ObjectEditDialogValue> {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = targets;
     dialogRef.componentInstance.accept = (() => {
@@ -193,7 +191,7 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<any> {
+  openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<void> {
     const dialogRef = this.modalService.open(FileAnnotationHistoryDialogComponent, {
       size: 'lg',
     });
@@ -210,7 +208,7 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openVersionHistoryDialog(target: FilesystemObject): Promise<any> {
+  openVersionHistoryDialog(target: FilesystemObject): Promise<ObjectVersion | null> {
     const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
       size: 'xl',
     });
@@ -218,7 +216,7 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
+  openShareDialog(object: FilesystemObject, forEditing = false): Promise<boolean> {
     return Promise.resolve(
       this.clipboard.copy(`${window.location.origin}${object.getURL(forEditing)}`)
     );
@@ -229,7 +227,7 @@ export class FilesystemObjectActions {
     return window.open(objectPath);
   }
 
-  reannotate(targets: FilesystemObject[]): Promise<any> {
+  reannotate(targets: FilesystemObject[]): Promise<ResultMapping<AnnotationGenerationResultData>> {
     const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
@@ -244,7 +242,7 @@ export class FilesystemObjectActions {
     const results: ResultMapping<AnnotationGenerationResultData>[] = [];
     return forkJoin(annotationRequests).pipe(
       mergeMap(res => merge(res)),
-      map(result => results.push(result)),
+      tap(result => results.push(result)),
       finalize(() => {
         const check = [];
         progressDialogRef.close();
