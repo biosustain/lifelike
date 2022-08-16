@@ -74,6 +74,7 @@ class LogEventType(Enum):
     SYSTEM = 'system'
     VISUALIZER = 'visualizer'
     VISUALIZER_SEARCH = 'visualizer_search'
+    REDIS = 'redis'
 
 
 DOMAIN_LABELS = [
