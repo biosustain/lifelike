@@ -29,7 +29,7 @@ export class AbstractLinkDirective {
   @Input() sideBySide: boolean;
   @Input() keepFocus: boolean;
   @Input() matchExistingTab: string | RegExp;
-  @Input() shouldReplaceTab: (component: any) => any;
+  @Input() shouldReplaceTab: (component: any) => boolean;
   @Input() handleClick = true; // TODO: Really should refactor this out, it's only used as a sort of kludge in one place
   @Input() forceWorkbench = false;
   @Input() preferPane: string;
