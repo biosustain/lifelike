@@ -1,43 +1,32 @@
 import io
 import json
 import math
+import os
 import re
+import tempfile
+import textwrap
 import typing
 import zipfile
-import tempfile
-
 from base64 import b64encode
-
 from io import BufferedIOBase
 from typing import Optional, List
 
-import textwrap
+import bioc
 import graphviz
 import numpy as np
 import requests
 import svg_stack
-from graphviz import escape
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from flask import current_app
-
+from graphviz import escape
+from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
+from lxml import etree
+from marshmallow import ValidationError
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
-from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
-from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
-import os
-import bioc
-from marshmallow import ValidationError
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PIL import Image, ImageColor
-from lxml import etree
 
-from neo4japp.exceptions import FileUploadError
-from neo4japp.models import Files
-from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
-from neo4japp.services.file_types.service import BaseFileTypeProvider
-from neo4japp.utils.logger import EventLog
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -87,7 +76,14 @@ from neo4japp.constants import (
     WATERMARK_ICON_SIZE,
     COLOR_TO_REPLACE
 )
-
+from neo4japp.exceptions import FileUploadError
+from neo4japp.models import Files
+from neo4japp.schemas.formats.drawing_tool import validate_map
+from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
+from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
@@ -1411,7 +1407,9 @@ class GraphTypeProvider(BaseFileTypeProvider):
 
     def validate_content(self, buffer: BufferedIOBase):
         data = json.loads(buffer.read())
-        validate_graph(data)
+        validate_graph_format(data)
+        if 'version' in data:
+            validate_graph_content(data)
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
