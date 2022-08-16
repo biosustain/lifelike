@@ -61,5 +61,5 @@ services:
 
   redis:
     container_name: redis
-    image: redis:6-alpine
+    image: redis:7-alpine
     command: redis-server --requirepass password
