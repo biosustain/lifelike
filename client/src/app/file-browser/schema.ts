@@ -1,10 +1,5 @@
 import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  AnnotationChangeExclusionMeta,
-  Meta,
-} from 'app/pdf-viewer/annotation-type';
+import { AddedAnnotationExclusion, Annotation, AnnotationChangeExclusionMeta, Meta, } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
 
@@ -267,6 +262,13 @@ export interface PDFAnnotationGenerationRequest {
 /* tslint:disable-next-line */
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
   //
+}
+
+
+export class AnnotationGenerationResultSchema {
+  attempted: boolean;
+  success: boolean;
+  error: string;
 }
 
 // ========================================

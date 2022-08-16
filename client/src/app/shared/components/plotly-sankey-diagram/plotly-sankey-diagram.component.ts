@@ -4,9 +4,10 @@ import { selectAll, select } from 'd3-selection';
 
 import { uuidv4 } from 'app/shared/utils';
 
-import { Layout, Data, newPlot } from 'plotly.js';
+import * as PlotlyType from 'plotly.js';
+import { Layout, Data } from 'plotly.js';
 
-declare const Plotly: any;
+declare const Plotly: typeof PlotlyType;
 
 @Component({
   selector: 'app-plotly-sankey-diagram',
@@ -29,7 +30,7 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     const container = document.getElementById(this.sankeyContainerId);
-    (Plotly.newPlot as typeof newPlot)(
+    Plotly.newPlot(
       container,
       [this.data],
       this.config,
