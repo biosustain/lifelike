@@ -78,7 +78,7 @@
                             [ngModel]="group.style.fontSizeScale || 1"
                             (ngModelChange)="model.valid && group.style.fontSizeScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
                     </div>
 
@@ -140,7 +140,7 @@
                             [ngModel]="group.style.lineWidthScale || 1"
                             (ngModelChange)="model.valid && group.style.lineWidthScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
                     </div>
                 </fieldset>

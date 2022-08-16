@@ -65,7 +65,9 @@ export class PercentInputComponent implements ControlValueAccessor, Validator {
   /**
    * Object with format callback `{format}`
    */
-  @Input() readonly formatter: Intl.NumberFormat = new Intl.NumberFormat('en-US', {maximumFractionDigits: 2});
+  @Input() readonly formatter: Intl.NumberFormat = new Intl.NumberFormat(
+    'en-US', {maximumFractionDigits: 2, useGrouping: false}
+  );
 
   disabled = false;
   /**

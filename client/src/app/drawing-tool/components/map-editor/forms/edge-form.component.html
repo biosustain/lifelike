@@ -56,7 +56,7 @@
                             [ngModel]="edge.style.fontSizeScale || 1"
                             (ngModelChange)="model.valid && edge.style.fontSizeScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
             </div>
 
@@ -99,7 +99,7 @@
                             [ngModel]="edge.style.lineWidthScale || 1"
                             (ngModelChange)="model.valid && edge.style.lineWidthScale = $event"
                             (change)="model.valid && doSave()"
-                            [style.width.rem]="6"
+                            appAutoGrow
                         ></app-percent-input>
             </div>
           </fieldset>
