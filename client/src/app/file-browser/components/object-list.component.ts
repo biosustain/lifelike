@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash-es';
+import { isNil, uniqueId } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
@@ -29,7 +29,7 @@ export class ObjectListComponent {
 
   @Input() appLinks = false;
   @Input() forEditing = true;
-  @Input() showPins = true;
+  @Input() showStars = true;
   @Input() showDescription = false;
   @Input() parent: FilesystemObject | undefined;
   @Input() objects: CollectionModel<FilesystemObject> | undefined;
@@ -107,16 +107,12 @@ export class ObjectListComponent {
     this.objects.updateView();
   }
 
-  togglePin(object: FilesystemObject) {
-    if (object.privileges.writable) {
-      return this.filesystemService.save(
-        [object.hashId],
-        { pinned: !object.pinned, parentHashId: object.parent.hashId },
-        {[object.hashId]: object}
-      ).pipe(
-        this.errorHandler.create({label: 'Edit object'}),
-      ).toPromise()
-      .then(() => this.updateView());
-    }
+  toggleStarred(object: FilesystemObject) {
+    this.filesystemService.updateStarred(object.hashId, isNil(object.starred))
+    .toPromise()
+    .then((result) => {
+      object.update(result);
+      this.updateView();
+    });
   }
 }
