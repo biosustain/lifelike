@@ -2,7 +2,6 @@ import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, Simpl
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { Observable } from 'rxjs';
 import { mergeMap, shareReplay } from 'rxjs/operators';
@@ -28,7 +27,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   @Input() showOpen = true;
   @Input() showRestore = false;
   @Input() showDelete = false;
-  @Input() showTools = true;
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   @Output() objectRefresh = new EventEmitter<FilesystemObject>();
@@ -139,5 +137,18 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
 
   openLink(url: string) {
     window.open(url);
+  }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.actions.updateStarred(hashId, starred).then(
+      (result) => {
+        this.object.update(result);
+        this.objectUpdate.emit(this.object);
+      }
+    );
+  }
+
+  updatePinned(target: FilesystemObject) {
+    return this.actions.updatePinned(target).then(() => this.objectUpdate.emit(this.object));
   }
 }

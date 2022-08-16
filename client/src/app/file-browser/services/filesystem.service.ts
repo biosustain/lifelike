@@ -350,6 +350,23 @@ export class FilesystemService {
       }
     );
   }
+
+  getStarred() {
+    return this.http.get<ResultList<FilesystemObjectData>>(`/api/filesystem/objects/starred`).pipe(
+      map(data => {
+        const list = new FilesystemObjectList();
+        list.results.replace(data.results.map(itemData => new FilesystemObject().update(itemData)));
+        return list;
+      })
+    );
+  }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.http.patch<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/star`,
+      { starred }
+    ).pipe(map(data => data.result));
+  }
 }
 
 export class LockError {
