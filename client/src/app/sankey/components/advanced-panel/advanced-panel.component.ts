@@ -1,5 +1,8 @@
 import { Component, OnDestroy, OnInit, } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, FormControl, FormGroup, AbstractControl } from '@angular/forms';
+
+import { map } from 'rxjs/operators';
+import { partition, keys, isInteger } from 'lodash-es';
 
 import { ControllerService } from 'app/sankey/services/controller.service';
 
@@ -22,6 +25,7 @@ export class SankeyAdvancedPanelComponent
   }
 
   form = this.formBuilder.group({
+    shortestPathPlusN: [1, []],
     alignId: [undefined, []],
     normalizeLinks: ['', []],
     fontSizeScale: [1, []],
@@ -34,10 +38,28 @@ export class SankeyAdvancedPanelComponent
 
   prescalers$ = this.common.prescalers$;
   maximumLabelLength$ = this.common.maximumLabelLength$;
+  maximumShortestPathPlusN$ = this.common.maximumShortestPathPlusN$;
   aligns$ = this.common.aligns$;
 
   ngOnInit() {
     super.ngOnInit();
+
+    this.maximumShortestPathPlusN$.subscribe(maximumShortestPathPlusN => {
+      this.form.get('shortestPathPlusN').setValidators([
+        ({value}: AbstractControl) => {
+          if (!isInteger(value)) {
+            return {
+              step: {
+                value,
+                fraction: value % 1
+              }
+            };
+          }
+        },
+        Validators.min(0),
+        Validators.max(maximumShortestPathPlusN),
+      ]);
+    });
   }
 
   ngOnDestroy() {

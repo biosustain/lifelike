@@ -49,62 +49,64 @@
         }
     },
     "mappings": {
-        "properties": {
-            "filename": {
-                "type": "text",
-                "analyzer": "filename_analyzer"
-            },
-            "file_path": {
-                "type": "text",
-                "fields": {
-                    "tree": {
-                        "type": "text",
-                        "analyzer": "custom_path_tree"
-                    },
-                    "tree_reversed": {
-                        "type": "text",
-                        "analyzer": "custom_path_tree_reversed"
+        "_doc": {
+            "properties": {
+                "filename": {
+                    "type": "text",
+                    "analyzer": "filename_analyzer"
+                },
+                "file_path": {
+                    "type": "text",
+                    "fields": {
+                        "tree": {
+                            "type": "text",
+                            "analyzer": "custom_path_tree"
+                        },
+                        "tree_reversed": {
+                            "type": "text",
+                            "analyzer": "custom_path_tree_reversed"
+                        }
                     }
+                },
+                "description": {
+                    "type": "text"
+                },
+                "uploaded_date": {
+                    "type": "date"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "keyword"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "project_hash_id": {
+                    "type": "keyword"
+                },
+                "project_name": {
+                    "type": "text"
+                },
+                "doi": {
+                    "type": "keyword"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "hash_id": {
+                    "type": "keyword"
+                },
+                "mime_type": {
+                    "type": "keyword"
+                },
+                "data_ok": {
+                    "type": "boolean"
                 }
-            },
-            "description": {
-                "type": "text"
-            },
-            "uploaded_date": {
-                "type": "date"
-            },
-            "user_id": {
-                "type": "integer"
-            },
-            "username": {
-                "type": "keyword"
-            },
-            "project_id": {
-                "type": "integer"
-            },
-            "project_hash_id": {
-                "type": "keyword"
-            },
-            "project_name": {
-                "type": "text"
-            },
-            "doi": {
-                "type": "keyword"
-            },
-            "public": {
-                "type": "boolean"
-            },
-            "id": {
-                "type": "integer"
-            },
-            "hash_id": {
-                "type": "keyword"
-            },
-            "mime_type": {
-                "type": "keyword"
-            },
-            "data_ok": {
-                "type": "boolean"
             }
         }
     }

@@ -14,7 +14,7 @@ import { FilesystemObject } from '../../models/filesystem-object';
   selector: 'app-object-annotation-history-dialog',
   templateUrl: './file-annotation-history-dialog.component.html',
 })
-export class FileAnnotationHistoryDialogComponent extends CommonDialogComponent {
+export class FileAnnotationHistoryDialogComponent extends CommonDialogComponent<void> {
 
   @Input() object: FilesystemObject;
 
@@ -23,7 +23,5 @@ export class FileAnnotationHistoryDialogComponent extends CommonDialogComponent 
     super(modal, messageDialog);
   }
 
-  getValue(): any {
-  }
-
+  getValue() {}
 }

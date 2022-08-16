@@ -11,8 +11,8 @@ import {
 import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, switchMap, first, map } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge, from as rxjs_from } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
@@ -64,7 +64,7 @@ export class Container<T> {
    */
   detach() {
     if (this.viewContainerRef) {
-      this.viewContainerRef.detach(0);
+      this.viewContainerRef.detach();
       this.viewContainerRef = null;
     }
   }
@@ -208,8 +208,8 @@ export class Tab {
   destroy() {
     if (this.container) {
       this.container.destroy();
-      this.container = undefined;
     }
+    this.container = undefined;
   }
 
   /**
@@ -218,6 +218,11 @@ export class Tab {
   get component(): ModuleAwareComponent | undefined {
     return this.container?.lazyComponentRef?.instance;
   }
+}
+
+export enum PaneIDs {
+  LEFT = 'left',
+  RIGHT = 'right'
 }
 
 /**
@@ -316,6 +321,7 @@ export class Pane {
       if (this.tabs[i] === tab) {
         this.tabs.splice(i, 1);
         this.activeTabHistory.delete(tab);
+        tab.destroy();
         return true;
       }
     }
@@ -354,7 +360,8 @@ export class Pane {
    * Destroy all tabs and unload their components.
    */
   destroy() {
-    for (const tab of this.tabs) {
+    // Make a copy of the tabs list, since `deleteTab` mutates it
+    for (const tab of this.tabs.slice()) {
       this.deleteTab(tab);
     }
   }
@@ -412,9 +419,9 @@ export class PaneManager {
   /**
    * Get the first pane or created one if one doesn't exist.
    */
-  getFirstOrCreate() {
+  getFirstOrCreate(): Pane {
     const it = this.panes.values().next();
-    return !it.done ? it.value : this.create('left');
+    return !it.done ? it.value : this.create(PaneIDs.LEFT);
   }
 
   /**
@@ -436,7 +443,8 @@ export class PaneManager {
    * Delete all panes.
    */
   clear() {
-    for (const pane of this.panes) {
+    // Make a copy of the panes list since `delete` mutates it
+    for (const pane of this.panes.slice()) {
       this.delete(pane);
     }
   }
@@ -468,10 +476,10 @@ export class PaneManager {
 export class WorkspaceManager {
   paneManager: PaneManager;
   readonly workspaceUrl = '/workspaces/local';
+  tabCreationTargetPane: Pane | undefined;
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
-  private loaded = false;
 
   constructor(private readonly router: Router,
               private readonly injector: Injector,
@@ -516,12 +524,12 @@ export class WorkspaceManager {
             const routeSnapshot: ActivatedRouteSnapshot = this.getDeepestChild(event.state.root);
             const queryParams = routeSnapshot.queryParams;
 
-            const pane = this.focusedPane || this.paneManager.getFirstOrCreate();
+            const pane = this.tabCreationTargetPane || this.paneManager.getFirstOrCreate();
             const tab = pane.getActiveTabOrCreate();
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
             // from the URL -- this part is a little hacky
-            // @ts-ignore
+            // @ts-ignore // todo: this hack has far reaching consequences limiting most of routing features
             const activatedRoute = new ActivatedRoute(new BehaviorSubject(routeSnapshot.url),
               new BehaviorSubject(routeSnapshot.params), new BehaviorSubject(queryParams),
               new BehaviorSubject(routeSnapshot.fragment), new BehaviorSubject(routeSnapshot.data),
@@ -604,18 +612,6 @@ export class WorkspaceManager {
     );
   }
 
-  openTabByUrl(pane: Pane | string,
-               url: string | UrlTree,
-               extras?: NavigationExtras & WorkspaceNavigationExtras,
-               tabDefaults?: TabDefaults): Promise<boolean> {
-    if (typeof pane === 'string') {
-      pane = this.paneManager.getOrCreate(pane);
-    }
-    this.focusedPane = pane;
-    pane.createTab({...tabDefaults, url: String(url)});
-    return this.navigateByUrl({url, extras});
-  }
-
   navigateByUrl(navigationData: NavigationData): Promise<boolean> {
     let extras = navigationData.extras || {};
 
@@ -623,6 +619,9 @@ export class WorkspaceManager {
 
     if (withinWorkspace) {
       let targetPane = this.focusedPane || this.paneManager.getFirstOrCreate();
+
+      // Set the initial target as the currently focused pane. We may change the target to the other pane, depending on the extras.
+      this.tabCreationTargetPane = targetPane;
 
       if (extras.newTab) {
         if (extras.sideBySide) {
@@ -635,11 +634,9 @@ export class WorkspaceManager {
           }
 
           if (sideBySidePane == null) {
-            if (targetPane.id === 'left') {
-              targetPane = this.paneManager.create('right');
-            } else {
-              targetPane = this.paneManager.create('left');
-            }
+            targetPane = this.paneManager.create(
+              targetPane.id === PaneIDs.LEFT ? PaneIDs.RIGHT : PaneIDs.LEFT
+            );
           } else {
             targetPane = sideBySidePane;
           }
@@ -662,11 +659,13 @@ export class WorkspaceManager {
 
               // This mechanism allows us to update an existing tab in a one-way data coupling
               if (extras.shouldReplaceTab != null) {
-                const component = tab.getComponent();
+                const component = tab.component;
                 if (component != null) {
-                  if (!extras.shouldReplaceTab(component)) {
-                    return;
-                  }
+                  return new Promise(() => extras.shouldReplaceTab(tab.component));
+                } else {
+                  // If we found a match, but it's not loaded, swap to it and reload with the new URL.
+                  this.interceptNextRoute = true;
+                  return this.router.navigateByUrl(navigationData.url, extras);
                 }
               }
 
@@ -681,7 +680,12 @@ export class WorkspaceManager {
           targetPane.createTab();
         }
 
-        this.focusedPane = targetPane;
+        this.tabCreationTargetPane = targetPane;
+
+        // // Determines whether the newly created tab is focused
+        if (!extras.keepFocus) {
+          this.focusedPane = targetPane;
+        }
       }
 
       this.interceptNextRoute = true;
@@ -698,14 +702,14 @@ export class WorkspaceManager {
             const parentExtras = {
               ...extras,
               openParentFirst: false,
-              preferPane: 'left',
+              preferPane: PaneIDs.LEFT,
               matchExistingTab: extras.parentAddress.toString(),
               shouldReplaceTab: true
             };
             extras = {
               ...extras,
               openParentFirst: false,
-              preferPane: 'right'
+              preferPane: PaneIDs.RIGHT
             };
             navigationArray.push({url: extras.parentAddress, extras: parentExtras});
           }
@@ -731,19 +735,12 @@ export class WorkspaceManager {
 
   }
 
-  navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
+  navigate(commands: any[], extras: WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl({url: this.router.createUrlTree(commands, extras), extras});
   }
 
   emitEvents(): void {
     this.panes$.next(this.buildPanesSnapshot());
-  }
-
-  initialLoad() {
-    if (!this.loaded) {
-      this.loaded = true;
-      this.load();
-    }
   }
 
   load() {
@@ -760,10 +757,7 @@ export class WorkspaceManager {
 
       loadTab(id: string, data: TabData): void {
         tasks.push(() => {
-          parent.openTabByUrl(id, data.url, null, {
-            title: data.title,
-            fontAwesomeIcon: data.fontAwesomeIcon,
-          });
+          parent.navigateByUrl({url: data.url, extras: { newTab: true, preferPane: id}});
         });
       }
 
@@ -783,9 +777,9 @@ export class WorkspaceManager {
         return previousTask.then(task);
       }, Promise.resolve());
     } else {
-      const leftPane = this.paneManager.create('left');
-      this.paneManager.create('right');
-      this.openTabByUrl(leftPane, '/projects');
+      const leftPane = this.paneManager.create(PaneIDs.LEFT);
+      this.paneManager.create(PaneIDs.RIGHT);
+      parent.navigateByUrl({url: '/projects', extras: { newTab: true, preferPane: leftPane.id}});
     }
   }
 
@@ -830,11 +824,12 @@ export function composeInternalLink(text, navigationData: NavigationData) {
   return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationData)})'>${escape(text)}</a>`;
 }
 
-export interface WorkspaceNavigationExtras {
+export interface WorkspaceNavigationExtras extends NavigationExtras {
   preferPane?: string;
   preferStartupPane?: string;
   newTab?: boolean;
   sideBySide?: boolean;
+  keepFocus?: boolean;
   matchExistingTab?: string | RegExp;
   shouldReplaceTab?: (component: any) => boolean;
   forceWorkbench?: boolean;
@@ -846,9 +841,5 @@ export interface WorkspaceNavigationExtras {
 // of missing extras in navigateByUrls
 export interface NavigationData {
   url: string | UrlTree;
-  extras?: NavigationExtras & WorkspaceNavigationExtras;
-}
-
-function getQueryString(params: { [key: string]: string }) {
-  return Object.entries(params).map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value)).join('&');
+  extras?: WorkspaceNavigationExtras;
 }

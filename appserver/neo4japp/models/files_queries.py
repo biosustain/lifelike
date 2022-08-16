@@ -9,7 +9,7 @@ from sqlalchemy.orm import aliased, contains_eager, defer, joinedload, lazyload,
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects
-from .files import Files, file_collaborator_role
+from .files import Files, StarredFile, file_collaborator_role
 from .projects_queries import ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
 
@@ -252,6 +252,33 @@ def add_file_user_role_columns(
     return query
 
 
+def add_file_starred_columns(query, file_table, user_id):
+    """
+    Add columns to a query for fetching the starred status for the
+    provided user ID for files in the provided file table.
+
+    :param query: the query to modify
+    :param file_table: the file table
+    :param user_id: the user ID to check for
+    """
+    t_starred_file = db.aliased(StarredFile, name='_starred_file')
+
+    query = query \
+        .outerjoin(
+            t_starred_file,
+            and_(
+                t_starred_file.file_id == file_table.id,
+                t_starred_file.user_id == user_id
+            )
+        ) \
+        .add_column(t_starred_file.id.label('starred_id')) \
+        .add_column(t_starred_file.file_id.label('starred_file_id')) \
+        .add_column(t_starred_file.user_id.label('starred_user_id')) \
+        .add_column(t_starred_file.creation_date.label('starred_creation_date'))
+
+    return query
+
+
 def get_nondeleted_recycled_children_query(
         filter,
         children_filter=None,
@@ -383,3 +410,19 @@ class FileHierarchy:
                 file.calculated_privileges[user_id] = privileges
 
             parent_file = file
+
+    def calculate_starred_files(self):
+        # We need to iterate through the files from parent to child because
+        # permissions are inherited and must be calculated in that order
+        for row in self.results:
+            file: Files = row[self.file_key]
+
+            if row['starred_id'] is not None:
+                file.calculated_starred = {
+                    'id': row['starred_id'],
+                    'file_id': row['starred_file_id'],
+                    'user_id': row['starred_user_id'],
+                    'creation_date': row['starred_creation_date'],
+                }
+            else:
+                file.calculated_starred = None

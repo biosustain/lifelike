@@ -1,42 +1,32 @@
 import io
 import json
 import math
+import os
 import re
+import tempfile
+import textwrap
 import typing
 import zipfile
-import tempfile
-
 from base64 import b64encode
-
 from io import BufferedIOBase
 from typing import Optional, List
 
-import textwrap
+import bioc
 import graphviz
+import numpy as np
 import requests
 import svg_stack
-from graphviz import escape
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from flask import current_app
-
+from graphviz import escape
+from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
+from lxml import etree
+from marshmallow import ValidationError
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
-from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
-from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
-import os
-import bioc
-from marshmallow import ValidationError
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PIL import Image
-from lxml import etree
 
-from neo4japp.exceptions import FileUploadError
-from neo4japp.models import Files
-from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
-from neo4japp.services.file_types.service import BaseFileTypeProvider
-from neo4japp.utils.logger import EventLog
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -83,9 +73,17 @@ from neo4japp.constants import (
     IMAGE_BORDER_SCALE,
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
-    WATERMARK_ICON_SIZE
+    WATERMARK_ICON_SIZE,
+    COLOR_TO_REPLACE
 )
-
+from neo4japp.exceptions import FileUploadError
+from neo4japp.models import Files
+from neo4japp.schemas.formats.drawing_tool import validate_map
+from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
+from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
@@ -456,7 +454,7 @@ def get_icons_data():
         return ICON_DATA
 
 
-def create_group_node(group):
+def create_group_node(group: dict):
     """
     Creates the node for NodeGroup - background, border, label, etc.
     :params:
@@ -464,7 +462,6 @@ def create_group_node(group):
     :return: ready to display param dict and dict for corresponding group label, if label is present
     """
     style = group.get('style', {})
-    print(group['data'])
     display_name = group['display_name'] or ""
 
     has_border = style.get('lineType') and style.get('lineType') != 'none'
@@ -517,7 +514,7 @@ def create_group_node(group):
     return params, label_params
 
 
-def create_default_node(node):
+def create_default_node(node: dict):
     """
     Creates a param dict with all the parameters required to create a simple text node or
     saving a baseline for more complex node - like map/note/link nodes'
@@ -561,7 +558,7 @@ def create_default_node(node):
     }
 
 
-def create_image_label(node):
+def create_image_label(node: dict):
     """
     Creates a node acting as a label for the image
     :params:
@@ -594,7 +591,7 @@ def create_image_label(node):
     }
 
 
-def create_image_node(node, params):
+def create_image_node(node: dict, params: dict):
     """
     Add parameters specific to the image label.
     :params:
@@ -619,7 +616,7 @@ def create_image_node(node, params):
     return params
 
 
-def create_detail_node(node, params):
+def create_detail_node(node: dict, params: dict):
     """
     Add parameters specific to the nodes which has a 'show detail text instead of a label'
     property. Due to the copyright, we limit the text in detail nodes dragged from the pdfs to 250
@@ -644,8 +641,8 @@ def create_detail_node(node, params):
         # Use regex to split, otherwise \n (text, not new lines) are matched as well
         lines = re.split("\n", detail_text)
         # Escape the characters and break lines longer than max line width
-        lines = map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
-                                                                ).wrap(escape(x))), lines)
+        lines = list(map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
+                                                                     ).wrap(escape(x))), lines))
         # '\l' is graphviz special new line, which placed at the end of the line will align it
         # to the left - we use that instead of \n (and add one at the end to align last line)
         detail_text = r"\l".join(lines) + r'\l'
@@ -666,7 +663,7 @@ def create_detail_node(node, params):
     return params
 
 
-def look_for_doi_link(node):
+def look_for_doi_link(node: dict):
     """
     Get DOI from links if available, and tests whether it is valid.
     :params:
@@ -683,7 +680,7 @@ def look_for_doi_link(node):
     return None
 
 
-def get_link_icon_type(node):
+def get_link_icon_type(node: dict):
     """
     Evaluate the icon that link node should have (document, sankey, ET, mail or link)
     If the link is valid, save it and use it later when setting the node href
@@ -731,14 +728,15 @@ def get_link_icon_type(node):
     return 'link', None
 
 
-def create_icon_node(node, params):
+def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirectory):
     """
     Alters the params dict with the values suitable for creation of the nodes with icons and
-    creates additional parameters dict storing the information about the icon node
+    creates additional parameters' dict storing the information about the icon node
     :params:
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
-    :returns: modified params dict descriping icon label and a new dict describing the icon
+    :param folder: path to a temporary folder in which the icon should be stored
+    :returns: modified params dict describing icon label and a new dict describing the icon
               itself. Additionally, returns computed height of icon + label to set it
               to a proper value
     """
@@ -759,6 +757,9 @@ def create_icon_node(node, params):
         f"{-node['data']['y'] / SCALING_FACTOR - distance_from_the_label}!"
     )
 
+    params['style'] = 'filled'
+    params['fillcolor'] = '#00000000'
+
     # Create a separate node which will hold the image
     icon_params = {
         'name': "icon_" + node['hash'],
@@ -766,7 +767,7 @@ def create_icon_node(node, params):
             f"{node['data']['x'] / SCALING_FACTOR},"
             f"{-node['data']['y'] / SCALING_FACTOR}!"
         ),
-        'label': ""
+        'label': "",
     }
     default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
                                                     {'defaultimagecolor': 'black'}
@@ -784,11 +785,23 @@ def create_icon_node(node, params):
     icon_params['image'] = (
         f'{ASSETS_PATH}{label}.png'
     )
+
+    fill_color = style.get("fillColor") or default_icon_color
     if label not in custom_icons.keys():
-        # We are setting the icon color by using 'inverse' icon images and colorful background
-        # But not for microsoft icons, as those are always in the same color
-        icon_params['fillcolor'] = style.get("fillColor") or default_icon_color
-        icon_params['style'] = 'filled'
+        image_filename = os.path.sep.join([folder.name, f'{label}_{fill_color}.png'])
+        icon_params['image'] = image_filename
+        # If a file with such color x label combination was not created, create it
+        if not os.path.exists(image_filename):
+            # NOTE: If this turns out to be too time-consuming, switch to PNGs should be considered,
+            # as those require much less modification.
+            original_image: Image = Image.open(f'{ASSETS_PATH}{label}.png', 'r')
+            orig_color = COLOR_TO_REPLACE
+            replacement_color = ImageColor.getcolor(fill_color, 'RGBA')
+            data = np.array(original_image.convert("RGBA"))
+            data[(data == orig_color).all(axis=-1)] = replacement_color
+            colored_image = Image.fromarray(data, mode='RGBA')
+            colored_image.save(image_filename)
+
     icon_params['shape'] = 'box'
     icon_params['height'] = ICON_SIZE
     icon_params['width'] = ICON_SIZE
@@ -799,7 +812,7 @@ def create_icon_node(node, params):
     return params, icon_params, node_height
 
 
-def create_relation_node(node, params):
+def create_relation_node(node: dict, params: dict):
     """
     Adjusts the node into the relation node (purple ones)
     :params:
@@ -816,7 +829,7 @@ def create_relation_node(node, params):
     return params
 
 
-def get_node_href(node):
+def get_node_href(node: dict):
     """
     Evaluates and sets the href for the node. If link parameter was not set previously, we are
     dealing with entity node (or icon node without any sources) - so we prioritize the
@@ -849,7 +862,7 @@ def get_node_href(node):
             # And search again
             href = get_node_href(node)
         else:
-            href = LIFELIKE_DOMAIN + current_link
+            href = LIFELIKE_DOMAIN or '' + current_link
     # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
     return href.replace("'", '%27')
 
@@ -869,7 +882,7 @@ def create_map_name_node():
     }
 
 
-def create_edge(edge, node_hash_type_dict):
+def create_edge(edge: dict, node_hash_type_dict: dict):
     """
     Creates a dict with parameters required to render an edge
     :params:
@@ -909,7 +922,7 @@ def create_edge(edge, node_hash_type_dict):
     }
 
 
-def create_watermark(x_center, y):
+def create_watermark(x_center: float, y: float):
     """
     Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
     We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
@@ -1023,7 +1036,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         nodes = content_json.get('nodes', [])
         for group in content_json.get('groups', []):
-            nodes.push(group)
+            nodes.append(group)
             nodes += group.get('members', [])
 
         for node in nodes:
@@ -1099,6 +1112,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             nodes += group.get('members', [])
             group_params, label_params = create_group_node(group)
             graph.node(**group_params)
+            node_hash_type_dict[group['hash']] = group['label']
+
             if label_params:
                 graph.node(**label_params)
 
@@ -1145,7 +1160,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if style.get('showDetail'):
                     params = create_detail_node(node, params)
                 else:
-                    params, icon_params, node_height = create_icon_node(node, params)
+                    params, icon_params, node_height = create_icon_node(node, params, folder)
                     # We need to set this to ensure that watermark is not intersect some edge cases
                     nodes[i]['data']['height'] = node_height
                     # Create separate node with the icon
@@ -1392,7 +1407,9 @@ class GraphTypeProvider(BaseFileTypeProvider):
 
     def validate_content(self, buffer: BufferedIOBase):
         data = json.loads(buffer.read())
-        validate_graph(data)
+        validate_graph_format(data)
+        if 'version' in data:
+            validate_graph_content(data)
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)

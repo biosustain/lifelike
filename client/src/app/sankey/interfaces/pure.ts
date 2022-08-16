@@ -18,6 +18,8 @@ export interface SankeyNodeInterface {
   order: number;
   // viewProperties?: object;
   height: number;
+  initialX0: number;
+  initialX1: number;
   x0: number;
   x1: number;
   y0: number;

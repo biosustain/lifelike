@@ -102,8 +102,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     }
   }
 
-
-
   activeTabChanged(event: NgbNavChangeEvent) {
     if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
       if (!confirm('Are you sure? Your progress will be lost!')) {
@@ -126,7 +124,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.form.get('filename').setValue(this.extractFilename(event.target.value));
     this.filePossiblyAnnotatable = this.form.get('contentUrl').value.length;
   }
-
 
   changeSelectedFile(newIndex: number) {
     const fileCount = this.fileList.length;
@@ -176,7 +173,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.selectedFile = null;
     this.changeSelectedFile(this.fileList.length - 1);
   }
-
 }
 
 export interface FileInput {

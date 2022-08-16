@@ -424,7 +424,7 @@ class LMDBService(LMDBConnection):
                         continue
         print('Done creating anatomy')
 
-    def create_lmdb_files(self, file_type='all'):
+    def create_lmdb_files(self, file_type=None):
         funcs = {
             EntityType.ANATOMY.value: self.create_lmdb_anatomy_database,
             EntityType.CHEMICAL.value: self.create_lmdb_chemicals_database,
@@ -438,11 +438,10 @@ class LMDBService(LMDBConnection):
             EntityType.SPECIES.value: self.create_lmdb_species_database
         }
 
-        func = funcs.get(file_type, None)
-        if func:
-            func()
-        elif file_type == 'all':
-            for k, v in funcs.items():
-                v()
+        if file_type is None:
+            for func in funcs.values():
+                func()
+        elif file_type in funcs:
+            funcs[file_type]()
         else:
             raise ValueError(f'Invalid argument, cannot identify which LMDB file to create: {file_type}')  # noqa
