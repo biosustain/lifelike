@@ -26,6 +26,8 @@
 #        that are not currently being tracked in the HEAD commit. In other words, to remove
 #        all traces of files that once existed, but were later removed.
 #
+#     3. Garbage collect the repository.
+#
 #     3. Use `trufflehog` to search for any potential leaked secrets in the current repository
 #        state, as well as across all its past commit history.
 #
@@ -50,12 +52,10 @@ elif [ ! -d "$SOURCE/.git" ]; then
 elif [ "$SOURCE" == "$DESTINATION" ]; then
   echo "ERROR: SOURCE and DESTINATION must not be the same" && exit 1
 fi
-# -----------------------------------------------------------------------------------------
-# Verify required tools are installed
-check_commands curl git git-filter-repo trufflehog jq || exit 1
-# -----------------------------------------------------------------------------------------
 
 function main() {
+  # Verify required tools are installed
+  check_commands curl git git-filter-repo trufflehog jq || exit 1
 
   divider "1. Checkout source repository"
   clone_source
@@ -93,9 +93,9 @@ function clone_source() {
     fi
     rm -rf "$DESTINATION"
   fi
-  echo "Cloning $SOURCE to $DESTINATION"
-  git clone --no-local $SOURCE $DESTINATION
-  cd $DESTINATION
+  echo "Cloning $SOURCE into $DESTINATION"
+  git clone --no-local "$SOURCE" "$DESTINATION"
+  cd "$DESTINATION"
 }
 
 function print_git_stats() {
@@ -135,11 +135,11 @@ function detect_secrets() {
     echo "Please review the report file: $report_file"
 
     # Detect and replace secrets with a placeholder
-    $replacements_file="$PWD/.git/secret-replacements.txt"
+    replacements_file="$PWD/.git/secret-replacements.txt"
     echo "" >"$replacements_file"
     while read -r line; do
       echo -n "$line" | jq -r ".Raw" | base64 -d >>"$replacements_file"
-      echo -e "\n" >>"$replacements_file"
+      echo >>"$replacements_file"
     done <"$report_file"
 
     # Remove duplicates
@@ -147,6 +147,9 @@ function detect_secrets() {
 
     echo "Replacing secrets with placeholder text..."
     git filter-repo --replace-text "$replacements_file" --force
+
+    echo "Stats after replacing secrets"
+    print_git_stats
 
     echo "Detecting secrets again"
     detect_secrets
