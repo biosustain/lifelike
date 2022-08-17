@@ -37,11 +37,6 @@ usage="usage: $(basename "$0") SOURCE DESTINATION [-h|--help]"
 # Print usage and ecit if -h or --help is specified
 [[ $@ == *"-h"* || $@ == *"--help"* ]] && echo "$help" && exit 0
 
-# Verify required tools are installed
-if [ ! assert_available_commands "git git-filter-repo trufflehogl jq" ]; then
-  echo "Not all required commands are available" && exit 1
-fi
-
 # -----------------------------------------------------------------------------------------
 # Capture and validate input arguments
 # -----------------------------------------------------------------------------------------
@@ -57,7 +52,7 @@ elif [ "$SOURCE" == "$DESTINATION" ]; then
 fi
 # -----------------------------------------------------------------------------------------
 # Verify required tools are installed
-check_commands curl git git-filter-repo trufflehog || exit 1
+check_commands curl git git-filter-repo trufflehog jq || exit 1
 # -----------------------------------------------------------------------------------------
 
 function main() {
