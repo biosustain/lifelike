@@ -1,4 +1,5 @@
 import base64
+from packaging.version import Version
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk, streaming_bulk
@@ -81,7 +82,9 @@ class ElasticService(ElasticConnection, GraphConnection):
             self.elastic_client.indices.create(
                 index=index_id,
                 body=index_definition,
-                include_type_name=True
+                # In Elasticsearch >= 7.0.0, set include_type_name=True to indicate that
+                # index types "_doc" is specified in the index definition. None otherwise.
+                include_type_name=self._get_elasticsearch_version() >= Version('7.0.0') or None
             )
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
@@ -577,6 +580,10 @@ class ElasticService(ElasticConnection, GraphConnection):
         )
 
         return boolExpr
+
+    def _get_elasticsearch_version(self) -> Version:
+        version_string = self.elastic_client.info()['version']['number']
+        return Version(version_string)
 
     def _build_query_clause(
         self,

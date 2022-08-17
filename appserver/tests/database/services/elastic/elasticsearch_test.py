@@ -1,4 +1,6 @@
 import base64
+from packaging.version import Version
+
 import pytest
 
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
@@ -103,6 +105,11 @@ def map_document(elastic_service):
         # This option is MANDATORY! Otherwise the document won't be immediately visible to search.
         refresh='true'
     )
+
+
+def test_can_parse_elasticsearch_version(elastic_service):
+    version = elastic_service._get_elasticsearch_version()
+    assert isinstance(version, Version), 'Can get and parse a valid packaging.version.Version'
 
 
 def test_should_not_get_results_from_empty_db(
