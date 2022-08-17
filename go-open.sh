@@ -56,15 +56,16 @@ elif [ "$SOURCE" == "$DESTINATION" ]; then
   echo "ERROR: SOURCE and DESTINATION must not be the same" && exit 1
 fi
 # -----------------------------------------------------------------------------------------
+# Verify required tools are installed
+check_commands curl git git-filter-repo trufflehog || exit 1
+# -----------------------------------------------------------------------------------------
 
 function main() {
-  # Verify that required commands are present
-  check_commands curl git git-filter-repo trufflehog || exit 1
 
   divider "1. Checkout source repository"
-  clone_SOURCE
+  clone_source
 
-  echo -e "\nnRepository stats before compression:"
+  echo -e "\nRepository stats before compression:"
   print_git_stats
 
   divider "2. Compress repository history"
@@ -86,7 +87,7 @@ function check_commands() {
   done
 }
 
-function clone_SOURCE() {
+function clone_source() {
   if [[ -d "$DESTINATION" && "$(ls -A "$DESTINATION")" ]]; then
     echo "⚡ Directory $DESTINATION already exists and is not empty."
     read -p "Do you really want to overwrite its contents? [y/N] " -n 1 -r
@@ -138,15 +139,19 @@ function detect_secrets() {
     echo "❌ Found $secret_count potential secrets in the repository."
     echo "Please review the report file: $report_file"
 
-    # for each line in file "lines.txt" and print line
-    echo "" >replacements.txt
+    # Detect and replace secrets with a placeholder
+    $replacements_file="$PWD/.git/secret-replacements.txt"
+    echo "" >"$replacements_file"
     while read -r line; do
-      echo -n "$line" | jq -r ".Raw" | base64 -d >>replacements.txt
-      echo -e "\n" >>replacements.txt
+      echo -n "$line" | jq -r ".Raw" | base64 -d >>"$replacements_file"
+      echo -e "\n" >>"$replacements_file"
     done <"$report_file"
 
+    # Remove duplicates
+    sort -u "$replacements_file" >"$replacements_file.tmp" && mv "$replacements_file.tmp" "$replacements_file"
+
     echo "Replacing secrets with placeholder text..."
-    git filter-repo --replace-text replacements.txt --force
+    git filter-repo --replace-text "$replacements_file" --force
 
     echo "Detecting secrets again"
     detect_secrets
