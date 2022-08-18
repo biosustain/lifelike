@@ -457,7 +457,7 @@ ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
-MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
+MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
