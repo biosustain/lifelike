@@ -6,7 +6,6 @@ import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.componen
 
 import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
-import { isNotEmpty } from '../utils';
 
 /**
  * Create a valid url string suitable for <a> tag href usage.

@@ -66,7 +66,7 @@ describe('VisualizationComponent', () => {
         mockGraphNode = {
             id: 1,
             label: 'Mock Node',
-            data: {},
+            data: { eid: 'Mock eid' },
             subLabels: ['Mock Node'],
             displayName: 'Mock Node 1',
             domainLabels: [],

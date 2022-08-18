@@ -61,7 +61,7 @@ import { VisualizationService } from 'app/visualization/services/visualization.s
     styleUrls: ['./visualization-canvas.component.scss'],
     providers: [ContextMenuControlService],
 })
-export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
+export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> implements OnInit, AfterViewInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() openLoadingClustersDialog = new EventEmitter<boolean>();
     @Output() finishedClustering = new EventEmitter<boolean>();
@@ -69,8 +69,8 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
     @Output() getNodeData = new EventEmitter<boolean>();
 
-    @Input() nodes: DataSet<any, any>;
-    @Input() edges: DataSet<any, any>;
+    @Input() nodes: DataSet<VisNode|DuplicateVisNode, 'id'>;
+    @Input() edges: DataSet<VisEdge|DuplicateVisEdge, 'id'>;
     @Input() set expandNodeResult(result: ExpandNodeResult) {
         try {
             if (!isNil(result)) {
@@ -149,8 +149,8 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
         if (!isNil(result)) {
             try {
-                const toNode = this.nodes.get(result.snippetData.toNodeId) as VisNode;
-                const fromNode = this.nodes.get(result.snippetData.fromNodeId) as VisNode;
+                const toNode = this.nodes.get(result.snippetData.toNodeId);
+                const fromNode = this.nodes.get(result.snippetData.fromNodeId);
 
                 if (isNil(toNode) || isNil(fromNode)) {
                     throw Error('One or more returned nodes do not exist on the network!');
@@ -184,8 +184,8 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         if (!isNil(result)) {
             try {
                 const data = result.snippetData.map(snippetResult => {
-                    const toNode = this.nodes.get(snippetResult.toNodeId) as VisNode;
-                    const fromNode = this.nodes.get(snippetResult.fromNodeId) as VisNode;
+                    const toNode = this.nodes.get(snippetResult.toNodeId);
+                    const fromNode = this.nodes.get(snippetResult.fromNodeId);
 
                     if (isNil(toNode) || isNil(fromNode)) {
                         throw Error('One or more returned nodes do not exist on the network!');
@@ -386,7 +386,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     }
 
     expandOrCollapseNode(nodeId: number) {
-        const nodeRef = this.nodes.get(nodeId) as VisNode;
+        const nodeRef = this.nodes.get(nodeId);
 
         if (nodeRef.expanded) {
             // Updates node expand state
@@ -441,7 +441,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     getNeighborsWithRelationship(relationship: string, node: IdType, direction: Direction) {
         return this.networkGraph.getConnectedEdges(node).filter(
             (edgeId) => {
-                const edge = this.edges.get(edgeId) as VisEdge;
+                const edge = this.edges.get(edgeId);
                 // First check if this is the correct relationship
                 if (this.isNotAClusterEdge(edgeId) && edge.label === relationship) {
                     // Then, check that it is in the correct direction
@@ -473,7 +473,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             edge => this.isNotAClusterEdge(edge)
         ).forEach(
             edgeId => {
-                const edge = this.edges.get(edgeId) as VisEdge;
+                const edge = this.edges.get(edgeId);
                 const { label, from, to } = edge;
 
                 // TODO: Need to validate that this is the expected behavior
@@ -689,7 +689,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
         // Redraw the original edge
         this.networkGraph.getConnectedEdges(duplicateNodeId).map(
-            duplicateEdgeId => this.edges.get(duplicateEdgeId)
+            duplicateEdgeId => this.edges.get(duplicateEdgeId) as DuplicateVisEdge
         ).forEach(duplicateEdge => {
             this.edges.update(this.createOriginalEdgeFromDuplicate(duplicateEdge));
         });
@@ -715,7 +715,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             }
 
             this.networkGraph.getConnectedEdges(duplicateNodeId).map(
-                duplicateEdgeId => this.edges.get(duplicateEdgeId)
+                duplicateEdgeId => this.edges.get(duplicateEdgeId) as DuplicateVisEdge
             ).forEach(duplicateEdge => {
                 edgesToRemove.push(duplicateEdge.id);
                 edgesToAdd.push(this.createOriginalEdgeFromDuplicate(duplicateEdge));

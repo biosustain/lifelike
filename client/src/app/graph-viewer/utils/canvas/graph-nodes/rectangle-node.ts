@@ -1,4 +1,5 @@
 import 'canvas-plus';
+import { ZoomTransform } from 'd3-zoom';
 
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
@@ -34,7 +35,7 @@ export class RectangleNode extends BaseRectangleNode {
     this.nodeHeight = (this.height ?? this.textbox.actualHeight) + this.padding;
   }
 
-  draw(transform: any, selected: boolean): void {
+  draw(transform: ZoomTransform, selected: boolean): void {
     if (selected) {
       this.drawSelection();
     }

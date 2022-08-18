@@ -1,4 +1,5 @@
 import { Directive, HostBinding } from '@angular/core';
+
 let counter = 0;
 
 @Directive({

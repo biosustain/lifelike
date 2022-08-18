@@ -2,6 +2,10 @@ import { Subject } from 'rxjs';
 
 import { GraphEntity, UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
 
+import { GraphView } from '../renderers/graph-view';
+import { CanvasGraphView } from '../renderers/canvas/canvas-graph-view';
+import { Behavior } from '../renderers/behaviors';
+
 /**
  * Manages a list of entities that will be invalidated when the set of
  * items is updated.
@@ -13,7 +17,7 @@ export class CacheGuardedEntityList {
    */
   readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
 
-  constructor(private readonly graphView: any) {
+  constructor(private readonly graphView: GraphView<Behavior>) {
   }
 
   replace(items: GraphEntity[]) {
@@ -29,13 +33,13 @@ export class CacheGuardedEntityList {
       const existed = invalidationMap.delete(item.entity);
       if (!existed) {
         // Item is new, so invalidate!
-        this.graphView.invalidateEntity(item);
+        (this.graphView as CanvasGraphView).invalidateEntity(item);
       }
     }
 
     // Invalidate items that got removed
     for (const item of invalidationMap.values()) {
-      this.graphView.invalidateEntity(item);
+      (this.graphView as CanvasGraphView).invalidateEntity(item);
     }
 
     // Emit event if it changed

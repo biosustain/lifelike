@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { ZoomTransform } from 'd3-zoom';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
@@ -64,7 +65,7 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
     }
   }
 
-  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: Handle) {
+  drawHandle(ctx: CanvasRenderingContext2D, transform: ZoomTransform, {minX, minY, maxX, maxY}: Handle) {
     // Draw Handle
     const noZoomScaleHandle = 1 / this.graphView.transform.scale(1).k;
     const nodeRadiusHandle = this.size / 2 * noZoomScaleHandle;
@@ -155,7 +156,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     return BehaviorResult.RemoveAndStop;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: any) {
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
     const from = this.from;
     const to = this.to;
 
