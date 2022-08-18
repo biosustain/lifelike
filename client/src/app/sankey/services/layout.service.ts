@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain } from 'lodash-es';
+import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain, map as lodashMap } from 'lodash-es';
 import { map, tap, switchMap, shareReplay, filter, takeUntil, catchError, first, distinctUntilChanged } from 'rxjs/operators';
 import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, BehaviorSubject, OperatorFunction } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -31,17 +31,40 @@ interface LayerPlaceholder {
   y1?: number;
 }
 
-export const groupByTraceGroupWithAccumulation = () => {
+function medianBy<T>(arr: T[], fn: (e: T) => number): number {
+  const sortedArray = lodashMap(arr, fn).sort((a, b) => a - b);
+  const middleIndex = sortedArray.length / 2;
+  if (middleIndex % 1 === 0) {
+      // Two middle numbers (e.g. [1, 2, 3, 4]), so to get the median take the average of the two
+      return sortedArray.slice(
+          middleIndex - 1,
+          middleIndex + 1 // slice end is exclusive
+      ).reduce((a, b) => a + b) / 2;
+  } else {
+      // middleIndex is "X.5", where the median index of the set is "X"
+      return sortedArray[Math.floor(middleIndex)];
+  }
+}
+
+export const groupByTraceGroupWithAccumulation = (nextNodeCallback) => {
   const traceGroupOrder = new Set();
-  return links => {
+  return function(links) {
     links.forEach(({trace}) => {
       this.warningController.assert(!isNil(trace), ErrorMessages.missingLinkTrace);
       traceGroupOrder.add(trace.group);
     });
     const groups = [...traceGroupOrder];
-    return links.sort((a, b) =>
-      (groups.indexOf(a.trace.group) - groups.indexOf(b.trace.group))
-    );
+
+    return chain(links)
+      .groupBy(link => nextNodeCallback(link)?.id)
+      .values()
+      .map(nodeLinks => ({
+        nodeLinks,
+        avgGroup: medianBy(nodeLinks, ({trace}) => groups.indexOf(trace.group))
+      }))
+      .sortBy('avgGroup')
+      .flatMap(({nodeLinks}) => nodeLinks)
+      .value();
   };
 };
 
@@ -363,7 +386,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     });
   }
 
-  computeNodeBreadths(data, columns): OperatorFunction<any, any> {
+  computeNodeBreadths(data, columns) {
     throw new Error();
   }
 
@@ -474,11 +497,11 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
           node.layer = i;
           columns[i].push(node);
         }
-        if (this.nodeSort) {
-          for (const column of columns) {
-            column.sort(this.nodeSort);
-          }
-        }
+        // if (this.nodeSort) {
+        //   for (const column of columns) {
+        //     column.sort(this.nodeSort);
+        //   }
+        // }
         return {
           x,
           columns
@@ -570,6 +593,13 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                         // Calculate the nodes' and links' vertical position within their respective column
                         //     Also readjusts sankeyCircular size if circular links are needed, and node x's
                         tap(() => this.computeNodeBreadths(data, columns)),
+                        tap(() => {
+                          if (this.nodeSort) {
+                            for (const column of columnsWithLinkPlaceholders) {
+                              column.sort(this.nodeSort);
+                            }
+                          }
+                        }),
                         debug('computeNodeBreadths'),
                         catchError(() => EMPTY),
                         switchMap(d =>
@@ -779,6 +809,10 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       `C${targetBezierX} ${targetY1},${sourceBezierX} ${sourceY1},${sourceX} ${sourceY1}` +
       `Z`
     );
+  }
+
+  nodeSort = (a, b) => {
+    return (a.order - b.order);
   }
 
   linkSort = (a, b) => (
