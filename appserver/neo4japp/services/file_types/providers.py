@@ -1312,7 +1312,6 @@ class MapTypeProvider(BaseFileTypeProvider):
                     annotation = annot.get('/A')
                     if annotation:
                         uri = annotation.get('/URI')
-                        print(uri)
                         rect = annot.get('/Rect')
                         destination_page = link_to_page_map.get(uri)
                         if destination_page is not None:
