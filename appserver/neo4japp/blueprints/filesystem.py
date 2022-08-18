@@ -33,6 +33,7 @@ from neo4japp.constants import (
     SUPPORTED_MAP_MERGING_FORMATS,
     UPDATE_DATE_MODIFIED_COLUMNS,
     SortDirection,
+    LIFELIKE_DOMAIN,
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -82,7 +83,7 @@ from neo4japp.schemas.filesystem import (
 )
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.utils.collections import window
+from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
@@ -480,7 +481,7 @@ class FilesystemBaseView(MethodView):
                     # places yet (namely not all API endpoints that query for public files will
                     # pick up files within a public directory)
                     if file.mime_type != DirectoryTypeProvider.MIME_TYPE and \
-                            file.public != params['public']:
+                        file.public != params['public']:
                         file.public = params['public']
 
                 if 'pinned' in params:
@@ -1318,8 +1319,9 @@ class FileExportView(FilesystemBaseView):
         file_type = file_type_service.get(file)
 
         if params['export_linked'] and params['format'] in SUPPORTED_MAP_MERGING_FORMATS:
-            files, links = self.get_all_linked_maps(file, set(file.hash_id), [file], [])
-            export = file_type.merge(files, params['format'], links)
+            link_to_page_map: Dict[str, int] = dict()
+            files = self.get_all_linked_maps(file, {file.hash_id}, [file], link_to_page_map)
+            export = file_type.merge(files, params['format'], link_to_page_map)
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
@@ -1337,7 +1339,13 @@ class FileExportView(FilesystemBaseView):
             mime_type=export.mime_type,
         )
 
-    def get_all_linked_maps(self, file: Files, map_hash_set: set, files: list, links: list):
+    def get_all_linked_maps(
+        self,
+        file: Files,
+        map_hash_set: set,
+        files: list,
+        link_to_page_map: dict
+    ):
         current_user = g.current_user
         zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
         try:
@@ -1345,30 +1353,29 @@ class FileExportView(FilesystemBaseView):
         except KeyError:
             raise ValidationError
         for node in json_graph['nodes']:
-            data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-            for link in data:
+            data = node['data']
+            for link in data.get('sources', []) + data.get('hyperlinks', []):
                 url = link.get('url', "").lstrip()
-                if MAPS_RE.match(url):
-                    map_hash = url.split('/')[-1]
-                    link_data = {
-                        'x': node['data']['x'],
-                        'y': node['data']['y'],
-                        'page_origin': next(i for i, f in enumerate(files)
-                                            if file.hash_id == f.hash_id),
-                        'page_destination': len(files)
-                    }
+                match = MAPS_RE.match(url)
+                if match:
+                    map_hash = match.group('hash_id')
                     # Fetch linked maps and check permissions, before we start to export them
                     if map_hash not in map_hash_set:
                         try:
-                            child_file = self.get_nondeleted_recycled_file(
-                                Files.hash_id == map_hash, lazy_load_content=True)
-                            self.check_file_permissions([child_file], current_user,
-                                                        ['readable'], permit_recycled=True)
                             map_hash_set.add(map_hash)
+                            child_file = self.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash,
+                                lazy_load_content=True
+                            )
+                            self.check_file_permissions(
+                                [child_file], current_user, ['readable'],
+                                permit_recycled=True
+                            )
                             files.append(child_file)
 
-                            files, links = self.get_all_linked_maps(child_file,
-                                                                    map_hash_set, files, links)
+                            files = self.get_all_linked_maps(
+                                child_file, map_hash_set, files, link_to_page_map
+                            )
 
                         except RecordNotFound:
                             current_app.logger.info(
@@ -1378,12 +1385,13 @@ class FileExportView(FilesystemBaseView):
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()
                             )
-                            link_data['page_destination'] = link_data['page_origin']
-                    else:
-                        link_data['page_destination'] = next(i for i, f in enumerate(files) if
-                                                             f.hash_id == map_hash)
-                    links.append(link_data)
-        return files, links
+                    destination_page = find_index(
+                        lambda f: f.hash_id == map_hash,
+                        files
+                    )
+                    if destination_page is not None:
+                        link_to_page_map[(LIFELIKE_DOMAIN or '') + url] = destination_page
+        return files
 
 
 class FileBackupView(FilesystemBaseView):
