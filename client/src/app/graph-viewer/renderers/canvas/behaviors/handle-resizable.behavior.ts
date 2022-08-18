@@ -9,7 +9,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { PlacedGroup, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { BLACK_COLOR, HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';

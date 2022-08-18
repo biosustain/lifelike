@@ -1,3 +1,5 @@
+import { ZoomTransform } from 'd3-zoom';
+
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { TextElement } from '../text-element';
@@ -85,7 +87,7 @@ export class FontIconNode extends PlacedNode {
     return {x: this.x, y: this.y};
   }
 
-  draw(transform: any, selected: boolean): void {
+  draw(transform: ZoomTransform, selected: boolean): void {
     const ctx = this.ctx;
     const highDetailLevel = transform.k >= 0.35 || this.forceVisibleText;
 

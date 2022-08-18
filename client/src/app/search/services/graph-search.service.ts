@@ -19,7 +19,7 @@ export class GraphSearchService {
       domains: string[],
       entities: string[],
   ) {
-    return this.http.post<{ result: FTSResult }>(
+    return this.http.post<{ result: FTSResult<any> }>(
       `${this.searchApi}/viz-search`,
       {query, organism, page, domains, entities, limit},
     ).pipe(map(resp => resp.result));

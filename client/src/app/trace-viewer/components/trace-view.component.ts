@@ -8,7 +8,7 @@ import { truncate } from 'lodash-es';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { UserError } from 'app/shared/exceptions';
-import { ModuleAwareComponent} from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
@@ -17,7 +17,6 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { AppURL } from 'app/shared/utils/url';
-import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';

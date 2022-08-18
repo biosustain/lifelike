@@ -15,7 +15,6 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MimeTypes } from 'app/shared/constants';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { Source } from 'app/drawing-tool/services/interfaces';
 
 
 @Component({

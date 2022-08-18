@@ -8,7 +8,6 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { Source } from 'app/drawing-tool/services/interfaces';
 
 import { EnrichmentService } from '../../services/enrichment.service';
 
@@ -85,15 +84,4 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
       fontAwesomeIcon: 'chart-bar',
     });
   }
-}
-
-
-export interface EnrichmentVisualisationParameters {
-  genes: any;
-  domains?: any;
-  organism?: any;
-}
-
-export interface EnrichmentVisualisationData {
-  parameters: EnrichmentVisualisationParameters;
 }

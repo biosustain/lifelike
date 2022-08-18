@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit, } from '@angular/core';
-import { FormBuilder, Validators, FormControl, FormGroup, AbstractControl } from '@angular/forms';
+import { FormBuilder, Validators, AbstractControl } from '@angular/forms';
 
-import { map } from 'rxjs/operators';
-import { partition, keys, isInteger } from 'lodash-es';
+import { isInteger } from 'lodash-es';
 
 import { ControllerService } from 'app/sankey/services/controller.service';
 

@@ -1,4 +1,4 @@
-import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit, Component, Injectable } from '@angular/core';
+import { AfterViewInit, ElementRef, OnDestroy, ViewChild, NgZone, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select as d3_select, ValueFn as d3_ValueFn, Selection as d3_Selection, event as d3_event } from 'd3-selection';

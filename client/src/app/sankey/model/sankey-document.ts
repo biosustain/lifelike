@@ -14,8 +14,13 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
-  SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface,
-  SankeyNodeInterface, DisplayProperty, SankeyState
+  SankeyTraceNetwork,
+  SankeyId,
+  SankeyNodePosition,
+  SankeyLinkInterface,
+  SankeyNodeInterface,
+  DisplayProperty,
+  SankeyState
 } from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';

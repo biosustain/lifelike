@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, isNil, isEmpty } from 'lodash-es';
+import { flatMap, groupBy, intersection, merge, isNil } from 'lodash-es';
 import { switchMap, map, shareReplay } from 'rxjs/operators';
 import { of, Observable, defer, iif } from 'rxjs';
 
@@ -11,7 +11,6 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
-import { ErrorMessages } from 'app/sankey/constants/error';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
