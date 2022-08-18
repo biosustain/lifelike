@@ -32,11 +32,14 @@ class EnrichmentVisualisationService():
                         tx.run(
                                 """
                                 UNWIND $gene_names AS geneName
-                                MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) WHERE
-                                g.name=geneName
-                                WITH g MATCH (g)-[:GO_LINK]-(go)
-                                WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
-                                WITH go, collect(DISTINCT g2) AS genes
+                                MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) 
+                                WHERE g.name=geneName
+                                WITH 
+                                    g, 
+                                    [(g)-[:GO_LINK {tax_id:$taxId}]-(go:db_GO) | go] as ncbi_go, 
+                                    [(g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO) | go] as biocyc_go
+                                UNWIND (ncbi_go + biocyc_go) as go
+                                WITH DISTINCT go, collect(g) as genes
                                 RETURN
                                     go.eid AS goId,
                                     go.name AS goTerm,
