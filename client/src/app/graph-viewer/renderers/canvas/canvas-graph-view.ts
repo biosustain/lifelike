@@ -1,3 +1,5 @@
+import { isDevMode } from '@angular/core';
+
 import * as d3 from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
@@ -813,8 +815,15 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       // ctx.save(), ctx.translate(), ctx.scale()
       this.startCurrentRenderBatch();
 
+      const devMode = isDevMode();
+
       while (true) {
         const result = this.renderQueue.next();
+
+        if (devMode) {
+          // tslint:disable-next-line:no-console
+          console.debug('Map render queue:', result.value);
+        }
 
         if (result.done) {
           // Finished rendering!
@@ -909,19 +918,26 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   *generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
 
+    yield 'Initialize';
     yield*this.drawTouchPosition(ctx);
-    yield* this.drawGroups();
-    yield* this.drawEdges();
-    yield* this.drawNodes();
+    yield 'Draw touch position';
+    yield*this.drawEdges();
+    yield 'Draw edges';
+    yield*this.drawNodes();
+    yield 'Draw nodes';
+    yield*this.drawGroups();
+    yield 'Draw groups';
     yield*this.drawHighlightBackground(ctx);
-    yield* this.drawSearchHighlightBox(ctx);
+    yield 'Draw highlight background';
+    yield*this.drawSearchHighlightBox(ctx);
+    yield 'Draw search highlight box';
     yield*this.drawSearchFocusBackground(ctx);
+    yield 'Draw search focus background';
     yield*this.drawActiveBehaviors(ctx);
+    yield 'Draw active behaviors';
   }
 
   private*drawTouchPosition(ctx: CanvasRenderingContext2D) {
-    yield null;
-
     if (this.touchPosition) {
       const noZoomScale = 1 / this.transform.scale(1).k;
       const touchPositionEntity = this.touchPosition.entity;
@@ -940,8 +956,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   private*drawHighlightBackground(ctx: CanvasRenderingContext2D) {
-    yield null;
-
     ctx.save();
     const highlighted = this.highlighting.get();
     for (const highlightedEntity of highlighted) {
@@ -951,8 +965,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   private* drawSearchHighlightBox(ctx: CanvasRenderingContext2D) {
-    yield null;
-
     if (!this.touchPosition) {
       const highlighted = this.searchHighlighting.get();
       for (const highlightedEntity of highlighted) {
@@ -962,8 +974,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   private*drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
-    yield null;
-
     if (!this.touchPosition) {
       const focus = this.searchFocus.get();
       for (const focusEntity of focus) {
@@ -973,7 +983,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   private* drawGroups() {
-    yield null;
     const selection = this.selection.getEntitySet();
 
     for (const group of this.groups) {
@@ -982,8 +991,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   private* drawEdges() {
-    yield null;
-
     const transform = this.transform;
     const placeEdge = this.placeEdge.bind(this);
 
@@ -995,7 +1002,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const edgeRenderObjects = [];
 
     for (const d of this.edges) {
-      yield null;
+      yield d;
       edgeRenderObjects.push({
         d,
         placedEdge: placeEdge(d),
@@ -1003,12 +1010,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
 
     for (const {d, placedEdge} of edgeRenderObjects) {
-      yield null;
+      yield {d, placedEdge};
       placedEdge.draw(transform, selected.has(d));
     }
 
     for (const {d, placedEdge} of edgeRenderObjects) {
-      yield null;
+      yield {d, placedEdge};
       placedEdge.drawLayer2(transform);
     }
   }
@@ -1016,14 +1023,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   private* drawNodes() {
     const selection = this.selection.getEntitySet();
     for (const d of this.nodes) {
-      yield null;
+      yield d;
       this.placeNode(d).draw(this.transform, selection.has(d));
     }
   }
 
   private*drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
     for (const behavior of this.behaviors.getBehaviors()) {
-      yield null;
+      yield behavior;
       behavior.draw(ctx, this.transform);
     }
   }

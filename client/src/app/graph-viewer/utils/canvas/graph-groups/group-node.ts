@@ -56,6 +56,8 @@ export class GroupNode extends PlacedGroup {
 
       // Node shape
     ctx.save();
+    // We want to draw group background behind current pixels
+    ctx.globalCompositeOperation = 'destination-over';
     (ctx as any).rect(
         this.bbox.minX,
         this.bbox.minY,
