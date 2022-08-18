@@ -25,11 +25,11 @@ export class ImageUploadDataProvider implements DataTransferDataProvider<ImageTr
           data: {
             blob: file as Blob,
             node: {
-                display_name: file.name,
-                label: IMAGE_LABEL,
-                sub_labels: [],
-                data: {}
-              } as Partial<UniversalGraphNode>,
+              display_name: file.name,
+              label: IMAGE_LABEL,
+              sub_labels: [],
+              data: {}
+            } as Partial<UniversalGraphNode>,
           },
           confidence: 90,
         });

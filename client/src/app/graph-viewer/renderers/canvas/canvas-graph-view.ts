@@ -1,19 +1,21 @@
 import { isDevMode } from '@angular/core';
 
 import * as d3 from 'd3';
+import { Transition, Selection } from 'd3';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { Transition, Selection } from 'd3';
 import { BaseType } from 'd3-selection';
 
 import {
   GraphEntity,
-  GraphEntityType, UniversalGraphGroup,
+  GraphEntityType,
+  UniversalGraphGroup,
   UniversalEdgeStyle,
   KnowledgeMapGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode, UniversalGraphNodelike,
+  UniversalGraphNode,
+  UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
@@ -147,7 +149,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Holds a queue of things to render to allow spreading rendering over several ticks.
    * Cleared when {@link requestRender} is called and re-created in {@link render}.
    */
-  private renderQueue: IterableIterator<any>;
+  private renderQueue: IterableIterator<string|object|any>;
 
   // Events
   // ---------------------------------
@@ -196,7 +198,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       .on('end', this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
-    const canvasMouseMoveSubject = new Subject<any>();
+    const canvasMouseMoveSubject = new Subject<void>();
 
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))

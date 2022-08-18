@@ -7,8 +7,13 @@ import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
 import {
-  SankeyState, SankeyFileOptions, SankeyStaticOptions, ViewBase,
-  SankeyId, SankeyOptions, SankeyTraceNetwork
+  SankeyState,
+  SankeyFileOptions,
+  SankeyStaticOptions,
+  ViewBase,
+  SankeyId,
+  SankeyOptions,
+  SankeyTraceNetwork
 } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';

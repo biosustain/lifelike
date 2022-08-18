@@ -28,17 +28,8 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  Location,
-  RemovedAnnotationExclusion,
-} from '../annotation-type';
-import {
-  AnnotationDragEvent,
-  AnnotationHighlightResult,
-  PdfViewerLibComponent,
-} from '../pdf-viewer-lib.component';
+import { AddedAnnotationExclusion, Annotation, Location, RemovedAnnotationExclusion, } from '../annotation-type';
+import { AnnotationDragEvent, AnnotationHighlightResult, PdfViewerLibComponent, } from '../pdf-viewer-lib.component';
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -456,7 +447,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
           // assumes first link will be main database source link
           // tslint ignore cause other option is destructuring and that
           // also gets name shadowing error
-          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0])?.url : '',
+          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
         }],
         hyperlinks,
         detail: meta.type === 'link' ? meta.allText : '',

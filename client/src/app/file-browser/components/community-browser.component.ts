@@ -102,7 +102,7 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  getObjectCommands(object: FilesystemObject): any[] {
+  getObjectCommands(object: FilesystemObject): string[] {
     return ['/projects', object.project.projectName, 'maps', object.hashId];
   }
 }

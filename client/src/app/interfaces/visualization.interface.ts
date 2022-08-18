@@ -5,7 +5,8 @@ import {
     VisEdge,
     VisNode,
     DuplicateVisNode,
-    DuplicateVisEdge
+    DuplicateVisEdge,
+    DefaultNodeData
 } from './neo4j.interface';
 
 // Begin Misc. Interfaces
@@ -60,9 +61,9 @@ export interface NodePair {
   node2Id: number;
 }
 
-export interface DuplicateNodeEdgePair {
-    node: DuplicateVisNode;
-    edge: DuplicateVisEdge;
+export interface DuplicateNodeEdgePair<NodeData = object, EdgeData = object> {
+    node: DuplicateVisNode<NodeData>;
+    edge: DuplicateVisEdge<EdgeData>;
 }
 
 export interface EdgeConnectionData {
@@ -73,24 +74,24 @@ export interface EdgeConnectionData {
     label: string;
 }
 
-export interface Publication extends GraphNode {
-    data: {
-        journal: string;
-        title: string;
-        pmid: string;
-        pubYear: number;
-    };
+export interface PublicationData {
+    journal: string;
+    title: string;
+    pmid: string;
+    pubYear: number;
 }
 
-export interface Reference extends GraphNode {
-    data: {
+export interface Publication extends GraphNode<PublicationData> {
+}
+
+export interface Reference extends GraphNode<{
         entry1Text: string;
         entry2Text: string;
         entry1Type: string;
         entry2Type: string;
         id: string;
         sentence: string;
-    };
+    }> {
 }
 
 export interface ReferenceTablePair {
@@ -144,14 +145,14 @@ export interface SidenavEdgeEntity {
     totalResults: number;
 }
 
-export interface SidenavNodeEntity {
-    data: VisNode;
-    edges: VisEdge[];
+export interface SidenavNodeEntity<NodeData = object, EdgeData = object> {
+    data: VisNode<NodeData>;
+    edges: VisEdge<EdgeData>[];
 }
 
-export interface SidenavTypeEntity {
-    sourceNode: VisNode;
-    connectedNodes: VisNode[];
+export interface SidenavTypeEntity<Data = DefaultNodeData> {
+    sourceNode: VisNode<Data>;
+    connectedNodes: VisNode<Data>[];
     type: AssociatedType;
 }
 
@@ -214,10 +215,10 @@ export interface AssociatedTypeSnippetCountRequest {
 
 // Begin Response Interfaces
 
-export interface ExpandNodeResult {
+export interface ExpandNodeResult<NodeData = object, EdgeData = object> {
     expandedNode: number;
-    nodes: VisNode[];
-    edges: VisEdge[];
+    nodes: VisNode<NodeData>[];
+    edges: VisEdge<EdgeData>[];
 }
 
 export interface GetEdgeSnippetsResult {
