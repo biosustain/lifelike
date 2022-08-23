@@ -9,5 +9,5 @@
 	url = https://github.com/SBRG/lifelike-website
 [submodule "deployment"]
 	path = deployment
-	url = https://github.com/SBRG/lifelike-infra
+	url = git@github.com:SBRG/lifelike-infra.git
 	branch = ansible
