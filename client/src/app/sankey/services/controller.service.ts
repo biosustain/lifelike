@@ -18,6 +18,8 @@ import {
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -33,8 +35,6 @@ import { SankeyViews } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
 import { SankeyDocument, TraceNetwork, SankeyNode, View } from '../model/sankey-document';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 /**
  * Reducer pipe
