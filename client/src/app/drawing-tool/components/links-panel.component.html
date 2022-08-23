@@ -27,7 +27,7 @@
       <div class="d-flex align-items-center">
         <div class="text-truncate mr-2" placement="top" container="body"
              [ngbTooltip]="link.url">
-          <a [href]="toValidUrl(link.url)" target="_blank" class="text-muted"
+          <a [href]="link.url" target="_blank" class="text-muted"
              (click)="linkClick($event, link)">
             <small><i class="{{ fontAwesomeIcon }} fa-fw"></i> {{ getUrlText(link.url) }}</small>
           </a>

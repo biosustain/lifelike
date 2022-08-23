@@ -9,11 +9,12 @@ import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
+import { openInternalLink } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
+import { AppURL } from 'app/shared/utils/url';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
@@ -77,9 +78,9 @@ export class ObjectListComponent {
         // TODO: Normally this would just be handled by the `appLink` directive. Really, we should update the template to either:
         //  - Use appLink
         //  - Use a callback that does the download portion of the `else` block below
-        openInternalLink(
+        return openInternalLink(
           this.workspaceManager,
-          toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
+          new AppURL(this.router.createUrlTree(target.getCommands()).toString()),
           {newTab: !target.isDirectory}
         );
       } else {
@@ -89,7 +90,7 @@ export class ObjectListComponent {
             status: 'Generating download...',
           }))],
         });
-        this.filesystemService.getContent(target.hashId).pipe(
+        return this.filesystemService.getContent(target.hashId).pipe(
           map(blob => {
             return new File([blob], target.filename);
           }),
@@ -98,7 +99,7 @@ export class ObjectListComponent {
           }),
           finalize(() => progressDialogRef.close()),
           this.errorHandler.create({label: 'Download file'}),
-        ).subscribe();
+        ).toPromise();
       }
     }
   }

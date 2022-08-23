@@ -120,7 +120,7 @@ export class EdgeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
+    return openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
   }
 
   /**

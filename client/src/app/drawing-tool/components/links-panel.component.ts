@@ -7,13 +7,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { Hyperlink, Source } from '../services/interfaces';
 import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
+import { AppURL } from 'app/shared/utils/url';
 
 @Component({
   selector: 'app-links-panel',
@@ -162,7 +163,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       return window.location.hostname;
     } else {
       try {
-        const urlObject = new URL(toValidLink(url));
+        const urlObject = new AppURL(url);
         return urlObject.hostname.replace(/^www./, '') || url;
       } catch {
         return url;
@@ -170,26 +171,19 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
-  toValidUrl(url: string) {
-    try {
-      return toValidLink(url);
-    } catch (e) {
-      return '#';
-    }
-  }
-
   linkClick(event: Event, link: (Source | Hyperlink)) {
+    event.preventDefault();
+    event.stopPropagation();
+
     try {
-      openPotentialExternalLink(this.workspaceManager, link.url, {newTab: true, sideBySide: true});
+      return openPotentialExternalLink(this.workspaceManager, link.url, {newTab: true, sideBySide: true});
     } catch (e) {
-      this.messageDialog.display({
+      return this.messageDialog.display({
         title: 'Invalid Link',
         message: 'The URL for this link is not valid.',
         type: MessageType.Error,
       });
     }
-    event.preventDefault();
-    event.stopPropagation();
   }
 
   linkFocus(event: FocusEvent, link: Source | Hyperlink, index: number) {

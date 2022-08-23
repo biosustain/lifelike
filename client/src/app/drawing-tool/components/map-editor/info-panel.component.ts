@@ -56,7 +56,7 @@ export class InfoPanelComponent {
   /**
    * Bring user to original source of node information
    */
-  openSource(source: string): void {
-    openPotentialExternalLink(this.workspaceManager, source, {newTab: true, sideBySide: true});
+  openSource(source: string) {
+    return openPotentialExternalLink(this.workspaceManager, source, {newTab: true, sideBySide: true});
   }
 }

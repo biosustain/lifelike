@@ -1,4 +1,4 @@
-import { escapeRegExp } from 'lodash-es';
+import { escapeRegExp, last } from 'lodash-es';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
@@ -6,52 +6,14 @@ import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.componen
 
 import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
+import { AppURL } from './url';
+import { isNotEmpty } from '../utils';
 
-/**
- * Create a valid url string suitable for <a> tag href usage.
- * @param url - user provided string that might need enhancement - such as adding http:// for external links
- */
-export function toValidLink(url: string): string {
-  url = url.trim();
-  // Watch out for javascript:!
-  if (url.match(/^(http|ftp)s?:\/\//i)) {
-    return url;
-  } else if (url.match(/^\/\//i)) {
-    return 'http:' + url;
-    // Internal URL begins with single /
-  } else if (url.startsWith('/')) {
-    return removeViewModeIfPresent(url);
-  } else if (url.match(/^mailto:/i)) {
-    return url;
-  } else {
-    return 'http://' + url;
+export function removeViewModeIfPresent(url: AppURL): AppURL {
+  if (last(url.pathSegments) === 'edit') {
+    url.pathSegments.pop();
   }
-}
-
-export function removeViewModeIfPresent(url: string): string {
-  return url.replace(/\/edit[\?#$]?/, '');
-}
-
-
-/**
- * Returns the string as a valid URL object
- * @param url - user provided string with url
- */
-export function toValidUrl(url: string): URL {
-  // Create a valid href string
-  url = toValidLink(url);
-  let urlObject;
-  try {
-    // This will fail in case of internal URL
-    urlObject = new URL(url);
-  } catch (e) {
-    if (url.startsWith('/')) {
-      urlObject = new URL(url, window.location.href);
-    } else {
-      urlObject = new URL('https://' + url);
-    }
-  }
-  return urlObject;
+  return url;
 }
 
 /**
@@ -59,22 +21,15 @@ export function toValidUrl(url: string): URL {
  * @param url the URL
  * @param target the window target (default _blank)
  */
-export function openLink(url: string, target = '_blank'): boolean {
-  if (url == null) {
-    return false;
-  }
-
-  url = toValidLink(url);
-  window.open(url, target);
-
-  return true;
+export function openLink(url: AppURL, target = '_blank'): Window | null {
+  return url.isEmpty ? null : window.open(url.toString(), target);
 }
 
 export function openInternalLink(
   workspaceManager: WorkspaceManager,
   urlObject: URL,
   extras: WorkspaceNavigationExtras = {}
-) {
+): Promise<boolean> {
   const url = urlObject.toString();
   const pathSearchHash: string = urlObject.pathname + urlObject.search + urlObject.hash;
 
@@ -85,15 +40,13 @@ export function openInternalLink(
   // for each.
   m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
   if (m) {
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: pathSearchHash,
       extras: {
         matchExistingTab: `^/+folders/${escapeRegExp(m[1])}.*`,
         ...extras
       }
     });
-
-    return true;
   }
 
   // Match a full file path (e.g. /projects/MyProject/files/myFileHash123XYZ)
@@ -139,15 +92,12 @@ export function openInternalLink(
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
-          const {hash, search, searchParams} = toValidUrl(pathSearchHash);
-          if (search) {
-            component.route.queryParams.next({
-              ...Object.fromEntries((new URLSearchParams(search.slice(1)))),
-              ...searchParams
-            });
+          const {fragment, searchParamsObject} = new AppURL(pathSearchHash);
+          if (isNotEmpty(searchParamsObject)) {
+            component.route.queryParams.next(searchParamsObject);
           }
-          if (hash) {
-            component.route.fragment.next(hash.slice(1));
+          if (fragment) {
+            component.route.fragment.next(fragment);
           }
         };
         break;
@@ -158,7 +108,7 @@ export function openInternalLink(
         break;
     }
 
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: pathSearchHash,
       extras: {
         matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
@@ -166,13 +116,12 @@ export function openInternalLink(
         ...extras
       }
     });
-    return true;
   }
 
   // Match a ***ARANGO_USERNAME*** folder with the `projects` ***ARANGO_USERNAME*** path
   m = pathSearchHash.match(/^\/projects\/([^\/]+)/);
   if (m) {
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: pathSearchHash,
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
@@ -180,14 +129,12 @@ export function openInternalLink(
         ...extras
       }
     });
-
-    return true;
   }
 
   // Match a ***ARANGO_USERNAME*** folder with the `folders` ***ARANGO_USERNAME*** path
   m = pathSearchHash.match(/^\/folders\/([^\/]+)/);
   if (m) {
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: pathSearchHash,
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
@@ -195,8 +142,6 @@ export function openInternalLink(
         ...extras
       }
     });
-
-    return true;
   }
 
   // Match a deprecated pdf link
@@ -211,45 +156,40 @@ export function openInternalLink(
       coordD,
     ] = pathSearchHash.replace(/^\/dt\/pdf\//, '').split('/');
     const newUrl = `/projects/beta-project/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: newUrl,
       extras: {
         matchExistingTab: `^/projects/beta-project/files/${fileId}`,
         ...extras
       }
     });
-
-    return true;
   }
 
   // Match a deprecated map link
   m = pathSearchHash.match(/^\/dt\/map\/([0-9a-f]+)$/);
   if (m) {
-    workspaceManager.navigateByUrl({
+    return workspaceManager.navigateByUrl({
       url: `/dt/map/${m[1]}`,
       extras: {
         matchExistingTab: `/maps/${m[1]}`,
         ...extras
       }
     });
-
-    return true;
   }
 
   // If nothing above matched, just try to open the url normally, with whatever extras were passed in
-  workspaceManager.navigateByUrl({
+  return workspaceManager.navigateByUrl({
     url: pathSearchHash,
     extras
   });
-  return true;
 }
 
 export function openPotentialExternalLink(
   workspaceManager: WorkspaceManager,
   url: string,
   extras: WorkspaceNavigationExtras = {}
-): boolean {
-  const urlObject = toValidUrl(url);
+): Promise<boolean> | Window | null {
+  const urlObject = new AppURL(url);
   const openInternally = workspaceManager.isWithinWorkspace()
       && (window.location.hostname === urlObject.hostname
       && (window.location.port || '80') === (urlObject.port || '80'));
@@ -258,7 +198,7 @@ export function openPotentialExternalLink(
     return openInternalLink(workspaceManager, urlObject, extras);
   }
 
-  return openLink(urlObject.href, '_blank');
+  return openLink(urlObject, '_blank');
 }
 
 

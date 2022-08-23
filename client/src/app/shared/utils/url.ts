@@ -57,8 +57,14 @@ export class AppURL implements URL, AppURLInterface {
 
   pathSegments: string[];
 
-  get isRelative() {
+  get isRelative(): boolean {
     return isEmpty(this.hostname);
+  }
+
+  get isEmpty(): boolean {
+    // For link to be absolute it has to have hostname (not empty)
+    // Need to only check relative links
+    return this.isRelative && isEmpty(this.pathSegments);
   }
 
   set pathname(value) {

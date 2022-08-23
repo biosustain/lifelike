@@ -4,9 +4,10 @@ import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
-import { openInternalLink, toValidUrl } from '../utils/browser';
+import { openInternalLink } from '../utils/browser';
 import { assignDefined } from '../utils/types';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
+import { AppURL } from '../utils/url';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load
@@ -93,7 +94,7 @@ export class AbstractLinkDirective {
       parentAddress: this.router.createUrlTree(this.parentCommands)
     });
 
-    openInternalLink(this.workspaceManager, toValidUrl(this.urlTree.toString()), extras);
+    openInternalLink(this.workspaceManager, new AppURL(this.urlTree.toString()), extras);
     return false;
   }
 

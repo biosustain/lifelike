@@ -14,7 +14,7 @@ import { AuthSelectors } from 'app/auth/store';
 import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
-import { toValidUrl } from 'app/shared/utils/browser';
+import { AppURL } from 'app/shared/utils/url';
 
 import { environment } from '../environments/environment';
 
@@ -65,7 +65,7 @@ export class AppComponent {
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
         this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
 
-        const url = toValidUrl(event.url);
+        const url = new AppURL(event.url);
 
         this.mainUrl = url.pathname;
         // Get the query fragment from the url if there is one, omitting the '#'
