@@ -1,6 +1,5 @@
 import { from, Observable, OperatorFunction, Subject } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
-import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
@@ -8,16 +7,6 @@ import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
-export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
-  return map(async blob => {
-      const graphRepr =  await JSZip.loadAsync(blob).then((zip: JSZip) => {
-        return zip.files['graph.json'].async('text').then((text: string) => {
-          return text;
-        });
-      });
-      return JSON.parse(graphRepr) as T;
-  });
-}
 
 export function mapBlobToBuffer(): OperatorFunction<Blob, ArrayBuffer> {
   return mergeMap(blob => {
