@@ -29,7 +29,7 @@ export function toValidLink(url: string): string {
 }
 
 export function removeViewModeIfPresent(url: string): string {
-  return url.replace(/\/edit[\?#$]/, '');
+  return url.replace(/\/edit[\?#$]?/, '');
 }
 
 
