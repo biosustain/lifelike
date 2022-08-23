@@ -17,4 +17,4 @@ biocycFiles:
   BsubCyc: bsub_47.tar.gz
   PaenibacillusCyc: gcf_000981585_25.5.tar.gz
   PsyringaeCyc: gcf_000007805cyc.tar.gz
-
+  StreptomycesCoelicolorA3_2: "Streptomyces coelicolor A3(2)/scocyc.tar.gz"

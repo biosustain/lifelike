@@ -94,6 +94,6 @@ def main(args):
         parse(biocyc_dbname)
 
 
-if __name__ == "__main__":
-    # parse(DB_ECOCYC)
-    parse(DB_PSYRCYC)
+# if __name__ == "__main__":
+#     # parse(DB_ECOCYC)
+#     parse(DB_PSYRCYC)
