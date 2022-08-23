@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { of, Subject, iif, ReplaySubject, Observable, EMPTY } from 'rxjs';
+import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer } from 'rxjs';
 import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain } from 'lodash-es';
-import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
 import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
@@ -33,6 +33,8 @@ import { SankeyViews } from '../interfaces/view';
 import { SankeyPathReportEntity } from '../interfaces/report';
 import { Align, ALIGN_ID } from '../interfaces/align';
 import { SankeyDocument, TraceNetwork, SankeyNode, View } from '../model/sankey-document';
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 /**
  * Reducer pipe
@@ -55,7 +57,8 @@ interface Utils<Nodes> {
 @Injectable()
 export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> {
   constructor(
-    readonly warningController: WarningControllerService
+    readonly warningController: WarningControllerService,
+    private readonly messageDialog: MessageDialog
   ) {
     super();
   }
@@ -70,7 +73,22 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         this.data$.pipe(
           map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
           map(({views}) => views[delta.viewName]),
-          map(view => getCommonState((view as View).state)),
+          switchMap(view =>
+            iif(
+              () => isNil(view),
+              defer(() =>
+                this.messageDialog.display({
+                  title: 'Trace network view does not exist',
+                  message: `Trace network ${delta.networkTraceIdx} does not contain a view named '${delta.viewName}'.`,
+                  additionalMsgs: ['View could be deleted or used link is corrupted.'],
+                  type: MessageType.Error,
+                })
+                  .then(() => EMPTY, () => EMPTY) // cancel current update
+                  .finally(() => this.patchState({viewName: null}).toPromise()) // init corrected update
+              ),
+              defer(() => of(getCommonState((view as View).state)))
+            )
+          ),
           map(state => merge({}, state, delta))
         ),
         of(delta)
