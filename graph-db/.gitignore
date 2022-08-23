@@ -1,5 +1,7 @@
 .DS_Store
 
+**/liquibase.properties
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
