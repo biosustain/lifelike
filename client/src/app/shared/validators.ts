@@ -1,7 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
-import { toValidLink } from './utils/browser';
-
 export function nonEmptyList(control: AbstractControl): { [key: string]: any } | null {
   return control.value.length === 0 ? {required: {value: control.value}} : null;
 }
@@ -25,7 +23,7 @@ export function potentiallyInternalUrl(control: AbstractControl): { [key: string
   const value = control.value;
   if (value != null && value.length) {
     try {
-      toValidLink(value);
+      // toValidLink(value);
       return null;
     } catch (e) {
       return {

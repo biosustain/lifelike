@@ -27,7 +27,7 @@ export function openLink(url: AppURL, target = '_blank'): Window | null {
 
 export function openInternalLink(
   workspaceManager: WorkspaceManager,
-  urlObject: URL,
+  urlObject: AppURL,
   extras: WorkspaceNavigationExtras = {}
 ): Promise<boolean> {
   const url = urlObject.toString();
@@ -38,11 +38,14 @@ export function openInternalLink(
   // TODO: Folder tabs have a slightly different URL structure than other files for some reason, so we need to check for them manually.
   // You can verify this behavior by opening a folder and a file in the workspace and clicking the "Share" button in the tab options
   // for each.
+  // TODO: alternatively `isMatch(urlObject.pathSegments, {0: 'projects', 2: 'folders'})`
   m = pathSearchHash.match(/^\/projects\/[^\/]+\/folders\/([^\/#?]+)/);
   if (m) {
     return workspaceManager.navigateByUrl({
+      // TODO: alternatively `urlObject.toString()`
       url: pathSearchHash,
       extras: {
+        // TODO: alternatively `urlObject.pathSegments[3]`
         matchExistingTab: `^/+folders/${escapeRegExp(m[1])}.*`,
         ...extras
       }
@@ -50,6 +53,7 @@ export function openInternalLink(
   }
 
   // Match a full file path (e.g. /projects/MyProject/files/myFileHash123XYZ)
+  // TODO: alternatively `isMatch(urlObject.pathSegments, ['projects'])`
   m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
   if (m) {
     let shouldReplaceTab;
@@ -58,6 +62,7 @@ export function openInternalLink(
       case FileTypeShorthand.Pdf: {
         shouldReplaceTab = (component) => {
           const fileViewComponent = component as PdfViewComponent;
+          // TODO: alternatively `const { fragment } = urlObject`
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           if (fragmentMatch) {
             fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
@@ -68,6 +73,7 @@ export function openInternalLink(
       case FileTypeShorthand.EnrichmentTable: {
         shouldReplaceTab = (component) => {
           const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+          // TODO: alternatively `const { fragment } = urlObject`
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           if (fragmentMatch) {
             enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
@@ -82,6 +88,7 @@ export function openInternalLink(
       }
       case FileTypeShorthand.BioC: {
         shouldReplaceTab = (component) => {
+          // TODO: alternatively `const { fragment } = urlObject`
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           const biocViewComponent = component as BiocViewComponent;
           if (fragmentMatch && fragmentMatch[1]) {
@@ -92,6 +99,7 @@ export function openInternalLink(
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
+          // TODO: alternatively `const {fragment, searchParamsObject} = urlObject`
           const {fragment, searchParamsObject} = new AppURL(pathSearchHash);
           if (isNotEmpty(searchParamsObject)) {
             component.route.queryParams.next(searchParamsObject);
@@ -109,8 +117,10 @@ export function openInternalLink(
     }
 
     return workspaceManager.navigateByUrl({
+      // TODO: alternatively `urlObject.toString()`
       url: pathSearchHash,
       extras: {
+        // TODO: alternatively `urlObject.pathSegments[3]`
         matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
         shouldReplaceTab,
         ...extras
@@ -119,12 +129,15 @@ export function openInternalLink(
   }
 
   // Match a ***ARANGO_USERNAME*** folder with the `projects` ***ARANGO_USERNAME*** path
+  // TODO: alternatively `isMatch(urlObject.pathSegments, ['projects'])`
   m = pathSearchHash.match(/^\/projects\/([^\/]+)/);
   if (m) {
     return workspaceManager.navigateByUrl({
+      // TODO: alternatively `url: urlObject.toString()`
       url: pathSearchHash,
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
+        // TODO: alternatively `urlObject.pathSegments[3]`
         matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\?$`,
         ...extras
       }
@@ -132,12 +145,15 @@ export function openInternalLink(
   }
 
   // Match a ***ARANGO_USERNAME*** folder with the `folders` ***ARANGO_USERNAME*** path
+  // TODO: alternatively `isMatch(urlObject.pathSegments, ['folders'])`
   m = pathSearchHash.match(/^\/folders\/([^\/]+)/);
   if (m) {
     return workspaceManager.navigateByUrl({
+      // TODO: alternatively `url: urlObject.toString()`
       url: pathSearchHash,
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
+        // TODO: alternatively `urlObject.pathSegments[3]`
         matchExistingTab: `^/+folders/${escapeRegExp(m[1])}\\?$`,
         ...extras
       }
@@ -145,6 +161,7 @@ export function openInternalLink(
   }
 
   // Match a deprecated pdf link
+  // TODO: alternatively `isMatch(urlObject.pathSegments, ['dt', 'pdf'])`
   m = pathSearchHash.match(/^\/dt\/pdf/);
   if (m) {
     const [

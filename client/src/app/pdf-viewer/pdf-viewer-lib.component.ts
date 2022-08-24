@@ -13,9 +13,11 @@ import {
   ComponentFactoryResolver,
   ApplicationRef,
   Injector,
+  SecurityContext,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
+import { DomSanitizer } from '@angular/platform-browser';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
@@ -24,7 +26,6 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { toValidLink } from 'app/shared/utils/browser';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
@@ -107,7 +108,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     protected readonly snackBar: MatSnackBar,
     protected readonly errorHandler: ErrorHandler,
     protected readonly internalSearch: InternalSearchService,
-    protected readonly clipboard: ClipboardService
+    protected readonly clipboard: ClipboardService,
+    private readonly sanitizer: DomSanitizer
   ) {
   }
 
@@ -493,7 +495,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       for (const link of an.meta.idHyperlinks) {
         const {label, url} = JSON.parse(link);
-        htmlLinks += `<a target="_blank" href="${escape(toValidLink(url))}">${escape(label)}</a><br>`;
+        htmlLinks += `<a target="_blank" href="${this.sanitizer.sanitize(SecurityContext.URL, url)}">${escape(label)}</a><br>`;
       }
 
       htmlLinks += `</div></div>`;
