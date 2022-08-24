@@ -2,7 +2,7 @@ import { OnDestroy, OnInit, Component, } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { omit, forEach, isEmpty } from 'lodash-es';
-import { startWith, pairwise, map, filter, switchMap, tap, skip } from 'rxjs/operators';
+import { startWith, pairwise, map, filter, switchMap, tap } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
 import { uuidv4, deepDiff } from 'app/shared/utils';
@@ -26,7 +26,7 @@ export abstract class SankeyAbstractAdvancedPanelComponent<Options extends objec
   formToStateSubscribtion: Subscription;
   formStateSync$ = this.stateController.state$.pipe(
     tap(state => this.form.patchValue(state, {emitEvent: false})),
-    map(() => this.form.value),
+    map(() => this.form.value as Partial<State>),
     debug('formStateSync$'),
     switchMap(prevValue => this.form.valueChanges.pipe(
       debug('form.valueChanges'),

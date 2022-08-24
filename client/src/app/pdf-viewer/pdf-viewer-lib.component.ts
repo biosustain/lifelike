@@ -29,7 +29,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { NavigationData, composeInternalLink } from 'app/shared/workspace-manager';
+import { composeInternalLink } from 'app/shared/workspace-manager';
 
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';

@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten, isNil } from 'lodash-es';
-import { defer, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';

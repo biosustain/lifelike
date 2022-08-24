@@ -1,10 +1,11 @@
 import { Subscription } from 'rxjs';
+import { ZoomTransform } from 'd3-zoom';
 
 import { ResourceManager, ResourceOwner } from '../../resource/resource-manager';
 import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
 import { Line } from '../lines/lines';
 import { TextElement } from '../text-element';
-import { drawTextNotSmallerThanMin, NO_TEXT_THRESHOLD } from '../shared';
+import { NO_TEXT_THRESHOLD } from '../shared';
 
 export interface ImageNodeOptions extends BaseRectangleNodeOptions {
   imageManager: ResourceManager<string, CanvasImageSource>;
@@ -51,7 +52,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     super.objectWillUnbind();
   }
 
-  draw(transform: any, selected: boolean): void {
+  draw(transform: ZoomTransform, selected: boolean): void {
     const zoomResetScale = 1 / transform.scale(1).k;
     this.ctx.save();
 

@@ -1,16 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import {
-  DataTransferData,
-  DataTransferDataProvider,
-  DataTransferToken,
-} from 'app/shared/services/data-transfer-data.service';
-import {
-  GenericDataProvider,
-  LABEL_TOKEN,
-  URI_TOKEN,
-  URIData,
-} from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from 'app/shared/services/data-transfer-data.service';
+import { GenericDataProvider, LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { makeid } from 'app/shared/utils/identifiers';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphRelationship } from '../services/interfaces';

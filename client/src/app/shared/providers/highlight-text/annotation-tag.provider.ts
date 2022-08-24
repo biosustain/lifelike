@@ -5,13 +5,7 @@ import Color from 'color';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  Hyperlink,
-  Reference,
-  Source,
-  UniversalGraphNode,
-  UniversalGraphNodeTemplate,
-} from 'app/drawing-tool/services/interfaces';
+import { Hyperlink, Reference, Source, UniversalGraphNode, UniversalGraphNodeTemplate, } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 

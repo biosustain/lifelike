@@ -1,3 +1,5 @@
+import { ZoomTransform } from 'd3-zoom';
+
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 
 import { distanceUnsq, getLinePointIntersectionDistance, pointOnRect } from '../../geometry';
@@ -135,7 +137,7 @@ export class LineEdge extends PlacedEdge {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  draw(transform: any, selected: boolean = false): void {
+  draw(transform: ZoomTransform, selected: boolean = false): void {
     if (selected) {
       this.drawSelection();
     }
@@ -197,7 +199,7 @@ export class LineEdge extends PlacedEdge {
    * NOTE: This works, since we are not using line breaks in edge label (which as width based).
    * @param transform current graph transform
    */
-  drawLayer2(transform: any) {
+  drawLayer2(transform: ZoomTransform) {
     if (this.textbox && transform.k > NO_TEXT_THRESHOLD) {
       drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
     }

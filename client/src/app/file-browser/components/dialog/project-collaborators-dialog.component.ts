@@ -103,7 +103,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
     }).subscribe();
   }
 
-  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<any> {
+  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<ModelList<Collaborator>> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Updating Collaborators',
       progressObservables: [new BehaviorSubject<Progress>(new Progress({

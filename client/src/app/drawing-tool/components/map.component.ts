@@ -15,7 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';

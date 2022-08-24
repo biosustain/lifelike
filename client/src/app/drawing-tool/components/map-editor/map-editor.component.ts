@@ -6,9 +6,7 @@ import { auditTime, catchError, defaultIfEmpty, finalize, map, switchMap, tap } 
 
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
-import { mapBlobToBuffer, mapBufferToJson, mapJsonToGraph, readBlobAsBuffer } from 'app/shared/utils/files';
 import { CompoundAction, GraphAction, GraphActionReceiver, } from 'app/graph-viewer/actions/actions';
-import { mergeDeep } from 'app/graph-viewer/utils/objects';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { LockError } from 'app/file-browser/services/filesystem.service';
@@ -18,7 +16,7 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import {  uuidv4 } from 'app/shared/utils/identifiers';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
@@ -187,7 +185,7 @@ export class MapEditorComponent
       .subscribe(); // Need to subscribe so it actually runs
   }
 
-  saveBackup() {
+  saveBackup(): Observable<{}> {
     if (this.map) {
       return forkJoin(
         this.graphCanvas?.getImageChanges().newImageHashes.map(hash =>

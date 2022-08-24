@@ -6,11 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import {
-  LABEL_TOKEN,
-  URI_TOKEN,
-  URIData,
-} from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';

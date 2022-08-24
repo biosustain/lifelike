@@ -1,8 +1,8 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { switchMap, map, shareReplay, takeUntil, tap } from 'rxjs/operators';
-import { merge, isNil, uniq, isEmpty } from 'lodash-es';
-import { of, iif, defer, combineLatest } from 'rxjs';
+import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { merge, isNil, uniq } from 'lodash-es';
+import { of, iif, defer } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';

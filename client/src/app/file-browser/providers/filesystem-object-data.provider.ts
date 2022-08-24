@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import {
-  DataTransferData,
-  DataTransferDataProvider,
-  DataTransferToken,
-} from 'app/shared/services/data-transfer-data.service';
+import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from 'app/shared/services/data-transfer-data.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilePrivileges } from '../models/privileges';
