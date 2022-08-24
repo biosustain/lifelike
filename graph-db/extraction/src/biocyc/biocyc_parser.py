@@ -13,10 +13,14 @@ from biocyc import (class_parser, compound_parser, dnabindsite_parser,
                     regulation_parser, rna_parser, species_parser,
                     terminator_parser, transcripitionunit_parser)
 
-ENTITIES = [NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
-            NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
-            NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
-            NODE_REACTION, NODE_PATHWAY, NODE_ENZ_REACTION, NODE_REGULATION]
+ENTITIES = [
+    NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
+    NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
+    NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
+    NODE_REACTION, NODE_PATHWAY,
+    NODE_ENZ_REACTION,
+    NODE_REGULATION,
+]
 
 PARSERS = {
     NODE_CLASS: class_parser.ClassParser,
