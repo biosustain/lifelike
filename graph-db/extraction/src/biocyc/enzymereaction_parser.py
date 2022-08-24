@@ -10,6 +10,8 @@ ATTR_NAMES = {
 REL_NAMES = {
     'ENZYME': RelationshipType(REL_CATALYZE, 'from', NODE_BIOCYC, PROP_BIOCYC_ID),
     'REACTION': RelationshipType(REL_CATALYZE, 'to', NODE_BIOCYC, PROP_BIOCYC_ID),
+    'COFACTORS': RelationshipType(REL_COFACTORS, 'to', NODE_BIOCYC, PROP_BIOCYC_ID),
+    'REGULATED-BY': RelationshipType(REL_REGULATE, 'from', NODE_BIOCYC, PROP_BIOCYC_ID)
 }
 
 

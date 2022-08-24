@@ -81,17 +81,16 @@ class DataFileParser(BaseParser):
             if not self.version:
                 self.version = self.get_db_version(tar)
                 self.logger.info(f'Database file version: "{self.version}"')
-            for tarinfo in tar:
-                if tarinfo.name.endswith(os.path.sep + self.datafile) and self.version in tarinfo.name:
-                    self.logger.info('Parse ' + tarinfo.name)
-                    utf8reader = codecs.getreader('ISO-8859-1')
-                    f = utf8reader(tar.extractfile(tarinfo.name))
-                    nodes = []
-                    node = None
-                    for line in f:
-                        line = biocyc_utils.cleanhtml(line)
-                        node = self.parse_line(line, node, nodes)
-                    return nodes
+            name = next(n for n in tar.getnames() if n.endswith(os.path.sep + self.datafile) and self.version in n)
+            self.logger.info('Parse ' + name)
+            utf8reader = codecs.getreader('ISO-8859-1')
+            f = utf8reader(tar.extractfile(name))
+            nodes = []
+            node = None
+            for line in f:
+                line = biocyc_utils.cleanhtml(line)
+                node = self.parse_line(line, node, nodes)
+            return nodes
 
     def parse_line(self, line, node, nodes):
         try:
