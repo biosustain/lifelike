@@ -1,12 +1,14 @@
 import hashlib
+from io import BytesIO
 import json
 import pytest
 from sqlalchemy.orm import make_transient
-import typing
+from typing import Any, Dict
 from urllib.parse import quote
+import zipfile
 
 from neo4japp.models import AppUser, Files, Projects
-from neo4japp.models.files import StarredFile
+from neo4japp.models.files import FileContent, StarredFile
 from neo4japp.util import snake_to_camel
 
 from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
@@ -405,7 +407,7 @@ def assert_patch_file_results(session, file_in_project: Files,
                               project: Projects,
                               user_with_project_roles: AppUser,
                               original_file: Files, field: str,
-                              value: typing.Any,
+                              value: Any,
                               expect_success: bool,
                               resp,
                               resp_file_getter):
@@ -475,8 +477,8 @@ def test_patch_file(
         file_in_project: Files,
         project: Projects,
         field: str,
-        sent_value: typing.Any,
-        value: typing.Any,
+        sent_value: Any,
+        value: Any,
         expect_success: bool):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
@@ -618,8 +620,8 @@ def test_bulk_patch_files(
         file_in_project: Files,
         project: Projects,
         field: str,
-        sent_value: typing.Any,
-        value: typing.Any,
+        sent_value: Any,
+        value: Any,
         expect_success: bool):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
@@ -751,3 +753,54 @@ def test_get_starred_file_list(
     assert resp_data['results'][0]['starred']['id'] == starred_file.id
     assert resp_data['results'][0]['starred']['userId'] == starred_file.user_id
     assert resp_data['results'][0]['starred']['fileId'] == starred_file.file_id
+
+
+@pytest.mark.parametrize(
+    'user_with_project_roles', [
+        TestUser([], ['project-write']),
+    ],
+    indirect=['user_with_project_roles'],
+    ids=str,
+)
+def test_duplicate_map_does_not_create_new_content(
+    session,
+    client,
+    login_password: str,
+    user_with_project_roles: AppUser,
+    map_file_in_project: Files
+):
+    old_content = zipfile.ZipFile(BytesIO(map_file_in_project.content.raw_file))
+    old_graph = json.loads(old_content.read('graph.json'))
+
+    new_graph: Dict[str, Any] = {"nodes": [], "edges": [], "groups": []}
+
+    # Explicitly show that the old and new content are exactly the same
+    assert old_graph == new_graph
+
+    new_content = BytesIO()
+    with zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED) as zip_fp:
+        byte_graph = json.dumps(new_graph, separators=(',', ':')).encode('utf-8')
+        zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
+    new_content.seek(0)
+
+    prev_total_file_contents = session.query(FileContent).count()
+
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+    resp = client.post(
+        f'/filesystem/objects',
+        headers=headers,
+        content_type='multipart/form-data',
+        data={
+            'contentValue': (new_content, 'test_map.llmap'),
+            'parentHashId': map_file_in_project.parent.hash_id,
+            'filename': 'Test Duplicate Map',
+        },
+    )
+
+    new_total_file_contents = session.query(FileContent).count()
+
+    assert resp.status_code == 200
+
+    # If the new content had an identical checksum to the old content, these will match
+    assert prev_total_file_contents == new_total_file_contents
