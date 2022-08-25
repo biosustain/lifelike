@@ -1362,10 +1362,10 @@ class MapTypeProvider(BaseFileTypeProvider):
         files_to_copy = [hash_id for hash_id in zip_file.namelist() if
                          os.path.basename(hash_id).split('.')[0] not in images_to_delete]
         for filename in files_to_copy:
-            new_zip.writestr(filename, zip_file.read(filename))
+            new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
 
         for image in new_images:
-            new_zip.writestr('images/' + image.filename + '.png', image.read())
+            new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
         if params.get('content_value') is not None:
             new_graph = params['content_value'].read()
         else:
@@ -1374,7 +1374,10 @@ class MapTypeProvider(BaseFileTypeProvider):
             validate_map(new_graph_json)
             new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
 
-        new_zip.writestr('graph.json', new_graph)
+        # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata! If
+        # the timestamp is included, otherwise identical zips will have different checksums. This
+        # is true for the two `writestr` calls above as well.
+        new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
         new_zip.close()
 
         # Remember to always rewind when working with BufferedIOBase
