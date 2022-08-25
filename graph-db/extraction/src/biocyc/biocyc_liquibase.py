@@ -1,4 +1,5 @@
 import os.path
+from pathlib import Path
 
 from common.liquibase_changelog_generator import *
 from common.constants import *
@@ -103,8 +104,10 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
 
     def generate_init_changelog_file(self):
         self.add_all_change_sets()
-        changelog_file = f"changelog-{self.biocyc_dbname}-init-{self.date_tag.replace('/', '-')}.xml"
-        self.generate_changelog_file(changelog_file)
+        filename = Path(
+            f"changelog-0010-{self.biocyc_dbname}-init-{self.date_tag}.xml"
+        )
+        self.generate_changelog_file(filename)
 
 
 class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
@@ -130,7 +133,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if content['type'] in ['post-modification', 'enrichment', 'db-link']:
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-{self.biocyc_dbname}-post-load-{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-0050-{self.biocyc_dbname}-post-load-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -140,7 +143,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if 'collapse' not in key:
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-{self.biocyc_dbname}-gds-no-collapse-{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-0010-{self.biocyc_dbname}-gds-no-collapse-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -150,7 +153,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if 'collapse' not in key  or key=='collapse_Regulation_nodes':
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-0010-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -159,7 +162,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         for key, content in self.cyphers.items():
             self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-{self.biocyc_dbname}-gds-{self.date_tag.replace('/', '-')}.xml"
+            filename = f"changelog-0010-{self.biocyc_dbname}-gds-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
