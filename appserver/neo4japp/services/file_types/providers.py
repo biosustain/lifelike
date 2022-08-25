@@ -1354,7 +1354,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_images = params.get('new_images') or []
 
         new_content = io.BytesIO()
-        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED)
+        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False)
 
         # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
         # to make sure that the graph.json is not copied as well.
