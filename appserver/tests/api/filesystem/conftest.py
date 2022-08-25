@@ -12,6 +12,7 @@ from neo4japp.models import (
     projects_collaborator_role,
     file_collaborator_role
 )
+from neo4japp.models.files import StarredFile
 from neo4japp.services import AccountService
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, GraphTypeProvider
 
@@ -199,3 +200,20 @@ def file_in_project(
             )
 
     return file
+
+
+@pytest.fixture(scope='function')
+def starred_file(
+    session,
+    user_with_project_roles: AppUser,
+    file_in_project: Files
+) -> StarredFile:
+    starred_file = StarredFile(
+        user_id=user_with_project_roles.id,
+        file_id=file_in_project.id
+    )
+
+    session.add(starred_file)
+    session.flush()
+
+    return starred_file

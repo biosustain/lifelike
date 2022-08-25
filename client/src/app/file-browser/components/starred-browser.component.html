@@ -1,0 +1,51 @@
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <app-module-error *ngIf="status.failedErrorShown; else noError" class="p-4" [error]="status.error">
+    <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+  </app-module-error>
+
+  <ng-template #noError>
+    <div class="module" appContainerBreakpoints>
+      <!-- Header -->
+      <div class="module-header">
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <div class="module-title">Starred Content</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="module-toolbar mt-2 ">
+          <div class="ml-auto d-flex">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text bg-transparent border-right-0">
+                        <i class="fa fa-search"></i>
+                    </div>
+                </div>
+                <input class="form-control py-2 pl-0 border-left-0 border bg-transparent"
+                       (keyup)="applyFilter($event.target.value)"
+                       placeholder="Find" maxlength="40">
+            </div>
+
+            <button class="btn btn-secondary ml-2"
+                    ngbTooltip="Reload List"
+                    container="body"
+                    placement="bottom top left right"
+                    (click)="refresh()">
+                <i class="fa fa-fw fa-sync"></i>
+            </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-fill overflow-auto">
+        <app-object-list [objects]="(status.placeholdersShown ? null : list.results)"
+                         [appLinks]="true"
+                         [forEditing]="false"
+                         [showStars]="false"
+                         (refreshRequest)="refresh()">
+        </app-object-list>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

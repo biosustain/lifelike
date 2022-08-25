@@ -42,6 +42,7 @@ import { BrowserRecentListComponent } from './components/browser/browser-recent-
 import { ObjectUploadDialogComponent } from './components/dialog/object-upload-dialog.component';
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
+import { StarredBrowserComponent } from './components/starred-browser.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { BrowserPinnedListComponent } from './components/browser/browser-pinned-
     BrowserContextComponent,
     BrowserCommunityListComponent,
     BrowserRecentListComponent,
+    StarredBrowserComponent,
     BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,

@@ -9,7 +9,7 @@
     Delete project...
   </button>
 </ng-container>
-<ng-container *ngIf="showTools">
+<ng-container>
   <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...

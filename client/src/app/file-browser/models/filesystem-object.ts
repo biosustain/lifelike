@@ -1,4 +1,4 @@
-import { isNil, isEmpty, has, toPairs } from 'lodash-es';
+import { isNil, isEmpty, has, toPairs, assign, pick } from 'lodash-es';
 
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
@@ -146,6 +146,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   // tslint:disable-next-line:variable-name
   annotations_date_tooltip?: string;
   annotationsTooltipContent: string;
+  starred?: boolean;
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;
@@ -461,11 +462,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.creationDate === this.modifiedDate;
   }
 
+  static normalizeFilename(filter: string): string {
+    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+  }
+
   filterChildren(filter: string) {
-    const normalizedFilter = this.normalizeFilter(filter);
+    const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => this.normalizeFilter(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
     );
   }
 
@@ -580,26 +585,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     toPairs(dragData).forEach(args => dataTransfer.setData(...args));
   }
 
-  private getId(): any {
-    switch (this.type) {
-      case 'dir':
-        const directory = this.data as Directory;
-        return directory.id;
-      case 'file':
-        const file = this.data as PdfFile;
-        return file.file_id;
-      case 'map':
-        const _map = this.data as KnowledgeMap;
-        return _map.hash_id;
-      default:
-        throw new Error(`unknown directory object type: ${this.type}`);
-    }
-  }
-
-  private normalizeFilter(filter: string): string {
-    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
-  }
-
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
     return (
       // Sort pinned files first
@@ -617,16 +602,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     if (data == null) {
       return this;
     }
-    for (const key of [
-      'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'pinned', 'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
-      'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
-      'trueFilename']) {
-      if (key in data) {
-        this[key] = data[key];
-      }
-    }
+
+    assign(this, pick(
+      data,
+      [
+        'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
+        'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
+        'fallbackOrganism', 'annotationConfigs', 'filePath', 'trueFilename', 'starred'
+      ]
+    ));
+
     if (has(data, 'modifiedDate')) {
       this.updatedTimestamp = Date.parse(data.modifiedDate);
     } else if (has(data, 'creationDate')) {

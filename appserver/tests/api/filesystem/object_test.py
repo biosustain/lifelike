@@ -1,11 +1,12 @@
 import hashlib
+import json
+import pytest
+from sqlalchemy.orm import make_transient
 import typing
 from urllib.parse import quote
 
-import pytest
-from sqlalchemy.orm import make_transient
-
 from neo4japp.models import AppUser, Files, Projects
+from neo4japp.models.files import StarredFile
 from neo4japp.util import snake_to_camel
 
 from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
@@ -679,3 +680,74 @@ def test_bulk_patch_files_missing(
     resp_data = resp.get_json()
     assert resp_data['mapping'] == dict()
     assert resp_data['missing'] == ['test_bulk_patch_files_missing']
+
+
+@pytest.mark.parametrize(
+    'file_in_project, user_with_project_roles, starred, status_code', [
+        (TestFile(public=False, in_folder=True, user_roles_for_file=[
+            'file-read'
+        ]), TestUser([], []), True, 200),
+        (TestFile(public=False, in_folder=True, user_roles_for_file=[
+            'file-read'
+        ]), TestUser([], []), False, 200),
+        (TestFile(public=False), TestUser([], []), True, 403),
+    ],
+    indirect=['file_in_project', 'user_with_project_roles'],
+    ids=str,
+)
+def test_update_file_starred(
+        client,
+        login_password: str,
+        user_with_project_roles: AppUser,
+        status_code: int,
+        file_in_project: Files,
+        starred: bool
+):
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    resp = client.patch(
+        f'/filesystem/objects/{quote(file_in_project.hash_id)}/star',
+        headers=headers,
+        json={'starred': starred},
+        content_type='application/json'
+    )
+
+    assert resp.status_code == status_code
+
+    if status_code == 200:
+        resp_data = resp.get_json()
+        resp_file = resp_data['result']
+
+        if starred:
+            assert (
+                resp_file['starred']['fileId'] == file_in_project.id and
+                resp_file['starred']['userId'] == user_with_project_roles.id
+            )
+        else:
+            assert resp_file['starred'] is None
+
+
+def test_get_starred_file_list(
+    client,
+    login_password: str,
+    user_with_project_roles: AppUser,
+    starred_file: StarredFile
+):
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    resp = client.get(
+        f'/filesystem/objects/starred',
+        headers=headers,
+        content_type='application/json'
+    )
+
+    assert resp.status_code == 200
+
+    resp_data = resp.get_json()
+
+    assert len(resp_data['results']) == 1
+    assert resp_data['results'][0]['starred']['id'] == starred_file.id
+    assert resp_data['results'][0]['starred']['userId'] == starred_file.user_id
+    assert resp_data['results'][0]['starred']['fileId'] == starred_file.file_id
