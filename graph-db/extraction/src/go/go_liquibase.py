@@ -54,7 +54,7 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
 def main():
     task = GoChangeLogsGenerator('rcai', "go-data-04052022.zip")
     task.add_all_change_sets()
-    task.generate_changelog_file(f"go_changelog_{task.date_tag.replace('/', '')}.xml")
+    task.generate_changelog_file(f"go_changelog_{task.date_tag}.xml")
 
 
 if __name__ == '__main__':

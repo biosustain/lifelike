@@ -53,7 +53,7 @@ class ChangeLogFileGenerator(object):
         self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
         os.makedirs(self.output_dir, 0o777, True)
 
-        self.date_tag = datetime.today().strftime('%m/%d/%Y')
+        self.date_tag = datetime.today().strftime('%m-%d-%Y')
         self.change_sets = []
         self.logger = logging.getLogger(__name__)
 
