@@ -1,5 +1,6 @@
 
 import argparse
+import importlib
 import re
 from re import Pattern
 from pathlib import Path
@@ -50,26 +51,34 @@ arg_parser.add_argument(
     type=LL_Ticket
 )
 
-subparser = arg_parser.add_subparsers(dest='domain', required=True)
-biocyc_parser = subparser.add_parser('biocyc')
-biocyc_parser.add_argument(
-    '--data-sources',
-    nargs='*',
-    required=True,
-    help='A list of data sources to load, e.g. PseudomonasCyc YeastCyc EcoCyc HumanCyc',
+domain_arg_parser = arg_parser.add_subparsers(
+    title='domain',
+    dest='domain',
+    required=True
 )
 
-# parsers with no additional arguments
-subparser.add_parser('chebi')
-subparser.add_parser('enzyme')
-subparser.add_parser('go')
-subparser.add_parser('kegg')
-subparser.add_parser('mesh')
-subparser.add_parser('mesh-add-disease-synonyms')
-subparser.add_parser('mesh-annotations')
-subparser.add_parser('ncbi-gene')
-subparser.add_parser('ncbi-taxonomy')
-subparser.add_parser('regulondb')
-subparser.add_parser('stringdb')
-subparser.add_parser('uniprot')
-subparser.add_parser('zenodo-literature')
+for module in ['biocyc', 'chebi', 'enzyme', 'go', 'kegg', 'mesh', 'ncbi', 'regulondb', 'stringdb', 'uniprot', 'zenodo-literature']:
+    importlib.import_module(module).setup_arg_parser(domain_arg_parser.add_parser(module))
+
+# biocyc_parser = domain_arg_parser.add_parser('biocyc')
+# biocyc_parser.add_argument(
+#     '--data-sources',
+#     nargs='*',
+#     required=True,
+#     help='A list of data sources to load, e.g. PseudomonasCyc YeastCyc EcoCyc HumanCyc',
+# )
+#
+# # parsers with no additional arguments
+# domain_arg_parser.add_parser('chebi')
+# domain_arg_parser.add_parser('enzyme')
+# domain_arg_parser.add_parser('go')
+# domain_arg_parser.add_parser('kegg')
+# domain_arg_parser.add_parser('mesh')
+# domain_arg_parser.add_parser('mesh-add-disease-synonyms')
+# domain_arg_parser.add_parser('mesh-annotations')
+# domain_arg_parser.add_parser('ncbi-gene')
+# domain_arg_parser.add_parser('ncbi-taxonomy')
+# domain_arg_parser.add_parser('regulondb')
+# domain_arg_parser.add_parser('stringdb')
+# domain_arg_parser.add_parser('uniprot')
+# domain_arg_parser.add_parser('zenodo-literature')

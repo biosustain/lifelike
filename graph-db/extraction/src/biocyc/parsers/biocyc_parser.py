@@ -7,11 +7,10 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
                     handlers=[logging.StreamHandler()])
 
-from biocyc import (class_parser, compound_parser, dnabindsite_parser,
-                    enzymereaction_parser, gene_parser, pathway_parser,
-                    promoter_parser, protein_parser, reaction_parser,
-                    regulation_parser, rna_parser, species_parser,
-                    terminator_parser, transcripitionunit_parser)
+from biocyc.parsers import enzymereaction_parser, class_parser, rna_parser, protein_parser, \
+    reaction_parser, regulation_parser, terminator_parser, promoter_parser, \
+    transcripitionunit_parser, dnabindsite_parser, compound_parser, pathway_parser, gene_parser, \
+    species_parser
 
 ENTITIES = [
     NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,

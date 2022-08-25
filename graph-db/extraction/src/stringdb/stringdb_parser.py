@@ -1,6 +1,5 @@
 from common.base_parser import BaseParser
 from common.constants import *
-from config.config import Config
 import pandas as pd
 import os
 
@@ -43,6 +42,11 @@ class StringParser(BaseParser):
                 header = False
             chunk.to_csv(outfile, index=False, sep='\t', header=header, mode=mode)
         self.zip_output_files([datafile], outputfile)
+
+def main(args):
+    # outputfile = "string-data-v11.5.zip"
+    parser = StringParser()
+    parser.parse_and_write_data_files(args.outputfile)
 
 
 if __name__ == '__main__':
