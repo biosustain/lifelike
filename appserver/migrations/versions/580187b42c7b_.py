@@ -23,40 +23,40 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_constraint(
-        op.f('fk_files_content_id_files_content'),
-        'files',
-        type_='foreignkey'
-    )
-    op.drop_constraint(
-        op.f('fk_file_version_content_id_files_content'),
-        'file_version',
-        type_='foreignkey'
-    )
-    op.drop_constraint(
-        op.f('fk_global_list_file_id_files_content'),
-        'global_list',
-        type_='foreignkey'
-    )
-
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+        op.drop_constraint(
+            op.f('fk_files_content_id_files_content'),
+            'files',
+            type_='foreignkey'
+        )
+        op.drop_constraint(
+            op.f('fk_file_version_content_id_files_content'),
+            'file_version',
+            type_='foreignkey'
+        )
+        op.drop_constraint(
+            op.f('fk_global_list_file_id_files_content'),
+            'global_list',
+            type_='foreignkey'
+        )
+
         data_upgrades()
 
-    op.create_foreign_key(
-        op.f('fk_files_content_id_files_content'),
-        'files', 'files_content', ['content_id'], ['id'],
-        ondelete='CASCADE'
-    )
-    op.create_foreign_key(
-        op.f('fk_file_version_content_id_files_content'),
-        'file_version', 'files_content', ['content_id'], ['id'],
-        ondelete='CASCADE'
-    )
-    op.create_foreign_key(
-        op.f('fk_global_list_file_id_files_content'),
-        'global_list', 'files_content', ['file_content_id'], ['id'],
-        ondelete='CASCADE'
-    )
+        op.create_foreign_key(
+            op.f('fk_files_content_id_files_content'),
+            'files', 'files_content', ['content_id'], ['id'],
+            ondelete='CASCADE'
+        )
+        op.create_foreign_key(
+            op.f('fk_file_version_content_id_files_content'),
+            'file_version', 'files_content', ['content_id'], ['id'],
+            ondelete='CASCADE'
+        )
+        op.create_foreign_key(
+            op.f('fk_global_list_file_id_files_content'),
+            'global_list', 'files_content', ['file_content_id'], ['id'],
+            ondelete='CASCADE'
+        )
 
 
 def downgrade():
