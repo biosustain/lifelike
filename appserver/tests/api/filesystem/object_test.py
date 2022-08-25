@@ -778,7 +778,7 @@ def test_duplicate_map_does_not_create_new_content(
     assert old_graph == new_graph
 
     new_content = BytesIO()
-    with zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED) as zip_fp:
+    with zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as zip_fp:
         byte_graph = json.dumps(new_graph, separators=(',', ':')).encode('utf-8')
         zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
     new_content.seek(0)

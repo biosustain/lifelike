@@ -15,7 +15,7 @@ def file_compress(inp_file_names, out_zip_file):
     # Select the compression mode ZIP_DEFLATED for compression
     # or zipfile.ZIP_STORED to just store the file
     compression = zipfile.ZIP_DEFLATED
-    zf = zipfile.ZipFile(out_zip_file, mode="w")
+    zf = zipfile.ZipFile(out_zip_file, mode='w', strict_timestamps=False)
 
     try:
         for file_to_write in inp_file_names:
