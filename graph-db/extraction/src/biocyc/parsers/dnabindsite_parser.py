@@ -1,4 +1,4 @@
-from biocyc.data_file_parser import DataFileParser
+from biocyc.parsers.data_file_parser import DataFileParser
 from common.constants import *
 
 

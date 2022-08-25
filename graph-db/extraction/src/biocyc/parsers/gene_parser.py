@@ -1,8 +1,7 @@
-from biocyc.data_file_parser import DataFileParser
-from common.graph_models import *
+from biocyc.parsers.data_file_parser import DataFileParser
 from common.constants import *
 import pandas as pd
-import logging, os
+import logging
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),

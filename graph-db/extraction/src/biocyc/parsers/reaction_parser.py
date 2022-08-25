@@ -1,4 +1,4 @@
-from biocyc.data_file_parser import *
+from biocyc.parsers.data_file_parser import *
 from common.graph_models import *
 
 

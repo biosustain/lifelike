@@ -3,7 +3,7 @@ import os.path
 from common.liquibase_changelog_generator import *
 from common.constants import *
 from common.query_builder import *
-from biocyc.biocyc_parser import ENTITIES
+from biocyc.parsers.biocyc_parser import ENTITIES
 from config.config import Config
 import pandas as pd
 from zipfile import ZipFile
