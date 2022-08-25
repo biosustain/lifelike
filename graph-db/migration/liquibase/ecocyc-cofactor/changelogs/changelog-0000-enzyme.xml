@@ -16,7 +16,7 @@ CREATE INDEX index_EC_Number_name IF NOT EXISTS FOR (n:EC_Number) ON (n.name);
     </sql>
   </changeSet>
 
-  <changeSet id="load db_Enzyme from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+  <changeSet id="load db_Enzyme from enzyme-data-04052022.zip, date 05/31/2022" author="rcai">
     <comment>
         load Enzyme enzyme.tsv from enzyme-data-05312022.zip, 8459 rows
     </comment>
@@ -28,7 +28,7 @@ MERGE (n:EC_Number {eid: row.eid})
 SET n:db_Enzyme,n.name=row.name,n.code=row.code,n.activities=row.activities,n.cofactors=row.cofactors,n.data_source='Enzyme'
       "
       fileName="enzyme.tsv"
-      zipFileName="enzyme-data-05312022.zip"
+      zipFileName="enzyme-data-04052022.zip"
       startAt="1"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -38,7 +38,7 @@ SET n:db_Enzyme,n.name=row.name,n.code=row.code,n.activities=row.activities,n.co
     />
   </changeSet>
 
-  <changeSet id="load db_Enzyme synonyms from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+  <changeSet id="load db_Enzyme synonyms from enzyme-data-04052022.zip, date 05/31/2022" author="rcai">
     <comment>
         Load Enzyme enzyme-synonyms.tsv from enzyme-data-05312022.zip
     </comment>
@@ -51,7 +51,7 @@ WITH row, a MATCH (b:db_Enzyme {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="enzyme-synonyms.tsv"
-      zipFileName="enzyme-data-05312022.zip"
+      zipFileName="enzyme-data-04052022.zip"
       startAt="1"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -61,7 +61,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
     />
   </changeSet>
 
-  <changeSet id="load HAS_PARENT relationship in enzyme-rels.tsv from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+  <changeSet id="load HAS_PARENT relationship in enzyme-rels.tsv from enzyme-data-04052022.zip, date 05/31/2022" author="rcai">
     <comment>
         Load Enzyme HAS_PARENT relationships, enzyme-rels.tsv from enzyme-data-05312022.zip
     </comment>
@@ -75,7 +75,7 @@ MERGE (a)-[r:HAS_PARENT]->(b)
 RETURN COUNT(*)
       "
       fileName="enzyme-rels.tsv"
-      zipFileName="enzyme-data-05312022.zip"
+      zipFileName="enzyme-data-04052022.zip"
       startAt="1"
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
