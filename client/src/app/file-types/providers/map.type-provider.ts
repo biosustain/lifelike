@@ -91,7 +91,8 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
           const zip = new JSZip();
-          zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}));
+          // IMPORTANT: Zip date is set to the UNIX epoch so that all zips generate the same checksum for the same input files
+          zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}), {date: new Date(0)});
           return zip.generateAsync({ type: 'blob' }).then((content) => {
             return this.objectCreationService.openCreateDialog(object, {
               title: 'New Map',
