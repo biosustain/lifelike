@@ -141,7 +141,12 @@ def data_upgrades():
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
 
         new_zip_bytes = io.BytesIO()
-        with zipfile.ZipFile(new_zip_bytes, 'w', zipfile.ZIP_DEFLATED) as new_zip:
+        with zipfile.ZipFile(
+            new_zip_bytes,
+            'w',
+            zipfile.ZIP_DEFLATED,
+            strict_timestamps=False
+        ) as new_zip:
             new_zip.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
 
             # Make sure to copy the image bytes into the hash object as well
@@ -150,7 +155,7 @@ def data_upgrades():
                     image_name = "".join(['images/', node.get('image_id'), '.png'])
                     try:
                         image_bytes = zip_file.read(image_name)
-                        new_zip.writestr(zipfile.ZipInfo(image_name, image_bytes))
+                        new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
                     except KeyError:
                         # For some reason there was a node with an image id, but no corresponding
                         # image file
