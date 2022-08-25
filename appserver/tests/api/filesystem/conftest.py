@@ -215,7 +215,7 @@ def map_file_in_project(
         project_owner_user: AppUser) -> Files:
 
     content = io.BytesIO()
-    with zipfile.ZipFile(content, 'w', zipfile.ZIP_DEFLATED) as zip_fp:
+    with zipfile.ZipFile(content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as zip_fp:
         byte_graph = json.dumps(
             {"nodes": [], "edges": [], "groups": []}, separators=(',', ':')
         ).encode('utf-8')
