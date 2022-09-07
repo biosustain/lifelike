@@ -12,7 +12,7 @@ from zipfile import ZipFile
 class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author:str, biocyc_dbname:str, zip_data_file:str,
                  initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_BIOCYC, None, initial_load)
+        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_BIOCYC, None, initial_load, subpath=(biocyc_dbname,))
         self.processed_data_dir = os.path.join(self.processed_data_dir, biocyc_dbname.lower())
         self.biocyc_dbname = biocyc_dbname
         self.biocycdb_label = 'db_' + self.biocyc_dbname
@@ -76,7 +76,13 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets += self.get_relationships_changesets(df, file, NODE_BIOCYC, NODE_BIOCYC)
+                        rel_props = df\
+                            .drop(columns=[REL_RELATIONSHIP, PROP_FROM_ID, PROP_TO_ID])\
+                            .dropna(axis=1, how='all')\
+                            .columns.tolist()
+                        self.change_sets += self.get_relationships_changesets(
+                            df, file, NODE_BIOCYC, NODE_BIOCYC, rel_props
+                        )
                 file = f"{entity}-dblinks.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
@@ -118,7 +124,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         """
         if genelink_cypher is not empty, use it to create gene-ndbi_gene links. Otherwise, use the cypher query in biocyc_cypher.yml file
         """
-        ChangeLogFileGenerator.__init__(self, author, None, DB_BIOCYC, '')
+        ChangeLogFileGenerator.__init__(self, author, None, DB_BIOCYC, '', subpath=(biocyc_dbname,))
         self.biocyc_dbname = biocyc_dbname
         self.genelink_cypher = genelink_cypher
         config = Config()
@@ -143,7 +149,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if 'collapse' not in key:
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-0010-{self.biocyc_dbname}-gds-no-collapse-{self.date_tag}.xml"
+            filename = f"changelog-0020-{self.biocyc_dbname}-gds-no-collapse-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -153,7 +159,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
             if 'collapse' not in key  or key=='collapse_Regulation_nodes':
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-0010-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag}.xml"
+            filename = f"changelog-0020-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -162,7 +168,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         for key, content in self.cyphers.items():
             self.change_sets.append(self.create_changeset(key, content))
         if not filename:
-            filename = f"changelog-0010-{self.biocyc_dbname}-gds-{self.date_tag}.xml"
+            filename = f"changelog-0020-{self.biocyc_dbname}-gds-{self.date_tag}.xml"
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
@@ -199,10 +205,11 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 
 
 if __name__ == "__main__":
-    generate_changelog_files('EcoCycCofactor-data-25.5.zip', DB_ECOCYC_COFACTOR, 'dommas')
+    # generate_changelog_files('PseudomonasAeruginosaPAO1-data-24.0.zip', DB_PSEUDOMONAS_AERUGINOSA_PAO_1, 'dommas')
     # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
     # generate_changelog_files('StreptomycesCoelicolorA3_2-data-24.0.zip', DB_STREPTOMYCES_COELICOLOR_A3_2, 'dommas')
-    # generate_changelog_files('StreptomycesCoelicolorA3_2-data-24.0.zip', DB_STREPTOMYCES_COELICOLOR_A3_2, 'dommas')
+    # generate_changelog_files('PseudomonasPutidaKT2440-data-24.0.zip', DB_PSEUDOMONAS_PUTIDA_KT_2440, 'dommas')
+    generate_changelog_files('HumanCyc-data-26.0.zip', DB_HUMANCYC, 'dommas')
 
 
 

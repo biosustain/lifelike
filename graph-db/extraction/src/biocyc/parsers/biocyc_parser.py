@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 from biocyc.parsers import enzymereaction_parser, class_parser, rna_parser, protein_parser, \
     reaction_parser, regulation_parser, terminator_parser, promoter_parser, \
     transcripitionunit_parser, dnabindsite_parser, compound_parser, pathway_parser, gene_parser, \
-    species_parser
+    species_parser, primary_parser
 
 ENTITIES = [
     NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
@@ -19,6 +19,7 @@ ENTITIES = [
     NODE_REACTION, NODE_PATHWAY,
     NODE_ENZ_REACTION,
     NODE_REGULATION,
+    NODE_PRIMARY
 ]
 
 PARSERS = {
@@ -28,6 +29,7 @@ PARSERS = {
     NODE_ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
     NODE_GENE: gene_parser.GeneParser,
     NODE_PATHWAY: pathway_parser.PathwayParser,
+    NODE_PRIMARY: primary_parser.PrimaryParser,
     NODE_PROMOTER: promoter_parser.PromoterParser,
     NODE_PROTEIN: protein_parser.ProteinParser,
     NODE_REACTION: reaction_parser.ReactionParser,
@@ -95,7 +97,6 @@ def parse(biocyc_dbname):
 def main(args):
     for biocyc_dbname in args.data_sources:
         parse(biocyc_dbname)
-
 
 # if __name__ == "__main__":
 #     # parse(DB_ECOCYC)
