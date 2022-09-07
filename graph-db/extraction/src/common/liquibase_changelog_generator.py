@@ -32,7 +32,7 @@ class ChangeLogFileGenerator(object):
     Expected File names in zip file as EntityName.tsv, EntityName-synonyms.tsv, EntityName-rels.tsv
 
     """
-    def __init__(self, author, zipfile:str, db_source:str, entity_label:str, initial_load=True, basedir=None):
+    def __init__(self, author, zipfile:str, db_source:str, entity_label:str, initial_load=True, basedir=None, subpath=()):
         """
         author: user name for changelog comment
         zipfile: zipfile name for the data files in tsv format. It should be located in processed_data_dir
@@ -50,7 +50,8 @@ class ChangeLogFileGenerator(object):
             basedir = Config().data_dir
         self.basedir = basedir
         self.processed_data_dir = os.path.join(self.basedir, 'processed', db_source.lower())
-        self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower())
+        os.makedirs(self.processed_data_dir, 0o777, True)
+        self.output_dir = os.path.join(self.basedir, 'changelogs', db_source.lower(), *subpath)
         os.makedirs(self.output_dir, 0o777, True)
 
         self.date_tag = datetime.today().strftime('%m-%d-%Y')
@@ -164,7 +165,9 @@ class ChangeLogFileGenerator(object):
 
     @classmethod
     def get_template(cls, templatefilename):
-        return Template(filename=os.path.join(Config().get_changelog_template_dir(), templatefilename))
+        return Template(
+            filename=os.path.join(Config().get_changelog_template_dir(), templatefilename),
+        )
 
     def generate_sql_changelog_file(self, id, comment, cypher, outfile_name):
         change_set = ChangeSet(id, self.author, comment, cypher)

@@ -136,16 +136,19 @@ class DataFileParser(BaseParser):
             node.add_attribute(PROP_URL, url)
 
     def write_node_file(self, nodes: [], node_attrs:[], outfile:str):
-        if not nodes:
-            return None
-        df = pd.DataFrame([node.to_dict() for node in nodes])
-        cols = [c for c in node_attrs if c in df.columns]
-        df = df[cols]
-        df[PROP_ID] = df[PROP_BIOCYC_ID]
-        df.fillna('', inplace=True)
-        self.logger.info(f"writing {outfile}")
-        df.to_csv(os.path.join(self.output_dir, outfile), index=False, sep='\t', quotechar='"')
-        return outfile
+        try:
+            if not nodes:
+                return None
+            df = pd.DataFrame([node.to_dict() for node in nodes])
+            cols = [c for c in node_attrs if c in df.columns]
+            df = df[cols]
+            df[PROP_ID] = df[PROP_BIOCYC_ID]
+            df.fillna('', inplace=True)
+            self.logger.info(f"writing {outfile}")
+            df.to_csv(os.path.join(self.output_dir, outfile), index=False, sep='\t', quotechar='"')
+            return outfile
+        except Exception:
+            pass
 
     def write_relationships_files(self, nodes):
         if not nodes:
@@ -154,7 +157,8 @@ class DataFileParser(BaseParser):
             REL_RELATIONSHIP: edge.label,
             PROP_FROM_ID: edge.source.get_id_attribute(),
             PROP_TO_ID: edge.dest.get_id_attribute(),
-            PROP_DB_NAME: edge.dest.get_attribute(PROP_DB_NAME)
+            PROP_DB_NAME: edge.dest.get_attribute(PROP_DB_NAME),
+            **edge.attributes
             } for node in nodes for edge in node.edges])
         if df.empty:
             return []
@@ -170,7 +174,7 @@ class DataFileParser(BaseParser):
             outfiles.append(dblinkfile)
         df_rel = df[df[REL_RELATIONSHIP] != REL_DBLINKS]
         if len(df_rel) > 0:
-            df_rel = df_rel[[REL_RELATIONSHIP, PROP_FROM_ID, PROP_TO_ID]]
+            # df_rel = df_rel[[REL_RELATIONSHIP, PROP_FROM_ID, PROP_TO_ID]]
             rel_outfile = self.get_node_rels_outfile(self.entity_name)
             self.logger.info(f"writing {rel_outfile}")
             df_rel.to_csv(os.path.join(self.output_dir, rel_outfile), sep='\t', index=False)
@@ -185,7 +189,7 @@ class DataFileParser(BaseParser):
         node_file = self.write_node_file(nodes, self.attrs, self.get_node_outfile(self.entity_name))
         synonym_file = self.write_synonyms_file(nodes, self.get_node_synonyms_outfile(self.entity_name))
         rel_files = self.write_relationships_files(nodes)
-        all_files = [node_file]
+        all_files = [node_file] if node_file else []
         if synonym_file:
             all_files.append(synonym_file)
         if rel_files:

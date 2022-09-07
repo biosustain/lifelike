@@ -12,7 +12,7 @@ neo4j:
 biocycFiles:
   EcoCyc: ecoli_25.5.tar.gz
   EcoCycCofactor: ecoli_25.5.tar.gz
-  HumanCyc: human.tar_25.5.gz
+  HumanCyc: humancyc/human-26.0.tar.gz
   YeastCyc: yeastcyc_25.5.tar.gz
   PseudomonasCyc: pput160488cyc_25.5.tar.gz
   BsubCyc: bsub_47.tar.gz
