@@ -1,10 +1,10 @@
 import os.path
 from pathlib import Path
 
+from biocyc.config import BiocycConfig
 from common.liquibase_changelog_generator import *
 from common.constants import *
 from common.query_builder import *
-from biocyc.parsers.biocyc_parser import ENTITIES
 from config.config import Config
 import pandas as pd
 from zipfile import ZipFile
@@ -13,9 +13,9 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author:str, biocyc_dbname:str, zip_data_file:str,
                  initial_load=True):
         ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_BIOCYC, None, initial_load, subpath=(biocyc_dbname,))
+        self.config = BiocycConfig(biocyc_dbname)
         self.processed_data_dir = os.path.join(self.processed_data_dir, biocyc_dbname.lower())
-        self.biocyc_dbname = biocyc_dbname
-        self.biocycdb_label = 'db_' + self.biocyc_dbname
+        self.biocycdb_label = 'db_' + self.config.dbname
         self.index_quieries = []
         self.logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def add_entity_index_queries(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
             filenames = zip.namelist()
-        for entity in ENTITIES:
+        for entity in self.config.entities:
             entity_data_file = f"{entity}.tsv"
             if entity_data_file in filenames:
                 self.index_quieries.append(get_create_index_query(entity, PROP_ID))
@@ -47,19 +47,19 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def add_node_changesets(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
             filenames = zip.namelist()
-            for entity in ENTITIES:
+            for entity in self.config.entities:
                 file = f"{entity}.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
                         self.change_sets.append(self.get_node_changeset(df, file, entity, NODE_BIOCYC,
-                                                                        ['db_'+self.biocyc_dbname]))
+                                                                        ['db_'+self.config.dbname]))
 
     def add_synonym_changesets(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
             filenames = zip.namelist()
-            for entity in ENTITIES:
+            for entity in self.config.entities:
                 file = f"{entity}-synonyms.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
@@ -70,7 +70,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def add_relationship_changesets(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
             filenames = zip.namelist()
-            for entity in ENTITIES:
+            for entity in self.config.entities:
                 file = f"{entity}-rels.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
@@ -111,7 +111,7 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
     def generate_init_changelog_file(self):
         self.add_all_change_sets()
         filename = Path(
-            f"changelog-0010-{self.biocyc_dbname}-init-{self.date_tag}.xml"
+            f"changelog-0010-{self.config.dbname}-init-{self.date_tag}.xml"
         )
         self.generate_changelog_file(filename)
 
@@ -183,7 +183,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         return ChangeSet(id, self.author, desc, query)
 
 
-def generate_changelog_files(zip_datafile, biocyc_dbname, author):
+def generate_changelog_files(author, biocyc_dbname, zip_datafile=None):
     """
     The code will generate three changelog files: init_changelog, post_load_changelog and gds_changelog.
     init_changelog loads all the parser output data into neo4j;
@@ -194,6 +194,7 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
     For individual gds database, we will need init_changelog and gds_changelog.
 
     """
+    zip_datafile = zip_datafile or BiocycConfig(biocyc_dbname).data_output_zip
     proc = BioCycChangeLogsGenerator(author, biocyc_dbname, zip_datafile, True)
     proc.generate_init_changelog_file()
 
@@ -203,6 +204,13 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
     proc.generate_gds_reg_collapse_changelog_file()
     proc.generate_gds_changelog_file()
 
+def main(args):
+    for biocyc_dbname in args.data_sources:
+        generate_changelog_files(
+            biocyc_dbname=biocyc_dbname,
+            zip_datafile=getattr(args, 'zip_datafile', None),
+            author=args.author
+        )
 
 if __name__ == "__main__":
     # generate_changelog_files('PseudomonasAeruginosaPAO1-data-24.0.zip', DB_PSEUDOMONAS_AERUGINOSA_PAO_1, 'dommas')

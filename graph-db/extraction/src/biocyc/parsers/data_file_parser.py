@@ -58,23 +58,6 @@ class DataFileParser(BaseParser):
     def get_dblink_rel_outfile(cls, entity):
         return f"{entity}-dblinks.tsv"
 
-    def get_db_version(self, tar:TarFile):
-        """
-        find the latest version of data in the tar file.  Sometimes a tar file has multiple version data.
-        :param tar:
-        :return:
-        """
-        versions = {}
-        for file in tar.getmembers():
-            data_path = os.path.sep + 'data'
-            if data_path in file.name:
-                sub = file.name.split(data_path)[0]
-                paths = sub.split(os.path.sep)
-                version = paths[-1]
-                versions[float(version)] = version
-        maxkey = max(versions.keys())
-        return versions[maxkey]
-
     def parse_data_file(self):
         # self.logger.info('read ' + self.datafile + ' from ' + self.input_zip)
         with tarfile.open(self.input_zip, mode='r:gz') as tar:

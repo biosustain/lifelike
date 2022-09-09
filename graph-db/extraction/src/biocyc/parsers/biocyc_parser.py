@@ -1,4 +1,4 @@
-from config.config import Config
+from biocyc.config import BiocycConfig
 from common.base_parser import BaseParser
 from common.constants import *
 import os
@@ -12,15 +12,6 @@ from biocyc.parsers import enzymereaction_parser, class_parser, rna_parser, prot
     transcripitionunit_parser, dnabindsite_parser, compound_parser, pathway_parser, gene_parser, \
     species_parser, primary_parser
 
-ENTITIES = [
-    NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
-    NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
-    NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
-    NODE_REACTION, NODE_PATHWAY,
-    NODE_ENZ_REACTION,
-    NODE_REGULATION,
-    # NODE_PRIMARY
-]
 
 PARSERS = {
     NODE_CLASS: class_parser.ClassParser,
@@ -29,7 +20,7 @@ PARSERS = {
     NODE_ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
     NODE_GENE: gene_parser.GeneParser,
     NODE_PATHWAY: pathway_parser.PathwayParser,
-    # NODE_PRIMARY: primary_parser.PrimaryParser,
+    NODE_PRIMARY: primary_parser.PrimaryParser,
     NODE_PROMOTER: promoter_parser.PromoterParser,
     NODE_PROTEIN: protein_parser.ProteinParser,
     NODE_REACTION: reaction_parser.ReactionParser,
@@ -49,19 +40,15 @@ class BiocycParser(BaseParser):
         then we don't need the db_BioCyc labels for all nodes
         """
         BaseParser.__init__(self, DB_BIOCYC.lower())
+        self.config = BiocycConfig(biocyc_dbname)
         self.output_dir = os.path.join(self.output_dir, biocyc_dbname.lower())
-        self.tar_data_file = Config().get_biocyc_tar_file(biocyc_dbname)
         self.biocyc_dbname = biocyc_dbname
         self.org_id = ''
         self.version = ''
         self.logger = logging.getLogger(__name__)
 
     def get_parser(self, entity_name):
-        return PARSERS[entity_name](self.biocyc_dbname, self.tar_data_file)
-
-    @classmethod
-    def get_data_output_zip(cls, biocyc_dbname, version):
-        return f"{biocyc_dbname}-data-{version}.zip"
+        return PARSERS[entity_name](self.biocyc_dbname, self.config['data'])
 
     def parse_and_write_data_files(self):
         """
@@ -70,21 +57,19 @@ class BiocycParser(BaseParser):
         :param database: the neo4j database to load data
         """
         all_files = []
-        for entity in ENTITIES:
+        for entity in self.config.entities:
             self.logger.info(f"Load {self.biocyc_dbname}: {entity}")
             parser = self.get_parser(entity)
-            parser.version = self.version
+            parser.version = self.config.version
             if parser:
                 # set parser org_id so that the node can link to the biocyc URL
                 parser.org_id = self.org_id
                 nodes = parser.parse_data_file()
                 if entity == NODE_SPECIES:
                     self.org_id = nodes[0].get_attribute(PROP_ID)
-                if not self.version and parser.version:
-                    self.version = parser.version
                 if nodes:
                     all_files += parser.parse_and_write_data_files(nodes)
-        zip_file = self.get_data_output_zip(self.biocyc_dbname, self.version)
+        zip_file = self.config.data_output_zip
         logging.info(f'create zip file: {zip_file}')
         self.zip_output_files(all_files, zip_file)
 

@@ -47,7 +47,7 @@ arg_parser.add_argument(
 arg_parser.add_argument(
     '--prefix',
     help='The JIRA card numeric number; e.g LL-1234',
-    required=True,
+    required=False,
     type=LL_Ticket
 )
 
