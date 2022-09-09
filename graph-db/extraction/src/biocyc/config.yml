@@ -1,0 +1,31 @@
+EcoCyc:
+  data: ecoli_25.5.tar.gz
+
+EcoCycCofactor:
+  data: ecoli_25.5.tar.gz
+
+EcoCycPrimary:
+  data: ecoli_25.5.tar.gz
+  extraParsers:
+    - Primary
+
+HumanCyc:
+  data: humancyc/human-26.0.tar.gz
+
+YeastCyc:
+  data: yeastcyc_25.5.tar.gz
+
+PseudomonasCyc:
+  data: pput160488cyc_25.5.tar.gz
+
+BsubCyc:
+  data: bsub_47.tar.gz
+
+PaenibacillusCyc:
+  data: gcf_000981585_25.5.tar.gz
+
+PsyringaeCyc:
+  data: gcf_000007805cyc.tar.gz
+
+StreptomycesCoelicolorA3_2:
+  data: "Streptomyces coelicolor A3(2)/scocyc.tar.gz"
