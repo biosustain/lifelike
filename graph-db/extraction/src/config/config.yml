@@ -8,14 +8,3 @@ neo4j:
   uri: bolt://localhost:7687
   user: neo4j
   password: rcai
-
-biocycFiles:
-  EcoCyc: ecoli_25.5.tar.gz
-  EcoCycCofactor: ecoli_25.5.tar.gz
-  HumanCyc: humancyc/human-26.0.tar.gz
-  YeastCyc: yeastcyc_25.5.tar.gz
-  PseudomonasCyc: pput160488cyc_25.5.tar.gz
-  BsubCyc: bsub_47.tar.gz
-  PaenibacillusCyc: gcf_000981585_25.5.tar.gz
-  PsyringaeCyc: gcf_000007805cyc.tar.gz
-  StreptomycesCoelicolorA3_2: "Streptomyces coelicolor A3(2)/scocyc.tar.gz"
