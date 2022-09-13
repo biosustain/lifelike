@@ -6,7 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="Create BioCyc constraints and indexes" author="dommas">
-    <comment>Create constraints and indexes for BioCyc nodes, created on 09-07-2022</comment>
+    <comment>Create constraints and indexes for BioCyc nodes, created on 09-12-2022</comment>
     <sql>
     CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
 CREATE INDEX index_db_BioCyc_biocyc_id IF NOT EXISTS FOR (n:db_BioCyc) ON (n.biocyc_id);
@@ -50,9 +50,9 @@ CREATE INDEX index_Regulation_name IF NOT EXISTS FOR (n:Regulation) ON (n.name);
   </changeSet>
 
 
-  <changeSet id="load Species from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Species from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Species.tsv from HumanCyc-data-26.0.zip, 1 rows
+        load BioCyc Species.tsv from HumanCyc-data-24.0.zip, 1 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -62,7 +62,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Species:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.genome=row.genome,n.tax_id=row.tax_id,n.data_source='BioCyc'
       "
       fileName="Species.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -73,9 +73,9 @@ SET n:Species:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.genome=row
   </changeSet>
 
 
-  <changeSet id="load BioCycClass from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load BioCycClass from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc BioCycClass.tsv from HumanCyc-data-26.0.zip, 4938 rows
+        load BioCyc BioCycClass.tsv from HumanCyc-data-24.0.zip, 7662 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -85,7 +85,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:BioCycClass:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.data_source='BioCyc'
       "
       fileName="BioCycClass.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -96,9 +96,9 @@ SET n:BioCycClass:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=ro
   </changeSet>
 
 
-  <changeSet id="load Compound from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Compound from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Compound.tsv from HumanCyc-data-26.0.zip, 4263 rows
+        load BioCyc Compound.tsv from HumanCyc-data-24.0.zip, 6388 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -108,7 +108,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Compound:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_name=row.abbrev_name,n.url=row.url,n.inchi_key=row.inchi_key,n.inchi=row.inchi,n.smiles=row.smiles,n.data_source='BioCyc'
       "
       fileName="Compound.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -119,9 +119,9 @@ SET n:Compound:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_na
   </changeSet>
 
 
-  <changeSet id="load Gene from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Gene from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Gene.tsv from HumanCyc-data-26.0.zip, 20997 rows
+        load BioCyc Gene.tsv from HumanCyc-data-24.0.zip, 20993 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -131,7 +131,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Gene:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.accession=row.accession,n.url=row.url,n.accession2=row.accession2,n.left_end_position=row.left_end_position,n.right_end_position=row.right_end_position,n.strand=row.strand,n.data_source='BioCyc'
       "
       fileName="Gene.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -142,9 +142,9 @@ SET n:Gene:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.accession=row
   </changeSet>
 
 
-  <changeSet id="load RNA from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load RNA from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc RNA.tsv from HumanCyc-data-26.0.zip, 255 rows
+        load BioCyc RNA.tsv from HumanCyc-data-24.0.zip, 254 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -154,7 +154,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:RNA:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.location=row.location,n.data_source='BioCyc'
       "
       fileName="RNA.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -165,9 +165,9 @@ SET n:RNA:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.
   </changeSet>
 
 
-  <changeSet id="load Protein from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Protein from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Protein.tsv from HumanCyc-data-26.0.zip, 21275 rows
+        load BioCyc Protein.tsv from HumanCyc-data-24.0.zip, 21272 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -177,7 +177,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Protein:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_name=row.abbrev_name,n.url=row.url,n.molecular_weight_kd=row.molecular_weight_kd,n.pi=row.pi,n.data_source='BioCyc'
       "
       fileName="Protein.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -188,9 +188,9 @@ SET n:Protein:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_nam
   </changeSet>
 
 
-  <changeSet id="load Reaction from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Reaction from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Reaction.tsv from HumanCyc-data-26.0.zip, 3066 rows
+        load BioCyc Reaction.tsv from HumanCyc-data-24.0.zip, 3221 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -200,7 +200,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Reaction:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.ec_number=row.ec_number,n.url=row.url,n.direction=row.direction,n.location=row.location,n.data_source='BioCyc'
       "
       fileName="Reaction.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -211,9 +211,9 @@ SET n:Reaction:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.ec_number
   </changeSet>
 
 
-  <changeSet id="load Pathway from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Pathway from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Pathway.tsv from HumanCyc-data-26.0.zip, 394 rows
+        load BioCyc Pathway.tsv from HumanCyc-data-24.0.zip, 390 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -223,7 +223,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Pathway:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.data_source='BioCyc'
       "
       fileName="Pathway.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -234,9 +234,9 @@ SET n:Pathway:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.ur
   </changeSet>
 
 
-  <changeSet id="load EnzReaction from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load EnzReaction from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc EnzReaction.tsv from HumanCyc-data-26.0.zip, 5491 rows
+        load BioCyc EnzReaction.tsv from HumanCyc-data-24.0.zip, 5895 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -246,7 +246,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:EnzReaction:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.data_source='BioCyc'
       "
       fileName="EnzReaction.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -257,9 +257,9 @@ SET n:EnzReaction:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=ro
   </changeSet>
 
 
-  <changeSet id="load Regulation from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Regulation from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        load BioCyc Regulation.tsv from HumanCyc-data-26.0.zip, 452 rows
+        load BioCyc Regulation.tsv from HumanCyc-data-24.0.zip, 465 rows
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -269,7 +269,7 @@ MERGE (n:db_BioCyc {eid: row.eid})
 SET n:Regulation:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.mode=row.mode,n.mechanism=row.mechanism,n.data_source='BioCyc'
       "
       fileName="Regulation.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -280,9 +280,9 @@ SET n:Regulation:db_HumanCyc,n.biocyc_id=row.biocyc_id,n.mode=row.mode,n.mechani
   </changeSet>
 
 
-  <changeSet id="load Species synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Species synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Species-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Species-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -293,7 +293,7 @@ WITH row, a MATCH (b:Species {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Species-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -304,9 +304,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load BioCycClass synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load BioCycClass synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc BioCycClass-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc BioCycClass-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -317,7 +317,7 @@ WITH row, a MATCH (b:BioCycClass {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="BioCycClass-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -328,9 +328,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Compound synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Compound synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Compound-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Compound-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -341,7 +341,7 @@ WITH row, a MATCH (b:Compound {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Compound-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -352,9 +352,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Gene synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Gene synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Gene-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Gene-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -365,7 +365,7 @@ WITH row, a MATCH (b:Gene {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Gene-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -376,9 +376,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Protein synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Protein synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Protein-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Protein-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -389,7 +389,7 @@ WITH row, a MATCH (b:Protein {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Protein-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -400,9 +400,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Reaction synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Reaction synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Reaction-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Reaction-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -413,7 +413,7 @@ WITH row, a MATCH (b:Reaction {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Reaction-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -424,9 +424,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Pathway synonyms from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Pathway synonyms from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc Pathway-synonyms.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc Pathway-synonyms.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -437,7 +437,7 @@ WITH row, a MATCH (b:Pathway {eid: row.eid})
 MERGE (b)-[r:HAS_SYNONYM]->(a)
       "
       fileName="Pathway-synonyms.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -448,9 +448,9 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, BioCycClass-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, BioCycClass-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -462,7 +462,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="BioCycClass-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -473,9 +473,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, Compound-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, Compound-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -487,7 +487,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="Compound-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -498,9 +498,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Compound CHEBI_LINK from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Compound CHEBI_LINK from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load Compound CHEBI_LINK: Compound-dblinks.tsv from HumanCyc-data-26.0.zip
+        Load Compound CHEBI_LINK: Compound-dblinks.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -512,7 +512,7 @@ MERGE (a)-[r:CHEBI_LINK]->(b)
 RETURN COUNT(*)
       "
       fileName="Compound-dblinks.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -523,9 +523,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, RNA-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, RNA-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -537,7 +537,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="RNA-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -548,9 +548,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in RNA-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load ENCODES relationship in RNA-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc ENCODES relationships, RNA-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc ENCODES relationships, RNA-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -562,7 +562,7 @@ MERGE (a)-[r:ENCODES]->(b)
 RETURN COUNT(*)
       "
       fileName="RNA-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -573,9 +573,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc MODIFIED_TO relationships, RNA-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc MODIFIED_TO relationships, RNA-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -587,7 +587,7 @@ MERGE (a)-[r:MODIFIED_TO]->(b)
 RETURN COUNT(*)
       "
       fileName="RNA-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -598,9 +598,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in Protein-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load ENCODES relationship in Protein-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc ENCODES relationships, Protein-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc ENCODES relationships, Protein-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -612,7 +612,7 @@ MERGE (a)-[r:ENCODES]->(b)
 RETURN COUNT(*)
       "
       fileName="Protein-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -623,34 +623,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load MODIFIED_TO relationship in Protein-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc MODIFIED_TO relationships, Protein-rels.tsv from HumanCyc-data-26.0.zip
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.ZipFileQueryHandler"
-      query="
-      UNWIND $rows AS row
-with row where row.RELATIONSHIP='MODIFIED_TO'
-MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
-MERGE (a)-[r:MODIFIED_TO]->(b)
-RETURN COUNT(*)
-      "
-      fileName="Protein-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
-      startAt="1" 
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
-  </changeSet>
-
-
-  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
-    <comment>
-        Load BioCyc TYPE_OF relationships, Protein-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, Protein-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -662,7 +637,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="Protein-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -673,9 +648,34 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load MODIFIED_TO relationship in Protein-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc COMPONENT_OF relationships, Protein-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc MODIFIED_TO relationships, Protein-rels.tsv from HumanCyc-data-24.0.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='MODIFIED_TO'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:MODIFIED_TO]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Protein-rels.tsv"
+      zipFileName="HumanCyc-data-24.0.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
+    <comment>
+        Load BioCyc COMPONENT_OF relationships, Protein-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -687,7 +687,7 @@ MERGE (a)-[r:COMPONENT_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="Protein-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -698,9 +698,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Protein GO_LINK from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load Protein GO_LINK from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load Protein GO_LINK: Protein-dblinks.tsv from HumanCyc-data-26.0.zip
+        Load Protein GO_LINK: Protein-dblinks.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -712,7 +712,7 @@ MERGE (a)-[r:GO_LINK]->(b)
 RETURN COUNT(*)
       "
       fileName="Protein-dblinks.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -723,34 +723,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, Reaction-rels.tsv from HumanCyc-data-26.0.zip
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.ZipFileQueryHandler"
-      query="
-      UNWIND $rows AS row
-with row where row.RELATIONSHIP='TYPE_OF'
-MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
-MERGE (a)-[r:TYPE_OF]->(b)
-RETURN COUNT(*)
-      "
-      fileName="Reaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
-      startAt="1" 
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
-  </changeSet>
-
-
-  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
-    <comment>
-        Load BioCyc CONSUMED_BY relationships, Reaction-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc CONSUMED_BY relationships, Reaction-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -762,7 +737,7 @@ MERGE (a)-[r:CONSUMED_BY]->(b)
 RETURN COUNT(*)
       "
       fileName="Reaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -773,9 +748,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc PRODUCES relationships, Reaction-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc PRODUCES relationships, Reaction-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -787,7 +762,7 @@ MERGE (a)-[r:PRODUCES]->(b)
 RETURN COUNT(*)
       "
       fileName="Reaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -798,9 +773,34 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Reaction ENZYME_LINK from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load Reaction ENZYME_LINK: Reaction-dblinks.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, Reaction-rels.tsv from HumanCyc-data-24.0.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='TYPE_OF'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:TYPE_OF]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Reaction-rels.tsv"
+      zipFileName="HumanCyc-data-24.0.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load Reaction ENZYME_LINK from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
+    <comment>
+        Load Reaction ENZYME_LINK: Reaction-dblinks.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -812,7 +812,7 @@ MERGE (a)-[r:ENZYME_LINK]->(b)
 RETURN COUNT(*)
       "
       fileName="Reaction-dblinks.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -823,9 +823,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, Pathway-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc TYPE_OF relationships, Pathway-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -837,7 +837,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="Pathway-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -848,9 +848,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc IN_PATHWAY relationships, Pathway-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc IN_PATHWAY relationships, Pathway-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -862,7 +862,7 @@ MERGE (a)-[r:IN_PATHWAY]->(b)
 RETURN COUNT(*)
       "
       fileName="Pathway-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -873,9 +873,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc CATALYZES relationships, EnzReaction-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc CATALYZES relationships, EnzReaction-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -887,7 +887,7 @@ MERGE (a)-[r:CATALYZES]->(b)
 RETURN COUNT(*)
       "
       fileName="EnzReaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -898,34 +898,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load REGULATES relationship in EnzReaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load HAS_COFACTOR relationship in EnzReaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc REGULATES relationships, EnzReaction-rels.tsv from HumanCyc-data-26.0.zip
-    </comment>
-    <customChange
-      class="edu.ucsd.sbrg.ZipFileQueryHandler"
-      query="
-      UNWIND $rows AS row
-with row where row.RELATIONSHIP='REGULATES'
-MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
-MERGE (a)-[r:REGULATES]->(b)
-RETURN COUNT(*)
-      "
-      fileName="EnzReaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
-      startAt="1" 
-      neo4jHost="${neo4jHost}"
-      neo4jCredentials="${neo4jCredentials}"
-      neo4jDatabase="${neo4jDatabase}"
-      localSaveFileDir="${localSaveFileDir}"
-
-    />
-  </changeSet>
-
-
-  <changeSet id="load HAS_COFACTOR relationship in EnzReaction-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
-    <comment>
-        Load BioCyc HAS_COFACTOR relationships, EnzReaction-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc HAS_COFACTOR relationships, EnzReaction-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -937,7 +912,7 @@ MERGE (a)-[r:HAS_COFACTOR]->(b)
 RETURN COUNT(*)
       "
       fileName="EnzReaction-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -948,9 +923,34 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Regulation-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load REGULATES relationship in EnzReaction-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc TYPE_OF relationships, Regulation-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc REGULATES relationships, EnzReaction-rels.tsv from HumanCyc-data-24.0.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='REGULATES'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:REGULATES]->(b)
+RETURN COUNT(*)
+      "
+      fileName="EnzReaction-rels.tsv"
+      zipFileName="HumanCyc-data-24.0.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load TYPE_OF relationship in Regulation-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
+    <comment>
+        Load BioCyc TYPE_OF relationships, Regulation-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -962,7 +962,7 @@ MERGE (a)-[r:TYPE_OF]->(b)
 RETURN COUNT(*)
       "
       fileName="Regulation-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
@@ -973,9 +973,9 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load REGULATES relationship in Regulation-rels.tsv from HumanCyc-data-26.0.zip, date 09-07-2022" author="dommas">
+  <changeSet id="load REGULATES relationship in Regulation-rels.tsv from HumanCyc-data-24.0.zip, date 09-12-2022" author="dommas">
     <comment>
-        Load BioCyc REGULATES relationships, Regulation-rels.tsv from HumanCyc-data-26.0.zip
+        Load BioCyc REGULATES relationships, Regulation-rels.tsv from HumanCyc-data-24.0.zip
     </comment>
     <customChange
       class="edu.ucsd.sbrg.ZipFileQueryHandler"
@@ -987,7 +987,7 @@ MERGE (a)-[r:REGULATES]->(b)
 RETURN COUNT(*)
       "
       fileName="Regulation-rels.tsv"
-      zipFileName="HumanCyc-data-26.0.zip"
+      zipFileName="HumanCyc-data-24.0.zip"
       startAt="1" 
       neo4jHost="${neo4jHost}"
       neo4jCredentials="${neo4jCredentials}"
