@@ -1,0 +1,716 @@
+/Users/dommas/Projects/graphdbdiff/graph.py:21: ExperimentalWarning: The configuration may change in the future.
+  self.driver.verify_connectivity()
+/Users/dommas/Projects/graphdbdiff/graph.py:21: ExperimentalWarning: The configuration may change in the future.
+  self.driver.verify_connectivity()
+---
+# Comparing bolt://localhost?database=humancyc (aka "Old") to bolt://localhost?database=humancyc-recreate-2 (aka "New")
+# Compare apoc meta stats
+dictionary_item_added:
+  "root['labels']['Species']": 0
+  "root['relTypes']['()-[:HAS_COFACTOR]->(:BioCycClass)']": 1
+  "root['relTypes']['()-[:IN_CHANGELOG]->()']": 2
+  "root['relTypes']['(:Species)-[:HAS_SYNONYM]->()']": 3
+  "root['relTypes']['(:EnzReaction)-[:HAS_COFACTOR]->()']": 4
+  "root['relTypes']['(:db_HumanCyc)-[:HAS_COFACTOR]->()']": 5
+  "root['relTypes']['(:BioCycClass)-[:HAS_SYNONYM]->()']": 6
+  "root['relTypes']['(:__LiquibaseChangeSet)-[:IN_CHANGELOG]->()']": 7
+  "root['relTypes']['()-[:HAS_COFACTOR]->(:db_HumanCyc)']": 8
+  "root['relTypes']['()-[:TYPE_OF]->(:Compound)']": 9
+  "root['relTypes']['()-[:HAS_COFACTOR]->(:db_BioCyc)']": 10
+  "root['relTypes']['(:db_BioCyc)-[:HAS_COFACTOR]->()']": 11
+  "root['relTypes']['()-[:HAS_COFACTOR]->()']": 12
+  "root['relTypes']['()-[:IN_CHANGELOG]->(:__LiquibaseChangeLog)']": 13
+  "root['relTypes']['()-[:HAS_COFACTOR]->(:Compound)']": 14
+  "root['relTypesCount']['IN_CHANGELOG']": 15
+  "root['relTypesCount']['HAS_COFACTOR']": 16
+  "root['stats']['labels']['Species']": 17
+  "root['stats']['relTypes']['()-[:HAS_COFACTOR]->(:BioCycClass)']": 18
+  "root['stats']['relTypes']['()-[:IN_CHANGELOG]->()']": 19
+  "root['stats']['relTypes']['(:Species)-[:HAS_SYNONYM]->()']": 20
+  "root['stats']['relTypes']['(:EnzReaction)-[:HAS_COFACTOR]->()']": 21
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:HAS_COFACTOR]->()']": 22
+  "root['stats']['relTypes']['(:BioCycClass)-[:HAS_SYNONYM]->()']": 23
+  "root['stats']['relTypes']['(:__LiquibaseChangeSet)-[:IN_CHANGELOG]->()']": 24
+  "root['stats']['relTypes']['()-[:HAS_COFACTOR]->(:db_HumanCyc)']": 25
+  "root['stats']['relTypes']['()-[:TYPE_OF]->(:Compound)']": 26
+  "root['stats']['relTypes']['()-[:HAS_COFACTOR]->(:db_BioCyc)']": 27
+  "root['stats']['relTypes']['(:db_BioCyc)-[:HAS_COFACTOR]->()']": 28
+  "root['stats']['relTypes']['()-[:HAS_COFACTOR]->()']": 29
+  "root['stats']['relTypes']['()-[:IN_CHANGELOG]->(:__LiquibaseChangeLog)']": 30
+  "root['stats']['relTypes']['()-[:HAS_COFACTOR]->(:Compound)']": 31
+dictionary_item_removed:
+  "root['relTypes']['(:EnzReaction)-[:HAS_SYNONYM]->()']": 0
+  "root['stats']['relTypes']['(:EnzReaction)-[:HAS_SYNONYM]->()']": 1
+values_changed:
+  "root['labelCount']":
+    new_value: 19
+    old_value: 12
+  "root['relTypeCount']":
+    new_value: 12
+    old_value: 10
+  "root['propertyKeyCount']":
+    new_value: 44
+    old_value: 25
+  "root['nodeCount']":
+    new_value: 194898
+    old_value: 182221
+  "root['relCount']":
+    new_value: 204321
+    old_value: 195603
+  "root['labels']['Pathway']":
+    new_value: 390
+    old_value: 362
+  "root['labels']['BioCycClass']":
+    new_value: 7662
+    old_value: 10271
+  "root['labels']['Compound']":
+    new_value: 6388
+    old_value: 1975
+  "root['labels']['Reaction']":
+    new_value: 3221
+    old_value: 3133
+  "root['labels']['Protein']":
+    new_value: 21272
+    old_value: 21080
+  "root['labels']['EnzReaction']":
+    new_value: 5895
+    old_value: 5995
+  "root['labels']['db_HumanCyc']":
+    new_value: 62282
+    old_value: 64328
+  "root['labels']['Gene']":
+    new_value: 20993
+    old_value: 20831
+  "root['labels']['Synonym']":
+    new_value: 132572
+    old_value: 117893
+  "root['labels']['Regulation']":
+    new_value: 465
+    old_value: 428
+  "root['labels']['db_BioCyc']":
+    new_value: 62282
+    old_value: 64328
+  "root['relTypes']['()-[:ENCODES]->(:Protein)']":
+    new_value: 20689
+    old_value: 20528
+  "root['relTypes']['(:Protein)-[:CATALYZES]->()']":
+    new_value: 5875
+    old_value: 5996
+  "root['relTypes']['()-[:MODIFIED_TO]->(:db_BioCyc)']":
+    new_value: 99
+    old_value: 97
+  "root['relTypes']['()-[:PRODUCES]->(:db_BioCyc)']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['()-[:PRODUCES]->(:db_HumanCyc)']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['()-[:ENCODES]->(:db_BioCyc)']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['()-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['relTypes']['()-[:COMPONENT_OF]->(:Protein)']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['()-[:COMPONENT_OF]->(:db_HumanCyc)']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['(:Reaction)-[:HAS_SYNONYM]->()']":
+    new_value: 2066
+    old_value: 2256
+  "root['relTypes']['(:Reaction)-[:IN_PATHWAY]->()']":
+    new_value: 1813
+    old_value: 1789
+  "root['relTypes']['(:db_HumanCyc)-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['relTypes']['(:Pathway)-[:TYPE_OF]->()']":
+    new_value: 473
+    old_value: 441
+  "root['relTypes']['(:db_BioCyc)-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['()-[:CATALYZES]->(:db_BioCyc)']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypes']['()-[:TYPE_OF]->(:db_HumanCyc)']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['(:Gene)-[:HAS_SYNONYM]->()']":
+    new_value: 45340
+    old_value: 45126
+  "root['relTypes']['(:db_BioCyc)-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['(:db_BioCyc)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['(:db_HumanCyc)-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['(:BioCycClass)-[:TYPE_OF]->()']":
+    new_value: 8851
+    old_value: 11353
+  "root['relTypes']['(:Pathway)-[:IN_PATHWAY]->()']":
+    new_value: 122
+    old_value: 118
+  "root['relTypes']['(:Reaction)-[:TYPE_OF]->()']":
+    new_value: 829
+    old_value: 786
+  "root['relTypes']['(:Compound)-[:TYPE_OF]->()']":
+    new_value: 7479
+    old_value: 2387
+  "root['relTypes']['()-[:MODIFIED_TO]->(:Protein)']":
+    new_value: 49
+    old_value: 47
+  "root['relTypes']['()-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['(:Protein)-[:TYPE_OF]->()']":
+    new_value: 139
+    old_value: 128
+  "root['relTypes']['()-[:REGULATES]->(:db_HumanCyc)']":
+    new_value: 930
+    old_value: 856
+  "root['relTypes']['()-[:CONSUMED_BY]->(:db_HumanCyc)']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['(:Reaction)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['(:db_BioCyc)-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypes']['(:db_HumanCyc)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['()-[:TYPE_OF]->(:db_BioCyc)']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['(:db_HumanCyc)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['()-[:CATALYZES]->(:EnzReaction)']":
+    new_value: 5876
+    old_value: 5997
+  "root['relTypes']['()-[:IN_PATHWAY]->(:Pathway)']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['(:EnzReaction)-[:CATALYZES]->()']":
+    new_value: 5895
+    old_value: 6364
+  "root['relTypes']['(:db_HumanCyc)-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['(:db_HumanCyc)-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['(:db_BioCyc)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['()-[:MODIFIED_TO]->(:db_HumanCyc)']":
+    new_value: 99
+    old_value: 97
+  "root['relTypes']['(:db_HumanCyc)-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypes']['()-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['relTypes']['(:Protein)-[:MODIFIED_TO]->()']":
+    new_value: 49
+    old_value: 47
+  "root['relTypes']['()-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypes']['()-[:ENCODES]->(:db_HumanCyc)']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['()-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['()-[:REGULATES]->(:Regulation)']":
+    new_value: 465
+    old_value: 428
+  "root['relTypes']['(:db_BioCyc)-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['(:db_HumanCyc)-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['(:BioCycClass)-[:CONSUMED_BY]->()']":
+    new_value: 1942
+    old_value: 1905
+  "root['relTypes']['(:db_HumanCyc)-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['relTypes']['(:Compound)-[:REGULATES]->()']":
+    new_value: 460
+    old_value: 394
+  "root['relTypes']['(:Regulation)-[:REGULATES]->()']":
+    new_value: 465
+    old_value: 428
+  "root['relTypes']['(:BioCycClass)-[:REGULATES]->()']":
+    new_value: 27
+    old_value: 30
+  "root['relTypes']['(:Protein)-[:COMPONENT_OF]->()']":
+    new_value: 775
+    old_value: 653
+  "root['relTypes']['()-[:IN_PATHWAY]->(:db_BioCyc)']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['()-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['()-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypes']['(:Regulation)-[:TYPE_OF]->()']":
+    new_value: 465
+    old_value: 428
+  "root['relTypes']['()-[:CATALYZES]->(:Reaction)']":
+    new_value: 5895
+    old_value: 6364
+  "root['relTypes']['()-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['relTypes']['()-[:REGULATES]->(:db_BioCyc)']":
+    new_value: 930
+    old_value: 856
+  "root['relTypes']['()-[:CONSUMED_BY]->(:Reaction)']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['()-[:IN_PATHWAY]->(:db_HumanCyc)']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['(:Compound)-[:HAS_SYNONYM]->()']":
+    new_value: 18620
+    old_value: 7038
+  "root['relTypes']['()-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['(:Compound)-[:CONSUMED_BY]->()']":
+    new_value: 6225
+    old_value: 4879
+  "root['relTypes']['(:db_BioCyc)-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['relTypes']['()-[:PRODUCES]->(:BioCycClass)']":
+    new_value: 2041
+    old_value: 1901
+  "root['relTypes']['()-[:REGULATES]->(:EnzReaction)']":
+    new_value: 460
+    old_value: 423
+  "root['relTypes']['(:db_HumanCyc)-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['relTypes']['()-[:HAS_SYNONYM]->(:Synonym)']":
+    new_value: 139069
+    old_value: 129045
+  "root['relTypes']['()-[:COMPONENT_OF]->(:db_BioCyc)']":
+    new_value: 789
+    old_value: 667
+  "root['relTypes']['()-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['()-[:CATALYZES]->(:db_HumanCyc)']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypes']['()-[:PRODUCES]->(:Compound)']":
+    new_value: 7212
+    old_value: 5444
+  "root['relTypes']['(:db_BioCyc)-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['relTypes']['(:db_BioCyc)-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypes']['()-[:TYPE_OF]->(:BioCycClass)']":
+    new_value: 13613
+    old_value: 15775
+  "root['relTypes']['(:db_BioCyc)-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['relTypes']['(:Gene)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypes']['(:Pathway)-[:HAS_SYNONYM]->()']":
+    new_value: 615
+    old_value: 561
+  "root['relTypes']['()-[:CONSUMED_BY]->(:db_BioCyc)']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypes']['(:Protein)-[:HAS_SYNONYM]->()']":
+    new_value: 68502
+    old_value: 67727
+  "root['relTypesCount']['ENCODES']":
+    new_value: 20889
+    old_value: 20728
+  "root['relTypesCount']['PRODUCES']":
+    new_value: 7955
+    old_value: 7362
+  "root['relTypesCount']['CATALYZES']":
+    new_value: 11771
+    old_value: 12361
+  "root['relTypesCount']['COMPONENT_OF']":
+    new_value: 789
+    old_value: 667
+  "root['relTypesCount']['MODIFIED_TO']":
+    new_value: 99
+    old_value: 97
+  "root['relTypesCount']['IN_PATHWAY']":
+    new_value: 1935
+    old_value: 1907
+  "root['relTypesCount']['HAS_SYNONYM']":
+    new_value: 139069
+    old_value: 129045
+  "root['relTypesCount']['REGULATES']":
+    new_value: 930
+    old_value: 856
+  "root['relTypesCount']['CONSUMED_BY']":
+    new_value: 6927
+    old_value: 6805
+  "root['relTypesCount']['TYPE_OF']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypeCount']":
+    new_value: 12
+    old_value: 10
+  "root['stats']['propertyKeyCount']":
+    new_value: 44
+    old_value: 25
+  "root['stats']['labelCount']":
+    new_value: 19
+    old_value: 12
+  "root['stats']['nodeCount']":
+    new_value: 194898
+    old_value: 182221
+  "root['stats']['relCount']":
+    new_value: 204321
+    old_value: 195603
+  "root['stats']['labels']['Pathway']":
+    new_value: 390
+    old_value: 362
+  "root['stats']['labels']['BioCycClass']":
+    new_value: 7662
+    old_value: 10271
+  "root['stats']['labels']['Compound']":
+    new_value: 6388
+    old_value: 1975
+  "root['stats']['labels']['Reaction']":
+    new_value: 3221
+    old_value: 3133
+  "root['stats']['labels']['Protein']":
+    new_value: 21272
+    old_value: 21080
+  "root['stats']['labels']['EnzReaction']":
+    new_value: 5895
+    old_value: 5995
+  "root['stats']['labels']['db_HumanCyc']":
+    new_value: 62282
+    old_value: 64328
+  "root['stats']['labels']['Gene']":
+    new_value: 20993
+    old_value: 20831
+  "root['stats']['labels']['Synonym']":
+    new_value: 132572
+    old_value: 117893
+  "root['stats']['labels']['Regulation']":
+    new_value: 465
+    old_value: 428
+  "root['stats']['labels']['db_BioCyc']":
+    new_value: 62282
+    old_value: 64328
+  "root['stats']['relTypes']['()-[:ENCODES]->(:Protein)']":
+    new_value: 20689
+    old_value: 20528
+  "root['stats']['relTypes']['(:Protein)-[:CATALYZES]->()']":
+    new_value: 5875
+    old_value: 5996
+  "root['stats']['relTypes']['()-[:MODIFIED_TO]->(:db_BioCyc)']":
+    new_value: 99
+    old_value: 97
+  "root['stats']['relTypes']['()-[:PRODUCES]->(:db_BioCyc)']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['()-[:PRODUCES]->(:db_HumanCyc)']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['()-[:ENCODES]->(:db_BioCyc)']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['()-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['stats']['relTypes']['()-[:COMPONENT_OF]->(:Protein)']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['()-[:COMPONENT_OF]->(:db_HumanCyc)']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['(:Reaction)-[:HAS_SYNONYM]->()']":
+    new_value: 2066
+    old_value: 2256
+  "root['stats']['relTypes']['(:Reaction)-[:IN_PATHWAY]->()']":
+    new_value: 1813
+    old_value: 1789
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['stats']['relTypes']['(:Pathway)-[:TYPE_OF]->()']":
+    new_value: 473
+    old_value: 441
+  "root['stats']['relTypes']['(:db_BioCyc)-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['()-[:CATALYZES]->(:db_BioCyc)']":
+    new_value: 11771
+    old_value: 12361
+  "root['stats']['relTypes']['()-[:TYPE_OF]->(:db_HumanCyc)']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['(:Gene)-[:HAS_SYNONYM]->()']":
+    new_value: 45340
+    old_value: 45126
+  "root['stats']['relTypes']['(:db_BioCyc)-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['(:db_BioCyc)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['(:BioCycClass)-[:TYPE_OF]->()']":
+    new_value: 8851
+    old_value: 11353
+  "root['stats']['relTypes']['(:Pathway)-[:IN_PATHWAY]->()']":
+    new_value: 122
+    old_value: 118
+  "root['stats']['relTypes']['(:Reaction)-[:TYPE_OF]->()']":
+    new_value: 829
+    old_value: 786
+  "root['stats']['relTypes']['(:Compound)-[:TYPE_OF]->()']":
+    new_value: 7479
+    old_value: 2387
+  "root['stats']['relTypes']['()-[:MODIFIED_TO]->(:Protein)']":
+    new_value: 49
+    old_value: 47
+  "root['stats']['relTypes']['()-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['(:Protein)-[:TYPE_OF]->()']":
+    new_value: 139
+    old_value: 128
+  "root['stats']['relTypes']['()-[:REGULATES]->(:db_HumanCyc)']":
+    new_value: 930
+    old_value: 856
+  "root['stats']['relTypes']['()-[:CONSUMED_BY]->(:db_HumanCyc)']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['(:Reaction)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['(:db_BioCyc)-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['()-[:TYPE_OF]->(:db_BioCyc)']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['()-[:CATALYZES]->(:EnzReaction)']":
+    new_value: 5876
+    old_value: 5997
+  "root['stats']['relTypes']['()-[:IN_PATHWAY]->(:Pathway)']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['(:EnzReaction)-[:CATALYZES]->()']":
+    new_value: 5895
+    old_value: 6364
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['(:db_BioCyc)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['()-[:MODIFIED_TO]->(:db_HumanCyc)']":
+    new_value: 99
+    old_value: 97
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['stats']['relTypes']['()-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['stats']['relTypes']['(:Protein)-[:MODIFIED_TO]->()']":
+    new_value: 49
+    old_value: 47
+  "root['stats']['relTypes']['()-[:CATALYZES]->()']":
+    new_value: 11771
+    old_value: 12361
+  "root['stats']['relTypes']['()-[:ENCODES]->(:db_HumanCyc)']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['()-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['()-[:REGULATES]->(:Regulation)']":
+    new_value: 465
+    old_value: 428
+  "root['stats']['relTypes']['(:db_BioCyc)-[:CONSUMED_BY]->()']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['(:BioCycClass)-[:CONSUMED_BY]->()']":
+    new_value: 1942
+    old_value: 1905
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['stats']['relTypes']['(:Compound)-[:REGULATES]->()']":
+    new_value: 460
+    old_value: 394
+  "root['stats']['relTypes']['(:Regulation)-[:REGULATES]->()']":
+    new_value: 465
+    old_value: 428
+  "root['stats']['relTypes']['(:BioCycClass)-[:REGULATES]->()']":
+    new_value: 27
+    old_value: 30
+  "root['stats']['relTypes']['(:Protein)-[:COMPONENT_OF]->()']":
+    new_value: 775
+    old_value: 653
+  "root['stats']['relTypes']['()-[:IN_PATHWAY]->(:db_BioCyc)']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['()-[:TYPE_OF]->()']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['()-[:PRODUCES]->()']":
+    new_value: 7955
+    old_value: 7362
+  "root['stats']['relTypes']['(:Regulation)-[:TYPE_OF]->()']":
+    new_value: 465
+    old_value: 428
+  "root['stats']['relTypes']['()-[:CATALYZES]->(:Reaction)']":
+    new_value: 5895
+    old_value: 6364
+  "root['stats']['relTypes']['()-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['stats']['relTypes']['()-[:REGULATES]->(:db_BioCyc)']":
+    new_value: 930
+    old_value: 856
+  "root['stats']['relTypes']['()-[:CONSUMED_BY]->(:Reaction)']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['()-[:IN_PATHWAY]->(:db_HumanCyc)']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['(:Compound)-[:HAS_SYNONYM]->()']":
+    new_value: 18620
+    old_value: 7038
+  "root['stats']['relTypes']['()-[:COMPONENT_OF]->()']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['(:Compound)-[:CONSUMED_BY]->()']":
+    new_value: 6225
+    old_value: 4879
+  "root['stats']['relTypes']['(:db_BioCyc)-[:MODIFIED_TO]->()']":
+    new_value: 99
+    old_value: 97
+  "root['stats']['relTypes']['()-[:PRODUCES]->(:BioCycClass)']":
+    new_value: 2041
+    old_value: 1901
+  "root['stats']['relTypes']['()-[:REGULATES]->(:EnzReaction)']":
+    new_value: 460
+    old_value: 423
+  "root['stats']['relTypes']['(:db_HumanCyc)-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['stats']['relTypes']['()-[:HAS_SYNONYM]->(:Synonym)']":
+    new_value: 139069
+    old_value: 129045
+  "root['stats']['relTypes']['()-[:COMPONENT_OF]->(:db_BioCyc)']":
+    new_value: 789
+    old_value: 667
+  "root['stats']['relTypes']['()-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['()-[:CATALYZES]->(:db_HumanCyc)']":
+    new_value: 11771
+    old_value: 12361
+  "root['stats']['relTypes']['()-[:PRODUCES]->(:Compound)']":
+    new_value: 7212
+    old_value: 5444
+  "root['stats']['relTypes']['(:db_BioCyc)-[:REGULATES]->()']":
+    new_value: 930
+    old_value: 856
+  "root['stats']['relTypes']['(:db_BioCyc)-[:IN_PATHWAY]->()']":
+    new_value: 1935
+    old_value: 1907
+  "root['stats']['relTypes']['()-[:TYPE_OF]->(:BioCycClass)']":
+    new_value: 13613
+    old_value: 15775
+  "root['stats']['relTypes']['(:db_BioCyc)-[:HAS_SYNONYM]->()']":
+    new_value: 139069
+    old_value: 129045
+  "root['stats']['relTypes']['(:Gene)-[:ENCODES]->()']":
+    new_value: 20889
+    old_value: 20728
+  "root['stats']['relTypes']['(:Pathway)-[:HAS_SYNONYM]->()']":
+    new_value: 615
+    old_value: 561
+  "root['stats']['relTypes']['()-[:CONSUMED_BY]->(:db_BioCyc)']":
+    new_value: 6927
+    old_value: 6805
+  "root['stats']['relTypes']['(:Protein)-[:HAS_SYNONYM]->()']":
+    new_value: 68502
+    old_value: 67727
+# Compare constrains
+dictionary_item_added:
+  "root['constraint_Synonym_name']": 0
+  "root['constraint_db_BioCyc_eid']": 1
+dictionary_item_removed:
+  "root['constraint_synonym_name']": 0
+# Compare constrained values
+# Compare nodes data
+# There are 146447 entities with not matching figerprints.
+# Fetching details for compharison
+Traceback (most recent call last):
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 116, in <module>
+    compare(*map(lambda uri: Graph(**uri), args.URI))
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 105, in compare
+    compare_data(db_zip.instances, node_fingerprints, 'get_nodes', node_unique_common_constrains)
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 70, in compare_data
+    d = diff(
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 24, in diff
+    return DeepDiff(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 303, in __init__
+    self._diff(root, parents_ids=frozenset({id(t1)}), _original_type=_original_type)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 1531, in _diff
+    self._diff_iterable(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 632, in _diff_iterable
+    self._diff_iterable_in_order(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 755, in _diff_iterable_in_order
+    self._diff_by_forming_pairs_and_comparing_one_by_one(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 784, in _diff_by_forming_pairs_and_comparing_one_by_one
+    for (i, j), (x, y) in self._get_matching_pairs(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 691, in _get_matching_pairs
+    if(self.iterable_compare_func(x, y, level)):
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 63, in compare_on_unique_constrains
+    y_value = y['properties'].get('property')
+KeyboardInterrupt
+Failed to write data to connection IPv4Address(('localhost', 7687)) (IPv4Address(('127.0.0.1', 7687)))
+Failed to write data to connection IPv4Address(('localhost', 7687)) (IPv4Address(('127.0.0.1', 7687)))
