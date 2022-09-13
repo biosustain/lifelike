@@ -108,6 +108,50 @@
     </sql>
   </changeSet>
 
+<!--  <changeSet id="collapse_EnzReaction_nodes, date 08/24/2022" author="dommas">-->
+<!--    <comment>remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS</comment>-->
+<!--    <sql>-->
+<!--    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)-->
+<!--    merge (n)-[:REGULATES]->(rxn) set n.enzreaction_id=e.eid delete r;-->
+<!--    match(n:Protein)-[:CATALYZES]->(e:EnzReaction)-[:CATALYZES]->(r)-->
+<!--    merge (n)-[cat:CATALYZES]->(r) set cat.enzreaction_id = e.eid-->
+<!--    with distinct e as enz detach delete enz;-->
+
+<!--    </sql>-->
+<!--  </changeSet>-->
+
+  <changeSet id="collapse_Regulation_nodes, date 08/24/2022" author="dommas">
+    <comment>remove Regulation nodes. Connect regulator directly with regulated elements</comment>
+    <sql>
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+' and exists(r.enzreaction_id)
+    with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+    merge (x)-[rel:ACTIVATES]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='-' and exists(r.enzreaction_id)
+    with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+    merge (x)-[rel:INHIBITS]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='' and exists(r.enzreaction_id)
+            with x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+            merge (x)-[rel:REGULATES]->(y) set rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+'
+    with x, y, collect(r.eid) as regIds
+    merge (x)-[rel:ACTIVATES]->(y) set rel.regulation_ids=regIds;
+
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='-'
+    with x, y, collect(r.eid) as regIds
+    merge (x)-[rel:INHIBITS]->(y) set rel.regulation_ids=regIds;
+
+    match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where not exists(r.mode) or r.mode=''
+    with x, y, collect(r.eid) as regIds
+    merge (x)-[rel:REGULATES]->(y) set rel.regulation_ids=regIds;
+
+    match(n:Regulation) detach delete n;
+
+    </sql>
+  </changeSet>
+
   <changeSet id="remove constraint, date 08/24/2022" author="dommas">
     <comment>remove constrain so that reversed reactions can be created</comment>
     <sql>

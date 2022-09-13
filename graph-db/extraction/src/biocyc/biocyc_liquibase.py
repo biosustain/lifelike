@@ -209,7 +209,8 @@ if __name__ == "__main__":
     # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
     # generate_changelog_files('StreptomycesCoelicolorA3_2-data-24.0.zip', DB_STREPTOMYCES_COELICOLOR_A3_2, 'dommas')
     # generate_changelog_files('PseudomonasPutidaKT2440-data-24.0.zip', DB_PSEUDOMONAS_PUTIDA_KT_2440, 'dommas')
-    generate_changelog_files('HumanCyc-data-26.0.zip', DB_HUMANCYC, 'dommas')
+    # generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'dommas')
+    generate_changelog_files('HumanCyc-data-24.0.zip', DB_HUMANCYC, 'dommas')
 
 
 
