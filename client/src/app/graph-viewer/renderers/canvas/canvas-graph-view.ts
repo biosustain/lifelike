@@ -17,7 +17,15 @@ import {
   UniversalGraphNode,
   UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, GroupRenderStyle, NodeRenderStyle, PlacedEdge, PlacedGroup, PlacedNode, } from 'app/graph-viewer/styles/styles';
+import {
+  EdgeRenderStyle,
+  GroupRenderStyle,
+  NodeRenderStyle,
+  PlacedEdge,
+  PlacedGroup,
+  PlacedNode,
+  PlacedObject,
+} from 'app/graph-viewer/styles/styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
@@ -397,6 +405,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return this.hoverPosition;
   }
 
+  placeUniversalNode(d: UniversalGraphNode): PlacedObject {
+    if (d.label === GROUP_LABEL) {
+      return this.placeGroup(d as UniversalGraphGroup);
+    } else {
+      return this.placeNode(d);
+    }
+  }
+
   placeNode(d: UniversalGraphNode): PlacedNode {
     let placedNode = this.renderTree.get(d) as PlacedNode;
     if (placedNode) {
@@ -422,8 +438,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const ctx = this.canvas.getContext('2d');
       const from = this.expectNodelikeByHash(d.from);
       const to = this.expectNodelikeByHash(d.to);
-      const placedFrom: PlacedNode = this.placeNode(from);
-      const placedTo: PlacedNode = this.placeNode(to);
+      const placedFrom: PlacedObject = this.placeUniversalNode(from);
+      const placedTo: PlacedObject = this.placeUniversalNode(to);
 
       placedEdge = this.edgeRenderStyle.placeEdge(d, from, to, placedFrom, placedTo, ctx, {
         selected: this.isAnySelected(d, from, to),
@@ -1051,8 +1067,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodelikeByHash(d.from);
       const to = this.expectNodelikeByHash(d.to);
-      const placedFrom: PlacedNode = this.placeNode(from);
-      const placedTo: PlacedNode = this.placeNode(to);
+      const placedFrom: PlacedObject = this.placeUniversalNode(from);
+      const placedTo: PlacedObject = this.placeUniversalNode(to);
 
       const source = placedTo.lineIntersectionPoint(from.data as Point);
       const target = placedFrom.lineIntersectionPoint(to.data as Point);
@@ -1095,8 +1111,8 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodelikeByHash(d.from);
       const to = this.expectNodelikeByHash(d.to);
-      const placedFrom: PlacedNode = this.placeNode(from);
-      const placedTo: PlacedNode = this.placeNode(to);
+      const placedFrom: PlacedObject = this.placeUniversalNode(from);
+      const placedTo: PlacedObject = this.placeUniversalNode(to);
 
       const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
       const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
