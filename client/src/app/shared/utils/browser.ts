@@ -20,7 +20,7 @@ export function toValidLink(url: string): string {
     return 'http:' + url;
     // Internal URL begins with single /
   } else if (url.startsWith('/')) {
-    return removeViewModeIfPresent(url);
+    return url;
   } else if (url.match(/^mailto:/i)) {
     return url;
   } else {
