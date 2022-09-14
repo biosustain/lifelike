@@ -212,8 +212,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isNavigable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.Map
-      || this.mimeType === MimeTypes.EnrichmentTable || this.mimeType === MimeTypes.BioC;
+    return this.isDirectory || this.isAnnotatable;
   }
 
   get hasWordCloud() {
