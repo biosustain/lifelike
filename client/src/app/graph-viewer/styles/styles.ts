@@ -38,8 +38,8 @@ export interface EdgeRenderStyle {
   placeEdge(d: UniversalGraphEdge,
             from: UniversalGraphNode,
             to: UniversalGraphNode,
-            placedFrom: PlacedNode,
-            placedTo: PlacedNode,
+            placedFrom: PlacedObject,
+            placedTo: PlacedObject,
             ctx: CanvasRenderingContext2D,
             options: PlacementOptions): PlacedEdge;
 }
