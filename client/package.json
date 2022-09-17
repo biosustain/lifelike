@@ -47,7 +47,7 @@
     "d3-sankey-circular": "^0.34.0",
     "d3.layout.cloud": "^1.2.0",
     "intersects": "^2.7.2",
-    "jquery": "^3.5.0",
+    "jquery": "^3.6.1",
     "jszip": "^3.7.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
