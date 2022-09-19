@@ -1,10 +1,9 @@
 import json
+from flask import current_app
 from functools import partial
 from typing import List
 
 import pandas as pd
-from flask import current_app
-
 from .enrich_methods import fisher
 from ..rcache import redis_cached, redis_server
 
@@ -16,7 +15,7 @@ class EnrichmentVisualisationService():
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
             GO_terms = redis_server.get(f"GO_for_{organism.id}")
-            if GO_terms:
+            if GO_terms is not None:
                 df = pd.read_json(GO_terms)
                 go_count = len(df)
                 mask = ~df.geneNames.map(set(gene_names).isdisjoint)
@@ -40,7 +39,8 @@ class EnrichmentVisualisationService():
                                     [(g)-[:GO_LINK {tax_id:$taxId}]-(go:db_GO) | go] as ncbi_go, 
                                     [(g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO) | go] as biocyc_go
                                 UNWIND (ncbi_go + biocyc_go) as go
-                                WITH DISTINCT go, collect(g) as genes
+                                WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
+                                WITH go, collect(DISTINCT g2) AS genes
                                 RETURN
                                     go.eid AS goId,
                                     go.name AS goTerm,
