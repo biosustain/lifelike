@@ -1,9 +1,10 @@
 import json
-from flask import current_app
 from functools import partial
 from typing import List
 
 import pandas as pd
+from flask import current_app
+
 from .enrich_methods import fisher
 from ..rcache import redis_cached, redis_server
 
@@ -68,11 +69,16 @@ class EnrichmentVisualisationService():
         r = self.graph.read_transaction(
                 lambda tx: list(
                         tx.run(
-                                """
-                                match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
-                                with n match (n)-[:GO_LINK]-(go) with distinct go
-                                return count(go) as go_count
-                                """,
+                            """
+                            match (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
+                            WITH 
+                                g, 
+                                [(g)-[:GO_LINK {tax_id:$taxId}]-(go:db_GO) | go] as ncbi_go, 
+                                [(g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(
+                                go:db_GO) | go] as biocyc_go
+                            UNWIND (ncbi_go + biocyc_go) as go
+                            return count(distinct go) as go_count
+                            """,
                                 taxId=organism_id
                         )
                 )

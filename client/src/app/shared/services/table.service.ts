@@ -119,8 +119,8 @@ export class DataService {
   }
 
   set inputData(data) {
-    this._inputData = data;
-    this._search$.next(data);
+    this._inputData = data || [];
+    this._search$.next(data || []);
   }
 
   private _search(inputData): Observable<SearchResult> {
