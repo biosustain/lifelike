@@ -40,7 +40,7 @@ def redis_cached(
 ):
     if cache_setting is None:
         cache_setting = DEFAULT_CACHE_SETTINGS
-    cached_result = redis_server.get(uid)
+    cached_result = None  # redis_server.get(uid)
     if cached_result:
         return load(cached_result) if load else cached_result
     else:
