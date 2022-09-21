@@ -1,6 +1,4 @@
 import pandas as pd
-from pandas import isnull
-
 from .utils.q_value import add_q_value
 from scipy.stats.distributions import hypergeom
 
@@ -35,7 +33,7 @@ def fisher(geneNames, GOterms, related_go_terms_count):
     def f(go):
         matching_gene_names = list(set(go['geneNames']).intersection(query))
         go['p-value'] = fisher_p(len(matching_gene_names), M, len(go['geneNames']), N)
-        if isnull(go['p-value']):
+        if pd.isnull(go['p-value']):
             go['p-value'] = None
         go['gene'] = f"{go['goTerm']} ({go['goId']})"
         go['geneNames'] = matching_gene_names
