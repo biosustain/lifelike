@@ -8,6 +8,7 @@ Create Date: 2022-09-22 15:26:10.117758
 from alembic import context
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = '55d9a626454f'
@@ -29,7 +30,7 @@ def downgrade():
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     conn = op.get_bind()
-    session = sa.Session(conn)
+    session = Session(conn)
     map_links = sa.table(
         'map_links',
         sa.column('entry_id', sa.PrimaryKey),
