@@ -48,7 +48,7 @@ class EnrichmentVisualisationService():
                         MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
                         WITH DISTINCT go 
                         // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
-                        MATCH (go)-[:GO_LINK]-(go_gene:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
+                        MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
                         RETURN go, go_gene
                     }
                     WITH 
