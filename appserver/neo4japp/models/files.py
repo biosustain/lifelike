@@ -78,6 +78,10 @@ class MapLinks(RDBMSBase):
     map_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
     linked_id = db.Column(db.Integer(), db.ForeignKey('files.id'), nullable=False)
 
+    __table_args__ = (
+        UniqueConstraint('map_id', 'linked_id', name='uq_map_id_linked_id'),
+    )
+
 
 class FileContent(RDBMSBase):
     __tablename__ = 'files_content'
