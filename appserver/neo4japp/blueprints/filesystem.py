@@ -974,36 +974,39 @@ class FileListView(FilesystemBaseView):
 
         self.update_files(target_files, parent_file, params, current_user)
 
-        # TODO: this should really account for multiple files being updated...it should also
-        # probably be in a helper function, like update_files
-        map_id = None
-        to_add = []
-        if files:
-            file = files[0]
-            if file.mime_type == FILE_MIME_TYPE_MAP:
-                map_id = file.id
-
-                # Possibly could be optimized with some get_or_create or insert_if_not_exist
-                to_add = [
-                    MapLinks(map_id=map_id, linked_id=file.id)
-                    for file in linked_files if not
-                    db.session.query(MapLinks).filter_by(
-                        map_id=map_id, linked_id=file.id
-                    ).scalar()
-                ]
+        map_target_files_id = list(
+            map(
+                lambda f: f.id,
+                filter(
+                    lambda f: f.mime_type == FILE_MIME_TYPE_MAP,
+                    target_files
+                )
+            )
+        )
+        linked_files_id = list(map(lambda f: f.id, linked_files))
         try:
-            if to_add:
-                db.session.bulk_save_objects(to_add)
-            if map_id:
-                delete_count = db.session.query(
+            if map_target_files_id:
+                db.session.query(
                     MapLinks
                 ).filter(
-                    MapLinks.map_id == map_id,
-                    MapLinks.linked_id.notin_([file.id for file in linked_files])
+                    MapLinks.map_id.in_(map_target_files_id),
+                    MapLinks.linked_id.notin_(linked_files_id)
                 ).delete(synchronize_session=False)
-
-                if to_add or delete_count:
-                    db.session.commit()
+            if linked_files_id:
+                db.session.execute(
+                    insert(MapLinks).values(
+                        list(map(
+                            lambda t: dict(map_id=t[0], linked_id=t[1]),
+                            itertools.product(
+                                map_target_files_id,
+                                linked_files_id
+                            )
+                        ))
+                    ).on_conflict_do_nothing(
+                        constraint='uq_map_id_linked_id'
+                    )
+                )
+            db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
