@@ -33,7 +33,7 @@ def data_upgrades():
     session = Session(conn)
     map_links = sa.table(
         'map_links',
-        sa.column('entry_id', sa.PrimaryKey),
+        sa.column('entry_id', sa.Integer),
         sa.column('map_id', sa.Integer),
         sa.column('linked_id', sa.Integer)
     )
