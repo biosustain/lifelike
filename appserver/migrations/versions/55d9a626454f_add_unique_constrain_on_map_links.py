@@ -41,3 +41,4 @@ def data_upgrades():
     alias_unique = sa.aliased(unique)
     session.delete(map_links) \
         .where(~map_links.id.in_(alias_unique))
+    session.commit()
