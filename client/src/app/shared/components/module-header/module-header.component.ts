@@ -29,7 +29,7 @@ export class ModuleHeaderComponent implements OnChanges {
   drag: CdkNativeDragItegration;
 
   constructor(
-    protected readonly filesystemService: FilesystemService,
+    // protected readonly filesystemService: FilesystemService,
     private tabUrlService: ModuleContext
   ) {
   }
