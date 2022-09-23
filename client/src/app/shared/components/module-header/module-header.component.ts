@@ -30,8 +30,7 @@ export class ModuleHeaderComponent implements OnChanges {
 
   constructor(
     protected readonly filesystemService: FilesystemService,
-    private tabUrlService: ModuleContext,
-    private ref: ChangeDetectorRef
+    private tabUrlService: ModuleContext
   ) {
   }
 
