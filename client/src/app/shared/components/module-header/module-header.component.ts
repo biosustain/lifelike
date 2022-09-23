@@ -8,7 +8,7 @@ import { tap } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+// import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
 import { WorkspaceManager } from '../../workspace-manager';
 import { ModuleContext } from '../../services/module-context.service';
