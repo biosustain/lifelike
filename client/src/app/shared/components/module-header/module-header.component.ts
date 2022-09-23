@@ -3,16 +3,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { get, isNil } from 'lodash-es';
 import { Observable, ReplaySubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
 import { WorkspaceManager } from '../../workspace-manager';
 import { ModuleContext } from '../../services/module-context.service';
 import { CdkNativeDragItegration } from '../../utils/drag';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-module-header',
