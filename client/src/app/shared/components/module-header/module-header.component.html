@@ -8,6 +8,11 @@
                 *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
         </button>
+        <div *ngIf="object.starred" class="d-flex align-items-center" container="body" (click)="toggleStarred()">
+            <div class="d-inline-block mr-1">
+                <i class="fas fa-star text-warning"></i>
+            </div>
+        </div>
         <!-- Needs wrapping in this way so when we get content of H1 node it does not include Angular comment -->
         <ng-container *ngIf="!titleTemplate; else titleFromTemplate">
             <h1 class="toolbar-title text-truncate"
