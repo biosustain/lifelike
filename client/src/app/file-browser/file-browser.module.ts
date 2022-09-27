@@ -78,6 +78,7 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
+    ObjectTileDeckComponent
   ],
   imports: [
     SharedModule,

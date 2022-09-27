@@ -38,4 +38,12 @@ export class ProjectMenuComponent {
   openShareDialog(project: ProjectImpl) {
     this.projectActions.openShareDialog(project);
   }
+
+  updateStarred(project: ProjectImpl, starred: boolean) {
+    return this.projectActions.updateStarred(project, starred).then(
+      (result) => {
+        this.project.update(result);
+      }
+    );
+  }
 }

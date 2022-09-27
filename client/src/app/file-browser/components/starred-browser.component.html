@@ -39,7 +39,25 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-object-list [objects]="(status.placeholdersShown ? null : list.results)"
+        <app-object-tile-deck
+                            [objects]="projectList.results"
+                            [showAuthor]="false"
+                    >
+                        <ng-template let-project #tileToolbar>
+                            <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
+                                <i class="fas fa-star text-warning"></i>
+                            </button>
+                            <div ngbDropdown class="d-inline-block ml-auto" container="body">
+                                <button class="btn btn-sm" ngbDropdownToggle>
+                                    <i class="fas fa-cog fa-fw"></i>
+                                </button>
+                                <div ngbDropdownMenu>
+                                    <app-project-menu [project]="project"></app-project-menu>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </app-object-tile-deck>
+        <app-object-list [objects]="(status.placeholdersShown ? null : fileList.results)"
                          [appLinks]="true"
                          [forEditing]="false"
                          [showStars]="false"
