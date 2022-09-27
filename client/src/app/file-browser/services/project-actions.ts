@@ -156,7 +156,11 @@ export class ProjectActions {
   }
 
   updateStarred(project: ProjectImpl, starred: boolean) {
-    return this.filesystemService.updateStarred(project.***ARANGO_USERNAME***.hashId, starred).toPromise();
+    return this.filesystemService.updateStarred(project.***ARANGO_USERNAME***.hashId, starred)
+      .toPromise()
+      .then((result) => {
+        project.update(result);
+      });
   }
 }
 
