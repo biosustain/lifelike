@@ -1,7 +1,7 @@
 """Update all file paths to correct values
 
 Revision ID: cfe30b3ab56c
-Revises: 580187b42c7b
+Revises: 55d9a626454f
 Create Date: 2022-09-26 19:43:01.495090
 
 """
@@ -15,7 +15,7 @@ from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = 'cfe30b3ab56c'
-down_revision = '580187b42c7b'
+down_revision = '55d9a626454f'
 branch_labels = None
 depends_on = None
 
