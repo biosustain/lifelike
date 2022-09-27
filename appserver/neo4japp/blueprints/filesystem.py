@@ -1785,6 +1785,7 @@ class FileStarUpdateView(FilesystemBaseView):
                     file_id=result.id
                 )
                 db.session.add(starred_file)
+                result.calculated_starred = starred_file
         # Delete the row only if it exists
         elif result.calculated_starred is not None:
             db.session.query(
@@ -1792,14 +1793,13 @@ class FileStarUpdateView(FilesystemBaseView):
             ).filter(
                 StarredFile.id == result.calculated_starred['id']
             ).delete()
+            result.calculated_starred = None
 
         try:
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
-
-        result.calculated_starred = starred_file if starred else None
 
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': user.id,

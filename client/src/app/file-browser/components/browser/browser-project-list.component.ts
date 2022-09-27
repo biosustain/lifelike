@@ -52,10 +52,6 @@ export class BrowserProjectListComponent {
   }
 
   toggleStarred(project: ProjectImpl) {
-    this.filesystemService.updateStarred(project.root.hashId, isNil(project.starred))
-    .toPromise()
-    .then((result) => {
-      project.update(result);
-    });
+    return this.projectActions.updateStarred(project, isNil(project.starred));
   }
 }
