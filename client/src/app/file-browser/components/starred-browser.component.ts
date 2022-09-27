@@ -73,6 +73,6 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   }
 
   toggleStarred(project) {
-    return this.projectActions.updateStarred(project, !project.starred);
+    return this.projectActions.updateStarred(project, !project.starred).then(() => this.refresh());
   }
 }
