@@ -32,6 +32,7 @@ class ProjectSchema(CamelCaseSchema):
     modified_date = fields.DateTime()
     privileges = fields.Method('get_privileges')
     ***ARANGO_USERNAME*** = fields.Nested(lambda: FileHashIdSchema())
+    # starred = fields.Method('get_starred')
 
     def get_user_privilege_filter(self):
         try:
@@ -48,6 +49,10 @@ class ProjectSchema(CamelCaseSchema):
         else:
             return None
 
+    # def get_starred(self, obj: Files):
+    #     if obj.calculated_starred is not None:
+    #         return StarredSchema(context=self.context).dump(obj.calculated_starred)
+    #     return None
 
 class FileHashIdSchema(CamelCaseSchema):
     hash_id = fields.String()

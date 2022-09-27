@@ -30,8 +30,22 @@ export class ProjectImpl implements Project {
   description: string;
   creationDate: string;
   modifiedDate: string;
-  ***ARANGO_USERNAME***?: FilesystemObject;
+  ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
+  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  private _starred: boolean;
+
+  get starred(): boolean {
+    return this._starred ?? this.***ARANGO_USERNAME***?.starred;
+  }
+
+  set starred(value) {
+    this._starred = value;
+  }
+
+  get filename() {
+    return this.name;
+  }
 
   get effectiveName(): string {
     return this.name || this.hashId;
@@ -50,7 +64,7 @@ export class ProjectImpl implements Project {
       return this;
     }
     for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
-      'privileges']) {
+      'privileges', 'starred']) {
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
@@ -61,8 +75,8 @@ export class ProjectImpl implements Project {
     return this;
   }
 
-  getCommands(): any[] {
-    return ['/projects', this.name];
+  getCommands(forEditing: boolean = false): any[] {
+    return ['/folders', this.***ARANGO_USERNAME***.hashId];
   }
 
   getURL(): string {
@@ -623,9 +637,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     } else if (has(data, 'creationDate')) {
       this.updatedTimestamp = Date.parse(data.creationDate);
     }
-    if ('project' in data) {
-      this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
-    }
     if ('parent' in data) {
       if (data.parent != null) {
         const parent = new FilesystemObject();
@@ -635,6 +646,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         this.parent = parent.update(data.parent);
       } else {
         this.parent = null;
+      }
+    }
+    if ('project' in data) {
+      this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
+      if (isNil(this.project.***ARANGO_USERNAME***) && isNil(this.parent)) {
+        this.project.***ARANGO_USERNAME*** = this;
       }
     }
     if ('children' in data) {

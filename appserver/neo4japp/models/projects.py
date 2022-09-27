@@ -19,7 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Mapper, validates
 from sqlalchemy.orm.query import Query
-from typing import Dict
+from typing import Dict, Optional
 
 from neo4japp.constants import LogEventType
 from neo4japp.database import db
@@ -77,6 +77,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
     calculated_privileges: Dict[int, ProjectPrivileges]  # key = AppUser.id
+    calculated_starred: Optional[Dict] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

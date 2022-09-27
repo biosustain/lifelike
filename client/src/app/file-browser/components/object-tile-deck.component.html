@@ -2,6 +2,13 @@
     <div class="tile-deck tile-deck-{{ tileDeckSize }}" appElementObserver #bodyObserver="appElementObserver">
         <div *ngFor="let o of objects.view$ | async" class="tile d-flex flex-column"
              draggable="true" (dragstart)="objectDragStart($event, o)">
+        <div class="d-flex tile-toolbar" *ngIf="tileToolbar">
+              <ng-container
+                 [ngTemplateOutlet]="tileToolbar"
+                 [ngTemplateOutletContext]="{$implicit:o}"
+              >
+              </ng-container>
+            </div>
             <div class="flex-fill d-flex justify-content-center align-items-center my-2">
                 <a [appLink]="o.getCommands(forEditing)" [newTab]="newTabObject"
                    class="text-muted">
@@ -15,7 +22,7 @@
                    [scroll$]="bodyObserver.scroll$">
                     <strong>{{ o.filename }}</strong>
                 </a>
-                <div class="text-truncate text-muted">
+                <div class="text-truncate text-muted" *ngIf="showAuthor">
                     By
                     <app-user [user]="o.user"></app-user>
                 </div>

@@ -79,7 +79,7 @@ export class CollectionModel<T> {
     this._updateView$,
   ]).pipe(
     map(([items, filter, sort]) => {
-      let filteredItems = [...items];
+      let filteredItems: T[] = [...items];
       if (filter != null) {
         filteredItems = filteredItems.filter(filter);
       }
