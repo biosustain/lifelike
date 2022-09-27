@@ -41,6 +41,7 @@ def fix_projects(session, test_user: AppUser) -> Projects:
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/test-project',
         user=test_user,
     )
     projects = Projects(
