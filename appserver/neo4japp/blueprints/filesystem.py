@@ -227,7 +227,7 @@ class FilesystemBaseView(MethodView):
                                               access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
-        query = add_file_starred_columns(query, t_file, current_user.id)
+        query = add_file_starred_columns(query, t_file.id, current_user.id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
