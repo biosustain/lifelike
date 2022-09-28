@@ -30,7 +30,8 @@ export class ProjectsService {
    */
   update$ = new Subject();
 
-  constructor(protected readonly http: HttpClient) {}
+  constructor(protected readonly http: HttpClient) {
+  }
 
   list(options?: PaginatedRequestOptions): Observable<ProjectList> {
     return this.update$.pipe(
@@ -41,10 +42,10 @@ export class ProjectsService {
           },
         ).pipe(
           map(data => {
-            const projectList = new ProjectList();
+            const projectList = new ProjectList(
+              data.results.map(itemData => new ProjectImpl().update(itemData))
+            );
             projectList.collectionSize = data.total;
-            projectList.results.replace(data.results.map(
-              itemData => new ProjectImpl().update(itemData)));
             return projectList;
           }),
         )
@@ -58,10 +59,10 @@ export class ProjectsService {
       options,
     ).pipe(
       map(data => {
-        const projectList = new ProjectList();
+        const projectList = new ProjectList(
+          data.results.map(itemData => new ProjectImpl().update(itemData))
+        );
         projectList.collectionSize = data.total;
-        projectList.results.replace(data.results.map(
-          itemData => new ProjectImpl().update(itemData)));
         return projectList;
       }),
     );
@@ -142,8 +143,10 @@ export class ProjectsService {
   getStarred() {
     return this.http.get<ResultList<FilesystemObjectData>>(`/api/projects/projects/starred`).pipe(
       map(data => {
-        const list = new ProjectList();
-        list.results.replace(data.results.map(itemData => new ProjectImpl().update(itemData)));
+        const list = new ProjectList(
+          data.results.map(itemData => new ProjectImpl().update(itemData))
+        );
+        list.collectionSize = data.total;
         return list;
       })
     );

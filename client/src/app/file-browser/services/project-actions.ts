@@ -159,7 +159,7 @@ export class ProjectActions {
     return this.filesystemService.updateStarred(project.***ARANGO_USERNAME***.hashId, starred)
       .toPromise()
       .then((result) => {
-        project.update(result);
+        project.***ARANGO_USERNAME***.update(result);
       });
   }
 }

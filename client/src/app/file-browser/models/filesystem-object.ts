@@ -1,4 +1,5 @@
-import { isNil, isEmpty, has, toPairs, assign, pick } from 'lodash-es';
+import { isNil, isEmpty, has, toPairs, assign, pick, omit } from 'lodash-es';
+import { Subject } from 'rxjs';
 
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
@@ -7,7 +8,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
-import { CollectionModel } from 'app/shared/utils/collection-model';
+import { CollectionModel, ObservableObject } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
@@ -20,7 +21,7 @@ import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
-export class ProjectImpl implements Project {
+export class ProjectImpl implements Project, ObservableObject {
   /**
    * Legacy ID field that needs to go away.
    */
@@ -33,18 +34,16 @@ export class ProjectImpl implements Project {
   ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
   fontAwesomeIcon = 'fa-4x fas fa-layer-group';
-  private _starred: boolean;
+  changed$ = new Subject();
 
   get starred(): boolean {
-    return this._starred ?? this.***ARANGO_USERNAME***?.starred;
+    return this.***ARANGO_USERNAME***.starred;
   }
 
   set starred(value) {
-    this._starred = value;
-  }
-
-  get filename() {
-    return this.name;
+    if (this.***ARANGO_USERNAME***) {
+      this.***ARANGO_USERNAME***.update({starred: value});
+    }
   }
 
   get effectiveName(): string {
@@ -70,8 +69,17 @@ export class ProjectImpl implements Project {
       }
     }
     if (data.hasOwnProperty('***ARANGO_USERNAME***')) {
-      this.***ARANGO_USERNAME*** = data.***ARANGO_USERNAME*** != null ? new FilesystemObject().update(data.***ARANGO_USERNAME***) : null;
+      if (isNil(data.***ARANGO_USERNAME***)) {
+        this.***ARANGO_USERNAME*** = null;
+        // TODO: Error?
+      } else {
+        const ***ARANGO_USERNAME*** = this.***ARANGO_USERNAME*** ?? new FilesystemObject();
+        ***ARANGO_USERNAME***.update(data.***ARANGO_USERNAME***);
+        ***ARANGO_USERNAME***.project = this;
+        this.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***;
+      }
     }
+    this.changed$.next(data);
     return this;
   }
 
@@ -124,7 +132,7 @@ export class ProjectImpl implements Project {
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
  * amount of code for the refactor.
  */
-export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap {
+export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap, ObservableObject {
   hashId: string;
   filename: string;
   user: AppUser;
@@ -159,6 +167,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   highlightAnnotated?: boolean[];
   annotationsTooltipContent: string;
   starred?: boolean;
+  changed$ = new Subject();
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;
@@ -392,11 +401,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get effectiveName(): string {
-    if (this.isDirectory && this.parent == null && this.project != null) {
+    if (this.isProjectRoot) {
       return this.project.name;
     } else {
       return this.filename;
     }
+  }
+
+  get isProjectRoot(): boolean {
+    return this.isDirectory && this.parent == null;
   }
 
   /**
@@ -497,7 +510,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProject) {
+        if (this.isProjectRoot) {
           return ['/projects', projectName];
         }
         return ['/projects', projectName, 'folders', this.hashId];
@@ -573,17 +586,17 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-        display_name: this.filename,
-        label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
-        sub_labels: [],
-        data: {
-          references: [{
-            type: 'PROJECT_OBJECT',
-            id: this.hashId + '',
-          }],
-          sources,
-        },
-      };
+      display_name: this.filename,
+      label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.hashId + '',
+        }],
+        sources,
+      },
+    };
     if (this.mimeType.trim().startsWith('image/')) {
       return {
         [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
@@ -601,7 +614,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move to DataTransferData framework
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const dragData  = this.getTransferData();
+    const dragData = this.getTransferData();
     toPairs(dragData).forEach(args => dataTransfer.setData(...args));
   }
 
@@ -649,9 +662,17 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       }
     }
     if ('project' in data) {
-      this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
-      if (isNil(this.project.***ARANGO_USERNAME***) && isNil(this.parent)) {
-        this.project.***ARANGO_USERNAME*** = this;
+      if (isNil(data.project)) {
+        this.project = null;
+      } else {
+        const project = this.project ?? new ProjectImpl();
+        if (this.isProjectRoot && isNil(data.project.***ARANGO_USERNAME***)) {
+          project.***ARANGO_USERNAME*** = this;
+          project.update(omit(data.project, '***ARANGO_USERNAME***'));
+        } else {
+          project.update(data.project);
+        }
+        this.project = project;
       }
     }
     if ('children' in data) {
@@ -669,6 +690,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         this.children.replace([]);
       }
     }
+    this.changed$.next(data);
     return this;
   }
 
