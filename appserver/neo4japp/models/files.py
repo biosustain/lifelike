@@ -322,43 +322,16 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         return self.recycled or self.parent_recycled
 
     @property
-    def file_path(self):
-        """
-        Gets a list of Files representing the path to this file.
-        """
-        current_file = self
-        file_path: List[Files] = []
-        while current_file is not None:
-            try:
-                file_path.append(current_file)
-                current_file = db.session.query(
-                    Files
-                ).filter(
-                    Files.id == current_file.parent_id
-                ).one_or_none()
-            except MultipleResultsFound as e:
-                current_app.logger.error(
-                    f'Could not find parent of file with id: {self.id}',
-                    exc_info=e,
-                    extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
-                )
-                raise ServerException(
-                    title=f'Cannot Get Filepath',
-                    message=f'Could not find parent of file {self.filename}.',
-                )
-        return file_path[::-1]
-
-    @property
     def project(self) -> Projects:
         """
         Gets the Project this file belongs to.
         """
-        ***ARANGO_USERNAME***_folder = self.file_path[0].id
+        project_name = self.path.split('/')[1]
         try:
             return db.session.query(
                 Projects
             ).filter(
-                Projects.***ARANGO_USERNAME***_id == ***ARANGO_USERNAME***_folder
+                Projects.name == project_name
             ).one()
         except NoResultFound as e:
             current_app.logger.error(
@@ -375,19 +348,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     @property
     def true_filename(self):
-        if self.parent_id is not None:
-            return self.filename
-        return self.project.name
-
-    @property
-    def filename_path(self):
-        file_path = self.file_path
-        project_name = file_path.pop(0).true_filename
-        filename_path = [project_name]
-
-        for file in file_path:
-            filename_path.append(file.filename)
-        return f'/{"/".join(filename_path)}'
+        return self.path.split('/')[-1]
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
