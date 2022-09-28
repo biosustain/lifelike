@@ -142542,3 +142542,27 @@ iterable_item_added:
 # Compare edges data
 # There are 90507 entities with not matching figerprints.
 # Fetching details for compharison
+Traceback (most recent call last):
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 138, in <module>
+    compare(*map(lambda uri: Graph(**uri), args.URI))
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 132, in compare
+    compare_data(db_zip.instances, edge_fingerprints, 'get_edges', edge_unique_common_constrains)
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 71, in compare_data
+    d = diff(
+  File "/Users/dommas/Projects/graphdbdiff/main.py", line 25, in diff
+    return DeepDiff(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 303, in __init__
+    self._diff(root, parents_ids=frozenset({id(t1)}), _original_type=_original_type)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 1531, in _diff
+    self._diff_iterable(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 632, in _diff_iterable
+    self._diff_iterable_in_order(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 755, in _diff_iterable_in_order
+    self._diff_by_forming_pairs_and_comparing_one_by_one(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 784, in _diff_by_forming_pairs_and_comparing_one_by_one
+    for (i, j), (x, y) in self._get_matching_pairs(
+  File "/Users/dommas/.local/share/virtualenvs/graphdbdiff-fnebv589/lib/python3.8/site-packages/deepdiff/diff.py", line 683, in _get_matching_pairs
+    for j, y in enumerate(level.t2):
+KeyboardInterrupt
+Failed to write data to connection IPv4Address(('localhost', 7687)) (IPv4Address(('127.0.0.1', 7687)))
+Failed to write data to connection IPv4Address(('localhost', 7687)) (IPv4Address(('127.0.0.1', 7687)))
