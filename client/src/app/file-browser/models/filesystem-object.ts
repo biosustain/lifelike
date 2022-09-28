@@ -37,7 +37,7 @@ export class ProjectImpl implements Project, ObservableObject {
   changed$ = new Subject();
 
   get starred(): boolean {
-    return this.root.starred;
+    return this.root?.starred;
   }
 
   set starred(value) {
@@ -176,7 +176,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * Top directories (without parents) are projects.
    */
-  get isProject() {
+  get isProjectRoot() {
     return this.isDirectory && !this.parent;
   }
 
@@ -408,10 +408,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  get isProjectRoot(): boolean {
-    return this.isDirectory && this.parent == null;
-  }
-
   /**
    * @deprecated
    */
@@ -576,7 +572,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return sources;
   }
 
-
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
@@ -652,7 +647,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     if ('parent' in data) {
       if (data.parent != null) {
-        const parent = new FilesystemObject();
+        const parent = this.parent ?? new FilesystemObject();
         if (this.project != null) {
           parent.project = this.project;
         }
@@ -673,6 +668,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           project.update(data.project);
         }
         this.project = project;
+        if (this.parent) {
+          this.parent.project = project;
+        }
       }
     }
     if ('children' in data) {
