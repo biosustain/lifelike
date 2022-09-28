@@ -21,7 +21,6 @@ import {
 } from '../schema';
 import { encode } from 'punycode';
 import { Collaborator } from '../models/collaborator';
-import { FilesystemObjectList } from '../models/filesystem-object-list';
 
 @Injectable()
 export class ProjectsService {
@@ -136,18 +135,6 @@ export class ProjectsService {
           itemData => new Collaborator().update(itemData)));
         return collaboratorsList;
       }),
-    );
-  }
-
-  getStarred() {
-    return this.http.get<ResultList<FilesystemObjectData>>(`/api/projects/projects/starred`).pipe(
-      map(data => {
-        const list = new ProjectList(
-          data.results.map(itemData => new ProjectImpl().update(itemData))
-        );
-        list.collectionSize = data.total;
-        return list;
-      })
     );
   }
 
