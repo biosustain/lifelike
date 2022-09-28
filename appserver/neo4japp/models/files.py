@@ -523,7 +523,12 @@ def _get_update_path_query():
 def _update_path_of_file(connection: Connection, target: Files) -> Files:
     query = _get_parent_path_of_file_query(target.id, target.parent_id)
     parent_path = connection.execute(query).scalar()
-    target.path = f'{parent_path}/{target.filename}'
+
+    if target.parent_id is None:
+        target.path = f'/{parent_path}'
+    else:
+        target.path = f'{parent_path}/{target.filename}'
+
     return target
 
 
@@ -555,7 +560,11 @@ def before_file_insert(mapper: Mapper, connection: Connection, target: Files):
     # when seeding the database for local development.
     insp = inspect(target)
     if not insp.attrs.get('path').history.added:
-        target = _update_path_of_file(connection, target)
+        # Also, since it's not possible to query for the project linked to root files *before* the
+        # file has been created, do not attempt to do so here. Root file paths are manually added
+        # in the project creation request.
+        if target.parent_id is not None:
+            target = _update_path_of_file(connection, target)
 
 
 def _after_file_insert(target: Files):
