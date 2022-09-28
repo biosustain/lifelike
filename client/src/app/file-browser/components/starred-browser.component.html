@@ -33,7 +33,7 @@
                     (click)="refresh()">
                 <i class="fa fa-fw fa-sync"></i>
             </button>
-        </div>
+          </div>
         </div>
       </div>
 
@@ -41,9 +41,10 @@
       <div class="flex-fill overflow-auto">
         <app-object-tile-deck
                 class="module-header d-block p-4"
-                            [objects]="projectList.results"
-                            [showAuthor]="false"
-                    >
+                *ngIf="projectList.results.length"
+                [objects]="projectList.results"
+                [showAuthor]="false"
+        >
                         <ng-template let-project #tileToolbar>
                             <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
                                 <i class="fas fa-star text-warning"></i>

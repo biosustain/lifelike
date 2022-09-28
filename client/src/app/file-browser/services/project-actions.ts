@@ -159,7 +159,7 @@ export class ProjectActions {
     return this.filesystemService.updateStarred(project.root.hashId, starred)
       .toPromise()
       .then((result) => {
-        project.update(result);
+        project.root.update(result);
       });
   }
 }
