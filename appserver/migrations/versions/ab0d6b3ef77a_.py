@@ -1,7 +1,7 @@
 """Reset all user login failure counts to 0
 
 Revision ID: ab0d6b3ef77a
-Revises: 55d9a626454f
+Revises: cfe30b3ab56c
 Create Date: 2022-09-27 23:41:03.479331
 
 """
@@ -16,7 +16,7 @@ from neo4japp.models.auth import AppUser
 
 # revision identifiers, used by Alembic.
 revision = 'ab0d6b3ef77a'
-down_revision = '55d9a626454f'
+down_revision = 'cfe30b3ab56c'
 branch_labels = None
 depends_on = None
 
