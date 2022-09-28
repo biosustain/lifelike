@@ -264,6 +264,14 @@ def login():
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
+
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
+
             return jsonify(LifelikeJWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
