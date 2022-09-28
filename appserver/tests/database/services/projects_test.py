@@ -45,6 +45,7 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/cookie',
         user=test_user,
     )
     projects = Projects(

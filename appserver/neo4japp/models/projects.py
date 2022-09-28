@@ -211,7 +211,7 @@ def init_default_access(mapper: Mapper, connection: Connection, target: Projects
         )).fetchone()
 
 
-@event.listens_for(Projects, 'after_update')
+@event.listens_for(Projects, 'before_update')
 def before_project_update(mapper: Mapper, connection: Connection, target: Projects):
     insp = inspect(target)
     deleted = insp.attrs.get('name').history.deleted
