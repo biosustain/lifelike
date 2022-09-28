@@ -158,6 +158,13 @@ def test_patch_file_parent_recursively(
         user_with_project_roles: AppUser,
         file_in_project: Files,
         project: Projects):
+    # TODO: LL-4585. Because we're not committing the `project` object in the fixture, and we use
+    # the same session in the fixture as in the following login API call, it actually gets comitted
+    # there instead. Aside from the conceptual issue, this also means that any lazy-loaded
+    # relationships are no longer available in the `project` object, since the transaction has been
+    # committed.
+    project_root_id = project.root.id
+
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
@@ -171,10 +178,8 @@ def test_patch_file_parent_recursively(
 
     assert resp.status_code == 400
 
-    resp_data = resp.get_json()
-
     updated_parent_folder: Files = session.query(Files) \
         .filter(Files.id == file_in_project.parent.id) \
         .one()
 
-    assert updated_parent_folder.parent.id == project.root.id
+    assert updated_parent_folder.parent.id == project_root_id
