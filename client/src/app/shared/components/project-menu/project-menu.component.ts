@@ -40,10 +40,6 @@ export class ProjectMenuComponent {
   }
 
   updateStarred(project: ProjectImpl, starred: boolean) {
-    return this.projectActions.updateStarred(project, starred).then(
-      (result) => {
-        this.project.update(result);
-      }
-    );
+    return this.projectActions.updateStarred(project, starred);
   }
 }
