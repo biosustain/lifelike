@@ -20,7 +20,7 @@
                    class="d-block text-truncate"
                    [appTextTruncateToTooltip]="o.filename"
                    [scroll$]="bodyObserver.scroll$">
-                    <strong>{{ o.filename }}</strong>
+                    <strong>{{ o.effectiveName }}</strong>
                 </a>
                 <div class="text-truncate text-muted" *ngIf="showAuthor">
                     By

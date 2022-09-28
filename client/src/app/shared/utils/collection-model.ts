@@ -1,11 +1,15 @@
-import { combineLatest, BehaviorSubject, Observable } from 'rxjs';
-import { map, shareReplay, distinctUntilChanged, startWith, pairwise } from 'rxjs/operators';
+import { combineLatest, BehaviorSubject, Observable, merge } from 'rxjs';
+import { map, shareReplay, distinctUntilChanged, startWith, pairwise, switchMap } from 'rxjs/operators';
 import { has, last, uniq, isEqual, first } from 'lodash-es';
 
 type Filter<T> = (item: T) => boolean;
 type Sort<T> = (a: T, b: T) => number;
 
-export class CollectionModel<T> {
+export interface ObservableObject<UpdateLoad = any> {
+  changed$: Observable<UpdateLoad>;
+}
+
+export class CollectionModel<T extends ObservableObject|any> {
   constructor(items: T[] = [], options: CollectionModalOptions<T> = {}) {
     if (has(options, 'multipleSelection')) {
       this.multipleSelection = options.multipleSelection;
@@ -29,7 +33,14 @@ export class CollectionModel<T> {
   sort$ = new BehaviorSubject<Sort<T>>(null);
   private _items$ = new BehaviorSubject<Array<T>>([]);
   items$: Observable<readonly T[]> = this._items$.pipe(
-    map(items => Object.freeze(items)),
+    switchMap(items =>
+      merge(
+        ...items.filter(i => has(i, 'changed$')).map(i => i.changed$)
+      ).pipe(
+        startWith({}),
+        map(() => Object.freeze(items))
+      )
+    ),
     shareReplay({bufferSize: 1, refCount: true})
   );
   private _selection$ = new BehaviorSubject<Array<T>>([]);

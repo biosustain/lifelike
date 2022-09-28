@@ -69,10 +69,12 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
 
   applyFilter(filter: string) {
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
-    this.filter$.next((item: FilesystemObject) => !isNil(item.starred) && FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter));
+    this.filter$.next(
+      (item: FilesystemObject) => !isNil(item.starred) && FilesystemObject.normalizeFilename(item.effectiveName).includes(normalizedFilter)
+    );
   }
 
   toggleStarred(project) {
-    return this.projectActions.updateStarred(project, !project.starred).then(() => this.refresh());
+    return this.projectActions.updateStarred(project, !project.starred);
   }
 }
