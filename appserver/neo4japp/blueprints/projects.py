@@ -16,7 +16,6 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role
 )
-from neo4japp.models.files import StarredFile
 from neo4japp.models.files_queries import add_file_starred_columns
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
 from neo4japp.schemas.common import PaginatedRequestSchema
@@ -263,31 +262,6 @@ class ProjectBaseView(MethodView):
         return missing
 
 
-class StarredProjectListView(ProjectBaseView):
-    def get(self):
-        user = g.current_user
-        starred_file_ids = db.session.query(
-            StarredFile.file_id
-        ).filter(
-            StarredFile.user_id == user.id
-        ).all()
-
-        starred_projects, total = self.get_nondeleted_projects(
-            filter=Projects.***ARANGO_USERNAME***_id.in_([file_id for file_id, in starred_file_ids])
-        )
-
-        # TODO: Need to update get_nondeleted_recycled_files so that we can sort on these
-        # calculated properties. For instance, we also cannnot sort/filter by project name.
-        starred_projects.sort(key=lambda p: p.calculated_starred['creation_date'],
-                              reverse=True)
-
-        return jsonify(ProjectListSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }).dump({
-            'total': total,
-            'results': starred_projects,
-        }))
-
 class ProjectListView(ProjectBaseView):
 
     @use_args(ProjectListRequestSchema)
@@ -531,8 +505,6 @@ class ProjectCollaboratorsListView(ProjectBaseView):
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 bp.add_url_rule('/search', view_func=ProjectSearchView.as_view('project_search'))
 bp.add_url_rule('/projects', view_func=ProjectListView.as_view('project_list'))
-bp.add_url_rule('/projects/starred',
-                view_func=StarredProjectListView.as_view('project_star_list'))
 bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectDetailView.as_view('project_detail'))
 bp.add_url_rule('/projects/<string:hash_id>/collaborators',
                 view_func=ProjectCollaboratorsListView.as_view('project_collaborators_list'))

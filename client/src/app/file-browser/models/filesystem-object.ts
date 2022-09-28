@@ -572,6 +572,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return sources;
   }
 
+
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
