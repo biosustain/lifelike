@@ -38,7 +38,6 @@ from neo4japp.schemas.projects import (
 from neo4japp.utils.request import Pagination
 
 
-
 class ProjectBaseView(MethodView):
     """Base view class for dealing with projects."""
 
@@ -89,7 +88,6 @@ class ProjectBaseView(MethodView):
         query = add_project_user_role_columns(query, Projects, user.id,
                                               access_override=private_data_access)
         query = add_file_starred_columns(query, Projects.***ARANGO_USERNAME***_id, user.id)
-
 
         return query
 

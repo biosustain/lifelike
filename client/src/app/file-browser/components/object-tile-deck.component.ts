@@ -28,7 +28,6 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
   @Input() moreButtonText = 'View more...';
   @ContentChild('tileToolbar', {static: false}) tileToolbar: TemplateRef<any>;
 
-
   constructor(router: Router,
               snackBar: MatSnackBar,
               modalService: NgbModal,

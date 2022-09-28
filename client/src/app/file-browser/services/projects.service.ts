@@ -30,8 +30,7 @@ export class ProjectsService {
    */
   update$ = new Subject();
 
-  constructor(protected readonly http: HttpClient) {
-  }
+  constructor(protected readonly http: HttpClient) {}
 
   list(options?: PaginatedRequestOptions): Observable<ProjectList> {
     return this.update$.pipe(
