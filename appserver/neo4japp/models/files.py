@@ -7,6 +7,7 @@ import sqlalchemy
 
 from dataclasses import dataclass
 from flask import current_app
+from pathlib import Path
 from sqlalchemy import (
     UniqueConstraint,
     and_,
@@ -326,7 +327,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         """
         Gets the Project this file belongs to.
         """
-        project_name = self.path.split('/')[1]
+        project_name = Path(self.path).parts[1]
         try:
             return db.session.query(
                 Projects
@@ -348,7 +349,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # as a helper for getting the real name of a root file.
     @property
     def true_filename(self):
-        return self.path.split('/')[-1]
+        return Path(self.path).name
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
