@@ -42,7 +42,7 @@
         <app-object-list [objects]="(status.placeholdersShown ? null : list.results)"
                          [appLinks]="{forceWorkbench: true, preferPane: 'left'}"
                          [forEditing]="false"
-                         [showStars]="false"
+                         [showStars]="true"
                          (refreshRequest)="refresh()">
         </app-object-list>
       </div>
