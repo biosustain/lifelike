@@ -1,9 +1,11 @@
+import base64
 import pytest
 from unittest.mock import patch
 
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.models.files import Files
 from neo4japp.services.elastic import ElasticService
+from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
@@ -38,6 +40,37 @@ def text_field_boosts():
 @pytest.fixture(scope='function')
 def return_fields():
     return ['id']
+
+
+@pytest.fixture(scope='function')
+def pdf_document(
+    elastic_service,
+    test_user,
+    test_user_with_pdf,
+    fix_project,
+):
+    elastic_service.elastic_client.create(
+        index=FILE_INDEX_ID,
+        pipeline=ATTACHMENT_PIPELINE_ID,
+        id='pdf_fixture_dup',
+        body={
+            'filename': 'example3.pdf',
+            'description': 'mock pdf document for testing elasticsearch',
+            'uploaded_date': None,
+            'data': base64.b64encode('BOLA3'.encode('utf-8')).decode('utf-8'),
+            'user_id': test_user.id,
+            'username': 'test_user',
+            'project_id': fix_project.id,
+            'project_name': 'Lifelike',
+            'doi': None,
+            'public': True,
+            'id': test_user_with_pdf.id,
+            'mime_type': 'application/pdf',
+            'path': '/Lifelike/example3.pdf'
+        },
+        # This option is MANDATORY! Otherwise the document won't be immediately visible to search.
+        refresh='true'
+    )
 
 
 def test_user_can_search_content(
@@ -357,3 +390,42 @@ def test_user_can_search_content_type_and_folder(
             ],
             highlight=highlight
         )
+
+
+def test_search_service_returns_child_of_folder(
+    client,
+    session,
+    test_user,
+    test_user_with_pdf,
+    fix_project,
+    # Included here to make sure the pdf is immediately available in elastic
+    pdf_document
+):
+    # Login as our test user
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['accessToken']['token'])
+
+    root_folder_hash_id = session.query(
+        Files.hash_id
+    ).filter(
+        Files.id == fix_project.root_id
+    ).scalar()
+
+    resp = client.get(
+        f'/search/content',
+        headers=headers,
+        data={
+            'q': 'BOLA3',
+            'limit': 10,
+            'page': 1,
+            'folders': root_folder_hash_id,
+        },
+        content_type='multipart/form-data'
+    )
+
+    assert resp.status_code == 200
+
+    data = resp.get_json()
+
+    assert data['total'] == 1
+    assert data['results'][0]['item']['hashId'] == test_user_with_pdf.hash_id
