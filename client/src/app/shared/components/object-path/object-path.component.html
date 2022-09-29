@@ -26,7 +26,7 @@
                                 size="16"
                                 [project]="item.project">
               </app-project-icon>
-              {{ item.isDirectory && item.parent == null && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
+              {{ item.isProjectRoot && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
             </a>
             <div appContextMenuBody>
                 <ng-container *ngIf="item.parent; else noParentMenu">

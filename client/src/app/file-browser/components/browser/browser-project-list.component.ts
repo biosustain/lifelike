@@ -4,6 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
 import { select } from '@ngrx/store';
+import { isNil } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -14,7 +15,8 @@ import { AuthSelectors } from 'app/auth/store';
 import { ProjectsService } from '../../services/projects.service';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectList } from '../../models/project-list';
-import { ProjectImpl } from '../../models/filesystem-object';
+import { ProjectImpl, FilesystemObject } from '../../models/filesystem-object';
+import { FilesystemService } from '../../services/filesystem.service';
 
 @Component({
   selector: 'app-browser-project-list',
@@ -33,6 +35,7 @@ export class BrowserProjectListComponent {
 
   constructor(protected readonly projectService: ProjectsService,
               protected readonly workspaceManager: WorkspaceManager,
+              protected readonly filesystemService: FilesystemService,
               protected readonly projectActions: ProjectActions) {
   }
 
@@ -46,5 +49,9 @@ export class BrowserProjectListComponent {
   projectDragStart(event: DragEvent, project: ProjectImpl) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     project.addDataTransferData(dataTransfer);
+  }
+
+  toggleStarred(project: ProjectImpl) {
+    return this.projectActions.updateStarred(project, isNil(project.starred));
   }
 }

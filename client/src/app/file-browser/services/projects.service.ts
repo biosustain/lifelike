@@ -40,10 +40,10 @@ export class ProjectsService {
           },
         ).pipe(
           map(data => {
-            const projectList = new ProjectList();
+            const projectList = new ProjectList(
+              data.results.map(itemData => new ProjectImpl().update(itemData))
+            );
             projectList.collectionSize = data.total;
-            projectList.results.replace(data.results.map(
-              itemData => new ProjectImpl().update(itemData)));
             return projectList;
           }),
         )
@@ -57,10 +57,10 @@ export class ProjectsService {
       options,
     ).pipe(
       map(data => {
-        const projectList = new ProjectList();
+        const projectList = new ProjectList(
+          data.results.map(itemData => new ProjectImpl().update(itemData))
+        );
         projectList.collectionSize = data.total;
-        projectList.results.replace(data.results.map(
-          itemData => new ProjectImpl().update(itemData)));
         return projectList;
       }),
     );

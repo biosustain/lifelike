@@ -227,7 +227,7 @@ class FilesystemBaseView(MethodView):
                                               access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
-        query = add_file_starred_columns(query, t_file, current_user.id)
+        query = add_file_starred_columns(query, t_file.id, current_user.id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
@@ -1786,6 +1786,7 @@ class FileStarUpdateView(FilesystemBaseView):
                     file_id=result.id
                 )
                 db.session.add(starred_file)
+                result.calculated_starred = starred_file
         # Delete the row only if it exists
         elif result.calculated_starred is not None:
             db.session.query(
@@ -1793,14 +1794,13 @@ class FileStarUpdateView(FilesystemBaseView):
             ).filter(
                 StarredFile.id == result.calculated_starred['id']
             ).delete()
+            result.calculated_starred = None
 
         try:
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             raise
-
-        result.calculated_starred = starred_file if starred else None
 
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': user.id,
