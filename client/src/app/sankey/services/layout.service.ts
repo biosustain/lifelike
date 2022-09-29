@@ -121,15 +121,27 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     takeUntil(this.destroyed$),
     // temporary fixes end
     switchMap(view => this.calculateLayout$),
-    switchMap((data: any) => this.horizontalStretch$.pipe(
-      map(horizontalZoom => {
-        data.nodes.forEach(node => {
-          node.x0 = horizontalZoom * node.initialX0;
-          node.x1 = node.x0 + this.dx;
-        });
-        return data;
-      })
-    )),
+    switchMap((data: any) => combineLatest([
+        this.horizontalStretch$.pipe(
+          tap(horizontalStretch =>
+            data.nodes.forEach(node => {
+              node.x0 = horizontalStretch * node.initialX0;
+              node.x1 = node.x0 + this.dx;
+            })
+          )
+        ),
+        this.verticalStretch$.pipe(
+          tap(verticalStretch =>
+            data.nodes.forEach(node => {
+              node.y0 = verticalStretch * node.initialY0;
+              node.y1 = node.y0 + node.height;
+            })
+          )
+        )
+      ]).pipe(
+        map(() => data)
+      )
+    ),
     debug('graph$'),
     shareReplay<Base['data']>(1),
     takeUntil(this.destroyed$)
@@ -153,6 +165,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   );
 
   horizontalStretch$ = new BehaviorSubject(1);
+  verticalStretch$ = new BehaviorSubject(1);
 
   state$: Partial<SankeyState>;
   baseState$: Partial<SankeyBaseState>;
@@ -241,7 +254,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   computeLinkBreadths(nodesAndPlaceholders) {
     return tap(x => {
       for (const node of nodesAndPlaceholders) {
-        let y0 = node.y0;
+        let y0 = node.initialY0;
         let y1 = y0;
         for (const link of node.sourceLinks) {
           link.y0 = y0 + link.width / 2;
@@ -403,13 +416,13 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         // nodes are placed in order from tree traversal
         nodes.sort((a, b) => a.order - b.order).forEach(node => {
           const nodeHeight = node.height;
-          node.y0 = y;
-          if (!isFinite(node.y0)) {
+          node.initialY0 = y;
+          if (!isFinite(node.initialY0)) {
             throw new Error('y0 is not finite');
           }
-          node.y1 = y + nodeHeight;
-          if (!isFinite(node.y1)) {
-            throw new Error('y1 is not finite');
+          node.initialY1 = y + nodeHeight;
+          if (!isFinite(node.initialY1)) {
+            throw new Error('initialY1 is not finite');
           }
           y += nodeHeight + spacerSize;
           // apply the y scale on links
@@ -427,7 +440,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
   adjustNodesHeight(nodes: Base['node'][]) {
     return tap(() =>
       nodes.forEach(node => {
-        node.y1 = node.y0 + node.height;
+        node.initialY1 = node.initialY0 + node.height;
       })
     );
   }
@@ -522,8 +535,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         Object.entries(view.nodes).map(([id, {y0, y1, x0, order}]) => {
           const entity = entityById.get(id);
           if (entity) {
-            entity.y0 = y0;
-            entity.y1 = y0 + entity.height;
+            entity.initialY0 = y0;
+            entity.initialY1 = y0 + entity.height;
             entity.initialX0 = x0;
             entity.initialX1 = x0 + this.dx;
             entity.order = order;
