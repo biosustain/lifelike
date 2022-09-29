@@ -114,6 +114,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   height: number;
 
   horizontalStretch$ = this.sankey.horizontalStretch$;
+  verticalStretch$ = this.sankey.verticalStretch$;
 
   // resize and listen to future resize events
   // would be nice to listen on #g but SVG lacks support for that

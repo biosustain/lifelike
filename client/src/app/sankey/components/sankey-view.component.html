@@ -153,15 +153,27 @@
             </div>
 
             <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
-                <button (click)="stretch()" class="btn btn-secondary" container="body"
-                        ngbTooltip="Stretch" placement="bottom"
+                <button (click)="horizontalStretch()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Horizontal stretch" placement="bottom"
                         type="button">
                     <i class="fas fa-expand-alt" [appRotate]="45"></i>
                 </button>
-                <button (click)="shrink()" class="btn btn-secondary" container="body"
-                        ngbTooltip="Shrink" placement="bottom"
+                <button (click)="horizontalShrink()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Horizontal shrink" placement="bottom"
                         type="button">
                     <i class="fas fa-compress-alt" [appRotate]="45"></i>
+                </button>
+            </div>
+            <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
+                <button (click)="verticalStretch()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Vertical stretch" placement="bottom"
+                        type="button">
+                    <i class="fas fa-expand-alt" [appRotate]="135"></i>
+                </button>
+                <button (click)="verticalShrink()" class="btn btn-secondary" container="body"
+                        ngbTooltip="Vartical shrink" placement="bottom"
+                        type="button">
+                    <i class="fas fa-compress-alt" [appRotate]="135"></i>
                 </button>
             </div>
             <div [ngClass.gt-sm]="'btn-group ml-auto'" [ngStyle.lt-md]="'display: contents'"

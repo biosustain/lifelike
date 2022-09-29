@@ -704,18 +704,31 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   resetStretch() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(1);
+      this.sankey.verticalStretch$.next(1);
     }
   }
 
-  stretch() {
+  horizontalStretch() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * 1.25);
     }
   }
 
-  shrink() {
+  horizontalShrink() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * .8);
+    }
+  }
+
+  verticalStretch() {
+    if (this.sankeySlot) {
+      this.sankey.verticalStretch$.next(this.sankey.verticalStretch$.value * 1.25);
+    }
+  }
+
+  verticalShrink() {
+    if (this.sankeySlot) {
+      this.sankey.verticalStretch$.next(this.sankey.verticalStretch$.value * .8);
     }
   }
 
