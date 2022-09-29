@@ -4,9 +4,9 @@ $blue: #3797DB;
 $dark-blue: #3177B8;
 
 @mixin no-select {
-  -webkit-user-select: none;  /* Chrome all / Safari all */
-  -moz-user-select: none;     /* Firefox all */
-  -ms-user-select: none;      /* IE 10+ */
+  -webkit-user-select: none; /* Chrome all / Safari all */
+  -moz-user-select: none; /* Firefox all */
+  -ms-user-select: none; /* IE 10+ */
   user-select: none;
 }
 
@@ -73,4 +73,8 @@ router-outlet + * {
 // Workaround for https://github.com/FortAwesome/Font-Awesome/issues/17469
 .fa.fa-spinner.fa-spin {
   transform-origin: 50% 0.445em;
+}
+
+.fas {
+  transform-origin: 50% 43.75%;
 }
