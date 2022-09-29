@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input } from '@angular/core';
+import { Component, ElementRef, Input, TemplateRef, ContentChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -23,8 +23,10 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
   @Input() newTabObject = false;
   @Input() newTabMore = false;
   @Input() showMoreButton = false;
+  @Input() showAuthor = true;
   @Input() moreLink = [];
   @Input() moreButtonText = 'View more...';
+  @ContentChild('tileToolbar', {static: false}) tileToolbar: TemplateRef<any>;
 
   constructor(router: Router,
               snackBar: MatSnackBar,
