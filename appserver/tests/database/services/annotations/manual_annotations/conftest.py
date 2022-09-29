@@ -54,6 +54,7 @@ def project(session, project_owner):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/my-life-work',
         user=project_owner,
     )
     project = Projects(

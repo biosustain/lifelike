@@ -3,12 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { isNil, uniqueId } from 'lodash-es';
+import { isNil, uniqueId, merge } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
 import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -27,7 +27,7 @@ import { FilesystemService } from '../services/filesystem.service';
 export class ObjectListComponent {
   id = uniqueId('FileListComponent-');
 
-  @Input() appLinks = false;
+  @Input() appLinks: boolean|WorkspaceNavigationExtras = false;
   @Input() forEditing = true;
   @Input() showStars = true;
   @Input() showDescription = false;
@@ -80,7 +80,10 @@ export class ObjectListComponent {
         openInternalLink(
           this.workspaceManager,
           toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
-          {newTab: !target.isDirectory}
+          merge(
+            {newTab: !target.isDirectory},
+            this.appLinks
+          )
         );
       } else {
         const progressDialogRef = this.progressDialog.display({

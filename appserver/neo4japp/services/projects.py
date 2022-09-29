@@ -54,6 +54,7 @@ class ProjectsService(RDBMSBaseDao):
         ***ARANGO_USERNAME*** = Files()
         ***ARANGO_USERNAME***.mime_type = DirectoryTypeProvider.MIME_TYPE
         ***ARANGO_USERNAME***.filename = '/'
+        ***ARANGO_USERNAME***.path = f'/{projects.name}'
         ***ARANGO_USERNAME***.user = user
         ***ARANGO_USERNAME***.creator = user
         db.session.add(***ARANGO_USERNAME***)

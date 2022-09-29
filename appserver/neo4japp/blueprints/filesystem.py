@@ -210,7 +210,7 @@ class FilesystemBaseView(MethodView):
         ).options(
             raiseload('*'), joinedload(t_file.user)
         ).order_by(
-            *[dir_fn(text(f'_file.{col}')) for col, dir_fn in sort_map]
+            *[dir_fn(text(f'_{col}')) for col, dir_fn in sort_map]
         )
 
         # Add extra boolean columns to the result indicating various permissions (read, write,
@@ -669,8 +669,9 @@ class FileHierarchyView(FilesystemBaseView):
 
         hierarchy = self.get_nondeleted_recycled_files(
             and_(*filters),
-            sort=['path'],
-            sort_direction=[SortDirection.ASC.value]
+            # Ordering by both project name and file path ensures hierarchical order
+            sort=['project.name', 'file.path'],
+            sort_direction=[SortDirection.ASC.value]*2
         )
 
         # Ignoring type annotation to appease mypy, since nested dicts are tricky to type
@@ -1182,7 +1183,7 @@ class FileSearchView(FilesystemBaseView):
                         Files.pinned.is_(True)
                     )
                 ),
-                sort=['modified_date'],
+                sort=['file.modified_date'],
                 sort_direction=[SortDirection.DESC.value]
             )
             files = [
