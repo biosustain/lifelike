@@ -139,7 +139,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
-  filePath: string;
+  path: string;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -614,7 +614,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       [
         'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
         'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
-        'fallbackOrganism', 'annotationConfigs', 'filePath', 'trueFilename', 'starred'
+        'fallbackOrganism', 'annotationConfigs', 'path', 'trueFilename', 'starred'
       ]
     ));
 
