@@ -302,8 +302,8 @@ def test_user_can_search_content_with_folder(
                     'bool': {
                         'should': [
                             {
-                                'term': {
-                                    'path.tree': f'/{fix_project.name}'
+                                'terms': {
+                                    'path.tree': [f'/{fix_project.name}']
                                 }
                             }
                         ]
@@ -373,8 +373,8 @@ def test_user_can_search_content_type_and_folder(
                     'bool': {
                         'should': [
                             {
-                                'term': {
-                                    'path.tree': f'/{fix_project.name}'
+                                'terms': {
+                                    'path.tree': [f'/{fix_project.name}']
                                 }
                             }
                         ]
