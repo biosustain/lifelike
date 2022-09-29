@@ -127,20 +127,13 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
         for project in accessible_projects
     ]
 
-    paths = []
-    for file in accessible_folders:
-        paths.append(file.path)
+    paths = [file.path for file in accessible_folders]
 
-    if len(paths):
+    if paths:
         return {
             'bool': {
                 'should': [
-                    {
-                        'term': {
-                            'path.tree': path
-                        }
-                    }
-                    for path in paths
+                    {'terms': {'path.tree': paths}}
                 ]
             }
         }
