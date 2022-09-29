@@ -40,7 +40,7 @@
       <!-- Body -->
       <div class="flex-fill overflow-auto">
         <app-object-list [objects]="(status.placeholdersShown ? null : list.results)"
-                         [appLinks]="true"
+                         [appLinks]="{forceWorkbench: true, preferPane: 'left'}"
                          [forEditing]="false"
                          [showStars]="false"
                          (refreshRequest)="refresh()">
