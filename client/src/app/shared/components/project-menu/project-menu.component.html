@@ -14,6 +14,9 @@
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...
   </button>
+  <button ngbDropdownItem (click)="updateStarred(project, !project.starred)">
+    {{ project.starred ? 'Remove from' : 'Add to' }} starred
+  </button>
   <ng-container *ngIf="project.root">
     <div class="dropdown-divider"></div>
     <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.root.hashId]"

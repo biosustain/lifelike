@@ -89,7 +89,7 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     switchMap(hashId => this.filesystemService.get(hashId).pipe(
       tap(object =>
         this.modulePropertiesChange.emit({
-          title: object.isProject ? object.project.name
+          title: object.isProjectRoot ? object.project.name
             : `${object.project.name} - ${object.filename}`,
           fontAwesomeIcon: 'folder',
         })

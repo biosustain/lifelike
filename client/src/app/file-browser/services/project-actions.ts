@@ -23,6 +23,7 @@ import { ProjectCreateRequest } from '../schema';
 import { ProjectCollaboratorsDialogComponent } from '../components/dialog/project-collaborators-dialog.component';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { ObjectDeleteReqursiveDialogComponent } from '../components/dialog/object-delete-reqursive-dialog.component';
+import { FilesystemService } from './filesystem.service';
 
 @Injectable()
 export class ProjectActions {
@@ -32,6 +33,7 @@ export class ProjectActions {
     protected readonly modalService: NgbModal,
     protected readonly messageDialog: MessageDialog,
     protected readonly errorHandler: ErrorHandler,
+    protected readonly filesystemService: FilesystemService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly clipboard: ClipboardService) {
   }
@@ -151,6 +153,14 @@ export class ProjectActions {
     return Promise.resolve(
       this.clipboard.copy(`${window.location.origin}/${project.getURL()}`),
     );
+  }
+
+  updateStarred(project: ProjectImpl, starred: boolean) {
+    return this.filesystemService.updateStarred(project.root.hashId, starred)
+      .toPromise()
+      .then((result) => {
+        project.root.update(result);
+      });
   }
 }
 

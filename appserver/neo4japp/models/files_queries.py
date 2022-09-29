@@ -252,13 +252,13 @@ def add_file_user_role_columns(
     return query
 
 
-def add_file_starred_columns(query, file_table, user_id):
+def add_file_starred_columns(query, file_id, user_id):
     """
     Add columns to a query for fetching the starred status for the
     provided user ID for files in the provided file table.
 
     :param query: the query to modify
-    :param file_table: the file table
+    :param file_id: id or sql id column from outer query
     :param user_id: the user ID to check for
     """
     t_starred_file = db.aliased(StarredFile, name='_starred_file')
@@ -267,7 +267,7 @@ def add_file_starred_columns(query, file_table, user_id):
         .outerjoin(
             t_starred_file,
             and_(
-                t_starred_file.file_id == file_table.id,
+                t_starred_file.file_id == file_id,
                 t_starred_file.user_id == user_id
             )
         ) \

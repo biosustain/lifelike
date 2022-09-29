@@ -31,7 +31,7 @@ class ProjectSchema(CamelCaseSchema):
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     privileges = fields.Method('get_privileges')
-    root = fields.Nested(lambda: FileHashIdSchema())
+    root = fields.Nested(lambda: ProjectRootSchema())
 
     def get_user_privilege_filter(self):
         try:
@@ -49,8 +49,21 @@ class ProjectSchema(CamelCaseSchema):
             return None
 
 
+class StarredFileSchema(CamelCaseSchema):
+    starred = fields.Method('get_starred')
+
+    def get_starred(self, obj: Files):
+        if obj.calculated_starred is not None:
+            return StarredSchema(context=self.context).dump(obj.calculated_starred)
+        return None
+
+
 class FileHashIdSchema(CamelCaseSchema):
     hash_id = fields.String()
+
+
+class ProjectRootSchema(FileHashIdSchema, StarredFileSchema):
+    pass
 
 
 ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
@@ -123,7 +136,7 @@ class MultipleProjectResponseSchema(ResultMappingSchema):
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 
 
-class FileSchema(CamelCaseSchema):
+class FileSchema(StarredFileSchema):
     hash_id = fields.String()
     filename = fields.String()
     user = fields.Nested(UserSchema)
@@ -143,7 +156,6 @@ class FileSchema(CamelCaseSchema):
     project = fields.Method('get_project', exclude='root')
     privileges = fields.Method('get_privileges')
     highlight = fields.Method('get_highlight')
-    starred = fields.Method('get_starred')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     path = fields.String()
@@ -169,11 +181,6 @@ class FileSchema(CamelCaseSchema):
 
     def get_highlight(self, obj: Files):
         return obj.calculated_highlight
-
-    def get_starred(self, obj: Files):
-        if obj.calculated_starred is not None:
-            return StarredSchema(context=self.context).dump(obj.calculated_starred)
-        return None
 
     def get_project(self, obj: Files):
         return ProjectSchema(context=self.context, exclude=(

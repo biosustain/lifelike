@@ -38,33 +38,24 @@
 
             <ng-container *ngIf="projectList.value">
                 <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
-                    <div class="tile-deck">
-                        <div *ngFor="let p of projectList.value.results.view$ | async" class="tile d-flex flex-column"
-                             draggable="true" (dragstart)="projectDragStart($event, p)">
-                            <div class="d-flex tile-toolbar">
-                                <div ngbDropdown class="d-inline-block ml-auto" container="body">
-                                    <button class="btn btn-sm" ngbDropdownToggle>
-                                        <i class="fas fa-cog fa-fw"></i>
-                                    </button>
-                                    <div ngbDropdownMenu>
-                                        <app-project-menu [project]="p"></app-project-menu>
-                                    </div>
+                    <app-object-tile-deck
+                            [objects]="projectList.value.results"
+                            [showAuthor]="false"
+                    >
+                        <ng-template let-project #tileToolbar>
+                            <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
+                                <i class="fas fa-star text-warning"></i>
+                            </button>
+                            <div ngbDropdown class="d-inline-block ml-auto" container="body">
+                                <button class="btn btn-sm" ngbDropdownToggle>
+                                    <i class="fas fa-cog fa-fw"></i>
+                                </button>
+                                <div ngbDropdownMenu>
+                                    <app-project-menu [project]="project"></app-project-menu>
                                 </div>
                             </div>
-                            <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                                <a [appLink]="['/folders', p.root.hashId]" class="text-muted">
-                                    <app-project-icon [project]="p" size="56px"></app-project-icon>
-                                </a>
-                            </div>
-                            <div class="text-truncate text-center">
-                                <a [appLink]="['/folders', p.root.hashId]" class="d-block text-truncate"
-                                   [appTextTruncateToTooltip]="p.name"
-                                   [scroll$]="bodyObserver.scroll$">
-                                    <strong>{{ p.name }}</strong>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                        </ng-template>
+                    </app-object-tile-deck>
 
                     <div class="mt-4">
                         <app-pagination [paging]="paging$.value" [collectionSize]="projectList.value.collectionSize"

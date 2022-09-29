@@ -16,6 +16,7 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role
 )
+from neo4japp.models.files_queries import add_file_starred_columns
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
@@ -85,6 +86,7 @@ class ProjectBaseView(MethodView):
         # for the current user, which then can be read later by ProjectCalculator or manually
         query = add_project_user_role_columns(query, Projects, user.id,
                                               access_override=private_data_access)
+        query = add_file_starred_columns(query, Projects.root_id, user.id)
 
         return query
 
@@ -146,6 +148,7 @@ class ProjectBaseView(MethodView):
         for row in results:
             calculator = ProjectCalculator(row, Projects)
             calculator.calculate_privileges([current_user.id])
+            calculator.calculate_starred()
             projects.append(calculator.project)
 
         # Handle helper require_hash_ids argument that check to see if all projected wanted
