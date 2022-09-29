@@ -97,7 +97,7 @@ export interface FilesystemObjectData {
   // TODO: Remove this if we ever give root files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a root file.
   trueFilename: string;
-  filePath: string;
+  path: string;
 }
 
 interface ContentValue {
