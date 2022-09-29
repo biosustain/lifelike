@@ -54,6 +54,7 @@ class ProjectsService(RDBMSBaseDao):
         root = Files()
         root.mime_type = DirectoryTypeProvider.MIME_TYPE
         root.filename = '/'
+        root.path = f'/{projects.name}'
         root.user = user
         root.creator = user
         db.session.add(root)

@@ -212,12 +212,12 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
   }
 
   static ascendingBreadth(a, b) {
-    return a.y0 - b.y0;
+    return a.initialY0 - b.initialY0;
   }
 
   static computeLinkBreadths({nodes}: LayoutData) {
     for (const node of nodes) {
-      let y0 = node.y0;
+      let y0 = node.initialY0;
       let y1 = y0;
       for (const link of node.sourceLinks) {
         link.y0 = y0 + link.width / 2;

@@ -20,6 +20,8 @@ export interface SankeyNodeInterface {
   height: number;
   initialX0: number;
   initialX1: number;
+  initialY0: number;
+  initialY1: number;
   x0: number;
   x1: number;
   y0: number;

@@ -328,6 +328,7 @@ def fix_project(test_user: AppUser, session) -> Projects:
     root_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/Lifelike',
         user=test_user,
     )
     project = Projects(
@@ -362,6 +363,7 @@ def fix_directory(session, test_user: AppUser) -> Files:
         filename='/',
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         user=test_user,
+        path='/test-project'
     )
 
     project = Projects(
