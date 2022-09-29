@@ -44,9 +44,11 @@ class PrimaryParser(DataFileParser):
         """
         returns - labeled primaries
         """
-        left_edge_label, right_edge_label = \
-            (REL_CONSUMED_BY, REL_PRODUCE) if layout['DIRECTION'] == 'L2R' \
-                else (REL_PRODUCE, REL_CONSUMED_BY)
+        # This one is fixed later on when reaction is getting reversed
+        # left_edge_label, right_edge_label = \
+        #     (REL_CONSUMED_BY, REL_PRODUCE) if layout['DIRECTION'] == 'L2R' \
+        #         else (REL_PRODUCE, REL_CONSUMED_BY)
+        left_edge_label, right_edge_label = (REL_CONSUMED_BY, REL_PRODUCE)
         return chain(
             zip(layout['LEFT_PRIMARIES'], repeat(left_edge_label)),
             zip(layout['RIGHT_PRIMARIES'], repeat(right_edge_label))
@@ -68,7 +70,10 @@ class PrimaryParser(DataFileParser):
                         compound_node = NodeData(NODE_REACTION, PROP_BIOCYC_ID)
                         compound_node.update_attribute(PROP_BIOCYC_ID, primary, 'str')
                         # add property on edge
-                        edge = EdgeData(reaction_node, compound_node, edge_label)
+                        if edge_label == REL_PRODUCE:
+                            edge = EdgeData(reaction_node, compound_node, edge_label)
+                        else:
+                            edge = EdgeData(compound_node, reaction_node, edge_label)
                         edge.add_attribute('PRIMARY', '', 'str')
                         patchway_node.edges.append(edge)
                         # add property on edge
