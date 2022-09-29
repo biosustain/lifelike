@@ -1,5 +1,5 @@
 <form [formGroup]="form">
-    <div>
+    <div *ngIf="maximumShortestPathPlusN$ | async as maximumShortestPathPlusN">
         <label class="w-100 text-left m-0" ngbButtonLabel>
             <div class="d-flex align-items-baseline flex-wrap w-100" [style.column-gap.rem]="1">
                 <label for="shortestPathPlusN" class="my-0 flex-shrink-0" [style.max-width.%]="100">
@@ -9,7 +9,7 @@
                 <input formControlName="shortestPathPlusN"
                        id="shortestPathPlusN"
                        min="0"
-                       [max]="maximumShortestPathPlusN$ | async"
+                       [max]="maximumShortestPathPlusN | async"
                        [style.min-width.%]="100"
                        step="1"
                        class="form-control"
