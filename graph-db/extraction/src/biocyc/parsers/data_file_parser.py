@@ -142,7 +142,8 @@ class DataFileParser(BaseParser):
             df = pd.DataFrame([node.to_dict() for node in nodes])
             cols = [c for c in node_attrs if c in df.columns]
             df = df[cols]
-            df[PROP_ID] = df[PROP_BIOCYC_ID]
+            if PROP_ID not in df.columns and PROP_BIOCYC_ID in df.columns:
+                df[PROP_ID] = df[PROP_BIOCYC_ID]
             df.fillna('', inplace=True)
             self.logger.info(f"writing {outfile}")
             df.to_csv(os.path.join(self.output_dir, outfile), index=False, sep='\t', quotechar='"')

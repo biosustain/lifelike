@@ -16,6 +16,7 @@ REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
     'LEFT': RelationshipType(REL_CONSUMED_BY, 'from', NODE_COMPOUND, PROP_BIOCYC_ID),
     'RIGHT': RelationshipType(REL_PRODUCE, 'to', NODE_COMPOUND, PROP_BIOCYC_ID),
+    'CITATIONS': RelationshipType(REL_CITE, 'to', NODE_PUBLICATION, PROP_ID)
 }
 
 REL_ATTRS = {

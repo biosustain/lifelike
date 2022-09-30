@@ -10,13 +10,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
 from biocyc.parsers import enzymereaction_parser, class_parser, rna_parser, protein_parser, \
     reaction_parser, regulation_parser, terminator_parser, promoter_parser, \
     transcripitionunit_parser, dnabindsite_parser, compound_parser, pathway_parser, gene_parser, \
-    species_parser, primary_parser
+    species_parser, primary_parser, publication
 
 ENTITIES = [
+    NODE_PUBLICATION,
     NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
     NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
     NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
-    NODE_REACTION, NODE_PATHWAY,
+    NODE_REACTION,
+    NODE_PATHWAY,
     NODE_ENZ_REACTION,
     NODE_REGULATION,
     # NODE_PRIMARY
@@ -29,7 +31,8 @@ PARSERS = {
     NODE_ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
     NODE_GENE: gene_parser.GeneParser,
     NODE_PATHWAY: pathway_parser.PathwayParser,
-    # NODE_PRIMARY: primary_parser.PrimaryParser,
+    NODE_PRIMARY: primary_parser.PrimaryParser,
+    NODE_PUBLICATION: publication.PublicationParser,
     NODE_PROMOTER: promoter_parser.PromoterParser,
     NODE_PROTEIN: protein_parser.ProteinParser,
     NODE_REACTION: reaction_parser.ReactionParser,

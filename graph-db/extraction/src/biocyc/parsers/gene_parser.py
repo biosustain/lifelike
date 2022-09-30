@@ -3,6 +3,8 @@ from common.constants import *
 import pandas as pd
 import logging
 
+from common.graph_models import RelationshipType
+
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
     'COMMON-NAME': (PROP_NAME, 'str'),
@@ -14,9 +16,13 @@ ATTR_NAMES = {
     'SYNONYMS': (PROP_SYNONYMS, 'str')
 }
 
+REL_NAMES = {
+    'CITATIONS': RelationshipType(REL_CITE, 'to', NODE_PUBLICATION, PROP_ID)
+}
+
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, dict())
+        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, REL_NAMES)
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_URL, PROP_ACCESSION2, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
         self.logger = logging.getLogger(__name__)
 
