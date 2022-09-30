@@ -220,11 +220,20 @@ jobs:
           echo $(cat results.txt) >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+          results=$(<results.txt)
           # Save results as step summary
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # Results
+          ## Backup details
+
+            - Cloud SQL instance name: **${{ matrix.instance }}**
+            - Backup date: **${{ steps.get-backup.outputs.date }}**
+            - Backup type: **${{ matrix.type }}**
+            - Backup ID: **${{ steps.get-backup.outputs.id }}**
+            - Workflow run ID: [**${{ github.run_id }}**](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ## Results
           \`\`\`
-          $(cat results.txt)
+          $results
           \`\`\`
           EOF
 
