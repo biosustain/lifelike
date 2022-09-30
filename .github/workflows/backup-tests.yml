@@ -126,12 +126,18 @@ jobs:
           PGPASSWORD: password
           PGHOST: localhost
         run: |
-          RESULTS=$( \
-            psql -U postgres -d postgres \
-              -c 'SELECT count(*) FROM files;')
+          psql -U postgres -d postgres \
+              -c 'SELECT count(*) FROM files;' > results.txt
           echo "RESULTS<<EOF" >> $GITHUB_ENV
-          echo "$RESULTS" >> $GITHUB_ENV
+          echo $(cat results.txt) >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
+      - name: Upload results artifact
+        if: ${{ steps.backup-id.outputs.id != '' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup-test-results-${{ steps.backup-id.outputs.id }}
+          path: results.txt
 
       - name: Delete temporary instance
         if: ${{ steps.backup-id.outputs.id != '' }}
@@ -147,17 +153,25 @@ jobs:
           from-email: no-reply@lifelike.bio
           to-email: darede@biosustain.dtu.dk
           # to-email: ${{ secrets.BACKUP_TEST_NOTIFY_EMAILS }}
-          subject: "[PASS ✅] Lifelike PostgreSQL backup test results"
+          subject: "✅ Lifelike PostgreSQL backup test results"
           markdown-body: |
             # Lifelike PostgreSQL backup test results
 
             ## Details
+
              - Cloud SQL instance: ${{ matrix.instance }}
              - Temporary test instance: ${{ steps.create-temp-instance.outputs.temp_instance_name }}
              - Type: ${{ matrix.type }}
-             - Workflow Run ID: ${{ github.run_id }}
+             - Workflow Run ID: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ## Results
+            ## Test result
+
+            ✅ PASSED
+
+            ---
+
+            ## Database query results
+
             ```
             ${{ env.RESULTS }}
             ```
