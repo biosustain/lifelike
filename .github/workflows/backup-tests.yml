@@ -82,7 +82,7 @@ jobs:
           script: |
             if (!'${{ steps.backup-id.outputs.id }}') {
               core.warn('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
-            } else if ((await (await glob.create('results.txt'))).glob().length > 0) {
+            } else if ((await (await glob.create('results.txt')).glob().length) > 0) {
               core.info('Skipping. Backup ${{ steps.backup-id.outputs.id }} has already been tested.')
             } else {
               core.exportVariable('PROCEED', 'true')
