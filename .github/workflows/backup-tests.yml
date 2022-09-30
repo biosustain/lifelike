@@ -68,13 +68,12 @@ jobs:
               | head -n 1)
           echo "::set-output name=id::$BACKUP_ID"
 
-      - name: Retrieve previous results artifact
+      - name: Retrieve previous results artifact, if any
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           name: backup-test-results-${{ steps.backup-id.outputs.id }}
           search_artifacts: true
-          skip_unpack: true
           if_no_artifact_found: ignore
 
       - name: Check if backup exists and hasn't been tested before
@@ -83,7 +82,7 @@ jobs:
           script: |
             if (!'${{ steps.backup-id.outputs.id }}') {
               core.warn('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
-            } else if (fs.existsSync('results.txt')) {
+            } else if ((await (await glob.create('results.txt'))).glob().length > 0) {
               core.info('Skipping. Backup ${{ steps.backup-id.outputs.id }} has already been tested.')
             } else {
               core.exportVariable('PROCEED', 'true')
