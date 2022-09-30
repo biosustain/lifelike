@@ -181,7 +181,7 @@ jobs:
                       max_value timestamp,
                       min_value timestamp)
           LANGUAGE plpgsql
-          AS $$
+          AS \$\$
               DECLARE
                   r record;
               BEGIN
@@ -208,7 +208,7 @@ jobs:
                       RETURN next;
                   END LOOP;
               END
-          $$;
+          \$\$;
           SELECT * FROM get_min_max_modified_date();
           EOF
 
@@ -222,10 +222,11 @@ jobs:
 
           # Save results as step summary
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          echo "# Results\n"
-          echo "\`\`\`"
-          cat results.txt >> $GITHUB_ENV
-          echo "\`\`\`"
+          # Results
+          \`\`\`
+          $(cat results.txt)
+          \`\`\`
+          EOF
 
       - name: Upload results artifact
         if: ${{ env.PROCEED == 'true' }}
