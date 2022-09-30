@@ -68,8 +68,26 @@ jobs:
               | head -n 1)
           echo "::set-output name=id::$BACKUP_ID"
 
-      - name: Get instance details
+      - name: Retrieve previous results artifact
         if: ${{ steps.backup-id.outputs.id != '' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: backup-test-results-${{ steps.backup-id.outputs.id }}
+
+      - name: Check if backup exists and hasn't been tested before
+        uses: actions/github-script@v6
+        with:
+          script: |
+            if (!'${{ steps.backup-id.outputs.id }}') {
+              core.warn('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
+            } else if (fs.existsSync('results.txt')) {
+              core.info('Skipping. Backup ${{ steps.backup-id.outputs.id }} has already been tested.')
+            } else {
+              core.exportVariable('PROCEED', 'true')
+            }
+
+      - name: Get instance details
+        if: ${{ env.PROCEED == 'true' }}
         id: instance-details
         run: |
           INSTANCE=$( \
@@ -82,7 +100,7 @@ jobs:
           echo ::set-output name=project::$(echo $INSTANCE | cut -d' ' -f4)
 
       - name: Create temporary Cloud SQL instance
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         id: create-temp-instance
         run: |
           TEMP_INSTANCE_NAME=$(echo "temp-${{ matrix.instance }}-${{ matrix.type }}-${{ github.run_id }}" | sed 's/_/-/g' | awk '{print tolower($0)}')
@@ -94,7 +112,7 @@ jobs:
           echo ::set-output name=temp_instance_name::$TEMP_INSTANCE_NAME
 
       - name: Restore backup into temporary instance
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         run: |
           gcloud sql backups restore --quiet \
             --restore-instance=${{ steps.create-temp-instance.outputs.temp_instance_name }} \
@@ -102,26 +120,26 @@ jobs:
             ${{ steps.backup-id.outputs.id }}
 
       - name: Reset postgres password
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         run: |
           gcloud sql users set-password \
             --instance=${{ steps.create-temp-instance.outputs.temp_instance_name }} \
             --password=password postgres
 
       - uses: mattes/gce-cloudsql-proxy-action@v1
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         with:
           creds: ${{ secrets.GCE_SA_KEY }}
           instance: ${{ steps.instance-details.outputs.project }}:${{ steps.instance-details.outputs.region }}:${{ steps.create-temp-instance.outputs.temp_instance_name }}
 
       - name: Setup PostgreSQL client
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends postgresql-client
 
       - name: Query temporary instance
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         env:
           PGPASSWORD: password
           PGHOST: localhost
@@ -133,19 +151,20 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Upload results artifact
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         uses: actions/upload-artifact@v3
         with:
           name: backup-test-results-${{ steps.backup-id.outputs.id }}
           path: results.txt
 
       - name: Delete temporary instance
-        if: ${{ steps.backup-id.outputs.id != '' }}
+        if: ${{ env.PROCEED == 'true' }}
         run: |
           gcloud sql instances delete --quiet \
             ${{ steps.create-temp-instance.outputs.temp_instance_name }}
 
       - name: Notify results by email
+        if: ${{ env.PROCEED == 'true' }}
         uses: licenseware/send-email-notification@v1
         with:
           api-key: "***REMOVED***"
@@ -153,27 +172,25 @@ jobs:
           from-email: no-reply@***ARANGO_DB_NAME***.bio
           to-email: darede@biosustain.dtu.dk
           # to-email: ${{ secrets.BACKUP_TEST_NOTIFY_EMAILS }}
-          subject: "✅ Lifelike PostgreSQL backup test results"
+          subject: "✅ Lifelike DB backup test passed for ${{ matrix.instance }} - ${{ matrix.type }}"
           markdown-body: |
             # Lifelike PostgreSQL backup test results
 
+            ## Test result: ✅ PASSED
+
             ## Details
 
-             - Cloud SQL instance: ${{ matrix.instance }}
-             - Temporary test instance: ${{ steps.create-temp-instance.outputs.temp_instance_name }}
-             - Type: ${{ matrix.type }}
-             - Workflow Run ID: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+             - Cloud SQL instance name: **${{ matrix.instance }}**
+             - Backup type: **${{ matrix.type }}**
+             - Backup ID: **${{ steps.backup-id.outputs.id }}**
+             - Workflow run ID: [**${{ github.run_id }}**](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ## Test result
-
-            ✅ PASSED
-
-            ---
-
-            ## Database query results
+            ## Database queries
 
             ```
             ${{ env.RESULTS }}
             ```
 
-            Details about this workflow run [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            ---
+
+            See the workflow run [at GitHub](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
