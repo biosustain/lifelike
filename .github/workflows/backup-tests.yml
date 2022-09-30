@@ -2,6 +2,12 @@ name: Database backups tests
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: Force backup tests to run even for backups already tested
+        type: boolean
+        default: false
+        required: false
   pull_request:
   schedule:
     # Run once a week on sunday at 00:00
@@ -87,7 +93,7 @@ jobs:
           script: |
             if (!'${{ steps.get-backup.outputs.id }}') {
               core.warning('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
-            } else if ((await (await glob.create('results.txt')).glob()).length > 0) {
+            } else if (!core.getInput('force') && (await (await glob.create('results.txt')).glob()).length > 0) {
               core.notice('Skipping. Backup ${{ steps.get-backup.outputs.id }} has already been tested.')
             } else {
               core.exportVariable('PROCEED', 'true')
