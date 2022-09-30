@@ -69,10 +69,13 @@ jobs:
           echo "::set-output name=id::$BACKUP_ID"
 
       - name: Retrieve previous results artifact
-        if: ${{ steps.backup-id.outputs.id != '' }}
-        uses: actions/download-artifact@v3
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
         with:
           name: backup-test-results-${{ steps.backup-id.outputs.id }}
+          search_artifacts: true
+          skip_unpack: true
+          if_no_artifact_found: ignore
 
       - name: Check if backup exists and hasn't been tested before
         uses: actions/github-script@v6
@@ -156,6 +159,7 @@ jobs:
         with:
           name: backup-test-results-${{ steps.backup-id.outputs.id }}
           path: results.txt
+          retention-days: 90
 
       - name: Delete temporary instance
         if: ${{ env.PROCEED == 'true' }}
