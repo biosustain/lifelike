@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="set_gene_link, date 09-29-2022" author="dominik">
+    <comment>link genes to NCBI gene</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)
+WHERE size(n.accession) > 0
+WITH n
+  MATCH (g:Gene)
+  WHERE g.locus_tag = n.accession
+  MERGE (n)-[:IS]->(g);
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_displayName, date 09-29-2022" author="dominik">
+    <comment>set biocyc node display name</comment>
+    <sql>
+    MATCH (n:db_BioCyc)
+SET n.displayName = n.name;
+
+MATCH (n)
+WHERE (not exists (n.displayName)) or n.displayName = ''
+SET n.displayName = n.biocyc_id;
+
+MATCH (n:Regulation:db_BioCyc)-[:TYPE_OF]-(t:db_BioCyc)
+WITH
+  n,
+  CASE
+      WHEN n.mode='+' then t.eid + ' (+)'
+      WHEN n.mode='-' then t.eid + ' (-)'
+      ELSE t.eid
+  END as displayName
+    SET n.displayName = displayName;
+  MATCH (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene)
+  WITH n, collect(g.name) as genes
+    WITH
+      n,
+      CASE
+          WHEN exists (n.name) then n.name + ' (tu)'
+          ELSE apoc.text.join(apoc.coll.sort(genes), '-') + ' (tu)'
+      END as displayName
+        SET n.displayName = displayName;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_node_description, date 09-29-2022" author="dominik">
+    <comment>set node description</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI)
+SET n.description = g.full_name;
+
+MATCH (n:Gene:db_BioCyc)
+WHERE not exists(n.description) or n.description = '-'
+WITH n
+  MATCH (n)-[:ENCODES]-(p)
+  SET n.description = p.name;
+
+MATCH (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene)
+WITH n, collect(g.description) as descs
+  SET n.description = 'TranscriptionUnit for ' + apoc.text.join(descs, ' and ');
+
+MATCH (n:Promoter:db_BioCyc)-[:ELEMENT_OF]->(tu)-[:ELEMENT_OF]-(g:Gene)
+WITH n, collect(g.description) as details
+  SET n.description = 'Promoter for ' + apoc.text.join(details, ' and ');
+
+MATCH (n:Protein:db_BioCyc)-[:ENCODES]-(g:Gene)
+WHERE not exists(n.name)
+SET n.name = g.description;
+
+MATCH (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein)
+WHERE not exists(n.name)
+WITH n, collect(p.name) as comps
+  SET n.name = 'complex of ' + apoc.text.join(comps, ', ');
+
+MATCH (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein:db_BioCyc)
+WITH n, collect(p.displayName) as comps
+  SET n.description = 'complex of ' + apoc.text.join(comps, ' and ');
+
+MATCH (n:Reaction:db_BioCyc)
+WITH n
+  MATCH (x)-[:CONSUMED_BY]-(n)-[:PRODUCES]-(y)
+  WITH
+    n,
+    collect(distinct x.displayName) as c1,
+    collect(distinct y.displayName) as c2,
+    CASE
+      WHEN n.direction = 'REVERSIBLE' then ' &lt;=> '
+      WHEN n.direction contains 'RIGHT-TO-LEFT' then ' &lt;= '
+      ELSE ' => '
+    END as symbol
+      SET n.detail = apoc.text.join(c1, ' + ') + symbol + apoc.text.join(c2, ' + ');
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_reaction_enzyme_name, date 09-29-2022" author="dominik">
+    <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
+    <sql>
+    MATCH (n:Reaction)-[:ENZYME_LINK]-(e)
+WITH n, collect(e.name) as enzyme_name
+  SET n.enzyme_name = enzyme_name;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_gene_pathways, date 09-29-2022" author="dominik">
+    <comment>set pathways related to a gene.</comment>
+    <sql>
+    MATCH (n:db_EcoCycPrimary:Gene)
+WITH n
+  MATCH path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:db_EcoCycPrimary)
+  WITH n, collect(p.name) as pathways
+    SET n.pathways = pathways
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_entity_type, date 09-29-2022" author="dominik">
+    <comment>set entity type for common entities since a node could have many labels</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)
+SET n.entityType='Gene';
+
+MATCH (n:Compound)
+SET n.entityType='Chemical';
+
+MATCH (n:Protein:db_BioCyc)
+SET n.entityType='Protein';
+
+MATCH (n:Reaction)
+SET n.entityType='Reaction';
+
+MATCH (n:Pathway)
+SET n.entityType='Pathway';
+
+MATCH (n:RNA)
+SET n.entityType='RNA';
+
+MATCH (n:Promoter)
+SET n.entityType='Promoter';
+
+MATCH (n:TranscriptionUnit)
+SET n.entityType='TranscriptionUnit';
+
+MATCH (n:Terminator)
+SET n.entityType = 'Terminator';
+
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
