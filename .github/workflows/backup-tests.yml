@@ -178,8 +178,8 @@ jobs:
           -- ------------------------------------------------------------
           CREATE OR REPLACE FUNCTION get_min_max_modified_date()
           RETURNS TABLE (table_name text,
-                      max_value timestamp,
-                      min_value timestamp)
+                      max_modified_daye timestamp,
+                      min_modified_daye timestamp)
           LANGUAGE plpgsql
           AS \$\$
               DECLARE
@@ -199,11 +199,11 @@ jobs:
                       execute format (
                           'SELECT min(modified_date) FROM %I.%I',
                           r.table_schema, r.table_name
-                      ) INTO min_value;
+                      ) INTO min_modified_daye;
                       execute format (
                           'SELECT max(modified_date) FROM %I.%I',
                           r.table_schema, r.table_name
-                      ) INTO max_value;
+                      ) INTO max_modified_daye;
                       table_name := r.table_name;
                       RETURN next;
                   END LOOP;
