@@ -173,9 +173,9 @@ jobs:
           # Save results as step summary
           cat <<EOF >> $GITHUB_STEP_SUMMARY
           echo "# Results\n"
-          echo "```"
+          echo "\`\`\`"
           cat results.txt >> $GITHUB_ENV
-          echo "```"
+          echo "\`\`\`"
 
       - name: Upload results artifact
         if: ${{ env.PROCEED == 'true' }}
