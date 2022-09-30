@@ -86,9 +86,9 @@ jobs:
         with:
           script: |
             if (!'${{ steps.get-backup.outputs.id }}') {
-              core.warn('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
+              core.warning('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
             } else if ((await (await glob.create('results.txt')).glob()).length > 0) {
-              core.info('Skipping. Backup ${{ steps.get-backup.outputs.id }} has already been tested.')
+              core.notice('Skipping. Backup ${{ steps.get-backup.outputs.id }} has already been tested.')
             } else {
               core.exportVariable('PROCEED', 'true')
             }
@@ -203,7 +203,7 @@ jobs:
                   END LOOP;
               END
           $$;
-          SELECT * FROM get_min_max_modified_date()
+          SELECT * FROM get_min_max_modified_date();
           EOF
 
           # Query the restored database
