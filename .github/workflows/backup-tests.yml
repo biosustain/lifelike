@@ -251,7 +251,7 @@ jobs:
           from-email: no-reply@***ARANGO_DB_NAME***.bio
           to-email: darede@biosustain.dtu.dk
           # to-email: ${{ secrets.BACKUP_TEST_NOTIFY_EMAILS }}
-          subject: "✅ Lifelike DB backup test passed for ${{ matrix.instance }} - ${{ matrix.type }}"
+          subject: "Lifelike DB backup test passed for ${{ matrix.instance }} - ${{ matrix.type }}"
           markdown-body: |
             # Lifelike PostgreSQL backup test results
 
@@ -268,7 +268,7 @@ jobs:
             ## Database queries
 
             ```
-            ${{ env.RESULTS }}
+            $(cat results.txt)
             ```
 
             ---
