@@ -647,32 +647,22 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       this.updatedTimestamp = Date.parse(data.creationDate);
     }
     if ('parent' in data) {
-      if (data.parent != null) {
-        const parent = this.parent ?? new FilesystemObject();
-        if (this.project != null) {
-          parent.project = this.project;
-        }
-        this.parent = parent.update(data.parent);
-      } else {
-        this.parent = null;
-      }
+      this.parent = data.parent ? this.parent ?? new FilesystemObject() : null;
     }
     if ('project' in data) {
-      if (isNil(data.project)) {
-        this.project = null;
-      } else {
-        const project = this.project ?? new ProjectImpl();
-        if (this.isProjectRoot && isNil(data.project.root)) {
-          project.root = this;
-          project.update(omit(data.project, 'root'));
-        } else {
-          project.update(data.project);
-        }
-        this.project = project;
-        if (this.parent) {
-          this.parent.project = project;
-        }
-      }
+      this.project = data.project ? this.project ?? new ProjectImpl() : null;
+    }
+    if (this.parent) {
+      this.parent.project = this.parent.project ?? this.project;
+    }
+    if (this.project && this.isProjectRoot) {
+      this.project.root = this.project.root ?? this;
+    }
+    if (data.parent) {
+      this.parent.update(data.parent);
+    }
+    if (data.project) {
+      this.project.update(data.project);
     }
     if ('children' in data) {
       if (data.children != null) {
