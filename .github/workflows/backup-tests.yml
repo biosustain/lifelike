@@ -163,7 +163,7 @@ jobs:
           EOF
 
           # Query the restored database
-          psql -U postgres -d postgres -f queries.sql
+          psql -U postgres -d postgres -f queries.sql > results.txt
 
           # Export results to variable
           echo "RESULTS<<EOF" >> $GITHUB_ENV
@@ -172,12 +172,10 @@ jobs:
 
           # Save results as step summary
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          # Results
-
-          ```
-          echo $(cat results.txt)
-          ````
-          EOF
+          echo "# Results\n"
+          echo "```"
+          cat results.txt >> $GITHUB_ENV
+          echo "```"
 
       - name: Upload results artifact
         if: ${{ env.PROCEED == 'true' }}
