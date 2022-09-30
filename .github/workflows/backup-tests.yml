@@ -45,8 +45,6 @@ jobs:
         type: ["AUTOMATED", "ON_DEMAND"]
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          echo "Instance: ${{ matrix.instance }}"
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
@@ -128,11 +126,40 @@ jobs:
           PGPASSWORD: password
           PGHOST: localhost
         run: |
-          psql -U postgres -d postgres \
-            -c 'SELECT count(*) FROM files;'
+          RESULTS=$( \
+            psql -U postgres -d postgres \
+              -c 'SELECT count(*) FROM files;')
+          echo "RESULTS<<EOF" >> $GITHUB_ENV
+          echo "$RESULTS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Delete temporary instance
         if: ${{ steps.backup-id.outputs.id != '' }}
         run: |
           gcloud sql instances delete --quiet \
             ${{ steps.create-temp-instance.outputs.temp_instance_name }}
+
+      - name: Notify results by email
+        uses: licenseware/send-email-notification@v1
+        with:
+          api-key: "***REMOVED***"
+          # api-key: ${{ secrets.SENDGRID_API_KEY }}
+          from-email: no-reply@***ARANGO_DB_NAME***.bio
+          to-email: darede@biosustain.dtu.dk
+          # to-email: ${{ secrets.BACKUP_TEST_NOTIFY_EMAILS }}
+          subject: "[PASS ✅] Lifelike PostgreSQL backup test results"
+          markdown-body: |
+            # Lifelike PostgreSQL backup test results
+
+            ## Details
+             - Cloud SQL instance: ${{ matrix.instance }}
+             - Temporary test instance: ${{ steps.create-temp-instance.outputs.temp_instance_name }}
+             - Type: ${{ matrix.type }}
+             - Workflow Run ID: ${{ github.run_id }}
+
+            ## Results
+            ```
+            ${{ env.RESULTS }}
+            ```
+
+            Details about this workflow run [here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
