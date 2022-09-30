@@ -58,21 +58,22 @@ jobs:
           install_components: beta
 
       - name: Get latest ${{ matrix.type }} backup ID
-        id: backup-id
+        id: get-backup
         run: |
-          BACKUP_ID=$( \
+          BACKUP=$( \
             gcloud sql backups list \
               --instance="${{ matrix.instance }}" \
               --filter="status=SUCCESSFUL AND type=${{ matrix.type }}" \
-              --format="value(id)" --sort-by="-startTime" \
+              --format="value(id, startTime)" --sort-by="-startTime" \
               | head -n 1)
-          echo "::set-output name=id::$BACKUP_ID"
+          echo ::set-output name=id::$(echo $BACKUP | cut -d' ' -f1)
+          echo ::set-output name=date::$(echo $BACKUP | cut -d' ' -f2)
 
       - name: Retrieve previous results artifact, if any
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          name: backup-test-results-${{ steps.backup-id.outputs.id }}
+          name: backup-test-results-${{ steps.get-backup.outputs.id }}
           search_artifacts: true
           if_no_artifact_found: ignore
 
@@ -80,10 +81,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            if (!'${{ steps.backup-id.outputs.id }}') {
+            if (!'${{ steps.get-backup.outputs.id }}') {
               core.warn('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
             } else if ((await (await glob.create('results.txt')).glob().length) > 0) {
-              core.info('Skipping. Backup ${{ steps.backup-id.outputs.id }} has already been tested.')
+              core.info('Skipping. Backup ${{ steps.get-backup.outputs.id }} has already been tested.')
             } else {
               core.exportVariable('PROCEED', 'true')
             }
@@ -119,7 +120,7 @@ jobs:
           gcloud sql backups restore --quiet \
             --restore-instance=${{ steps.create-temp-instance.outputs.temp_instance_name }} \
             --backup-instance=${{ matrix.instance }} \
-            ${{ steps.backup-id.outputs.id }}
+            ${{ steps.get-backup.outputs.id }}
 
       - name: Reset postgres password
         if: ${{ env.PROCEED == 'true' }}
@@ -167,7 +168,7 @@ jobs:
         if: ${{ env.PROCEED == 'true' }}
         uses: actions/upload-artifact@v3
         with:
-          name: backup-test-results-${{ steps.backup-id.outputs.id }}
+          name: backup-test-results-${{ steps.get-backup.outputs.id }}
           path: results.txt
           retention-days: 90
 
@@ -195,8 +196,9 @@ jobs:
             ## Details
 
              - Cloud SQL instance name: **${{ matrix.instance }}**
+             - Backup date: **${{ steps.get-backup.outputs.date }}**
              - Backup type: **${{ matrix.type }}**
-             - Backup ID: **${{ steps.backup-id.outputs.id }}**
+             - Backup ID: **${{ steps.get-backup.outputs.id }}**
              - Workflow run ID: [**${{ github.run_id }}**](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ## Database queries
