@@ -60,7 +60,6 @@ class PrimaryParser(DataFileParser):
             if attr == 'UNIQUE-ID':
                 patchway_node = NodeData(NODE_PATHWAY, PROP_BIOCYC_ID)
                 patchway_node.update_attribute(PROP_BIOCYC_ID, val, 'str')
-                nodes.append(patchway_node)
             elif attr == 'REACTION-LAYOUT':
                 layout = self.parse_reaction_layout(val)
                 reaction_node = NodeData(NODE_REACTION, PROP_BIOCYC_ID)
@@ -77,9 +76,19 @@ class PrimaryParser(DataFileParser):
                         edge.add_attribute('PRIMARY', '', 'str')
                         patchway_node.edges.append(edge)
                         # add property on edge
-                        edge = EdgeData(compound_node, patchway_node, REL_PRIMARY_OF)
-                        edge.add_attribute('PRIMARY', layout['REACTION'], 'str')
-                        patchway_node.edges.append(edge)
+                        primary_node = NodeData('PRIMARY', PROP_BIOCYC_ID)
+                        primary_node.update_attribute(
+                            PROP_BIOCYC_ID,
+                            f"{patchway_node.get_id_attribute()}_{primary}_{layout['REACTION']}",
+                            'str'
+                        )
+                        nodes.append(primary_node)
+                        edge = EdgeData(compound_node, primary_node, 'PRIMARY')
+                        primary_node.edges.append(edge)
+                        edge = EdgeData(patchway_node, primary_node, 'PRIMARY')
+                        primary_node.edges.append(edge)
+                        edge = EdgeData(primary_node, reaction_node, REL_PRIMARY_OF)
+                        primary_node.edges.append(edge)
         except Exception as ex:
             self.logger.error('line:', line, ex)
         return patchway_node
