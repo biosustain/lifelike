@@ -1,4 +1,7 @@
+import re
+
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 import pandas as pd
 
@@ -16,7 +19,8 @@ REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
     'COMPONENTS': RelationshipType(REL_IS_COMPONENT, 'from', NODE_PROTEIN, PROP_BIOCYC_ID),
     'GENE': RelationshipType(REL_ENCODE, 'from', NODE_GENE, PROP_BIOCYC_ID),
-    'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_PROTEIN, PROP_BIOCYC_ID)
+    'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_PROTEIN, PROP_BIOCYC_ID),
+    **CITATIONS
 }
 
 # True indicate that the dblink id has prefix, eg. GO:1234.  In ***ARANGO_DB_NAME***, we only use the id, no prefix

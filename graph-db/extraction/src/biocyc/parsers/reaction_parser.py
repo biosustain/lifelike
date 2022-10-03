@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import *
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 
 
@@ -16,7 +17,7 @@ REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
     'LEFT': RelationshipType(REL_CONSUMED_BY, 'from', NODE_COMPOUND, PROP_BIOCYC_ID),
     'RIGHT': RelationshipType(REL_PRODUCE, 'to', NODE_COMPOUND, PROP_BIOCYC_ID),
-    'CITATIONS': RelationshipType(REL_CITE, 'to', NODE_PUBLICATION, PROP_ID)
+    **CITATIONS
 }
 
 REL_ATTRS = {

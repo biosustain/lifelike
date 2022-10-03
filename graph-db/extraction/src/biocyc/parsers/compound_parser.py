@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 from biocyc.utils import cleanhtml
 
@@ -15,6 +16,7 @@ ATTR_NAMES = {
 REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
     'DBLINKS': RelationshipType(REL_DBLINKS, 'to', NODE_DBLINK, PROP_REF_ID),
+    **CITATIONS
 }
 
 # True indicate that the dblink id has prefix, eg. CHEBI:1234.  In ***ARANGO_DB_NAME***, we only use the id, no prefix

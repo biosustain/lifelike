@@ -4,7 +4,7 @@ from common.graph_models import NodeData
 from biocyc import utils as biocyc_utils
 
 ATTR_NAMES = {
-    'UNIQUE-ID': (PROP_PUBMED_ID, 'str'),
+    'UNIQUE-ID': (PROP_ID, 'str'),
     'TYPES': (PROP_TYPES, 'str'),
     'COMMON-NAME': (PROP_NAME, 'str'),
     'ABSTRACT': (PROP_ABSTRACT, 'str'),
@@ -22,7 +22,7 @@ ATTR_NAMES = {
     'MESH-HEADINGS': (PROP_MESH_HEADINGS, 'str'),
     'PATHOLOGIC-NAME-MATCHER-EVIDENCE': (PROP_PATHOLOGIC_NAME_MATCHER_EVIDENCE, 'str'),
     'PATHOLOGIC-PWY-EVIDENCE': (PROP_PATHOLOGIC_PWY_EVIDENCE, 'str'),
-    'PUBMED-ID': (PROP_ID, 'str'),
+    'PUBMED-ID': (PROP_PUBMED_ID, 'str'),
     'REFERENT-FRAME': (PROP_REFERENT_FRAME, 'str'),
     'SOURCE': (PROP_SOURCE, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str'),

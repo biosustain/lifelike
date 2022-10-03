@@ -6,7 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="Create BioCyc constraints and indexes" author="dommas">
-    <comment>Create constraints and indexes for BioCyc nodes, created on 09-30-2022</comment>
+    <comment>Create constraints and indexes for BioCyc nodes, created on 10-03-2022</comment>
     <sql>
     CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
 CREATE INDEX index_db_BioCyc_biocyc_id IF NOT EXISTS FOR (n:db_BioCyc) ON (n.biocyc_id);
@@ -65,7 +65,7 @@ CREATE INDEX index_Regulation_name IF NOT EXISTS FOR (n:Regulation) ON (n.name);
   </changeSet>
 
 
-  <changeSet id="load Publication from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Publication from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Publication.tsv from EcoCyc-data-25.5.zip, 41558 rows
     </comment>
@@ -88,7 +88,7 @@ SET n:Publication:db_EcoCyc,n.types=row.types,n.authors=row.authors,n.comment=ro
   </changeSet>
 
 
-  <changeSet id="load Species from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Species from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Species.tsv from EcoCyc-data-25.5.zip, 1 rows
     </comment>
@@ -111,7 +111,7 @@ SET n:Species:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.genome=row.g
   </changeSet>
 
 
-  <changeSet id="load BioCycClass from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load BioCycClass from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc BioCycClass.tsv from EcoCyc-data-25.5.zip, 7740 rows
     </comment>
@@ -134,7 +134,7 @@ SET n:BioCycClass:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.
   </changeSet>
 
 
-  <changeSet id="load Compound from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Compound from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Compound.tsv from EcoCyc-data-25.5.zip, 7271 rows
     </comment>
@@ -157,7 +157,7 @@ SET n:Compound:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_name
   </changeSet>
 
 
-  <changeSet id="load DNABindingSite from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load DNABindingSite from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc DNABindingSite.tsv from EcoCyc-data-25.5.zip, 4128 rows
     </comment>
@@ -180,7 +180,7 @@ SET n:DNABindingSite:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.abs_center_pos=row.ab
   </changeSet>
 
 
-  <changeSet id="load Gene from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Gene from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Gene.tsv from EcoCyc-data-25.5.zip, 4674 rows
     </comment>
@@ -203,7 +203,7 @@ SET n:Gene:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.accession=row.a
   </changeSet>
 
 
-  <changeSet id="load Terminator from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Terminator from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Terminator.tsv from EcoCyc-data-25.5.zip, 371 rows
     </comment>
@@ -226,7 +226,7 @@ SET n:Terminator:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.left_end_position=row.lef
   </changeSet>
 
 
-  <changeSet id="load Promoter from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Promoter from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Promoter.tsv from EcoCyc-data-25.5.zip, 4044 rows
     </comment>
@@ -249,7 +249,7 @@ SET n:Promoter:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url
   </changeSet>
 
 
-  <changeSet id="load TranscriptionUnit from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TranscriptionUnit from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc TranscriptionUnit.tsv from EcoCyc-data-25.5.zip, 3697 rows
     </comment>
@@ -272,7 +272,7 @@ SET n:TranscriptionUnit:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.ur
   </changeSet>
 
 
-  <changeSet id="load RNA from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load RNA from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc RNA.tsv from EcoCyc-data-25.5.zip, 315 rows
     </comment>
@@ -295,7 +295,7 @@ SET n:RNA:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,n.lo
   </changeSet>
 
 
-  <changeSet id="load Protein from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Protein from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Protein.tsv from EcoCyc-data-25.5.zip, 5969 rows
     </comment>
@@ -318,7 +318,7 @@ SET n:Protein:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbrev_name=
   </changeSet>
 
 
-  <changeSet id="load Reaction from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Reaction from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Reaction.tsv from EcoCyc-data-25.5.zip, 3017 rows
     </comment>
@@ -341,7 +341,7 @@ SET n:Reaction:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.ec_number=r
   </changeSet>
 
 
-  <changeSet id="load Pathway from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Pathway from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Pathway.tsv from EcoCyc-data-25.5.zip, 442 rows
     </comment>
@@ -364,7 +364,7 @@ SET n:Pathway:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.url,
   </changeSet>
 
 
-  <changeSet id="load EnzReaction from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load EnzReaction from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc EnzReaction.tsv from EcoCyc-data-25.5.zip, 2886 rows
     </comment>
@@ -387,7 +387,7 @@ SET n:EnzReaction:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.
   </changeSet>
 
 
-  <changeSet id="load Regulation from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Regulation from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         load BioCyc Regulation.tsv from EcoCyc-data-25.5.zip, 8704 rows
     </comment>
@@ -410,7 +410,7 @@ SET n:Regulation:db_EcoCyc,n.biocyc_id=row.biocyc_id,n.mode=row.mode,n.mechanism
   </changeSet>
 
 
-  <changeSet id="load Species synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Species synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Species-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -434,7 +434,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load BioCycClass synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load BioCycClass synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc BioCycClass-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -458,7 +458,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Compound synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Compound synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Compound-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -482,7 +482,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Gene synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Gene synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Gene-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -506,7 +506,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Promoter synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Promoter synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Promoter-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -530,7 +530,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Protein synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Protein synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Protein-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -554,7 +554,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Reaction synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Reaction synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Reaction-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -578,7 +578,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Pathway synonyms from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Pathway synonyms from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc Pathway-synonyms.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -602,7 +602,32 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Species-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Species-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Species-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, BioCycClass-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -627,7 +652,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, Compound-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -652,7 +677,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Compound CHEBI_LINK from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Compound-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Compound-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Compound-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load Compound CHEBI_LINK from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load Compound CHEBI_LINK: Compound-dblinks.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -677,7 +727,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CITE relationship in Gene-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in DNABindingSite-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, DNABindingSite-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="DNABindingSite-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load CITE relationship in Gene-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc CITE relationships, Gene-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -702,7 +777,82 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ELEMENT_OF relationship in TranscriptionUnit-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Terminator-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Terminator-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Terminator-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load CITE relationship in Promoter-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Promoter-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Promoter-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load CITE relationship in TranscriptionUnit-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, TranscriptionUnit-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="TranscriptionUnit-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load ELEMENT_OF relationship in TranscriptionUnit-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc ELEMENT_OF relationships, TranscriptionUnit-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -727,7 +877,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, RNA-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -752,7 +902,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, RNA-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="RNA-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load ENCODES relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc ENCODES relationships, RNA-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -777,7 +952,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc MODIFIED_TO relationships, RNA-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -802,7 +977,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load ENCODES relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc ENCODES relationships, Protein-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -827,7 +1002,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Protein-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Protein-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc COMPONENT_OF relationships, Protein-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -852,7 +1052,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, Protein-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -877,7 +1077,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load MODIFIED_TO relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load MODIFIED_TO relationship in Protein-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc MODIFIED_TO relationships, Protein-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -902,7 +1102,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Protein GO_LINK from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Protein GO_LINK from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load Protein GO_LINK: Protein-dblinks.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -927,7 +1127,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc CONSUMED_BY relationships, Reaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -952,7 +1152,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc PRODUCES relationships, Reaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -977,7 +1177,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, Reaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1002,7 +1202,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CITE relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Reaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc CITE relationships, Reaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1027,7 +1227,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Reaction ENZYME_LINK from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load Reaction ENZYME_LINK from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load Reaction ENZYME_LINK: Reaction-dblinks.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1052,7 +1252,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, Pathway-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1077,7 +1277,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Pathway-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, Pathway-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="Pathway-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc IN_PATHWAY relationships, Pathway-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1102,7 +1327,32 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load HAS_COFACTOR relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
+    <comment>
+        Load BioCyc CITE relationships, EnzReaction-rels.tsv from EcoCyc-data-25.5.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='CITE'
+MATCH (a:db_BioCyc {eid: row.from_id}), (b:db_BioCyc {eid: row.to_id})
+MERGE (a)-[r:CITE]->(b)
+RETURN COUNT(*)
+      "
+      fileName="EnzReaction-rels.tsv"
+      zipFileName="EcoCyc-data-25.5.zip"
+      startAt="1" 
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+
+  <changeSet id="load HAS_COFACTOR relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc HAS_COFACTOR relationships, EnzReaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1127,7 +1377,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc CATALYZES relationships, EnzReaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1152,7 +1402,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load REGULATES relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load REGULATES relationship in EnzReaction-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc REGULATES relationships, EnzReaction-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1177,7 +1427,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load TYPE_OF relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc TYPE_OF relationships, Regulation-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1202,7 +1452,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load BINDS relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load BINDS relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc BINDS relationships, Regulation-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1227,7 +1477,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CITE relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load CITE relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc CITE relationships, Regulation-rels.tsv from EcoCyc-data-25.5.zip
     </comment>
@@ -1252,7 +1502,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load REGULATES relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 09-30-2022" author="dommas">
+  <changeSet id="load REGULATES relationship in Regulation-rels.tsv from EcoCyc-data-25.5.zip, date 10-03-2022" author="dommas">
     <comment>
         Load BioCyc REGULATES relationships, Regulation-rels.tsv from EcoCyc-data-25.5.zip
     </comment>

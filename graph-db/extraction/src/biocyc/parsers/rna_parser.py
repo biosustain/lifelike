@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 
 
@@ -11,7 +12,8 @@ ATTR_NAMES = {
 REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
     'GENE': RelationshipType(REL_ENCODE, 'from', NODE_GENE, PROP_BIOCYC_ID),
-    'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_RNA, PROP_BIOCYC_ID)
+    'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_RNA, PROP_BIOCYC_ID),
+    **CITATIONS
 }
 
 

@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.constants import *
 import pandas as pd
 import logging
@@ -16,9 +17,7 @@ ATTR_NAMES = {
     'SYNONYMS': (PROP_SYNONYMS, 'str')
 }
 
-REL_NAMES = {
-    'CITATIONS': RelationshipType(REL_CITE, 'to', NODE_PUBLICATION, PROP_ID)
-}
+REL_NAMES = CITATIONS
 
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):

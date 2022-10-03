@@ -41,7 +41,13 @@ class Item(object):
         :param value_type: value type, str, int or number
         :return:
         """
-        if not value:
+        if callable(value_type):
+            try:
+                self.attributes[key] = value_type(value)
+            except AttributeError as e:
+                print(e)
+                return
+        elif not value:
             self.attributes[key] = ''
         if type(value) is str:
             value = value.strip()

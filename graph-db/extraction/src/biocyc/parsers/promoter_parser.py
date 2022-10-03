@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 
 
@@ -10,8 +11,7 @@ ATTR_NAMES = {
     'TRANSCRIPTION-DIRECTION': (PROP_STRAND, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str')
 }
-REL_NAMES = {
-}
+REL_NAMES = CITATIONS
 
 class PromoterParser(DataFileParser):
     def __init__(self, db_name, tarfile):

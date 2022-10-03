@@ -1,4 +1,5 @@
 from biocyc.parsers.data_file_parser import DataFileParser
+from biocyc.parsers.relationship_types import CITATIONS
 from common.graph_models import *
 
 
@@ -12,7 +13,7 @@ REL_NAMES = {
     'ASSOCIATED-BINDING-SITE': RelationshipType(REL_BIND, 'to', NODE_DNA_BINDING_SITE, PROP_BIOCYC_ID),
     'REGULATOR': RelationshipType(REL_REGULATE, 'from', DB_BIOCYC, PROP_BIOCYC_ID),
     'REGULATED-ENTITY': RelationshipType(REL_REGULATE, 'to', DB_BIOCYC, PROP_BIOCYC_ID),
-    'CITATIONS': RelationshipType(REL_CITE, 'to', NODE_PUBLICATION, PROP_ID)
+    **CITATIONS
 }
 class RegulationParser(DataFileParser):
     def __init__(self, db_name, tarfile):

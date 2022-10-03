@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="set_gene_link, date 09-30-2022" author="dommas">
+  <changeSet id="set_gene_link, date 10-03-2022" author="dommas">
     <comment>link genes to NCBI gene</comment>
     <sql>
     match(n:Gene:db_BioCyc) where size(n.accession)>0
@@ -16,7 +16,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_displayName, date 09-30-2022" author="dommas">
+  <changeSet id="set_displayName, date 10-03-2022" author="dommas">
     <comment>set biocyc node display name</comment>
     <sql>
     match(n:db_BioCyc) set n.displayName = n.name;
@@ -40,7 +40,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_node_description, date 09-30-2022" author="dommas">
+  <changeSet id="set_node_description, date 10-03-2022" author="dommas">
     <comment>set node description</comment>
     <sql>
     match (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI) set n.description = g.full_name;
@@ -65,7 +65,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_reaction_enzyme_name, date 09-30-2022" author="dommas">
+  <changeSet id="set_reaction_enzyme_name, date 10-03-2022" author="dommas">
     <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
     <sql>
     match(n:Reaction)-[:ENZYME_LINK]-(e) with n, collect(e.name) as enzyme_name set n.enzyme_name = enzyme_name;
@@ -73,7 +73,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_gene_pathways, date 09-30-2022" author="dommas">
+  <changeSet id="set_gene_pathways, date 10-03-2022" author="dommas">
     <comment>set pathways related to a gene.</comment>
     <sql>
     match (n:db_EcoCyc:Gene) with n
@@ -84,7 +84,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_entity_type, date 09-30-2022" author="dommas">
+  <changeSet id="set_entity_type, date 10-03-2022" author="dommas">
     <comment>set entity type for common entities since a node could have many labels</comment>
     <sql>
     match(n:Gene:db_BioCyc) set n.entityType='Gene';
@@ -101,7 +101,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set reaction_display_name, date 09-30-2022" author="dommas">
+  <changeSet id="set reaction_display_name, date 10-03-2022" author="dommas">
     <comment>set displayName as the first enzyme name in the enzyme_name property</comment>
     <sql>
     match(n:Reaction) set n.displayName = '';
@@ -117,7 +117,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="collapse_EnzReaction_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="collapse_EnzReaction_nodes, date 10-03-2022" author="dommas">
     <comment>remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS</comment>
     <sql>
     match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
@@ -130,7 +130,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="collapse_Regulation_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="collapse_Regulation_nodes, date 10-03-2022" author="dommas">
     <comment>remove Regulation nodes. Connect regulator directly with regulated elements</comment>
     <sql>
     match(x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y) where r.mode='+' and exists(r.enzreaction_id)
@@ -163,7 +163,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove constraint, date 09-30-2022" author="dommas">
+  <changeSet id="remove constraint, date 10-03-2022" author="dommas">
     <comment>remove constrain so that reversed reactions can be created</comment>
     <sql>
     DROP CONSTRAINT constraint_db_BioCyc_eid IF EXISTS;
@@ -171,7 +171,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="correct_reaction_direction, date 09-30-2022" author="dommas">
+  <changeSet id="correct_reaction_direction, date 10-03-2022" author="dommas">
     <comment>correct the input and out directions for reactions, create reversed reaction for each reversible reaction</comment>
     <sql>
     match (n:Reaction:db_BioCyc) where n.direction ends with 'RIGHT-TO-LEFT' and not exists(n.reversed) with n
@@ -199,7 +199,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="recreate_constraint, date 09-30-2022" author="dommas">
+  <changeSet id="recreate_constraint, date 10-03-2022" author="dommas">
     <comment>recreate constrain for eid</comment>
     <sql>
     CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
@@ -207,7 +207,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="reverse_Gene_TransUnit_relationship, date 09-30-2022" author="dommas">
+  <changeSet id="reverse_Gene_TransUnit_relationship, date 10-03-2022" author="dommas">
     <comment>reverse Gene to TransactionUnit relationship.</comment>
     <sql>
     match(n:TranscriptionUnit:db_BioCyc)-[r:ELEMENT_OF]-(g:Gene) merge (n)-[:HAS_GENE]->(g) delete r
@@ -215,7 +215,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove_DNABindingSite_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="remove_DNABindingSite_nodes, date 10-03-2022" author="dommas">
     <comment>remove DNABindingSite nodes. Most of the nodes are orphan nodes.</comment>
     <sql>
     match(n:DNABindingSite) detach delete n;
@@ -223,7 +223,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove_TYPEOF_relationship, date 09-30-2022" author="dommas">
+  <changeSet id="remove_TYPEOF_relationship, date 10-03-2022" author="dommas">
     <comment>remove TYPE_OF relationships to BioCycClass.</comment>
     <sql>
     match(n)-[r:TYPE_OF]->() delete r;
@@ -231,7 +231,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove_orphan_Class_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="remove_orphan_Class_nodes, date 10-03-2022" author="dommas">
     <comment>remove orphan BioCycClass nodes.</comment>
     <sql>
     match(n:BioCycClass) where not (n)-[]-() delete n;
@@ -239,7 +239,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove_Enzyme_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="remove_Enzyme_nodes, date 10-03-2022" author="dommas">
     <comment>remove Enzyme nodes.</comment>
     <sql>
     match(n:db_Enzyme) detach delete n;
@@ -247,7 +247,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="remove_synonym_nodes, date 09-30-2022" author="dommas">
+  <changeSet id="remove_synonym_nodes, date 10-03-2022" author="dommas">
     <comment>set synonym properties, then remove synonym nodes</comment>
     <sql>
     match(n:db_BioCyc)-[:HAS_SYNONYM]-(s:Synonym) with n, collect(s.name) as syns set n.synonyms=syns;
@@ -257,7 +257,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="label_currency_metabolites, date 09-30-2022" author="dommas">
+  <changeSet id="label_currency_metabolites, date 10-03-2022" author="dommas">
     <comment>Label common compound nodes as CurrencyMetabolite</comment>
     <sql>
     match(n:db_BioCyc) where n.biocyc_id in ['PROTON', 'WATER', 'OXYGEN-MOLECULE', 'NADP', 'NADPH', 'ATP', 'PPI', 'CARBON-DIOXIDE',
@@ -269,7 +269,7 @@ merge (n)-[:IS]->(g);
   </changeSet>
 
 
-  <changeSet id="set_detail_property, date 09-30-2022" author="dommas">
+  <changeSet id="set_detail_property, date 10-03-2022" author="dommas">
     <comment>change description property to detail since description is used by sankey for other purpose</comment>
     <sql>
     match(n) where exists(n.description) set n.detail = n.description remove n.description;
