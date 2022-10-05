@@ -1,3 +1,4 @@
+import { first } from 'lodash-es';
 
 import { REGEX } from 'app/shared/regex';
 
@@ -221,7 +222,7 @@ export class TextElement {
                 }
                 lines.push({
                   // Since we break the words, add hyphen.
-                  text: widthFitLine.line + '-',
+                  text: widthFitLine.line + (widthFitLine.remainingTokens ? '-' : ''),
                   metrics: widthFitLine.metrics,
                   xOffset: 0,
                   horizontalOverflow: stillOverflow
@@ -297,8 +298,9 @@ export class TextElement {
       return;
     }
 
-    let lineTokens = [tokens[0]];
-    let line = tokens[0];
+    const lineStart = first(tokens).trimStart();  // line does not start with space
+    let lineTokens = [lineStart];
+    let line = lineStart;
     let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(''));
 
     for (let i = 1; i < tokens.length; i++) {
@@ -315,8 +317,9 @@ export class TextElement {
           remainingTokens: true,
         };
 
-        lineTokens = [token];
-        line = token;
+        const lineStartToken = token.trimStart();  // line does not start with space
+        lineTokens = [lineStartToken];
+        line = lineStartToken;
         metrics = this.ctx.measureText(line);
       } else {
         lineTokens.push(token);

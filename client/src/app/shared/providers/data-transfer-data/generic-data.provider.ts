@@ -15,7 +15,7 @@ export class URIData {
 @Injectable()
 export class GenericDataProvider implements DataTransferDataProvider<URIData[]|string> {
 
-  private static readonly acceptedUriPattern = new RegExp('^[A-Za-z0-9-]{1,40}:');
+  private static readonly acceptedUriPattern = /^[A-Za-z0-9-]{1,40}:/;
 
   static setURIs(dataTransfer: DataTransfer, data: URIData[], options: {
     action?: 'replace' | 'append'
