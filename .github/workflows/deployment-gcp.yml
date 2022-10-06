@@ -79,7 +79,7 @@ jobs:
           dockerfile: ./Dockerfile
 
   # ---------------------------------------------
-  # JOB: Backup DB if new migrations are found
+  # JOB: Backup DB
   # ---------------------------------------------
   cloud-sql-backup:
     name: Backup Cloud SQL instance
@@ -90,18 +90,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Detect migration changes
-        id: changes
-        uses: dorny/paths-filter@v2
-        with:
-          filters: |
-            src:
-              - 'appserver/migrations/**'
-
-      - if: steps.changes.outputs.migrations == 'true' || inputs.cloud_sql_force_backup == 'true'
+      - name: Create a new Clod SQL instance backup
         id: backup
-        name: Create a new Clod SQL instance backup
         uses: ./.github/actions/cloud-sql-backup
         with:
           gcp_credentials: "${{ secrets.GCP_CREDENTIALS }}"
@@ -167,4 +157,3 @@ jobs:
             --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
             --user ansible
             --verbose
-
