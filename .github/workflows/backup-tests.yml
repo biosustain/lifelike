@@ -1,0 +1,285 @@
+name: Database backups tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Force backup tests to run even for backups already tested
+        type: boolean
+        default: false
+        required: false
+  pull_request:
+  schedule:
+    # Run once a week on sunday at 00:00
+    - cron: "0 1 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  get-sql-instances:
+    name: List Cloud SQL instances
+    runs-on: ubuntu-latest
+    outputs:
+      instances: ${{ steps.instances.outputs.json }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        id: auth
+        with:
+          credentials_json: "${{ secrets.GCE_SA_KEY }}"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
+      - name: Get all Cloud SQL instances
+        id: instances
+        run: |
+          INSTANCES=$( \
+            gcloud sql instances list \
+            --format="value(name.list())" \
+            --filter="labels.test-backups=true" \
+            | jq -R -s -c 'split("\n") | map(select(.!=""))')
+          echo ::set-output name=json::$INSTANCES
+
+  restore-and-test:
+    needs: get-sql-instances
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        instance: ${{ fromJSON(needs.get-sql-instances.outputs.instances) }}
+        type: ["AUTOMATED", "ON_DEMAND"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        id: auth
+        with:
+          credentials_json: "${{ secrets.GCE_SA_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          install_components: beta
+
+      - name: Get latest ${{ matrix.type }} backup ID
+        id: get-backup
+        run: |
+          BACKUP=$( \
+            gcloud sql backups list \
+              --instance="${{ matrix.instance }}" \
+              --filter="status=SUCCESSFUL AND type=${{ matrix.type }}" \
+              --format="value(id, startTime)" --sort-by="-startTime" \
+              | head -n 1)
+          echo ::set-output name=id::$(echo $BACKUP | cut -d' ' -f1)
+          echo ::set-output name=date::$(echo $BACKUP | cut -d' ' -f2)
+
+      - name: Retrieve previous results artifact, if any
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: backup-test-results-${{ steps.get-backup.outputs.id }}
+          search_artifacts: true
+          if_no_artifact_found: ignore
+
+      - name: Check if backup exists and hasn't been tested before
+        uses: actions/github-script@v6
+        with:
+          script: |
+            if (!'${{ steps.get-backup.outputs.id }}') {
+              core.warning('Skipping. No backup found of type ${{ matrix.type }} for Cloud SQL instance: {{ matrix.instance }}')
+            } else if (!core.getInput('force') && (await (await glob.create('results.txt')).glob()).length > 0) {
+              core.notice('Skipping. Backup ${{ steps.get-backup.outputs.id }} has already been tested.')
+            } else {
+              core.exportVariable('PROCEED', 'true')
+            }
+
+      - name: Get instance details
+        if: ${{ env.PROCEED == 'true' }}
+        id: instance-details
+        run: |
+          INSTANCE=$( \
+            gcloud sql instances describe \
+              --format="value(databaseVersion, settings.tier, region, project)" \
+              ${{ matrix.instance }})
+          echo ::set-output name=version::$(echo $INSTANCE | cut -d' ' -f1)
+          echo ::set-output name=tier::$(echo $INSTANCE | cut -d' ' -f2)
+          echo ::set-output name=region::$(echo $INSTANCE | cut -d' ' -f3)
+          echo ::set-output name=project::$(echo $INSTANCE | cut -d' ' -f4)
+
+      - name: Create temporary Cloud SQL instance
+        if: ${{ env.PROCEED == 'true' }}
+        id: create-temp-instance
+        run: |
+          TEMP_INSTANCE_NAME=$(echo "temp-${{ matrix.instance }}-${{ matrix.type }}-${{ github.run_id }}" | sed 's/_/-/g' | awk '{print tolower($0)}')
+          gcloud beta sql instances create "$TEMP_INSTANCE_NAME" \
+            --database-version=${{ steps.instance-details.outputs.version }} \
+            --tier=${{ steps.instance-details.outputs.tier }} \
+            --region=${{ steps.instance-details.outputs.region }} \
+            --labels="temp-instance=true,workflow-run=${{ github.run_id }}"
+          echo ::set-output name=temp_instance_name::$TEMP_INSTANCE_NAME
+
+      - name: Restore backup into temporary instance
+        if: ${{ env.PROCEED == 'true' }}
+        run: |
+          gcloud sql backups restore --quiet \
+            --restore-instance=${{ steps.create-temp-instance.outputs.temp_instance_name }} \
+            --backup-instance=${{ matrix.instance }} \
+            ${{ steps.get-backup.outputs.id }}
+
+      - name: Reset postgres password
+        if: ${{ env.PROCEED == 'true' }}
+        run: |
+          gcloud sql users set-password \
+            --instance=${{ steps.create-temp-instance.outputs.temp_instance_name }} \
+            --password=password postgres
+
+      - uses: mattes/gce-cloudsql-proxy-action@v1
+        if: ${{ env.PROCEED == 'true' }}
+        with:
+          creds: ${{ secrets.GCE_SA_KEY }}
+          instance: ${{ steps.instance-details.outputs.project }}:${{ steps.instance-details.outputs.region }}:${{ steps.create-temp-instance.outputs.temp_instance_name }}
+
+      - name: Setup PostgreSQL client
+        if: ${{ env.PROCEED == 'true' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client
+
+      - name: Query temporary instance
+        if: ${{ env.PROCEED == 'true' }}
+        env:
+          PGPASSWORD: password
+          PGHOST: localhost
+        run: |
+          cat <<EOF > queries.sql
+          -- ------------------------------------------------------------
+          -- Count stats
+          -- ------------------------------------------------------------
+          WITH tbl AS
+            (SELECT table_schema,TABLE_NAME
+            FROM information_schema.tables
+            WHERE TABLE_NAME not like 'pg_%'
+              AND table_schema in ('public'))
+          SELECT TABLE_NAME, (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from %I.%I', table_schema, TABLE_NAME), FALSE, TRUE, '')))[1]::text::int AS rows
+          FROM tbl
+          ORDER BY rows DESC;
+          -- ------------------------------------------------------------
+          -- Alembic
+          -- ------------------------------------------------------------
+          SELECT version_num as current_alembic_version FROM alembic_version;
+          -- ------------------------------------------------------------
+          -- Date stats
+          -- ------------------------------------------------------------
+          CREATE OR REPLACE FUNCTION get_min_max_modified_date()
+          RETURNS TABLE (table_name text,
+                      max_modified_daye timestamp,
+                      min_modified_daye timestamp)
+          LANGUAGE plpgsql
+          AS \$\$
+              DECLARE
+                  r record;
+              BEGIN
+                  FOR r IN
+                      SELECT i.table_name, i.table_schema
+                      FROM information_schema.tables i
+                      WHERE i.table_name in (
+                          SELECT c.table_name
+                          FROM information_schema.columns c
+                          WHERE c.table_schema = 'public'
+                          AND c.column_name = 'modified_date'
+                          GROUP BY c.table_name
+                      )
+                  LOOP
+                      execute format (
+                          'SELECT min(modified_date) FROM %I.%I',
+                          r.table_schema, r.table_name
+                      ) INTO min_modified_daye;
+                      execute format (
+                          'SELECT max(modified_date) FROM %I.%I',
+                          r.table_schema, r.table_name
+                      ) INTO max_modified_daye;
+                      table_name := r.table_name;
+                      RETURN next;
+                  END LOOP;
+              END
+          \$\$;
+          SELECT * FROM get_min_max_modified_date();
+          EOF
+
+          # Query the restored database
+          psql -U postgres -d postgres -f queries.sql > results.txt
+
+          # Export results to variable
+          echo "RESULTS<<EOF" >> $GITHUB_ENV
+          echo $(cat results.txt) >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          results=$(<results.txt)
+          # Save results as step summary
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ## Backup details
+
+            - Cloud SQL instance name: **${{ matrix.instance }}**
+            - Backup date: **${{ steps.get-backup.outputs.date }}**
+            - Backup type: **${{ matrix.type }}**
+            - Backup ID: **${{ steps.get-backup.outputs.id }}**
+            - Workflow run ID: [**${{ github.run_id }}**](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ## Results
+          \`\`\`
+          $results
+          \`\`\`
+          EOF
+
+      - name: Upload results artifact
+        if: ${{ env.PROCEED == 'true' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup-test-results-${{ steps.get-backup.outputs.id }}
+          path: results.txt
+          retention-days: 90
+
+      - name: Delete temporary instance
+        if: ${{ env.PROCEED == 'true' }}
+        run: |
+          gcloud sql instances delete --quiet \
+            ${{ steps.create-temp-instance.outputs.temp_instance_name }}
+
+      - name: Notify results by email
+        if: ${{ env.PROCEED == 'true' }}
+        uses: licenseware/send-email-notification@v1
+        with:
+          api-key: "***REMOVED***"
+          # api-key: ${{ secrets.SENDGRID_API_KEY }}
+          from-email: no-reply@lifelike.bio
+          to-email: darede@biosustain.dtu.dk
+          # to-email: ${{ secrets.BACKUP_TEST_NOTIFY_EMAILS }}
+          subject: "Lifelike DB backup test passed for ${{ matrix.instance }} - ${{ matrix.type }}"
+          markdown-body: |
+            # Lifelike PostgreSQL backup test results
+
+            ## Test result: ✅ PASSED
+
+            ## Details
+
+             - Cloud SQL instance name: **${{ matrix.instance }}**
+             - Backup date: **${{ steps.get-backup.outputs.date }}**
+             - Backup type: **${{ matrix.type }}**
+             - Backup ID: **${{ steps.get-backup.outputs.id }}**
+             - Workflow run ID: [**${{ github.run_id }}**](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ## Database queries
+
+            ```
+            $(cat results.txt)
+            ```
+
+            ---
+
+            See the workflow run [at GitHub](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
