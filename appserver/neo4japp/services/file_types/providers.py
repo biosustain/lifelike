@@ -22,7 +22,7 @@ from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
-from math import floor
+from math import ceil, floor
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFTextExtractionNotAllowed, PDFEncryptionError
 from PIL import Image, ImageColor
