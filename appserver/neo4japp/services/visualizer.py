@@ -469,10 +469,10 @@ class VisualizerService(KgService):
                     ID(endNode(r)) as to_id,
                     t.name as name,
                     ID(t) as node_id
-                MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+                MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
                 WHERE ID(f)=from_id AND ID(t)=to_id
                 WITH from_id, to_id, a AS association, name, node_id
-                MATCH (association)<-[r:INDICATES]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+                MATCH (association)<-[r:INDICATES]-(s:Snippet)
                 RETURN
                     name,
                     node_id,
