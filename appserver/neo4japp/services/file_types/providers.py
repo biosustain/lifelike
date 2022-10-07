@@ -15,15 +15,16 @@ import graphviz
 import numpy as np
 import requests
 import svg_stack
-from PyPDF4.generic import DictionaryObject
 from PIL import Image, ImageColor
 from PyPDF4 import PdfFileWriter, PdfFileReader
+from PyPDF4.generic import DictionaryObject
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from flask import current_app
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
+from math import ceil
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
 
@@ -49,17 +50,10 @@ from neo4japp.constants import (
     ICON_SIZE,
     LIFELIKE_DOMAIN,
     BYTE_ENCODING,
-    DEFAULT_DPI,
-    POINT_TO_PIXEL,
-    HORIZONTAL_TEXT_PADDING,
     LABEL_OFFSET,
-    MAP_ICON_OFFSET,
     PDF_MARGIN,
     NAME_NODE_OFFSET,
     TRANSPARENT_PIXEL,
-    VERTICAL_NODE_PADDING,
-    NAME_LABEL_FONT_AVERAGE_WIDTH,
-    NAME_LABEL_PADDING_MULTIPLIER,
     FILENAME_LABEL_MARGIN,
     FILENAME_LABEL_FONT_SIZE,
     IMAGES_RE,
@@ -74,7 +68,7 @@ from neo4japp.constants import (
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
     WATERMARK_ICON_SIZE,
-    COLOR_TO_REPLACE
+    COLOR_TO_REPLACE, DEFAULT_FONT_RATIO
 )
 from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
@@ -528,11 +522,18 @@ def create_default_node(node: dict):
     style = node.get('style', {})
     # Ensure that display name is of type string, as it can be None
     display_name = node['display_name'] or ""
+    fontsize = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    if 'width' in node['data']:
+        width = node['data']['width']
+        max_character_per_line = width / (fontsize * DEFAULT_FONT_RATIO)
+    else:
+        width = DEFAULT_NODE_WIDTH
+        max_character_per_line = min(10 + len(display_name) // 4, MAX_LINE_WIDTH)
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': escape('\n'.join(textwrap.TextWrapper(
-            width=min(10 + len(display_name) // 4, MAX_LINE_WIDTH),
+            width=ceil(max_character_per_line),
             replace_whitespace=False).wrap(display_name))),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
@@ -541,7 +542,7 @@ def create_default_node(node: dict):
         ),
         # Resize the node base on font size, as otherwise the margin would be smaller than
         # in the Lifelike map editor
-        'width': f"{node['data'].get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+        'width': f"{width / SCALING_FACTOR}",
         'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
         'shape': 'box',
         'style': 'rounded,filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
@@ -551,7 +552,7 @@ def create_default_node(node: dict):
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fillcolor': style.get('bgColor') or 'white',
-        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+        'fontsize': f"{fontsize}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
         if style.get('lineType') != 'none' else '0.0'

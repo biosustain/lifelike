@@ -1,14 +1,11 @@
-import os
 import codecs
+import os
 import re
 import string
-
 from datetime import timezone
 from enum import Enum
 
-
 from sendgrid import SendGridAPIClient
-
 
 TIMEZONE = timezone.utc
 
@@ -368,6 +365,7 @@ ANNOTATION_STYLES_DICT = {
 
 # Style constants
 DEFAULT_FONT_SIZE = 14.0
+DEFAULT_FONT_RATIO = 0.5  # width / height
 DEFAULT_BORDER_COLOR = '#2B7CE9'
 DEFAULT_NODE_WIDTH = 41.25
 DEFAULT_NODE_HEIGHT = 27.5
