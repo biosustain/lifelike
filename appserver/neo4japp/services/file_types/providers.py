@@ -729,9 +729,7 @@ def create_detail_node(node: dict, params: dict):
         any(
             DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources', [])
         )
-        and len(detail_text) > DETAIL_TEXT_LIMIT
     ):
-        detail_text = detail_text[:DETAIL_TEXT_LIMIT]
         detail_text = detail_text.rstrip('\\')
     detail_lines = get_fitting_lines(detail_text, style, node['data'])
     # '\l' is graphviz special new line, which placed at the end of the line will align it
