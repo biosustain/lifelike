@@ -923,7 +923,7 @@ def create_edge(edge: dict, node_hash_type_dict: dict):
     }
 
 
-def create_watermark(x_center: float, y: float):
+def create_watermark():
     """
     Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
     We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
@@ -934,14 +934,10 @@ def create_watermark(x_center: float, y: float):
     returns:
     3 dictionaries - each for one of the watermark elements
     """
-    y += WATERMARK_DISTANCE
     label_params = {
         'name': 'watermark_node',
         'label': 'Created by Lifelike',
-        'pos': (
-            f"{x_center / SCALING_FACTOR},"
-            f"{-y / SCALING_FACTOR}!"
-        ),
+        'pos': '0,0!',
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
         'fontcolor': 'black',
@@ -956,8 +952,7 @@ def create_watermark(x_center: float, y: float):
         'label': 'lifelike.bio',
         'href': 'https://lifelike.bio',
         'pos': (
-            f"{x_center / SCALING_FACTOR},"
-            f"{-(y + DEFAULT_NODE_HEIGHT / 2.0) / SCALING_FACTOR}!"
+            f"0,{-DEFAULT_NODE_HEIGHT / 2.0 / SCALING_FACTOR}!"
         ),
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
@@ -971,8 +966,7 @@ def create_watermark(x_center: float, y: float):
         'name': 'watermark_icon',
         'label': '',
         'pos': (
-            f"{(x_center - WATERMARK_WIDTH / 2.0 + WATERMARK_ICON_SIZE) / SCALING_FACTOR},"
-            f"{-y / SCALING_FACTOR}!"
+            f"{(-WATERMARK_WIDTH / 2.0 + WATERMARK_ICON_SIZE) / SCALING_FACTOR},0!"
         ),
         'penhwidth': '0.0',
         'fixedsize': 'true',
@@ -1088,116 +1082,123 @@ class MapTypeProvider(BaseFileTypeProvider):
             )
             raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
 
-        graph_attr = [('margin', f'{PDF_MARGIN}'), ('outputorder', 'nodesfirst'),
-                      ('pad', f'{PDF_PAD}')]
-
-        if format == 'png':
-            graph_attr.append(('dpi', '100'))
-
         graph = graphviz.Digraph(
             escape(file.filename),
-            # New lines are not permitted in the comment - they will crash the export.
-            # Replace them with spaces until we find different solution
-            comment=file.description.replace('\n', ' ') if file.description else None,
-            engine='neato',
-            graph_attr=graph_attr,
-            format=format)
+            comment=file.description.encode('unicode_escape') if file.description else None,
+            engine='fdp',
+            format=format
+        )
+
+        graph.attr(
+            margin=str(PDF_MARGIN),
+            outputorder='nodesfirst',
+            pad=str(PDF_PAD),
+            overlap='false'
+        )
+
+        if format == 'png':
+            graph.attr(dpi=100)
 
         node_hash_type_dict = {}
-        x_values, y_values = [], []
         images = []
-
         nodes = json_graph['nodes']
 
-        for group in json_graph.get('groups', []):
-            nodes += group.get('members', [])
-            group_params, label_params = create_group_node(group)
-            graph.node(**group_params)
-            node_hash_type_dict[group['hash']] = group['label']
+        with graph.subgraph(name='cluster_title') as title:
+            title.attr(overlap='true', style='invis')
+            if self_contained_export:
+                # We add name of the map in left top corner to ease map recognition in linked export
+                name_node_params = create_map_name_node()
+                # Set outside of the function to avoid unnecessary copying of potentially big
+                # variables
+                name_node_params['name'] = file.filename
 
-            if label_params:
-                graph.node(**label_params)
+                title.node(**name_node_params)
 
-        # Sort the images to the front of the list to ensure that they do not cover other nodes
-        nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
+        with graph.subgraph(name='cluster_body') as body:
+            body.attr(overlap='true', style='invis')
+            for group in json_graph.get('groups', []):
+                nodes += group.get('members', [])
+                group_params, label_params = create_group_node(group)
+                body.node(**group_params)
+                node_hash_type_dict[group['hash']] = group['label']
 
-        for i, node in enumerate(nodes):
-            # Store the coordinates of each node as map name node and watermark are based on them
-            x_values.append(node['data']['x'])
-            y_values.append(node['data']['y'])
-            # Store node hash->label for faster edge default type evaluation
-            node_hash_type_dict[node['hash']] = node['label']
-            style = node.get('style', {})
-            params = create_default_node(node)
+                if label_params:
+                    body.node(**label_params)
 
-            if node['label'] == 'image':
-                try:
-                    image_name = node.get('image_id') + '.png'
-                    images.append(image_name)
-                    im = zip_file.read("".join(['images/', image_name]))
-                    file_path = os.path.sep.join([folder.name, image_name])
-                    f = open(file_path, "wb")
-                    f.write(im)
-                    f.close()
-                # Note: Add placeholder images instead?
-                except KeyError:
-                    name = node.get('image_id') + '.png'
-                    current_app.logger.info(
-                        f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
-                        extra=EventLog(
-                            event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
-                    )
-                    raise ValidationError(
-                        f"Cannot retrieve image: {name} - file might be corrupted")
-                params = create_image_node(node, params)
-                if node['display_name']:
-                    graph.node(**create_image_label(node))
-                params['image'] = file_path
+            # Sort the images to the front of the list to ensure that they do not cover other nodes
+            nodes.sort(key=lambda n: n.get('label', "") == 'image', reverse=True)
 
-            if node['label'] in ICON_NODES:
-                # map and note should point to the first source or hyperlink, if the are no sources
-                link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
-                node['link'] = link_data[0].get('url') if link_data else None
-                if style.get('showDetail'):
-                    params = create_detail_node(node, params)
-                else:
-                    params, icon_params, node_height = create_icon_node(node, params, folder)
-                    icon_params['href'] = get_node_href(node)
-                    # We need to set this to ensure that watermark is not intersect some edge cases
-                    nodes[i]['data']['height'] = node_height
-                    # Create separate node with the icon
-                    graph.node(**icon_params)
+            for i, node in enumerate(nodes):
+                # Store node hash->label for faster edge default type evaluation
+                node_hash_type_dict[node['hash']] = node['label']
+                style = node.get('style', {})
+                params = create_default_node(node)
 
-            if node['label'] in RELATION_NODES:
-                params = create_relation_node(node, params)
+                if node['label'] == 'image':
+                    try:
+                        image_name = node.get('image_id') + '.png'
+                        images.append(image_name)
+                        im = zip_file.read("".join(['images/', image_name]))
+                        file_path = os.path.sep.join([folder.name, image_name])
+                        f = open(file_path, "wb")
+                        f.write(im)
+                        f.close()
+                    # Note: Add placeholder images instead?
+                    except KeyError:
+                        name = node.get('image_id') + '.png'
+                        current_app.logger.info(
+                            f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
+                            extra=EventLog(
+                                event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                        )
+                        raise ValidationError(
+                            f"Cannot retrieve image: {name} - file might be corrupted")
+                    params = create_image_node(node, params)
+                    if node['display_name']:
+                        body.node(**create_image_label(node))
+                    params['image'] = file_path
 
-            params['href'] = get_node_href(node)
-            graph.node(**params)
+                if node['label'] in ICON_NODES:
+                    # map and note should point to the first source or hyperlink, if the are no
+                    # sources
+                    link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+                    node['link'] = link_data[0].get('url') if link_data else None
+                    if style.get('showDetail'):
+                        params = create_detail_node(node, params)
+                    else:
+                        params, icon_params, node_height = create_icon_node(node, params, folder)
+                        icon_params['href'] = get_node_href(node)
+                        # We need to set this to ensure that watermark is not intersect some edge
+                        # cases
+                        nodes[i]['data']['height'] = node_height
+                        # Create separate node with the icon
+                        body.node(**icon_params)
 
-        min_x = min(x_values, default=0)
-        min_y = min(y_values, default=0)
-        if self_contained_export:
-            # We add name of the map in left top corner to ease map recognition in linked export
-            name_node_params = create_map_name_node()
-            # Set outside of the function to avoid unnecessary copying of potentially big variables
-            name_node_params['name'] = file.filename
-            name_node_params['pos'] = (
-                f"{(min_x - NAME_NODE_OFFSET) / SCALING_FACTOR},"
-                f"{(-min_y - NAME_NODE_OFFSET) / SCALING_FACTOR}!"
-            )
+                if node['label'] in RELATION_NODES:
+                    params = create_relation_node(node, params)
 
-            graph.node(**name_node_params)
+                params['href'] = get_node_href(node)
+                body.node(**params)
 
-        lower_ys = list(map(lambda x: x['data']['y'] + x['data'].get(
-            'height', DEFAULT_NODE_HEIGHT) / 2.0, nodes))
-        max_x = max(x_values, default=0)
-        x_center = min_x + (max_x - min_x) / 2.0
-        for params in create_watermark(x_center, max(lower_ys, default=0)):
-            graph.node(**params)
+            for edge in json_graph['edges']:
+                edge_params = create_edge(edge, node_hash_type_dict)
+                body.edge(**edge_params)
 
-        for edge in json_graph['edges']:
-            edge_params = create_edge(edge, node_hash_type_dict)
-            graph.edge(**edge_params)
+        with graph.subgraph(name='cluster_footer') as footer:
+            footer.attr(overlap='true', style='invis')
+            for params in create_watermark():
+                footer.node(**params)
+
+        graph.edge(
+            'cluster_title', 'cluster_body',
+            len=str(NAME_NODE_OFFSET / SCALING_FACTOR),
+            style='invis'
+        )
+        graph.edge(
+            'cluster_body', 'cluster_footer',
+            len=str(WATERMARK_DISTANCE / SCALING_FACTOR),
+            style='invis'
+        )
 
         ext = f".{format}"
         content = io.BytesIO(graph.pipe())
@@ -1298,8 +1299,8 @@ class MapTypeProvider(BaseFileTypeProvider):
         final_bytes = io.BytesIO()
         writer = PdfFileWriter()
         links = []
-        for origin_page, out_file in enumerate(files):
-            out_file = self.get_file_export(out_file, 'pdf')
+        for origin_page, file in enumerate(files):
+            out_file = self.get_file_export(file, 'pdf')
             reader = PdfFileReader(out_file, strict=False)
             # region Find internal links in pdf
             for page in map(reader.getPage, range(reader.getNumPages())):
@@ -1322,7 +1323,18 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 rect=rect
                             ))
             # endregion
+            num_of_pages = writer.getNumPages()  # index of first attached page since this point
             writer.appendPagesFromReader(reader)
+            file_bookmark = writer.addBookmark(file.filename_path, num_of_pages, bold=True)
+            for line in (
+                f'Description:\t{file.description}',
+                f'Creation date:\t{file.creation_date}',
+                f'Modified date:\t{file.modified_date}',
+            ):
+                writer.addBookmark(
+                    line, num_of_pages, file_bookmark
+                )
+
         # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:
             writer.addLink(**link)
