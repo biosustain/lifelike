@@ -42,12 +42,27 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getReferenceTableData(request: ReferenceTableDataRequest) {
-        return this.http.post<{result: GetReferenceTableDataResult}>(
-            `${this.baseUrl}/get-reference-table-data`,
-            {nodeEdgePairs: request.nodeEdgePairs},
-        ).pipe(map(resp => resp.result));
-    }
+  getReferenceTableData(request: ReferenceTableDataRequest) {
+    return this.http
+      .post<{ result: GetReferenceTableDataResult }>(`${this.baseUrl}/get-reference-table-data`, {
+        nodeEdgePairs: [...request.nodeEdgePairs].sort(
+          (
+            { node: { displayName: a1 }, edge: { originalFrom: a2, originalTo: a3 } },
+            { node: { displayName: b1 }, edge: { originalFrom: b2, originalTo: b3 } }
+          ) => {
+            const a = `${a1}${a2}${a3}`;
+            const b = `${b1}${b2}${b3}`;
+            if (a > b) {
+              return -1;
+            } else if (a < b) {
+              return 1;
+            }
+            return 0;
+          }
+        ),
+      })
+      .pipe(map((resp) => resp.result));
+  }
 
     getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
         return this.http.post<{result: GetEdgeSnippetsResult}>(
@@ -75,14 +90,17 @@ export class VisualizationService {
         );
     }
 
-    getAssociatedTypeSnippetCount(request: AssociatedTypeSnippetCountRequest) {
-        return this.http.post<{result: GetAssociatedTypeResult}>(
-            `${this.baseUrl}/get-associated-type-snippet-count`, {
-                source_node: request.source_node,
-                associated_nodes: request.associated_nodes,
-            },
-        ).pipe(map(resp => resp.result.associatedData));
-    }
+  getAssociatedTypeSnippetCount(request: AssociatedTypeSnippetCountRequest) {
+    return this.http
+      .post<{ result: GetAssociatedTypeResult }>(
+        `${this.baseUrl}/get-associated-type-snippet-count`,
+        {
+          source_node: request.source_node,
+          associated_nodes: [...request.associated_nodes].sort((a, b) => a - b),
+        }
+      )
+      .pipe(map((resp) => resp.result.associatedData));
+  }
 
     getSnippetsForNodePair(node1Id: number, node2Id: number, page: number, limit: number) {
       return this.http.post<{result: GetNodePairSnippetsResult}>(
