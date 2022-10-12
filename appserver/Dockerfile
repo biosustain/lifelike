@@ -38,6 +38,6 @@ RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
 USER $N4J_USER
 
 # Setup flask application environment vars
-ENV MAX_ALLOWED_LOGIN_FAILURES 6
+ENV MAX_ALLOWED_LOGIN_FAILURES 30
 
 CMD [ "bin/startup.sh" ]
