@@ -18,7 +18,7 @@ export class BaseEnrichmentDocument {
     'String',
     'GO',
     'BioCyc',
-    'KEGG'
+    // 'KEGG'
   ];
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
@@ -297,7 +297,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     String: {labels: ['Annotation']},
                     GO: {labels: ['Annotation']},
                     BioCyc: {labels: ['Pathways']},
-                    KEGG: {labels: ['Pathways']}
+                    // KEGG: {labels: ['Pathways']}
                   },
                   genes: genesList,
                 };
@@ -397,18 +397,18 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       }
     }
 
-    if (domains.includes('KEGG')) {
-      if (wrapper.kegg !== null) {
-        const text = this.shortenTerms(wrapper.kegg.result);
-        results.KEGG = {
-          Pathways: {
-            text,
-            annotatedText: text,
-            link: wrapper.kegg.link,
-          },
-        };
-      }
-    }
+    // if (domains.includes('KEGG')) {
+    //   if (wrapper.kegg !== null) {
+    //     const text = this.shortenTerms(wrapper.kegg.result);
+    //     results.KEGG = {
+    //       Pathways: {
+    //         text,
+    //         annotatedText: text,
+    //         link: wrapper.kegg.link,
+    //       },
+    //     };
+    //   }
+    // }
 
     return results;
   }
