@@ -14,7 +14,7 @@ class Domain(Enum):
     STRING = 'String'
     GO = 'GO'
     BIOCYC = 'BioCyc'
-    KEGG = 'KEGG'
+    # KEGG = 'KEGG'
 
 
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
@@ -39,7 +39,7 @@ def get_ncbi_enrichment_domains():
         go = kg.get_go_genes(node_ids) if Domain.GO.value in domains else {}
         string = kg.get_string_genes(node_ids) if Domain.STRING.value in domains else {}
         uniprot = kg.get_uniprot_genes(node_ids) if Domain.UNIPROT.value in domains else {}
-        kegg = kg.get_kegg_genes(node_ids) if Domain.KEGG.value in domains else {}
+        # kegg = kg.get_kegg_genes(node_ids) if Domain.KEGG.value in domains else {}
 
         nodes = {
             node_id: {
@@ -48,7 +48,7 @@ def get_ncbi_enrichment_domains():
                 'string': string.get(node_id, None),
                 'go': go.get(node_id, None),
                 'biocyc': biocyc.get(node_id, None),
-                'kegg': kegg.get(node_id, None),
+                # 'kegg': kegg.get(node_id, None),
                 'node_id': node_id
             } for node_id in node_ids}
 
