@@ -220,7 +220,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'phenotype',
     },
     'food': {
-        'color': '#8eff69',
+        'color': '#f71698',
         'label': 'food',
     },
     'anatomy': {
@@ -232,11 +232,11 @@ ANNOTATION_STYLES_DICT = {
         'label': 'ENTITY'
     },
     'lab strain': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab strain',
     },
     'lab sample': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab sample',
     },
     'link': {
