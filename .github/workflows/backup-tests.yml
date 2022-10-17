@@ -8,7 +8,6 @@ on:
         type: boolean
         default: false
         required: false
-  pull_request:
   schedule:
     # Run once a week on sunday at 00:00
     - cron: "0 1 * * 0"
