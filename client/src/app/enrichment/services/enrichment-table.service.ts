@@ -139,10 +139,10 @@ export interface UniprotNode {
   id: string;
 }
 
-// interface KeggWrapper {
-//   result: string[];
-//   link: string;
-// }
+interface KeggWrapper {
+  result: string[];
+  link: string;
+}
 
 export interface DomainWrapper {
   biocyc: BiocycWrapper | null;
@@ -150,7 +150,7 @@ export interface DomainWrapper {
   regulon: RegulonWrapper | null;
   string: StringWrapper | null;
   uniprot: UniprotWrapper | null;
-  // kegg: KeggWrapper | null;
+  kegg: KeggWrapper | null;
   node_id: number;
 }
 
