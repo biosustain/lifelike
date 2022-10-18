@@ -13,7 +13,7 @@ import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
-import { cloneDeep, flatMap, assign, escape } from 'lodash-es';
+import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
@@ -820,8 +820,21 @@ export class WorkspaceManager {
 
 // Horrible fix just so we can still compose components as strings and eval it into DOM instead of fixing old implementation
 // Don't use arbitrary urls - this method is not is not safe in terms of XSS
-export function composeInternalLink(text, navigationData: NavigationData) {
-  return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationData)})'>${escape(text)}</a>`;
+export function composeInternalLink(text, url, navigationData?: NavigationData) {
+  const urlStr = String(url);
+  const navigationDataWithDefaults = _merge(
+    {
+      url: urlStr,
+      extras: {
+        sideBySide: true,
+        newTab: true,
+        keepFocus: true,
+        matchExistingTab: `${escapeRegExp(urlStr)}$`
+      }
+    },
+    navigationData
+  );
+  return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationDataWithDefaults)})'>${escape(text)}</a>`;
 }
 
 export interface WorkspaceNavigationExtras extends NavigationExtras {

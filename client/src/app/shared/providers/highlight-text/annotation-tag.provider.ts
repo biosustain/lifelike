@@ -272,20 +272,11 @@ export class AnnotationTagHandler extends TagHandler {
     `;
     const organism = detail.object?.fallbackOrganism?.tax_id;
     const visLink = this.internalSearch.getVisualizerLink(meta.allText, {organism});
-    htmlLinks += composeInternalLink(
-      'Knowledge Graph',
-      {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
-    ) + '<br>';
+    htmlLinks += composeInternalLink('Knowledge Graph', visLink) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(meta.allText);
-    htmlLinks += composeInternalLink(
-      'File Content',
-      {url: String(contLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
-    ) + '<br>';
+    htmlLinks += composeInternalLink('File Content', contLink) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(meta.allText, {types: ['map']});
-    htmlLinks += composeInternalLink(
-      'Map Content',
-      {url: String(mapLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
-    ) + '<br>';
+    htmlLinks += composeInternalLink('Map Content', mapLink) + '<br>';
     htmlLinks += `</div></div>`;
 
     base.push(htmlLinks);
