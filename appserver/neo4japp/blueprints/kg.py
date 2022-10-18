@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
-from pandas import DataFrame, concat
+from pandas import DataFrame
 
 from neo4japp.constants import KGDomain
 from neo4japp.database import get_kg_service
 import numpy as np
 
 bp = Blueprint('kg-api', __name__, url_prefix='/knowledge-graph')
+
 
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
 def get_ncbi_enrichment_domains():
@@ -24,30 +25,11 @@ def get_ncbi_enrichment_domains():
         domain_nodes = {
             domain.lower(): kg.get_genes(KGDomain(domain), node_ids, tax_id) for domain in domains
         }
-        df = DataFrame(domain_nodes).replace({np.nan:None}).transpose()
+        df = DataFrame(domain_nodes).replace({np.nan: None}).transpose()
         # Redundant but just following old implementation
         nodes = df.append(df.columns.to_series(name='node_id')).to_dict()
     else:
         nodes = {}
-
-    # regulon = kg.get_regulon_genes(node_ids) if KGDomain.REGULON.value in domains else {}
-    # biocyc = kg.get_biocyc_genes(node_ids, tax_id) if KGDomain.BIOCYC.value in domains else {}
-    # go = kg.get_go_genes(node_ids) if KGDomain.GO.value in domains else {}
-    # string = kg.get_string_genes(node_ids) if KGDomain.STRING.value in domains else {}
-    # uniprot = kg.get_uniprot_genes(node_ids) if KGDomain.UNIPROT.value in domains else {}
-    # # kegg = kg.get_kegg_genes(node_ids) if Domain.KEGG.value in domains else {}
-    #
-    # nodes = {
-    #     node_id: {
-    #         'regulon': regulon.get(node_id, None),
-    #         'uniprot': uniprot.get(node_id, None),
-    #         'string': string.get(node_id, None),
-    #         'go': go.get(node_id, None),
-    #         'biocyc': biocyc.get(node_id, None),
-    #         # 'kegg': kegg.get(node_id, None),
-    #         'node_id': node_id
-    #     } for node_id in node_ids
-    # }
 
     return jsonify({'result': nodes}), 200
 

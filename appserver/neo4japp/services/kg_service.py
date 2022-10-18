@@ -247,6 +247,7 @@ class KgService(HybridDBDao):
                 'result': result['node'],
                 'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"  # noqa
             } for result in results}
+
     def get_genes(self, domain: KGDomain, gene_ids: List[int], tax_id: str):
         if domain == KGDomain.REGULON:
             return self.get_regulon_genes(gene_ids)
@@ -261,23 +262,23 @@ class KgService(HybridDBDao):
         if domain == KGDomain.KEGG:
             return self.get_kegg_genes(gene_ids)
 
-    # def get_kegg_genes(self, ncbi_gene_ids: List[int]):
-    #     start = time.time()
-    #     results = self.graph.read_transaction(
-    #         self.get_kegg_genes_query,
-    #         ncbi_gene_ids
-    #     )
-    #
-    #     current_app.logger.info(
-    #         f'Enrichment KEGG KG query time {time.time() - start}',
-    #         extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-    #     )
-    #
-    #     return {
-    #         result['node_id']: {
-    #             'result': result['pathway'],
-    #             'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
-    #         } for result in results}
+    def get_kegg_genes(self, ncbi_gene_ids: List[int]):
+        start = time.time()
+        results = self.graph.read_transaction(
+            self.get_kegg_genes_query,
+            ncbi_gene_ids
+        )
+
+        current_app.logger.info(
+            f'Enrichment KEGG KG query time {time.time() - start}',
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        )
+
+        return {
+            result['node_id']: {
+                'result': result['pathway'],
+                'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
+            } for result in results}
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
