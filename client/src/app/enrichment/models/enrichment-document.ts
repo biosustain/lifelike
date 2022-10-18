@@ -1,6 +1,6 @@
 import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
-import { compact, omitBy, isNil, isEmpty } from 'lodash-es';
+import { compact, omitBy, isEmpty } from 'lodash-es';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
