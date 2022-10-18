@@ -61,6 +61,9 @@ ENV APPSERVER_UPSTREAM http://appserver:5000
 # Whether to run the app in prod mode
 ENV PRODUCTION_MODE true
 
+# Whether we are running with valid KEGG license
+ENV KEGG_ENABLED false
+
 # Whether to run the app with oauth login
 ENV OAUTH_ENABLED false
 

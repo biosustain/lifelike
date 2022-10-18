@@ -49,6 +49,9 @@ class SortDirection(Enum):
     DESC = 'desc'
 
 
+
+KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+
 # enrichment labels
 class EnrichmentDomain(Enum):
     UNIPROT = 'UniProt'
@@ -57,6 +60,15 @@ class EnrichmentDomain(Enum):
     GO = 'GO'
     BIOCYC = 'BioCyc'
 
+
+class KGDomain(Enum):
+    REGULON = 'Regulon'
+    UNIPROT = 'UniProt'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'BioCyc'
+    if KEGG_ENABLED:
+        KEGG = 'KEGG'
 
 class LogEventType(Enum):
     ANNOTATION = 'annotations'
@@ -506,3 +518,4 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
 SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
 SEED_FILE_KEY_USER = 'neo4japp.models.AppUser'
 SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
+
