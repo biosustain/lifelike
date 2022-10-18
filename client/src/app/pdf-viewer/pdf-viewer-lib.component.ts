@@ -18,7 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { escape, isNil, uniqueId, defer, forEach } from 'lodash-es';
+import { escape, isNil, uniqueId, defer, forEach, escapeRegExp } from 'lodash-es';
 import { Observable, Subject, Subscription } from 'rxjs';
 
 import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -535,20 +535,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         <div class="collapse" id="${searchInternalLinkCollapseTargetId}">
     `;
     const visLink = this.internalSearch.getVisualizerLink(an.meta.allText);
-    htmlLinks += composeInternalLink(
-      'Knowledge Graph',
-      {url: String(visLink), extras: {sideBySide: true, newTab: true, keepFocus: true}},
-    ) + '<br>';
+    htmlLinks += composeInternalLink('Knowledge Graph', visLink) + '<br>';
     const contLink = this.internalSearch.getFileContentLink(an.meta.allText);
-    htmlLinks += composeInternalLink(
-      'File Content',
-      {url: String(contLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
-    ) + '<br>';
+    htmlLinks += composeInternalLink('File Content', contLink) + '<br>';
     const mapLink = this.internalSearch.getFileContentLink(an.meta.allText, {types: ['map']});
-    htmlLinks += composeInternalLink(
-      'Map Content',
-      {url: String(mapLink), extras: {sideBySide: true, newTab: true, keepFocus: true}}
-    ) + '<br>';
+    htmlLinks += composeInternalLink('Map Content', mapLink) + '<br>';
     htmlLinks += `</div></div>`;
 
     base.push(htmlLinks);
