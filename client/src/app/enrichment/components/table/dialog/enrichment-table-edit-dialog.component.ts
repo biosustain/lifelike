@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 
-import { isNil, omit, omitBy, filter, compact } from 'lodash-es';
+import { isNil, compact } from 'lodash-es';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -10,6 +10,7 @@ import { ObjectEditDialogComponent, ObjectEditDialogValue } from 'app/file-brows
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
 import { environment } from '../../../../../environments/environment';
 
 @Component({
