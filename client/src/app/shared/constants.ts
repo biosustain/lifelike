@@ -121,7 +121,7 @@ export enum FAClass {
   PowerPoint = 'fak fa-powerpoint-solid',
   Word = 'fak fa-word-solid',
   Cytoscape = 'fak fa-cytoscape-solid',
-
+  Project = 'fas fa-layer-group'
 }
 
 export enum Unicodes {

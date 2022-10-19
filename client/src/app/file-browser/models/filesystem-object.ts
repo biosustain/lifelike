@@ -33,7 +33,7 @@ export class ProjectImpl implements Project, ObservableObject {
   modifiedDate: string;
   ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
-  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  fontAwesomeIcon = `fa-4x ${FAClass.Project}`;
   changed$ = new Subject();
 
   get starred(): boolean {
@@ -43,6 +43,16 @@ export class ProjectImpl implements Project, ObservableObject {
   set starred(value) {
     if (this.***ARANGO_USERNAME***) {
       this.***ARANGO_USERNAME***.update({starred: value});
+    }
+  }
+
+  get public(): boolean {
+    return this.***ARANGO_USERNAME***?.public;
+  }
+
+  set public(value) {
+    if (this.***ARANGO_USERNAME***) {
+      this.***ARANGO_USERNAME***.update({public: value});
     }
   }
 
@@ -314,6 +324,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       return 'fa fa-file-video';
     } else if (this.mimeType.startsWith('text/')) {
       return 'fa fa-file-alt';
+    }
+    if (this.isProjectRoot) {
+      return FAClass.Project;
     }
 
     // TODO: Move this method to ObjectTypeProvider
