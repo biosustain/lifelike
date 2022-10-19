@@ -13,6 +13,13 @@
       <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
                 rows="10"></textarea>
     </app-form-row>
+
+    <app-form-row [control]="form.get('public')">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <label class="custom-control-label" for="public">Publicly share with the community</label>
+      </div>
+    </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>
