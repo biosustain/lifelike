@@ -15,7 +15,7 @@ import { AuthSelectors } from 'app/auth/store';
 import { ProjectsService } from '../../services/projects.service';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectList } from '../../models/project-list';
-import { ProjectImpl, FilesystemObject } from '../../models/filesystem-object';
+import { FilesystemObject } from '../../models/filesystem-object';
 import { FilesystemService } from '../../services/filesystem.service';
 
 @Component({
@@ -46,12 +46,12 @@ export class BrowserProjectListComponent {
     });
   }
 
-  projectDragStart(event: DragEvent, project: ProjectImpl) {
+  projectDragStart(event: DragEvent, project: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     project.addDataTransferData(dataTransfer);
   }
 
-  toggleStarred(project: ProjectImpl) {
+  toggleStarred(project: FilesystemObject) {
     return this.projectActions.updateStarred(project, isNil(project.starred));
   }
 }

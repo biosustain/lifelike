@@ -63,14 +63,15 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
           // Legacy URLs use the project name (which we are deprecating) so
           // we need to figure out what that requested project is
           this.projectService.search({
-            name: project_name,
+            filename: project_name,
+            type: 'project'
           }).pipe(
             this.errorHandler.create({label: 'Load project from name for legacy URL'}),
             switchMap(({results}) =>
               iif(
                 () => Boolean(results.length),
                 results.items$.pipe(
-                  map(([item]) => item.***ARANGO_USERNAME***.hashId)
+                  map(([item]) => item.project.hashId)
                 ),
                 throwError(new HttpErrorResponse({
                   status: 404,
@@ -89,8 +90,8 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     switchMap(hashId => this.filesystemService.get(hashId).pipe(
       tap(object =>
         this.modulePropertiesChange.emit({
-          title: object.isProjectRoot ? object.project.name
-            : `${object.project.name} - ${object.filename}`,
+          title: object.isProject ? object.filename
+            : `${object.project.filename} - ${object.filename}`,
           fontAwesomeIcon: 'folder',
         })
       ))

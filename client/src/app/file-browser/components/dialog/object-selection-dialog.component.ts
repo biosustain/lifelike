@@ -9,7 +9,7 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
 
-import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
+import { FilesystemObject } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';
 
 @Component({
@@ -43,8 +43,8 @@ export class ObjectSelectionDialogComponent
     this.objectSelect.multipleSelection = multipleSelection;
   }
 
-  openProject(project: ProjectImpl) {
-    this.hashId = project.***ARANGO_USERNAME***.hashId;
+  openProject(project: FilesystemObject) {
+    this.hashId = project.hashId;
   }
 
   getValue(): Promise<readonly FilesystemObject[]> {

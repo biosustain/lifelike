@@ -225,13 +225,6 @@ def get_account_service():
     return g.account_service
 
 
-def get_projects_service():
-    if 'projects_service' not in g:
-        from neo4japp.services import ProjectsService
-        g.projects_service = ProjectsService(session=db.session)
-    return g.projects_service
-
-
 def get_elastic_service():
     if 'elastic_service' not in g:
         from neo4japp.services.elastic import ElasticService

@@ -38,7 +38,6 @@ from neo4japp.constants import (
 )
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
-from neo4japp.models.projects import Projects
 from neo4japp.models.common import (
     RDBMSBase,
     TimestampMixin,
@@ -48,6 +47,7 @@ from neo4japp.models.common import (
 )
 from neo4japp.utils import EventLog
 from neo4japp.utils.sqlalchemy import get_model_changes
+
 
 file_collaborator_role = db.Table(
     'file_collaborator_role',
@@ -279,7 +279,6 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # yourself or use helpers that populate these fields. These fields are used by
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
-    calculated_project: Optional[Projects] = None
     calculated_privileges: Dict[int, FilePrivileges]  # key = AppUser.id
     calculated_children: Optional[List['Files']] = None  # children of this file
     calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
@@ -321,29 +320,6 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     @property
     def effectively_recycled(self):
         return self.recycled or self.parent_recycled
-
-    @property
-    def project(self) -> Projects:
-        """
-        Gets the Project this file belongs to.
-        """
-        project_name = Path(self.path).parts[1]
-        try:
-            return db.session.query(
-                Projects
-            ).filter(
-                Projects.name == project_name
-            ).one()
-        except NoResultFound as e:
-            current_app.logger.error(
-                f'Could not find project of file with id: {self.id}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
-            )
-            raise ServerException(
-                title=f'Cannot Get Project of File',
-                message=f'Could not find project of file {self.filename}.',
-            )
 
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.

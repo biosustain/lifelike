@@ -5,13 +5,13 @@ from typing import Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect, literal
-from sqlalchemy.orm import aliased, contains_eager, defer, joinedload, lazyload, Query, raiseload
+from sqlalchemy.orm import aliased, contains_eager, defer, joinedload, lazyload, raiseload
 
 from neo4japp.database import db
-from . import AppUser, AppRole, Projects
+from . import AppUser, AppRole
 from .files import Files, StarredFile, file_collaborator_role
-from .projects_queries import ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
+
 
 Direction = Union[Literal['children'], Literal['parents']]
 
@@ -20,7 +20,6 @@ def _build_file_cte(
     direction: Direction,
     filter, max_depth=Files.MAX_DEPTH,
     files_table=Files,
-    projects_table=Projects
 ) -> BaseQuery:
     """
     Build a query for fetching *just* the parent (or) child IDs of a file,
@@ -30,7 +29,6 @@ def _build_file_cte(
     :param filter: WHERE for finding the desired file (i.e. Files.id == X)
     :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
     :param files_table: a files table to use, if not the default Files model
-    :param projects_table: a projects table to use, if not the default Projects model
     :return: a hierarchy CTE query
     """
     get_children = direction == 'children'
@@ -45,7 +43,6 @@ def _build_file_cte(
     q_hierarchy = db.session.query(
         files_table.id,
         files_table.parent_id,
-        projects_table.id.label('project_id'),
         # If are querying several files, we need to track what file a
         # hierarchy is for, so we put the file ID in initial_id
         files_table.id.label('initial_id'),
@@ -53,7 +50,6 @@ def _build_file_cte(
         # and also to provide in a basic infinite recursion mitigation
         db.literal(0).label('level')
     ) \
-        .outerjoin(projects_table, projects_table.***ARANGO_USERNAME***_id == files_table.id) \
         .filter(filter) \
         .cte(recursive=True)
 
@@ -67,12 +63,8 @@ def _build_file_cte(
         db.session.query(
             t_children.id,
             t_children.parent_id,
-            projects_table.id.label('project_id'),
             t_parent.c.initial_id,
             (t_parent.c.level + 1).label("level")
-        ).outerjoin(
-            projects_table,
-            projects_table.***ARANGO_USERNAME***_id == t_children.id
         ).filter(
             relationship,
             t_parent.c.level < max_depth
@@ -88,8 +80,7 @@ def _build_file_cte(
 def build_file_parents_cte(
     filter,
     max_depth=Files.MAX_DEPTH,
-    files_table=Files,
-    projects_table=Projects
+    files_table=Files
 ) -> BaseQuery:
     """
     Build a query for fetching *just* the parent IDs of a file, and the file itself.
@@ -99,17 +90,15 @@ def build_file_parents_cte(
     :param filter: WHERE for finding the desired file (i.e. Files.id == X)
     :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
     :param files_table: a files table to use, if not the default Files model
-    :param projects_table: a projects table to use, if not the default Projects model
     :return: a hierarchy CTE query
     """
-    return _build_file_cte('parents', filter, max_depth, files_table, projects_table)
+    return _build_file_cte('parents', filter, max_depth, files_table)
 
 
 def build_file_children_cte(
     filter,
     max_depth=Files.MAX_DEPTH,
-    files_table=Files,
-    projects_table=Projects
+    files_table=Files
 ) -> BaseQuery:
     """
     Build a query for fetching *just* the child IDs of a file, and the file itself.
@@ -119,33 +108,13 @@ def build_file_children_cte(
     :param filter: WHERE for finding the desired file (i.e. Files.id == X)
     :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
     :param files_table: a files table to use, if not the default Files model
-    :param projects_table: a projects table to use, if not the default Projects model
     :return: a hierarchy CTE query
     """
-    return _build_file_cte('children', filter, max_depth, files_table, projects_table)
-
-
-def join_projects_to_parents_cte(q_hierarchy: Query):
-    """
-    Using the query from :func:`get_get_file_parent_hierarchy_query`, this methods joins
-    the project ID for the initial file row(s), provided the top-most parent (***ARANGO_USERNAME***) of
-    that initial file row has a project.
-
-    :param q_hierarchy: the hierarchy query
-    :return: a new query
-    """
-    return db.session.query(
-        q_hierarchy.c.initial_id,
-        db.func.max(q_hierarchy.c.project_id).label('project_id'),
-    ) \
-        .select_from(q_hierarchy) \
-        .group_by(q_hierarchy.c.initial_id) \
-        .subquery()
+    return _build_file_cte('children', filter, max_depth, files_table)
 
 
 def build_file_hierarchy_query(
-    condition, projects_table, files_table,
-    include_deleted_projects=False,
+    condition, files_table,
     include_deleted_files=False,
     file_attr_excl=None,
     direction: Direction = 'parents'
@@ -155,9 +124,7 @@ def build_file_hierarchy_query(
     (optionally) excluding deleted projects and deleted projects.
 
     :param condition: the condition to limit the files returned
-    :param projects_table: a reference to the projects table used in the query
     :param files_table: a reference to the files table used in the query
-    :param include_deleted_projects: whether to include deleted projects
     :param file_attr_excl: list of file attributes to exclude from the query
     :return: a query
     """
@@ -174,10 +141,6 @@ def build_file_hierarchy_query(
         *([files_table.deleted_date.is_(None)] if include_deleted_files else []),
     ))
 
-    # Only the top-most directory has a project FK, so we need to reorganize
-    # the query results from the CTE so we have a project ID for every file row
-    q_hierarchy_project = join_projects_to_parents_cte(q_hierarchy)
-
     t_parent_files = aliased(files_table)
 
     # By default, we query for all columns within the File table.
@@ -189,20 +152,14 @@ def build_file_hierarchy_query(
     # Main query
     query = db.session.query(files_table,  # Warning: Do not change this order, but you can add
                              q_hierarchy.c.initial_id,
-                             q_hierarchy.c.level,
-                             projects_table) \
+                             q_hierarchy.c.level) \
         .join(q_hierarchy, q_hierarchy.c.id == files_table.id) \
-        .join(q_hierarchy_project, q_hierarchy_project.c.initial_id == q_hierarchy.c.initial_id) \
-        .join(projects_table, projects_table.id == q_hierarchy_project.c.project_id) \
         .outerjoin(t_parent_files, t_parent_files.id == files_table.parent_id) \
         .options(
             contains_eager(files_table.parent, alias=t_parent_files).options(*col_defer),
             *col_defer,
         ) \
         .order_by(q_hierarchy.c.level)
-
-    if not include_deleted_projects:
-        query = query.filter(projects_table.deletion_date.is_(None))
 
     return query
 
@@ -326,30 +283,16 @@ class FileHierarchy:
     (aka has the right queried columns).
     """
 
-    def __init__(self, results, file_table, project_table):
+    def __init__(self, results, file_table):
         self.results = [row._asdict() for row in results]
         self.file_table = file_table
-        self.project_table = project_table
         self.file_key = inspect(self.file_table).name
-        self.project_key = inspect(self.project_table).name
-
-        self.project_calculator = ProjectCalculator(results[0], self.project_table)
-
-        if self.project_key is None or self.file_key is None:
-            raise RuntimeError("the file_table or project_table need to be aliased")
-
-    @property
-    def project(self) -> Projects:
-        return self.results[0][self.project_key]
 
     @property
     def file(self) -> Files:
         return self.results[0][self.file_key]
 
     def calculate_properties(self, user_ids):
-        self.project_calculator.calculate_privileges(user_ids)
-        self.file.calculated_project = self.project_calculator.project
-
         parent_deleted = False
         parent_recycled = False
 
@@ -371,9 +314,6 @@ class FileHierarchy:
             file: Files = row[self.file_key]
 
             for user_id in user_ids:
-                project_manageable = row[f'has_project-admin_{user_id}']
-                project_readable = row[f'has_project-read_{user_id}']
-                project_writable = row[f'has_project-write_{user_id}']
                 file_readable = row[f'has_file-read_{user_id}']
                 file_writable = row[f'has_file-write_{user_id}']
                 file_commentable = row[f'has_file-comment_{user_id}']
@@ -381,20 +321,14 @@ class FileHierarchy:
                     user_id] if parent_file else None
 
                 commentable = any([
-                    project_manageable,
-                    project_readable and project_writable,
                     file_commentable,
                     parent_privileges and parent_privileges.commentable,
                 ])
                 writable = any([
-                    project_manageable,
-                    project_writable,
                     file_writable,
                     parent_privileges and parent_privileges.writable,
                     ])
                 readable = commentable or writable or any([
-                    project_manageable,
-                    project_readable,
                     file_readable,
                     file.public,
                     parent_privileges and parent_privileges.readable,

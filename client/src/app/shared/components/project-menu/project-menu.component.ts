@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ProjectImpl } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ProjectActions } from 'app/file-browser/services/project-actions';
 
 @Component({
@@ -10,36 +10,36 @@ import { ProjectActions } from 'app/file-browser/services/project-actions';
 })
 export class ProjectMenuComponent {
 
-  @Input() project: ProjectImpl;
+  @Input() project: FilesystemObject;
   @Input() nameEntity = false;
 
   constructor(protected readonly projectActions: ProjectActions,
               protected readonly snackBar: MatSnackBar) {
   }
 
-  openEditDialog(project: ProjectImpl) {
+  openEditDialog(project: FilesystemObject) {
     this.projectActions.openEditDialog(project);
   }
 
-  openCollaboratorsDialog(project: ProjectImpl) {
+  openCollaboratorsDialog(project: FilesystemObject) {
     this.projectActions.openCollaboratorsDialog(project);
   }
 
-  openDeleteDialog(project: ProjectImpl) {
+  openDeleteDialog(project: FilesystemObject) {
     return this.projectActions.openDeleteDialog(project)
       .then(() =>
         this.snackBar.open(
-          `Deleted ${project.name}.`,
+          `Deleted ${project.filename}.`,
           'Close', {duration: 5000}
         )
       );
   }
 
-  openShareDialog(project: ProjectImpl) {
+  openShareDialog(project: FilesystemObject) {
     this.projectActions.openShareDialog(project);
   }
 
-  updateStarred(project: ProjectImpl, starred: boolean) {
+  updateStarred(project: FilesystemObject, starred: boolean) {
     return this.projectActions.updateStarred(project, starred);
   }
 }

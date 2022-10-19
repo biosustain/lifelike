@@ -7,20 +7,21 @@ import { Observable, Subject } from 'rxjs';
 import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ModelList } from 'app/shared/models';
 import { serializePaginatedParams } from 'app/shared/utils/params';
+import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
 import { ProjectList } from '../models/project-list';
-import { ProjectImpl, FilesystemObject } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import {
   BulkProjectUpdateRequest,
   CollaboratorData,
   MultiCollaboratorUpdateRequest,
   ProjectCreateRequest,
-  ProjectData,
   ProjectSearchRequest,
   FilesystemObjectData,
 } from '../schema';
 import { encode } from 'punycode';
 import { Collaborator } from '../models/collaborator';
+import File = GraphNS.File;
 
 @Injectable()
 export class ProjectsService {
@@ -34,14 +35,14 @@ export class ProjectsService {
   list(options?: PaginatedRequestOptions): Observable<ProjectList> {
     return this.update$.pipe(
       startWith(Date.now()),
-      switchMap(() => this.http.get<ResultList<ProjectData>>(
-          `/api/projects/projects`, {
+      switchMap(() => this.http.get<ResultList<FilesystemObjectData>>(
+          `/api/filesystem/objects`, {
             params: serializePaginatedParams(options, false),
           },
         ).pipe(
           map(data => {
             const projectList = new ProjectList(
-              data.results.map(itemData => new ProjectImpl().update(itemData))
+              data.results.map(itemData => new FilesystemObject().update(itemData))
             );
             projectList.collectionSize = data.total;
             return projectList;
@@ -52,13 +53,13 @@ export class ProjectsService {
   }
 
   search(options: ProjectSearchRequest): Observable<ProjectList> {
-    return this.http.post<ResultList<ProjectData>>(
-      `/api/projects/search`,
+    return this.http.post<ResultList<FilesystemObjectData>>(
+      `/api/filesystem/search`,
       options,
     ).pipe(
       map(data => {
         const projectList = new ProjectList(
-          data.results.map(itemData => new ProjectImpl().update(itemData))
+          data.results.map(itemData => new FilesystemObject().update(itemData))
         );
         projectList.collectionSize = data.total;
         return projectList;
@@ -67,36 +68,36 @@ export class ProjectsService {
   }
 
   create(request: ProjectCreateRequest) {
-    return this.http.post<SingleResult<ProjectData>>(
-      `/api/projects/projects`,
+    return this.http.post<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects`,
       request,
     ).pipe(
-      map(data => new ProjectImpl().update(data.result)),
+      map(data => new FilesystemObject().update(data.result)),
     );
   }
 
-  get(hashId: string): Observable<ProjectImpl> {
-    return this.http.get<SingleResult<ProjectData>>(
-      `/api/projects/projects/${encode(hashId)}`,
+  get(hashId: string): Observable<FilesystemObject> {
+    return this.http.get<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/${encode(hashId)}`,
     ).pipe(
-      map(data => new ProjectImpl().update(data.result)),
+      map(data => new FilesystemObject().update(data.result)),
     );
   }
 
   save(hashIds: string[], changes: Partial<BulkProjectUpdateRequest>,
-       updateWithLatest?: { [hashId: string]: ProjectImpl }):
-    Observable<{ [hashId: string]: ProjectImpl }> {
-    return this.http.patch<ResultMapping<ProjectData>>(
-      `/api/projects/projects`, {
+       updateWithLatest?: { [hashId: string]: FilesystemObject }):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.patch<ResultMapping<FilesystemObjectData>>(
+      `/api/filesystem/objects`, {
         ...changes,
         hashIds,
       }
     ).pipe(
       map(data => {
-        const ret: { [hashId: string]: ProjectImpl } = updateWithLatest || {};
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
         for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
           if (!(itemHashId in ret)) {
-            ret[itemHashId] = new ProjectImpl();
+            ret[itemHashId] = new FilesystemObject();
           }
           ret[itemHashId].update(itemData);
         }
@@ -146,7 +147,7 @@ export class ProjectsService {
     Observable<{ [hashId: string]: FilesystemObject }> {
     return this.http.request<ResultMapping<FilesystemObjectData>>(
       'DELETE',
-      `/api/projects/projects`, {
+      `/api/filesystem/objects`, {
         headers: {'Content-Type': 'application/json'},
         body: {
           hashIds: [hashId],

@@ -179,7 +179,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
         sources: [{
           domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
+          url: ['/projects', encodeURIComponent(this.object.project.filename), 'bioc',
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
@@ -452,7 +452,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
+    const url = `/file-navigator/${this.object.project.filename}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
   }
 
@@ -553,7 +553,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const position = jQuery(node).parent().attr('position');
       const startIndex = jQuery(node).attr('start');
       const len = jQuery(node).attr('len');
-      let source = ['/projects', encodeURIComponent(this.object.project.name),
+      let source = ['/projects', encodeURIComponent(this.object.project.filename),
         'bioc', encodeURIComponent(this.object.hashId)].join('/');
       if (position) {
         source += '#';
@@ -601,7 +601,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const domain = new URL(src).hostname.replace(/^www\./i, '');
     hyperlinks.push({ url, domain });
     const hyperlink = meta.idHyperlink || '';
-    let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
+    let sourceUrl = ['/projects', encodeURIComponent(this.object.project.filename),
       'bioc', encodeURIComponent(this.object.hashId)].join('/');
     if (offset) {
       sourceUrl += '#offset=' + offset;

@@ -1,4 +1,4 @@
-<ng-container *ngIf="project.privileges.administrable">
+<ng-container *ngIf="project.privileges.writable">
   <button ngbDropdownItem (click)="openEditDialog(project)">
     Edit project...
   </button>
@@ -10,17 +10,17 @@
   </button>
 </ng-container>
 <ng-container>
-  <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>
+  <div class="dropdown-divider" *ngIf="project.privileges.writable"></div>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...
   </button>
   <button ngbDropdownItem (click)="updateStarred(project, !project.starred)">
     {{ project.starred ? 'Remove from' : 'Add to' }} starred
   </button>
-  <ng-container *ngIf="project.***ARANGO_USERNAME***">
+  <ng-container *ngIf="project">
     <div class="dropdown-divider"></div>
-    <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.***ARANGO_USERNAME***.hashId]"
-            [parentAddress]="['/projects', project.name]"
+    <button ngbDropdownItem [appLink]="['/file-navigator', project.filename, project.hashId]"
+            [parentAddress]="['/projects', project.filename]"
             [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
       Open file navigator
     </button>

@@ -3,21 +3,7 @@ import { AddedAnnotationExclusion, Annotation, AnnotationChangeExclusionMeta, Me
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
 
-import { FilePrivileges, ProjectPrivileges } from './models/privileges';
-
-// ========================================
-// Projects
-// ========================================
-
-export interface ProjectData {
-  hashId: string;
-  name: string;
-  description: string;
-  creationDate: string;
-  modifiedDate: string;
-  ***ARANGO_USERNAME***: FilesystemObjectData;
-  privileges: ProjectPrivileges;
-}
+import { FilePrivileges } from './models/privileges';
 
 // Requests
 // ----------------------------------------
@@ -26,7 +12,8 @@ export interface ProjectData {
  * Search request.
  */
 export interface ProjectSearchRequest extends PaginatedRequestOptions {
-  name: string;
+  filename: string;
+  type: 'project';
 }
 
 /**
@@ -86,7 +73,6 @@ export interface FilesystemObjectData {
   recyclingDate: string;
   parent: FilesystemObjectData;
   children: FilesystemObjectData[];
-  project: ProjectData;
   privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;

@@ -14,10 +14,9 @@ import { wrapExceptions } from 'app/shared/rxjs/wrapExceptions';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AuthSelectors } from 'app/auth/store';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 
 import { ProjectsService } from './projects.service';
-import { ProjectImpl } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { ProjectEditDialogComponent, ProjectEditDialogValue } from '../components/dialog/project-edit-dialog.component';
 import { ProjectCreateRequest } from '../schema';
 import { ProjectCollaboratorsDialogComponent } from '../components/dialog/project-collaborators-dialog.component';
@@ -59,8 +58,8 @@ export class ProjectActions {
   /**
    * Open a dialog to create a project.
    */
-  openCreateDialog(options: CreateDialogOptions = {}): Promise<ProjectImpl> {
-    const project = new ProjectImpl();
+  openCreateDialog(options: CreateDialogOptions = {}): Promise<FilesystemObject> {
+    const project = new FilesystemObject();
     const dialogRef = this.modalService.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New Project';
     dialogRef.componentInstance.project = project;
@@ -81,11 +80,11 @@ export class ProjectActions {
    * Open a dialog to edit a project.
    * @param project the project to edit
    */
-  openEditDialog(project: ProjectImpl): Promise<ProjectImpl> {
+  openEditDialog(project: FilesystemObject): Promise<FilesystemObject> {
     const dialogRef = this.modalService.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.project = project;
     dialogRef.componentInstance.accept = ((value: ProjectEditDialogValue) =>
-        this.addSimpleProgressDialog(`Saving changes to '${project.name}'...`)(
+        this.addSimpleProgressDialog(`Saving changes to '${project.filename}'...`)(
           this.projectService.save([project.hashId], value.request, {
             [project.hashId]: project,
           })
@@ -100,7 +99,7 @@ export class ProjectActions {
    * Open a dialog to modify a project's collaborators.
    * @param project the project to edit
    */
-  openCollaboratorsDialog(project: ProjectImpl): Promise<void> {
+  openCollaboratorsDialog(project: FilesystemObject): Promise<void> {
     const dialogRef = this.modalService.open(ProjectCollaboratorsDialogComponent);
     dialogRef.componentInstance.project = project;
     return dialogRef.result;
@@ -110,11 +109,11 @@ export class ProjectActions {
    * Open a dialog to delete a project.
    * @param project the project to delete
    */
-  openDeleteDialog(project: ProjectImpl): Promise<DirectoryObject[]> {
+  openDeleteDialog(project: FilesystemObject): Promise<FilesystemObject[]> {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = [project];
     dialogRef.componentInstance.accept = () =>
-      this.addSimpleProgressDialog(`Deleting ${project.name}...`)(
+      this.addSimpleProgressDialog(`Deleting ${project.filename}...`)(
         this.projectService.delete(project.hashId)
       ).pipe(
         wrapExceptions,
@@ -149,17 +148,17 @@ export class ProjectActions {
     return dialogRef.result;
   }
 
-  openShareDialog(project: ProjectImpl): Promise<boolean> {
+  openShareDialog(project: FilesystemObject): Promise<boolean> {
     return Promise.resolve(
       this.clipboard.copy(`${window.location.origin}/${project.getURL()}`),
     );
   }
 
-  updateStarred(project: ProjectImpl, starred: boolean) {
-    return this.filesystemService.updateStarred(project.***ARANGO_USERNAME***.hashId, starred)
+  updateStarred(project: FilesystemObject, starred: boolean) {
+    return this.filesystemService.updateStarred(project.hashId, starred)
       .toPromise()
       .then((result) => {
-        project.***ARANGO_USERNAME***.update(result);
+        project.update(result);
       });
   }
 }

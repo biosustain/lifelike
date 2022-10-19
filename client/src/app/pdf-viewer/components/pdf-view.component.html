@@ -116,12 +116,12 @@
                     [disabled]="!ready"
                      [appLink]="[
                             '/file-navigator',
-                            this.object.project.name,
+                            this.object.project.filename,
                             this.object.hashId
                         ]"
                       [parentAddress]="[
                             '/projects',
-                            this.object.project.name,
+                            this.object.project.filename,
                             'files',
                             this.object.hashId
                       ]"

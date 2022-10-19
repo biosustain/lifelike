@@ -12,7 +12,6 @@ import { ObjectTypeProvider } from 'app/file-types/providers/base-object.type-pr
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
@@ -25,6 +24,7 @@ import { FindOptions } from 'app/shared/utils/find';
 import { getChoicesFromQuery } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
+import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -39,6 +39,7 @@ import {
   createContentSearchParamsFromQuery,
   getContentSearchQueryParams
 } from '../utils/search';
+import File = GraphNS.File;
 
 
 @Component({
@@ -219,7 +220,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
+  highlightDisplayLimitChanged(object: FilesystemObject, change: HighlightDisplayLimitChange) {
     if (this.snippetAnnotations) {
       const queue: {
         index: number,

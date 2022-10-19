@@ -45,7 +45,6 @@ from neo4japp.exceptions import (
     UnsupportedMediaTypeError
 )
 from neo4japp.models import (
-    Projects,
     Files,
     FileContent,
     AppUser,
@@ -59,7 +58,6 @@ from neo4japp.models.files_queries import (
     build_file_hierarchy_query,
     FileHierarchy,
 )
-from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
@@ -79,7 +77,7 @@ from neo4japp.schemas.filesystem import (
     FileStarUpdateRequest,
     FileUpdateRequestSchema,
     FileVersionHistorySchema,
-    MultipleFileResponseSchema
+    MultipleFileResponseSchema, FileListRequestSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
@@ -88,6 +86,7 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -153,8 +152,9 @@ class FilesystemBaseView(MethodView):
             require_hash_ids: List[str] = None,
             sort: List[str] = [],
             sort_direction: List[str] = [],
-            attr_excl: List[str] = None
-    ) -> List[Files]:
+            attr_excl: List[str] = None,
+            pagination: Optional[Pagination] = None
+    ):
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -170,7 +170,6 @@ class FilesystemBaseView(MethodView):
         current_user = g.current_user
 
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
-        t_project = db.aliased(Projects, name='_project')
 
         # The following code gets a whole file hierarchy, complete with permission
         # information for the current user for the whole hierarchy, all in one go, but the
@@ -204,7 +203,6 @@ class FilesystemBaseView(MethodView):
 
         query = build_file_hierarchy_query(
             and_(*filters),
-            t_project,
             t_file,
             file_attr_excl=attr_excl
         ).options(
@@ -223,8 +221,6 @@ class FilesystemBaseView(MethodView):
         private_data_access = get_authorization_service().has_role(
             current_user, 'private-data-access'
         )
-        query = add_project_user_role_columns(query, t_project, current_user.id,
-                                              access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
         query = add_file_starred_columns(query, t_file.id, current_user.id)
@@ -232,7 +228,14 @@ class FilesystemBaseView(MethodView):
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
 
-        results = query.all()
+
+        if pagination:
+            paginated_results = query.paginate(pagination.page, pagination.limit)
+            results = paginated_results.items
+            total = paginated_results.total
+        else:
+            results = query.all()
+            total = len(results)
 
         # Because this method supports loading multiple files AND their hierarchy EACH, the query
         # dumped out every file AND every file's hierarchy. To figure out permissions for a file,
@@ -249,7 +252,7 @@ class FilesystemBaseView(MethodView):
         # 'recycled' should not be inherited?)
         files = []
         for rows in grouped_results.values():
-            hierarchy = FileHierarchy(rows, t_file, t_project)
+            hierarchy = FileHierarchy(rows, t_file)
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
             hierarchy.calculate_starred_files()
@@ -267,6 +270,8 @@ class FilesystemBaseView(MethodView):
                             f"({', '.join(missing_hash_ids)}) that could not be found.",
                     code=404)
 
+        if pagination:
+            return files, total
         # In the end, we just return a list of Files instances!
         return files
 
@@ -293,7 +298,6 @@ class FilesystemBaseView(MethodView):
         current_user = g.current_user
 
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
-        t_project = db.aliased(Projects, name='_project')
 
         # The following code gets a whole file hierarchy, complete with permission
         # information for the current user for the whole hierarchy, all in one go, but the
@@ -314,7 +318,6 @@ class FilesystemBaseView(MethodView):
                 filter,
                 Files.deletion_date.is_(None)
             ),
-            t_project,
             t_file,
             file_attr_excl=attr_excl,
             direction='children'
@@ -333,8 +336,6 @@ class FilesystemBaseView(MethodView):
         private_data_access = get_authorization_service().has_role(
             current_user, 'private-data-access'
         )
-        query = add_project_user_role_columns(query, t_project, current_user.id,
-                                              access_override=private_data_access)
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
 
@@ -444,8 +445,7 @@ class FilesystemBaseView(MethodView):
         update_modified_date = any([param in UPDATE_DATE_MODIFIED_COLUMNS for param in params])
 
         for file in target_files:
-            assert file.calculated_project is not None
-            is_***ARANGO_USERNAME***_dir = (file.calculated_project.***ARANGO_USERNAME***_id == file.id)
+            is_***ARANGO_USERNAME***_dir = not file.parent
 
             if 'description' in params:
                 if file.description != params['description']:
@@ -929,6 +929,23 @@ class FileListView(FilesystemBaseView):
 
         return self.get_file_response(file.hash_id, current_user)
 
+    @use_args(FileListRequestSchema)
+    @use_args(PaginatedRequestSchema)
+    def get(self, params, pagination: Pagination):
+        """Endpoint to fetch a list of projects accessible by the user."""
+
+        projects, total = self.get_nondeleted_recycled_files(
+            filter=Files.parent_id.is_(None),
+            pagination=pagination
+        )
+
+        return jsonify(FileListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': total,
+            'results': projects,
+        }))
+
     @use_args(lambda request: BulkFileRequestSchema(),
               locations=['json', 'form', 'files', 'mixed_form_json'])
     @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True),
@@ -1181,6 +1198,26 @@ class FileSearchView(FilesystemBaseView):
                         Files.recycling_date.is_(None),
                         Files.deletion_date.is_(None),
                         Files.pinned.is_(True)
+                    )
+                ),
+                sort=['file.modified_date'],
+                sort_direction=[SortDirection.DESC.value]
+            )
+            files = [
+                file for file in files
+                if file.calculated_privileges[current_user.id].readable
+            ]
+            # Ensure directories appear at the top of the list
+            files.sort(key=lambda f: not (f.mime_type == FILE_MIME_TYPE_DIRECTORY))
+            total = len(files)
+        elif params['type'] == 'project':
+            files = self.get_nondeleted_recycled_files(
+                filter=(
+                    and_(
+                        Files.recycling_date.is_(None),
+                        Files.deletion_date.is_(None),
+                        Files.parent_id.is_(None),
+                        Files.filename == params['filename']
                     )
                 ),
                 sort=['file.modified_date'],

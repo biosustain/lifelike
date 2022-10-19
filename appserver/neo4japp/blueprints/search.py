@@ -6,7 +6,6 @@ from flask_apispec import use_kwargs
 from typing import List, Optional
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.projects import ProjectBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
@@ -16,7 +15,7 @@ from neo4japp.database import (
     get_file_type_service
 )
 from neo4japp.exceptions import ServerException
-from neo4japp.models import Files, Projects
+from neo4japp.models import Files
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
     ContentSearchSchema,
@@ -111,21 +110,13 @@ def get_folders_from_params(advanced_args):
         return []
 
 
-def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: List[Projects]):
+def get_filepaths_filter(accessible_folders: List[Files]):
     """
-    Generates an elastic boolean query which filters documents based on folder/project access. Takes
-    as input two options:
+    Generates an elastic boolean query which filters documents based on folder access. Takes
+    as input an option:
         - accessible_folders: a list of Files objects representing folders to be included in the
         query
-        - accessible_projects: a list of Projects objects representing projects to be included in
-        the query
-    Any files present in accessible_folders which are not children of accessible_projects will be
-    ignored, and returned along with the query.
     """
-    accessible_projects_ids = [
-        project.id
-        for project in accessible_projects
-    ]
 
     paths = [file.path for file in accessible_folders]
 
@@ -138,13 +129,11 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
             }
         }
     else:
-        # If there were no accessible filepaths in the given list, search all accessible projects
+        # If there were no accessible filepaths in the given list
         return {
             'bool': {
                 'should': [
-                    # If the user has access to the project the document is in...
-                    {'terms': {'project_id': accessible_projects_ids}},
-                    # OR if the document is public.
+                    # if the document is public.
                     {'term': {'public': True}}
                 ]
             }
@@ -153,7 +142,7 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
 # End Search Helpers #
 
 
-class ContentSearchView(ProjectBaseView, FilesystemBaseView):
+class ContentSearchView(FilesystemBaseView):
 
     @use_args(ContentSearchSchema)
     @use_args(PaginatedRequestSchema)
@@ -204,8 +193,6 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         }
 
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
-        # Gets the full list of projects accessible by the current user.
-        accessible_projects, _ = self.get_nondeleted_projects(None, accessible_only=True)
         # Gets the full list of folders accessible by the current user.
         accessible_folders = self.get_nondeleted_recycled_files(
             Files.hash_id.in_(folders),
@@ -214,8 +201,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         accessible_folder_hash_ids = [folder.hash_id for folder in accessible_folders]
         dropped_folders = [folder for folder in folders if folder not in accessible_folder_hash_ids]
         filepaths_filter = get_filepaths_filter(
-            accessible_folders,
-            accessible_projects
+            accessible_folders
         )
         # These are the document fields that will be returned by elastic
         return_fields = ['id']

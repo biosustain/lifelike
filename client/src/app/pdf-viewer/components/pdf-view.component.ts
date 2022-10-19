@@ -383,7 +383,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     const loc = event.location;
     const meta = event.meta;
 
-    const source = `/projects/${encodeURIComponent(this.object.project.name)}`
+    const source = `/projects/${encodeURIComponent(this.object.project.filename)}`
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 

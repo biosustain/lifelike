@@ -7,7 +7,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { filenameValidator, noStartOrEndWhitespaceValidator } from 'app/shared/validators';
 
-import { ProjectImpl } from '../../models/filesystem-object';
+import { FilesystemObject } from '../../models/filesystem-object';
 import { ProjectCreateRequest } from '../../schema';
 
 @Component({
@@ -17,7 +17,7 @@ import { ProjectCreateRequest } from '../../schema';
 export class ProjectEditDialogComponent extends CommonFormDialogComponent<ProjectEditDialogValue> {
   @Input() title = 'Edit Project';
 
-  private _project: ProjectImpl;
+  private _project: FilesystemObject;
 
   readonly form: FormGroup = new FormGroup({
     name: new FormControl('', [
@@ -37,7 +37,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
   }
 
   @Input()
-  set project(value: ProjectImpl) {
+  set project(value: FilesystemObject) {
     this._project = value;
     this.form.patchValue({
       name: value.name || '',
@@ -71,7 +71,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
 }
 
 export interface ProjectEditDialogValue {
-  project: ProjectImpl;
-  projectChanges: Partial<ProjectImpl>;
+  project: FilesystemObject;
+  projectChanges: Partial<FilesystemObject>;
   request: ProjectCreateRequest;
 }

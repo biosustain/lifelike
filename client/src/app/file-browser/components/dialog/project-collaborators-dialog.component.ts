@@ -16,7 +16,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 
-import { ProjectImpl } from '../../models/filesystem-object';
+import { FilesystemObject } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
 import { ProjectsService } from '../../services/projects.service';
 import { MultiCollaboratorUpdateRequest } from '../../schema';
@@ -28,7 +28,7 @@ import { MultiCollaboratorUpdateRequest } from '../../schema';
 export class ProjectCollaboratorsDialogComponent extends CommonFormDialogComponent<void> {
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
-  private _project: ProjectImpl;
+  private _project: FilesystemObject;
   collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
   readonly addForm: FormGroup = new FormGroup({
     roleName: new FormControl('project-read', Validators.required),
@@ -49,7 +49,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   }
 
   @Input()
-  set project(value: ProjectImpl) {
+  set project(value: FilesystemObject) {
     this._project = value;
     this.refresh();
   }

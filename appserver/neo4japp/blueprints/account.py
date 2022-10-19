@@ -32,9 +32,9 @@ from neo4japp.constants import (
     RESET_PASSWORD_EMAIL_TITLE,
     LogEventType, FILE_MIME_TYPE_MAP
 )
-from neo4japp.database import db, get_authorization_service, get_projects_service
+from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException, NotAuthorized
-from neo4japp.models import AppUser, AppRole, Projects, Files, FileContent
+from neo4japp.models import AppUser, AppRole, Files, FileContent
 from neo4japp.models.auth import user_role
 from neo4japp.models.files import FileAnnotationsVersion
 from neo4japp.schemas.account import (
@@ -47,9 +47,10 @@ from neo4japp.schemas.account import (
     UserChangePasswordSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
-from neo4japp.services.file_types.providers import MapTypeProvider
+from neo4japp.services.file_types.providers import MapTypeProvider, DirectoryTypeProvider
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
+
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
@@ -131,25 +132,28 @@ class AccountView(MethodView):
         or if initial project template does not exist.
         :param user: user to create initial project for
         """
-        project = Projects()
-        project.name = f'{user.username}-example'
+        project = Files()
+        project.filename = f'{user.username}-example'
         project.description = f'Initial project for {user.username}'
 
-        project_service = get_projects_service()
+        project.mime_type = DirectoryTypeProvider.MIME_TYPE
+        project.path = f'/{project.filename}'
+        project.user = user
+        project.creator = user
 
         try:
             db.session.begin_nested()
-            project_service.create_project_uncommitted(user, project)
+            db.session.add(project)
             db.session.commit()
             db.session.flush()
         except IntegrityError:
             db.session.rollback()
             logging.exception('Failed to create initial project with default naming for user %s',
                               user.username)
-            project.name += '-' + uuid4().hex[:8]
+            project.filename += '-' + uuid4().hex[:8]
             try:
                 db.session.begin_nested()
-                project_service.create_project_uncommitted(user, project)
+                db.session.add(project)
                 db.session.commit()
                 db.session.flush()
             except IntegrityError:
@@ -173,7 +177,7 @@ class AccountView(MethodView):
                         file.content_id = FileContent().get_or_create(file_content)
 
                     file.user_id = user.id
-                    file.parent = project.***ARANGO_USERNAME***
+                    file.parent = project.id
                     db.session.add(file)
                     file_map[file_metadata['path']] = file
 
@@ -235,7 +239,7 @@ class AccountView(MethodView):
                     file.content_id = FileContent().get_or_create(updated_map_content)
 
                     file.user_id = user.id
-                    file.parent = project.***ARANGO_USERNAME***
+                    file.parent = project.id
                     db.session.add(file)
 
                     file_map[file_metadata['path']] = file

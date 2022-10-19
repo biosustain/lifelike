@@ -299,7 +299,7 @@ class AuthenticationError(ServerException):
 
 class AccessRequestRequiredError(ServerException):
     """
-    Raised when access needs to be requested for a project. The end goal is to
+    Raised when access needs to be requested for a file. The end goal is to
     provide enough data in this error to the client that we can pop up a
     dialog to allow the user to request permission. As of writing, this error has not been
     fleshed out and will probably need rethinking.

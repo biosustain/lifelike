@@ -1,28 +1,26 @@
 import { escapeRegExp } from 'lodash-es';
 
-import { DirectoryObject } from 'app/interfaces/projects.interface';
-
 import { FilesystemObject } from '../models/filesystem-object';
 
-export function getObjectCommands(object: DirectoryObject) {
+export function getObjectCommands(object: FilesystemObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID
-      return ['/projects', object.project.projectName, 'folders', object.id];
+      return ['/projects', object.project.filename, 'folders', object.id];
     case 'file':
       if (object.name.slice(object.name.length - 11) === '.enrichment') {
-        return ['/projects', object.project.projectName, 'enrichment-table', object.id];
+        return ['/projects', object.project.filename, 'enrichment-table', object.id];
       } else {
-        return ['/projects', object.project.projectName, 'files', object.id];
+        return ['/projects', object.project.filename, 'files', object.id];
       }
     case 'map':
-      return ['/projects', object.project.projectName, 'maps', object.id];
+      return ['/projects', object.project.filename, 'maps', object.id];
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }
 }
 
-export function getObjectMatchExistingTab(object: DirectoryObject) {
+export function getObjectMatchExistingTab(object: FilesystemObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID

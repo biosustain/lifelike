@@ -3,9 +3,3 @@ export interface FilePrivileges {
   writable: boolean;
   commentable: boolean;
 }
-
-export interface ProjectPrivileges {
-  readable: boolean;
-  writable: boolean;
-  administrable: boolean;
-}

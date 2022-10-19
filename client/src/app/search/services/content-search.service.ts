@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ProjectData } from 'app/file-browser/schema';
+import { FilesystemObjectData } from 'app/file-browser/schema';
 
 import {
   AnnotationRequestOptions,
@@ -54,8 +54,8 @@ export class ContentSearchService {
     );
   }
 
-  getProjects(): Observable<ProjectData[]> {
-    return this.http.get<{results: ProjectData[]}>(
+  getProjects(): Observable<FilesystemObjectData[]> {
+    return this.http.get<{results: FilesystemObjectData[]}>(
       `/api/projects/projects`, {
       },
     ).pipe(map(resp => resp.results));

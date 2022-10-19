@@ -1,6 +1,6 @@
 import { ModelList } from 'app/shared/models';
 
-import { ProjectImpl } from './filesystem-object';
+import { FilesystemObject } from './filesystem-object';
 
-export class ProjectList extends ModelList<ProjectImpl> {
+export class ProjectList extends ModelList<FilesystemObject> {
 }

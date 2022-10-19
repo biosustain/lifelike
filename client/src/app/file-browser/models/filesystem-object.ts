@@ -4,7 +4,6 @@ import { Subject } from 'rxjs';
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
@@ -14,125 +13,16 @@ import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
 import { FILESYSTEM_IMAGE_HASHID_TYPE, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
 
-import { FilePrivileges, ProjectPrivileges } from './privileges';
+import { FilePrivileges } from './privileges';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../providers/filesystem-object-data.provider';
-import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { Directory, Project } from '../services/project-space.service';
+import { AnnotationConfigurations, FilesystemObjectData } from '../schema';
 import { createDragImage } from '../utils/drag';
-
-// TODO: Rename this class after #unifiedfileschema
-export class ProjectImpl implements Project, ObservableObject {
-  /**
-   * Legacy ID field that needs to go away.
-   */
-  id?: number;
-  hashId: string;
-  name: string;
-  description: string;
-  creationDate: string;
-  modifiedDate: string;
-  ***ARANGO_USERNAME***: FilesystemObject;
-  privileges: ProjectPrivileges;
-  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
-  changed$ = new Subject();
-
-  get starred(): boolean {
-    return this.***ARANGO_USERNAME***?.starred;
-  }
-
-  set starred(value) {
-    if (this.***ARANGO_USERNAME***) {
-      this.***ARANGO_USERNAME***.update({starred: value});
-    }
-  }
-
-  get effectiveName(): string {
-    return this.name || this.hashId;
-  }
-
-  get projectName() {
-    return this.name;
-  }
-
-  get directory(): Directory {
-    return this.***ARANGO_USERNAME*** ? this.***ARANGO_USERNAME***.directory : null;
-  }
-
-  update(data: RecursivePartial<ProjectData>): ProjectImpl {
-    if (data == null) {
-      return this;
-    }
-    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
-      'privileges', 'starred']) {
-      if (data.hasOwnProperty(key)) {
-        this[key] = data[key];
-      }
-    }
-    if (data.hasOwnProperty('***ARANGO_USERNAME***')) {
-      if (isNil(data.***ARANGO_USERNAME***)) {
-        this.***ARANGO_USERNAME*** = null;
-        // TODO: Error?
-      } else {
-        const ***ARANGO_USERNAME*** = this.***ARANGO_USERNAME*** ?? new FilesystemObject();
-        ***ARANGO_USERNAME***.update(data.***ARANGO_USERNAME***);
-        ***ARANGO_USERNAME***.project = this;
-        this.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***;
-      }
-    }
-    this.changed$.next(data);
-    return this;
-  }
-
-  getCommands(forEditing: boolean = false): any[] {
-    return ['/folders', this.***ARANGO_USERNAME***.hashId];
-  }
-
-  getURL(): string {
-    return this.getCommands().map(item => {
-      return encodeURIComponent(item.replace(/^\//, ''));
-    }).join('/');
-  }
-
-  get colorHue(): number {
-    let hash = 3242;
-    for (let i = 0; i < this.hashId.length; i++) {
-      // tslint:disable-next-line:no-bitwise
-      hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
-    }
-    return hash % 100 / 100;
-  }
-
-  addDataTransferData(dataTransfer: DataTransfer) {
-    createProjectDragImage(this).addDataTransferData(dataTransfer);
-
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.name,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.id + '',
-        }],
-        sources: [{
-          domain: 'File Source',
-          url: this.getCommands().join('/'),
-        }],
-      },
-    };
-
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
-  }
-}
-
 /**
  * This object represents both directories and every type of file in Lifelike. Due
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
  * amount of code for the refactor.
  */
-export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap, ObservableObject {
+export class FilesystemObject implements PdfFile, KnowledgeMap, ObservableObject {
   hashId: string;
   filename: string;
   user: AppUser;
@@ -147,7 +37,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   readonly modifiedDate: string;
   protected updatedTimestamp: number;
   recyclingDate: string;
-  project: ProjectImpl;
   parent: FilesystemObject;
   readonly children = new CollectionModel<FilesystemObject>([], {
     multipleSelection: true,
@@ -173,10 +62,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.mimeType === MimeTypes.Directory;
   }
 
+  get project(): FilesystemObject {
+    return this.parent?.project ?? this;
+  }
+
   /**
    * Top directories (without parents) are projects.
    */
-  get isProjectRoot() {
+  get isProject() {
     return this.isDirectory && !this.parent;
   }
 
@@ -249,8 +142,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   get locator(): PathLocator {
     if (this.type === 'dir') {
       return {
-        projectName: this.project.name,
-        directoryId: this.hashId,
+        projectName: this.project.filename,
+        directoryId: this.hashId
       };
     } else if (this.parent != null) {
       return this.parent.locator;
@@ -262,7 +155,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * @deprecated
    */
-  get directory(): Directory {
+  get directory(): FilesystemObject {
     // noinspection JSDeprecatedSymbols
     if (this.type === 'dir') {
       return this;
@@ -401,11 +294,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get effectiveName(): string {
-    if (this.isProjectRoot) {
-      return this.project.name;
-    } else {
       return this.filename;
-    }
   }
 
   /**
@@ -481,7 +370,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * @deprecated
    */
-  get data(): Directory | KnowledgeMap | PdfFile {
+  get data(): FilesystemObject | KnowledgeMap | PdfFile {
     return this;
   }
 
@@ -503,10 +392,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   getCommands(forEditing = true): any[] {
     // TODO: Move this method to ObjectTypeProvider
-    const projectName = this.project ? this.project.name : 'default';
+    const projectName = this.project ? this.project.filename : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProjectRoot) {
+        if (this.isProject) {
           return ['/projects', projectName];
         }
         return ['/projects', projectName, 'folders', this.hashId];
@@ -649,20 +538,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     if ('parent' in data) {
       this.parent = data.parent ? this.parent ?? new FilesystemObject() : null;
     }
-    if ('project' in data) {
-      this.project = data.project ? this.project ?? new ProjectImpl() : null;
-    }
-    if (this.parent) {
-      this.parent.project = this.parent.project ?? this.project;
-    }
-    if (this.project && this.isProjectRoot) {
-      this.project.***ARANGO_USERNAME*** = this.project.***ARANGO_USERNAME*** ?? this;
-    }
     if (data.parent) {
       this.parent.update(data.parent);
-    }
-    if (data.project) {
-      this.project.update(data.project);
     }
     if ('children' in data) {
       if (data.children != null) {
@@ -670,9 +547,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           itemData => {
             const child = new FilesystemObject();
             child.parent = this;
-            if (this.project != null) {
-              child.project = this.project;
-            }
             return child.update(itemData);
           }));
       } else {
@@ -682,14 +556,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     this.changed$.next(data);
     return this;
   }
-
-  get ***ARANGO_USERNAME***(): FilesystemObject {
-    let ***ARANGO_USERNAME***: FilesystemObject = this;
-    while (***ARANGO_USERNAME***.parent != null) {
-      ***ARANGO_USERNAME*** = ***ARANGO_USERNAME***.parent;
-    }
-    return ***ARANGO_USERNAME***;
-  }
 }
 
 export interface PathLocator {
@@ -697,8 +563,8 @@ export interface PathLocator {
   directoryId?: string;
 }
 
-export function createProjectDragImage(project: ProjectImpl): DragImage {
-  return createDragImage(project.name, '\uf5fd');
+export function createProjectDragImage(project: FilesystemObject): DragImage {
+  return createDragImage(project.filename, '\uf5fd');
 }
 
 export function createObjectDragImage(object: FilesystemObject): DragImage {
