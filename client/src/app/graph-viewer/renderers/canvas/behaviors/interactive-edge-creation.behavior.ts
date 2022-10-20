@@ -43,7 +43,7 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   }
 }
 
-class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
+class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle, UniversalGraphNodelike> {
   protected topOffset = 0;
   protected leftOffset = 0;
   protected size = 20;
