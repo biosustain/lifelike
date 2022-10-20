@@ -1,6 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { GraphEntity } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
 
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -40,9 +40,24 @@ export class CopyKeyboardShortcutBehavior extends AbstractCanvasBehavior {
                 });
       clipboardData = '';
     } else {
+      const nestedNodes = new Set(
+        selection
+        .filter(({type}) => type === GraphEntityType.Group)
+        .flatMap(({entity}) =>
+          (entity as UniversalGraphGroup).members.map(({hash}) => hash)
+        )
+      );
+      const nestedEdges = this.graphView.edges.filter(({from, to}) =>
+        nestedNodes.has(from) && nestedNodes.has(to)
+      );
       clipboardData = JSON.stringify({
         type: TYPE_STRING,
-        selection,
+        selection: selection.concat(
+          nestedEdges.map(entity => ({
+            type: GraphEntityType.Edge,
+            entity
+          } as GraphEntity))
+        ),
       } as GraphClipboardData);
     }
 
