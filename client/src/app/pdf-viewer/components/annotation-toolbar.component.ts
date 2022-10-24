@@ -118,7 +118,7 @@ export class AnnotationToolbarComponent {
     const container = this.containerRef.nativeElement;
     for (let i = 0; i < selection.rangeCount; i++) {
       const range = selection.getRangeAt(i);
-      if (range.startOffset !== range.endOffset && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
+      if (!range.collapsed && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
         ranges.push(range);
       }
     }
