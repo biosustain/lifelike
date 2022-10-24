@@ -38,7 +38,6 @@ x-appserver: &appserver
     # Other
     - DOMAIN=http://localhost:4200
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-    - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
     - ./appserver:/home/n4j
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb

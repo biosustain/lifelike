@@ -8,7 +8,7 @@ import typing
 import zipfile
 from base64 import b64encode
 from io import BufferedIOBase
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import bioc
 import graphviz
@@ -146,7 +146,6 @@ ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
 PROJECTS_RE = re.compile(r'(^ */projects/(?!.*/.+).*)|(^ */(projects/.+/)?folders/.*#project)')
-ICON_DATA: dict = {}
 PDF_PAD = 1.0
 
 
@@ -435,20 +434,23 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
+icon_names = [
+    'map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
+    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', '***ARANGO_DB_NAME***'
+]
+ICON_DATA = {}
+
 def get_icons_data():
     """
     Lazy loading of the byte icon data from the PNG files
     """
-    if ICON_DATA:
-        return ICON_DATA
-    else:
-        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
-                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', '***ARANGO_DB_NAME***']:
-            with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
-                ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
-                                                       + b64encode(file.read()) \
-                                                           .decode(BYTE_ENCODING)
-        return ICON_DATA
+    if not ICON_DATA:
+        for icon in icon_names:
+            path = ASSETS_PATH / f'{icon}.png'
+            with open(path, 'rb') as f:
+                ICON_DATA[path] = 'data:image/png;base64,' + \
+                                    b64encode(f.read()).decode(BYTE_ENCODING)
+    return ICON_DATA
 
 
 def create_group_node(group: dict):
@@ -981,7 +983,7 @@ def create_watermark():
         'fixedsize': 'true',
         'imagescale': 'both',
         'shape': 'rect',
-        'image': ASSETS_PATH + '***ARANGO_DB_NAME***.png',
+        'image': ASSETS_PATH / '***ARANGO_DB_NAME***.png',
         'width': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
         'height': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
         'penwidth': '0.0'
