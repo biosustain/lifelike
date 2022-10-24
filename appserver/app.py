@@ -308,7 +308,7 @@ def drop_all_tables_and_enums():
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
 
 
-def validate_email(email):
+def validate_email(ctx, name, email):
     if not re.match(
         r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
         email
@@ -316,10 +316,10 @@ def validate_email(email):
         raise ValueError('Invalid email address')
     return email
 
-
 @app.cli.command("create-user")
 @click.argument("name", nargs=1)
 @click.argument("email", nargs=1, callback=validate_email)
+@click.argument("password", nargs=1, default="password")
 def create_user(name, email):
     user = AppUser(
         username=name,
@@ -332,7 +332,7 @@ def create_user(name, email):
     account_service = get_account_service()
     get_role = account_service.get_or_create_role('user')
     user.roles.extend([get_role])
-    user.set_password('password')
+    user.set_password(password)
     db.session.add(user)
     db.session.commit()
     # rollback in case of error?
