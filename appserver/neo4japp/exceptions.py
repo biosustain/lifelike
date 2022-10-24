@@ -95,18 +95,7 @@ class StatisticalEnrichmentError(ServerException):
 
 
 class AnnotationError(ServerException):
-    def __init__(
-        self,
-        title=None,
-        message=None,
-        additional_msgs=[],
-        code=HTTPStatus.INTERNAL_SERVER_ERROR
-    ):
-        super().__init__(
-            title=title,
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+    pass
 
 
 class LMDBError(ServerException):
