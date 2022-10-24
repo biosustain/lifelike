@@ -13,7 +13,7 @@ from neo4japp.database import get_redis_connection
 class RedisQueueService():
     def __init__(self):
         super().__init__()
-        self._redis_conn = get_redis_connection()
+        self._redis_conn = get_redis_connection(db=0)
 
     def get_queue(self, name='default') -> Queue:
         return Queue(name, connection=self._redis_conn)

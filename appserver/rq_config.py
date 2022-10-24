@@ -1,12 +1,8 @@
 from os import getenv
 
-REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
-        host=getenv('REDIS_HOST', 'localhost'),
-        port=getenv('REDIS_PORT', '6379'),
-        username=getenv('REDIS_USERNAME', 'default'),
-        password=getenv('REDIS_PASSWORD', 'password'),
-        db=getenv('REDIS_DB', '1')
-    )
+from neo4japp.constants import BASE_REDIS_URL, RQ_REDIS_DB
+
+RQ_REDIS_URL = f"{BASE_REDIS_URL}/{RQ_REDIS_DB}"
 
 QUEUES = ['high', 'default', 'low']
 

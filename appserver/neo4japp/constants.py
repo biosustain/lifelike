@@ -11,6 +11,17 @@ from sendgrid import SendGridAPIClient
 from neo4japp.util import Enumd
 
 BASE_PATH = Path.cwd() / '../'
+BASE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}'.format(
+    host=os.getenv('REDIS_HOST', 'localhost'),
+    port=os.getenv('REDIS_PORT', '6379'),
+    username=os.getenv('REDIS_USERNAME', ''),
+    password=os.getenv('REDIS_PASSWORD', ''),
+)
+CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB', '0')
+RQ_REDIS_DB = os.getenv('RQ_REDIS_DB', '1')
+
+ELASTICSEARCH_HOSTS = os.getenv('ELASTICSEARCH_HOSTS', 'localhost:9200').split(',')
+
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset

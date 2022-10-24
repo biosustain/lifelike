@@ -18,10 +18,8 @@ x-appserver: &appserver
     - POSTGRES_DB=postgres
     # Redis
     - REDIS_HOST=redis
-    - REDIS_PORT=6379
     - REDIS_USERNAME=default
     - REDIS_PASSWORD=password
-    - REDIS_SSL=false
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     - ELASTIC_FILE_INDEX_ID=file_ci
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/

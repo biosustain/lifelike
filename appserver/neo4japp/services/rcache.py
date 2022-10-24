@@ -1,23 +1,18 @@
-""" Redis Cache """
+"""Redis Cache"""
 import os
 import redis
 
-REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT')
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
+from neo4japp.database import CACHE_REDIS_URL
 
+DEFAULT_CACHE_SETTINGS = dict(ex=3600 * 24)
 
-DEFAULT_CACHE_SETTINGS = {
-    'ex': 3600 * 24
-}
-
-connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
-
-redis_server = redis.Redis(
-    connection_pool=redis.BlockingConnectionPool.from_url(connection_url))
-
+cache = None
+def _get_redis_instance():
+    """Memoized redis instance"""
+    if not cache:
+        connection_pool = redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
+        cache = redis.Redis(connection_pool=connection_pool)
+    return cache
 
 # Helper method to use redis cache
 #   If:
@@ -38,25 +33,26 @@ def redis_cached(
         load=None,
         dump=None
 ):
-    cached_result = redis_server.get(uid)
+    cache = _get_redis_instance()
+    cached_result = cache.get(uid)
     if cached_result:
         return load(cached_result) if load else cached_result
     else:
         result = result_provider()
         dumped_result = dump(result) if dump else result
-        redis_server.set(uid, dumped_result, **cache_setting)
+        cache.set(uid, dumped_result, **cache_setting)
         if load is None:
             return dumped_result
         return result
 
 
 def getcache(uid: str):
-    return redis_server.get(uid)
+    return _get_redis_instance().get(uid)
 
 
 def delcache(uid: str):
-    if redis_server.get(uid):
-        redis_server.delete(uid)
+    if getcache(id):
+        _get_redis_instance().delete(uid)
 
 
 def setcache(
@@ -67,5 +63,5 @@ def setcache(
     cache_setting=DEFAULT_CACHE_SETTINGS,
 ):
     dumped_data = dump(data) if dump else data
-    redis_server.set(uid, dumped_data, **cache_setting)
+    _get_redis_instance().set(uid, dumped_data, **cache_setting)
     return load(dumped_data) if load else dumped_data
