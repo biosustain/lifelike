@@ -11,13 +11,13 @@ x-appserver: &appserver
     - FLASK_ENV=development
 
     # Postgres
-    - POSTGRES_HOST=pgdatabase
+    - POSTGRES_HOST=postgres
     - POSTGRES_USER=postgres
     - POSTGRES_PASSWORD=postgres
     - POSTGRES_DB=postgres
 
     # Neo4j
-    - NEO4J_HOST=graphdatabase
+    - NEO4J_HOST=neo4j
     - NEO4J_AUTH=neo4j/password
 
     # Redis
@@ -34,8 +34,8 @@ x-appserver: &appserver
   volumes:
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
-    - pgdatabase
-    - graphdatabase
+    - postgres
+    - neo4j
     - pdfparser
     - statistical-enrichment
     - elasticsearch
@@ -72,13 +72,13 @@ services:
       - FLASK_ENV=development
 
       # Neo4j
-      - NEO4J_HOST=graphdatabase
+      - NEO4J_HOST=neo4j
       - NEO4J_AUTH=neo4j/password
 
       # Redis
       - REDIS_HOST=redis
     depends_on:
-      - graphdatabase
+      - neo4j
       - redis
 
   cache-invalidator:
@@ -89,60 +89,14 @@ services:
       - LOG_LEVEL=debug
 
       # Neo4j
-      - NEO4J_HOST=graphdatabase
+      - NEO4J_HOST=neo4j
       - NEO4J_AUTH=neo4j/password
 
       # Redis
       - REDIS_HOST=redis
     depends_on:
       - redis
-      - graphdatabase
-
-  # ----------------------------------------
-  # Backing services
-  # ----------------------------------------
-  pgdatabase:
-    image: postgres:14
-    container_name: pgdatabase
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_PASSWORD=postgres
-
-  graphdatabase:
-    image: neo4j:4.4-community
-    container_name: graphdatabase
-    ports:
-      - 7474:7474
-      - 7687:7687
-    environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - 6379:6379
-
-  pdfparser:
-    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
-    restart: unless-stopped
-    tty: true
-    ports:
-      - 7600:7600
-
-  elasticsearch:
-    build: ./elasticsearch
-    ports:
-      - 9200:9200
-    environment:
-      - discovery.type=single-node
-      - http.max_content_length=200mb
-      - bootstrap.memory_lock=true
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - neo4j
 
 volumes:
   lmdb:

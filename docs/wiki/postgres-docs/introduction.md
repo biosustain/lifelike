@@ -14,23 +14,21 @@ Optionally commit the diagram to the repository (in `docs/dev`).
 
 1. Access PostgreSQL:
 
-   ```sh
-   docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
-   ```
+    ```sh
+    docker-compose exec postgres psql -U postgres -h postgres -d postgres
+    ```
 
 2. Drop the current schema:
 
-   ```sql
-   DROP SCHEMA public CASCADE;
-   CREATE SCHEMA public;
-   ```
+    ```sql
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
+    ```
 
 3. Move the SQL dump file to the top folder of your repository.
 
 4. Load the SQL dump:
 
-   ```sh
-   docker-compose exec -T pgdatabase psql -U postgres < $dump_file
-   ```
-
-   
+    ```sh
+    docker-compose exec -T postgres psql -U postgres < $dump_file
+    ```
