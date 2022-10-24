@@ -1,4 +1,5 @@
-from os import environ
+import os
+from pathlib import Path
 
 from neo4japp.database import get_or_create_arango_client
 
@@ -79,7 +80,8 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(getenv('LMDB_HOME_FOLDER'), **configs)
+    this_dir = Path(os.path.abspath(os.path.dirname(__file__)))
+    return LMDBService(f"{os.getenv('LMDB_HOME_FOLDER', this_dir/'lmdb')}/", **configs)
 
 
 def get_recognition_service(exclusions, inclusions):

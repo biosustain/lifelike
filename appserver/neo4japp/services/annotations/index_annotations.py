@@ -1,14 +1,18 @@
-import os
 import json
-import lmdb
+import os
 import sys
-
 from collections import deque
-from getopt import getopt, GetoptError
+from getopt import GetoptError, getopt
+from pathlib import Path
 
-from elasticsearch import Elasticsearch
+import lmdb
 from elasticsearch.helpers import parallel_bulk
+from elasticsearch import Elasticsearch
 
+from neo4japp.constants import ELASTICSEARCH_HOSTS
+from neo4japp.database import db
+from neo4japp.factory import create_app
+from neo4japp.models import GlobalList
 from neo4japp.services.annotations.constants import (
     ANATOMY_LMDB,
     CHEMICALS_LMDB,
@@ -19,15 +23,11 @@ from neo4japp.services.annotations.constants import (
     PHENOTYPES_LMDB,
     PROTEINS_LMDB,
     SPECIES_LMDB,
+    ManualAnnotationType
 )
 
-from neo4japp.database import db
-from neo4japp.factory import create_app
-from neo4japp.models import GlobalList
-from neo4japp.services.annotations.constants import ManualAnnotationType
 
-
-es = Elasticsearch(hosts=['http://elasticsearch'], timeout=5000)
+es = Elasticsearch(hosts=ELASTICSEARCH_HOSTS, timeout=5000)
 
 """
 Don't delete - useful for testing locally to confirm the
@@ -131,7 +131,7 @@ def seed_exclusions():
 
 
 def main(argv):
-    directory = os.path.realpath(os.path.dirname(__file__))
+    lmdb_path = os.path.realpath(os.path.dirname(__file__)) / Path('lmdb')
 
     try:
         opts, args = getopt(argv, 'aen:')
@@ -143,22 +143,16 @@ def main(argv):
         opt, entity_type = opts[0]
 
         if opt == '-n':
-            parentdir = os.path.join(directory, f'lmdb/{entity_type}')
-
-            env, db = open_env(entity_type, parentdir)
-
-            print(f'Processing {parentdir}')
+            env, db = open_env(entity_type, parentdir / entity_type)
             # first delete the index to clear the data
             es.indices.delete(index=entity_type, ignore=[404])
             es.indices.create(index=entity_type)
             deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
             env.close()
         elif opt == '-a':
-            for parentdir, subdirs, files in os.walk(os.path.join(directory, 'lmdb')):
+            for parentdir, subdirs, files in os.walk(lmdb_path):
                 if 'data.mdb' in files:
-                    print(f'Processing {parentdir}')
                     entity_type = parentdir.split('/')[-1]
-
                     env, db = open_env(entity_type, parentdir)
 
                     # first delete the index to clear the data
