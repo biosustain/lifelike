@@ -7,7 +7,7 @@ from os import environ
 from .exceptions import JWTTokenException
 
 auth = HTTPTokenAuth('Bearer')
-jwt_client = jwt.PyJWKClient(environ.get('JWKS_URL', ''))
+jwt_client = jwt.PyJWKClient(getenv('JWKS_URL', ''))
 
 def login_exempt(f):
     """

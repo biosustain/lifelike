@@ -5,31 +5,31 @@ class Base():
     SITE_NAME = 'Lifelike Knowledge Search'
 
     # Optional for tracking the master branch for the build
-    GITHUB_HASH = os.environ.get('GITHUB_HASH', '__VERSION__')
-    GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
-    APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
-    APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
+    GITHUB_HASH = os.getenv('GITHUB_HASH', '__VERSION__')
+    GITHUB_LAST_COMMIT_TIMESTAMP = os.getenv('GITHUB_COMMIT_TIMESTAMP', 'undefined')
+    APP_BUILD_NUMBER = os.getenv('APP_BUILD_NUMBER', 'undefined')
+    APP_VERSION = os.getenv('APP_VERSION', 'undefined')
 
-    JWKS_URL = os.environ.get('JWKS_URL', None)
-    JWT_SECRET = os.environ.get('JWT_SECRET', 'secrets')
-    JWT_AUDIENCE = os.environ.get('JWT_AUDIENCE', None)
-    JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+    JWKS_URL = os.getenv('JWKS_URL', None)
+    JWT_SECRET = os.getenv('JWT_SECRET', 'secrets')
+    JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', None)
+    JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
 
-    POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-    POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-    POSTGRES_USER = os.environ.get('POSTGRES_USER')
-    POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-    POSTGRES_DB = os.environ.get('POSTGRES_DB')
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+    POSTGRES_USER = os.getenv('POSTGRES_USER')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    POSTGRES_DB = os.getenv('POSTGRES_DB')
 
-    NEO4J_HOST = os.environ.get('NEO4J_HOST')
-    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME')
-    NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
-    NEO4J_PORT = os.environ.get('NEO4J_PORT')
-    NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
+    NEO4J_HOST = os.getenv('NEO4J_HOST')
+    NEO4J_SCHEME = os.getenv('NEO4J_SCHEME')
+    NEO4J_AUTH = os.getenv('NEO4J_AUTH')
+    NEO4J_PORT = os.getenv('NEO4J_PORT')
+    NEO4J_DATABASE = os.getenv('NEO4J_DATABASE')
 
-    AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
-    AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
-    AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')
+    AZURE_ACCOUNT_STORAGE_NAME = os.getenv('AZURE_ACCOUNT_STORAGE_NAME')
+    AZURE_ACCOUNT_STORAGE_KEY = os.getenv('AZURE_ACCOUNT_STORAGE_KEY')
+    AZURE_BLOB_STORAGE_URL = os.getenv('AZURE_BLOB_STORAGE_URL')
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,

@@ -213,7 +213,7 @@ def get_or_create_content_id(session, data, creation_date):
 def upgrade():
     session = Session(op.get_bind())
 
-    if os.environ.get('USE_UNIFIED_FILE_SCHEMA_MIGRATION_SAMPLE'):
+    if os.getenv('USE_UNIFIED_FILE_SCHEMA_MIGRATION_SAMPLE'):
         logger.info("Inserting sample data for testing the migration "
                     "(due to USE_UNIFIED_FILE_SCHEMA_MIGRATION_SAMPLE flag)...")
         insert_sample_data(session)

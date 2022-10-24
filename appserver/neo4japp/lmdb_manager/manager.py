@@ -85,8 +85,8 @@ class BaseCloudStorageProvider:
 class AzureStorageProvider(BaseCloudStorageProvider):
 
     def __init__(self):
-        account_name = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
-        account_key = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
+        account_name = os.getenv('AZURE_ACCOUNT_STORAGE_NAME')
+        account_key = os.getenv('AZURE_ACCOUNT_STORAGE_KEY')
         self.client = FileService(account_name=account_name, account_key=account_key)
         super().__init__()
 
@@ -221,11 +221,11 @@ class LMDBManager:
                 self.lmdb_versions = config_fi
 
     def init_db_connection(self):
-        POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-        POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-        POSTGRES_USER = os.environ.get('POSTGRES_USER')
-        POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-        POSTGRES_DB = os.environ.get('POSTGRES_DB')
+        POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+        POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+        POSTGRES_USER = os.getenv('POSTGRES_USER')
+        POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+        POSTGRES_DB = os.getenv('POSTGRES_DB')
         engine = sqlalchemy.create_engine(
             sqlalchemy.engine.url.URL(
                         drivername='postgres+psycopg2',

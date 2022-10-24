@@ -1,14 +1,14 @@
-from os import environ
+from os import getenv
 
 class Base():
     """Default values"""
-    JWKS_URL = environ.get('JWKS_URL', None)
-    JWT_SECRET = environ.get('JWT_SECRET', 'secrets')
-    JWT_ALGORITHM = environ.get('JWT_ALGORITHM', 'HS256')
-    JWT_AUDIENCE = environ.get('JWT_AUDIENCE', None)
+    JWKS_URL = getenv('JWKS_URL', None)
+    JWT_SECRET = getenv('JWT_SECRET', 'secrets')
+    JWT_ALGORITHM = getenv('JWT_ALGORITHM', 'HS256')
+    JWT_AUDIENCE = getenv('JWT_AUDIENCE', None)
 
-    NEO4J_HOST = environ.get('NEO4J_HOST')
-    NEO4J_SCHEME = environ.get('NEO4J_SCHEME')
-    NEO4J_AUTH = environ.get('NEO4J_AUTH')
-    NEO4J_PORT = environ.get('NEO4J_PORT')
-    NEO4J_DATABASE = environ.get('NEO4J_DATABASE')
+    NEO4J_HOST = getenv('NEO4J_HOST', 'localhost')
+    NEO4J_SCHEME = getenv('NEO4J_SCHEME', 'bolt')
+    NEO4J_AUTH = getenv('NEO4J_AUTH', 'neo4j/password')
+    NEO4J_PORT = getenv('NEO4J_PORT', '7687')
+    NEO4J_DATABASE = getenv('NEO4J_DATABASE', 'neo4j')

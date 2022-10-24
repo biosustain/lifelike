@@ -35,7 +35,7 @@ from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
 
-app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
+app_config = os.getenv('FLASK_APP_CONFIG', 'Development')
 
 apm = ElasticAPM()
 
@@ -54,7 +54,7 @@ for mod in module_logs:
     logging.getLogger(mod).setLevel(logging.WARNING)
 
 # Commit Hash (Version) of Application
-GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
+GITHUB_HASH = os.getenv('GITHUB_HASH', 'undefined')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -148,7 +148,7 @@ def create_app(name='neo4japp', config='config.Development'):
         )
         sentry_sdk.init(
             before_send=filter_to_sentry,
-            dsn=os.environ.get('SENTRY_KEY'),
+            dsn=os.getenv('SENTRY_KEY'),
             integrations=[
                 sentry_logging,
                 FlaskIntegration(),
@@ -161,7 +161,7 @@ def create_app(name='neo4japp', config='config.Development'):
     else:
         # Set to 'true' for dev mode to have
         # the same format as staging.
-        if os.environ.get('FORMAT_AS_JSON', 'false') == 'false':
+        if os.getenv('FORMAT_AS_JSON', 'false') == 'false':
             app_logger.removeHandler(log_handler)
         app_logger.setLevel(logging.DEBUG)
 
