@@ -136,6 +136,20 @@ class ManualAnnotationService:
                 tokens_list=self.tokenizer.create(parsed)
             )
 
+            if not matches:
+                try:
+                    abbrev_of = self.tokenizer.abbreviations[term]
+                except KeyError:
+                    pass
+                else:
+                    raise AnnotationError(
+                        title='Unable to Annotate',
+                        message=f'This term "{term}" cannot be annotated because it has been '
+                                f'identified as an acronym of "{" ".join(abbrev_of)}".',
+                        # fields=dict(abbrev_of=abbrev_of),
+                        code=400
+                    )
+
             inclusions = [{
                 **annotation_to_add,
                 'pageNumber': meta['page_number'],
