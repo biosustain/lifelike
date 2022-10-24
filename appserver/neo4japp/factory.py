@@ -35,6 +35,8 @@ from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
 
+app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
+
 apm = ElasticAPM()
 
 # Set the following modules to have a minimum of log level 'WARNING'
@@ -203,7 +205,7 @@ def create_app(name='neo4japp', config='config.Development'):
         apm.init_app(
             app,
             service_name='***ARANGO_DB_NAME***-appserver',
-            environment=os.getenv('FLASK_APP_CONFIG'))
+            environment=app_config)
 
     return app
 

@@ -36,7 +36,7 @@ from neo4japp.constants import (
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
 from neo4japp.exceptions import OutdatedVersionException
-from neo4japp.factory import create_app
+from neo4japp.factory import create_app, app_config
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
 from neo4japp.models.files import FileContent, Files
@@ -46,7 +46,6 @@ from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils.logger import EventLog
 
-app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
 logger = logging.getLogger(__name__)
 
