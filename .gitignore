@@ -82,3 +82,6 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # ansible secrets
 .vault_secrets_pw
+
+# Runtime signaling
+.READY
