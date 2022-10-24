@@ -33,13 +33,6 @@ x-appserver: &appserver
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   volumes:
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
-  depends_on:
-    - postgres
-    - neo4j
-    - pdfparser
-    - statistical-enrichment
-    - elasticsearch
-    - redis
 
 services:
   # ----------------------------------------
@@ -77,9 +70,6 @@ services:
 
       # Redis
       - REDIS_HOST=redis
-    depends_on:
-      - neo4j
-      - redis
 
   cache-invalidator:
     build: ./cache-invalidator
@@ -94,9 +84,6 @@ services:
 
       # Redis
       - REDIS_HOST=redis
-    depends_on:
-      - redis
-      - neo4j
 
 volumes:
   lmdb:
