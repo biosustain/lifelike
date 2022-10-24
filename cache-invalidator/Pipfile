@@ -12,4 +12,4 @@ redis = "==3.5.2"
 neo4j = "==4.2.1"
 
 [requires]
-python_version = "3.11"
+python_version = "3.8"

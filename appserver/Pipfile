@@ -71,7 +71,7 @@ elastic-apm = {extras = ["flask"], version = "*"}
 rq = "==1.10.1"
 
 [requires]
-python_version = "3.8.2"
+python_version = "3.8"
 
 [scripts]
 lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle .'"
