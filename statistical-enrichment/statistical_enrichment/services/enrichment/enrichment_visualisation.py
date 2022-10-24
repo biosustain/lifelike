@@ -14,7 +14,7 @@ class EnrichmentVisualisationService():
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
-            GO_terms = redis_server.get(f"GO_for_{organism.id}")
+            GO_terms = None # redis_server.get(f"GO_for_{organism.id}")
             if GO_terms is not None:
                 df = pd.read_json(GO_terms)
                 go_count = len(df)
@@ -32,7 +32,7 @@ class EnrichmentVisualisationService():
                 tx.run(
                     """
                     UNWIND $gene_names AS geneName
-                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) 
+                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
                     WHERE g.name=geneName
                     CALL {
                         // Make simple run by relations we has from GO db
@@ -46,18 +46,18 @@ class EnrichmentVisualisationService():
                         // Fetch GO relations defined in BioCyc
                         WITH g
                         MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
-                        WITH DISTINCT go 
+                        WITH DISTINCT go
                         // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
                         MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
                         RETURN go, go_gene
                     }
-                    WITH 
-                        DISTINCT go, 
+                    WITH
+                        DISTINCT go,
                         collect(DISTINCT go_gene) AS go_genes
                     RETURN
                         go.eid AS goId,
                         go.name AS goTerm,
-                        // Return all but 'db_GO' labels 
+                        // Return all but 'db_GO' labels
                         [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
                         [g IN go_genes |g.name] AS geneNames
                     """,
