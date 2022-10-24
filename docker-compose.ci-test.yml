@@ -4,25 +4,27 @@ version: "3.8"
 x-appserver: &appserver
   image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
   environment:
-    - NEO4J_HOST=neo4j
-    - NEO4J_AUTH=neo4j/password
-    - NEO4J_PORT=7687
+    # Flask
+    - FLASK_APP=app
     - FLASK_DEBUG=1
     - FLASK_ENV=development
-    - FLASK_APP=app
-    - FLASK_APP_CONFIG=Development
+
+    # Postgres
     - POSTGRES_HOST=postgres
-    - POSTGRES_PORT=5432
     - POSTGRES_USER=postgres
     - POSTGRES_PASSWORD=postgres
     - POSTGRES_DB=postgres
+
+    # Neo4j
+    - NEO4J_HOST=neo4j
+    - NEO4J_AUTH=neo4j/password
+    - FLASK_APP_CONFIG=Development
+
     # Redis
     - REDIS_HOST=redis
-    - REDIS_USERNAME=default
-    - REDIS_PASSWORD=password
+
+    # Elasticsearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    - ELASTIC_FILE_INDEX_ID=file_ci
-    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
   depends_on:
     - postgres
     - elasticsearch
@@ -39,7 +41,7 @@ services:
     command: rq worker -c rq_config --with-scheduler
 
   postgres:
-    image: postgres:13
+    image: postgres:14
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -53,12 +55,9 @@ services:
 
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
-    restart: on-failure
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
 
   redis:
-    container_name: redis
     image: redis:7-alpine
-    command: redis-server --requirepass password

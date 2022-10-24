@@ -1,20 +1,148 @@
-version: '3.8'
+version: "3.8"
+
+# ----------------------------------------
+# Appserver template anchor
+# ----------------------------------------
+x-appserver: &appserver
+  build: ./appserver
+  restart: unless-stopped
+  environment:
+    # Flask
+    - FLASK_ENV=development
+
+    # Postgres
+    - POSTGRES_HOST=pgdatabase
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=postgres
+
+    # Neo4j
+    - NEO4J_HOST=graphdatabase
+    - NEO4J_AUTH=neo4j/password
+
+    # Redis
+    - REDIS_HOST=redis
+
+    # Statistical Enrichment
+    - STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5010
+
+    # PDF Parser
+    - PDFPARSER_URL=http://pdfparser:7600
+
+    # ElasticSearch
+    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  volumes:
+    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+  depends_on:
+    - pgdatabase
+    - graphdatabase
+    - pdfparser
+    - statistical-enrichment
+    - elasticsearch
+    - redis
 
 services:
-    appserver:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
+  # ----------------------------------------
+  # Internal services
+  # ----------------------------------------
+  appserver:
+    <<: *appserver
+    ports:
+      - 5000:5000
 
-    webserver:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
+  worker:
+    <<: *appserver
+    command: rq worker -c rq_config --with-scheduler
 
-    pdfparser:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
+  webserver:
+    build: ./client
+    restart: unless-stopped
+    ports:
+      - 8080:80
 
-    filebeat:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+  statistical-enrichment:
+    build: ./statistical-enrichment
+    restart: unless-stopped
+    ports:
+      - 5010:5010
+    environment:
+      # Flask
+      - FLASK_APP_CONFIG=Development
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
 
-    cache-invalidator:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
+      # Neo4j
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
 
-    statistical-enrichment:
-        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
+      # Redis
+      - REDIS_HOST=redis
+    depends_on:
+      - graphdatabase
+      - redis
+
+  cache-invalidator:
+    build: ./cache-invalidator
+    restart: unless-stopped
+    environment:
+      # Flask
+      - LOG_LEVEL=debug
+
+      # Neo4j
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
+
+      # Redis
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - graphdatabase
+
+  # ----------------------------------------
+  # Backing services
+  # ----------------------------------------
+  pgdatabase:
+    image: postgres:14
+    container_name: pgdatabase
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  graphdatabase:
+    image: neo4j:4.4-community
+    container_name: graphdatabase
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+
+  pdfparser:
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 7600:7600
+
+  elasticsearch:
+    build: ./elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+      - http.max_content_length=200mb
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+volumes:
+  lmdb:
