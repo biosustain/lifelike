@@ -1,29 +1,36 @@
-FROM python:3.11.0a4-slim 
-LABEL app=kg-prototypes
+FROM python:3.8-slim-buster
 
-ENV APP_USER ***ARANGO_DB_NAME***
-ENV APP_HOME /home/$APP_USER
-ENV UID 1000
-ENV GID 1000
-
-RUN groupadd -g $GID $APP_USER && \
-    useradd -u $UID -g $GID -G sudo --create-home --home-dir $APP_HOME --shell /bin/bash $APP_USER
-
-WORKDIR $APP_HOME
-
+# Install pipenv
 RUN pip install pipenv
 
-COPY --chown=1000:1000 Pipfile .
-COPY --chown=1000:1000 Pipfile.lock .
+WORKDIR /app
 
+# Copy Pipfiles and install Python dependencies
+COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --dev --system
 
-COPY --chown=1000:1000 . .
+# Copy application file
+COPY main.py ./
 
-# Don't lose stdin, stdout and stderr output due to buffering
+# Set non-***ARANGO_USERNAME*** runtime user
+RUN groupadd -g 999 appuser && \
+    useradd -r -u 999 -g appuser appuser
+USER 999
+
+# Environment variables
 ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH $APP_HOME
+ENV PYTHONPATH /app
 
-USER $APP_USER
+# Redis server
+ENV LOG_LEVEL INFO
+ENV REDIS_HOST redis
+ENV REDIS_PORT 6379
+ENV REDIS_PASSWORD ""
+ENV REDIS_SSL false
 
+# Neo4j server
+ENV NEO4J_HOST neo4j
+ENV NEO4J_AUTH neo4j/password
+
+# Run the application
 CMD ["python", "main.py"]
