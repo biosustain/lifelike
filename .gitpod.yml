@@ -6,10 +6,11 @@
 tasks:
   - before: git submodule deinit --all -f
 
-  - name: Access Developer assets
+  - name: Google Cloud Platform
     init: make gcloud
+    command: gp sync-done gcloud-setup
     openIn: left
-    openMode: tab-before
+    openMode: split-left
 
   - name: Docker services
     before: docker-compose -f docker-compose.services.yml pull
@@ -21,10 +22,9 @@ tasks:
 
   - name: Appserver
     before: cd appserver
-    init: |
-      pipenv install --dev --keep-outdated
-      gp sync-await services-deployed
+    init: pipenv install --dev --keep-outdated
     command: |
+      gp sync-await services-deployed && \
       pipenv run flask run
     env:
       FLASK_APP: app
@@ -34,15 +34,20 @@ tasks:
     before: cd client
     init: yarn install
     command: |
-      gp ports await 5000
+      gp ports await 5000 & \
       yarn run dev-start
 
-  - command: gp ports await 3000 && gp preview $(gp url 3000)
+  - command: |
+      gp ports await 4200 && \
+      gp preview $(gp url 4200)
 
   - name: Statistical Enrichment
     before: cd statistical-enrichment
     init: pipenv install --dev --keep-outdated
-    command: pipenv run fask run --debugger
+    command: |
+      gp ports await 7601 && \
+      gp ports await 7687 && \
+      pipenv run flask run --debugger
     env:
       FLASK_APP: statistical_enrichment
       FLASK_ENV: Development
@@ -54,6 +59,7 @@ tasks:
 
   - name: Download LMDB data files
     before: |
+      gp sync-await gcloud-setup
       gsutil cp gs://lmdb/public/lmdb_v6.tgz .
       tar zxfg lmdb.tgz
 
@@ -94,7 +100,7 @@ ports:
     visibility: public
     onOpen: notify
 
-  - port: 8768
+  - port: 7687
     name: neo4j-bolt
     description: Neo4j Bolt port
     visibility: public
