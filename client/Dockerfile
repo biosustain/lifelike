@@ -1,4 +1,4 @@
-ARG NODE_IMAGE_TAG=node:14
+ARG NODE_IMAGE_TAG=node:16
 
 # ========================================
 # Landing page
@@ -51,8 +51,7 @@ RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 # ========================================
 # Runtime stage - NGINX
 # ========================================
-FROM nginx:1.23.1
-LABEL app=kg-prototypes
+FROM nginx:1.23
 WORKDIR /usr/share/nginx/html
 
 # URL to proxy requests to /api
