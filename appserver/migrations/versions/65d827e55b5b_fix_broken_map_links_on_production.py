@@ -31,6 +31,12 @@ logger = logging.getLogger('alembic.runtime.migration.' + __name__)
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+        """
+        TODO:
+            🚨 WARNING 🚨
+            This statement most probably no longer means
+            what it used to mean at the time it was written
+        """
         # This migration may have unintended side effects on environments other than production.
         if os.getenv('FLASK_APP_CONFIG') == 'Production':
             data_upgrades()
