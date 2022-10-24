@@ -1,19 +1,18 @@
-import requests
-
 from string import punctuation
 from typing import List, Tuple
 
-from ..constants import (
-    MAX_ABBREVIATION_WORD_LENGTH,
-    PARSER_RESOURCE_PULL_ENDPOINT,
-    PARSER_PDF_ENDPOINT,
-    PARSER_TEXT_ENDPOINT,
-    REQUEST_TIMEOUT
-)
-from ..data_transfer_objects import PDFWord
+import requests
 
 from neo4japp.constants import FILE_MIME_TYPE_PDF
 from neo4japp.exceptions import ServerException
+from ..constants import (
+    MAX_ABBREVIATION_WORD_LENGTH,
+    PARSER_PDF_ENDPOINT,
+    PARSER_RESOURCE_PULL_ENDPOINT,
+    PARSER_TEXT_ENDPOINT,
+    SERVICE_REQUEST_TIMEOUT
+)
+from ..data_transfer_objects import PDFWord
 
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
@@ -77,7 +76,7 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
         data = {'text': kwargs['text']}
 
     try:
-        req = requests.post(url, data=data, timeout=REQUEST_TIMEOUT)
+        req = requests.post(url, data=data, timeout=SERVICE_REQUEST_TIMEOUT)
         resp = req.json()
         req.close()
     except requests.exceptions.ConnectTimeout:
