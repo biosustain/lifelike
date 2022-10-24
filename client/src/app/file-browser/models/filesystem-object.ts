@@ -325,13 +325,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     } else if (this.mimeType.startsWith('text/')) {
       return 'fa fa-file-alt';
     }
-    if (this.isProjectRoot) {
-      return FAClass.Project;
-    }
 
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
+        if (this.isProjectRoot) {
+          return FAClass.Project;
+        }
         return FAClass.Directory;
       case MimeTypes.Map:
         return FAClass.Map;
