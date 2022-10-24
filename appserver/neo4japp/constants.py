@@ -4,11 +4,13 @@ import re
 import string
 from datetime import timezone
 from enum import Enum
+from pathlib import Path
 
 from sendgrid import SendGridAPIClient
 
 from neo4japp.util import Enumd
 
+BASE_PATH = Path.cwd() / '../'
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset
@@ -449,25 +451,27 @@ MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
 RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
+# Assets
+ASSETS_PATH = BASE_PATH / 'assets'
+
 # Start email constants
 LIFELIKE_EMAIL_ACCOUNT = '***ARANGO_DB_NAME***.science@gmail.com'
 MESSAGE_SENDER_IDENTITY = '***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio'
 MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
-RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', 'r').read()
+RESET_PASS_MAIL_CONTENT = codecs.open(ASSETS_PATH / 'reset_email.html', 'r').read()
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = 'Lifelike: Copyright Infringement Report Confirmation'
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
-    r'/home/n4j/assets/copyright_report_confirmation.html',
+    ASSETS_PATH / 'copyright_report_confirmation.html',
     'r'
 ).read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
 # Start shared Elastic constants
-FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
+FILE_INDEX_ID = os.getenv('ELASTIC_FILE_INDEX_ID', 'files')
 FRAGMENT_SIZE = 1024
 
-LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
+LIFELIKE_DOMAIN = os.getenv('DOMAIN', 'http://localhost:4200')
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
@@ -475,7 +479,7 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
-IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+IMAGES_RE = re.compile(f'{ASSETS_PATH}/.+\.png')
 BYTE_ENCODING = 'utf-8'
 
 # Start filesystem API constants
