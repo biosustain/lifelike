@@ -1,28 +1,28 @@
 ## Requirements
 
-* Docker
-  * Potentially with increased memory and disk space limits if on Windows or Mac OS X
-  * Windows users: Get Docker for Windows, not the older Docker Toolbox
-* docker-compose
-* Git
-* Azure account with access to our files
-* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-  * Configured locally with your login: ```az login```
-* The source code, preferably downloaded to a directory named `kg-prototypes`
-* Windows users:
-  * Symbolic link support
-  * make
+-   Docker
+    -   Potentially with increased memory and disk space limits if on Windows or Mac OS X
+    -   Windows users: Get Docker for Windows, not the older Docker Toolbox
+-   docker-compose
+-   Git
+-   Azure account with access to our files
+-   [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+    -   Configured locally with your login: `az login`
+-   The source code, preferably downloaded to a directory named `kg-prototypes`
+-   Windows users:
+    -   Symbolic link support
+    -   make
 
 ### Systems Running Docker VMs
 
 If you are on a system that runs Docker in a VM (like Windows or Mac OS X), it's recommend that you increase your VM's memory and disk space to a minimum of:
 
-* 8 GB of RAM
-* 60 GB of disk space
+-   8 GB of RAM
+-   60 GB of disk space
 
 These are guidelines and you may need more or less disk space and memory allocated.
 
-###  Windows-specific
+### Windows-specific
 
 #### Enabling Symbolic Links
 
@@ -60,7 +60,7 @@ After the containers are built, you can start them up with:
 make docker-run
 ```
 
-There are containers for the Python app server (`appserver`), the Angular app (`client`), PostgreSQL (`pgdatabase`)
+There are containers for the Python app server (`appserver`), the Angular app (`client`), PostgreSQL (`postgres`)
 
 ### Seeding PostgreSQL
 
@@ -90,15 +90,15 @@ docker-compose logs -f $container_name
 
 For `$container_name`, you have a choice of:
 
-* `appserver` for the Python app
-* `client` for the Angular app
+-   `appserver` for the Python app
+-   `client` for the Angular app
 
 ## Connecting to the Containers
 
 ### PostgreSQL
 
 ```sh
-docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
+docker-compose exec postgres psql -U postgres -h postgres -d postgres
 ```
 
 ### Neo4j
@@ -145,31 +145,31 @@ If you need to delete all Docker data, run the following command afterwards:
 make clean
 ```
 
-| ⚠ Warning                                                    |
-| ------------------------------------------------------------ |
+| ⚠ Warning                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------------- |
 | The clean command will not only affect this project -- it will also prune Docker of dangling or down containers used in other projects. |
 
 ## IntelliJ IDE Setup
 
-1. Run `yarn install` in the *client* folder.
+1. Run `yarn install` in the _client_ folder.
 2. Install the [Makefile support plugin](https://plugins.jetbrains.com/plugin/9333-makefile-support).
-   * On Windows, set the make path to `C:\ProgramData\chocolatey\bin\make.exe` in IntelliJ's settings.
+    - On Windows, set the make path to `C:\ProgramData\chocolatey\bin\make.exe` in IntelliJ's settings.
 3. Import the `appserver/appserver.iml` and `client/client.iml` files by right clicking them and choosing 'Import.'
-   - If you are prompted to add Angular support, choose to do so.
-4. Under the *File* -> *Project Settings* window, setup the Python interpreter for the appserver module.
-5. From the *Make* tool window, run `init` if you haven't yet previously run `make init`. You can also choose to run Docker from this menu.
+    - If you are prompted to add Angular support, choose to do so.
+4. Under the _File_ -> _Project Settings_ window, setup the Python interpreter for the appserver module.
+5. From the _Make_ tool window, run `init` if you haven't yet previously run `make init`. You can also choose to run Docker from this menu.
 
 ## Automated linting fix
 
 Many client linting problems can be fixed in automated manner by running:
 
 ```
-cd client 
+cd client
 yarn lint --fix
 ```
 
 ## Continued Reading
 
-* [[AppServer Development]]
-* [[Client Development]]
-* [[PostgreSQL Development]]
+-   [[AppServer Development]]
+-   [[Client Development]]
+-   [[PostgreSQL Development]]
