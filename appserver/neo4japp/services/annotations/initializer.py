@@ -1,7 +1,7 @@
-from os import environ
+from os import getenv, path
+from pathlib import Path
 
 from neo4japp.database import get_neo4j_driver
-
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import AnnotationGraphService
@@ -85,7 +85,8 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(getenv('LMDB_HOME_FOLDER'), **configs)
+    this_dir = Path(path.abspath(path.dirname(__file__)))
+    return LMDBService(f"{environ.getenv('LMDB_HOME_FOLDER', this_dir/'lmdb')}/", **configs)
 
 
 def get_recognition_service(exclusions, inclusions):
