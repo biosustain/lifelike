@@ -1,12 +1,22 @@
 import re
 from enum import Enum
-import os
 from string import punctuation
 from typing import Dict, Union
 
 from neo4japp.util import Enumd
 
-# lmdb database names
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
+PDFPARSER_URL = os.getenv('PDFPARSER_URL', 'http://localhost:7600')
+
+NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT', 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict')
+NLP_SERVICE_SECRET = os.getenv('NLP_SERVICE_SECRET', '')
+SERVICE_REQUEST_TIMEOUT = int(os.getenv('SERVICE_REQUEST_TIMEOUT', '600'))
+
+PARSER_PDF_ENDPOINT = f'{PDFPARSER_URL}/token/rect/json'
+PARSER_TEXT_ENDPOINT = f'{PDFPARSER_URL}/token/rect/text/json'
+PARSER_RESOURCE_PULL_ENDPOINT = f'{BASE_URL}/annotations/files'
+
+# LMDB database names
 ANATOMY_LMDB = 'anatomy_lmdb'
 CHEMICALS_LMDB = 'chemicals_lmdb'
 COMPOUNDS_LMDB = 'compounds_lmdb'
@@ -30,13 +40,6 @@ MAX_ENTITY_WORD_LENGTH = 6
 MIN_ENTITY_LENGTH = 2
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
-
-NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT', 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict')
-NLP_SERVICE_SECRET = os.getenv('NLP_SERVICE_SECRET', '')
-REQUEST_TIMEOUT = int(os.getenv('SERVICE_REQUEST_TIMEOUT', '60'))
-PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
-PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
-PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',

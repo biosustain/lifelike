@@ -8,7 +8,7 @@ from neo4japp.exceptions import ServerException
 from ..constants import (
     NLP_SERVICE_ENDPOINT,
     NLP_SERVICE_SECRET,
-    REQUEST_TIMEOUT,
+    SERVICE_REQUEST_TIMEOUT,
     EntityType
 )
 from ..data_transfer_objects import NLPResults
@@ -20,7 +20,7 @@ def _call_nlp_service(model: str, text: str) -> dict:
             NLP_SERVICE_ENDPOINT,
             json={'model': model, 'sentence': text},
             headers={'secret': NLP_SERVICE_SECRET},
-            timeout=REQUEST_TIMEOUT)
+            timeout=SERVOCE_REQUEST_TIMEOUT)
         req.raise_for_status()
         return req.json()
 
