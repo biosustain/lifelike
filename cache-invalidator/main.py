@@ -21,7 +21,7 @@ DEFAULT_LOG_LEVEL = logging.DEBUG
 logging.basicConfig()
 logger = logging.getLogger('KG-Statistics')
 try:
-    log_level = getattr(logging, os.environ.get('LOG_LEVEL').upper())
+    log_level = getattr(logging, os.getenv('LOG_LEVEL').upper())
 except:
     log_level = DEFAULT_LOG_LEVEL
 logger.setLevel(log_level)
@@ -29,10 +29,10 @@ logger.info(f'Set log level to {log_level}')
 
 
 def _get_redis_connection_url():
-    host = os.environ.get('REDIS_HOST')
-    port = os.environ.get('REDIS_PORT')
-    password = os.environ.get('REDIS_PASSWORD')
-    ssl = os.environ.get('REDIS_SSL', 'false').lower()
+    host = os.getenv('REDIS_HOST')
+    port = os.getenv('REDIS_PORT')
+    password = os.getenv('REDIS_PASSWORD')
+    ssl = os.getenv('REDIS_SSL', 'false').lower()
     connection_prefix = 'rediss' if ssl == 'true' else 'redis'
     return f'{connection_prefix}://:{password}@{host}:{port}/0'
 

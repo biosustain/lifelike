@@ -79,7 +79,7 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+    return LMDBService(getenv('LMDB_HOME_FOLDER'), **configs)
 
 
 def get_recognition_service(exclusions, inclusions):

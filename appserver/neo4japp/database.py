@@ -54,7 +54,7 @@ db = SQLAlchemy(
 )
 
 # Note that this client should only be used when JWKS_URL has been configured!
-jwt_client = PyJWKClient(os.environ.get('JWKS_URL', ''))
+jwt_client = PyJWKClient(os.getenv('JWKS_URL', ''))
 
 
 def get_redis_connection(db: int = 0) -> Redis:
