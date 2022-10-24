@@ -519,9 +519,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProjectRoot) {
-          return ['/projects', projectName];
-        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
