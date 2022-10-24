@@ -101,6 +101,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
           queryParams: {
             q: `"${useKeyword ? annotation.text : annotation.primaryName}"`,
             folders: this.object.hashId,
+            types: 'pdf'
           },
           newTab: true,
           sideBySide: true,
