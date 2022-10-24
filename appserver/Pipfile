@@ -72,7 +72,7 @@ rq = "==1.10.1"
 python-arango = "==7.5.2"
 
 [requires]
-python_version = "3.8.2"
+python_version = "3.8"
 
 [scripts]
 lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle .'"
