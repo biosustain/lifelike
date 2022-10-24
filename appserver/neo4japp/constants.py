@@ -505,7 +505,7 @@ RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
 RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
 # Assets
-ASSETS_PATH = BASE_PATH / 'assets'
+ASSETS_PATH = Path.cwd() / 'assets'
 
 # Start email constants
 LIFELIKE_EMAIL_ACCOUNT = '***ARANGO_DB_NAME***.science@gmail.com'
