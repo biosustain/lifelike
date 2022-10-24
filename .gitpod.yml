@@ -14,7 +14,10 @@ tasks:
   - name: Docker services
     before: docker-compose -f docker-compose.services.yml pull
     init: docker-compose -f docker-compose.services.yml up -d --wait
-    command: gp sync-done services-deployed
+    command: |
+      gp sync-done services-deployed
+      watch --no-title --color \
+        docker compose -f docker-compose.services.yml ps --all
 
   - name: Appserver
     before: cd appserver
@@ -34,10 +37,12 @@ tasks:
       gp ports await 5000
       yarn run dev-start
 
+  - command: gp ports await 3000 && gp preview $(gp url 3000)
+
   - name: Statistical Enrichment
-    before: cd appserver
+    before: cd statistical-enrichment
     init: pipenv install --dev --keep-outdated
-    command: pipenv run fask run
+    command: pipenv run fask run --debugger
     env:
       FLASK_APP: statistical_enrichment
       FLASK_ENV: Development
