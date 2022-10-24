@@ -89,3 +89,6 @@ arangodb/apps/*
 
 # Arango seed data
 arangodb/bin/seed_data
+
+# Runtime signaling
+.READY
