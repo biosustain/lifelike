@@ -12,7 +12,6 @@ env/
 
 # compiled output
 dist/
-/**/*.pyc
 
 # System Files
 .DS_Store
@@ -23,28 +22,15 @@ Thumbs.db
 
 # IDE - VSCode
 .vscode/
-
-# ignore db files
-neo4j/data/*
-neo4j/import/*
-neo4j/logs/*
-neo4j/plugins/*
-
-postgres/
-!postgres/.gitkeep
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # ignore node_modules
-client/node_modules
-esdata/
 node_modules/
 
-# ignore copy
-deployment/kg-prototypes
 # terraform files
 terraform.tfstate.*
 .terraform/
-# The terraform Gcloud service account
-terraform-gcloud.json
 
 # .env Files (to protect secrets)
 *.env
@@ -61,27 +47,21 @@ venv/
 outputs/
 
 # LMDB files
-appserver/neo4japp/services/annotations/**/*.mdb
-appserver/neo4japp/services/annotations/**/*.mdb.old
-appserver/neo4japp/services/annotations/datasets/**/*.csv
-appserver/neo4japp/services/annotations/datasets/**/*.tsv
+annotations/**/*.mdb
+annotations/**/*.mdb.old
+annotations/datasets/**/*.csv
+annotations/datasets/**/*.tsv
 
 # profiler results
-appserver/profilers/results/
+appserver/profilers/results
 
 # nlp pdfs
-appserver/neo4japp/services/annotations/nlp_data_output/pdfs/*.pdf
-appserver/neo4japp/services/annotations/nlp_data_output/annotations/*.json
-appserver/neo4japp/services/annotations/nlp_data_output/*.txt
+annotations/nlp_data_output/pdfs/*.pdf
+annotations/nlp_data_output/annotations/*.json
+annotations/nlp_data_output/*.txt
 
 # Backups
 *.backup
-
-# gcloud service accounts
-*ansible_service_account*
-
-# ansible secrets
-.vault_secrets_pw
 
 # Runtime signaling
 .READY
