@@ -12,5 +12,3 @@ RUN brew install \
 
 # Shell config & completion
 RUN npm completion >> ~/.bashrc && npm completion >> ~/.zshrc
-RUN kubectl completion bash > ~/.kube/completion.bash.inc
-RUN echo "source \"$HOME/.kube/completion.bash.inc\"" >> $HOME/.bash_profile
