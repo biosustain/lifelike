@@ -95,10 +95,11 @@ services:
       - FLASK_DEBUG=1
       - FLASK_ENV=development
       # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
+      Update! So it points to copy of stagging or stagging
+      - NEO4J_SCHEME=
+      - NEO4J_HOST=
+      - NEO4J_AUTH=
+      - NEO4J_PORT=
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
