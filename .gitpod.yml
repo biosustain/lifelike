@@ -50,15 +50,21 @@ ports:
     visibility: public
     onOpen: ignore
 
-  - port: 9200
-    name: elasticsearch
-    description: Elasticsearch service
+  - port: 7601
+    name: pdfparse
+    description: PDF Parser service
     visibility: public
     onOpen: ignore
 
   - port: 5432
     name: postgres
     description: PostgresQL database
+    visibility: public
+    onOpen: ignore
+
+  - port: 9200
+    name: elasticsearch
+    description: Elasticsearch service
     visibility: public
     onOpen: ignore
 
@@ -71,6 +77,12 @@ ports:
   - port: 8768
     name: neo4j-bolt
     description: Neo4j Bolt port
+    visibility: public
+    onOpen: ignore
+
+  - port: 5010
+    name: statistical-enrichment
+    description: Statistical Enrichment service app
     visibility: public
     onOpen: ignore
 
