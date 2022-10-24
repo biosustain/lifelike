@@ -1,8 +1,7 @@
 FROM fedora:32 as base
-LABEL app=kg-prototypes
 
 # Install dependencies
-RUN dnf install htop postgresql graphviz python-pip python3-devel vim net-tools which -y \
+RUN dnf install graphviz python-pip python3-devel -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 RUN pip install pipenv
