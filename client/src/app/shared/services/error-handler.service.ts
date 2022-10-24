@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 
-import { isNil } from 'lodash-es';
-import { EMPTY, Observable, of, pipe, throwError } from 'rxjs';
-import { catchError, first, map, mergeMap } from 'rxjs/operators';
+import { isNil, compact, defaults } from 'lodash-es';
+import { EMPTY, Observable, of, pipe, throwError, from } from 'rxjs';
+import { catchError, first, map, mergeMap, switchMap } from 'rxjs/operators';
 import { UnaryFunction } from 'rxjs/internal/types';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -13,7 +13,7 @@ import { MessageDialog } from './message-dialog.service';
 import { UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
-import { mapBlobToBuffer, mapBufferToJson } from '../utils/files';
+import { mapBlobToBuffer, mapBufferToJson, bufferToJson } from '../utils/files';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -25,141 +25,103 @@ export class ErrorHandler {
   ) {
   }
 
+  httpCodeMessages = {
+    404: 'The page that you are looking for does not exist. You may have ' +
+      'followed a broken link or the page may have been removed.',
+    413: 'The server could not process your upload because it was too large.',
+  };
+
   createTransactionId(): string {
     return Math.random().toString(36).substr(2, 9);
   }
 
-  getErrorResponse(error: any): Observable<ErrorResponse | undefined> {
+  getErrorResponse(error: any): ErrorResponse | Promise<ErrorResponse> {
     if (error instanceof HttpErrorResponse) {
       const httpErrorResponse = error as HttpErrorResponse;
       if (typeof httpErrorResponse.error === 'string') {
-        try {
-          return of(JSON.parse(httpErrorResponse.error));
-        } catch (e) {
-          // Not an error response object
-        }
+        return JSON.parse(httpErrorResponse.error);
       } else if (httpErrorResponse.error instanceof Blob) {
-        return of(httpErrorResponse.error).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson<ErrorResponse | undefined>(),
-          catchError(() => of(null)), // If JSON parsing fails, just go back to default behavior
-        );
+        return httpErrorResponse.error.arrayBuffer()
+          .then(buff => bufferToJson<ErrorResponse | undefined>(buff));
+        // If JSON parsing fails, just go back to default behavior
       } else if (typeof httpErrorResponse.error === 'object') {
-        return of(httpErrorResponse.error);
+        return httpErrorResponse.error.message ? httpErrorResponse.error : httpErrorResponse;
       }
     }
-    return of(null);
   }
 
-  createUserError(error: any, options: { transactionId?: string } = {}): Observable<UserError> {
-    let errorResponse$: Observable<ErrorResponse | null>;
-
+  createUserError(error: any, options: { transactionId?: string } = {}): UserError | Promise<UserError> {
+    const defaultErrorResponse: ErrorResponse = {
+      ...error,
+      title: 'We\'re sorry!',
+      message: 'Looks like something went wrong on our end! Please try again in a moment.',
+      additionalMsgs: [],
+      stacktrace: null,
+      // A transaction id for log audits with Sentry (Sentry.io)
+      transactionId: options.transactionId != null ? options.transactionId : 'L-' + this.createTransactionId(),
+    };
     if (error instanceof HttpErrorResponse) {
-      errorResponse$ = this.getErrorResponse(error);
-    } else {
-      errorResponse$ = of(null);
-    }
-
-    return errorResponse$.pipe(
-      mergeMap(errorResponse => {
-        let title = 'We\'re sorry!';
-        let message = 'Looks like something went wrong on our end! Please try again in a moment.';
-        let additionalMsgs = [];
-        let stacktrace = null;
-        // A transaction id for log audits with Sentry (Sentry.io)
-        let transactionId = options.transactionId != null ? options.transactionId : 'L-' + this.createTransactionId();
-
-        if (error instanceof HttpErrorResponse) {
-          const httpErrorResponse = error as HttpErrorResponse;
-
-          // Detect if we got an error response object
-          if (errorResponse && errorResponse.message) {
-            title = errorResponse.title;
-            message = errorResponse.message;
-            additionalMsgs = errorResponse.additionalMsgs;
-            stacktrace = errorResponse.stacktrace;
-            transactionId = 'R-' + errorResponse.transactionId;
-          }
-
+      return Promise.resolve(this.getErrorResponse(error))
+        // errorResponse is only correct if it has message field
+        .catch(() => ({}))
+        .then((errorResponse: ErrorResponse) => new UserError({
+          ...defaults(errorResponse.message ? errorResponse : {}, defaultErrorResponse),
           // Override some fields for some error codes
-          if (httpErrorResponse.status === 404) {
-            message = 'The page that you are looking for does not exist. You may have ' +
-              'followed a broken link or the page may have been removed.';
-          } else if (httpErrorResponse.status === 413) {
-            message = 'The server could not process your upload because it was too large.';
-          }
-        } else if (error instanceof UserError) {
-          const userError = error as UserError;
-
-          title = userError.title;
-          message = userError.message;
-          additionalMsgs = userError.additionalMsgs;
-          stacktrace = userError.stacktrace;
-          transactionId = userError.transactionId;
-
-          if (error.cause != null) {
-            return this.createUserError(error.cause).pipe(
-              map(causeUserError => {
-                if (causeUserError.stacktrace != null) {
-                  if (stacktrace != null) {
-                    stacktrace = stacktrace + '\n\n------------------------------\n\n' + causeUserError.stacktrace;
-                  } else {
-                    stacktrace = causeUserError.stacktrace;
-                  }
-                }
-
-                return new UserError({
-                  ...error, title, message, additionalMsgs, stacktrace, transactionId
-                });
-              }),
-            );
-          }
-        } else if (error instanceof Error) {
-          const errorObject = error as Error;
-          stacktrace = errorObject.message;
-
-          if (errorObject.stack) {
-            stacktrace += '\n\n' + errorObject.stack;
-          }
-        } else {
-          stacktrace = error + '';
-        }
-
-        return of(new UserError({
-          ...error, title, message, additionalMsgs, stacktrace, transactionId
+          message: this.httpCodeMessages[error.status] ?? errorResponse.message,
         }));
-      }),
-    );
+    } else if (error instanceof UserError) {
+      if (error.cause != null) {
+        return Promise.resolve(this.createUserError(error.cause)).then(({stacktrace}) => {
+          return new UserError({
+            ...defaultErrorResponse,
+            stacktrace: compact([error.stacktrace, stacktrace]).join('\n\n------------------------------\n\n'),
+          });
+        });
+      } else {
+        return error;
+      }
+    } else if (error instanceof Error) {
+      return new UserError({
+        ...defaultErrorResponse,
+        stacktrace: compact([error.message, error.stack]).join('\n\n'),
+      });
+    } else {
+      return new UserError({
+        ...defaultErrorResponse,
+        stacktrace: error + '',
+      });
+    }
   }
 
   logError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
-    this.createUserError(error).subscribe(userError => {
-      const {title, message, additionalMsgs, stacktrace, transactionId} = userError;
-
-      this.loggingService.sendLogs(
-        {title, message, additionalMsgs, stacktrace, transactionId, ...logInfo},
-      ).pipe(
-        first(),
-        catchError(() => EMPTY),
-      ).subscribe();
-    });
+    return Promise.resolve(this.createUserError(error))
+      .then(({title, message, additionalMsgs, stacktrace, transactionId}) =>
+        this.loggingService.sendLogs(
+          {title, message, additionalMsgs, stacktrace, transactionId, ...logInfo},
+        ).pipe(
+          catchError(() => {
+            console.warn('Error could not be logged due to connection issue', error);
+            return EMPTY;
+          }),
+        ).toPromise(),
+      );
   }
 
   showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
-    this.logError(error, logInfo);
-
-    this.createUserError(error).subscribe(userError => {
-      const {title, message, additionalMsgs, stacktrace, transactionId} = userError;
-
-      this.messageDialog.display({
-        title,
-        message,
-        additionalMsgs,
-        stacktrace,
-        transactionId,
-        type: MessageType.Error,
-      });
-    });
+    return Promise.allSettled([
+      this.logError(error, logInfo),
+      Promise.resolve(this.createUserError(error))
+        .then(({title, message, additionalMsgs, stacktrace, transactionId}) =>
+          this.messageDialog.display({
+            title,
+            message,
+            additionalMsgs,
+            stacktrace,
+            transactionId,
+            type: MessageType.Error,
+          }),
+        ),
+    ]);
   }
 
   createCallback<T>(logInfo?: ErrorLogMeta): (e: any) => void {
@@ -185,34 +147,37 @@ export class ErrorHandler {
 
   createFormErrorHandler<T>(form: AbstractControl,
                             apiFieldToFormFieldMapping = {}): UnaryFunction<Observable<T>, Observable<T>> {
-    return pipe(catchError(error => {
-      this.getErrorResponse(error).subscribe(errorResponse => {
-        if (errorResponse && errorResponse.fields) {
-          const remainingErrors: string[] = [];
+    return catchError(error =>
+      from(Promise.resolve(this.getErrorResponse(error)))
+        .pipe(
+          catchError(() => of(error)),
+          switchMap(errorResponse => {
+            if (errorResponse?.fields) {
+              const remainingErrors: string[] = [];
 
-          for (const apiFieldKey of Object.keys(errorResponse.fields)) {
-            const formFieldKey = apiFieldToFormFieldMapping[apiFieldKey] || apiFieldKey;
-            const field = form.get(formFieldKey);
-            if (field != null) {
-              field.setErrors({
-                serverValidated: errorResponse.fields[apiFieldKey],
-              });
-            } else {
-              for (const errorMessage of errorResponse.fields[apiFieldKey]) {
-                remainingErrors.push(errorMessage);
+              for (const apiFieldKey of Object.keys(errorResponse.fields)) {
+                const formFieldKey = apiFieldToFormFieldMapping[apiFieldKey] || apiFieldKey;
+                const field = form.get(formFieldKey);
+                if (field != null) {
+                  field.setErrors({
+                    serverValidated: errorResponse.fields[apiFieldKey],
+                  });
+                } else {
+                  for (const errorMessage of errorResponse.fields[apiFieldKey]) {
+                    remainingErrors.push(errorMessage);
+                  }
+                }
+              }
+
+              if (remainingErrors.length) {
+                form.setErrors({
+                  serverValidated: remainingErrors,
+                });
               }
             }
-          }
-
-          if (remainingErrors.length) {
-            form.setErrors({
-              serverValidated: remainingErrors,
-            });
-          }
-        }
-      });
-
-      return throwError(error);
-    }));
+            return throwError(error);
+          }),
+        )
+    );
   }
 }

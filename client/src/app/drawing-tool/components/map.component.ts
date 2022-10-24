@@ -15,7 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, switchMap, map } from 'rxjs/operators';
 
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
@@ -25,7 +25,11 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import { mapBufferToJson, readBlobAsBuffer, mapJsonToGraph } from 'app/shared/utils/files';
+import {
+  mapBufferToJson,
+  mapJsonToGraph,
+  mapBlobToBuffer,
+} from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -204,13 +208,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   openMap(mapBlob: Blob, mapFile: FilesystemObject): Observable<KnowledgeMapGraph> {
     return this.objectTypeService.get(mapFile).pipe(
       switchMap(typeProvider => typeProvider.unzipContent(mapBlob)),
-      switchMap(graphRepr =>
-        readBlobAsBuffer(new Blob([graphRepr], {type: MimeTypes.Map})).pipe(
-          mapBufferToJson<KnowledgeMapGraph>(),
-          mapJsonToGraph(),
-          this.errorHandler.create({label: 'Parse map data'}),
-        )
-      ),
+      map(graphRepr => new Blob([graphRepr], {type: MimeTypes.Map})),
+      mapBlobToBuffer(),
+      mapBufferToJson<KnowledgeMapGraph>(),
+      mapJsonToGraph(),
+      this.errorHandler.create({label: 'Parse map data'}),
       catchError(e => {
         // Data is corrupt
         // TODO: Prevent the user from editing or something so the user doesnt lose data?

@@ -1,5 +1,6 @@
 import { from, Observable, OperatorFunction, Subject } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { map, mergeMap, switchMap } from 'rxjs/operators';
+import { partialRight, ary } from 'lodash-es';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
@@ -7,29 +8,33 @@ import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
+const utf8Decoder = new TextDecoder('utf-8');
 
-export function mapBlobToBuffer(): OperatorFunction<Blob, ArrayBuffer> {
-  return mergeMap(blob => {
-    const subject = new Subject<ArrayBuffer>();
-    const reader = new FileReader();
-    reader.onload = e => {
-      subject.next((e.target as FileReader).result as ArrayBuffer);
-    };
-    reader.onerror = e => subject.error(e);
-    reader.onabort = e => subject.error(e);
-    reader.readAsArrayBuffer(blob);
-    return subject;
-  });
-}
+export const bufferToJson = <T>(
+  data: ArrayBuffer | undefined,
+  textDecoder = utf8Decoder
+) =>
+    data ? JSON.parse(textDecoder.decode(data)) as T : undefined;
 
-export function mapBufferToJson<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T | undefined> {
-  return map((data: ArrayBuffer | undefined) => {
-    if (data == null) {
-      return null;
-    }
-    return JSON.parse(new TextDecoder(encoding).decode(data)) as T;
-  });
-}
+export const bufferToJsons = <T>(
+  data: ArrayBuffer | undefined,
+  textDecoder = utf8Decoder,
+) =>
+  data ?
+    textDecoder
+      .decode(data)
+      .split('\n')
+      .filter(jl => jl)
+      .map(jsonline => JSON.parse(jsonline) as T)
+    : undefined;
+
+export const mapBlobToBuffer = (): OperatorFunction<Blob, ArrayBuffer> =>
+  switchMap(blob => blob.arrayBuffer());
+
+export const mapBufferToJson = <T>(textDecoder?: TextDecoder): OperatorFunction<ArrayBuffer, T | undefined> =>
+  map(ary(
+    textDecoder ? partialRight(bufferToJson, textDecoder) : bufferToJson
+  ));
 
 /**
  * Maps the graph stored in export to the graph suitable for further manipulation.
@@ -46,27 +51,10 @@ export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeM
   });
 }
 
-export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T[]> {
-  return map((data: ArrayBuffer | undefined) => {
-    if (data == null) {
-      return null;
-    }
-    const text = new TextDecoder(encoding).decode(data);
-    const jsonLines = text.split('\n');
-    return jsonLines.reduce((o, n) => {
-      if (n) {
-        o.push(JSON.parse(n) as T);
-      }
-      return o;
-    }, [] as T[]);
-  });
-}
-
-export function readBlobAsBuffer(blob: Blob): Observable<ArrayBuffer> {
-  return from([blob]).pipe(
-    mapBlobToBuffer(),
-  );
-}
+export const mapBufferToJsons = <T>(textDecoder?: TextDecoder): OperatorFunction<ArrayBuffer, T[]> =>
+  map(ary(
+    textDecoder ? partialRight(bufferToJsons, textDecoder) : bufferToJsons
+  ));
 
 export function openDownloadForBlob(blob: Blob, filename: string): void {
   // IE doesn't allow using a blob object directly as link href
