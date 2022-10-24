@@ -19,25 +19,24 @@ logger.setLevel(log_level)
 print(f'Set log level to {log_level}')
 logging.debug('Debug Logs')
 
+CACHE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
+    host=os.getenv('REDIS_HOST', 'localhost'),
+    port=os.getenv('REDIS_PORT', '6379'),
+    username=os.getenv('REDIS_USERNAME', ''),
+    password=os.getenv('REDIS_PASSWORD', ''),
+    db=os.getenv('CACHE_REDIS_DB', '0')
+)
+connection_pool=redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
+redis_server = redis.Redis(connection_pool=connection_pool)
+
 SUCCESSFUL_SLEEP_TIME = 3600 * 24       # refresh cached data this often
 ERROR_INITIAL_SLEEP_TIME = 60           # if error occurs, try again sooner
 ERROR_SLEEP_TIME_MULTIPLIER = 2         # on subsequent errors, sleep longer
 ERROR_MAX_SLEEP_TIME = 3600 * 6         # but not longer than this
 CACHE_EXPIRATION_TIME = 3600 * 24 * 14  # expire cached data
 
-REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT')
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
-connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
-
-# Establish Redis Connection
-redis_server = redis.Redis(
-    connection_pool=redis.BlockingConnectionPool.from_url(connection_url))
-
 # Establish Neo4j Connection
-host = os.getenv('NEO4J_HOST', '0.0.0.0')
+host = os.getenv('NEO4J_HOST', 'localhost')
 scheme = os.getenv('NEO4J_SCHEME', 'bolt')
 port = os.getenv('NEO4J_PORT', '7687')
 url = f'{scheme}://{host}:{port}'

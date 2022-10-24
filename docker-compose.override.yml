@@ -28,10 +28,8 @@ x-appserver: &appserver
     - NEO4J_PORT=7687
     # Redis
     - REDIS_HOST=redis
-    - REDIS_PORT=6379
     - REDIS_USERNAME=default
     - REDIS_PASSWORD=password
-    - REDIS_SSL=false
     # StatisticalEnrichment
     - SE_HOST=statistical-enrichment
     - SE_PORT=5010
@@ -100,9 +98,7 @@ services:
       - NEO4J_PORT=7687
       # Redis
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - REDIS_PASSWORD=password
-      - REDIS_SSL=false
     # Allow debugging w/ IPython or pdb
     stdin_open: true
     tty: true
@@ -127,9 +123,7 @@ services:
       - NEO4J_PORT=7687
       # Redis
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - REDIS_PASSWORD=password
-      - REDIS_SSL=false
     volumes:
       - ./cache-invalidator:/app
     networks:
@@ -176,7 +170,7 @@ services:
     image: redis:6-alpine
     command: redis-server --requirepass password
     ports:
-      - "6379:6379"
+      - "6379"
     networks:
       - backend
 

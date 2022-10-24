@@ -2,22 +2,17 @@
 import os
 import redis
 
-REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT')
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
+DEFAULT_CACHE_SETTINGS = dict(ex=3600 * 24)
 
-DEFAULT_CACHE_SETTINGS = {
-    'ex': 3600 * 24
-}
-
-connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
-
-redis_server = redis.Redis(
-        connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
+CACHE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
+    host=os.getenv('REDIS_HOST', 'localhost'),
+    port=os.getenv('REDIS_PORT', '6379'),
+    username=os.getenv('REDIS_USERNAME', ''),
+    password=os.getenv('REDIS_PASSWORD', ''),
+    db=os.getenv('CACHE_REDIS_DB', '0')
 )
-
+connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
+redis_server = redis.Redis(connection_pool=connection_pool)
 
 # Helper method to use redis cache
 #   If:

@@ -11,8 +11,10 @@ from neo4j import Driver, GraphDatabase, basic_auth
 from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
+from neo4japp.constants import BASE_REDIS_URL, CACHE_REDIS_DB, ELASTICSEARCH_HOSTS
 from neo4japp.utils.flask import scope_flask_app_ctx
 
+CACHE_REDIS_URL = f'{BASE_REDIS_URL}/{CACHE_REDIS_DB}'
 
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
@@ -84,16 +86,9 @@ def close_neo4j_db(e=None):
         neo4j_db.close()
 
 
-def get_redis_connection() -> Redis:
+def get_redis_connection(db: int = 0) -> Redis:
     if not hasattr(g, 'redis_conn'):
-        HOST = os.environ.get('REDIS_HOST')
-        PORT = os.environ.get('REDIS_PORT')
-        PASSWORD = os.environ.get('REDIS_PASSWORD')
-        DB = os.getenv('REDIS_DB', '1')
-        SSL = os.environ.get('REDIS_SSL', 'false').lower()
-        connection_prefix = 'rediss' if SSL == 'true' else 'redis'
-
-        g.redis_conn = Redis.from_url(f'{connection_prefix}://:{PASSWORD}@{HOST}:{PORT}/{DB}')
+        g.redis_conn = Redis.from_url(CACHE_REDIS_URL)
     return g.redis_conn
 
 
@@ -108,7 +103,7 @@ def close_redis_conn(error):
 def _connect_to_elastic():
     return Elasticsearch(
         timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+        hosts=ELASTICSEARCH_HOSTS
     )
 
 
