@@ -3,11 +3,11 @@
 
   <app-modal-body>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
-      <div class="input-group">
-        <input formControlName="text" type="text" class="form-control" id="text">
+      <div class="input-group" (click)="enableTextField()">
+        <input formControlName="text" type="text" class="form-control" id="text" [readOnly]="!isTextEnabled">
         <div class="input-group-append">
           <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction">
-            <i class="fas fa-edit" type="button" (click)="enableTextField()"></i>
+            <i class="fas fa-edit" type="button"></i>
           </button>
         </div>
       </div>
@@ -20,8 +20,8 @@
     </div>
 
     <app-form-row for="search-links" label="Search">
-      <ng-container *ngFor="let searchLink of getSearchLinks; let i = index" id="search-links">
-        <a href="{{searchLink.link}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="i < getSearchLinks.length - 1">, </span>
+      <ng-container *ngFor="let searchLink of searchLinks$ | async; let l = last" id="search-links">
+        <a href="{{searchLink.link}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="!l">, </span>
       </ng-container>
     </app-form-row>
 
@@ -32,8 +32,8 @@
           formControlName="entityType"
           class="custom-select w-100"
           id="entity-type"
-          (change)="disableGlobalOption()"
         >
+          <option selected disabled hidden value="">Choose type</option>
           <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
             {{choice.name | titlecase}}
           </option>
@@ -44,18 +44,28 @@
         <label for="id" class="col-form-label col-sm-3">
           <i class="fas fa-exclamation-circle" ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"></i>
           Identifier:</label>
-        <div class="col-sm-6">
-          <select formControlName="source" class="custom-select w-100" id="source">
-            <option value="" selected>No Source</option>
-            <option *ngFor="let choice of databaseTypeChoices" [value]="choice">
-              {{choice}}
-            </option>
-          </select>
-        </div>
-        <div class="col-sm-3">
-          <input type="text" formControlName="id" class="form-control" id="id">
-          <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
-        </div>
+          <div class="col-sm d-flex flex-wrap" [style.gap]="'.5rem 15px'">
+              <select formControlName="source" class="custom-select w-auto flex-grow-1" id="source">
+                  <option selected value="">No Source</option>
+                  <option *ngFor="let choice of databaseTypeChoices$ | async" [value]="choice">
+                      {{choice}}
+                  </option>
+              </select>
+              <div
+                      class="d-inline-flex flex-column flex-grow-1"
+                      [style.max-width.%]="100"
+              >
+                  <input type="text"
+                         class="form-control"
+                         [style.min-width.%]="100"
+                         [style.max-width]="'inherit'"
+                         appAutoGrow paddingBorderAdjustment="calc( 1.3rem + 2px )"
+                         [recalculate]="form.get('id').valueChanges"
+                         formControlName="id"
+                  >
+                  <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
+              </div>
+          </div>
       </div>
     </fieldset>
 
