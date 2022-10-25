@@ -164,7 +164,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     } else {
       try {
         const urlObject = new AppURL(url);
-        return urlObject.hostname.replace(/^www./, '') || url;
+        return urlObject.hostname.replace(/^www\./, '') || url;
       } catch {
         return url;
       }
