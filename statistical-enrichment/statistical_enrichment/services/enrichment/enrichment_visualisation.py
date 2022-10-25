@@ -15,7 +15,7 @@ class EnrichmentVisualisationService():
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
             GO_terms = redis_server.get(f"GO_for_{organism.id}")
-            if GO_terms:
+            if GO_terms is not None:
                 df = pd.read_json(GO_terms)
                 go_count = len(df)
                 mask = ~df.geneNames.map(set(gene_names).isdisjoint)
@@ -28,25 +28,43 @@ class EnrichmentVisualisationService():
 
     def query_go_term(self, organism_id, gene_names):
         r = self.graph.read_transaction(
-                lambda tx: list(
-                        tx.run(
-                                """
-                                UNWIND $gene_names AS geneName
-                                MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) WHERE
-                                g.name=geneName
-                                WITH g MATCH (g)-[:GO_LINK]-(go)
-                                WITH DISTINCT go MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(g2:Gene)
-                                WITH go, collect(DISTINCT g2) AS genes
-                                RETURN
-                                    go.eid AS goId,
-                                    go.name AS goTerm,
-                                    [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
-                                    [g IN genes |g.name] AS geneNames
-                                """,
-                                taxId=organism_id,
-                                gene_names=gene_names
-                        ).data()
-                )
+            lambda tx: list(
+                tx.run(
+                    """
+                    UNWIND $gene_names AS geneName
+                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) 
+                    WHERE g.name=geneName
+                    CALL {
+                        // Make simple run by relations we has from GO db
+                        WITH g
+                        MATCH (g)-[:GO_LINK]-(go:db_GO)
+                        WITH DISTINCT go
+                        // GO db 'GO_LINK's has tax_id property so we can filter in this way
+                        MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(go_gene:Gene)
+                        RETURN go, go_gene
+                    UNION
+                        // Fetch GO relations defined in BioCyc
+                        WITH g
+                        MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
+                        WITH DISTINCT go 
+                        // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
+                        MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
+                        RETURN go, go_gene
+                    }
+                    WITH 
+                        DISTINCT go, 
+                        collect(DISTINCT go_gene) AS go_genes
+                    RETURN
+                        go.eid AS goId,
+                        go.name AS goTerm,
+                        // Return all but 'db_GO' labels 
+                        [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
+                        [g IN go_genes |g.name] AS geneNames
+                    """,
+                    taxId=organism_id,
+                    gene_names=gene_names
+                ).data()
+            )
         )
         if not r:
             current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
@@ -63,16 +81,24 @@ class EnrichmentVisualisationService():
 
     def query_go_term_count(self, organism_id):
         r = self.graph.read_transaction(
-                lambda tx: list(
-                        tx.run(
-                                """
-                                match (n:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
-                                with n match (n)-[:GO_LINK]-(go) with distinct go
-                                return count(go) as go_count
-                                """,
-                                taxId=organism_id
-                        )
+            lambda tx: list(
+                tx.run(
+                    """
+                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
+                    CALL {
+                        WITH g
+                        MATCH (g)-[:GO_LINK]-(go:db_GO)
+                        RETURN go
+                    UNION
+                        WITH g
+                        MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
+                        RETURN go
+                    }
+                    return count(distinct go) as go_count
+                    """,
+                    taxId=organism_id
                 )
+            )
         )
         if not r:
             current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
