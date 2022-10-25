@@ -4,7 +4,7 @@ from marshmallow_enum import EnumField
 
 from neo4japp.models.files import AnnotationChangeCause
 from neo4japp.schemas.account import UserSchema
-from neo4japp.schemas.base import CamelCaseSchema
+from neo4japp.schemas.base import CamelCaseSchema, not_blank
 from neo4japp.schemas.common import ResultListSchema
 
 
@@ -76,13 +76,13 @@ class AnnotationLinksSchema(Schema):
 
 class BaseAnnotationMetaSchema(Schema):
     # These fields are camel case even in Python
-    type = fields.String(required=True)
+    type = fields.String(required=True, validate=not_blank)
     links = fields.Nested(AnnotationLinksSchema, required=True)
-    id = fields.String(required=True)
-    idType = fields.String(required=True)
-    idHyperlinks = fields.List(fields.String(), required=True)
+    id = fields.String(required=True, validate=not_blank)
+    idType = fields.String(validate=not_blank)
+    idHyperlinks = fields.List(fields.String(validate=not_blank), required=True)
     isCustom = fields.Boolean(required=True)
-    allText = fields.String(required=True)
+    allText = fields.String(required=True, validate=not_blank)
 
 
 class BaseAnnotationSchema(Schema):

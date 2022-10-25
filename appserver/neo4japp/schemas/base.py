@@ -1,4 +1,4 @@
-from marshmallow import Schema
+from marshmallow import Schema, validate
 
 
 def camelcase(s):
@@ -13,3 +13,6 @@ class CamelCaseSchema(Schema):
 
     def on_bind_field(self, field_name, field_obj):
         field_obj.data_key = camelcase(field_obj.data_key or field_name)
+
+
+not_blank = validate.Length(min=1, error='Field cannot be blank')
