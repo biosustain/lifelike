@@ -58,6 +58,9 @@ export class ObjectListComponent {
 
     // At this time, we don't support dragging multiple items
     this.objects.selectOnly(object);
+
+    // Do not bubble as tab drag event
+    event.stopPropagation();
   }
 
   openParentEditDialog() {
