@@ -7,8 +7,7 @@ export enum DatabaseType {
   NCBI_GENE = 'NCBI Gene',
   NCBI_TAXONOMY = 'NCBI Taxonomy',
   UNIPROT = 'UniProt',
-  PUBCHEM = 'PubChem',
-  NONE = ''
+  PUBCHEM = 'PubChem'
 }
 
 export interface DatabaseLink {
@@ -43,7 +42,7 @@ export const ENTITY_TYPES = [
   new EntityType(
     'Company',
     annotationTypesMap.get('company').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
@@ -61,7 +60,7 @@ export const ENTITY_TYPES = [
   new EntityType(
     'Entity',
     annotationTypesMap.get('entity').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
@@ -82,25 +81,25 @@ export const ENTITY_TYPES = [
   new EntityType(
     'Lab Sample',
     annotationTypesMap.get('lab sample').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
     'Lab Strain',
     annotationTypesMap.get('lab strain').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
     'Mutation',
     annotationTypesMap.get('mutation').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
     'Pathway',
     annotationTypesMap.get('pathway').color,
-    [DatabaseType.NONE],
+    [],
     [{} as DatabaseLink]
   ),
   new EntityType(
