@@ -1212,7 +1212,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             filename=f"{file.filename}{ext}"
         )
 
-    def merge(self, files: list, requested_format: str, links=None):
+    def merge(self, files: List[Files], requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
         :param files: List of Files objects. The first entry is always the main map,
         :param requested_format: export format
@@ -1289,7 +1289,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_im.save(final_bytes, format='PNG')
         return final_bytes
 
-    def merge_pdfs(self, files: list, link_to_page_map=None):
+    def merge_pdfs(self, files: List[Files], link_to_page_map=None):
         """ Merge pdfs and add links to map.
         params:
         :param files: list of files to export.
@@ -1325,7 +1325,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             # endregion
             num_of_pages = writer.getNumPages()  # index of first attached page since this point
             writer.appendPagesFromReader(reader)
-            file_bookmark = writer.addBookmark(file.filename_path, num_of_pages, bold=True)
+            file_bookmark = writer.addBookmark(file.path, num_of_pages, bold=True)
             for line in (
                 f'Description:\t{file.description}',
                 f'Creation date:\t{file.creation_date}',
