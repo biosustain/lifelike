@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 
 import { PaginatedRequestOptions, ResultList } from '../schemas/common';
+import { retryWhenOnline } from '../rxjs/online-observable';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class GlobalAnnotationService {
@@ -18,8 +19,8 @@ export class GlobalAnnotationService {
         return this.http.get<ResultList<GlobalAnnotationListItem>>(
             `${this.baseUrl}/global-list`, {
             params: {...options as any, globalAnnotationType},
-            }
-        );
+          },
+        ).pipe(retryWhenOnline());
     }
 
     deleteAnnotations(pids: number[][]): Observable<string> {
@@ -42,7 +43,8 @@ export class GlobalAnnotationService {
             responseType: 'blob',
             observe: 'events',
             reportProgress: true,
-        });
+        }
+        ).pipe(retryWhenOnline());
     }
 
     exportGlobalInclusions(): Observable<HttpEvent<Blob>> {
@@ -52,6 +54,6 @@ export class GlobalAnnotationService {
             observe: 'events',
             reportProgress: true,
             }
-        );
+        ).pipe(retryWhenOnline());
     }
 }

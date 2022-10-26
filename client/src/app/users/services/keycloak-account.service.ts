@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { KeycloakUserData } from '../interfaces';
 
@@ -18,7 +19,7 @@ export class KeycloakAccountService {
   ) {}
 
   getCurrentUser(): Observable<KeycloakUserData> {
-    return this.http.get<KeycloakUserData>(`${this.keycloakAccountApiPath}`);
+    return this.http.get<KeycloakUserData>(`${this.keycloakAccountApiPath}`).pipe(retryWhenOnline());
   }
 
   updateCurrentUser(update: KeycloakUserData) {

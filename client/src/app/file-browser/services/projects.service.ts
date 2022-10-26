@@ -7,6 +7,8 @@ import { Observable, Subject } from 'rxjs';
 import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ModelList } from 'app/shared/models';
 import { serializePaginatedParams } from 'app/shared/utils/params';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
+import { Collaborator } from 'app/file-browser/models/collaborator';
 
 import { ProjectList } from '../models/project-list';
 import { ProjectImpl, FilesystemObject } from '../models/filesystem-object';
@@ -20,7 +22,6 @@ import {
   FilesystemObjectData,
 } from '../schema';
 import { encode } from 'punycode';
-import { Collaborator } from '../models/collaborator';
 
 @Injectable()
 export class ProjectsService {
@@ -39,6 +40,7 @@ export class ProjectsService {
             params: serializePaginatedParams(options, false),
           },
         ).pipe(
+          retryWhenOnline(),
           map(data => {
             const projectList = new ProjectList(
               data.results.map(itemData => new ProjectImpl().update(itemData))
@@ -79,6 +81,7 @@ export class ProjectsService {
     return this.http.get<SingleResult<ProjectData>>(
       `/api/projects/projects/${encode(hashId)}`,
     ).pipe(
+      retryWhenOnline(),
       map(data => new ProjectImpl().update(data.result)),
     );
   }
@@ -112,6 +115,7 @@ export class ProjectsService {
         params: serializePaginatedParams(options, false),
       },
     ).pipe(
+      retryWhenOnline(),
       map(data => {
         const collaboratorsList = new ModelList<Collaborator>();
         collaboratorsList.collectionSize = data.results.length;

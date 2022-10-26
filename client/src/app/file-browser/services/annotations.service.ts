@@ -9,7 +9,7 @@ import { Annotation } from 'app/pdf-viewer/annotation-type';
 import {
   SortingAlgorithmId
 } from 'app/word-cloud/sorting/sorting-algorithms';
-
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
@@ -17,7 +17,7 @@ import {
   AnnotationGenerationResultData,
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
-} from '../schema';
+} from 'app/file-browser/schema';
 
 @Injectable()
 export class AnnotationsService {
@@ -27,6 +27,7 @@ export class AnnotationsService {
     return this.http.get<ResultList<Annotation>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations`,
     ).pipe(
+      retryWhenOnline(),
       map(data => data.results),
     );
   }

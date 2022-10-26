@@ -8,6 +8,7 @@ import { map, mergeMap } from 'rxjs/operators';
 import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
@@ -91,6 +92,7 @@ export class EnrichmentVisualisationService {
       `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism: `${taxID}/${organism}`, analysis},
     ).pipe(
+      retryWhenOnline(),
       map((data: any) => data.map(addressPrecisionMistake))
     );
   }

@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, retryWhen } from 'rxjs/operators';
 
 import { TextAnnotationGenerationRequest, AnnotationGenerationResultSchema } from 'app/file-browser/schema';
 import { ResultMapping } from 'app/shared/schemas/common';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { EnrichmentParsedData } from '../models/enrichment-document';
 
@@ -64,6 +65,7 @@ export class EnrichmentTableService {
     return this.http.get<{ results: EnrichmentParsedData }>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
     ).pipe(
+      retryWhenOnline(),
       map(resp => resp.results),
     );
   }

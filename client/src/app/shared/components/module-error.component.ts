@@ -1,4 +1,5 @@
 import { Component, Input, HostBinding } from '@angular/core';
+import { userError } from '@angular/compiler-cli/src/transformers/util';
 
 import { Observable, of } from 'rxjs';
 
@@ -6,7 +7,6 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { UserError } from '../exceptions';
 import { ErrorHandler } from '../services/error-handler.service';
-import { userError } from '@angular/compiler-cli/src/transformers/util';
 
 @Component({
   selector: 'app-module-error',

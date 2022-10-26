@@ -16,6 +16,7 @@ import {
   GetAssociatedTypeResult,
   GetNodePairSnippetsResult,
 } from 'app/interfaces';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 @Injectable()
 export class VisualizationService {
@@ -27,7 +28,10 @@ export class VisualizationService {
         return this.http.get<{result: Neo4jResults<any, any>}>(
             `${this.baseUrl}/batch`,
             {params: {data: query}}
-        ).pipe(map(resp => resp.result));
+        ).pipe(
+          retryWhenOnline(),
+          map(resp => resp.result)
+        );
     }
 
     /**

@@ -6,6 +6,7 @@ import { ChartOptions, ChartDataSets } from 'chart.js';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 interface StatisticsDataResponse {
   [domain: string]: {
@@ -112,9 +113,9 @@ export class KgStatisticsComponent {
   totalCount: any = 0;
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) {
-    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() => {
-      return this.http.get<StatisticsDataResponse>('/api/kg-statistics');
-    });
+    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() =>
+      this.http.get<StatisticsDataResponse>('/api/kg-statistics').pipe(retryWhenOnline())
+    );
 
     this.loadTask.results$.subscribe(({result, value}) => {
       this._getChartDataEntitiesByDomain(result);

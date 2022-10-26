@@ -13,6 +13,7 @@ import {
 
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AccountService implements OnDestroy {
@@ -55,13 +56,13 @@ export class AccountService implements OnDestroy {
      */
     getUsers(hashId?: string): Observable<ResultList<PrivateAppUser>> {
         if (hashId) {
-            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`);
+            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`).pipe(retryWhenOnline());
         }
-        return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`);
+        return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`).pipe(retryWhenOnline());
     }
 
     getUserBySubject(subject: string): Observable<PrivateAppUser> {
-      return this.http.get<PrivateAppUser>(`${this.accountApi}/subject/${subject}`);
+      return this.http.get<PrivateAppUser>(`${this.accountApi}/subject/${subject}`).pipe(retryWhenOnline());
     }
 
     currentUser(): Observable<PrivateAppUser> {

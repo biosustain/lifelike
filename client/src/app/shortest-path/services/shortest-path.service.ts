@@ -4,6 +4,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
+
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
 })
@@ -17,6 +19,7 @@ export class ShortestPathService {
       `${this.kgAPI}/shortest-path-query/${queryId}`, {
       }
     ).pipe(
+      retryWhenOnline(),
       map((resp: any) => resp.result),
     );
   }
@@ -26,6 +29,7 @@ export class ShortestPathService {
       `${this.kgAPI}/shortest-path-query-list`, {
       }
     ).pipe(
+      retryWhenOnline(),
       map((resp: any) => resp.result),
     );
   }

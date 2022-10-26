@@ -107,7 +107,11 @@ export class ErrorHandler {
       );
   }
 
-  showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
+  showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta): Promise<any> {
+    if ((error as HttpErrorResponse)?.status !== 0) {
+      // offline error is handled in interceptor
+      return Promise.reject();
+    }
     return Promise.allSettled([
       this.logError(error, logInfo),
       Promise.resolve(this.createUserError(error))

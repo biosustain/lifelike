@@ -7,6 +7,7 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
 import { AppURL } from 'app/shared/utils/url';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -18,7 +19,7 @@ export class ViewService {
   get(viewId: string): Observable<object> {
     return this.http.get(
       `/api/view/${encodeURIComponent(viewId)}`,
-    );
+    ).pipe(retryWhenOnline());
   }
 
   /**

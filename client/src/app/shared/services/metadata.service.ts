@@ -6,6 +6,8 @@ import { map } from 'rxjs/operators';
 
 import { BuildInfo } from 'app/interfaces/metadata.interface';
 
+import { retryWhenOnline } from '../rxjs/online-observable';
+
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class MetaDataService {
     readonly baseUrl = '/api/meta';
@@ -16,6 +18,7 @@ export class MetaDataService {
         return this.http.get<{result: BuildInfo}>(
             `${this.baseUrl}/`,
         ).pipe(
+          retryWhenOnline(),
             map((res) => res.result)
         );
     }

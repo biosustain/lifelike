@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 
 import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
 
+import { retryWhenOnline } from '../rxjs/online-observable';
+
 
 @Injectable()
 export class SharedSearchService {
@@ -16,7 +18,10 @@ export class SharedSearchService {
   getOrganismFromTaxId(organismTaxId: string): Observable<OrganismAutocomplete> {
     return this.http.get<{ result: OrganismAutocomplete }>(
       `${this.searchApi}/organism/${organismTaxId}`,
-    ).pipe(map(resp => resp.result));
+    ).pipe(
+      retryWhenOnline(),
+      map(resp => resp.result)
+    );
   }
 
   getOrganisms(query: string, limit: number = 50): Observable<OrganismsResult> {
