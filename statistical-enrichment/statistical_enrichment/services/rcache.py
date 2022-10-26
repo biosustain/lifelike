@@ -11,7 +11,7 @@ CACHE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
     password=os.getenv('REDIS_PASSWORD', ''),
     db=os.getenv('CACHE_REDIS_DB', '0')
 )
-connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
+connection_pool=redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
 redis_server = redis.Redis(connection_pool=connection_pool)
 
 # Helper method to use redis cache

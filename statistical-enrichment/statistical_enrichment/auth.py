@@ -2,7 +2,7 @@ from flask import current_app
 from flask_httpauth import HTTPTokenAuth
 import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-from os import environ
+from os import getenv
 
 from .exceptions import JWTTokenException
 
