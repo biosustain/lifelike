@@ -3,7 +3,7 @@ import io
 import itertools
 import json
 import os
-import typing
+from typing import Set, cast
 from urllib.error import HTTPError
 import zipfile
 
@@ -13,6 +13,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from marshmallow import ValidationError
+from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -21,6 +22,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
+from itertools import chain
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
@@ -1131,7 +1133,7 @@ class FileListView(FilesystemBaseView):
         elif buffer is not None:
             return buffer, None
         else:
-            return typing.cast(io.BufferedIOBase, io.BytesIO()), None
+            return cast(io.BufferedIOBase, io.BytesIO()), None
 
 
 class FileSearchView(FilesystemBaseView):
@@ -1346,17 +1348,25 @@ class FileExportView(FilesystemBaseView):
     def get_all_linked_maps(
         self,
         file: Files,
-        map_hash_set: set,
-        files: list,
-        link_to_page_map: dict
-    ):
+        map_hash_set: Set[str],
+        files: List[Files],
+        link_to_page_map: Dict[str, int]
+    ) -> List[Files]:
         current_user = g.current_user
         zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
             raise ValidationError
-        for node in json_graph['nodes']:
+        for node in chain(
+                json_graph['nodes'],
+                flatten(
+                    map(
+                        lambda group: group.get('members', []),
+                        json_graph['groups']
+                    )
+                )
+        ):
             data = node['data']
             for link in data.get('sources', []) + data.get('hyperlinks', []):
                 url = link.get('url', "").lstrip()
