@@ -3,8 +3,6 @@ import { HttpClient, HttpResponse, HttpEvent } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import { retryWhenOnline } from '../rxjs/online-observable';
-
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class StorageService {
     readonly baseUrl = '/api/storage';
@@ -12,13 +10,11 @@ export class StorageService {
     constructor(private http: HttpClient) { }
 
     getUserManual(): Observable<HttpResponse<Blob>> {
-      return this.http.get(
-        `${this.baseUrl}/manual`,
-        {
-          responseType: 'blob',
-          observe: 'response',
-        },
-      );
+        return this.http.get(
+            `${this.baseUrl}/manual`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
     }
 
     uploadUserManual(file: File): Observable<HttpEvent<{result: string}>> {

@@ -7,8 +7,6 @@ import { Observable, Subject } from 'rxjs';
 import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ModelList } from 'app/shared/models';
 import { serializePaginatedParams } from 'app/shared/utils/params';
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
-import { Collaborator } from 'app/file-browser/models/collaborator';
 
 import { ProjectList } from '../models/project-list';
 import { ProjectImpl, FilesystemObject } from '../models/filesystem-object';
@@ -22,6 +20,7 @@ import {
   FilesystemObjectData,
 } from '../schema';
 import { encode } from 'punycode';
+import { Collaborator } from '../models/collaborator';
 
 @Injectable()
 export class ProjectsService {

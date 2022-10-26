@@ -1,7 +1,8 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { merge, isObject } from 'lodash-es';
-import { isOfflineError } from '../exceptions';
 import { first } from 'rxjs/operators';
+
+import { isOfflineError } from '../exceptions';
 import { onlineChangeObservable } from './online-observable';
 
 export enum TaskState {

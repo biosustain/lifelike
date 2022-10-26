@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { KeycloakUserData } from '../interfaces';
 

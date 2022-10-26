@@ -2,11 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
-import { map, retryWhen } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { TextAnnotationGenerationRequest, AnnotationGenerationResultSchema } from 'app/file-browser/schema';
 import { ResultMapping } from 'app/shared/schemas/common';
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { EnrichmentParsedData } from '../models/enrichment-document';
 

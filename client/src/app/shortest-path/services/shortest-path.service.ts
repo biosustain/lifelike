@@ -4,8 +4,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
-
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
 })

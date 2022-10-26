@@ -6,7 +6,6 @@ import { map } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ProjectData } from 'app/file-browser/schema';
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import {
   AnnotationRequestOptions,
@@ -59,9 +58,7 @@ export class ContentSearchService {
     return this.http.get<{results: ProjectData[]}>(
       `/api/projects/projects`, {
       },
-    ).pipe(
-      map(resp => resp.results)
-    );
+    ).pipe(map(resp => resp.results));
   }
 
   getSynoynms(searchTerm: string, organisms: string[], types: string[], page: number, limit: number): Observable<SynonymSearchResponse> {

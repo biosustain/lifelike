@@ -23,7 +23,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
-import { retryWhenOnline } from '../../shared/rxjs/online-observable';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 @Component({
     selector: 'app-annotations-table',

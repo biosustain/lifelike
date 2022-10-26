@@ -13,7 +13,6 @@ import {
 
 } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AccountService implements OnDestroy {
@@ -67,9 +66,7 @@ export class AccountService implements OnDestroy {
 
     currentUser(): Observable<PrivateAppUser> {
         const userState = JSON.parse(localStorage.getItem('auth')).user;
-        return this.getUsers(userState.hashId).pipe(
-          map(result => result.results[0])
-        );
+        return this.getUsers(userState.hashId).pipe(map(result => result.results[0]));
     }
 
     changePassword(updateRequest: ChangePasswordRequest) {

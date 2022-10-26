@@ -13,7 +13,6 @@ import { serializePaginatedParams } from 'app/shared/utils/params';
 import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
-import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import {
@@ -203,19 +202,19 @@ export class FilesystemService {
       },
     ).pipe(
       catchError(e => {
-      // If the backup doesn't exist, don't let the caller have to figure out
-      // that it's a HTTP error and then check the status!
-      // Let's return a null indicating that there's no backup
-      if (e instanceof HttpErrorResponse) {
-        if (e.status === 404) {
-          return of(null);
+        // If the backup doesn't exist, don't let the caller have to figure out
+        // that it's a HTTP error and then check the status!
+        // Let's return a null indicating that there's no backup
+        if (e instanceof HttpErrorResponse) {
+          if (e.status === 404) {
+            return of(null);
+          }
         }
-      }
 
-      // If it's any other type of error, we need to propagate it so
-      // the calling code can handle it through its normal error handling
-      return throwError(e);
-    })
+        // If it's any other type of error, we need to propagate it so
+        // the calling code can handle it through its normal error handling
+        return throwError(e);
+      }),
     );
   }
 
