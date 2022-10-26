@@ -21,9 +21,8 @@ Thumbs.db
 .run
 
 # IDE - VSCode
-.vscode/
+.vscode/**
 !.vscode/launch.json
-!.vscode/extensions.json
 
 # ignore node_modules
 node_modules/
