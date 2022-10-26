@@ -29,7 +29,6 @@ export class VisualizationService {
             `${this.baseUrl}/batch`,
             {params: {data: query}}
         ).pipe(
-          retryWhenOnline(),
           map(resp => resp.result)
         );
     }

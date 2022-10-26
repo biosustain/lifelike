@@ -27,7 +27,6 @@ export class AnnotationsService {
     return this.http.get<ResultList<Annotation>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations`,
     ).pipe(
-      retryWhenOnline(),
       map(data => data.results),
     );
   }

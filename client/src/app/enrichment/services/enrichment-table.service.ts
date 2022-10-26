@@ -65,7 +65,6 @@ export class EnrichmentTableService {
     return this.http.get<{ results: EnrichmentParsedData }>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
     ).pipe(
-      retryWhenOnline(),
       map(resp => resp.results),
     );
   }

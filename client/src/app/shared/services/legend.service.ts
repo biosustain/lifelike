@@ -18,7 +18,6 @@ export class LegendService {
         return this.http.get<{result: NodeLegend}>(
             `${this.visApi}/get-annotation-legend`,
         ).pipe(
-          retryWhenOnline(),
           map(resp => resp.result)
         );
     }

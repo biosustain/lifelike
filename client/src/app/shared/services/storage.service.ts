@@ -12,12 +12,13 @@ export class StorageService {
     constructor(private http: HttpClient) { }
 
     getUserManual(): Observable<HttpResponse<Blob>> {
-        return this.http.get(
-            `${this.baseUrl}/manual`, {
-            responseType: 'blob',
-            observe: 'response',
-        }
-        ).pipe(retryWhenOnline());
+      return this.http.get(
+        `${this.baseUrl}/manual`,
+        {
+          responseType: 'blob',
+          observe: 'response',
+        },
+      );
     }
 
     uploadUserManual(file: File): Observable<HttpEvent<{result: string}>> {

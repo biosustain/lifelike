@@ -35,26 +35,27 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
   destroyed = new Subject();
 
   loadTask = new BackgroundTask((id: string) =>
-    combineLatest([
-      this.filesystemService.get(id),
-      this.filesystemService.getContent(id).pipe(
-        mapBlobToBuffer(),
-        mapBufferToJson(),
-        switchMap(({graph: {trace_networks}, nodes}: Graph.File) =>
-          this.route.params.pipe(
-            map(({hash_id, network_trace_idx, trace_idx}) => {
-              const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
-              const parsedTraceData = this.parseTraceDetails(traceData, nodes);
-              return getTraceDetailsGraph(parsedTraceData);
-            })
-          )
-        )
-      )
-    ]).pipe(
-      takeUntil(this.destroyed),
-      tap(() => this.cdr.detectChanges()),
-      shareReplay({refCount: true, bufferSize: 1})
-    )
+      combineLatest([
+        this.filesystemService.get(id),
+        this.filesystemService.getContent(id).pipe(
+          mapBlobToBuffer(),
+          mapBufferToJson(),
+          switchMap(({graph: {trace_networks}, nodes}: Graph.File) =>
+            this.route.params.pipe(
+              map(({hash_id, network_trace_idx, trace_idx}) => {
+                const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
+                const parsedTraceData = this.parseTraceDetails(traceData, nodes);
+                return getTraceDetailsGraph(parsedTraceData);
+              }),
+            ),
+          ),
+        ),
+      ]).pipe(
+        takeUntil(this.destroyed),
+        tap(() => this.cdr.detectChanges()),
+        shareReplay({refCount: true, bufferSize: 1}),
+      ),
+    {retryMaxCount: 1},
   );
 
   data$ = this.loadTask.results$.pipe(

@@ -2,7 +2,7 @@
     <app-module-error *ngIf="status.error" [error]="status.error">
     </app-module-error>
     <app-module-progress *ngIf="status.running">
-        Loading Statistical Enrichment...
+        Loading Statistical Enrichment... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
     </app-module-progress>
     <ng-template #tabTitle> {{object.filename}} - Statistical Enrichment</ng-template>
     <ng-container *ngIf="status.resultsShown">

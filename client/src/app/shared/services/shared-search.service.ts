@@ -19,7 +19,6 @@ export class SharedSearchService {
     return this.http.get<{ result: OrganismAutocomplete }>(
       `${this.searchApi}/organism/${organismTaxId}`,
     ).pipe(
-      retryWhenOnline(),
       map(resp => resp.result)
     );
   }

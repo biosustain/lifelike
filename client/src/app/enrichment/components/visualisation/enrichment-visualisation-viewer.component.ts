@@ -61,8 +61,9 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
       this.object = result;
       this.emitModuleProperties();
     });
-    this.loadTask = new BackgroundTask((analysis) =>
-      this.enrichmentService.enrichWithGOTerms(analysis),
+    this.loadTask = new BackgroundTask(
+      (analysis) => this.enrichmentService.enrichWithGOTerms(analysis),
+      {retryMaxCount: 1},
     );
 
     this.loadSubscription = this.loadTask.results$.subscribe(({result}) => {

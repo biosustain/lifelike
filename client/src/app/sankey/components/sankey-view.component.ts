@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take } from 'rxjs/operators';
+import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take, timeout } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
 import { isNil, zip, omitBy, assign } from 'lodash-es';
 
@@ -143,7 +143,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
-      ])
+      ]),
+      {retryMaxCount: 1}
     );
 
     // Listener for file open
@@ -265,7 +266,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
 
   pendingChanges$ = defer(() => this.baseView$.pipe(
-    switchMap(baseView => baseView.hasPendingChanges$)
+    switchMap(baseView => baseView.hasPendingChanges$),
+    startWith(false),
   ));
 
   state$ = this.sankeyController.state$;

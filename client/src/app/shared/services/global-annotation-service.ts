@@ -20,7 +20,7 @@ export class GlobalAnnotationService {
             `${this.baseUrl}/global-list`, {
             params: {...options as any, globalAnnotationType},
           },
-        ).pipe(retryWhenOnline());
+        );
     }
 
     deleteAnnotations(pids: number[][]): Observable<string> {
@@ -44,7 +44,7 @@ export class GlobalAnnotationService {
             observe: 'events',
             reportProgress: true,
         }
-        ).pipe(retryWhenOnline());
+        );
     }
 
     exportGlobalInclusions(): Observable<HttpEvent<Blob>> {
@@ -54,6 +54,6 @@ export class GlobalAnnotationService {
             observe: 'events',
             reportProgress: true,
             }
-        ).pipe(retryWhenOnline());
+        );
     }
 }

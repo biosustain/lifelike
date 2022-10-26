@@ -18,7 +18,6 @@ export class MetaDataService {
         return this.http.get<{result: BuildInfo}>(
             `${this.baseUrl}/`,
         ).pipe(
-          retryWhenOnline(),
             map((res) => res.result)
         );
     }

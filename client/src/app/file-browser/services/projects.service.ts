@@ -40,7 +40,6 @@ export class ProjectsService {
             params: serializePaginatedParams(options, false),
           },
         ).pipe(
-          retryWhenOnline(),
           map(data => {
             const projectList = new ProjectList(
               data.results.map(itemData => new ProjectImpl().update(itemData))
@@ -81,7 +80,6 @@ export class ProjectsService {
     return this.http.get<SingleResult<ProjectData>>(
       `/api/projects/projects/${encode(hashId)}`,
     ).pipe(
-      retryWhenOnline(),
       map(data => new ProjectImpl().update(data.result)),
     );
   }
@@ -115,7 +113,6 @@ export class ProjectsService {
         params: serializePaginatedParams(options, false),
       },
     ).pipe(
-      retryWhenOnline(),
       map(data => {
         const collaboratorsList = new ModelList<Collaborator>();
         collaboratorsList.collectionSize = data.results.length;

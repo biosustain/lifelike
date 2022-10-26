@@ -19,7 +19,7 @@ export class KeycloakAccountService {
   ) {}
 
   getCurrentUser(): Observable<KeycloakUserData> {
-    return this.http.get<KeycloakUserData>(`${this.keycloakAccountApiPath}`).pipe(retryWhenOnline());
+    return this.http.get<KeycloakUserData>(`${this.keycloakAccountApiPath}`);
   }
 
   updateCurrentUser(update: KeycloakUserData) {

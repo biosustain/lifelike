@@ -10,7 +10,7 @@ import { UnaryFunction } from 'rxjs/internal/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { MessageDialog } from './message-dialog.service';
-import { UserError } from '../exceptions';
+import { isOfflineError, UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
 import { mapBlobToBuffer, mapBufferToJson, bufferToJson } from '../utils/files';
@@ -108,7 +108,7 @@ export class ErrorHandler {
   }
 
   showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta): Promise<any> {
-    if ((error as HttpErrorResponse)?.status !== 0) {
+    if (isOfflineError(error)) {
       // offline error is handled in interceptor
       return Promise.reject();
     }

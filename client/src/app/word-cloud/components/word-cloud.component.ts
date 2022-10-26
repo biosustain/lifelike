@@ -66,12 +66,13 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     this.layout = cloud();
 
     // Initialize the background task
-    this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
-      return combineLatest(
-        this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(hashId, sortingId),
-      );
-    });
+    this.loadTask = new BackgroundTask(({hashId, sortingId}) =>
+        combineLatest(
+          this.legendService.getAnnotationLegend(),
+          this.annotationsService.getSortedAnnotations(hashId, sortingId),
+        ),
+      {retryMaxCount: 1},
+    );
 
     // Set up the cloud resize observer.
     // @ts-ignore // todo: use createResizeObservable

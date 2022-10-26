@@ -40,7 +40,6 @@ export class ContentSearchService {
         }
       },
     ).pipe(
-      retryWhenOnline(),
       map(data => {
         return {
           total: data.total,
@@ -61,7 +60,6 @@ export class ContentSearchService {
       `/api/projects/projects`, {
       },
     ).pipe(
-      retryWhenOnline(),
       map(resp => resp.results)
     );
   }
@@ -77,6 +75,6 @@ export class ContentSearchService {
           limit: limit.toString(),
         }
       },
-    ).pipe(retryWhenOnline());
+    );
   }
 }

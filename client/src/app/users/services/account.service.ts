@@ -56,18 +56,20 @@ export class AccountService implements OnDestroy {
      */
     getUsers(hashId?: string): Observable<ResultList<PrivateAppUser>> {
         if (hashId) {
-            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`).pipe(retryWhenOnline());
+            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`);
         }
-        return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`).pipe(retryWhenOnline());
+        return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`);
     }
 
     getUserBySubject(subject: string): Observable<PrivateAppUser> {
-      return this.http.get<PrivateAppUser>(`${this.accountApi}/subject/${subject}`).pipe(retryWhenOnline());
+      return this.http.get<PrivateAppUser>(`${this.accountApi}/subject/${subject}`);
     }
 
     currentUser(): Observable<PrivateAppUser> {
         const userState = JSON.parse(localStorage.getItem('auth')).user;
-        return this.getUsers(userState.hashId).pipe(map(result => result.results[0]));
+        return this.getUsers(userState.hashId).pipe(
+          map(result => result.results[0])
+        );
     }
 
     changePassword(updateRequest: ChangePasswordRequest) {

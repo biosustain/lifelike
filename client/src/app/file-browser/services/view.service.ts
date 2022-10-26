@@ -19,7 +19,7 @@ export class ViewService {
   get(viewId: string): Observable<object> {
     return this.http.get(
       `/api/view/${encodeURIComponent(viewId)}`,
-    ).pipe(retryWhenOnline());
+    );
   }
 
   /**

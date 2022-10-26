@@ -114,7 +114,7 @@ export class KgStatisticsComponent {
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) {
     this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() =>
-      this.http.get<StatisticsDataResponse>('/api/kg-statistics').pipe(retryWhenOnline())
+      this.http.get<StatisticsDataResponse>('/api/kg-statistics')
     );
 
     this.loadTask.results$.subscribe(({result, value}) => {

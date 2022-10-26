@@ -19,7 +19,6 @@ export class ShortestPathService {
       `${this.kgAPI}/shortest-path-query/${queryId}`, {
       }
     ).pipe(
-      retryWhenOnline(),
       map((resp: any) => resp.result),
     );
   }
@@ -29,7 +28,6 @@ export class ShortestPathService {
       `${this.kgAPI}/shortest-path-query-list`, {
       }
     ).pipe(
-      retryWhenOnline(),
       map((resp: any) => resp.result),
     );
   }

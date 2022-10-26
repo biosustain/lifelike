@@ -47,20 +47,23 @@ export class EnrichmentVisualisationService {
   set fileId(fileId: string) {
     const enrichmentDocument = this.enrichmentDocument = new BaseEnrichmentDocument();
     this.currentFileId = fileId;
-    this.loadTaskMetaData = new BackgroundTask(() =>
-      this.enrichmentService.get(
+    this.loadTaskMetaData = new BackgroundTask(
+      () => this.enrichmentService.get(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         map((value: FilesystemObject, _) => this.object = value),
-      ));
-    this.loadTask = new BackgroundTask(() =>
-      this.enrichmentService.getContent(
+      ),
+      {retryMaxCount: 1},
+    );
+    this.loadTask = new BackgroundTask(
+      () => this.enrichmentService.getContent(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         mergeMap((blob: Blob) => enrichmentDocument.load(blob))
-      )
+      ),
+      {retryMaxCount: 1}
     );
 
     this.load = combineLatest(
@@ -92,7 +95,6 @@ export class EnrichmentVisualisationService {
       `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism: `${taxID}/${organism}`, analysis},
     ).pipe(
-      retryWhenOnline(),
       map((data: any) => data.map(addressPrecisionMistake))
     );
   }

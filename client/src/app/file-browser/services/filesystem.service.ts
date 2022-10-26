@@ -53,7 +53,7 @@ export class FilesystemService {
   // TODO: Type this method
   protected lmdbsDates$ = this.http.get<object>(
     `/api/files/lmdbs_dates`,
-  ).pipe(retryWhenOnline());
+  );
 
   search(options: ObjectSearchRequest): Observable<FilesystemObjectList> {
     return this.http.post<ResultList<FilesystemObjectData>>(
@@ -94,7 +94,6 @@ export class FilesystemService {
     return this.http.get<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
     ).pipe(
-      retryWhenOnline(),
       map(data => new FilesystemObject().update(data.result)),
       tap(fileObj => updateRecent && this.recentFilesService.addToList(fileObj)),
     );
@@ -105,8 +104,6 @@ export class FilesystemService {
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
         responseType: 'blob',
       },
-    ).pipe(
-      retryWhenOnline()
     );
   }
 
@@ -123,7 +120,7 @@ export class FilesystemService {
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/map-content`, {
         responseType: 'blob',
       }
-    ).pipe(retryWhenOnline());
+    );
   }
 
   // TODO: Deprecate after LL-3006
@@ -133,7 +130,6 @@ export class FilesystemService {
         responseType: 'json',
       }
     ).pipe(
-      retryWhenOnline(),
       map(data => from(data.result))
     );
   }
@@ -206,7 +202,6 @@ export class FilesystemService {
         responseType: 'blob',
       },
     ).pipe(
-      retryWhenOnline(),
       catchError(e => {
       // If the backup doesn't exist, don't let the caller have to figure out
       // that it's a HTTP error and then check the status!
@@ -244,7 +239,6 @@ export class FilesystemService {
         params: serializePaginatedParams(options, false),
       },
     ).pipe(
-      retryWhenOnline(),
       map(data => {
         const object = new FilesystemObject().update(data.object);
         const list = new ObjectVersionHistory();
@@ -264,7 +258,7 @@ export class FilesystemService {
       `/api/filesystem/versions/${encodeURIComponent(hashId)}/content`, {
         responseType: 'blob',
       },
-    ).pipe(retryWhenOnline());
+    );
   }
 
   /**
@@ -279,7 +273,6 @@ export class FilesystemService {
         params: serializePaginatedParams(options, false),
       },
     ).pipe(
-      retryWhenOnline(),
       map(data => new FileAnnotationHistory().update(data)),
     );
   }
@@ -316,7 +309,6 @@ export class FilesystemService {
     return this.http.get<ResultList<ObjectLockData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks`
     ).pipe(
-      retryWhenOnline(),
       map(data => {
         return data.results.map(itemData => new ObjectLock().update(itemData));
       }),
@@ -360,12 +352,11 @@ export class FilesystemService {
           directoriesOnly: String(directoriesOnly)
         }
       }
-    ).pipe(retryWhenOnline());
+    );
   }
 
   getStarred() {
     return this.http.get<ResultList<FilesystemObjectData>>(`/api/filesystem/objects/starred`).pipe(
-      retryWhenOnline(),
       map(data => {
         const list = new FilesystemObjectList();
         list.results.replace(data.results.map(itemData => new FilesystemObject().update(itemData)));

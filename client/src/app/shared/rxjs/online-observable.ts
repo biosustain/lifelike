@@ -34,6 +34,7 @@ export const onlineChangeObservable = (
     };
   })
 ).pipe(
+  tap(online => console.log(`Changed to ${online ? 'online' : 'offline'} status.`)),
   share()
 );
 

@@ -94,13 +94,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService
   ) {
-    this.loadTask = new BackgroundTask((hashId) => {
-      return combineLatest([
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId),
-        this.getBackupBlob(),
-      ]);
-    });
+    this.loadTask = new BackgroundTask(
+      (hashId) => combineLatest([
+          this.filesystemService.get(hashId),
+          this.filesystemService.getContent(hashId),
+          this.getBackupBlob(),
+        ]),
+      {retryMaxCount: 1},
+    );
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [mapFile, mapBlob, backupBlob], value}) => {
