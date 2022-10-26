@@ -17,7 +17,6 @@ from neo4japp.utils.logger import EventLog
 from .annotation_graph_service import AnnotationGraphService
 from .tokenizer import Tokenizer
 from .constants import (
-    EntityType,
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
     MAX_GENE_WORD_LENGTH,
