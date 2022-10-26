@@ -1,5 +1,7 @@
+import re
 from enum import Enum
 import os
+from string import punctuation
 from typing import Dict, Union
 
 
@@ -24,6 +26,7 @@ PDF_CHARACTER_SPACING_THRESHOLD = .325
 ABBREVIATION_WORD_LENGTH = {3, 4}
 MAX_ABBREVIATION_WORD_LENGTH = 4
 MAX_ENTITY_WORD_LENGTH = 6
+MIN_ENTITY_LENGTH = 2
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
@@ -189,3 +192,5 @@ DEFAULT_ANNOTATION_CONFIGS = {
         EntityType.GENE.value: {'nlp': False, 'rules_based': True}
     }
 }
+
+WORD_CHECK_REGEX = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
