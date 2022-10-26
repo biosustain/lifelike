@@ -5,7 +5,7 @@ import time
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List
+from typing import List
 
 from neo4japp.constants import (
     BIOCYC_ORG_ID_DICT,

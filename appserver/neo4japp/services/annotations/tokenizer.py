@@ -7,7 +7,7 @@ from .constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_WORDS,
     MAX_ENTITY_WORD_LENGTH,
-    PDF_NEW_LINE_THRESHOLD
+    PDF_NEW_LINE_THRESHOLD, WORD_CHECK_REGEX, MIN_ENTITY_LENGTH
 )
 from .data_transfer_objects import PDFWord
 
@@ -15,7 +15,7 @@ from .data_transfer_objects import PDFWord
 class Tokenizer:
     def __init__(self) -> None:
         self.abbreviations: Dict[str, List[str]] = dict()
-        self.token_word_check_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
+        self.token_word_check_regex = WORD_CHECK_REGEX
 
     def _is_abbrev(self, token: PDFWord) -> bool:
         """Determine if a word is an abbreviation.
@@ -180,7 +180,7 @@ class Tokenizer:
                 self.token_word_check_regex.match(token.keyword) or
                 token.keyword in ascii_letters or
                 token.keyword in digits or
-                len(token.normalized_keyword) <= 2 or
+                len(token.normalized_keyword) <= MIN_ENTITY_LENGTH or
                 self._is_abbrev(token)
             ):  # noqa
                 continue
