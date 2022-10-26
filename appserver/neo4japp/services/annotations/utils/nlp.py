@@ -29,7 +29,7 @@ def _call_nlp_service(model: str, text: str) -> dict:
         raise ServerException(
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
-            additional_msgs=['Status:', e.response.status_code, 'Body:', e.response.text],
+            additional_msgs=(f'Status: {e.response.status_code}, Body: {e.response.text}',),
             code=e.response.status_code)
 
     # Timeout either when connecting or reading response
