@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone, ElementRef } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { select as d3_select, Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq, isNil, mapValues, isEmpty } from 'lodash-es';
-import { combineLatest, forkJoin, iif, zip, of } from 'rxjs';
+import { Selection as d3_Selection } from 'd3-selection';
+import { flatMap, groupBy, uniq, mapValues, isEmpty, assign } from 'lodash-es';
+import { combineLatest, forkJoin } from 'rxjs';
 import { switchMap, map, tap, takeUntil, publish, first } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
@@ -14,11 +14,8 @@ import { SankeySelectionService } from 'app/sankey/services/selection.service';
 import { symmetricDifference } from 'app/sankey/utils';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
-import { d3EventCallback } from 'app/shared/utils/d3';
+import { SankeyAbstractComponent } from 'app/sankey/abstract/sankey.component';
 
-
-import { createMapToColor, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../../color-palette';
-import { SankeyAbstractComponent } from '../../../../abstract/sankey.component';
 import { Base } from '../../interfaces';
 import { MultiLaneLayoutService } from '../../services/multi-lane-layout.service';
 import { EditService } from '../../../../services/edit.service';
@@ -114,17 +111,19 @@ export class SankeyMultiLaneComponent
 
   selectionUpdate$ = this.selection.selection$.pipe(
     map(selection =>
-      mapValues(
-        groupBy(selection, 'type'),
-        group => group.map(({entity}) => entity)
+      assign(
+        mapValues(
+          groupBy(selection, 'type'),
+          group => group.map(({entity}) => entity)
+        ),
+        {empty: isEmpty(selection)}
       )
     ),
     publish(selection$ => combineLatest([
       selection$.pipe(
-        map(({[SelectionType.node]: nodes = []}) => nodes),
-        switchMap(selection => this.renderedNodes$.pipe(
+        switchMap(({[SelectionType.node]: selection = [], empty}) => this.renderedNodes$.pipe(
           tap(renderedNodes => {
-            if (isEmpty(selection)) {
+            if (empty) {
               renderedNodes.attr('selected', undefined);
             } else {
               renderedNodes
@@ -136,10 +135,9 @@ export class SankeyMultiLaneComponent
         ))
       ),
       selection$.pipe(
-        map(({[SelectionType.link]: links = []}) => links),
-        switchMap(selection => this.renderedLinks$.pipe(
+        switchMap(({[SelectionType.link]: selection = [], empty}) => this.renderedLinks$.pipe(
           tap(renderedLinks => {
-            if (isEmpty(selection)) {
+            if (empty) {
               renderedLinks.attr('selected', undefined);
             } else {
               renderedLinks
@@ -167,7 +165,7 @@ export class SankeyMultiLaneComponent
                 } else {
                   renderedNodes
                     .attr('transitively-selected', ({id}) => selection.includes(id))
-                    .filter( ({id}) => selection.includes(id))
+                    .filter(({id}) => selection.includes(id))
                     .raise();
                 }
               })
@@ -273,67 +271,6 @@ export class SankeyMultiLaneComponent
 
   ngOnDestroy() {
     super.ngOnDestroy();
-  }
-
-  /**
-   * Callback that dims any nodes/links not connected through the hovered path.
-   * @param element the svg element being hovered over
-   * @param data object representing the link data
-   */
-  @d3EventCallback
-  async pathMouseOver(element, data) {
-    d3_select(element)
-      .raise();
-  }
-
-  /**
-   * Callback that undims all nodes/links.
-   * @param element the svg element being hovered over
-   * @param data object representing the link data
-   */
-  @d3EventCallback
-  async pathMouseOut(element, data) {
-    // temporary disabled as of LL-3726
-    // this.unhighlightNodes();
-    // this.unhighlightLinks();
-  }
-
-  /**
-   * Callback that undims all nodes/links. Also unsets hover styling on the hovered node.
-   * @param element the svg element being hovered over
-   * @param data object representing the node data
-   */
-  @d3EventCallback
-  async nodeMouseOut(element, data) {
-    this.unhighlightNode(element);
-
-    // temporary disabled as of LL-3726
-    // this.unhighlightNodes();
-    // this.unhighlightLinks();
-  }
-
-  // endregion
-
-  // region Highlight
-  // highlightTraces(traces: Set<object>) {
-  //   this.assignAttrAndRaise(this.linkSelection, 'highlighted', ({trace}) => traces.has(trace));
-  // }
-
-  highlightNodeGroup(group) {
-    this.nodeSelection
-      .attr('highlighted', ({id}) => group.has(id));
-  }
-
-  highlightNode(element) {
-    const selection = d3_select(element)
-      .raise()
-      .select('g')
-      .call(this.extendNodeLabel);
-    // postpone so the size is known
-    requestAnimationFrame(() =>
-      selection
-        .each(SankeyAbstractComponent.updateTextShadow)
-    );
   }
 
   /**

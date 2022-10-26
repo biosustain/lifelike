@@ -1,14 +1,14 @@
 import {
   Component,
   EventEmitter,
-  OnDestroy,
   ViewChild,
   ComponentFactoryResolver,
   Injector,
   AfterViewInit,
   getModuleFactory,
   NgZone,
-  OnInit, HostListener
+  OnInit,
+  HostListener
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,7 +17,7 @@ import { KeyValue } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take } from 'rxjs/operators';
 import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
-import { isNil, pick, flatMap, zip, entries, omitBy, toPlainObject, fromPairs, assign } from 'lodash-es';
+import { isNil, zip, omitBy, assign } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -58,8 +58,7 @@ import { EditService } from '../services/edit.service';
 import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
-import { SankeyDocument, TraceNetwork, View } from '../model/sankey-document';
-import { getBoundingRect } from '../utils/entent';
+import { SankeyDocument } from '../model/sankey-document';
 
 interface BaseViewContext {
   baseView: DefaultBaseControllerService;
@@ -369,6 +368,10 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     )
   );
 
+
+  sourceData$ = defer(() => this.object$.pipe(map(object => object.getGraphEntitySources())));
+
+
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {
     return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
@@ -383,6 +386,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       first()
     ).toPromise();
   }
+
 
   order = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => 0;
 
@@ -700,18 +704,31 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   resetStretch() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(1);
+      this.sankey.verticalStretch$.next(1);
     }
   }
 
-  stretch() {
+  horizontalStretch() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * 1.25);
     }
   }
 
-  shrink() {
+  horizontalShrink() {
     if (this.sankeySlot) {
       this.sankey.horizontalStretch$.next(this.sankey.horizontalStretch$.value * .8);
+    }
+  }
+
+  verticalStretch() {
+    if (this.sankeySlot) {
+      this.sankey.verticalStretch$.next(this.sankey.verticalStretch$.value * 1.25);
+    }
+  }
+
+  verticalShrink() {
+    if (this.sankeySlot) {
+      this.sankey.verticalStretch$.next(this.sankey.verticalStretch$.value * .8);
     }
   }
 

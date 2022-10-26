@@ -60,7 +60,9 @@
 }
 
 .tile-toolbar {
+  left: 0;
+  margin: ($spacer / 2) ($spacer / 2) 0;
   position: absolute;
-  top: ($spacer / 2);
-  right: ($spacer / 2);
+  right: 0;
+  top: 0;
 }

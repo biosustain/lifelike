@@ -1,4 +1,5 @@
 import 'canvas-plus';
+import { ZoomTransform } from 'd3-zoom';
 
 import { TextElement } from '../text-element';
 import { Line } from '../lines/lines';
@@ -34,15 +35,22 @@ export class RectangleNode extends BaseRectangleNode {
     this.nodeHeight = (this.height ?? this.textbox.actualHeight) + this.padding;
   }
 
-  draw(transform: any): void {
+  draw(transform: ZoomTransform, selected: boolean): void {
+    if (selected) {
+      this.drawSelection();
+    }
+
     const ctx = this.ctx;
+    ctx.beginPath();
+
+    ctx.save();
+
     const zoomResetScale = 1 / transform.scale(1).k;
     const fontSize = parseFloat(this.textbox.font);
     const visibleText = this.forceVisibleText ||
       transform.k >= VISIBLE_TEXT_THRESHOLD * (DEFAULT_LABEL_FONT_SIZE / fontSize);
 
     // Node shape
-    ctx.save();
     (ctx as any).roundedRect(
       this.bbox.minX,
       this.bbox.minY,
@@ -60,5 +68,7 @@ export class RectangleNode extends BaseRectangleNode {
     if (visibleText) {
       this.textbox.drawCenteredAt(this.x, this.y);
     }
+
   }
+
 }

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription } from 'rxjs';
+import { defer, of, Subscription } from 'rxjs';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -49,6 +49,8 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadSubscription: Subscription;
 
+  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
+
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {
     return 0;
@@ -82,15 +84,4 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
       fontAwesomeIcon: 'chart-bar',
     });
   }
-}
-
-
-export interface EnrichmentVisualisationParameters {
-  genes: any;
-  domains?: any;
-  organism?: any;
-}
-
-export interface EnrichmentVisualisationData {
-  parameters: EnrichmentVisualisationParameters;
 }

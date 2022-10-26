@@ -1,7 +1,9 @@
+import { ZoomTransform } from 'd3-zoom';
+
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { TextElement } from '../text-element';
-import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
+import { BoundingBox, getRectWithMargin, isBBoxEnclosing, Point, SELECTION_SHADOW_COLOR } from '../shared';
 
 
 export interface IconNodeOptions {
@@ -85,9 +87,13 @@ export class FontIconNode extends PlacedNode {
     return {x: this.x, y: this.y};
   }
 
-  draw(transform: any): void {
+  draw(transform: ZoomTransform, selected: boolean): void {
     const ctx = this.ctx;
     const highDetailLevel = transform.k >= 0.35 || this.forceVisibleText;
+
+    if (selected) {
+      this.drawSelection();
+    }
 
     ctx.save();
     ctx.beginPath();
@@ -125,4 +131,16 @@ export class FontIconNode extends PlacedNode {
 
     ctx.restore();
   }
+
+  drawSelection() {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.save();
+    const {x, y, width, height} = getRectWithMargin(this.bbox, this.selectionMargin);
+    ctx.rect(x, y, width, height);
+    ctx.fillStyle = SELECTION_SHADOW_COLOR;
+    ctx.fill();
+    ctx.restore();
+  }
+
 }

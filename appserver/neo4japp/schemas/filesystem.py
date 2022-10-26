@@ -31,7 +31,7 @@ class ProjectSchema(CamelCaseSchema):
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     privileges = fields.Method('get_privileges')
-    ***ARANGO_USERNAME*** = fields.Nested(lambda: FileHashIdSchema())
+    ***ARANGO_USERNAME*** = fields.Nested(lambda: ProjectRootSchema())
 
     def get_user_privilege_filter(self):
         try:
@@ -49,8 +49,21 @@ class ProjectSchema(CamelCaseSchema):
             return None
 
 
+class StarredFileSchema(CamelCaseSchema):
+    starred = fields.Method('get_starred')
+
+    def get_starred(self, obj: Files):
+        if obj.calculated_starred is not None:
+            return StarredSchema(context=self.context).dump(obj.calculated_starred)
+        return None
+
+
 class FileHashIdSchema(CamelCaseSchema):
     hash_id = fields.String()
+
+
+class ProjectRootSchema(FileHashIdSchema, StarredFileSchema):
+    pass
 
 
 ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
@@ -123,7 +136,7 @@ class MultipleProjectResponseSchema(ResultMappingSchema):
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 
 
-class FileSchema(CamelCaseSchema):
+class FileSchema(StarredFileSchema):
     hash_id = fields.String()
     filename = fields.String()
     user = fields.Nested(UserSchema)
@@ -145,7 +158,7 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
-    file_path = fields.String()
+    path = fields.String()
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     true_filename = fields.String()
@@ -333,6 +346,7 @@ class FileHierarchyResponseSchema(CamelCaseSchema):
 
 class FileBackupCreateRequestSchema(CamelCaseSchema):
     content_value = FileUploadField(required=True)
+    new_images = fields.List(fields.Field, required=False)
 
 
 # ========================================
@@ -388,3 +402,21 @@ class FileLockDeleteRequest(CamelCaseSchema):
 
 class FileLockListResponse(ResultListSchema):
     results = fields.List(fields.Nested(FileLockSchema))
+
+
+# ========================================
+# Starred Files
+# ========================================
+
+
+class StarredSchema(CamelCaseSchema):
+    id = fields.Integer()
+    file_id = fields.Integer()
+    user_id = fields.Integer()
+    creation_date = fields.DateTime()
+
+
+# Requests
+# ----------------------------------------
+class FileStarUpdateRequest(CamelCaseSchema):
+    starred = fields.Boolean(required=True)

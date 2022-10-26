@@ -15,7 +15,7 @@ import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
-import { ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -47,7 +47,7 @@ import {
   styleUrls: ['./content-search.component.scss'],
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchParameters,
-  RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
+  RankedItem<FilesystemObject>> implements OnInit, OnDestroy, ModuleAwareComponent {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 

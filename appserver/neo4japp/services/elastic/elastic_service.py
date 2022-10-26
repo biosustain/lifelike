@@ -78,7 +78,11 @@ class ElasticService(ElasticConnection, GraphConnection):
                 return
 
         try:
-            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            self.elastic_client.indices.create(
+                index=index_id,
+                body=index_definition,
+                include_type_name=True
+            )
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
@@ -312,7 +316,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_id': file.hash_id,
             '_source': {
                 'filename': file.filename,
-                'file_path': file.filename_path,
+                'path': file.path,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
                 'data': base64.b64encode(indexable_content).decode('utf-8'),

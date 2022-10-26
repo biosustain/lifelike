@@ -15,7 +15,7 @@ export class ObjectPathComponent implements OnChanges {
   path: FilesystemObject[] = [];
   @Input() newTab = false;
   @Output() refreshRequest = new EventEmitter<any>();
-  @Input() wrap;
+  @Input() wrap: boolean;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }

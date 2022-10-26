@@ -25,7 +25,7 @@ import { MultiCollaboratorUpdateRequest } from '../../schema';
   selector: 'app-project-collaborators-dialog',
   templateUrl: './project-collaborators-dialog.component.html',
 })
-export class ProjectCollaboratorsDialogComponent extends CommonFormDialogComponent<any> {
+export class ProjectCollaboratorsDialogComponent extends CommonFormDialogComponent<void> {
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
   private _project: ProjectImpl;
@@ -54,8 +54,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
     this.refresh();
   }
 
-  getValue(): any {
-  }
+  getValue() {}
 
   refresh() {
     this.collaborators$ = this.projectsService.getCollaborators(this.project.hashId, {
@@ -104,7 +103,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
     }).subscribe();
   }
 
-  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<any> {
+  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<ModelList<Collaborator>> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Updating Collaborators',
       progressObservables: [new BehaviorSubject<Progress>(new Progress({

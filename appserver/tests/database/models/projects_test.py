@@ -36,6 +36,7 @@ def test_can_add_projects(session, name, test_user):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path=f'/{name}',
         user=test_user,
     )
     project = Projects(
@@ -59,6 +60,7 @@ def test_can_add_users_to_projects(session, name, user_fks, test_user: AppUser):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path=f'/{name}',
         user=test_user,
     )
     project = Projects(
@@ -100,6 +102,7 @@ def test_can_set_user_role(session, role):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/they-see-me',
         user=test_user,
     )
     new_projects = Projects(
@@ -140,6 +143,7 @@ def test_projects_init_with_roles(session, test_user: AppUser):
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/they-see-me',
         user=test_user,
     )
     p = Projects(

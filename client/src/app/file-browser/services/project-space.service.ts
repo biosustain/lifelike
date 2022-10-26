@@ -16,10 +16,8 @@ export interface Project {
 
 // TODO: Remove this after #unifiedfileschema
 export interface Directory {
-  directoryParentId: any;
   id: any;
   name?: string;
-  projectsId: any;
   type?: string;
   routeLink?: string;
   dirPath?: {

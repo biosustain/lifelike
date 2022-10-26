@@ -14,8 +14,13 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import {
-  SankeyTraceNetwork, SankeyId, SankeyNodePosition, SankeyLinkInterface,
-  SankeyNodeInterface, DisplayProperty, SankeyState
+  SankeyTraceNetwork,
+  SankeyId,
+  SankeyNodePosition,
+  SankeyLinkInterface,
+  SankeyNodeInterface,
+  DisplayProperty,
+  SankeyState
 } from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';
@@ -66,6 +71,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   target: number;
   group: number;
   displayProperties?: DisplayProperty[];
+  shortestPathPlusN?: number;
 
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
@@ -242,6 +248,8 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
   height: number;
   initialX0: number;
   initialX1: number;
+  initialY0: number;
+  initialY1: number;
   x0: number;
   x1: number;
   label?: string;

@@ -73,7 +73,7 @@ export class ChartComponent implements OnChanges {
   ngOnChanges({show, data, showMore}: SimpleChanges) {
     if (this.show && (show || data || showMore)) {
       const slicedNotFormatedData = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
-      this.slicedData = slicedNotFormatedData.map((d: any, i) => ({
+      this.slicedData = slicedNotFormatedData.map((d, i) => ({
         ...d,
         x: -Math.log(d['q-value'])
       }));

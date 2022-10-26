@@ -1,7 +1,7 @@
 import re
 
 from string import ascii_letters, digits, punctuation, whitespace
-from typing import List, Set
+from typing import List, Dict
 
 from .constants import (
     ABBREVIATION_WORD_LENGTH,
@@ -14,7 +14,7 @@ from .data_transfer_objects import PDFWord
 
 class Tokenizer:
     def __init__(self) -> None:
-        self.abbreviations: Set[str] = set()
+        self.abbreviations: Dict[str, List[str]] = dict()
         self.token_word_check_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
     def _is_abbrev(self, token: PDFWord) -> bool:
@@ -58,7 +58,7 @@ class Tokenizer:
         abbrev = abbrev[-len_of_word:]
 
         if abbrev == token.keyword:
-            self.abbreviations.add(token.keyword)
+            self.abbreviations[token.keyword] = previous_words[-len_of_word:]
             return True
         return False
 

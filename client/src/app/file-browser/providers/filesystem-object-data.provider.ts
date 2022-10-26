@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import {
-  DataTransferData,
-  DataTransferDataProvider,
-  DataTransferToken,
-} from 'app/shared/services/data-transfer-data.service';
+import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from 'app/shared/services/data-transfer-data.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilePrivileges } from '../models/privileges';
@@ -18,9 +14,9 @@ export class FilesystemObjectTransferData {
 }
 
 @Injectable()
-export class FilesystemObjectDataProvider implements DataTransferDataProvider {
+export class FilesystemObjectDataProvider implements DataTransferDataProvider<FilesystemObjectTransferData[]> {
 
-  extract(dataTransfer: DataTransfer): DataTransferData<any>[] {
+  extract(dataTransfer: DataTransfer): DataTransferData<FilesystemObjectTransferData[]>[] {
     const results: DataTransferData<FilesystemObjectTransferData[]>[] = [];
 
     const data = dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);

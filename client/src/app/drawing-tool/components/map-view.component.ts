@@ -2,12 +2,12 @@ import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/cor
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, defer, of } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
 
-import { ModuleAwareComponent, ShouldConfirmUnload } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -67,6 +67,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
   }
 
+
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -76,9 +77,13 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
+  sourceData$ = defer(() => of(this.map?.getGraphEntitySources()));
+
+
   get shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();
   }
+
 
   ngOnDestroy() {
     super.ngOnDestroy();

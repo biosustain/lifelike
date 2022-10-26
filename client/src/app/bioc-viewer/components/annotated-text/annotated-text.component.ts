@@ -2,7 +2,7 @@ import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges, OnDestro
 
 import { SEARCH_LINKS } from 'app/shared/links';
 
-import { Annotation } from '../bioc.format';
+import { Annotation, Infon } from '../bioc.format';
 
 @Component({
   selector: 'app-bioc-annotated-text',
@@ -38,7 +38,7 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     }
   }
 
-  getSource(payload: any = {}) {
+  getSource(payload: Infon = {}) {
     const identifier = payload.identifier || payload.Identifier;
     const type = payload.type;
     // console.log(payload);

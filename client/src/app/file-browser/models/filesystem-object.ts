@@ -1,4 +1,5 @@
-import { isNil, isEmpty, has, toPairs } from 'lodash-es';
+import { isNil, isEmpty, has, toPairs, assign, pick, omit } from 'lodash-es';
+import { Subject } from 'rxjs';
 
 import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
@@ -7,7 +8,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
-import { CollectionModel } from 'app/shared/utils/collection-model';
+import { CollectionModel, ObservableObject } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
@@ -20,7 +21,7 @@ import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
-export class ProjectImpl implements Project {
+export class ProjectImpl implements Project, ObservableObject {
   /**
    * Legacy ID field that needs to go away.
    */
@@ -30,8 +31,20 @@ export class ProjectImpl implements Project {
   description: string;
   creationDate: string;
   modifiedDate: string;
-  ***ARANGO_USERNAME***?: FilesystemObject;
+  ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
+  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  changed$ = new Subject();
+
+  get starred(): boolean {
+    return this.***ARANGO_USERNAME***?.starred;
+  }
+
+  set starred(value) {
+    if (this.***ARANGO_USERNAME***) {
+      this.***ARANGO_USERNAME***.update({starred: value});
+    }
+  }
 
   get effectiveName(): string {
     return this.name || this.hashId;
@@ -50,19 +63,28 @@ export class ProjectImpl implements Project {
       return this;
     }
     for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
-      'privileges']) {
+      'privileges', 'starred']) {
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
     }
     if (data.hasOwnProperty('***ARANGO_USERNAME***')) {
-      this.***ARANGO_USERNAME*** = data.***ARANGO_USERNAME*** != null ? new FilesystemObject().update(data.***ARANGO_USERNAME***) : null;
+      if (isNil(data.***ARANGO_USERNAME***)) {
+        this.***ARANGO_USERNAME*** = null;
+        // TODO: Error?
+      } else {
+        const ***ARANGO_USERNAME*** = this.***ARANGO_USERNAME*** ?? new FilesystemObject();
+        ***ARANGO_USERNAME***.update(data.***ARANGO_USERNAME***);
+        ***ARANGO_USERNAME***.project = this;
+        this.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***;
+      }
     }
+    this.changed$.next(data);
     return this;
   }
 
-  getCommands(): any[] {
-    return ['/projects', this.name];
+  getCommands(forEditing: boolean = false): any[] {
+    return ['/folders', this.***ARANGO_USERNAME***.hashId];
   }
 
   getURL(): string {
@@ -110,7 +132,7 @@ export class ProjectImpl implements Project {
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
  * amount of code for the refactor.
  */
-export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap {
+export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap, ObservableObject {
   hashId: string;
   filename: string;
   user: AppUser;
@@ -139,16 +161,23 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
-  filePath: string;
+  path: string;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
-  // tslint:disable-next-line:variable-name
-  annotations_date_tooltip?: string;
   annotationsTooltipContent: string;
+  starred?: boolean;
+  changed$ = new Subject();
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;
+  }
+
+  /**
+   * Top directories (without parents) are projects.
+   */
+  get isProjectRoot() {
+    return this.isDirectory && !this.parent;
   }
 
   get isFile() {
@@ -206,8 +235,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isNavigable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.Map
-      || this.mimeType === MimeTypes.EnrichmentTable || this.mimeType === MimeTypes.BioC;
+    return this.isDirectory || this.isAnnotatable;
   }
 
   get hasWordCloud() {
@@ -373,7 +401,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get effectiveName(): string {
-    if (this.isDirectory && this.parent == null && this.project != null) {
+    if (this.isProjectRoot) {
       return this.project.name;
     } else {
       return this.filename;
@@ -461,11 +489,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.creationDate === this.modifiedDate;
   }
 
+  static normalizeFilename(filter: string): string {
+    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+  }
+
   filterChildren(filter: string) {
-    const normalizedFilter = this.normalizeFilter(filter);
+    const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => this.normalizeFilter(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
     );
   }
 
@@ -474,7 +506,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        // TODO: Convert to hash ID
+        if (this.isProjectRoot) {
+          return ['/projects', projectName];
+        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
@@ -548,17 +582,17 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-        display_name: this.filename,
-        label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
-        sub_labels: [],
-        data: {
-          references: [{
-            type: 'PROJECT_OBJECT',
-            id: this.hashId + '',
-          }],
-          sources,
-        },
-      };
+      display_name: this.filename,
+      label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.hashId + '',
+        }],
+        sources,
+      },
+    };
     if (this.mimeType.trim().startsWith('image/')) {
       return {
         [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
@@ -576,28 +610,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move to DataTransferData framework
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const dragData  = this.getTransferData();
+    const dragData = this.getTransferData();
     toPairs(dragData).forEach(args => dataTransfer.setData(...args));
-  }
-
-  private getId(): any {
-    switch (this.type) {
-      case 'dir':
-        const directory = this.data as Directory;
-        return directory.id;
-      case 'file':
-        const file = this.data as PdfFile;
-        return file.file_id;
-      case 'map':
-        const _map = this.data as KnowledgeMap;
-        return _map.hash_id;
-      default:
-        throw new Error(`unknown directory object type: ${this.type}`);
-    }
-  }
-
-  private normalizeFilter(filter: string): string {
-    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
   }
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
@@ -617,34 +631,38 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     if (data == null) {
       return this;
     }
-    for (const key of [
-      'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'pinned', 'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
-      'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs', 'filePath',
-      'trueFilename']) {
-      if (key in data) {
-        this[key] = data[key];
-      }
-    }
+
+    assign(this, pick(
+      data,
+      [
+        'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
+        'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
+        'fallbackOrganism', 'annotationConfigs', 'path', 'trueFilename', 'starred'
+      ]
+    ));
+
     if (has(data, 'modifiedDate')) {
       this.updatedTimestamp = Date.parse(data.modifiedDate);
     } else if (has(data, 'creationDate')) {
       this.updatedTimestamp = Date.parse(data.creationDate);
     }
-    if ('project' in data) {
-      this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
-    }
     if ('parent' in data) {
-      if (data.parent != null) {
-        const parent = new FilesystemObject();
-        if (this.project != null) {
-          parent.project = this.project;
-        }
-        this.parent = parent.update(data.parent);
-      } else {
-        this.parent = null;
-      }
+      this.parent = data.parent ? this.parent ?? new FilesystemObject() : null;
+    }
+    if ('project' in data) {
+      this.project = data.project ? this.project ?? new ProjectImpl() : null;
+    }
+    if (this.parent) {
+      this.parent.project = this.parent.project ?? this.project;
+    }
+    if (this.project && this.isProjectRoot) {
+      this.project.***ARANGO_USERNAME*** = this.project.***ARANGO_USERNAME*** ?? this;
+    }
+    if (data.parent) {
+      this.parent.update(data.parent);
+    }
+    if (data.project) {
+      this.project.update(data.project);
     }
     if ('children' in data) {
       if (data.children != null) {
@@ -661,6 +679,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         this.children.replace([]);
       }
     }
+    this.changed$.next(data);
     return this;
   }
 

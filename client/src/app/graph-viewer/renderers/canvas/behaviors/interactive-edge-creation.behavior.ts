@@ -1,9 +1,10 @@
 import * as d3 from 'd3';
+import { ZoomTransform } from 'd3-zoom';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
 import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-heads/arrow';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AbstractObjectHandleBehavior, Handle} from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
+import { AbstractObjectHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
 
@@ -28,11 +29,12 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   setup() {
     this.selectionChangeSubscription = this.graphView.selection.changeObservable.subscribe(
       ([newSelection, oldSelection]) => {
-        if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node) {
+        if (newSelection.length === 1 && (newSelection[0].type === GraphEntityType.Node ||
+                                          newSelection[0].type === GraphEntityType.Group)) {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
 
           this.graphView.behaviors.add(HANDLE_BEHAVIOR_KEY,
-            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNode), 2);
+            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNodelike), 2);
         } else {
           this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
         }
@@ -41,7 +43,7 @@ export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   }
 }
 
-class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
+class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle, UniversalGraphNodelike> {
   protected topOffset = 0;
   protected leftOffset = 0;
   protected size = 20;
@@ -52,17 +54,18 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle> {
   }
 
   protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
-    if (subject != null && subject.type === GraphEntityType.Node) {
+    if (subject != null && (subject.type === GraphEntityType.Node ||
+                            subject.type === GraphEntityType.Group)) {
       this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
       this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
-        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
+        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNodelike), 10);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
     }
   }
 
-  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: Handle) {
+  drawHandle(ctx: CanvasRenderingContext2D, transform: ZoomTransform, {minX, minY, maxX, maxY}: Handle) {
     // Draw Handle
     const noZoomScaleHandle = 1 / this.graphView.transform.scale(1).k;
     const nodeRadiusHandle = this.size / 2 * noZoomScaleHandle;
@@ -106,7 +109,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   } = null;
 
   constructor(private readonly graphView: CanvasGraphView,
-              private readonly from: UniversalGraphNode) {
+              private readonly from: UniversalGraphNodelike) {
     super();
   }
 
@@ -137,14 +140,14 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   }
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
+    const subject = this.graphView.getEntityAtMouse();
 
-    if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-      if (node !== this.from) {
+    if (subject && (subject.type === GraphEntityType.Group || subject.type === GraphEntityType.Node)) {
+      const entity = subject.entity as UniversalGraphNodelike;
+      if (entity !== this.from) {
         this.graphView.execute(new EdgeCreation('Create connection', {
           from: this.from.hash,
-          to: node.hash,
+          to: entity.hash,
           label: null,
         }, true));
         this.graphView.requestRender();
@@ -153,7 +156,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     return BehaviorResult.RemoveAndStop;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: any) {
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
     const from = this.from;
     const to = this.to;
 

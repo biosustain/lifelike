@@ -1,4 +1,4 @@
-export interface RenderTree<T = any> {
+export interface RenderTree<T> {
   delete(key: T): void;
 
   clear(): void;

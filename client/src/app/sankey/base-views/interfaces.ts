@@ -14,6 +14,7 @@ export interface SankeyBaseOptions {
 }
 
 export interface SankeyBaseState {
+  shortestPathPlusN: number;
   nodeHeight: SankeyNodeHeight;
   nodeValueAccessorId?: string;
   linkValueAccessorId?: string;

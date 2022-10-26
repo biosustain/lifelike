@@ -1,10 +1,5 @@
 import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  AnnotationChangeExclusionMeta,
-  Meta,
-} from 'app/pdf-viewer/annotation-type';
+import { AddedAnnotationExclusion, Annotation, AnnotationChangeExclusionMeta, Meta, } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
 
@@ -96,12 +91,13 @@ export interface FilesystemObjectData {
   recycled: boolean;
   effectivelyRecycled: boolean;
   highlight?: string[];
+  starred?: boolean;
   fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigurations;
   // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
-  filePath: string;
+  path: string;
 }
 
 interface ContentValue {
@@ -267,6 +263,13 @@ export interface PDFAnnotationGenerationRequest {
 /* tslint:disable-next-line */
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
   //
+}
+
+
+export class AnnotationGenerationResultSchema {
+  attempted: boolean;
+  success: boolean;
+  error: string;
 }
 
 // ========================================

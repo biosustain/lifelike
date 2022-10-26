@@ -1,3 +1,4 @@
+import { ZoomTransform } from 'd3-zoom';
 
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
@@ -81,7 +82,7 @@ export class SelectableEntityBehavior extends AbstractCanvasBehavior {
     this.graphView.invalidateEntity(entity);
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: any) {
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
   }
 }
 
@@ -122,7 +123,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
     return BehaviorResult.RemoveAndContinue;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: any) {
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
     const {minX, minY, maxX, maxY} = this.getBoundingBox();
     const width = maxX - minX;
     const height = maxY - minY;

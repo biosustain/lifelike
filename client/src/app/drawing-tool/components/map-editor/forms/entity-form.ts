@@ -1,17 +1,9 @@
-import {
-  AfterViewInit,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-  ViewChild
-} from '@angular/core';
+import { AfterViewInit, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { openPotentialInternalLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
 export abstract class EntityForm implements AfterViewInit {
@@ -83,7 +75,7 @@ export abstract class EntityForm implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
+    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
   }
 
 

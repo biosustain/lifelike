@@ -1,8 +1,11 @@
-import datetime
-import pytest
-
 from collections import namedtuple
+import datetime
+import io
+import json
+import typing
+import pytest
 from typing import Optional
+import zipfile
 
 from neo4japp.models import (
     AppUser,
@@ -12,6 +15,7 @@ from neo4japp.models import (
     projects_collaborator_role,
     file_collaborator_role
 )
+from neo4japp.models.files import StarredFile
 from neo4japp.services import AccountService
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, GraphTypeProvider
 
@@ -47,6 +51,7 @@ def project(
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',
+        path='/my-life-work',
         user=project_owner_user,
     )
     project = Projects(
@@ -199,3 +204,118 @@ def file_in_project(
             )
 
     return file
+
+
+@pytest.fixture(scope='function')
+def map_file_in_project(
+        request,
+        session,
+        account_user: AccountService,
+        project: Projects,
+        user_with_project_roles: AppUser,
+        project_owner_user: AppUser) -> Files:
+
+    content = io.BytesIO()
+    with zipfile.ZipFile(content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False) as zip_fp:
+        byte_graph = json.dumps(
+            {"nodes": [], "edges": [], "groups": []}, separators=(',', ':')
+        ).encode('utf-8')
+        zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
+    content.seek(0)
+
+    file_content_id = FileContent.get_or_create(content)
+
+    if hasattr(request, 'param'):
+        param: ParameterizedFile = request.param
+    else:
+        param = ParameterizedFile(False, False, [], [], False, False, False, False)
+
+    file = Files(
+        mime_type=GraphTypeProvider.MIME_TYPE,
+        filename='a sankey',
+        description='desc',
+        user=project_owner_user,
+        content_id=file_content_id,
+        parent=project.***ARANGO_USERNAME***,
+        public=param.public,
+    )
+
+    folder: Optional[Files] = None
+    if param.in_folder:
+        folder = Files(
+            mime_type=DirectoryTypeProvider.MIME_TYPE,
+            filename='a folder',
+            description='desc',
+            user=project_owner_user,
+            parent=project.***ARANGO_USERNAME***,
+        )
+        file.parent = folder
+        session.add(folder)
+
+    if param.recycled:
+        file.recycling_date = datetime.datetime.now()
+
+    if param.folder_recycled:
+        assert folder is not None
+        folder.recycling_date = datetime.datetime.now()
+
+    if param.deleted:
+        file.deletion_date = datetime.datetime.now()
+
+    if param.folder_deleted:
+        assert folder is not None
+        folder.deletion_date = datetime.datetime.now()
+
+    session.add(file)
+    session.flush()
+
+    if param.user_roles_for_file:
+        assert param.in_folder
+
+        for role_name in param.user_roles_for_file:
+            session.execute(
+                file_collaborator_role.insert(),
+                [{
+                    'file_id': file.id,
+                    'collaborator_id': user_with_project_roles.id,
+                    'owner_id': user_with_project_roles.id,
+                    'role_id': account_user.get_or_create_role(role_name).id,
+                    'creator_id': user_with_project_roles.id,
+                    'modifier_id': user_with_project_roles.id,
+                }]
+            )
+
+    if param.user_roles_for_folder:
+        assert folder is not None
+
+        for role_name in param.user_roles_for_folder:
+            session.execute(
+                file_collaborator_role.insert(),
+                [{
+                    'file_id': folder.id,
+                    'collaborator_id': user_with_project_roles.id,
+                    'owner_id': user_with_project_roles.id,
+                    'role_id': account_user.get_or_create_role(role_name).id,
+                    'creator_id': user_with_project_roles.id,
+                    'modifier_id': user_with_project_roles.id,
+                }]
+            )
+
+    return file
+
+
+@pytest.fixture(scope='function')
+def starred_file(
+    session,
+    user_with_project_roles: AppUser,
+    file_in_project: Files
+) -> StarredFile:
+    starred_file = StarredFile(
+        user_id=user_with_project_roles.id,
+        file_id=file_in_project.id
+    )
+
+    session.add(starred_file)
+    session.flush()
+
+    return starred_file

@@ -102,7 +102,6 @@ export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOper
     // Makes all debugged observables hot - very useful for debugging
     // source.subscribe(
     //   updated(id, 'forced hot updated'),
-    //   // tslint:disable-next-line:no-shadowed-variable
     //   error(id, 'forced hot error'),
     //   completed(id, 'forced hot completed'),
     // );

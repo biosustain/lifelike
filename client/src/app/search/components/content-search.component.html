@@ -84,9 +84,10 @@
                     </div>
                     <div class="search-results-item-header text-truncate">
                       <h5 class="text-truncate" [style.padding]="'1px 0'">
-                        <app-file-type-label [object]="result.item" [showLabel]="false"
-                          class="mr-1"></app-file-type-label>
-                        <a [appLink]="result.item.getCommands(false)" [newTab]="true" [sideBySide]="true"
+                        <app-file-type-label [object]="result.item" [showLabel]="false" class="mr-1"></app-file-type-label>
+                        <a [appLink]="result.item.getCommands(false)"
+                           [newTab]="true"
+                           [sideBySide]="true"
                            (dragstart)="itemDragStart($event, result.item, true)">
                           <app-term-highlight
                             [text]="result.item.name"

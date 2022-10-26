@@ -82,3 +82,16 @@ class ProjectCalculator:
             )
 
             project.calculated_privileges[user_id] = privileges
+
+    def calculate_starred(self):
+        project: Projects = self.result[self.project_key]
+
+        if self.result['starred_id'] is not None:
+            project.***ARANGO_USERNAME***.calculated_starred = {
+                'id': self.result['starred_id'],
+                'file_id': self.result['starred_file_id'],
+                'user_id': self.result['starred_user_id'],
+                'creation_date': self.result['starred_creation_date'],
+            }
+        else:
+            project.***ARANGO_USERNAME***.calculated_starred = None

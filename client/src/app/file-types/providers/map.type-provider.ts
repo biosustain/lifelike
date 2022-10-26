@@ -43,6 +43,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   unzipContent(contentValue: Blob) {
     const imageIds: string[] = [];
     const imageProms: Promise<Blob>[] = [];
+
     return from((async () => {
       const unzipped = await JSZip.loadAsync(contentValue).then(zip => {
         const imageFolder = zip.folder('images');
@@ -90,7 +91,9 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           object.mimeType = MimeTypes.Map;
           object.parent = options.parent;
           const zip = new JSZip();
-          zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}));
+          // IMPORTANT: Zip date is set to the minimum allowed by the Python zipfile library so that all zips generate the same checksum
+          // for the same input files
+          zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}), {date: new Date(Date.UTC(1980, 1, 1))});
           return zip.generateAsync({ type: 'blob' }).then((content) => {
             return this.objectCreationService.openCreateDialog(object, {
               title: 'New Map',

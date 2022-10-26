@@ -10,10 +10,10 @@ import { SharedModule } from 'app/shared/shared.module';
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
 
 describe('SidenavNodeViewComponent', () => {
-    let component: SidenavNodeViewComponent;
-    let fixture: ComponentFixture<SidenavNodeViewComponent>;
+    let component: SidenavNodeViewComponent<{eid: any}>;
+    let fixture: ComponentFixture<SidenavNodeViewComponent<{eid: any}>>;
 
-    let mockNodeEntity: SidenavNodeEntity;
+    let mockNodeEntity: SidenavNodeEntity<{eid: any, name: string}, object>;
     let mockLegend: Map<string, string[]>;
 
     configureTestSuite(() => {
@@ -31,7 +31,7 @@ describe('SidenavNodeViewComponent', () => {
         // Reset mock data before every test so changes don't carry over between tests
         mockNodeEntity = {
             data: {
-                data: {id: 'MOCK_NODE_ID', name: 'Mock Node'},
+                data: {eid: 'MOCK_NODE_ID', name: 'Mock Node'},
                 displayName: 'Mock Node',
                 id: 1,
                 label: 'Mock Node',

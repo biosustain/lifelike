@@ -1,14 +1,11 @@
-import os
 import codecs
+import os
 import re
 import string
-
 from datetime import timezone
 from enum import Enum
 
-
 from sendgrid import SendGridAPIClient
-
 
 TIMEZONE = timezone.utc
 
@@ -47,6 +44,11 @@ FILE_MIME_TYPE_GRAPH = 'vnd.***ARANGO_DB_NAME***.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
 
 
+class SortDirection(Enum):
+    ASC = 'asc'
+    DESC = 'desc'
+
+
 # enrichment labels
 class EnrichmentDomain(Enum):
     UNIPROT = 'UniProt'
@@ -74,6 +76,7 @@ class LogEventType(Enum):
     SYSTEM = 'system'
     VISUALIZER = 'visualizer'
     VISUALIZER_SEARCH = 'visualizer_search'
+    REDIS = 'redis'
 
 
 DOMAIN_LABELS = [
@@ -217,7 +220,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'phenotype',
     },
     'food': {
-        'color': '#8eff69',
+        'color': '#f71698',
         'label': 'food',
     },
     'anatomy': {
@@ -229,11 +232,11 @@ ANNOTATION_STYLES_DICT = {
         'label': 'ENTITY'
     },
     'lab strain': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab strain',
     },
     'lab sample': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab sample',
     },
     'link': {
@@ -362,6 +365,7 @@ ANNOTATION_STYLES_DICT = {
 
 # Style constants
 DEFAULT_FONT_SIZE = 14.0
+DEFAULT_FONT_RATIO = 0.5  # width / height
 DEFAULT_BORDER_COLOR = '#2B7CE9'
 DEFAULT_NODE_WIDTH = 41.25
 DEFAULT_NODE_HEIGHT = 27.5
@@ -378,7 +382,7 @@ HORIZONTAL_TEXT_PADDING = 0.18 * DEFAULT_DPI
 LABEL_OFFSET = 20
 PDF_MARGIN = 3
 MAP_ICON_OFFSET = 0.5 * DEFAULT_DPI
-NAME_NODE_OFFSET = 100
+NAME_NODE_OFFSET = 5.5
 TRANSPARENT_PIXEL = (0, 0, 0, 0)
 FILENAME_LABEL_MARGIN = 0.165
 VERTICAL_NODE_PADDING = POINT_TO_PIXEL * FILENAME_LABEL_MARGIN
@@ -388,9 +392,10 @@ FILENAME_LABEL_FONT_SIZE = 40.0
 DEFAULT_IMAGE_NODE_WIDTH = 120
 DEFAULT_IMAGE_NODE_HEIGHT = 120
 IMAGE_BORDER_SCALE = 4
-WATERMARK_DISTANCE = 100.0
+WATERMARK_DISTANCE = 5.5
 WATERMARK_WIDTH = 160.0
 WATERMARK_ICON_SIZE = 15
+COLOR_TO_REPLACE = (0, 0, 0, 255)
 
 BORDER_STYLES_DICT = {
     'dashed': 'dashed',
@@ -445,12 +450,12 @@ FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER')
+ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
-MAPS_RE = re.compile('^ */projects/.+/maps/.+$')
+MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
 IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')

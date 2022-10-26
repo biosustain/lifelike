@@ -1,16 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { isNil, isEqual, isEmpty, pick, partialRight, fromPairs } from 'lodash-es';
+import { Subject, iif, of } from 'rxjs';
+import { takeUntil, map, shareReplay, distinctUntilChanged, switchMap, tap, filter, startWith } from 'rxjs/operators';
 
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { AnnotationType } from 'app/shared/constants';
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
-import { Annotation } from '../annotation-type';
+import { Annotation, Meta } from '../annotation-type';
 
 @Component({
   selector: 'app-annotation-panel',
@@ -18,15 +21,23 @@ import { Annotation } from '../annotation-type';
   // needed to make links inside *ngFor to work and be clickable
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
-  @Input() pageNumber: number;
-  @Input() keywords: string[];
-  @Input() coords: number[][];
+export class AnnotationEditDialogComponent extends CommonFormDialogComponent<Annotation> implements OnInit {
   @Input() set allText(allText: string) {
     this.form.patchValue({text: allText});
   }
+  @Input() pageNumber: number;
+  @Input() keywords: string[];
+  @Input() coords: number[][];
+
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+    super(modal, messageDialog);
+    this.updateIdField$.subscribe();
+    this.updateIncludeGlobally$.subscribe();
+  }
+
   isTextEnabled = false;
   sourceLinks: Hyperlink[] = [];
+  destroyed$ = new Subject();
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
@@ -34,102 +45,144 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   };
 
   readonly form: FormGroup = new FormGroup({
-    text: new FormControl({value: '', disabled: true}, Validators.required),
+    text: new FormControl(null, Validators.required),
     entityType: new FormControl('', Validators.required),
-    id: new FormControl({value: '', disabled: true}),
-    source: new FormControl(DatabaseType.NONE),
+    id: new FormControl({value: null, disabled: true}, Validators.required),
+    source: new FormControl({value: '', disabled: true}),
     sourceLinks: new FormArray([]),
     includeGlobally: new FormControl(false),
   });
-  caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
+  readonly caseSensitiveTypes = new Set([AnnotationType.Gene, AnnotationType.Protein]);
+  readonly notAcceptedGloballyTypes = new Set([AnnotationType.Mutation, AnnotationType.Pathway]);
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
-    super(modal, messageDialog);
-  }
+  entityType$ = this.getFormFieldObservable('entityType').pipe(
+    tap(entityType =>
+      // always default to "No Source" on entity type change
+      this.form.get('source').patchValue('')
+    ),
+    shareReplay({refCount: true, bufferSize: 1})
+  );
 
-  get databaseTypeChoices(): string[] {
-    let choices = null;
-    const value = this.form.get('entityType').value;
-    const dropdown = this.form.get('source');
-    if (value === '') {
-      dropdown.disable();
-      choices = [DatabaseType.NONE];
-    } else {
-      dropdown.enable();
-      if (ENTITY_TYPE_MAP.hasOwnProperty(value)) {
-        if (ENTITY_TYPE_MAP[value].sources.indexOf(DatabaseType.NONE) > -1) {
-          dropdown.disable();
-          choices = [DatabaseType.NONE];
-        } else {
-          choices = ENTITY_TYPE_MAP[value].sources;
-        }
+  updateIncludeGlobally$ = this.entityType$.pipe(
+    map(entityType => this.notAcceptedGloballyTypes.has(entityType)),
+    distinctUntilChanged(),
+    tap(disableIncludeGlobally => {
+      const includeGloballyField = this.form.get('includeGlobally');
+      if (disableIncludeGlobally) {
+        includeGloballyField.disable();
+        includeGloballyField.patchValue(false);
+      } else {
+        includeGloballyField.enable();
       }
-    }
-    this._toggleIdField();
-    return choices;
+    })
+  );
+
+  searchLinks$ = this.getFormFieldObservable('text').pipe(
+    map(text => text?.trim()),
+    map(text => SEARCH_LINKS.map(link =>
+      ({
+        domain: link.domain.replace('_', ' '),
+        link: this.substituteLink(link.url, text)
+      })
+    ))
+  );
+
+  databaseTypeChoices$ = this.entityType$.pipe(
+    map(entityType => {
+      const dropdown = this.form.get('source');
+      const {sources} = ENTITY_TYPE_MAP[entityType] ?? {};
+      if (isEmpty(sources)) {
+        dropdown.disable();
+        return [];
+      }
+      dropdown.enable();
+      return sources;
+    }),
+    takeUntil(this.destroyed$)
+  );
+
+  updateIdField$ = this.getFormFieldObservable('source').pipe(
+    switchMap(source => {
+      const idField = this.form.get('id');
+      if (source) {
+        idField.patchValue('');
+        idField.enable();
+        return of(idField);
+      } else {
+        idField.disable();
+        return this.getFormFieldObservables(['text', 'entityType']).pipe(
+          map(({text, entityType}) => {
+            if (text && entityType) {
+              const textId = this.caseSensitiveTypes.has(entityType) ? text : text?.toLowerCase();
+              idField.patchValue(`${entityType}_${textId}`);
+            } else {
+              idField.patchValue('');
+            }
+            return idField;
+          })
+        );
+      }
+    }),
+    tap((idField) => idField.updateValueAndValidity())
+  );
+
+  getFormFieldObservable(fieldName: string) {
+    const field = this.form.get(fieldName);
+    return field.valueChanges.pipe(
+      startWith(field.value),
+      distinctUntilChanged()
+    );
   }
 
-  get getSearchLinks() {
-    const formRawValues = this.form.getRawValue();
-    const text = formRawValues.text.trim();
-
-    return SEARCH_LINKS.map(link => (
-      {domain: `${link.domain.replace('_', ' ')}`, link: this.substituteLink(link.url, text)}));
+  getFormFieldObservables(fieldNames: string[]) {
+    return this.form.valueChanges.pipe(
+      startWith(this.form.value),
+      map(partialRight(pick, fieldNames)),
+      distinctUntilChanged(isEqual)
+    );
   }
 
-  disableGlobalOption() {
-    // need to reset value here so id input also gets reset
-    // since the select will always default to "No Source" on entity type change
-    this.form.get('source').patchValue('');
-    if (['Mutation', 'Pathway'].includes(this.form.get('entityType').value)) {
-      this.form.get('includeGlobally').patchValue(false);
-      this.form.get('includeGlobally').disable();
-      this.form.get('id').updateValueAndValidity();
-    } else {
-      this.form.get('includeGlobally').enable();
-    }
-  }
-
-  private _toggleIdField() {
-    const dropdown = this.form.get('source');
-    if (dropdown.value !== '') {
-      this.form.get('id').enable();
-      this.form.get('id').setValidators([Validators.required]);
-    } else {
-      this.form.get('id').patchValue('');
-      this.form.get('id').setValidators(null);
-      this.form.get('id').disable();
-    }
-    this.form.get('id').updateValueAndValidity();
+  ngOnInit() {
   }
 
   getValue(): Annotation {
-    const links = {};
     // getRawValue will return values of disabled controls too
-    const formRawValues = this.form.getRawValue();
-    const text = formRawValues.text.trim();
-    SEARCH_LINKS.forEach(link => {
-      links[link.domain.toLowerCase()] = this.substituteLink(link.url, text);
-    });
+    const {entityType, source, id, text, includeGlobally} = this.form.getRawValue();
+    const idLinkUrl = ENTITY_TYPE_MAP[entityType]?.links.find(link => link.name === source)?.url;
+    if (idLinkUrl) {
+      // Add this as a first item, as this is an expected convention
+      this.sourceLinks.unshift({
+        domain: source,
+        url: `${idLinkUrl}${id}`
+      });
+    }
+    const meta = {
+      id,
+      isCustom: true,
+      allText: text.trim(),
+      includeGlobally,
+      isCaseInsensitive: !this.caseSensitiveTypes.has(entityType),
+      type: entityType,
+      links: fromPairs(
+        SEARCH_LINKS.map(link =>
+          [link.domain.toLowerCase(), this.substituteLink(link.url, text)]
+        )
+      )
+    } as Meta;
+    if (source) {
+      meta.idType = source;
+    }
+    if (this.sourceLinks) {
+      meta.idHyperlinks = this.sourceLinks.map(
+        link => JSON.stringify({label: link.domain, url: link.url})
+      );
+    }
 
     return {
       pageNumber: this.pageNumber,
       keywords: this.keywords.map(keyword => keyword.trim()),
-      rects: this.coords.map((coord) => {
-        return [coord[0], coord[3], coord[2], coord[1]];
-      }),
-      meta: {
-        id: this.form.value.id || '',
-        idHyperlinks: this.sourceLinks.length > 0 ? this.sourceLinks.map(
-          link => JSON.stringify({label: link.domain, url: link.url})) : [],
-        idType: this.form.value.source || '',
-        type: this.form.value.entityType,
-        links,
-        isCustom: true,
-        allText: text,
-        includeGlobally: formRawValues.includeGlobally,
-        isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
-      },
+      rects: this.coords.map((coord) => [coord[0], coord[3], coord[2], coord[1]]),
+      meta
     };
   }
 
@@ -139,6 +192,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   enableTextField() {
     this.isTextEnabled = true;
-    this.form.controls.text.enable();
+    this.form.get('text').enable();
   }
 }

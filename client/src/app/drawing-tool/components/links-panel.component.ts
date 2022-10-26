@@ -1,23 +1,20 @@
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, flatMap, sortBy, chain, compact, first } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import {
-  LABEL_TOKEN,
-  URI_TOKEN,
-  URIData,
-} from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { openPotentialInternalLink, toValidLink } from 'app/shared/utils/browser';
+import { LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { Hyperlink, Source } from '../services/interfaces';
 import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
+import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
 
 @Component({
   selector: 'app-links-panel',
@@ -83,31 +80,24 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       this.dropTargeted = false;
 
       const items = this.dataTransferData.extract(event.dataTransfer);
-      let text: string | undefined = null;
-      const uriData: URIData[] = [];
-
-      for (const item of items) {
-        if (item.token === URI_TOKEN) {
-          uriData.push(...(item.data as URIData[]));
+      let hyperLink = {} as Source | Hyperlink;
+      for (const item of sortBy(items, 'confidence')) {
+        if (item.token === GRAPH_ENTITY_TOKEN) {
+          hyperLink = chain(item.data)
+            .map(d => d.entity?.data)
+            .map(d => [d?.sources, d?.hyperlinks])
+            .flattenDeep()
+            .compact()
+            .first()
+            .value();
+        } else if (item.token === URI_TOKEN) {
+          hyperLink.url = first(item.data as URIData[])?.uri;
         } else if (item.token === LABEL_TOKEN) {
-          text = item.data as string;
+          hyperLink.domain = item.data.trim() as string;
         }
-      }
-
-      if (uriData.length) {
-        this.openCreateDialog({
-          url: uriData[0].uri,
-          domain: text.trim(),
-        }).then(result => {
-        }, () => {
-        });
-      } else {
-        this.openCreateDialog({
-          url: '',
-          domain: text.trim(),
-        }).then(result => {
-        }, () => {
-        });
+        if (hyperLink.url && hyperLink.domain) {
+          return this.openCreateDialog(hyperLink);
+        }
       }
     }
   }
@@ -184,7 +174,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
   linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
-      openPotentialInternalLink(this.workspaceManager, link.url);
+      openPotentialExternalLink(this.workspaceManager, link.url, {newTab: true, sideBySide: true});
     } catch (e) {
       this.messageDialog.display({
         title: 'Invalid Link',

@@ -52,7 +52,6 @@ export class ObjectExplorerComponent {
             n.children = value;
           } else {
             // if text is longer than 20 character show it as collapsible node
-            // @ts-ignore
             if (isString(value) && value.length > 20) {
               n.children = [
                 value

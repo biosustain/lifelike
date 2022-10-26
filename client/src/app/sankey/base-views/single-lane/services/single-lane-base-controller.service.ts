@@ -11,7 +11,6 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
-import { ErrorMessages } from 'app/sankey/constants/error';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
 import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
@@ -105,6 +104,17 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
 
   networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
     switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
+        switchMap(({traces, sources, targets}) =>
+          this.common.stateAccessor('shortestPathPlusN').pipe(
+          map(shortestPathPlusN => ({
+            sources,
+            targets,
+            traces: traces.filter((trace) =>
+                trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
+              )
+          }))
+        )
+        ),
         map(({sources, targets, traces}) => {
           const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
           const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
@@ -124,11 +134,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   );
 
   colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
-
-  // parseDelta$ = this.delta$.pipe(
-  //   // @ts-ignore
-  //   this.resolvePredefinedValueAccessor(PREDEFINED_VALUE.fixed_height)
-  // );
 
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -170,7 +175,6 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     mapNodePositionToColor(targets, NodePosition.right);
     const reused = intersection(sources, targets);
     if (isNotEmpty(reused)) {
-      this.warningController.warn(ErrorMessages.wrongInOutDefinition(reused));
       mapNodePositionToColor(reused, NodePosition.multi);
     }
   }

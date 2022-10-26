@@ -39,28 +39,28 @@ export class SingleLaneLayoutService extends LayoutService<Base> implements Serv
    * iteratively figuring order of the nodes.
    */
   computeNodeBreadths(data, columns) {
-    // decide on direction
-    const dt = new DirectedTraversal([first(columns), last(columns)]);
-    // order next related nodes in order this group first appeared
-    const visited = new Set();
-    let order = 0;
-    const traceOrder = new Set();
-    const relayoutLinks = linksToTraverse =>
-      linksToTraverse.forEach(l => {
-        relayoutNodes([dt.nextNode(l)]);
-        traceOrder.add(l.trace);
-      });
-    const relayoutNodes = nodesToTraverse =>
-      nodesToTraverse.forEach(node => {
-        if (visited.has(node)) {
-          return;
-        }
-        visited.add(node);
-        node.order = order++;
-        const links = dt.nextLinks(node);
-        relayoutLinks(links);
-      });
-    // traverse tree of connections
-    relayoutNodes(dt.startNodes);
+        // decide on direction
+        const dt = new DirectedTraversal([first(columns), last(columns)]);
+        // order next related nodes in order this group first appeared
+        const visited = new Set();
+        let order = 0;
+        const traceOrder = new Set();
+        const relayoutLinks = linksToTraverse =>
+          linksToTraverse.forEach(l => {
+            relayoutNodes([dt.nextNode(l)]);
+            traceOrder.add(l.trace);
+          });
+        const relayoutNodes = nodesToTraverse =>
+          nodesToTraverse.forEach(node => {
+            if (visited.has(node)) {
+              return;
+            }
+            visited.add(node);
+            node.order = order++;
+            const links = dt.nextLinks(node);
+            relayoutLinks(links);
+          });
+        // traverse tree of connections
+        relayoutNodes(dt.startNodes);
   }
 }

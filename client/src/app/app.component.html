@@ -5,8 +5,14 @@
     <div class="d-flex flex-column">
       <!-- If a file is in standalone mode, workbench button opens it as tab -->
       <ng-container *ngIf="isStandaloneFileOpen; else goToWorkbench">
-        <a [appLink]="mainUrl" placement="right" ngbTooltip="Workbench" [forceWorkbench]="true" [newTab]="true"
-           [fragment]="fragment" preferPane="left">
+        <a [appLink]="mainUrl"
+           [forceWorkbench]="true"
+           [newTab]="true"
+           [fragment]="fragment"
+           [queryParams]="queryParams"
+           preferPane="left"
+           placement="right"
+           ngbTooltip="Workbench">
           <i class="far fa-window-restore"></i>
         </a>
       </ng-container>
@@ -17,14 +23,23 @@
       </ng-template>
       <!-- TODO: Something odd is happening when OAuth is enabled and these `appLink` links are clicked when the user is not logged in. For
         some reason a bunch of redirects happen all at once, rather than just one single redirect. -->
-      <a appLink="/projects" placement="right" ngbTooltip="File Browser" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+      <a appLink="/projects" placement="right" ngbTooltip="File Browser" matchExistingTab="/projects$"
+         [forceWorkbench]="true"
+         [newTab]="true" preferPane="left">
         <i class="fa fa-folder"></i>
       </a>
-      <a appLink="/search/graph" placement="right" ngbTooltip="Knowledge Graph" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+      <a appLink="/search/graph" placement="right" ngbTooltip="Knowledge Graph" matchExistingTab="/search/graph$"
+         [forceWorkbench]="true"
+         [newTab]="true" preferPane="left">
         <i class="fas fa-chart-network"></i>
       </a>
-      <a appLink="/search/content" placement="right" ngbTooltip="Search" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+      <a appLink="/search/content" matchExistingTab="/search/content$" placement="right" ngbTooltip="Search"
+         [forceWorkbench]="true" [newTab]="true"
+         preferPane="left">
         <i class="fa fa-search"></i>
+      </a>
+      <a routerLink="/files/starred" placement="right" ngbTooltip="Starred Content">
+        <i class="fas fa-star"></i>
       </a>
       <div class="button-divider"></div>
       <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->

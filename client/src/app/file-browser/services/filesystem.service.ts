@@ -72,11 +72,12 @@ export class FilesystemService {
   }> {
     return this.http.post(
       `/api/filesystem/objects`,
-      objectToMixedFormData(request), {
+      objectToMixedFormData(request),
+      {
         observe: 'events',
         reportProgress: true,
         responseType: 'json',
-      },
+      }
     ).pipe(
       map(event => {
         if (event.type === HttpEventType.Response) {
@@ -216,20 +217,15 @@ export class FilesystemService {
   }
 
   putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
-    return this.http.put<unknown>(
+    return this.http.put<{}>(
       `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
-      objectToMixedFormData(request),
-    ).pipe(
-      map(() => ({})),
-    );
+      objectToMixedFormData(request));
   }
 
   deleteBackup(hashId: string): Observable<{}> {
-    return this.http.delete<unknown>(
+    return this.http.delete<{}>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
       },
-    ).pipe(
-      map(() => ({})),
     );
   }
 
@@ -354,6 +350,23 @@ export class FilesystemService {
         }
       }
     );
+  }
+
+  getStarred() {
+    return this.http.get<ResultList<FilesystemObjectData>>(`/api/filesystem/objects/starred`).pipe(
+      map(data => {
+        const list = new FilesystemObjectList();
+        list.results.replace(data.results.map(itemData => new FilesystemObject().update(itemData)));
+        return list;
+      })
+    );
+  }
+
+  updateStarred(hashId: string, starred: boolean) {
+    return this.http.patch<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/star`,
+      { starred }
+    ).pipe(map(data => data.result));
   }
 }
 

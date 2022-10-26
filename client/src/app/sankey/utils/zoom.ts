@@ -60,12 +60,12 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.duration();
   }
 
-  set extent(extent: [[number, number], [number, number]]) {
+  set extent(extent: ValueFn<ZoomRefElement, Datum, [[number, number], [number, number]]>) {
     this.zoom.extent(extent);
   }
 
-  get extent(): [[number, number], [number, number]] {
-    return this.zoom.extent() as any as [[number, number], [number, number]];
+  get extent(): ValueFn<ZoomRefElement, Datum, [[number, number], [number, number]]> {
+    return this.zoom.extent();
   }
 
   set filter(filterFn) {

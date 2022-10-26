@@ -8,13 +8,15 @@
 // - con
 // - inv
 
+import { Unicodes } from './constants';
+
 interface AnnotationStyle {
   // Mandatory fields
 
   label: string;
   color: string;
   // Optional fields
-  iconCode?: string;
+  iconCode?: Unicodes;
   subtypes?: string[];
   style?: {
     // Override the border-color of the node on vis-network
@@ -38,10 +40,10 @@ const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOMENA = '#edc949';
 const PHENOTYPE = '#edc949';
-const FOOD = '#8eff69';
+const FOOD = '#f71698';
 const ANATOMY = '#0202bd';
-const LABSAMPLE = '#f71698';
-const LABSTRAIN = '#f71698';
+const LABSAMPLE = '#8eff69';
+const LABSTRAIN = '#8eff69';
 
 const NOTE = '#edc949';
 const MAP = '#0277bd';
@@ -137,7 +139,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'link',
     color: LINK,
-    iconCode: '\uf0c1'
+    iconCode: Unicodes.Link
   },
   {
     label: 'entity',
@@ -146,12 +148,12 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'map',
     color: MAP,
-    iconCode: '\uf542'
+    iconCode: Unicodes.Map
   },
   {
     label: 'note',
     color: NOTE,
-    iconCode: '\uf249'
+    iconCode: Unicodes.Note
   },
   // Non-Entity types
   {

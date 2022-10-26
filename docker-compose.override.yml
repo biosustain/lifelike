@@ -29,6 +29,7 @@ x-appserver: &appserver
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
+    - REDIS_USERNAME=default
     - REDIS_PASSWORD=password
     - REDIS_SSL=false
     # StatisticalEnrichment
@@ -61,7 +62,7 @@ services:
   worker:
     <<: *appserver
     container_name: worker
-    command: flask rq worker
+    command: rq worker -c rq_config --with-scheduler
     networks:
       - backend
 
@@ -161,11 +162,10 @@ services:
 
   graphdatabase:
     container_name: graphdatabase
-    build: ./graph-db/neo4j
+    image: neo4j:4.4-community
     environment:
       - NEO4J_AUTH=neo4j/password
-    volumes:
-      - ./graph-db/neo4j/logs:/logs
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -173,8 +173,11 @@ services:
       - backend
 
   redis:
+    container_name: redis
     image: redis:6-alpine
     command: redis-server --requirepass password
+    ports:
+      - "6379:6379"
     networks:
       - backend
 
@@ -208,4 +211,3 @@ networks:
   frontend:
   backend:
   elastic:
-

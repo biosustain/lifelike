@@ -18,7 +18,7 @@ export class AsyncElementFind implements AsyncFindController {
   private pendingJump = false;
 
   target: Element;
-  // @ts-ignore
+  // @ts-ignore // todo: use createResizeObservable
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
   query = '';

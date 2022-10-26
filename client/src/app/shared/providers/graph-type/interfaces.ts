@@ -81,6 +81,7 @@ export interface GraphTrace {
   source: number;
   target: number;
   group: number;
+  shortestPathPlusN?: number;
 
   detail_edges?: Array<[number, number, GraphDetailEdge]>;
 

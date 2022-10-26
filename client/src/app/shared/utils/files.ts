@@ -1,6 +1,5 @@
 import { from, Observable, OperatorFunction, Subject } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
-import JSZip from 'jszip';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
@@ -8,16 +7,6 @@ import { extractDescriptionFromSankey } from 'app/sankey/utils';
 
 import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from '../constants';
 
-export function mapBlobToJson<T>(): OperatorFunction<Blob, Promise<T>> {
-  return map(async blob => {
-      const graphRepr =  await JSZip.loadAsync(blob).then((zip: JSZip) => {
-        return zip.files['graph.json'].async('text').then((text: string) => {
-          return text;
-        });
-      });
-      return JSON.parse(graphRepr) as T;
-  });
-}
 
 export function mapBlobToBuffer(): OperatorFunction<Blob, ArrayBuffer> {
   return mergeMap(blob => {
@@ -57,20 +46,19 @@ export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeM
   });
 }
 
-export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, any | undefined> {
+export function mapBufferToJsons<T>(encoding = 'utf-8'): OperatorFunction<ArrayBuffer, T[]> {
   return map((data: ArrayBuffer | undefined) => {
     if (data == null) {
       return null;
     }
     const text = new TextDecoder(encoding).decode(data);
     const jsonLines = text.split('\n');
-    // @ts-ignore
     return jsonLines.reduce((o, n) => {
       if (n) {
-        o.push(JSON.parse(n));
+        o.push(JSON.parse(n) as T);
       }
       return o;
-    }, []);
+    }, [] as T[]);
   });
 }
 

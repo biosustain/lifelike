@@ -56,12 +56,12 @@ export class PdfViewerComponent
   implements OnChanges, OnInit, OnDestroy {
 
 
-  @Input('c-maps-url')
+  @Input()
   set cMapsUrl(cMapsUrl: string) {
     this.internalCMapsUrl = cMapsUrl;
   }
 
-  @Input('page')
+  @Input()
   set page(page) {
     page = parseInt(page, 10) || 1;
     const orginalPage = page;
@@ -76,34 +76,34 @@ export class PdfViewerComponent
     }
   }
 
-  @Input('render-text')
+  @Input()
   set renderText(renderText: boolean) {
     this.internalRenderText = renderText;
   }
 
-  @Input('render-text-mode')
+  @Input()
   set renderTextMode(renderTextMode: RenderTextMode) {
     if (renderTextMode !== undefined) {
       this.internalRenderTextMode = renderTextMode;
     }
   }
 
-  @Input('original-size')
+  @Input()
   set originalSize(originalSize: boolean) {
     this.internalOriginalSize = originalSize;
   }
 
-  @Input('show-all')
+  @Input()
   set showAll(value: boolean) {
     this.internalShowAll = value;
   }
 
-  @Input('stick-to-page')
+  @Input()
   set stickToPage(value: boolean) {
     this.internalStickToPage = value;
   }
 
-  @Input('zoom')
+  @Input()
   set zoom(value: number) {
     if (value <= 0) {
       return;
@@ -116,7 +116,7 @@ export class PdfViewerComponent
     return this.internalZoom;
   }
 
-  @Input('rotation')
+  @Input()
   set rotation(value: number) {
     if (!(typeof value === 'number' && value % 90 === 0)) {
       console.warn('Invalid pages rotation angle.');
@@ -126,22 +126,22 @@ export class PdfViewerComponent
     this.internalRotation = value;
   }
 
-  @Input('external-link-target')
+  @Input()
   set externalLinkTarget(value: string) {
     this.internalExternalLinkTarget = value;
   }
 
-  @Input('autoresize')
+  @Input()
   set autoresize(value: boolean) {
     this.internalCanAutoResize = Boolean(value);
   }
 
-  @Input('fit-to-page')
+  @Input()
   set fitToPage(value: boolean) {
     this.internalFitToPage = Boolean(value);
   }
 
-  @Input('show-borders')
+  @Input()
   set showBorders(value: boolean) {
     this.internalShowBorders = Boolean(value);
   }
@@ -218,20 +218,13 @@ export class PdfViewerComponent
   private isInitialized = false;
   private loadingTask: PDFDocumentLoadingTask;
 
-  // tslint:disable-next-line
-  @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
-  // tslint:disable-next-line
-  @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
-  // tslint:disable-next-line
-  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
-  // tslint:disable-next-line
-  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter();
-  // tslint:disable-next-line
-  @Output('find-control-state-updated') findControlStateUpdated = new EventEmitter();
-  // tslint:disable-next-line
-  @Output('error') onError = new EventEmitter<any>();
-  // tslint:disable-next-line
-  @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
+  @Output() afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
+  @Output() pageRendered = new EventEmitter<CustomEvent>();
+  @Output() textLayerRendered = new EventEmitter<CustomEvent>();
+  @Output() matchesCountUpdated = new EventEmitter();
+  @Output() findControlStateUpdated = new EventEmitter();
+  @Output() errorCallback = new EventEmitter<any>();
+  @Output() progressCallback = new EventEmitter<PDFProgressData>();
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
   @Input()
   src: PDFSource;
@@ -599,7 +592,7 @@ export class PdfViewerComponent
     });
 
     this.loadingTask.onProgress = (progressData: PDFProgressData) => {
-      this.onProgress.emit(progressData);
+      this.progressCallback.emit(progressData);
     };
 
     const src = this.src;
@@ -617,7 +610,7 @@ export class PdfViewerComponent
 
         return this.update();
       },
-      this.onError.emit
+      this.errorCallback.emit
     );
   }
 

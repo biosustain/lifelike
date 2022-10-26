@@ -5,11 +5,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, combineLatest } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { BaseEnrichmentDocument } from '../models/enrichment-document';
+import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 
 export interface EnrichWithGOTermsResult {
@@ -36,13 +36,12 @@ export class EnrichmentVisualisationService {
   }
 
   private currentFileId: string;
-  object;
-  loadTask: BackgroundTask<null, any>;
-  loadTaskMetaData: BackgroundTask<null, any>;
-  load: Observable<any>;
-  unsavedChanges: any;
+  object: FilesystemObject;
+  loadTask: BackgroundTask<null, EnrichmentParsedData>;
+  loadTaskMetaData: BackgroundTask<null, FilesystemObject>;
+  load: Observable<[TaskResult<null, FilesystemObject>, TaskResult<null, EnrichmentParsedData>]>;
   loaded = false;
-  enrichmentDocument;
+  enrichmentDocument: BaseEnrichmentDocument;
 
   set fileId(fileId: string) {
     const enrichmentDocument = this.enrichmentDocument = new BaseEnrichmentDocument();

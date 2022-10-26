@@ -10,7 +10,7 @@ export class ContainerBreakpointsDirective implements OnInit, OnDestroy {
   private _queryDelay = 50;
   protected readonly classPrefix = 'cbp';
   protected readonly resizes$ = new Subject<any>();
-  // @ts-ignore
+  // @ts-ignore // todo use createResizeObservable instead
   protected readonly observer = new ResizeObserver(() => this.resizes$.next());
   protected readonly breakpoints = Object.freeze({
     xs: 0,

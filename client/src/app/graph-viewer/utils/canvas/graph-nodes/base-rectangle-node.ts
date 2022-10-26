@@ -1,7 +1,7 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 
 import { pointOnRect } from '../../geometry';
-import { BoundingBox, isBBoxEnclosing, Point } from '../shared';
+import { BoundingBox, getRectWithMargin, isBBoxEnclosing, Point, SELECTION_SHADOW_COLOR } from '../shared';
 
 export interface BaseRectangleNodeOptions {
   x: number;
@@ -36,6 +36,18 @@ export abstract class BaseRectangleNode extends PlacedNode {
     const maxX = minX + this.nodeWidth;
     const maxY = minY + this.nodeHeight;
     this.bbox = {minX, minY, maxX, maxY};
+  }
+
+  drawSelection() {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.save();
+    const {x, y, width, height} = getRectWithMargin(this.bbox, this.selectionMargin);
+    ctx.rect(x, y, width, height);
+    ctx.fillStyle = SELECTION_SHADOW_COLOR;
+    ctx.fill();
+    ctx.restore();
+
   }
 
   getBoundingBox(): BoundingBox {

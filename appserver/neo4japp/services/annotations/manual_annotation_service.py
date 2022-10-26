@@ -136,6 +136,20 @@ class ManualAnnotationService:
                 tokens_list=self.tokenizer.create(parsed)
             )
 
+            if not matches:
+                try:
+                    abbrev_of = self.tokenizer.abbreviations[term]
+                except KeyError:
+                    pass
+                else:
+                    raise AnnotationError(
+                        title='Unable to Annotate',
+                        message=f'This term "{term}" cannot be annotated because it has been '
+                                f'identified as an acronym of "{" ".join(abbrev_of)}".',
+                        # fields=dict(abbrev_of=abbrev_of),
+                        code=400
+                    )
+
             inclusions = [{
                 **annotation_to_add,
                 'pageNumber': meta['page_number'],
@@ -442,13 +456,14 @@ class ManualAnnotationService:
         """
         if inclusion_type == ManualAnnotationType.INCLUSION.value:
             try:
-                entity_type = annotation['meta']['type']
-                entity_id = annotation['meta']['id']
-                data_source = annotation['meta']['idType']
+                meta = annotation['meta']
+                entity_type = meta['type']
+                entity_id = meta['id']
+                data_source = meta.get('idType')
                 common_name = annotation['primaryName']
-                synonym = annotation['meta']['allText']
+                synonym = meta['allText']
                 inclusion_date = annotation['inclusion_date']
-                hyperlinks = annotation['meta']['idHyperlinks']
+                hyperlinks = meta['idHyperlinks']
                 username = username
             except KeyError:
                 raise AnnotationError(
@@ -466,7 +481,7 @@ class ManualAnnotationService:
                 'synonym': synonym,
                 'inclusion_date': inclusion_date,
                 'user': username,
-                'data_source': data_source if data_source else None,
+                'data_source': data_source,
                 'hyperlinks': hyperlinks,
                 'common_name': common_name,
                 'file_uuid': file_hash_id

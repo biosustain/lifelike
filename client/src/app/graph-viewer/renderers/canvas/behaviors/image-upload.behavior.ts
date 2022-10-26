@@ -1,5 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { filter } from 'lodash-es';
+
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
@@ -20,28 +22,11 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   }
 
   private containsFiles(dataTransfer: DataTransfer) {
-    if (dataTransfer.types) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let i = 0; i < dataTransfer.types.length; i++) {
-        if (dataTransfer.types[i] === 'Files') {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return dataTransfer.types?.includes('Files');
   }
 
   private getFiles(dataTransfer: DataTransfer): File[] {
-    const result: File[] = [];
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < dataTransfer.files.length; i++) {
-      const file = dataTransfer.files[i];
-      if (this.isSupportedFile(file)) {
-        result.push(file);
-      }
-    }
-    return result;
+    return filter(dataTransfer.files, file => this.isSupportedFile(file));
   }
 
   private isSupportedFile(file: File) {

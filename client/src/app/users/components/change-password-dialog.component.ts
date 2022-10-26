@@ -15,7 +15,7 @@ import { UserEffects } from '../store/effects';
   selector: 'app-change-password-dialog',
   templateUrl: './change-password-dialog.component.html'
 })
-export class ChangePasswordDialogComponent extends CommonDialogComponent {
+export class ChangePasswordDialogComponent extends CommonDialogComponent<boolean> {
   user: PrivateAppUser;
 
   constructor(modal: NgbActiveModal,

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationCancel, NavigationEnd, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { select, Store } from '@ngrx/store';
@@ -14,8 +14,10 @@ import { AuthSelectors } from 'app/auth/store';
 import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
+import { toValidUrl } from 'app/shared/utils/browser';
 
 import { environment } from '../environments/environment';
+
 
 /**
  * Root of the application that creates the left menu and the content section.
@@ -30,10 +32,11 @@ export class AppComponent {
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
-  standAloneFileUrlRegex = /^\/(projects|folders)\/([^\/]+)\//;
+  standAloneFileUrlRegex = /^\/(projects|folders)\//;
   isStandaloneFileOpen: boolean;
   mainUrl: string;
   fragment: string;
+  queryParams: any;
 
   constructor(
     private readonly store: Store<State>,
@@ -57,14 +60,18 @@ export class AppComponent {
 
     // Set the title of the document based on the route
     this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
+      if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
         const child = this.activatedRoute.firstChild;
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
         this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
-        const urlParts = event.url.split('#', 2);
-        this.mainUrl = urlParts[0];
-        // Undefined if not present, but we default it in AppLink
-        this.fragment = urlParts[1];
+
+        const url = toValidUrl(event.url);
+
+        this.mainUrl = url.pathname;
+        // Get the query fragment from the url if there is one, omitting the '#'
+        this.fragment = url.hash.length ? url.hash.slice(1) : undefined;
+        // Get the query params from the url if there are any, omitting the '?'
+        this.queryParams = url.search.length ? Object.fromEntries(new URLSearchParams(url.search.slice(1))) : undefined;
       }
     });
   }

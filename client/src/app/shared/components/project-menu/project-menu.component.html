@@ -9,10 +9,13 @@
     Delete project...
   </button>
 </ng-container>
-<ng-container *ngIf="showTools">
+<ng-container>
   <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...
+  </button>
+  <button ngbDropdownItem (click)="updateStarred(project, !project.starred)">
+    {{ project.starred ? 'Remove from' : 'Add to' }} starred
   </button>
   <ng-container *ngIf="project.***ARANGO_USERNAME***">
     <div class="dropdown-divider"></div>

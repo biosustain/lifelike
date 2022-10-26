@@ -8,7 +8,6 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { FORMATS_WITH_POSSIBLE_DESCRIPTION } from 'app/shared/constants';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';
@@ -29,8 +28,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   // TODO: We can think about removing this after we add task queue for annotations
   readonly maxFileCount = 5;
 
-  fileList: FileInput[] = [];
-  selectedFile: FileInput = null;
+  fileList: FileInput<any>[] = [];
+  selectedFile: FileInput<any> = null;
   selectedFileIndex;
 
   invalidInputs = false;
@@ -80,7 +79,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
       await extractDescriptionFromFile(targetFile).then(description => {
-        const fileEntry: FileInput = {
+        const fileEntry: FileInput<any> = {
           formState: {
             contentValue: targetFile,
             filename,
@@ -101,8 +100,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       });
     }
   }
-
-
 
   activeTabChanged(event: NgbNavChangeEvent) {
     if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
@@ -126,7 +123,6 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.form.get('filename').setValue(this.extractFilename(event.target.value));
     this.filePossiblyAnnotatable = this.form.get('contentUrl').value.length;
   }
-
 
   changeSelectedFile(newIndex: number) {
     const fileCount = this.fileList.length;
@@ -176,12 +172,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     this.selectedFile = null;
     this.changeSelectedFile(this.fileList.length - 1);
   }
-
 }
 
-export interface FileInput {
+export interface FileInput<FormState> {
   filename: string;
-  formState: any;
+  formState: FormState;
   hasErrors: boolean;
   filePossiblyAnnotatable: boolean;
 }

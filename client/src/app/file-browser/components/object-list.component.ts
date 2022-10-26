@@ -3,12 +3,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash-es';
+import { isNil, uniqueId, merge } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
+import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -26,9 +27,9 @@ import { FilesystemService } from '../services/filesystem.service';
 export class ObjectListComponent {
   id = uniqueId('FileListComponent-');
 
-  @Input() appLinks = false;
+  @Input() appLinks: boolean|WorkspaceNavigationExtras = false;
   @Input() forEditing = true;
-  @Input() showPins = true;
+  @Input() showStars = true;
   @Input() showDescription = false;
   @Input() parent: FilesystemObject | undefined;
   @Input() objects: CollectionModel<FilesystemObject> | undefined;
@@ -57,6 +58,9 @@ export class ObjectListComponent {
 
     // At this time, we don't support dragging multiple items
     this.objects.selectOnly(object);
+
+    // Do not bubble as tab drag event
+    event.stopPropagation();
   }
 
   openParentEditDialog() {
@@ -73,9 +77,17 @@ export class ObjectListComponent {
 
     if (this.appLinks) {
       if (target.isOpenable) {
-        this.workspaceManager.navigate(target.getCommands(), {
-          newTab: !target.isDirectory,
-        });
+        // TODO: Normally this would just be handled by the `appLink` directive. Really, we should update the template to either:
+        //  - Use appLink
+        //  - Use a callback that does the download portion of the `else` block below
+        openInternalLink(
+          this.workspaceManager,
+          toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
+          merge(
+            {newTab: !target.isDirectory},
+            this.appLinks
+          )
+        );
       } else {
         const progressDialogRef = this.progressDialog.display({
           title: `Download ${getObjectLabel(target)}`,
@@ -101,16 +113,12 @@ export class ObjectListComponent {
     this.objects.updateView();
   }
 
-  togglePin(object: FilesystemObject) {
-    if (object.privileges.writable) {
-      return this.filesystemService.save(
-        [object.hashId],
-        { pinned: !object.pinned, parentHashId: object.parent.hashId },
-        {[object.hashId]: object}
-      ).pipe(
-        this.errorHandler.create({label: 'Edit object'}),
-      ).toPromise()
-      .then(() => this.updateView());
-    }
+  toggleStarred(object: FilesystemObject) {
+    this.filesystemService.updateStarred(object.hashId, isNil(object.starred))
+    .toPromise()
+    .then((result) => {
+      object.update(result);
+      this.updateView();
+    });
   }
 }

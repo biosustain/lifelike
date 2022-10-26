@@ -1,29 +1,26 @@
-import sys
-from typing import List
+import base64
 import click
+from collections import namedtuple
 import copy
+from flask import current_app, request
 import hashlib
 import importlib
 import io
 import json
-import base64
-
-import timeflake
-
 import logging
+from marshmallow.exceptions import ValidationError
 import math
 import os
 import re
-import uuid
 import requests
-import zipfile
-
-from collections import namedtuple
-from flask import current_app, request
-from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
-from sqlalchemy.sql.expression import and_, text, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.expression import and_, text
+import sys
+import timeflake
+from typing import List
+import uuid
+import zipfile
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
@@ -46,6 +43,7 @@ from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils.logger import EventLog
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
@@ -311,9 +309,18 @@ def drop_all_tables_and_enums():
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
 
 
+def validate_email(email):
+    if not re.match(
+        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+        email
+    ):
+        raise ValueError('Invalid email address')
+    return email
+
+
 @app.cli.command("create-user")
 @click.argument("name", nargs=1)
-@click.argument("email", nargs=1)
+@click.argument("email", nargs=1, callback=validate_email)
 def create_user(name, email):
     user = AppUser(
         username=name,
@@ -1131,3 +1138,23 @@ def fix_broken_map_links():
     except Exception:
         db.session.rollback()
         raise
+
+
+@app.cli.command("log_failed_jobs")
+@click.option('--queue', '-q', required=True, type=str)
+def log_failed_rq_jobs(queue: str):
+    """
+    Logs all failed jobs registered by the redis queue service.
+    """
+    rq_service = RedisQueueService()
+    rq_service.log_failed_jobs(queue)
+
+
+@app.cli.command("retry_failed_jobs")
+@click.option('--queue', '-q', required=True, type=str)
+def retry_failed_rq_jobs(queue: str):
+    """
+    Requeues all failed jobs registered by the redis queue service.
+    """
+    rq_service = RedisQueueService()
+    rq_service.retry_failed_jobs(queue)

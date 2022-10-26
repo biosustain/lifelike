@@ -289,54 +289,32 @@ def test_user_2(session) -> AppUser:
 
 
 @pytest.fixture(scope='function')
-def test_user_with_pdf(
-        session, test_user: AppUser,
-        fix_directory: Files,
-        pdf_dir: str) -> Files:
-    pdf_path = os.path.join(pdf_dir, 'example3.pdf')
+def fix_directory(session, test_user: AppUser) -> Files:
+    dir = Files(
+        filename='/',
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        user=test_user,
+        path='/Lifelike'
+    )
 
-    with open(pdf_path, 'rb') as pdf_file:
-        pdf_content = pdf_file.read()
+    session.add(dir)
+    session.flush()
 
-        file_content = FileContent(
-            raw_file=pdf_content,
-            checksum_sha256=hashlib.sha256(pdf_content).digest(),
-            creation_date=datetime.now(),
-        )
-
-        fake_file = Files(
-            filename='example3.pdf',
-            content_id=file_content.id,
-            user_id=test_user.id,
-            mime_type=PDFTypeProvider.MIME_TYPE,
-            creation_date=datetime.now(),
-            parent_id=fix_directory.id,
-            organism_name='Homo sapiens',
-            organism_synonym='Homo sapiens',
-            organism_taxonomy_id='9606'
-        )
-
-        session.add(file_content)
-        session.add(fake_file)
-        session.flush()
-
-    return fake_file
+    return dir
 
 
 @pytest.fixture(scope='function')
-def fix_project(test_user: AppUser, session) -> Projects:
-    ***ARANGO_USERNAME***_dir = Files(
-        mime_type=DirectoryTypeProvider.MIME_TYPE,
-        filename='/',
-        user=test_user,
-    )
+def fix_project(
+    session,
+    fix_directory: Files,
+    test_user: AppUser
+) -> Projects:
     project = Projects(
         name='Lifelike',
         description='Test project',
-        ***ARANGO_USERNAME***=***ARANGO_USERNAME***_dir,
+        ***ARANGO_USERNAME***=fix_directory,
         creation_date=datetime.now(),
     )
-    session.add(***ARANGO_USERNAME***_dir)
     session.add(project)
     session.flush()
 
@@ -357,24 +335,40 @@ def fix_project(test_user: AppUser, session) -> Projects:
 
 
 @pytest.fixture(scope='function')
-def fix_directory(session, test_user: AppUser) -> Files:
-    dir = Files(
-        filename='/',
-        mime_type=DirectoryTypeProvider.MIME_TYPE,
-        user=test_user,
-    )
+def test_user_with_pdf(
+        session,
+        test_user: AppUser,
+        fix_project: Projects,
+        pdf_dir: str
+) -> Files:
+    pdf_path = os.path.join(pdf_dir, 'example3.pdf')
 
-    project = Projects(
-        name='test-project',
-        description='test project',
-        ***ARANGO_USERNAME***=dir,
-    )
+    with open(pdf_path, 'rb') as pdf_file:
+        pdf_content = pdf_file.read()
 
-    session.add(project)
-    session.add(dir)
-    session.flush()
+        file_content = FileContent(
+            raw_file=pdf_content,
+            checksum_sha256=hashlib.sha256(pdf_content).digest(),
+            creation_date=datetime.now(),
+        )
 
-    return dir
+        fake_file = Files(
+            filename='example3.pdf',
+            content_id=file_content.id,
+            user_id=test_user.id,
+            mime_type=PDFTypeProvider.MIME_TYPE,
+            creation_date=datetime.now(),
+            parent_id=fix_project.***ARANGO_USERNAME***_id,
+            organism_name='Homo sapiens',
+            organism_synonym='Homo sapiens',
+            organism_taxonomy_id='9606'
+        )
+
+        session.add(file_content)
+        session.add(fake_file)
+        session.flush()
+
+    return fake_file
 
 
 def login_as_user(self, email, password) -> AppUser:

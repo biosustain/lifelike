@@ -133,7 +133,6 @@ export class RouteDisplayComponent {
         label,
         color,
       },
-
       link: {
         source,
         target,

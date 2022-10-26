@@ -1,6 +1,8 @@
+import { ZoomTransform } from 'd3-zoom';
+
 import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
-import { BoundingBox, Point } from '../utils/canvas/shared';
+import { BoundingBox, DEFAULT_SELECTION_MARGIN, Point } from '../utils/canvas/shared';
 
 /**
  * A style of node rendering, used to render different shapes of nodes.
@@ -36,8 +38,8 @@ export interface EdgeRenderStyle {
   placeEdge(d: UniversalGraphEdge,
             from: UniversalGraphNode,
             to: UniversalGraphNode,
-            placedFrom: PlacedNode,
-            placedTo: PlacedNode,
+            placedFrom: PlacedObject,
+            placedTo: PlacedObject,
             ctx: CanvasRenderingContext2D,
             options: PlacementOptions): PlacedEdge;
 }
@@ -79,6 +81,9 @@ export abstract class PlacedObject {
   private placedObjectRenderer: PlacedObjectRenderer;
   protected children: PlacedObject[] = [];
 
+  // NOTE: We might want to adjust just based on the entity type, for example, we can do smaller for icons.
+  selectionMargin = DEFAULT_SELECTION_MARGIN;
+
   /**
    * Binds an object to a context.
    * @param renderer the renderer
@@ -111,8 +116,14 @@ export abstract class PlacedObject {
   /**
    * Render the object on the canvas.
    * @param transform the zoom and pan transform
+   * @param selected is object selected
    */
-  abstract draw(transform: any): void;
+  abstract draw(transform: ZoomTransform, selected: boolean): void;
+
+  /**
+   * Render the selection shadow below object.
+   */
+  abstract drawSelection();
 
   /**
    * Called after the object has been bound to a renderer.
@@ -127,16 +138,12 @@ export abstract class PlacedObject {
   }
 
   /**
-   * Called to see if the object should be re-rendered.
+   * Get the first intersection point of a line coming from outside this object
+   * to the center of the object.
+   * @param lineOrigin the line's origin point
+   * @return Point
    */
-  shouldObjectRender(): boolean {
-    for (const child of this.children) {
-      if (child.shouldObjectRender()) {
-        return true;
-      }
-    }
-    return false;
-  }
+  abstract lineIntersectionPoint(lineOrigin: Point): Point;
 
   /**
    * Force this object to be re-rendered at some point.
@@ -166,13 +173,6 @@ export abstract class PlacedNode extends PlacedObject {
   resizable: boolean;
   uniformlyResizable: boolean;
 
-  /**
-   * Get the first intersection point of a line coming from outside this object
-   * to the center of the object.
-   * @param lineOrigin the line's origin point
-   * @return Point
-   */
-  abstract lineIntersectionPoint(lineOrigin: Point): Point;
 }
 
 /**
@@ -189,7 +189,7 @@ export abstract class PlacedEdge extends PlacedObject {
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */
-  abstract drawLayer2(transform: any): void;
+  abstract drawLayer2(transform: ZoomTransform): void;
 }
 
 /**
