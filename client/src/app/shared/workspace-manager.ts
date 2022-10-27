@@ -15,7 +15,7 @@ import { filter, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
 
-import {timeoutPromise} from 'app/shared/utils/promise';
+import { timeoutPromise } from 'app/shared/utils/promise';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
