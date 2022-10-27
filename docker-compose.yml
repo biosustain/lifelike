@@ -6,9 +6,6 @@ version: "3.9"
 x-appserver: &appserver
   build: ./appserver
   restart: unless-stopped
-  profiles:
-    - backend
-    - tests
   environment:
     # Flask
     - FLASK_ENV=development
@@ -43,6 +40,8 @@ services:
   # ----------------------------------------
   appserver:
     <<: *appserver
+    profiles:
+      - app
     ports:
       - 5000:5000
 
@@ -54,8 +53,7 @@ services:
     build: ./client
     restart: unless-stopped
     profiles:
-      - frontend
-      - tests
+      - app
     ports:
       - 8080:80
 
@@ -63,7 +61,7 @@ services:
     build: ./statistical-enrichment
     restart: unless-stopped
     profiles:
-      - backend
+      - app
     ports:
       - 5010:5010
     environment:
@@ -83,7 +81,7 @@ services:
     build: ./cache-invalidator
     restart: unless-stopped
     profiles:
-      - backend
+      - app
     environment:
       # Flask
       - LOG_LEVEL=debug
@@ -95,9 +93,20 @@ services:
       # Redis
       - REDIS_HOST=redis
 
+  pdfparser:
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
+    restart: unless-stopped
+    profiles:
+      - service
+    tty: true
+    ports:
+      - 7600:7600
+
   postgres:
     image: postgres:14
     restart: unless-stopped
+    profiles:
+      - service
     ports:
       - 5432:5432
     environment:
@@ -106,6 +115,8 @@ services:
   neo4j:
     image: neo4j:4.4-community
     restart: unless-stopped
+    profiles:
+      - service
     ports:
       - 7474:7474
       - 7687:7687
@@ -113,26 +124,23 @@ services:
       - NEO4J_AUTH=neo4j/password
       - NEO4JLABS_PLUGINS=["apoc", "n10s"]
 
-  pdfparser:
-    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
-    restart: unless-stopped
-    tty: true
-    ports:
-      - 7600:7600
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - 6379:6379
-
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch
+    profiles:
+      - service
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - http.max_content_length=200mb
     ports:
       - 9200:9200
+
+  redis:
+    image: redis:7-alpine
+    profiles:
+      - service
+    ports:
+      - 6379:6379
 
 volumes:
   lmdb:

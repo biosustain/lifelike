@@ -1,18 +1,33 @@
-gcloud:
-	gcloud auth login
-	gcloud config set project able-goods-221820
+.PHONY: lmdb-fetch up down githooks gcloud-setup
 
-# Fetches the LMDB files needed to run the application
-fetch-lmdb:
-	gsutil cp gs://lmdb/lmdb_v6.tgz /tmp/lmdb_v6.tgz
-	tar zxvf /tmp/lmdb_v6.tgz
+
+# Fetch LMDB database files
+source?=gs://lmdb/v6
+target?=appserver/neo4japp/services/annotations/lmdb
+lmdb-fetch:
+	gsutil -m rsync -r ${source} ${target}
+
+
+# Bring up Docker Compose services
+profile?=service,app
+args?=-d
+up:
+	docker compose --profile ${profile} up ${args}
+
+
+# Bring down Docker Compose services
+down:
+	docker compose down --volumes --remove-orphans
+
 
 # Sets up commit hooks for linting
 githooks:
 	git config --local core.hooksPath .githooks/
 
-stop:
-	docker-compose down --volumes
 
-docker-flask-seed:
-	pipenv run flask
+# Set up Google Cloud Platform SDK
+gcp_project_id=able-goods-221820
+gcloud-setup:
+	@echo "Google Cloud Platform setup..."	
+	gcloud auth login
+	gcloud config set project ${gcp_project_id}

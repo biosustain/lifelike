@@ -121,16 +121,15 @@ ports:
 vscode:
   extensions:
     - ms-python.python
-    - donjayamanne.python-extension-pack
     - almenon.arepl
     - esbenp.prettier-vscode
     - dbaeumer.vscode-eslint
     - mgesbert.python-path
     - christian-kohler.path-intellisense
-    - DavidAnson.vscode-markdownlint
     - cyrilletuzi.angular-schematics
     - manuth.eslint-language-service
     - Angular.ng-template
+    - littlefoxteam.vscode-python-test-adapter
 
 gitConfig:
   diff.ignoreSubmodules: all
