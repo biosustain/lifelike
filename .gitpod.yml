@@ -25,9 +25,9 @@ tasks:
   - name: Run Docker Compose backing services
     init: docker-compose pull
     command: |
-      docker-compose up --watch --detach
+      docker compose up -d --wait
       gp sync-done services-up
-      docker-compose logs --follow
+      docker compose logs --follow
 
   - name: Run Appserver Flask app
     before: cd appserver
