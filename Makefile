@@ -3,7 +3,7 @@ gcloud:
 	gcloud config set project able-goods-221820
 
 # Fetches the LMDB files needed to run the application
-lmdb:
+fetch-lmdb:
 	gsutil cp gs://lmdb/lmdb_v6.tgz /tmp/lmdb_v6.tgz
 	tar zxvf /tmp/lmdb_v6.tgz
 
