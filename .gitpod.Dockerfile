@@ -14,7 +14,7 @@ RUN sudo apt-get install --yes gcc python3-dev python3-setuptools && \
     sudo pip3 install --no-cache-dir -U crcmod
 
 # Linuxbrew packages
-RUN sudo brew install gh figlet hasura-cli kubectl helm helmfile
+RUN brew install gh figlet hasura-cli kubectl helm helmfile
 
 # Shell config & completion
 RUN npm completion >> ~/.bashrc && npm completion >> ~/.zshrc
