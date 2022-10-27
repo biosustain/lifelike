@@ -1,66 +1,18 @@
-# liinting
-/**/.husky
-
-# Python
-__pycache__/
-*.pyc
-env/
-.cache/
-.python_history
-.ipython/
-.mypy_cache/
-
-# compiled output
-dist/
+# Pre-commit hooks
+.husky
 
 # System Files
 .DS_Store
 Thumbs.db
-.bash_history
-.local/
-.run
 
-# IDE - VSCode
-.vscode/**
+# VSCode
+.vscode/
 !.vscode/launch.json
+!.vscode/settings.json
 
-# ignore node_modules
-node_modules/
-
-# terraform files
-terraform.tfstate.*
-.terraform/
+# IntelliJ
+.idea/
 
 # .env Files (to protect secrets)
-*.env
-*.env.*
-
-# IDE - IntelliJ
-.idea/
-/*.iml
-.run
-
-#virtual environments
-.venv/
-venv/
-outputs/
-
-# LMDB files
-annotations/**/*.mdb
-annotations/**/*.mdb.old
-annotations/datasets/**/*.csv
-annotations/datasets/**/*.tsv
-
-# profiler results
-appserver/profilers/results
-
-# nlp pdfs
-annotations/nlp_data_output/pdfs/*.pdf
-annotations/nlp_data_output/annotations/*.json
-annotations/nlp_data_output/*.txt
-
-# Backups
-*.backup
-
-# Runtime signaling
-.READY
+.env*
+!.env.example
