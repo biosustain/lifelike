@@ -1,5 +1,5 @@
 # LMDB files
-lmdb/**/*.mdb
+lmdb/*
 
 # NLP output files
 nlp_data_output/
