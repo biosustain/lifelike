@@ -53,15 +53,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     moduleContext.register(this);
 
-    this.loadTask = new BackgroundTask(([hashId]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJsons<Document>()
+    this.loadTask = new BackgroundTask(([hashId]) =>
+        combineLatest(
+          this.filesystemService.get(hashId),
+          this.filesystemService.getContent(hashId).pipe(
+            mapBlobToBuffer(),
+            mapBufferToJsons<Document>(),
+          ),
         )
-      );
-    });
+    );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

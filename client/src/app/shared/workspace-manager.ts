@@ -15,10 +15,14 @@ import { filter, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
 
+import { timeoutPromise } from 'app/shared/utils/promise';
+
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
+import { ErrorHandler } from './services/error-handler.service';
+import { UserError } from './exceptions';
 
 export interface TabDefaults {
   title: string;
@@ -484,7 +488,8 @@ export class WorkspaceManager {
   constructor(private readonly router: Router,
               private readonly injector: Injector,
               private readonly sessionService: WorkspaceSessionService,
-              private readonly tracking: TrackingService) {
+              private readonly tracking: TrackingService,
+              private readonly errorHandler: ErrorHandler) {
     this.paneManager = new PaneManager(injector);
     this.hookRouter();
     this.emitEvents();
@@ -586,6 +591,8 @@ export class WorkspaceManager {
       .then(needConfirmation =>
         !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
       )
+      // In case call to shouldConfirmTabUnload fails we want to delete tab
+      .catch(error => true)
       .then(shouldDeleteTab => {
         if (shouldDeleteTab) {
           pane.deleteTab(tab);
@@ -798,7 +805,8 @@ export class WorkspaceManager {
 
   shouldConfirmTabUnload(tab: Tab): Promise<boolean> {
     const component = tab.component as Partial<ShouldConfirmUnload>;
-    return Promise.resolve(component?.shouldConfirmUnload);
+    // If should unload does not respond then ignore the answear
+    return timeoutPromise(Promise.resolve(component?.shouldConfirmUnload), 1000);
   }
 
   applyPendingChanges() {

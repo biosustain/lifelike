@@ -46,15 +46,16 @@ export class EnrichmentVisualisationService {
   set fileId(fileId: string) {
     const enrichmentDocument = this.enrichmentDocument = new BaseEnrichmentDocument();
     this.currentFileId = fileId;
-    this.loadTaskMetaData = new BackgroundTask(() =>
-      this.enrichmentService.get(
+    this.loadTaskMetaData = new BackgroundTask(
+      () => this.enrichmentService.get(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         map((value: FilesystemObject, _) => this.object = value),
-      ));
-    this.loadTask = new BackgroundTask(() =>
-      this.enrichmentService.getContent(
+      )
+    );
+    this.loadTask = new BackgroundTask(
+      () => this.enrichmentService.getContent(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
