@@ -54,8 +54,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
         takeUntil(this.destroyed),
         tap(() => this.cdr.detectChanges()),
         shareReplay({refCount: true, bufferSize: 1}),
-      ),
-    {retryMaxCount: 1},
+      )
   );
 
   data$ = this.loadTask.results$.pipe(

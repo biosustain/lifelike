@@ -52,8 +52,7 @@ export class EnrichmentVisualisationService {
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         map((value: FilesystemObject, _) => this.object = value),
-      ),
-      {retryMaxCount: 1},
+      )
     );
     this.loadTask = new BackgroundTask(
       () => this.enrichmentService.getContent(
@@ -61,8 +60,7 @@ export class EnrichmentVisualisationService {
       ).pipe(
         this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         mergeMap((blob: Blob) => enrichmentDocument.load(blob))
-      ),
-      {retryMaxCount: 1}
+      )
     );
 
     this.load = combineLatest(

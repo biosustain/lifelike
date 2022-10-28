@@ -51,8 +51,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
   readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
     (locator: PaginatedRequestOptions) =>
-      this.globalAnnotationService.getAnnotations(locator, this.globalAnnotationType),
-    {retryMaxCount: 1},
+      this.globalAnnotationService.getAnnotations(locator, this.globalAnnotationType)
   );
 
     locator: StandardRequestOptions = {

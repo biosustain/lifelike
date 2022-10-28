@@ -60,8 +60,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
             mapBlobToBuffer(),
             mapBufferToJsons<Document>(),
           ),
-        ),
-      {retryMaxCount: 1},
+        )
     );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {

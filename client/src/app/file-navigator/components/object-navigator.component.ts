@@ -40,8 +40,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     moduleContext.register(this);
 
     this.loadTask = new BackgroundTask(hashId =>
-        this.filesystemService.get(hashId),
-      {retryMaxCount: 1},
+        this.filesystemService.get(hashId)
     );
 
     this.fileLoadedSub = this.loadTask.results$.subscribe(({

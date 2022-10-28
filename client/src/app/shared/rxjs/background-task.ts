@@ -57,7 +57,7 @@ export class BackgroundTask<T, R> {
   readonly retryInitialDelay = 3000;
   readonly retryDelayMultiplier = 1.5;
   readonly retryMaxDelay = 1000 * 60;
-  readonly retryMaxCount = 0;
+  readonly retryMaxCount = 1;
   readonly delayedRunningInitialDelay = 0;
   readonly delayedRunningMinimumLength = 500;
 

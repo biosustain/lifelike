@@ -67,8 +67,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
             mapBlobToBuffer(),
           ),
           this.pdfAnnService.getAnnotations(hashId),
-        ),
-      {retryMaxCount: 1},
+        )
     );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {

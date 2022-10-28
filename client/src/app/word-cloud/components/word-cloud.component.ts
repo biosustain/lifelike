@@ -70,8 +70,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         combineLatest(
           this.legendService.getAnnotationLegend(),
           this.annotationsService.getSortedAnnotations(hashId, sortingId),
-        ),
-      {retryMaxCount: 1},
+        )
     );
 
     // Set up the cloud resize observer.

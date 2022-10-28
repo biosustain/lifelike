@@ -99,8 +99,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           this.filesystemService.get(hashId),
           this.filesystemService.getContent(hashId),
           this.getBackupBlob(),
-        ]),
-      {retryMaxCount: 1},
+        ])
     );
     const isInEditMode = this.isInEditMode.bind(this);
 

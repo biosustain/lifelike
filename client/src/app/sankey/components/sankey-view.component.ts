@@ -143,8 +143,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
           mapBlobToBuffer(),
           mapBufferToJson()
         ) as Observable<GraphFile>
-      ]),
-      {retryMaxCount: 1}
+      ])
     );
 
     // Listener for file open
