@@ -28,7 +28,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  loadTask: BackgroundTask<string, [FilesystemObject]>;
+  loadTask: BackgroundTask<string, FilesystemObject>;
   fileLoadedSub: Subscription;
 
   object: FilesystemObject;
@@ -39,14 +39,12 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
               protected readonly moduleContext: ModuleContext) {
     moduleContext.register(this);
 
-    this.loadTask = new BackgroundTask(hashId => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-      );
-    });
+    this.loadTask = new BackgroundTask(hashId =>
+        this.filesystemService.get(hashId)
+    );
 
     this.fileLoadedSub = this.loadTask.results$.subscribe(({
-                                                             result: [object],
+                                                             result: object,
                                                              value: [],
                                                            }) => {
       this.object = object;
