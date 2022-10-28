@@ -9,6 +9,7 @@ import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
+import { isNotEmpty } from 'app/shared/utils';
 
 @Component({
   selector: 'app-workspace-tab',
@@ -37,10 +38,10 @@ export class WorkspaceTabComponent implements OnChanges {
   }
 
   dragData$ = defer(() =>
-    from(this.tab.component?.sourceData$).pipe(
+    from(this.tab.component?.sourceData$ ?? of([])).pipe(
       switchMap(sources =>
         iif(
-          () => Boolean(sources),
+          () => isNotEmpty(sources),
           of(sources),
           this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
             map(({href}) => [{
@@ -49,16 +50,18 @@ export class WorkspaceTabComponent implements OnChanges {
           } as Source])),
         )
       ),
-      map(sources => {
-        return { 'application/***ARANGO_DB_NAME***-node': JSON.stringify({
+      map(sources => ({
+        'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
           label: (this.tab.component as MapComponent)?.map ? 'map' : 'link',
           sub_labels: [],
           data: {
-            sources
-          }
-        } as Partial<UniversalGraphNode>)};
-      })));
+            sources,
+          },
+        } as Partial<UniversalGraphNode>),
+      })),
+    )
+  );
 
   drag = new CdkNativeDragItegration(this.dragData$);
 
