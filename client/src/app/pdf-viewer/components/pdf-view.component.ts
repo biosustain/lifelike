@@ -60,14 +60,15 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     moduleContext.register(this);
 
-    this.loadTask = new BackgroundTask(([hashId, loc]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-        ),
-        this.pdfAnnService.getAnnotations(hashId));
-    });
+    this.loadTask = new BackgroundTask(([hashId, loc]) =>
+        combineLatest(
+          this.filesystemService.get(hashId),
+          this.filesystemService.getContent(hashId).pipe(
+            mapBlobToBuffer(),
+          ),
+          this.pdfAnnService.getAnnotations(hashId),
+        )
+    );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

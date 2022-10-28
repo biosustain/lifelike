@@ -200,20 +200,22 @@ export class FilesystemService {
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup/content`, {
         responseType: 'blob',
       },
-    ).pipe(catchError(e => {
-      // If the backup doesn't exist, don't let the caller have to figure out
-      // that it's a HTTP error and then check the status!
-      // Let's return a null indicating that there's no backup
-      if (e instanceof HttpErrorResponse) {
-        if (e.status === 404) {
-          return of(null);
+    ).pipe(
+      catchError(e => {
+        // If the backup doesn't exist, don't let the caller have to figure out
+        // that it's a HTTP error and then check the status!
+        // Let's return a null indicating that there's no backup
+        if (e instanceof HttpErrorResponse) {
+          if (e.status === 404) {
+            return of(null);
+          }
         }
-      }
 
-      // If it's any other type of error, we need to propagate it so
-      // the calling code can handle it through its normal error handling
-      return throwError(e);
-    }));
+        // If it's any other type of error, we need to propagate it so
+        // the calling code can handle it through its normal error handling
+        return throwError(e);
+      }),
+    );
   }
 
   putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
