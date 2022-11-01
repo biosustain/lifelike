@@ -1,10 +1,27 @@
 import { Injectable } from '@angular/core';
 
-import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from 'app/shared/services/data-transfer-data.service';
-import { GenericDataProvider, LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { sortBy } from 'lodash-es';
+
+import {
+  DataTransferData,
+  DataTransferDataProvider,
+  DataTransferToken,
+} from 'app/shared/services/data-transfer-data.service';
+import {
+  GenericDataProvider,
+  LABEL_TOKEN,
+  LIFELIKE_URI_TOKEN,
+  URI_TOKEN,
+  URIData,
+} from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { makeid } from 'app/shared/utils/identifiers';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode, UniversalGraphRelationship } from '../services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphNode,
+  UniversalGraphRelationship,
+} from '../services/interfaces';
 import { FILESYSTEM_IMAGE_TRANSFER_TYPE } from './image-entity-data.provider';
 
 export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>('universalGraphEntity');
@@ -74,9 +91,9 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
       let text: string | undefined = null;
       const uriData: URIData[] = [];
 
-      for (const item of items) {
-        if (item.token === URI_TOKEN) {
-          uriData.push(...(item.data as URIData[]));
+      for (const item of sortBy(items, 'confidence')) {
+        if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
+          uriData.unshift(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
           text = item.data as string;
         }
@@ -100,7 +117,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
                 detail: text,
                 sources: uriData.map(item => ({
                   domain: item.title,
-                  url: item.uri
+                  url: String(item.uri),
                 })),
               },
               style: {
