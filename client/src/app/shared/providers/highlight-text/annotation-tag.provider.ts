@@ -3,11 +3,18 @@ import { Injectable, RendererFactory2 } from '@angular/core';
 import { escape, uniqueId } from 'lodash-es';
 import Color from 'color';
 
-import { DatabaseLink, EntityType, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { Hyperlink, Reference, Source, UniversalGraphNode, UniversalGraphNodeTemplate, } from 'app/drawing-tool/services/interfaces';
+import {
+  Hyperlink,
+  Reference,
+  Source,
+  UniversalGraphNode,
+  UniversalGraphNodeTemplate,
+} from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
+import { AppURL } from 'app/shared/utils/url';
 
 import { DropdownController } from '../../utils/dom/dropdown-controller';
 import { GenericDataProvider } from '../data-transfer-data/generic-data.provider';
@@ -149,7 +156,7 @@ export class AnnotationTagHandler extends TagHandler {
       if (object) {
         GenericDataProvider.setURIs(dataTransfer, [{
           title: object.filename,
-          uri: new URL(object.getURL(false), window.location.href).href,
+          uri: new AppURL(object.getURL(false)).toAbsolute(),
         }]);
       }
 

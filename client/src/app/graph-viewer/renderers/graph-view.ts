@@ -9,11 +9,11 @@ import {
   GraphEntity,
   GraphEntityType,
   Hyperlink,
-  UniversalGraphGroup,
-  Source,
   KnowledgeMapGraph,
+  Source,
   UniversalGraphEdge,
   UniversalGraphEntity,
+  UniversalGraphGroup,
   UniversalGraphNode,
   UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
@@ -266,6 +266,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     const set = new Set<string>();
     // Note: Should I check only nodes?
     this.nodes.forEach(node => this.checkEntityForLinked(node).forEach(val => set.add(val)));
+    this.groups.forEach(group => this.checkEntityForLinked(group).forEach(val => set.add(val)));
     this.edges.forEach(edge => this.checkEntityForLinked(edge).forEach(val => set.add(val)));
     return set;
   }
