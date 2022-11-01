@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
-import { Observable, defer, of, iif, from } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { combineLatest, defer, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { compact, concat } from 'lodash-es';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
@@ -9,12 +10,13 @@ import { Tab } from 'app/shared/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
-import { isNotEmpty } from 'app/shared/utils';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { AppURL } from 'app/shared/utils/url';
 
 @Component({
   selector: 'app-workspace-tab',
   templateUrl: './workspace-tab.component.html',
-  styleUrls: ['./workspace-tab.component.scss']
+  styleUrls: ['./workspace-tab.component.scss'],
 })
 export class WorkspaceTabComponent implements OnChanges {
   @Input() active: boolean;
@@ -38,19 +40,16 @@ export class WorkspaceTabComponent implements OnChanges {
   }
 
   dragData$ = defer(() =>
-    from(this.tab.component?.sourceData$ ?? of([])).pipe(
-      switchMap(sources =>
-        iif(
-          () => isNotEmpty(sources),
-          of(sources),
-          this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
-            map(({href}) => [{
-            url: href,
-            domain: this.tab.title,
-          } as Source])),
-        )
-      ),
-      map(sources => ({
+    combineLatest(compact([
+      this.tab.component?.sourceData$,
+      this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
+        map(({href}) => [{
+          url: href,
+          domain: this.tab.title,
+        } as Source])),
+    ])).pipe(
+      map(sources => concat(...sources)),
+      map((sources: Source[]) => ({
         'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
           label: (this.tab.component as MapComponent)?.map ? 'map' : 'link',
@@ -59,6 +58,12 @@ export class WorkspaceTabComponent implements OnChanges {
             sources,
           },
         } as Partial<UniversalGraphNode>),
+        ...GenericDataProvider.getURIs(
+          sources.map(({url, domain}) => ({
+            uri: new AppURL(url).toAbsolute(),
+            title: domain,
+          })),
+        ),
       })),
     )
   );

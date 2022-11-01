@@ -1,4 +1,4 @@
-import { assign, startsWith, isEmpty, filter } from 'lodash-es';
+import { assign, filter, isEmpty, startsWith } from 'lodash-es';
 
 import { isNotEmpty } from '../utils';
 
@@ -14,6 +14,7 @@ class URL_REGEX {
   static hash = '(?<hash>#.*)';
   static host = `${URL_REGEX.hostname}(?:\\:${URL_REGEX.port})?`;
   static origin = `(?:${URL_REGEX.protocol}\\/\\/)?(?:${URL_REGEX.username}(?:\\:${URL_REGEX.password})?(?:@))?${URL_REGEX.host}`;
+  static relativehref = `${URL_REGEX.pathname}${URL_REGEX.search}?${URL_REGEX.hash}?$`;
   static href = `^(?:${URL_REGEX.origin})?${URL_REGEX.pathname}${URL_REGEX.search}?${URL_REGEX.hash}?$`;
 }
 
@@ -28,6 +29,7 @@ interface AppURLInterface {
   hash: string;
   host: string;
   origin: string;
+  relativehref: string;
   href: string;
 }
 
@@ -38,11 +40,6 @@ interface AppURLInterface {
  * For more documentation check: https://url.spec.whatwg.org/#url-class
  */
 export class AppURL implements URL, AppURLInterface {
-  constructor(urlString: string, overwrites: Partial<AppURLInterface> = {}) {
-    this.href = urlString;
-    assign(this, overwrites);
-  }
-
   fragment: string;
   hostname: string;
   port: string;
@@ -118,6 +115,24 @@ export class AppURL implements URL, AppURLInterface {
     Object.assign(this, value.match(URL_REGEX.href).groups);
   }
 
+  get relativehref() {
+    return this.pathname + this.search + this.hash;
+  }
+
+  set relativehref(value) {
+    Object.assign(this, value.match(URL_REGEX.relativehref).groups);
+  }
+
+  constructor(urlString: string = '', overwrites: Partial<AppURLInterface> = {}) {
+    this.href = urlString;
+    assign(this, overwrites);
+  }
+
+  toAbsolute() {
+    this.origin = window.location.href;
+    return this;
+  }
+
   toString(): string {
     return this.href;
   }
@@ -126,3 +141,6 @@ export class AppURL implements URL, AppURLInterface {
     return this.toString();
   }
 }
+
+export const ***ARANGO_DB_NAME***Url = Object.freeze(new AppURL().toAbsolute());
+export const isInternalUri = (uri: AppURL) => uri.origin === ***ARANGO_DB_NAME***Url.origin;

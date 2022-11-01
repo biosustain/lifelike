@@ -1,10 +1,18 @@
-import { Component, EventEmitter, OnDestroy, Output, ViewChild, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId, first } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer, of } from 'rxjs';
+import { first, uniqueId } from 'lodash-es';
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import jQueryType from 'jquery';
 
@@ -17,15 +25,17 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { Location, BiocAnnotationLocation } from 'app/pdf-viewer/annotation-type';
+import { BiocAnnotationLocation, Location } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/links';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { AppURL } from 'app/shared/utils/url';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
-import { Document, Passage, Infon } from './bioc.format';
+import { Document, Infon, Passage } from './bioc.format';
 
 declare var jQuery: typeof jQueryType;
 
@@ -183,7 +193,11 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
             'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>)
+    } as Partial<UniversalGraphNode>),
+    ...GenericDataProvider.getURIs([{
+      uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+      title: this.object.filename,
+    }]),
   }));
 
   sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
