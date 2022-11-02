@@ -459,11 +459,13 @@ def create_group_node(group: dict):
     display_name = group['display_name'] or ""
 
     has_border = style.get('lineType') and style.get('lineType') != 'none'
+    href = get_node_href(group)
 
     params = {
         'name': group['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': '',
+        'href': href,
         # We have to inverse the y-axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
@@ -497,6 +499,7 @@ def create_group_node(group: dict):
     label_params = {
         'name': group['hash'] + '_label',
         'label': label,
+        'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
             f"{(-group['data']['y'] - label_offset) / SCALING_FACTOR}!"
