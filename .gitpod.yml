@@ -10,10 +10,10 @@ tasks:
   - name: Fetch LMDB files
     init: >
       git submodule deinit --all -f &&
-      sudo mkdir /lmdb && sudo chown gitpod:gitpod /lmdb &&
-      make lmdb-fetch target=/lmdb &&
+      mkdir ~/lmdb &&
+      make lmdb-fetch target=~/lmdb &&
       rm -rf ./appserver/neo4japp/services/annotations/lmdb &&
-      ln -s /lmdb ./appserver/neo4japp/services/annotations/lmdb
+      ln -s ~/lmdb ./appserver/neo4japp/services/annotations/lmdb
 
   - name: Google Cloud Platform
     command: >
