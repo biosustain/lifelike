@@ -5,7 +5,21 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Appserver Flask app",
+      "name": "Debug Angular Dev Server",
+      "request": "launch",
+      "runtimeArgs": ["run-script", "debug"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "cwd": "${workspaceFolder}/client",
+      "presentation": {
+        "hidden": false,
+        "group": "Frontend",
+        "order": 1
+      }
+    },
+    {
+      "name": "Debug Appserver Flask app",
       "type": "python",
       "request": "launch",
       "module": "flask",
@@ -23,6 +37,48 @@
         "hidden": false,
         "group": "Backend",
         "order": 1
+      }
+    },
+    {
+      "name": "Debug RQ worker Flask app",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "app.py",
+        "FLASK_DEBUG": "1"
+      },
+      "args": ["rq", "worker", "-c", "rq_config", "--with-scheduler"],
+      "jinja": true,
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}/appserver",
+      "python": "${workspaceFolder}/appserver/.venv/bin/python",
+      "purpose": ["debug-in-terminal", "debug-test"],
+      "presentation": {
+        "hidden": false,
+        "group": "Backend",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug Statistical Enrichment Flask App",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "statistical_enrichment",
+        "FLASK_DEBUG": "1"
+      },
+      "args": ["run"],
+      "jinja": true,
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}/statistical-enrichment",
+      "python": "${workspaceFolder}/statistical-enrichment/.venv/bin/python",
+      "purpose": ["debug-in-terminal", "debug-test"],
+      "presentation": {
+        "hidden": false,
+        "group": "Backend",
+        "order": 3
       }
     }
   ]
