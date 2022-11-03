@@ -13,14 +13,14 @@ tasks:
 
   - name: Google Cloud Platform
     command: >
-      make gcloud &&
+      make gcloud-setup &&
       gp sync-done gcloud-setup
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Backend tasks
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   - name: Run Docker Compose backing services
-    init: docker-compose pull
+    init: docker compose build --pull
     command: >
       docker compose up -d --wait &&
       gp sync-done services-up &&
