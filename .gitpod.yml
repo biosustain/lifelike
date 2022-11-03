@@ -6,36 +6,33 @@ tasks:
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Admin tasks
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  - before: git submodule deinit --all -f
+  - name: Fetch LMDB files
+    init: >
+      git submodule deinit --all -f &&
+      make lmdb-fetch
 
   - name: Google Cloud Platform
-    init: make gcloud
-    command: gp sync-done gcloud-setup
-    openIn: left
-    openMode: split-left
-
-  - name: Fetch LMDB files
-    init: |
-      make fetch-lmdb
-      gp sync-done fetch-lmdb
+    command: >
+      make gcloud &&
+      gp sync-done gcloud-setup
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Backend tasks
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   - name: Run Docker Compose backing services
     init: docker-compose pull
-    command: |
-      docker compose up -d --wait
+    command: >
+      docker compose up -d --wait &&
       gp sync-done services-up
       docker compose logs --follow
 
   - name: Run Appserver Flask app
     before: cd appserver
-    init: |
-      pipenv install --dev --keep-outdated
+    init: >
+      pipenv install --dev --keep-outdated &&
       gp sync-done appserver-init
-    command: |
-      gp sync-await services-up
+    command: >
+      gp sync-await services-up &&
       pipenv run flask run
     env:
       FLASK_APP: app
@@ -46,18 +43,18 @@ tasks:
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   - name: Run Angular frontend app
     before: cd client
-    init: |
-      yarn install
-      gp sync-done frontend-init
-    command: yarn run dev-start
+    init: yarn install
+    command: >
+      gp sync-done frontend-init &&
+      yarn run dev-start
 
   - name: Statistical Enrichment
     before: cd statistical-enrichment
     init: pipenv install --dev --keep-outdated
-    command: |
-      gp ports await 7601 && \
-      gp ports await 7687 && \
-      pipenv run flask run --debugger
+    command: >
+      gp ports await 7601 &&
+      gp ports await 7687 &&
+      pipenv run flask run
     env:
       FLASK_APP: statistical_enrichment
       FLASK_ENV: Development
@@ -66,12 +63,6 @@ tasks:
     before: cd cache-invalidator
     init: pipenv install --dev --keep-outdated
     command: pipenv run python main.py
-
-  - name: Download LMDB data files
-    before: |
-      gp sync-await gcloud-setup
-      gsutil cp gs://lmdb/public/lmdb_v6.tgz .
-      tar zxfg lmdb.tgz
 
 ports:
   - port: 4200
