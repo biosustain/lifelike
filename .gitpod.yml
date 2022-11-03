@@ -7,15 +7,15 @@ tasks:
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Admin tasks
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  - name: Fetch LMDB files
-    init: >
+  - name: Sync LMDB files
+    command: >
       git submodule deinit --all -f &&
       mkdir ~/lmdb &&
       make lmdb-fetch target=~/lmdb &&
       rm -rf ./appserver/neo4japp/services/annotations/lmdb &&
       ln -s ~/lmdb ./appserver/neo4japp/services/annotations/lmdb
 
-  - name: Google Cloud Platform
+  - name: Setup Google Cloud Platform
     command: >
       make gcloud-setup &&
       gp sync-done gcloud-setup
