@@ -23,7 +23,7 @@ tasks:
     init: docker-compose pull
     command: >
       docker compose up -d --wait &&
-      gp sync-done services-up
+      gp sync-done services-up &&
       docker compose logs --follow
 
   - name: Run Appserver Flask app
@@ -52,7 +52,6 @@ tasks:
     before: cd statistical-enrichment
     init: pipenv install --dev --keep-outdated
     command: >
-      gp ports await 7601 &&
       gp ports await 7687 &&
       pipenv run flask run
     env:
@@ -62,7 +61,10 @@ tasks:
   - name: Cache Invalidator
     before: cd cache-invalidator
     init: pipenv install --dev --keep-outdated
-    command: pipenv run python main.py
+    command: >
+      gp ports await 7687 &&
+      gp ports await 6379 &&
+      pipenv run python main.py
 
 ports:
   - port: 4200
