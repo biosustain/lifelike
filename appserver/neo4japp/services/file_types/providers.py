@@ -1141,11 +1141,17 @@ class MapTypeProvider(BaseFileTypeProvider):
                     try:
                         image_name = node.get('image_id') + '.png'
                         images.append(image_name)
-                        im = zip_file.read("".join(['images/', image_name]))
+                        im = Image.open(zip_file.open("".join(['images/', image_name])))
+                        # Image prescaling is needed because Graphviz crashes on big images
+                        # (it is either size >~1MB or resolution but no clear error is given)
+                        # If an image is too big Graphviz will log cryptic warning that
+                        # the image could not be found
+                        im.resize((
+                            int(node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)),
+                            int(node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT))
+                        ))
                         file_path = os.path.sep.join([folder.name, image_name])
-                        f = open(file_path, "wb")
-                        f.write(im)
-                        f.close()
+                        im.save(file_path)
                     # Note: Add placeholder images instead?
                     except KeyError:
                         name = node.get('image_id') + '.png'
