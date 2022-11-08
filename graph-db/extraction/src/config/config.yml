@@ -11,6 +11,7 @@ neo4j:
 
 biocycFiles:
   EcoCyc: ecoli_25.5.tar.gz
+  mcap243233cyc: "Methylococcus capsulatus/mcap243233cyc.tar.gz"
   EcoCycCofactor: ecoli_25.5.tar.gz
   HumanCyc: humancyc/human-24.0.tar.gz
   YeastCyc: yeastcyc_25.5.tar.gz
