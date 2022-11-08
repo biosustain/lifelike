@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="Create Enzyme constraints and indexes" author="rcai">
+    <comment>Create constraints and indexes for Enzyme nodes, created on 05/31/2022</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_db_Enzyme_eid IF NOT EXISTS ON (n:db_Enzyme) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_EC_Number_eid IF NOT EXISTS ON (n:EC_Number) ASSERT n.eid IS UNIQUE;
+CREATE CONSTRAINT constraint_Synonym_name IF NOT EXISTS ON (n:Synonym) ASSERT n.name IS UNIQUE;
+CREATE INDEX index_db_Enzyme_name IF NOT EXISTS FOR (n:db_Enzyme) ON (n.name);
+CREATE INDEX index_EC_Number_name IF NOT EXISTS FOR (n:EC_Number) ON (n.name);
+    </sql>
+  </changeSet>
+
+  <changeSet id="load db_Enzyme from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+    <comment>
+        load Enzyme enzyme.tsv from enzyme-data-05312022.zip, 8459 rows
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows as row
+MERGE (n:EC_Number {eid: row.eid})
+SET n:db_Enzyme,n.name=row.name,n.code=row.code,n.activities=row.activities,n.cofactors=row.cofactors,n.data_source='Enzyme'
+      "
+      fileName="enzyme.tsv"
+      zipFileName="enzyme-data-05312022.zip"
+      startAt="1"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load db_Enzyme synonyms from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+    <comment>
+        Load Enzyme enzyme-synonyms.tsv from enzyme-data-05312022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+MERGE (a:Synonym {name: row.name}) SET a.lowercase_name=toLower(row.name)
+WITH row, a MATCH (b:db_Enzyme {eid: row.eid})
+MERGE (b)-[r:HAS_SYNONYM]->(a)
+      "
+      fileName="enzyme-synonyms.tsv"
+      zipFileName="enzyme-data-05312022.zip"
+      startAt="1"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+
+  <changeSet id="load HAS_PARENT relationship in enzyme-rels.tsv from enzyme-data-05312022.zip, date 05/31/2022" author="rcai">
+    <comment>
+        Load Enzyme HAS_PARENT relationships, enzyme-rels.tsv from enzyme-data-05312022.zip
+    </comment>
+    <customChange
+      class="edu.ucsd.sbrg.ZipFileQueryHandler"
+      query="
+      UNWIND $rows AS row
+with row where row.RELATIONSHIP='HAS_PARENT'
+MATCH (a:db_Enzyme {eid: row.from_id}), (b:db_Enzyme {eid: row.to_id})
+MERGE (a)-[r:HAS_PARENT]->(b)
+RETURN COUNT(*)
+      "
+      fileName="enzyme-rels.tsv"
+      zipFileName="enzyme-data-05312022.zip"
+      startAt="1"
+      neo4jHost="${neo4jHost}"
+      neo4jCredentials="${neo4jCredentials}"
+      neo4jDatabase="${neo4jDatabase}"
+      localSaveFileDir="${localSaveFileDir}"
+
+    />
+  </changeSet>
+</databaseChangeLog>
