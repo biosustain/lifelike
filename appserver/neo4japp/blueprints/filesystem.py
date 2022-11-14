@@ -1363,7 +1363,7 @@ class FileExportView(FilesystemBaseView):
                 flatten(
                     map(
                         lambda group: group.get('members', []),
-                        json_graph['groups']
+                        json_graph.get('groups', [])
                     )
                 )
         ):
