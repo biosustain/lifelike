@@ -222,7 +222,7 @@ class FileTypeService:
     def register(self, provider: BaseFileTypeProvider):
         """
         Register a new file type provider.
-        :param service: the provider
+        :param provider: the provider
         """
         self.providers.append(provider)
 

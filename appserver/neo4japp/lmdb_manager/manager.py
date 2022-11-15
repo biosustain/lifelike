@@ -69,7 +69,7 @@ class BaseCloudStorageProvider:
         :param local_path: path to the local file.
         :type local_path: str
         :param hashlib_fn: the callback used to determine the file's checksum.
-        :type hashlib_fn: bool
+        :type hashlib_fn: func
         :return: the hashed value
         :rtype: str
         """

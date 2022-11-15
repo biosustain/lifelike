@@ -4,6 +4,7 @@ import os
 from string import punctuation
 from typing import Dict, Union
 
+from neo4japp.util import Enumd
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
@@ -77,7 +78,7 @@ COMMON_WORDS = set.union(*[
 GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
 
-class EntityType(Enum):
+class EntityType(Enumd):
     ANATOMY = 'Anatomy'
     CHEMICAL = 'Chemical'
     COMPOUND = 'Compound'
@@ -176,7 +177,8 @@ ENTITY_HYPERLINKS: Dict[str, Union[str, Dict[str, str]]] = {
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-    DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',  # noqa
+    DatabaseType.NCBI_TAXONOMY.value:
+        'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     DatabaseType.BIOCYC.value: {
         EntityType.GENE.value: 'https://biocyc.org/gene?orgid=PPUT160488&id=',
         EntityType.COMPOUND.value: 'https://biocyc.org/compound?orgid=META&id='

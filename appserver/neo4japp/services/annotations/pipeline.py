@@ -168,7 +168,7 @@ class Pipeline:
             except (KeyError, TypeError, Exception):
                 # could not get data from lmdb
                 current_app.logger.info(
-                    f'Failed to get category for fallback organism "{specified_organism_synonym}".',  # noqa
+                    f'Failed to get category for fallback organism "{specified_organism_synonym}".',
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
                 entity_category = 'Uncategorized'

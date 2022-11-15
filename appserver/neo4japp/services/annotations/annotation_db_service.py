@@ -22,26 +22,26 @@ class AnnotationDBService(DBConnection):
         :param exclusions:  excluded annotations relative to file
             - need to be filtered for local exclusions
         """
-        exclusion_sets: Dict[str, set] = {
-            EntityType.ANATOMY.value: set(),
-            EntityType.CHEMICAL.value: set(),
-            EntityType.COMPOUND.value: set(),
-            EntityType.DISEASE.value: set(),
-            EntityType.FOOD.value: set(),
-            EntityType.GENE.value: set(),
-            EntityType.PHENOMENA.value: set(),
-            EntityType.PHENOTYPE.value: set(),
-            EntityType.PROTEIN.value: set(),
-            EntityType.SPECIES.value: set(),
-            EntityType.COMPANY.value: set(),
-            EntityType.ENTITY.value: set(),
-            EntityType.LAB_SAMPLE.value: set(),
-            EntityType.LAB_STRAIN.value: set()
+        exclusion_sets: Dict[EntityType, set] = {
+            EntityType.ANATOMY: set(),
+            EntityType.CHEMICAL: set(),
+            EntityType.COMPOUND: set(),
+            EntityType.DISEASE: set(),
+            EntityType.FOOD: set(),
+            EntityType.GENE: set(),
+            EntityType.PHENOMENA: set(),
+            EntityType.PHENOTYPE: set(),
+            EntityType.PROTEIN: set(),
+            EntityType.SPECIES: set(),
+            EntityType.COMPANY: set(),
+            EntityType.ENTITY: set(),
+            EntityType.LAB_SAMPLE: set(),
+            EntityType.LAB_STRAIN: set()
         }
 
-        exclusion_sets_case_insensitive: Dict[str, set] = {
-            EntityType.GENE.value: set(),
-            EntityType.PROTEIN.value: set()
+        exclusion_sets_case_insensitive: Dict[EntityType, set] = {
+            EntityType.GENE: set(),
+            EntityType.PROTEIN: set()
         }
 
         global_exclusions = [d.annotation for d in self.get_global_exclusions()]
@@ -51,35 +51,35 @@ class AnnotationDBService(DBConnection):
         for exclude in global_exclusions + local_exclusions:
             try:
                 excluded_text = exclude['text']
-                entity_type = exclude['type']
+                entity_type = EntityType.get(exclude['type'])
             except KeyError:
                 continue
 
             if excluded_text and entity_type in exclusion_sets:
-                if entity_type == EntityType.GENE.value or entity_type == EntityType.PROTEIN.value:  # noqa
+                if entity_type == EntityType.GENE or entity_type == EntityType.PROTEIN:
                     if exclude.get('isCaseInsensitive', False):
                         if entity_type in exclusion_sets_case_insensitive:
-                            exclusion_sets_case_insensitive[entity_type].add(excluded_text.lower())  # noqa
+                            exclusion_sets_case_insensitive[entity_type].add(excluded_text.lower())
                     else:
                         exclusion_sets[entity_type].add(excluded_text)
                 else:
                     exclusion_sets[entity_type].add(excluded_text.lower())
 
         return GlobalExclusions(
-            excluded_anatomy=exclusion_sets[EntityType.ANATOMY.value],
-            excluded_chemicals=exclusion_sets[EntityType.CHEMICAL.value],
-            excluded_compounds=exclusion_sets[EntityType.COMPOUND.value],
-            excluded_diseases=exclusion_sets[EntityType.DISEASE.value],
-            excluded_foods=exclusion_sets[EntityType.FOOD.value],
-            excluded_genes=exclusion_sets[EntityType.GENE.value],
-            excluded_phenomenas=exclusion_sets[EntityType.PHENOMENA.value],
-            excluded_phenotypes=exclusion_sets[EntityType.PHENOTYPE.value],
-            excluded_proteins=exclusion_sets[EntityType.PROTEIN.value],
-            excluded_species=exclusion_sets[EntityType.SPECIES.value],
-            excluded_genes_case_insensitive=exclusion_sets_case_insensitive[EntityType.GENE.value],  # noqa
-            excluded_proteins_case_insensitive=exclusion_sets_case_insensitive[EntityType.PROTEIN.value],  # noqa
-            excluded_companies=exclusion_sets[EntityType.COMPANY.value],
-            excluded_entities=exclusion_sets[EntityType.ENTITY.value],
-            excluded_lab_strains=exclusion_sets[EntityType.LAB_STRAIN.value],
-            excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE.value]
+            excluded_anatomy=exclusion_sets[EntityType.ANATOMY],
+            excluded_chemicals=exclusion_sets[EntityType.CHEMICAL],
+            excluded_compounds=exclusion_sets[EntityType.COMPOUND],
+            excluded_diseases=exclusion_sets[EntityType.DISEASE],
+            excluded_foods=exclusion_sets[EntityType.FOOD],
+            excluded_genes=exclusion_sets[EntityType.GENE],
+            excluded_phenomenas=exclusion_sets[EntityType.PHENOMENA],
+            excluded_phenotypes=exclusion_sets[EntityType.PHENOTYPE],
+            excluded_proteins=exclusion_sets[EntityType.PROTEIN],
+            excluded_species=exclusion_sets[EntityType.SPECIES],
+            excluded_genes_case_insensitive=exclusion_sets_case_insensitive[EntityType.GENE],
+            excluded_proteins_case_insensitive=exclusion_sets_case_insensitive[EntityType.PROTEIN],
+            excluded_companies=exclusion_sets[EntityType.COMPANY],
+            excluded_entities=exclusion_sets[EntityType.ENTITY],
+            excluded_lab_strains=exclusion_sets[EntityType.LAB_STRAIN],
+            excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE]
         )

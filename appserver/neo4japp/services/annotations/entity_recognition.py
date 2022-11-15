@@ -74,11 +74,15 @@ class EntityRecognitionService:
         lmdb_matches = []
         for token in tokens:
             if token.normalized_keyword in key_results:
+                results = key_results[token.normalized_keyword]
                 lowered = token.keyword.lower()
-                if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:  # noqa
+                if (
+                        token.keyword in global_exclusion or
+                        lowered in global_exclusion_case_insensitive
+                ):
                     continue
 
-                exact = [data for data in key_results[token.normalized_keyword] if data['synonym'] == token.keyword]  # noqa
+                exact = [data for data in results if data['synonym'] == token.keyword]
                 if not exact:
                     continue
 
@@ -137,20 +141,23 @@ class EntityRecognitionService:
         for token in tokens:
             if token.keyword.lower() not in global_exclusion:
                 if token.normalized_keyword in key_results:
+                    results = key_results[token.normalized_keyword]
                     lmdb_matches.append(
                         LMDBMatch(
                             entities=[
-                                data for data in key_results[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
-                            ] or key_results[token.normalized_keyword],
+                                data for data in results if data['synonym'] == data['name']
+                            ] or results,
                             token=token
                         )
                     )
                 elif token.normalized_keyword in key_results_local:
+                    results_local = key_results_local[token.normalized_keyword]
                     lmdb_matches_local.append(
                         LMDBMatch(
                             entities=[
-                                data for data in key_results_local[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
-                            ] or key_results_local[token.normalized_keyword],
+                                         data for data in results_local
+                                         if data['synonym'] == data['name']
+                                     ] or results_local,
                             token=token
                         )
                     )
@@ -218,7 +225,8 @@ class EntityRecognitionService:
                 dbname = PROTEINS_LMDB
                 global_inclusion = self.entity_inclusions.included_proteins
                 global_exclusion = self.entity_exclusions.excluded_proteins
-                global_exclusion_case_insensitive = self.entity_exclusions.excluded_proteins_case_insensitive  # noqa
+                global_exclusion_case_insensitive = \
+                    self.entity_exclusions.excluded_proteins_case_insensitive
 
             elif entity_type == EntityType.SPECIES.value:
                 species_matches, species_matches_local = self._check_lmdb_species(
@@ -275,12 +283,15 @@ class EntityRecognitionService:
                         token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
                 continue
 
-            if dbname is not None and global_inclusion is not None and global_exclusion is not None:  # noqa
+            if dbname is not None and global_inclusion is not None and global_exclusion is not None:
                 key_results: Dict[str, List[dict]] = {}
 
                 with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
-                    matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)  # noqa
+                    matched_results = cursor.getmulti(
+                        [k.encode('utf-8') for k in keys],
+                        dupdata=True
+                    )
 
                     for key, value in matched_results:
                         decoded_key = key.decode('utf-8')
@@ -300,7 +311,10 @@ class EntityRecognitionService:
                     if token.normalized_keyword in key_results:
                         lowered = token.keyword.lower()
                         if global_exclusion_case_insensitive:
-                            if token.keyword in global_exclusion or lowered in global_exclusion_case_insensitive:  # noqa
+                            if (
+                                    token.keyword in global_exclusion or
+                                    lowered in global_exclusion_case_insensitive
+                            ):
                                 continue
                         else:
                             if lowered in global_exclusion:
@@ -308,8 +322,9 @@ class EntityRecognitionService:
 
                         match = LMDBMatch(
                             entities=[
-                                data for data in key_results[token.normalized_keyword] if data['synonym'] == data['name']  # noqa
-                            ] or key_results[token.normalized_keyword],
+                                         data for data in key_results[token.normalized_keyword]
+                                         if data['synonym'] == data['name']
+                                     ] or key_results[token.normalized_keyword],
                             token=token
                         )
                         offset_key = (token.lo_location_offset, token.hi_location_offset)

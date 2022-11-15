@@ -47,14 +47,20 @@ class VisEdge(CamelDictMixin):
     arrows: Optional[str] = attr.ib()
 
     def build_from_dict_formatter(self, vis_edge_input_dict: dict):
+        vis_edge_input_from_ = vis_edge_input_dict.get('from_', None)
+        vis_edge_input_from = vis_edge_input_dict.get('from', None)
         # Error if both 'from' and 'from_' are in the dict, or if neither of them are
-        if vis_edge_input_dict.get('from_', None) is None and vis_edge_input_dict.get('from', None) is None:  # noqa
-            raise FormatterException(message="Must have either 'from' or 'from_' in a VisEdge dict!")  # noqa
-        elif vis_edge_input_dict.get('from_', None) is not None and vis_edge_input_dict.get('from', None) is not None:  # noqa
-            raise FormatterException(message="Cannot have both 'from' and 'from_' in a VisEdge dict!")  # noqa
+        if vis_edge_input_from_ is None and vis_edge_input_from is None:
+            raise FormatterException(
+                message="Must have either 'from' or 'from_' in a VisEdge dict!"
+            )
+        elif vis_edge_input_from_ is not None and vis_edge_input_from is not None:
+            raise FormatterException(
+                message="Cannot have both 'from' and 'from_' in a VisEdge dict!"
+            )
 
-        if vis_edge_input_dict.get('from', None) is not None:
-            vis_edge_input_dict['from_'] = vis_edge_input_dict['from']
+        if vis_edge_input_from is not None:
+            vis_edge_input_dict['from_'] = vis_edge_input_from
             del vis_edge_input_dict['from']
             return vis_edge_input_dict
         else:
