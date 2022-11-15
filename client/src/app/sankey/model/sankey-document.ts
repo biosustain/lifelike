@@ -153,6 +153,10 @@ export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork>
     this.views$.subscribe(sankeyDocument.isDirty$);
   }
 
+  get effectiveName() {
+    return this.name || this.description || 'Trace Description Unknown';
+  }
+
   addView(name: string, view: SankeyView) {
     this.views$.next({...this.views$.value, [name]: new View(view, this.sankeyDocument)});
   }

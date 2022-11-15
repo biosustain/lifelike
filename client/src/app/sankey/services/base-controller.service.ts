@@ -211,67 +211,67 @@ export class BaseControllerService<Base extends TypeContext>
     this.nodeHeight$ = this.stateAccessor('nodeHeight');
   }
 
-  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
-
-  resolvePredefinedValueAccessor(defaultValue) {
-    // whichever change was more recent
-    return rxjs_merge(
-      this.delta$.pipe(
-        map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
-        // here we are sensing change of predefinedValueAccessorId
-        // actual accessors are resolved based on options$
-        switchMap(predefinedValueAccessorId => this.common.options$.pipe(
-          first(),
-          map(({predefinedValueAccessors}) => ({
-            predefinedValueAccessorId,
-            ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
-          }))
-        )),
-        debug<Partial<Base['state']>>('predefinedValueAccessorId change')
-      ),
-      // this.delta$.pipe(
-      //   map(this.pickPartialAccessors),
-      //   distinctUntilChanged(isEqual),
-      //   filter(isNotEmpty),
-      //   // here we are sensing change of (node|link)ValueAccessorId
-      //   // usually we just change one of them so we need to preserve state for the other one
-      //   switchMap(delta => this.state$.pipe(
-      //       first(),
-      //       map(this.pickPartialAccessors),
-      //       map(state => merge(
-      //         {predefinedValueAccessorId: customisedMultiValueAccessorId},
-      //         state,
-      //         delta
-      //       ))
-      //     )
-      //   ),
-      //   debug<Partial<Base['state']>>('partialAccessors change')
-      // )
-    ).pipe(
-      distinctUntilChanged(isEqual)
-    );
-  }
-
-  predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
-    if (!isNil(predefinedValueAccessorId)) {
-      const {
-        linkValueAccessorId,
-        nodeValueAccessorId
-      } = predefinedValueAccessors[predefinedValueAccessorId];
-      return {
-        linkValueAccessorId,
-        nodeValueAccessorId,
-        predefinedValueAccessorId,
-      };
-    } else {
-      return {};
-    }
-  }
-
-  defaultPredefinedValueAccessorReducer({networkTraces = {}, predefinedValueAccessors = {}}, {networkTraceIdx}) {
-    const predefinedValueAccessorId = networkTraces[networkTraceIdx]?.default_sizing;
-    return this.predefinedValueAccessorReducer({predefinedValueAccessors}, {predefinedValueAccessorId});
-  }
+  // As of (https://github.com/SBRG/kg-prototypes/pull/1927) 
+  // I am commenting this code believing that we might want to come back to this implementation
+  // resolvePredefinedValueAccessor(defaultValue) {
+  //   // whichever change was more recent
+  //   return rxjs_merge(
+  //     this.delta$.pipe(
+  //       map(({predefinedValueAccessorId = defaultValue}) => predefinedValueAccessorId),
+  //       // here we are sensing change of predefinedValueAccessorId
+  //       // actual accessors are resolved based on options$
+  //       switchMap(predefinedValueAccessorId => this.common.options$.pipe(
+  //         first(),
+  //         map(({predefinedValueAccessors}) => ({
+  //           predefinedValueAccessorId,
+  //           ...this.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId as string])
+  //         }))
+  //       )),
+  //       debug<Partial<Base['state']>>('predefinedValueAccessorId change')
+  //     ),
+  //     // this.delta$.pipe(
+  //     //   map(this.pickPartialAccessors),
+  //     //   distinctUntilChanged(isEqual),
+  //     //   filter(isNotEmpty),
+  //     //   // here we are sensing change of (node|link)ValueAccessorId
+  //     //   // usually we just change one of them so we need to preserve state for the other one
+  //     //   switchMap(delta => this.state$.pipe(
+  //     //       first(),
+  //     //       map(this.pickPartialAccessors),
+  //     //       map(state => merge(
+  //     //         {predefinedValueAccessorId: customisedMultiValueAccessorId},
+  //     //         state,
+  //     //         delta
+  //     //       ))
+  //     //     )
+  //     //   ),
+  //     //   debug<Partial<Base['state']>>('partialAccessors change')
+  //     // )
+  //   ).pipe(
+  //     distinctUntilChanged(isEqual)
+  //   );
+  // }
+  //
+  // predefinedValueAccessorReducer({predefinedValueAccessors = {}}, {predefinedValueAccessorId}) {
+  //   if (!isNil(predefinedValueAccessorId)) {
+  //     const {
+  //       linkValueAccessorId,
+  //       nodeValueAccessorId
+  //     } = predefinedValueAccessors[predefinedValueAccessorId];
+  //     return {
+  //       linkValueAccessorId,
+  //       nodeValueAccessorId,
+  //       predefinedValueAccessorId,
+  //     };
+  //   } else {
+  //     return {};
+  //   }
+  // }
+  //
+  // defaultPredefinedValueAccessorReducer({networkTraces = {}, predefinedValueAccessors = {}}, {networkTraceIdx}) {
+  //   const predefinedValueAccessorId = networkTraces[networkTraceIdx]?.default_sizing;
+  //   return this.predefinedValueAccessorReducer({predefinedValueAccessors}, {predefinedValueAccessorId});
+  // }
 
   patchState(statePatch) {
     return this.delta$.pipe(
