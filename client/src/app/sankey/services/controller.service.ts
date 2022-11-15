@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain } from 'lodash-es';
+import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain, keys } from 'lodash-es';
 import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
 import { max } from 'd3';
 
@@ -118,7 +118,10 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
             alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
             baseViewName: get(
               defaults, 'baseViewName',
-              sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+              // Things are not set in stone yet, we might want to bring back this behaviour
+              // (https://github.com/SBRG/kg-prototypes/pull/1927)
+              // sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
+              ViewBase.sankeySingleLane
             )
           })),
           map(state => merge({}, state, delta))
@@ -335,13 +338,14 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   );
 
   networkTraceDefaultSizing$ = this.networkTrace$.pipe(
-    switchMap(({defaultSizing}) =>
+    switchMap(networkTrace =>
       iif(
-        () => defaultSizing,
-        of(defaultSizing),
-        this.oneToMany$.pipe(
-          map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
-        )
+        () => networkTrace.defaultSizing,
+        of({
+          predefinedValueAccessorId: networkTrace._defaultSizing,
+          ...networkTrace.defaultSizing
+        }),
+        defer(() => this.getNetworkTraceBestFittingSizing$(networkTrace))
       )
     )
   );
@@ -357,6 +361,35 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   normalizeLinks$ = this.stateAccessor('normalizeLinks');
   fileUpdated$ = new Subject<Graph.File>();
 
+  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
+
+  getNetworkTraceBestFittingSizing$({effectiveName}) {
+    const persumedValueAccessorRegex =
+      /reverse|rev.?pagerank/i.test(effectiveName) ?
+        /rev.?pagerank/i :
+        /forward|pagerank/i.test(effectiveName) ?
+          /pagerank/i :
+          undefined;
+    return this.predefinedValueAccessors$.pipe(
+      switchMap(predefinedValueAccessors => {
+        const persumedValueAccessorId = keys(predefinedValueAccessors).find(pva => persumedValueAccessorRegex?.test(pva));
+        return iif(
+          () => isNil(persumedValueAccessorId),
+          this.oneToMany$.pipe(
+            map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
+            map(valueAccessorId => ({
+              predefinedValueAccessorId: valueAccessorId,
+              ...this.pickPartialAccessors(predefinedValueAccessors[valueAccessorId])
+            }))
+          ),
+          of({
+              predefinedValueAccessorId: persumedValueAccessorId,
+            ...this.pickPartialAccessors(predefinedValueAccessors[persumedValueAccessorId])
+          })
+        );
+      })
+    );
+  }
 
   resolveNetworkTraceAndBaseView(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
     return delta$.pipe(

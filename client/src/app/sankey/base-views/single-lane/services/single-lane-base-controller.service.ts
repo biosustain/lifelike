@@ -70,14 +70,19 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
             ratio: 2
           }
         },
-        predefinedValueAccessorId: PREDEFINED_VALUE.fixed_height,
       },
       delta
     )),
-    switchMap(delta => this.common.options$.pipe(
-        map(({predefinedValueAccessors}) =>
-          this.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId])
+    switchMap(delta =>
+      iif(
+        () => isNil(delta.predefinedValueAccessorId),
+        this.common.networkTraceDefaultSizing$,
+        this.common.options$.pipe(
+          map(({predefinedValueAccessors}) =>
+            this.common.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId]),
+          )
         ),
+      ).pipe(
         map(state => merge({}, delta, state))
       )
     )
