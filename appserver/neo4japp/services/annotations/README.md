@@ -117,8 +117,8 @@ for index, cell_text in enriched.text_index_map:
             # first cell will always have the correct index
             # update index offset to be relative to the cell again
             # since they're relative to the combined text
-            anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
-            anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
+            anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1
+            anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1
 ```
 This code snippet recalculates the positional index so it is independent of text in other cells and relative to its own cell. It is important to recalculate these because they are used to correctly identify and highlight words in the enrichment table.
 

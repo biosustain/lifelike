@@ -38,7 +38,7 @@ from .utils.common import has_center_point
 
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import AnnotationError
-from neo4japp.util import normalize_str
+from neo4japp.util import normalize_str, equal_number_of_words
 from neo4japp.utils.logger import EventLog
 
 
@@ -150,14 +150,20 @@ class AnnotationService:
             if not param.entity_hyperlinks:
                 if 'NULL' not in param.entity_id and param.entity_datasource:
                     try:
+                        entity_datasource_hyperlinks = cast(
+                            dict, ENTITY_HYPERLINKS[param.entity_datasource]
+                        )
                         if param.entity_datasource == DatabaseType.BIOCYC.value:
-                            hyperlink = cast(dict, ENTITY_HYPERLINKS[param.entity_datasource])[param.token_type]  # noqa
+                            hyperlink = entity_datasource_hyperlinks[param.token_type]
                         else:
-                            hyperlink = cast(str, ENTITY_HYPERLINKS[param.entity_datasource])
+                            hyperlink = entity_datasource_hyperlinks
                     except KeyError:
                         raise
 
-                    if param.entity_datasource == DatabaseType.MESH.value and DatabaseType.MESH.value.upper() in param.entity_id:  # noqa
+                    if (
+                            param.entity_datasource == DatabaseType.MESH.value and
+                            DatabaseType.MESH.value.upper() in param.entity_id
+                    ):
                         hyperlink += uri_encode(param.entity_id[5:])
                     else:
                         hyperlink += uri_encode(param.entity_id)
@@ -264,7 +270,7 @@ class AnnotationService:
         token_type: str,
         id_str: str,
     ) -> List[Annotation]:
-        tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)  # noqa
+        tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
         entities_to_create: List[CreateAnnotationObjParams] = []
@@ -274,9 +280,9 @@ class AnnotationService:
                 entity_synonym = entity['synonym']
                 entity_common_name = entity['name']
                 if entity_synonym in synonym_common_names_dict:
-                    synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
+                    synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))
                 else:
-                    synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
+                    synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}
 
             for entity in match.entities:
                 entity_synonym = entity['synonym']
@@ -288,7 +294,9 @@ class AnnotationService:
                     # if none of those common names appear in the document
                     # or if more than one of those common names appear in the document
                     # do not annotate because cannot infer
-                    common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
+                    common_names_in_document = [
+                        n for n in common_names_referenced_by_synonym if n in tokens_lowercased
+                    ]
 
                     if len(common_names_in_document) != 1:
                         continue
@@ -370,10 +378,12 @@ class AnnotationService:
             # If this organism is equidistant to the current closest, check frequency instead
             elif min_organism_dist == closest_dist:
                 try:
+                    organism_frequency = self.organism_frequency[organism]
+                    curr_closest_organism_frequency = self.organism_frequency[curr_closest_organism]
                     # If the frequency of this organism is greater, update
-                    if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
+                    if organism_frequency > curr_closest_organism_frequency:
                         curr_closest_organism = organism
-                    elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
+                    elif organism_frequency == curr_closest_organism_frequency:
                         # If the organisms are equidistant and equal frequency,
                         # check if the new organism is human, and if so update
                         if organism == HOMO_SAPIENS_TAX_ID:
@@ -415,7 +425,7 @@ class AnnotationService:
 
         specified_organism_id = None
         if closest_distance > ORGANISM_DISTANCE_THRESHOLD:
-            has_fallback_match = fallback_organism_matches.get(entity_synonym, False)  # noqa
+            has_fallback_match = fallback_organism_matches.get(entity_synonym, False)
             find_organism_above = True
 
             if self.specified_organism.synonym and has_fallback_match:
@@ -431,7 +441,8 @@ class AnnotationService:
                     # for genes
                     try:
                         # prioritize common name that is same as synonym
-                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym][entity_synonym]  # noqa
+                        fallback_organisms_to_match = \
+                            fallback_organism_matches[entity_synonym][entity_synonym]
                     except KeyError:
                         # an organism can have multiple different genes w/ same synonym
                         # since we don't know which to use, doing this is fine
@@ -439,14 +450,14 @@ class AnnotationService:
                             fallback_organisms_to_match = {**fallback_organisms_to_match, **d}
 
                 # if matched in KG then set to fallback strain
-                if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
-                    entity_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
+                if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):
+                    entity_id = fallback_organisms_to_match[self.specified_organism.organism_id]
                     specified_organism_id = self.specified_organism.organism_id
                     find_organism_above = False
 
             if find_organism_above:
                 # try to get organism above
-                entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
+                entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
                     entity=token,
                     organism_matches=organisms_to_match,
                     above_only=True
@@ -454,12 +465,16 @@ class AnnotationService:
                 # if distance is inf, then it means we didn't find an organism above
                 if isinf(closest_distance):
                     # try to use the most frequent organism
-                    most_frequent = max(self.organism_frequency.keys(), key=(lambda k: self.organism_frequency[k]))  # noqa
+                    most_frequent = max(
+                        self.organism_frequency.keys(),
+                        key=(lambda k: self.organism_frequency[k])
+                    )
                     if most_frequent in organisms_to_match:
-                        entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
-                            entity=token,
-                            organism_matches={most_frequent: organisms_to_match[most_frequent]}
-                        )
+                        entity_id, organism_id, closest_distance = \
+                            self._get_closest_entity_organism_pair(
+                                entity=token,
+                                organism_matches={most_frequent: organisms_to_match[most_frequent]}
+                            )
         return BestOrganismMatch(
             entity_id=entity_id,
             organism_id=organism_id,
@@ -499,7 +514,11 @@ class AnnotationService:
             entities_set = set()
             for entity in match.entities:
                 gene_names.add(entity['synonym'])
-                entities_set.add((entity['synonym'], entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+                entities_set.add((
+                    entity['synonym'],
+                    entity['id_type'],
+                    entity.get('hyperlinks', '')
+                ))
             for synonym, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
@@ -569,19 +588,23 @@ class AnnotationService:
                 gene_id = best_match.entity_id
                 organism_id = best_match.organism_id
                 specified_organism_id = best_match.specified_organism_id
-                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+                if specified_organism_id:
+                    category = self.specified_organism.category
+                else:
+                    category = self.organism_categories[organism_id]
             elif entity_synonym in fallback_gene_organism_matches:
+                fallback_gene_organism = fallback_gene_organism_matches[entity_synonym]
                 organism_id = self.specified_organism.organism_id
                 try:
                     # prioritize common name match over synonym
-                    organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
+                    organisms_to_match = fallback_gene_organism[entity_synonym]
                 except KeyError:
                     # an organism can have multiple different genes w/ same synonym
                     # since we don't know which to use, doing this is fine
-                    for d in list(fallback_gene_organism_matches[entity_synonym].values()):
+                    for d in list(fallback_gene_organism.values()):
                         organisms_to_match = {**organisms_to_match, **d}
                 try:
-                    gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
+                    gene_id = organisms_to_match[self.specified_organism.organism_id]
                     category = self.specified_organism.category
                 except KeyError:
                     continue
@@ -622,7 +645,12 @@ class AnnotationService:
             entities_set = set()
             for entity in match.entities:
                 protein_names.add(entity['synonym'])
-                entities_set.add((entity['synonym'], entity.get('category', ''), entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+                entities_set.add((
+                    entity['synonym'],
+                    entity.get('category', ''),
+                    entity['id_type'],
+                    entity.get('hyperlinks', '')
+                ))
             for synonym, category, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
@@ -660,7 +688,8 @@ class AnnotationService:
             fallback_protein_organism_matches = fallback_graph_results.matches
             protein_primary_names.update(fallback_graph_results.primary_names)
 
-        for entity_synonym, category, entity_datasource, entity_hyperlinks, token in entity_token_pairs:  # noqa
+        for entity_synonym, category, entity_datasource, entity_hyperlinks, token \
+                in entity_token_pairs:
             # in LMDB we use the synonym as id and name, so do the same here
             protein_id = entity_synonym
 
@@ -679,10 +708,14 @@ class AnnotationService:
                 protein_id = best_match.entity_id
                 organism_id = best_match.organism_id
                 specified_organism_id = best_match.specified_organism_id
-                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+                if specified_organism_id:
+                    category = self.specified_organism.category
+                else:
+                    category = self.organism_categories[organism_id]
             elif entity_synonym in fallback_protein_organism_matches:
+                fallback_protein_organism = fallback_protein_organism_matches[entity_synonym]
                 try:
-                    protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                    protein_id = fallback_protein_organism[self.specified_organism.organism_id]
                     category = self.specified_organism.category
                 except KeyError:
                     continue
@@ -865,8 +898,13 @@ class AnnotationService:
 
             # TODO: Does the order of these checks matter?
 
-            if isinstance(annotation, GeneAnnotation) or \
-            (annotation.meta.type == EntityType.PROTEIN.value and len(text_in_document) == 1):  # noqa
+            if (
+                    isinstance(annotation, GeneAnnotation) or
+                    (
+                            annotation.meta.type == EntityType.PROTEIN.value and
+                            len(text_in_document) == 1
+                    )
+            ):
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
                     fixed_annotations.append(annotation)
@@ -1016,7 +1054,9 @@ class AnnotationService:
             annotations_to_fix: List[Annotation] = []
 
             for overlap in overlaps:
-                annotations_to_fix += [anno for anno in annotation_interval_dict[(overlap.begin, overlap.end)]]  # noqa
+                annotations_to_fix += [
+                    anno for anno in annotation_interval_dict[(overlap.begin, overlap.end)]
+                ]
 
             chosen_annotation = None
 
@@ -1047,7 +1087,7 @@ class AnnotationService:
             (anno2.meta.type == EntityType.PROTEIN.value or
                 anno2.meta.type == EntityType.GENE.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
-                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
+                anno1.hi_location_offset == anno2.hi_location_offset)):
             if anno1.meta.type != anno2.meta.type:
                 # protein vs gene
                 # protein has capital first letter: CysB
@@ -1072,9 +1112,9 @@ class AnnotationService:
 
                     # no match so far
                     if gene_protein_precedence_result is None:
-                        if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                        if equal_number_of_words(anno1.text_in_document, anno1.keyword):
                             gene_protein_precedence_result = anno1
-                        elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
+                        elif equal_number_of_words(anno2.text_in_document, anno2.keyword):
                             gene_protein_precedence_result = anno2
                 else:
                     if anno2.text_in_document == anno2.keyword:
@@ -1084,9 +1124,9 @@ class AnnotationService:
 
                     # no match so far
                     if gene_protein_precedence_result is None:
-                        if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                        if equal_number_of_words(anno2.text_in_document, anno2.keyword):
                             gene_protein_precedence_result = anno2
-                        elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
+                        elif equal_number_of_words(anno1.text_in_document, anno1.keyword):
                             gene_protein_precedence_result = anno1
 
                 if gene_protein_precedence_result is not None:

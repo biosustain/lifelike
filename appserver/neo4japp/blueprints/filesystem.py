@@ -165,8 +165,9 @@ class FilesystemBaseView(MethodView):
         :param filter: the SQL Alchemy filter
         :param lazy_load_content: whether to load the file's content into memory
         :param require_hash_ids: a list of file hash IDs that must be in the result
-        :param attr_excl: list of file attributes to exclude from the query
         :param sort: str list of file attributes to order by
+        :param sort_direction: Setup related sort columns either ASC or DESC
+        :param attr_excl: list of file attributes to exclude from the query
         :return: the result, which may be an empty list
         """
         current_user = g.current_user

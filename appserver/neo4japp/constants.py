@@ -7,6 +7,8 @@ from enum import Enum
 
 from sendgrid import SendGridAPIClient
 
+from neo4japp.util import Enumd
+
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset
@@ -50,7 +52,7 @@ class SortDirection(Enum):
 
 
 # enrichment labels
-class EnrichmentDomain(Enum):
+class EnrichmentDomain(Enumd):
     UNIPROT = 'UniProt'
     REGULON = 'Regulon'
     STRING = 'String'
@@ -147,7 +149,9 @@ DISPLAY_NAME_MAP = {
     TYPE_PHENOTYPE: 'name',
     TYPE_PROMOTER: 'name',
     TYPE_PROTEIN: 'name',
-    TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
+    # NOTE: 'title' tend to be long,
+    # might want to use a different attribute or consider truncating on the client
+    TYPE_PUBLICATION: 'title',
     TYPE_ENZREACTION: 'name',
     TYPE_REACTION: 'name',
     TYPE_REGULATION: 'displayName',

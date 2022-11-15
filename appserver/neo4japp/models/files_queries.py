@@ -158,7 +158,9 @@ def build_file_hierarchy_query(
     :param projects_table: a reference to the projects table used in the query
     :param files_table: a reference to the files table used in the query
     :param include_deleted_projects: whether to include deleted projects
+    :param include_deleted_files: whether to include deleted files
     :param file_attr_excl: list of file attributes to exclude from the query
+    :param direction: traverse either towards parents or children
     :return: a query
     """
 
@@ -280,7 +282,7 @@ def add_file_starred_columns(query, file_id, user_id):
 
 
 def get_nondeleted_recycled_children_query(
-        filter,
+        file_filter,
         children_filter=None,
         lazy_load_content=False
 ):
@@ -289,12 +291,13 @@ def get_nondeleted_recycled_children_query(
     files, even if those children do not match the filter. The files returned by
     this method do not have complete information to determine permissions.
 
-    :param filter: the SQL Alchemy filter
+    :param file_filter: the SQL Alchemy filter
+    :param children_filter: the SQL Alchemy filter to be applied on children
     :param lazy_load_content: whether to load the file's content into memory
     :return: the result, which may be an empty list
     """
     q_hierarchy = build_file_children_cte(and_(
-        filter,
+        file_filter,
         Files.deletion_date.is_(None)
     ))
 

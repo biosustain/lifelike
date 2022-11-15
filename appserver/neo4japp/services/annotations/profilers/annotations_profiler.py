@@ -67,7 +67,8 @@ def main():
 
         pdf = os.path.join(
             directory,
-            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf')  # noqa
+            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf'
+        )
 
         hash_id = None
         with open(pdf, 'rb') as f:

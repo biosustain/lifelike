@@ -176,13 +176,14 @@ class Tokenizer:
         # have been missed
         tokens_to_use = []
         for token in new_tokens:
-            if (token.keyword.lower() in COMMON_WORDS or
-                self.token_word_check_regex.match(token.keyword) or
-                token.keyword in ascii_letters or
-                token.keyword in digits or
-                len(token.normalized_keyword) <= MIN_ENTITY_LENGTH or
-                self._is_abbrev(token)
-            ):  # noqa
+            if (
+                    token.keyword.lower() in COMMON_WORDS or
+                    self.token_word_check_regex.match(token.keyword) or
+                    token.keyword in ascii_letters or
+                    token.keyword in digits or
+                    len(token.normalized_keyword) <= MIN_ENTITY_LENGTH or
+                    self._is_abbrev(token)
+            ):
                 continue
             else:
                 tokens_to_use.append(token)
@@ -191,5 +192,5 @@ class Tokenizer:
     def create(self, words: List[PDFWord]) -> List[PDFWord]:
         return [
             current_token for idx, token in enumerate(words)
-                for current_token in self._create(
-                    words[idx:MAX_ENTITY_WORD_LENGTH + idx])]  # noqa
+            for current_token in self._create(words[idx:MAX_ENTITY_WORD_LENGTH + idx])
+        ]
