@@ -185,7 +185,7 @@
                             <ng-container *ngIf="viewName$ | async as viewName">
                                 {{ viewName }} :
                             </ng-container>
-                            {{ networkTrace?.name || networkTrace?.description || 'Trace Description Unknown' }}
+                            {{ networkTrace?.effectiveName }}
                         </ng-container>
                         <ng-template #noSelectedTrace>Select Trace Network or View</ng-template>
                     </button>

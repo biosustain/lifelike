@@ -67,14 +67,19 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           }
         },
         linkPaletteId: LINK_PALETTE_ID.hue_palette,
-        predefinedValueAccessorId: PREDEFINED_VALUE.input_count,
       },
       delta
     )),
-    switchMap(delta => this.common.options$.pipe(
-        map(({predefinedValueAccessors}) =>
-          this.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId])
+    switchMap(delta =>
+      iif(
+        () => isNil(delta.predefinedValueAccessorId),
+        this.common.networkTraceDefaultSizing$,
+        this.common.options$.pipe(
+          map(({predefinedValueAccessors}) =>
+            this.common.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId]),
+          )
         ),
+      ).pipe(
         map(state => merge({}, delta, state))
       )
     )
