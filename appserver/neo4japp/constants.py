@@ -51,6 +51,9 @@ class SortDirection(Enum):
     DESC = 'desc'
 
 
+KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+
+
 # enrichment labels
 class EnrichmentDomain(Enumd):
     UNIPROT = 'UniProt'
@@ -58,6 +61,16 @@ class EnrichmentDomain(Enumd):
     STRING = 'String'
     GO = 'GO'
     BIOCYC = 'BioCyc'
+
+
+class KGDomain(Enum):
+    REGULON = 'Regulon'
+    UNIPROT = 'UniProt'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'BioCyc'
+    if KEGG_ENABLED:
+        KEGG = 'KEGG'
 
 
 class LogEventType(Enum):

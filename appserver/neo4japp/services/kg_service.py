@@ -9,7 +9,7 @@ from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelation
 from typing import List
 
 from neo4japp.constants import (
-    BIOCYC_ORG_ID_DICT,
+    BIOCYC_ORG_ID_DICT, KGDomain,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
@@ -254,6 +254,20 @@ class KgService(HybridDBDao):
                     type='gene'
                 )))
             } for result in results}
+
+    def get_genes(self, domain: KGDomain, gene_ids: List[int], tax_id: str):
+        if domain == KGDomain.REGULON:
+            return self.get_regulon_genes(gene_ids)
+        if domain == KGDomain.BIOCYC:
+            return self.get_biocyc_genes(gene_ids, tax_id)
+        if domain == KGDomain.GO:
+            return self.get_go_genes(gene_ids)
+        if domain == KGDomain.STRING:
+            return self.get_string_genes(gene_ids)
+        if domain == KGDomain.UNIPROT:
+            return self.get_uniprot_genes(gene_ids)
+        if domain == KGDomain.KEGG:
+            return self.get_kegg_genes(gene_ids)
 
     def get_kegg_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()

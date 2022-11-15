@@ -4,6 +4,9 @@
     // Whether to run the app in prod mode
     window.__env.production = false;
 
+    // Whether we are running with valid KEGG license
+    window.__env.keggEnabled = false;
+
     // Whether to run the app with oauth login
     window.__env.oauthEnabled = false;
 
