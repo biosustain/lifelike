@@ -127,7 +127,7 @@ doi_re = re.compile(
     # match up to 20 characters in the same line (values after # are ~ignored anyway)
     rb'([^\n\f#]{0,20})',
     flags=re.IGNORECASE
-)  # noqa
+)
 protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
 characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
@@ -343,7 +343,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
         # match up to 20 characters in the same line (values after # are ~ignored anyway)
         rb'([^\n\f#]{0,20})',
         flags=re.IGNORECASE
-    )  # noqa
+    )
     protocol_re = re.compile(r'https?:\/\/')
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
     characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
@@ -930,10 +930,7 @@ def create_watermark():
     """
     Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
     We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
-    :params:
-    :param x_center: middle of the pdf
-    :param y: position of the lowest node bottom on the pdf
-    :param lowest_node: details of the lowest node (used to get BBox)
+
     returns:
     3 dictionaries - each for one of the watermark elements
     """

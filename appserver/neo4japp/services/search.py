@@ -13,11 +13,10 @@ from neo4japp.data_transfer_objects import (
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (
-    get_first_known_label_from_list,
-    get_known_domain_labels_from_list,
     normalize_str,
     snake_to_camel_dict
 )
+from neo4japp.utils.labels import get_first_known_label_from_list, get_known_domain_labels_from_list
 from neo4japp.utils.logger import EventLog
 
 
@@ -151,10 +150,10 @@ class SearchService(GraphBaseDao):
 
         # If the domain list or entity list provided by the user is empty, then assume ALL
         # domains/entities should be used.
-        result_domains = result_domains if len(result_domains) > 0 else [val for val in
-            domains_map.values()]  # noqa
-        result_entities = result_entities if len(result_entities) > 0 else [val for val in
-            entities_map.values()]  # noqa
+        result_domains = result_domains if len(result_domains) > 0 else \
+            list(domains_map.values())
+        result_entities = result_entities if len(result_entities) > 0 else \
+            list(entities_map.values())
 
         return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
 

@@ -28,7 +28,8 @@ from neo4japp.data_transfer_objects.visualization import (
 from neo4japp.models import GraphNode
 from neo4japp.models.entity_resources import DomainURLsMap
 from neo4japp.services import KgService
-from neo4japp.util import get_first_known_label_from_list, snake_to_camel_dict
+from neo4japp.util import snake_to_camel_dict
+from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
 
 

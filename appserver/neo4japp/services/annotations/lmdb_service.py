@@ -82,10 +82,17 @@ class LMDBService(LMDBConnection):
         super().__init__(dirpath, **kwargs)
         self.map_size = 1099511627776
 
+    def _lmdb_open(self, file):
+        return lmdb.open(
+            path.join(directory, 'lmdb', file),
+            map_size=self.map_size,
+            max_dbs=2
+        )
+
     def create_lmdb_genes_database(self):
         for filename in [LMDB_GENES_SOURCE, LMDB_PSEUDOMONAS_GENES_SOURCE]:
             with open(path.join(directory, filename), 'r') as f:
-                env = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=self.map_size, max_dbs=2)  # noqa
+                env = self._lmdb_open('genes')
                 db = env.open_db(GENES_LMDB.encode('utf-8'), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
@@ -115,7 +122,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_chemicals_database(self):
         with open(path.join(directory, LMDB_CHEMICALS_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('chemicals')
             db = env.open_db(CHEMICALS_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -148,7 +155,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_compounds_database(self):
         with open(path.join(directory, LMDB_COMPOUNDS_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('compounds')
             db = env.open_db(COMPOUNDS_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -199,7 +206,7 @@ class LMDBService(LMDBConnection):
     def create_lmdb_proteins_database(self):
         for filename in [LMDB_PROTEINS_SOURCE, LMDB_UNIPROT_PROTEINS_SOURCE]:
             with open(path.join(directory, filename), 'r') as f:
-                env = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=self.map_size, max_dbs=2)  # noqa
+                env = self._lmdb_open('proteins')
                 db = env.open_db(PROTEINS_LMDB.encode('utf-8'), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
@@ -232,7 +239,7 @@ class LMDBService(LMDBConnection):
     def create_lmdb_species_database(self):
         for filename in [LMDB_TAXONOMY_SOURCE, LMDB_COVID_TAXONOMY_SOURCE]:
             with open(path.join(directory, filename), 'r') as f:
-                env = lmdb.open(path.join(directory, 'lmdb/species'), map_size=self.map_size, max_dbs=2)  # noqa
+                env = self._lmdb_open('species')
                 db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
@@ -267,7 +274,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_diseases_database(self):
         with open(path.join(directory, LMDB_DISEASES_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('diseases')
             db = env.open_db(DISEASES_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -296,7 +303,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_phenomenas_database(self):
         with open(path.join(directory, LMDB_PHENOMONAS_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/phenomenas'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('phenomenas')
             db = env.open_db(PHENOMENAS_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -329,7 +336,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_phenotypes_database(self):
         with open(path.join(directory, LMDB_PHENOTYPE_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('phenotypes')
             db = env.open_db(PHENOTYPES_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -362,7 +369,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_foods_database(self):
         with open(path.join(directory, LMDB_FOOD_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/foods'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('foods')
             db = env.open_db(FOODS_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -394,7 +401,7 @@ class LMDBService(LMDBConnection):
 
     def create_lmdb_anatomy_database(self):
         with open(path.join(directory, LMDB_ANATOMY_SOURCE), 'r') as f:
-            env = lmdb.open(path.join(directory, 'lmdb/anatomy'), map_size=self.map_size, max_dbs=2)  # noqa
+            env = self._lmdb_open('anatomy')
             db = env.open_db(ANATOMY_LMDB.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
@@ -444,4 +451,6 @@ class LMDBService(LMDBConnection):
         elif file_type in funcs:
             funcs[file_type]()
         else:
-            raise ValueError(f'Invalid argument, cannot identify which LMDB file to create: {file_type}')  # noqa
+            raise ValueError(
+                f'Invalid argument, cannot identify which LMDB file to create: {file_type}'
+            )

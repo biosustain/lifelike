@@ -149,7 +149,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         """
         Adds the files with the given ids to Elastic. If no IDs are given,
         all non-deleted files will be indexed.
-        :param ids: a list of file table IDs (integers)
+        :param hash_ids: a list of file table IDs (integers)
         :param batch_size: number of documents to index per batch
         """
         filters = [

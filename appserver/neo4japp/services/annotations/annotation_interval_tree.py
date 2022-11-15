@@ -32,7 +32,7 @@ class AnnotationIntervalTree(IntervalTree):
         `data_reducer` function.
         """
         if not self:
-            return []  # noqa
+            return []
 
         sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
         merged = []
@@ -78,7 +78,7 @@ class AnnotationIntervalTree(IntervalTree):
         `data_reducer` function.
         """
         if not self:
-            return []  # noqa
+            return []
 
         sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
         merged = []
@@ -98,8 +98,10 @@ class AnnotationIntervalTree(IntervalTree):
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
-                if (higher.begin < lower.end or
-                    not strict and higher.begin == lower.end):  # noqa # should merge
+                if (
+                        higher.begin < lower.end or
+                        not strict and higher.begin == lower.end
+                ):  # should merge
                     upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
                         current_reduced[0] = data_reducer(current_reduced[0], higher.data)
