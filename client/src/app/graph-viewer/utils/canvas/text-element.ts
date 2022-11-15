@@ -1,6 +1,7 @@
 import { first } from 'lodash-es';
 
 import { REGEX } from 'app/shared/regex';
+import { wrapText } from 'app/shared/utils/canvas';
 
 interface TextboxOptions {
   width?: number;
@@ -179,10 +180,11 @@ export class TextElement {
   } {
     const effectiveWidth = this.getEffectiveWidth();
     const effectiveHeight = this.getEffectiveHeight();
+    const measureText = this.ctx.measureText.bind(this.ctx);
 
     if (this.actualLineHeight > effectiveHeight || (this.maxLines != null && this.maxLines <= 0)) {
       // If the box is too small to fit even one line of text
-      const metrics = this.ctx.measureText(this.text);
+      const metrics = measureText(this.text);
 
       return {
         lines: [],
@@ -196,81 +198,44 @@ export class TextElement {
       let boxHorizontalOverflow = false;
       let boxVerticalOverflow = true;
       let actualWidth = 0;
-      const lines: ComputedLine[] = [];
-      const blocks = this.text.split(/\r?\n/g);
+      const lines = [];
 
-      blockLoop:
-        for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-          // We break on whitespace, word endings and special chars `\.,_-`.
-          const tokens = blocks[blockIndex].split(REGEX.BETWEEN_TEXT_BREAKS);
-
-          for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
-            const lineHorizontalOverflow = metrics.width > effectiveWidth;
-
-            if (lineHorizontalOverflow) {
-              // If we can split on the previous, try to break the words on syllables
-              // If there is no match, return the entire string as array (will be marked as overflow)
-              const splitTokens = line.match(REGEX.BETWEEN_SYLABES) || [line];
-              for (const widthFitLine of this.getWidthFittedLines(splitTokens, effectiveWidth - this.hyphenWidth)) {
-                const stillOverflow = widthFitLine.metrics.width > effectiveWidth;
-                // If that did not help, we cannot do anything else
-                if (stillOverflow) {
-                  // If this line overflows, make sure to mark the box as overflowing and
-                  // update the width of the box
-                  boxHorizontalOverflow = true;
-                  actualWidth = effectiveWidth;
-                }
-                lines.push({
-                  // Since we break the words, add hyphen.
-                  text: widthFitLine.line + (widthFitLine.remainingTokens ? '-' : ''),
-                  metrics: widthFitLine.metrics,
-                  xOffset: 0,
-                  horizontalOverflow: stillOverflow
-                });
-              }
-            } else {
-              lines.push({
-                text: line,
-                metrics,
-                xOffset: 0, // We'll update later
-                horizontalOverflow: lineHorizontalOverflow,
-              });
-            }
-
-
-            if (metrics.width > actualWidth && !lineHorizontalOverflow) {
-              // If the line isn't overflowing but this line's width is longer than the
-              // running actual width, update that
-              actualWidth = metrics.width;
-            }
-
-
-            // We've overflow the height if we add another line
-            if ((remainingTokens || blockIndex < blocks.length - 1) && (
-              (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
-              || (this.maxLines != null && lines.length >= this.maxLines))
-            ) {
-              boxVerticalOverflow = true;
-              break blockLoop;
-            }
-          }
-
-          // Do X offset for center and other alignments
-          // Do this in a second phase because actualWidth is still being calculated
-          for (const line of lines) {
-            line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
-          }
+      for (const computedLine of wrapText(this.text, effectiveWidth, measureText, this.hyphenWidth)) {
+        // We've overflow the height if we add another line
+        if (
+          (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
+          || (this.maxLines != null && lines.length >= this.maxLines)
+        ) {
+          boxVerticalOverflow = true;
+          break;
         }
+        if (computedLine.horizontalOverflow) {
+          // If this line overflows, make sure to mark the box as overflowing and
+          // update the width of the box
+          boxHorizontalOverflow = true;
+          actualWidth = effectiveWidth;
+        } else {
+          // If the line isn't overflowing but this line's width is longer than the
+          // running actual width, update that
+          actualWidth = Math.max(computedLine.metrics.width, actualWidth);
+        }
+        lines.push(computedLine);
+      }
+      // Do X offset for center and other alignments
+      // Do this in a second phase because actualWidth is still being calculated
+      for (const line of lines) {
+        line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
+      }
 
       return {
-        lines,
+        lines: lines as ComputedLine[],
         verticalOverflow: boxVerticalOverflow,
         horizontalOverflow: boxHorizontalOverflow,
         actualWidth,
       };
     } else {
       // If we have no width to conform to at all
-      const metrics = this.ctx.measureText(this.text);
+      const metrics = measureText(this.text);
 
       return {
         lines: [{
