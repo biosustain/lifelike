@@ -4,6 +4,7 @@
 
 interface EnvironmentVars {
   production: boolean;
+  keggEnabled: boolean;
   oauthEnabled: boolean;
   testVar: string;
   oauthIssuer: string;
@@ -18,6 +19,7 @@ const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWin
 
 export const environment = {
   production: browserWindowEnv.production || false,
+  keggEnabled: browserWindowEnv.keggEnabled || false,
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
   oauthClientId: browserWindowEnv.oauthClientId || 'client',
