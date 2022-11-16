@@ -59,9 +59,13 @@ class NcbiGeneChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'Gene and taxonomy need to be linked; important for annotations etc'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI), (t:Taxonomy {id:n.tax_id}) RETURN n, t',
-        'MERGE (n)-[:HAS_TAXONOMY]->(t)', {batchSize:5000})
+        FOR n IN Gene
+            FILTER n.data_source == "db_NCBI"
+            FOR t in Taxonomy
+                FILTER t.id == n.tax_id
+                UPSERT { _from: n._key, _to: t._key }
+                INSERT { _from: n._key, _to: t._key }
+                IN HAS_TAXONOMY;
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -72,9 +76,10 @@ class NcbiGeneChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'tax_id is used by statistical enrichment cypher queries'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_GO)-[r:GO_LINK]-(g:Gene) RETURN g.tax_id AS taxid, r',
-        'SET r.tax_id = taxid', {batchSize: 5000})
+        FOR g IN Gene
+            FOR n, r IN ANY g GO_LINK
+                FILTER n.data_source == "db_GO"
+                UPDATE r WITH { tax_id: taxid }
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -85,10 +90,16 @@ class NcbiGeneChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'NCBI gene synonym names should be locus tag'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:Gene:db_NCBI) WHERE exists(n.locus_tag) AND n.locus_tag <> '' AND n.locus_tag <> n.name RETURN n',
-        'MERGE (s:Synonym {name:n.locus_tag}) SET s.lowercase_name = toLower(n.locus_tag) MERGE (n)-[:HAS_SYNONYM]->(s)',
-        {batchSize:10000})
+        FOR n IN Gene:
+            FILTER n.data_source == "db_NCBI" && n.locus_tag == null && n.locus_tag != '' && n.locus_tag != n.name
+            UPSERT {name:n.locus_tag}
+            INSERT {name:n.locus_tag, lowercase_name: toLower(n.locus_tag)}
+            UPDATE {name:n.locus_tag, lowercase_name: toLower(n.locus_tag)}
+            IN Synonym
+            LET s = NEW
+            UPSERT { _from: n._key, _to: s._key }
+            INSERT { _from: n._key, _to: s._key }
+            IN HAS_SYNONYM
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)

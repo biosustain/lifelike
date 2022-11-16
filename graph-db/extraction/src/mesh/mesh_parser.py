@@ -36,7 +36,10 @@ class MeshParser(BaseParser):
 
     def _load_treenumber(self, db):
         self.logger.info('Load treenumber nodes')
-        df = db.get_data(f'MATCH (t:TreeNumber) RETURN t.label AS {PROP_ID}')
+        df = db.get_data(f"""
+            FOR t IN TreeNumber
+                RETURN t.label as {PROP_ID}
+        """)
         df[PROP_OBSOLETE] = df[PROP_ID].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
         self.logger.info(f'len of df: {len(df)}')
@@ -46,7 +49,11 @@ class MeshParser(BaseParser):
         df.to_csv(outfile, index=False, sep='\t')
 
         self.logger.info('node treenumber has_parent relationship')
-        df = db.get_data(f'MATCH (t:TreeNumber)-[:parentTreeNumber]->(p:TreeNumber) RETURN t.label AS {PROP_ID}, p.label AS {PROP_PARENT_ID}')
+        df = db.get_data(f"""
+        FOR t IN TreeNumber
+            FOR p IN OUTBOUND t parentTreeNumber
+                RETURN t.label AS {PROP_ID}, p.label AS {PROP_PARENT_ID}
+        """)
         self.logger.info(f'len of df: {len(df)}')
         df[PROP_ID] = df[PROP_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
         df[PROP_PARENT_ID] = df[PROP_PARENT_ID].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -57,7 +64,10 @@ class MeshParser(BaseParser):
 
     def _load_topical_descriptor(self, db):
         self.logger.info('load topicaldescriptor nodes')
-        df = db.get_data(f'MATCH (d:TopicalDescriptor) RETURN d.identifier AS {PROP_ID}, d.label AS {PROP_NAME}')
+        df = db.get_data(f"""
+        FOR d in TopicalDescriptor
+            RETURN d.identifier AS {PROP_ID}, d.label AS {PROP_NAME}
+        """)
         self.logger.info(f'len of df: {len(df)}')
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -67,7 +77,11 @@ class MeshParser(BaseParser):
         df.to_csv(outfile, index=False, sep='\t')
 
         self.logger.info('map mesh to tree-number')
-        df = db.get_data(f'MATCH (t:TreeNumber)-[]-(d:TopicalDescriptor) RETURN d.identifier AS {PROP_ID}, t.label AS treenumber')
+        df = db.get_data(f"""
+        FOR t IN TreeNumber
+            FOR d IN ANY t HAS_TREENUMBER
+                RETURN d.identifier AS {PROP_ID}, t.label AS treenumber
+        """)
         self.logger.info(f'len of df: {len(df)}')
         df['treenumber'] = df['treenumber'].str.replace('[OBSOLETE]', '', regex=False).str.strip()
         query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'treenumber', REL_TREENUMBER)
@@ -77,7 +91,10 @@ class MeshParser(BaseParser):
 
     def _load_chemical(self, db):
         self.logger.info('node mesh chemical nodes')
-        df = db.get_data(f'MATCH (n:SCR_Chemical) RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}')
+        df = db.get_data(f"""
+        FOR n in SCR_Chemical
+            RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}
+        """)
         self.logger.info(f'len of df: {len(df)}')
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
@@ -101,7 +118,10 @@ class MeshParser(BaseParser):
 
     def _load_disease(self, db):
         self.logger.info('load mesh disease nodes')
-        df = db.get_data(f'MATCH (n:SCR_Disease) RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}')
+        df = db.get_data(f"""
+        FOR n in SCR_Disease
+            RETURN n.identifier AS {PROP_ID}, n.label AS {PROP_NAME}
+        """)
         df[PROP_OBSOLETE] = df[PROP_NAME].str.startswith('[OBSOLETE]').astype(int)
         df[PROP_NAME] = df[PROP_NAME].str.replace('[OBSOLETE]', '', regex=False).str.strip()
         self.logger.info(f'len of df: {len(df)}')

@@ -27,7 +27,12 @@ class TestGeneParser(unittest.TestCase):
 
     def test_gene_count(self):
         query = """
-        match (n:Gene:db_NCBI)-[:HAS_TAXONOMY]-(t:Taxonomy {id:$taxId}) where exists(n.tax_id) return count(*) as count
+        FOR n IN Gene
+            FILTER n.data_source == "db_NCBI"
+            FOR t IN ANY n HAS_TAXONOMY
+                FILTER t.id == @taxId && n.tax_id != null
+                COLLECT WITH COUNT INTO count
+                RETURN count
         """
         result = self.database.get_data(query, {'taxId': str(self.tax_id)})
         db_count = result.loc[0][0]
@@ -58,9 +63,16 @@ class TestGeneParser(unittest.TestCase):
         Synonyms in google stg and prod were not unique (need to merge nodes), therefore need to use distinct synonym name
         """
         query = f"""
-        match(n:Gene:db_NCBI)-[:HAS_TAXONOMY]-(:Taxonomy {id:$taxId}) with n where exists(n.tax_id) 
-        match (n)-[r:HAS_SYNONYM]-(s) where not exists(r.inclusion_date) 
-        with distinct n.{PROP_ID} as id, s.name as name return count(*)
+        LET result = (
+            FOR n IN Gene
+                FILTER n.data_source == "db_NCBI"
+                FOR t IN ANY n HAS_TAXONOMY
+                    FILTER t.id == @taxId && n.tax_id == null
+                    FOR s, r IN n HAS_SYNONYM
+                        FILTER r.inclusion_date == null
+                        RETURN DISTINCT n.{PROP_ID} as id, s.name as name
+        )
+        RETURN LENGTH(result)
         """
         result = self.database.get_data(query, {'taxId': str(self.tax_id)})
         db_count = result.loc[0][0]
@@ -69,9 +81,13 @@ class TestGeneParser(unittest.TestCase):
 
     def compare_synonyms(self):
         query = f"""
-                match(n:Gene:db_NCBI)-[:HAS_TAXONOMY]-(:Taxonomy {id:$taxId}) with n where exists(n.tax_id) 
-                match (n)-[r:HAS_SYNONYM]-(s) where not exists(r.inclusion_date) 
-                return distinct n.{PROP_ID} as id, s.name as name order by id, name
+            FOR n IN Gene
+                FILTER n.data_source == "db_NCBI"
+                FOR t IN ANY n HAS_TAXONOMY
+                    FILTER t.id == @taxId && n.tax_id != null
+                    FOR s, r IN n HAS_SYNONYM
+                        FILTER r.inclusion_date == null
+                        RETURN DISTINCT n.{PROP_ID} as id, s.name as name order by id, name
                 """
         df_db = self.database.get_data(query, {'taxId': str(self.tax_id)})
         df_db = df_db.drop_duplicates()

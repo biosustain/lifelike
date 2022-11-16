@@ -96,9 +96,12 @@ class UniprotChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'Create a synonym relationship for Protein and Taxonomy'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:%s), (t:%s {id: n.tax_id}) RETURN n,t',
-        'MERGE (n)-[:%s]->(t)', {batchSize:5000})
+        FOR n IN %s
+            FOR t IN %s
+                FILTER t.id == n.tax_id
+                UPSERT { _from: n._key, _to: t._key }
+                INSERT { _from: n._key, _to: t._key }
+                IN %s
         """ % (NODE_UNIPROT, NODE_TAXONOMY, REL_TAXONOMY)
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)

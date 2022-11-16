@@ -72,14 +72,26 @@ class LiteratureChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'LiteratureChemical should be MAPPED_TO Chemical nodes (Chebi and Mesh); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (c:db_MESH {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
-        {batchSize:10000, parallel:true});
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureChemical) WHERE n.eid CONTAINS "CHEBI:" RETURN n',
-        'MERGE (c:db_CHEBI {eid:split(n.eid, ":")[1]}) WITH c,n MERGE (n)-[:MAPPED_TO]->(c) FOREACH (item IN CASE WHEN NOT "Chemical" IN labels(c) THEN [1] ELSE [] END | SET c:Chemical)',
-        {batchSize:10000, parallel:true});
+        FOR n IN LiteratureChemical
+            FILTER n.data_source == "db_Literature" && CONTAINS(n.eid, "MESH:")
+            UPSERT { eid: SPLIT(n.eid, ":")[1] }
+            INSERT { data_source: "db_MESH", eid: SPLIT(n.eid, ":")[1] }
+            UPDATE { data_source: "db_MESH" }
+            IN Chemical
+            LET c = NEW
+            UPSERT { _from: n._key, _to: c._key }
+            INSERT { _from: n._key, _to: c._key }
+            IN MAPPED_TO;
+        FOR n IN LiteratureChemical
+            FILTER n.data_source == "db_Literature" && CONTAINS(n.eid, "CHEBI:")
+            UPSERT { eid: SPLIT(n.eid, ":")[1] }
+            INSERT { data_source: "db_CHEBI", eid: SPLIT(n.eid, ":")[1] }
+            UPDATE { data_source: "db_CHEBI" }
+            IN Chemical
+            LET c = NEW
+            UPSERT { _from: n._key, _to: c._key }
+            INSERT { _from: n._key, _to: c._key }
+            IN MAPPED_TO;
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -90,14 +102,25 @@ class LiteratureChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'LiteratureDisease should be MAPPED_TO Diseases nodes (db_MESH and Disease not in a domain, e.g OMIM:xxxxxx id); Need to use foreach because if label is included in the merge, it will create two different relationships if an entity has more than one entity label'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureDisease) WHERE n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (d:db_MESH {eid:split(n.eid, ":")[1]}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d) FOREACH (item IN CASE WHEN NOT "Disease" IN labels(d) THEN [1] ELSE [] END | SET d:Disease)',
-        {batchSize:10000, parallel:true});
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureDisease) WHERE NOT n.eid CONTAINS "MESH:" RETURN n',
-        'MERGE (d:Disease {eid:n.eid}) WITH d,n MERGE (n)-[:MAPPED_TO]->(d)',
-        {batchSize:10000, parallel:true});
+        FOR n IN LiteratureDisease
+            FILTER n.data_source == "db_Literature" && CONTAINS(n.eid, "MESH:")
+            UPSERT { eid: SPLIT(n.eid, ":")[1] }
+            INSERT { data_source: "db_MESH", eid: SPLIT(n.eid, ":")[1] }
+            UPDATE { data_source: "db_MESH" }
+            IN Disease
+            LET c = NEW
+            UPSERT { _from: n._key, _to: c._key }
+            INSERT { _from: n._key, _to: c._key }
+            IN MAPPED_TO;
+        FOR n IN LiteratureDisease
+            FILTER n.data_source == "db_Literature" && NOT CONTAINS(n.eid, "MESH:")
+            UPSERT { eid: n.eid }
+            INSERT { eid: n.eid }
+            IN Disease
+            LET c = NEW
+            UPSERT { _from: n._key, _to: c._key }
+            INSERT { _from: n._key, _to: c._key }
+            IN MAPPED_TO;
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
@@ -108,10 +131,16 @@ class LiteratureChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = 'LiteratureGene should be MAPPED_TO Gene nodes'
         query = """
-        CALL apoc.periodic.iterate(
-        'MATCH (n:db_Literature:LiteratureGene) RETURN n',
-        'MERGE (g:db_NCBI:Gene {eid:n.eid}) WITH g,n MERGE (n)-[:MAPPED_TO]->(g)',
-        {batchSize:10000, parallel:true});
+        FOR n IN LiteratureGene
+            FILTER n.data_source == "db_Literature"
+            UPSERT { eid: eid:n.eid }
+            INSERT { data_source: "db_NCBI", eid: eid:n.eid }
+            UPDATE { data_source: "db_NCBI" }
+            IN Gene
+            LET g = NEW
+            UPSERT { _from: n._key, _to: g._key }
+            INSERT { _from: n._key, _to: g._key }
+            IN MAPPED_TO;
         """
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)

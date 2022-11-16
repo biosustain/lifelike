@@ -24,8 +24,14 @@ def generate_compound_list_for_LMDB(database, output_dir):
     Compound main change to Chemical in the future
     """
     query = """
-    match (n:Compound)-[:HAS_SYNONYM]-(s)
-    return n.eid as id, n.name as name, s.name as synonym,n.data_source as data_source
+    FOR  n IN Compound:
+        FOR s, r IN ANY n HAS_SYNONYM:
+            RETURN {
+                "id": n.eid,
+                "name": n.name,
+                "synonym": s.name,
+                "data_source": n.data_source
+            }
     """
     df = database.get_data(query)
     filename = "Compound_list_for_LMDB.tsv"

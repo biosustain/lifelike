@@ -212,15 +212,43 @@ class LiteratureDataParser(BaseParser):
         print('Cleaning chemical...')
         self.literature_chemicals = set(val for entry in self.literature_chemicals for val in entry.split('|'))
         chemical_ids_to_exclude = db.get_data(
-            'MATCH (n:Chemical) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
+            """
+            LET entityIds = (
+                FOR n in Chemical
+                    return n.eid
+            )
+            FOR entry in @zenodo_ids
+                FILTER SPLIT(entry, ":")[1] NOT IN entity_ids
+                return entry
+
+            """,
             {'zenodo_ids': list(self.literature_chemicals)})['exclude'].tolist()[0]
         print('Cleaning disease...')
         disease_ids_to_exclude = db.get_data(
-            'MATCH (n:Disease) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
+            """
+            LET entityIds = (
+                FOR n in Disease
+                    return n.eid
+            )
+            FOR entry in @zenodo_ids
+                FILTER SPLIT(entry, ":")[1] NOT IN entity_ids
+                return entry
+
+            """,
             {'zenodo_ids': list(self.literature_diseases)})['exclude'].tolist()[0]
         print('Cleaning gene...')
         gene_ids_to_exclude = db.get_data(
-            'MATCH (n:Gene:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
+            """
+            LET entityIds = (
+                FOR n in Gene
+                    FILTER n.data_source == "db_NCBI"
+                    return n.eid
+            )
+            FOR entry in @zenodo_ids
+                FILTER entry NOT IN entity_ids
+                return entry
+
+            """,
             {'zenodo_ids': list(self.literature_genes)})['exclude'].tolist()[0]
 
         # print('Cleaning chemical...')
