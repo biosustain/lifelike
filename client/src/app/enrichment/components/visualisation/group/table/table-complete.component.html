@@ -47,13 +47,11 @@
             </th>
             <td>
                 <span [className]="'gene-list'">
-                  <ng-container *ngFor="let gene of row['geneNames']; let last = last">
-                    <ngb-highlight [appSELink]="gene"
+                    <ngb-highlight *ngFor="let gene of row['geneNames']"
+                                   [appSELink]="gene"
                                    [result]="gene"
                                    [term]="service.searchTerm"
                     ></ngb-highlight>
-                    <ng-container *ngIf="!last">, </ng-container>
-                  </ng-container>
                 </span>
             </td>
 <!--            <td>-->
