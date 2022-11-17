@@ -81,5 +81,15 @@
 
   .gene-list > * {
     display: inline;
+
+    &:after {
+      content: ', ';
+      cursor: text;
+      pointer-events: none;
+    }
+
+    &:last-child:after {
+      content: '';
+    }
   }
 }
