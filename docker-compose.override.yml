@@ -172,6 +172,23 @@ services:
     networks:
       - backend
 
+  arangodb:
+    build:
+      # Note that this Dockerfile simply adds a user directory and installs the helper scripts into it, and then executes the default arango
+      # entrypoint as normal.
+      context: ./arangodb
+      dockerfile: Dockerfile
+    container_name: arangodb
+    environment:
+      ARANGO_ROOT_PASSWORD: password
+      LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***-11-16-22
+    ports:
+      - 8529:8529
+    volumes:
+      - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
+      - ./arangodb/data:/var/lib/arangodb3
+      - ./arangodb/apps:/var/lib/arangodb3-apps
+
   redis:
     container_name: redis
     image: redis:6-alpine
