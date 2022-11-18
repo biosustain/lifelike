@@ -47,7 +47,7 @@ export class ProjectImpl implements Project, ObservableObject {
   modifiedDate: string;
   ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
-  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  fontAwesomeIcon = `fa-4x ${FAClass.Project}`;
   changed$ = new Subject();
 
   get starred(): boolean {
@@ -57,6 +57,16 @@ export class ProjectImpl implements Project, ObservableObject {
   set starred(value) {
     if (this.***ARANGO_USERNAME***) {
       this.***ARANGO_USERNAME***.update({starred: value});
+    }
+  }
+
+  get public(): boolean {
+    return this.***ARANGO_USERNAME***?.public;
+  }
+
+  set public(value) {
+    if (this.***ARANGO_USERNAME***) {
+      this.***ARANGO_USERNAME***.update({public: value});
     }
   }
 
@@ -338,6 +348,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
+        if (this.isProjectRoot) {
+          return FAClass.Project;
+        }
         return FAClass.Directory;
       case MimeTypes.Map:
         return FAClass.Map;
@@ -525,9 +538,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProjectRoot) {
-          return ['/projects', projectName];
-        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
