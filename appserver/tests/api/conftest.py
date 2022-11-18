@@ -176,8 +176,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_organisms_from_gene_ids_query',
+        'neo4japp.services.annotations.annotation_graph_service.get_organisms_from_gene_ids',
         get_organisms_from_gene_ids_result,
     )
 
