@@ -2,6 +2,7 @@ import bisect
 import itertools
 import time
 
+from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Dict, List, Set, Tuple
 
@@ -12,8 +13,8 @@ from neo4japp.utils.logger import EventLog
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
-from .annotation_graph_service import AnnotationGraphService
-from .constants import EntityIdStr, EntityType
+from .annotation_graph_service import AnnotationGraphService, get_genes_to_organisms
+from .constants import EntityType
 from .data_transfer_objects import (
     Annotation,
     CreateAnnotationObjParams,
@@ -28,8 +29,13 @@ class EnrichmentAnnotationService(AnnotationService):
         self,
         db: AnnotationDBService,
         graph: AnnotationGraphService,
+        # TODO: I don't think this is the best way to handle the arango client connection, but the
+        # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
+        # now, but I think we should slowly try to migrate away from the "service-as-an-object"
+        # pattern
+        arango_client: ArangoClient
     ) -> None:
-        super().__init__(db=db, graph=graph)
+        super().__init__(db=db, graph=graph, arango_client=arango_client)
 
     def _annotate_type_gene(
         self,
@@ -59,7 +65,8 @@ class EnrichmentAnnotationService(AnnotationService):
 
         gene_match_time = time.time()
         fallback_graph_results = \
-            self.graph.get_genes_to_organisms(
+            get_genes_to_organisms(
+                arango_client=self.arango_client,
                 genes=gene_names_list,
                 organisms=[self.specified_organism.organism_id],
             )

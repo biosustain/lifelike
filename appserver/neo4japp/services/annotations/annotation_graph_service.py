@@ -1,3 +1,4 @@
+from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Any, Dict, List
 
@@ -197,48 +198,6 @@ class AnnotationGraphService(GraphConnection):
             included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value]
         )
 
-    def get_genes_to_organisms(
-        self,
-        genes: List[str],
-        organisms: List[str],
-    ) -> GeneOrProteinToOrganism:
-        gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
-        data_sources: Dict[str, str] = {}
-        primary_names: Dict[str, str] = {}
-
-        result = self.exec_read_query_with_params(
-            get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
-
-        for row in result:
-            gene_name = row['gene_name']
-            gene_synonym = row['gene_synonym']
-            gene_id = row['gene_id']
-            organism_id = row['organism_id']
-            data_source = row['data_source']
-            data_source_key = f'{gene_synonym}{organism_id}'
-
-            primary_names[gene_id] = gene_name
-            data_sources[data_source_key] = data_source
-
-            if gene_to_organism_map.get(gene_synonym, None) is not None:
-                if gene_to_organism_map[gene_synonym].get(gene_name, None):
-                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
-                else:
-                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
-            else:
-                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
-
-        # clean any gene/organism matches that have excess results
-        # we want to prioritize matches where the primary name and synonym are the same
-        for synonym, v in gene_to_organism_map.items():
-            if synonym in v and len(v) > 1:
-                gene_to_organism_map[synonym] = {synonym: v[synonym]}
-
-        return GeneOrProteinToOrganism(
-            matches=gene_to_organism_map,
-            data_sources=data_sources,
-            primary_names=primary_names
-        )
 
     def get_proteins_to_organisms(
         self,
@@ -268,9 +227,57 @@ class AnnotationGraphService(GraphConnection):
         return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)
 
 
-def get_organisms_from_gene_ids(arango_client, gene_ids: Dict[Any, int]):
+def get_organisms_from_gene_ids(arango_client: ArangoClient, gene_ids: Dict[Any, int]):
     return execute_arango_query(
         db=get_db(arango_client),
         query=get_organisms_from_gene_ids_query(),
         gene_ids=list(gene_ids.keys())
+    )
+
+
+def get_genes_to_organisms(
+    arango_client: ArangoClient,
+    genes: List[str],
+    organisms: List[str],
+) -> GeneOrProteinToOrganism:
+    gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
+    data_sources: Dict[str, str] = {}
+    primary_names: Dict[str, str] = {}
+
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_gene_to_organism_query(),
+        genes=genes,
+        organisms=organisms
+    )
+
+    for row in result:
+        gene_name = row['gene_name']
+        gene_synonym = row['gene_synonym']
+        gene_id = row['gene_id']
+        organism_id = row['organism_id']
+        data_source = row['data_source']
+        data_source_key = f'{gene_synonym}{organism_id}'
+
+        primary_names[gene_id] = gene_name
+        data_sources[data_source_key] = data_source
+
+        if gene_to_organism_map.get(gene_synonym, None) is not None:
+            if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
+        else:
+            gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
+
+    # clean any gene/organism matches that have excess results
+    # we want to prioritize matches where the primary name and synonym are the same
+    for synonym, v in gene_to_organism_map.items():
+        if synonym in v and len(v) > 1:
+            gene_to_organism_map[synonym] = {synonym: v[synonym]}
+
+    return GeneOrProteinToOrganism(
+        matches=gene_to_organism_map,
+        data_sources=data_sources,
+        primary_names=primary_names
     )

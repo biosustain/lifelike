@@ -1,6 +1,6 @@
 from os import environ
 
-from neo4japp.database import get_neo4j_driver
+from neo4japp.database import get_neo4j_driver, get_or_create_arango_client
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
@@ -69,14 +69,16 @@ def get_manual_annotation_service():
 def get_annotation_service():
     return AnnotationService(
         db=get_annotation_db_service(),
-        graph=get_annotation_graph_service()
+        graph=get_annotation_graph_service(),
+        arango_client=get_or_create_arango_client(),
     )
 
 
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
         db=get_annotation_db_service(),
-        graph=get_annotation_graph_service()
+        graph=get_annotation_graph_service(),
+        arango_client=get_or_create_arango_client(),
     )
 
 

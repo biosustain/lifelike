@@ -54,12 +54,20 @@ def get_organisms_from_gene_ids_query():
 
 def get_gene_to_organism_query():
     return """
-    MATCH (s:Synonym)-[]-(g:Gene)
-    WHERE s.name IN $genes
-    WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-    WHERE p.eid IN $organisms
-    RETURN g.name AS gene_name, s.name AS gene_synonym, g.eid AS gene_id,
-        p.eid AS organism_id, g.data_source AS data_source
+        FOR s IN synonym
+            FILTER s.name IN @genes
+            FOR g, synonym_rel IN 1..1 INBOUND s has_synonym
+                FILTER 'Gene' IN g.labels
+                FOR t, species_rel IN 1..2 OUTBOUND g GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
+                    FILTER t.eid IN @organisms
+                    FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
+                    RETURN DISTINCT {
+                        'gene_name': g.name,
+                        'gene_synonym': s.name,
+                        'gene_id': g.eid,
+                        'organism_id': t.eid,
+                        'data_source': g.data_source
+                    }
     """
 
 
