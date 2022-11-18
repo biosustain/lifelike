@@ -28,9 +28,10 @@ class Base():
     NEO4J_PORT = os.environ.get('NEO4J_PORT')
     NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
 
-    ARANGO_HOST = os.getenv("ARANGO_HOST", "http://arangodb:8529")
-    ARANGO_USERNAME = os.getenv("ARANGO_USERNAME", "root")
-    ARANGO_PASSWORD = os.getenv("ARANGO_PASSWORD", "password")
+    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://arangodb:8529')
+    ARANGO_USERNAME = os.getenv('ARANGO_USERNAME', 'root')
+    ARANGO_PASSWORD = os.getenv('ARANGO_PASSWORD', 'password')
+    LIFELIKE_ARANGO_DB_NAME = os.getenv('LIFELIKE_ARANGO_DB_NAME', 'lifelike')
 
     AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')

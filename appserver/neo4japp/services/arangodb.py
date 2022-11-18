@@ -1,6 +1,7 @@
 from arango import ArangoClient
 from arango.database import StandardDatabase
-from typing import Dict, List
+from flask import current_app
+from typing import Dict, List, Optional
 
 
 # Helpers
@@ -10,11 +11,16 @@ def get_version(client: ArangoClient):
     return client.version
 
 
-def get_db(arango_client: ArangoClient, name: str, username: str, password: str):
+def get_db(
+    arango_client: ArangoClient,
+    name: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None
+):
     return arango_client.db(
-        name=name,
-        username=username,
-        password=password,
+        name=name or current_app.config.get('LIFELIKE_ARANGO_DB_NAME'),
+        username=username or current_app.config.get('ARANGO_USERNAME'),
+        password=password or current_app.config.get('ARANGO_PASSWORD'),
     )
 
 

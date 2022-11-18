@@ -4,7 +4,7 @@ import os
 from arango import ArangoClient
 from arango.http import DefaultHTTPClient
 from elasticsearch import Elasticsearch
-from flask import g
+from flask import g, current_app
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -119,7 +119,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
     class CustomHTTPClient(DefaultHTTPClient):
         REQUEST_TIMEOUT = 1000
 
-    hosts = hosts or os.environ.get('ARANGO_HOST')
+    hosts = hosts or current_app.config.get('ARANGO_HOST')
     return ArangoClient(hosts=hosts, http_client=CustomHTTPClient())
 
 
