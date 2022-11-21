@@ -87,7 +87,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_query,
     get_global_inclusions_count_query,
 )
-from ..services.arangodb import execute_arango_query, get_db
+from ..services.arangodb import convert_datetime, execute_arango_query, get_db
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
@@ -817,8 +817,11 @@ class GlobalAnnotationExportInclusions(MethodView):
     def get(self):
         yield g.current_user
 
-        graph = get_annotation_graph_service()
-        inclusions = graph.exec_read_query(get_global_inclusions_query())
+        arango_client = get_or_create_arango_client()
+        inclusions = execute_arango_query(
+            db=get_db(arango_client),
+            query=get_global_inclusions_query(),
+        )
 
         file_uuids = {inclusion['file_reference'] for inclusion in inclusions}
         file_data_query = db.session.query(
@@ -830,7 +833,7 @@ class GlobalAnnotationExportInclusions(MethodView):
 
         file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
 
-        def get_inclusion_for_review(inclusion, file_uuids_map, graph):
+        def get_inclusion_for_review(inclusion, file_uuids_map):
             user = AppUser.query.filter_by(
                 id=file_uuids_map[inclusion['file_reference']]
             ).one_or_none()
@@ -844,7 +847,7 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'file_uuid': inclusion['file_reference'],
                 'file_deleted': deleter,
                 'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': str(graph.convert_datetime(inclusion['creation_date'])),
+                'creation_date': convert_datetime(inclusion['creation_date']),
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
@@ -854,7 +857,7 @@ class GlobalAnnotationExportInclusions(MethodView):
             }
 
         data = [
-            get_inclusion_for_review(inclusion, file_uuids_map, graph)
+            get_inclusion_for_review(inclusion, file_uuids_map)
             for inclusion in inclusions
             if inclusion['file_reference'] in file_uuids_map
         ]

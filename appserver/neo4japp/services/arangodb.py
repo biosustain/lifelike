@@ -1,10 +1,15 @@
 from arango import ArangoClient
 from arango.database import StandardDatabase
+from datetime import datetime
 from flask import current_app
 from typing import Dict, List, Optional
 
 
 # Helpers
+
+
+def convert_datetime(date_val: str) -> str:
+    return str(datetime.fromisoformat(date_val.replace("Z[UTC]", "")))
 
 
 def get_version(client: ArangoClient):
