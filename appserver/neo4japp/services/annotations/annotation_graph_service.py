@@ -199,34 +199,6 @@ class AnnotationGraphService(GraphConnection):
         )
 
 
-    def get_proteins_to_organisms(
-        self,
-        proteins: List[str],
-        organisms: List[str],
-    ) -> GeneOrProteinToOrganism:
-        protein_to_organism_map: Dict[str, Dict[str, str]] = {}
-        primary_names: Dict[str, str] = {}
-
-        result = self.exec_read_query_with_params(
-            get_protein_to_organism_query(), {'proteins': proteins, 'organisms': organisms})
-
-        for row in result:
-            protein_name: str = row['protein']
-            organism_id: str = row['organism_id']
-            # For now just get the first protein in the list of matches,
-            # no way for us to infer which to use
-            protein_id: str = row['protein_ids'][0]
-
-            primary_names[protein_id] = protein_name
-
-            if protein_to_organism_map.get(protein_name, None) is not None:
-                protein_to_organism_map[protein_name][organism_id] = protein_id
-            else:
-                protein_to_organism_map[protein_name] = {organism_id: protein_id}
-
-        return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)
-
-
 def get_organisms_from_gene_ids(arango_client: ArangoClient, gene_ids: Dict[Any, int]):
     return execute_arango_query(
         db=get_db(arango_client),
@@ -281,3 +253,35 @@ def get_genes_to_organisms(
         data_sources=data_sources,
         primary_names=primary_names
     )
+
+
+def get_proteins_to_organisms(
+    arango_client: ArangoClient,
+    proteins: List[str],
+    organisms: List[str],
+) -> GeneOrProteinToOrganism:
+    protein_to_organism_map: Dict[str, Dict[str, str]] = {}
+    primary_names: Dict[str, str] = {}
+
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_protein_to_organism_query(),
+        proteins=proteins,
+        organisms=organisms
+    )
+
+    for row in result:
+        protein_name: str = row['protein']
+        organism_id: str = row['organism_id']
+        # For now just get the first protein in the list of matches,
+        # no way for us to infer which to use
+        protein_id: str = row['protein_ids'][0]
+
+        primary_names[protein_id] = protein_name
+
+        if protein_to_organism_map.get(protein_name, None) is not None:
+            protein_to_organism_map[protein_name][organism_id] = protein_id
+        else:
+            protein_to_organism_map[protein_name] = {organism_id: protein_id}
+
+    return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)

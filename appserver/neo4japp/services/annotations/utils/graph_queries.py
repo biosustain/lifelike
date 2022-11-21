@@ -39,45 +39,54 @@ def query_builder(parts):
 
 def get_organisms_from_gene_ids_query():
     return """
-        FOR doc IN ncbi
-            FILTER 'Gene' IN doc.labels
-            FILTER doc.eid IN @gene_ids
-            FOR v IN 1..1 OUTBOUND doc has_taxonomy
-                RETURN {
-                    'gene_id': doc.eid,
-                    'gene_name': doc.name,
-                    'taxonomy_id': v.eid,
-                    'species_name': v.name
-                }
+    FOR doc IN ncbi
+        FILTER 'Gene' IN doc.labels
+        FILTER doc.eid IN @gene_ids
+        FOR v IN 1..1 OUTBOUND doc has_taxonomy
+            RETURN {
+                'gene_id': doc.eid,
+                'gene_name': doc.name,
+                'taxonomy_id': v.eid,
+                'species_name': v.name
+            }
     """
 
 
 def get_gene_to_organism_query():
     return """
-        FOR s IN synonym
-            FILTER s.name IN @genes
-            FOR g, synonym_rel IN 1..1 INBOUND s has_synonym
-                FILTER 'Gene' IN g.labels
-                FOR t, species_rel IN 1..2 OUTBOUND g GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
-                    FILTER t.eid IN @organisms
-                    FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
-                    RETURN DISTINCT {
-                        'gene_name': g.name,
-                        'gene_synonym': s.name,
-                        'gene_id': g.eid,
-                        'organism_id': t.eid,
-                        'data_source': g.data_source
-                    }
+    FOR s IN synonym
+        FILTER s.name IN @genes
+        FOR g, synonym_rel IN 1..1 INBOUND s has_synonym
+            FILTER 'Gene' IN g.labels
+            FOR t, species_rel IN 1..2 OUTBOUND g GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
+                FILTER t.eid IN @organisms
+                FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
+                RETURN DISTINCT {
+                    'gene_name': g.name,
+                    'gene_synonym': s.name,
+                    'gene_id': g.eid,
+                    'organism_id': t.eid,
+                    'data_source': g.data_source
+                }
     """
 
 
 def get_protein_to_organism_query():
     return """
-    MATCH (s:Synonym)-[]-(g:db_UniProt)
-    WHERE s.name IN $proteins
-    WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
-    WHERE p.eid IN $organisms
-    RETURN s.name AS protein, collect(g.eid) AS protein_ids, p.eid AS organism_id
+    FOR s IN synonym
+        FILTER s.name IN @proteins
+        FOR p, synonym_rel IN 1..1 INBOUND s has_synonym OPTIONS {vertexCollections: 'uniprot'}
+            FILTER 'Protein' IN p.labels
+            FILTER synonym_rel.label == 'has_synonym'
+            FOR t, species_rel IN 1..2 OUTBOUND p GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
+                FILTER t.eid IN @organisms
+                FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
+                COLLECT organism = t.eid, protein = s.name INTO protein_ids
+                RETURN {
+                    'protein': protein,
+                    'protein_ids': protein_ids[*].p.eid,
+                    'organism_id': organism,
+                }
     """
 
 
