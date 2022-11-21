@@ -989,10 +989,11 @@ class GlobalAnnotationListView(MethodView):
             query_total = exclusions.total
         else:
             arango_client = get_or_create_arango_client()
-            graph = get_annotation_graph_service()
-            global_inclusions = graph.exec_read_query_with_params(
-                get_global_inclusions_paginated_query(),
-                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit}
+            global_inclusions = execute_arango_query(
+                db=get_db(arango_client),
+                query=get_global_inclusions_paginated_query(),
+                skip=0 if page == 1 else (page - 1) * limit,
+                limit=limit
             )
 
             file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
@@ -1015,7 +1016,7 @@ class GlobalAnnotationListView(MethodView):
                 # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
                 'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
                 'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': graph.convert_datetime(i['creation_date']),
+                'creation_date': convert_datetime(i['creation_date']),
                 'text': i['synonym'],
                 'case_insensitive': True,
                 'entity_type': i['entity_type'],
