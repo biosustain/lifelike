@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 
 
 def convert_datetime(date_val: str) -> str:
-    return str(datetime.fromisoformat(date_val.replace("Z[UTC]", "")))
+    return datetime.fromisoformat(date_val.replace("Z[UTC]", ""))
 
 
 def get_version(client: ArangoClient):
