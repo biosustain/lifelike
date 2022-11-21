@@ -13,7 +13,11 @@ from neo4japp.utils.logger import EventLog
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
-from .annotation_graph_service import AnnotationGraphService, get_genes_to_organisms
+from .annotation_graph_service import (
+    get_genes_to_organisms,
+    get_proteins_to_organisms,
+    AnnotationGraphService
+)
 from .constants import EntityType
 from .data_transfer_objects import (
     Annotation,
@@ -147,7 +151,8 @@ class EnrichmentAnnotationService(AnnotationService):
         organism = self.specified_organism
         organism_id = organism.organism_id
         fallback_graph_results = \
-            self.graph.get_proteins_to_organisms(
+            get_proteins_to_organisms(
+                arango_client=self.arango_client,
                 proteins=protein_names_list,
                 organisms=[organism_id],
             )
