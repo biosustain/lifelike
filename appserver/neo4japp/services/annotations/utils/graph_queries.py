@@ -129,21 +129,23 @@ def get_global_inclusions_query():
 
 def get_global_inclusions_paginated_query():
     return """
-    MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n)
-    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
-    RETURN
-        id(n) AS node_internal_id,
-        id(s) AS syn_node_internal_id,
-        n.eid AS entity_id,
-        s.name AS synonym,
-        n.data_source AS data_source,
-        r.entity_type AS entity_type,
-        r.file_reference AS file_reference,
-        r.user AS creator,
-        r.inclusion_date AS creation_date
-    ORDER BY toLower(synonym)
-    SKIP $skip
-    LIMIT $limit
+    FOR doc IN synonym
+        FILTER 'GlobalInclusion' IN doc.labels
+        FOR v, e IN 1..1 INBOUND doc has_synonym
+            FILTER e.label == 'has_synonym' AND e.global_inclusion == true AND e.inclusion_date != null
+            SORT LOWER(doc.name) ASC
+            LIMIT @skip, @limit
+            RETURN {
+                'node_internal_id': v._key,
+                'syn_node_internal_id': doc._key,
+                'entity_id': v.eid,
+                'synonym': doc.name,
+                'data_source': v.data_source,
+                'entity_type': e.entity_type,
+                'file_reference': e.file_reference,
+                'creator': e.user,
+                'creation_date': e.inclusion_date
+            }
     """
 
 
