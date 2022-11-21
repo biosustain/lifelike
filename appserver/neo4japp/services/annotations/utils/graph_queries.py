@@ -92,9 +92,17 @@ def get_protein_to_organism_query():
 
 def get_global_inclusions_count_query():
     return """
-    MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n)
-    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
-    RETURN count(s) AS total
+    RETURN {
+        'total': COUNT(
+            FOR doc IN synonym
+                FILTER 'GlobalInclusion' in doc.labels
+                FOR v, e IN 1..1 INBOUND doc has_synonym
+                    FILTER e.global_inclusion == true
+                    FILTER e.inclusion_date != null
+                    SORT e.inclusion_date DESC
+                    RETURN e.inclusion_date
+        )
+    }
     """
 
 
