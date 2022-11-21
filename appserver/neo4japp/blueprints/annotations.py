@@ -87,6 +87,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_query,
     get_global_inclusions_count_query,
 )
+from ..services.arangodb import execute_arango_query, get_db
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
@@ -984,6 +985,7 @@ class GlobalAnnotationListView(MethodView):
             } for r in exclusions.items]
             query_total = exclusions.total
         else:
+            arango_client = get_or_create_arango_client()
             graph = get_annotation_graph_service()
             global_inclusions = graph.exec_read_query_with_params(
                 get_global_inclusions_paginated_query(),
@@ -1018,8 +1020,11 @@ class GlobalAnnotationListView(MethodView):
                 'reason': '',
                 'comment': ''
             } for i in global_inclusions]
-            query_total = graph.exec_read_query(
-                get_global_inclusions_count_query())[0]['total']
+
+            query_total = execute_arango_query(
+                db=get_db(arango_client),
+                query=get_global_inclusions_count_query(),
+            )[0]['total']
 
         results = {
             'total': query_total,
