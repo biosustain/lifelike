@@ -74,12 +74,15 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
       iif(
         () => isNil(delta.predefinedValueAccessorId),
         this.common.networkTraceDefaultSizing$,
-        this.common.options$.pipe(
-          map(({predefinedValueAccessors}) =>
-            this.common.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId]),
-          )
-        ),
+        of(delta.predefinedValueAccessorId)
       ).pipe(
+        switchMap(predefinedValueAccessorId =>
+          this.common.options$.pipe(
+            map(({predefinedValueAccessors}) =>
+              this.common.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId]),
+            ),
+          ),
+        ),
         map(state => merge({}, delta, state))
       )
     )
