@@ -135,6 +135,9 @@ common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 # Used to match the links in maps during the export
 SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
+SEARCH_RE = re.compile(r'^ */search/content')
+KGSEARCH_RE = re.compile(r'^ */search/graph')
+DIRECTORY_RE = re.compile(r'^ */(projects/.+/)?folders')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
@@ -700,6 +703,12 @@ def get_link_icon_type(node: dict):
             return 'enrichment_table', link['url']
         elif SANKEY_RE.match(link['url']):
             return 'sankey', link['url']
+        elif SEARCH_RE.search(link['url']):
+            return 'search', link['url']
+        elif KGSEARCH_RE.search(link['url']):
+            return 'kgsearch', link['url']
+        elif DIRECTORY_RE.search(link['url']):
+            return 'directory', link['url']
         elif DOCUMENT_RE.match(link['url']):
             doi_src = look_for_doi_link(node)
             if doi_src:
