@@ -211,7 +211,7 @@ export class BaseControllerService<Base extends TypeContext>
     this.nodeHeight$ = this.stateAccessor('nodeHeight');
   }
 
-  // As of (https://github.com/SBRG/kg-prototypes/pull/1927) 
+  // As of (https://github.com/SBRG/kg-prototypes/pull/1927)
   // I am commenting this code believing that we might want to come back to this implementation
   // resolvePredefinedValueAccessor(defaultValue) {
   //   // whichever change was more recent
