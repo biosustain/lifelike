@@ -1,8 +1,13 @@
+from arango.client import ArangoClient
 import multiprocessing as mp
+from typing import Dict, List
 
+from neo4japp.database import get_or_create_arango_client
 from neo4japp.models import Files
 from neo4japp.services.annotations.initializer import get_annotation_graph_service
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations.utils.graph_queries import get_docs_by_ids_query
+from neo4japp.services.arangodb import execute_arango_query, get_db
 
 
 def window_chunk(q, windowsize=100):
@@ -18,6 +23,17 @@ def window_chunk(q, windowsize=100):
             break
         yield chunk
 
+def _get_nodes_from_node_ids(
+    arango_client: ArangoClient,
+    entity_type: str,
+    node_ids: List[str]
+) -> Dict[str, str]:
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_docs_by_ids_query(entity_type),
+        ids=node_ids
+    )
+    return {row['entity_id']: row['entity_name'] for row in result}
 
 def get_primary_names(annotations):
     """Copied from AnnotationService.add_primary_name
@@ -30,6 +46,7 @@ def get_primary_names(annotations):
     organism_ids = set()
     mesh_ids = set()
 
+    arango_client = get_or_create_arango_client()
     neo4j = get_annotation_graph_service()
     updated_annotations = []
 
@@ -70,12 +87,36 @@ def get_primary_names(annotations):
                 organism_ids.add(meta_id)
 
     try:
-        chemical_names = neo4j.get_nodes_from_node_ids(EntityType.CHEMICAL.value, list(chemical_ids))  # noqa
-        compound_names = neo4j.get_nodes_from_node_ids(EntityType.COMPOUND.value, list(compound_ids))  # noqa
-        disease_names = neo4j.get_nodes_from_node_ids(EntityType.DISEASE.value, list(disease_ids))
-        gene_names = neo4j.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
-        protein_names = neo4j.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))
-        organism_names = neo4j.get_nodes_from_node_ids(EntityType.SPECIES.value, list(organism_ids))  # noqa
+        chemical_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.CHEMICAL.value,
+            list(chemical_ids)
+        )
+        compound_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.COMPOUND.value,
+            list(compound_ids)
+        )
+        disease_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.DISEASE.value,
+            list(disease_ids)
+        )
+        gene_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.GENE.value,
+            list(gene_ids)
+        )
+        protein_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.PROTEIN.value,
+            list(protein_ids)
+        )
+        organism_names = _get_nodes_from_node_ids(
+            arango_client,
+            EntityType.SPECIES.value,
+            list(organism_ids)
+        )
         mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
     except Exception:
         raise
