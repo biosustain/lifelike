@@ -1,13 +1,13 @@
 import {
   DETAIL_NODE_LABELS,
   Hyperlink,
-  UniversalGraphGroup,
   Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
+  UniversalGraphGroup,
   UniversalGraphNode,
-  UniversalNodeStyle,
   UniversalGraphNodelike,
+  UniversalNodeStyle,
 } from 'app/drawing-tool/services/interfaces';
 import {
   EdgeRenderStyle,
@@ -24,8 +24,9 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import { BLACK_COLOR, FA_CUSTOM_ICONS, Unicodes, WHITE_COLOR } from 'app/shared/constants';
+import { BLACK_COLOR, FA_CUSTOM_ICONS, Unicodes, WHITE_COLOR, InternalURIType } from 'app/shared/constants';
 import { getSupportedFileCodes } from 'app/shared/utils';
+import { AppURL, getInternalURIType, isInternalUri } from 'app/shared/utils/url';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
@@ -448,42 +449,72 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
   private getIconCode(iconCode: string, links): {iconCode: Unicodes, specialIconColor: string } {
     let specialIconColor;
-    for (const link of links) {
-      try {
-        const url = new URL(link.url, window.location.href);
-        if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
+    search: for (const link of links) {
+      const appUrl = new AppURL(link.url);
+      const type = getInternalURIType(appUrl);
+      switch (type) {
+        case InternalURIType.Search:
+          iconCode = Unicodes.Search;
+          break search;
+        case InternalURIType.KgSearch:
+          iconCode = Unicodes.KgSearch;
+          break search;
+        case InternalURIType.Directory:
+          iconCode = Unicodes.Directory;
+          break search;
+        case InternalURIType.BioC:
           iconCode = Unicodes.BioC;
-          break;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+          break search;
+        case InternalURIType.EnrichmentTable:
           iconCode = Unicodes.EnrichmentTable;
-          break;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
+          break search;
+        case InternalURIType.Map:
           iconCode = Unicodes.Map;
-          break;
-        } else if (
-          url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//) ||
-          url.pathname.match(/^\/projects\/([^\/]+)\/sankey-many-to-many\//)
-        ) {
+          break search;
+        case InternalURIType.Graph:
           iconCode = Unicodes.Graph;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
+          break search;
+        case InternalURIType.Pdf:
           iconCode = Unicodes.Pdf;
-          break;
-        } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
-          iconCode = Unicodes.Project;
-          break;
-        } else if (url.protocol.match(/^mailto:$/i)) {
-          iconCode = Unicodes.Mail;
-          break;
-        } else if (url.pathname.match(/^\/files\//)) {
-          const domain = link.domain.trim();
-          const matchedIcon = getSupportedFileCodes(domain);
-          if (matchedIcon !== undefined) {
-            iconCode = matchedIcon.unicode;
-            specialIconColor = matchedIcon.color;
+          break search;
+        default:
+          // Lagacy implementation
+          try {
+            const url = new URL(link.url, window.location.href);
+            if (url.pathname.match(/^\/projects\/([^\/]+)\/bioc\//)) {
+              iconCode = Unicodes.BioC;
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+              iconCode = Unicodes.EnrichmentTable;
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
+              iconCode = Unicodes.Map;
+              break;
+            } else if (
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey\//) ||
+              url.pathname.match(/^\/projects\/([^\/]+)\/sankey-many-to-many\//)
+            ) {
+              iconCode = Unicodes.Graph;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
+              iconCode = Unicodes.Pdf;
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
+              iconCode = Unicodes.Project;
+              break;
+            } else if (url.protocol.match(/^mailto:$/i)) {
+              iconCode = Unicodes.Mail;
+              break;
+            } else if (url.pathname.match(/^\/files\//)) {
+              const domain = link.domain.trim();
+              const matchedIcon = getSupportedFileCodes(domain);
+              if (matchedIcon !== undefined) {
+                iconCode = matchedIcon.unicode;
+                specialIconColor = matchedIcon.color;
+              }
+            }
+          } catch (e) {
+            return {iconCode, specialIconColor} as { iconCode: Unicodes, specialIconColor: string };
           }
-        }
-      } catch (e) {
-        return {iconCode, specialIconColor} as {iconCode: Unicodes, specialIconColor: string };
       }
     }
     return {iconCode, specialIconColor} as {iconCode: Unicodes, specialIconColor: string };
