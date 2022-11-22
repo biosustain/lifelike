@@ -23,6 +23,26 @@ def window_chunk(q, windowsize=100):
             break
         yield chunk
 
+
+# NOTE DEPRECATED: just used in old migration
+def _get_mesh_by_ids_query():
+    return """
+    FOR doc IN mesh
+        FILTER 'TopicalDescriptor' IN doc.labels
+        FILTER doc.eid IN @ids
+        RETURN {'mesh_id': doc.eid, 'mesh_name': doc.name}
+    """
+
+
+def _get_mesh_from_mesh_ids(arango_client: ArangoClient, mesh_ids: List[str]) -> Dict[str, str]:
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=_get_mesh_by_ids_query(),
+        ids=mesh_ids
+    )
+    return {row['mesh_id']: row['mesh_name'] for row in result}
+
+
 def _get_nodes_from_node_ids(
     arango_client: ArangoClient,
     entity_type: str,
@@ -117,7 +137,7 @@ def get_primary_names(annotations):
             EntityType.SPECIES.value,
             list(organism_ids)
         )
-        mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
+        mesh_names = _get_mesh_from_mesh_ids(arango_client, list(mesh_ids))
     except Exception:
         raise
 
