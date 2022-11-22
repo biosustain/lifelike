@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { iif, of } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
+import { merge, isNil, omitBy } from 'lodash-es';
 
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 import { IMAGE_DEFAULT_SIZE, IMAGE_LABEL } from 'app/shared/constants';
@@ -11,10 +12,18 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
+import { AppURL, isInternalUri } from 'app/shared/utils/url';
+import { GroupCreation } from 'app/graph-viewer/actions/groups';
 
 import { MapImageProviderService } from './map-image-provider.service';
 import { IMAGE_TOKEN, ImageTransferData } from '../providers/image-entity-data.provider';
-import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from './interfaces';
+import {
+  GraphEntity,
+  GraphEntityType, UniversalEntityData,
+  UniversalGraphEdge,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+} from './interfaces';
 import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
 
 @Injectable()
@@ -72,6 +81,30 @@ export class GraphActionsService {
     return actions;
   }
 
+  mapInternalLinks<E extends {data?: UniversalEntityData}>(entity: E): E {
+    const mapInternalToRelativeLink = ({url, ...rest}) => {
+        const appUrl = AppURL.from(url);
+        if (isInternalUri(appUrl)) {
+          return {
+            ...rest,
+            url: appUrl.relativehref
+          };
+        }
+      };
+    return merge(
+      entity,
+      {
+        data: omitBy(
+          {
+          sources: entity.data?.sources?.map(mapInternalToRelativeLink),
+          hyperlinks: entity.data?.hyperlinks?.map(mapInternalToRelativeLink)
+        },
+          isNil
+        )
+      }
+    );
+  }
+
   extractGraphEntityActions(items: DataTransferData<any>[], origin: { x: number, y: number }): GraphAction[] {
     let entities: GraphEntity[] = [];
     const actions: GraphAction[] = [];
@@ -86,17 +119,22 @@ export class GraphActionsService {
     const isSingularEntity = entities.length === 1;
 
     // Create nodes and edges
-    for (const entity of entities) {
-      if (entity.type === GraphEntityType.Node) {
-        const node = entity.entity as UniversalGraphNode;
+    for (const {type, entity} of entities) {
+      if (type === GraphEntityType.Node) {
+        const node = entity as UniversalGraphNode;
         actions.push(
           new NodeCreation(`Create ${node.display_name} node`, node, true, isSingularEntity),
         );
-      } else if (entity.type === GraphEntityType.Edge) {
-        const edge = entity.entity as UniversalGraphEdge;
+      } else if (type === GraphEntityType.Edge) {
+        const edge = entity as UniversalGraphEdge;
         actions.push(
           new EdgeCreation(`Create edge`, edge, true, isSingularEntity),
         );
+      } else if (type === GraphEntityType.Group) {
+        const group = this.mapInternalLinks(entity as UniversalGraphGroup);
+        actions.push(new GroupCreation(
+          `Create group`, group, true, isSingularEntity,
+        ));
       }
     }
 

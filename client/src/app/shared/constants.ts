@@ -124,6 +124,17 @@ export enum FAClass {
   Project = 'fas fa-layer-group'
 }
 
+export enum InternalURIType {
+  Search,
+  KgSearch,
+  Directory,
+  BioC,
+  EnrichmentTable,
+  Map,
+  Graph,
+  Pdf
+}
+
 export enum Unicodes {
   Directory = '\uf07b',
   Map = '\uf542',
@@ -142,7 +153,9 @@ export enum Unicodes {
   Excel = '\ue001',
   Word = '\ue002',
   PowerPoint = '\ue003',
-  Cytoscape = '\ue004'
+  Cytoscape = '\ue004',
+  Search = '\uf002',
+  KgSearch = '\uf78a'
 }
 // Colors used to render microsoft icons - they should not change
 export enum CustomIconColors {
