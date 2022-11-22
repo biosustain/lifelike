@@ -1147,6 +1147,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       event,
     };
     if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(behaviorEvent)))) {
+      event.stopPropagation();
       event.preventDefault();
     }
   }

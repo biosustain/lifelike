@@ -24,6 +24,7 @@ import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 import { ImageBlob } from 'app/shared/utils/forms';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { GraphEntityType, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -296,7 +297,9 @@ export class MapEditorComponent
     const hoverPosition = this.graphCanvas.hoverPosition;
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
-
+      if (isNotEmpty(items)) {
+        this.graphCanvas.selection.replace([]);
+      }
       const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
 
       actionPromise.then(actions => {
@@ -425,6 +428,7 @@ export class MapEditorComponent
   }
 
   createGroup() {
+    this.graphCanvas?.selection.replace([]);
     this.graphCanvas?.execute(new GroupCreation(
       'Create group',
       {
@@ -442,7 +446,7 @@ export class MapEditorComponent
           width: 100,
           height: 100
         }
-      }, true
+      }, true, true
     ));
   }
 
