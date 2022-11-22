@@ -34,8 +34,12 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
       } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
       const hashMap = new Map<string, string>();
+      const isSingularNode = nodes.length === 1;
+      const isSingularEdge = edges.length === 1;
+      const isSingularGroup = groups.length === 1;
+      this.graphView.selection.replace([]);
 
-      const cloneNode = ({hash, data, ...rest}) => {
+      const cloneNode = ({hash, data, ...rest}, select) => {
         const newNode = {
           ...rest,
           hash: uuidv4(),
@@ -46,7 +50,9 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
           }
         } as UniversalGraphNode;
         hashMap.set(hash, newNode.hash);
-        actions.push(new NodeCreation('Duplicate node', newNode, nodes.length === 1));
+        actions.push(
+          new NodeCreation('Duplicate node', newNode, select, isSingularNode)
+        );
         return newNode;
       };
 
@@ -59,24 +65,28 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
             x: data.x + this.DEFAULT_OFFSET,
             y: data.y + this.DEFAULT_OFFSET,
           },
-          members: members.map(node => cloneNode(node))
+          members: members.map(node => cloneNode(node, false))
         } as UniversalGraphGroup;
         // This works also for groups, as those inherit from the node
         hashMap.set(hash, newGroup.hash);
-        actions.push(new GroupCreation('Duplicate group', newGroup, groups.length === 1));
+        actions.push(
+          new GroupCreation('Duplicate group', newGroup, true, isSingularGroup)
+        );
       }
       for (const node of nodes) {
         if (!hashMap.has(node.hash)) {
-          cloneNode(node);
+          cloneNode(node, true);
         }
       }
       for (const {from, to, ...rest} of this.graphView.edges) {
         // Copy only if both nodes are copied as well
         if (hashMap.has(from) && hashMap.has(to)) {
           actions.push(
-            new EdgeCreation('Duplicate edge',
+            new EdgeCreation(
+              'Duplicate edge',
               {...rest, to: hashMap.get(to), from: hashMap.get(from)} as UniversalGraphEdge,
-              edges.length === 1
+              true,
+              isSingularEdge
             )
           );
         }
@@ -84,8 +94,6 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       // Remove selection to prevent user from copying multiple nodes a couple of times
       this.graphView.selection.replace([]);
       this.graphView.execute(new CompoundAction('Duplicate selected entities', actions));
-      event.event.preventDefault();
-      event.event.stopPropagation();
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;

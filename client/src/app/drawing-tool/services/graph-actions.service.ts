@@ -24,7 +24,6 @@ export class GraphActionsService {
               readonly filesystemService: FilesystemService) { }
 
   fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point): Promise<GraphAction[]> {
-
     const actions = this.extractGraphEntityActions(items, hoverPosition);
     return this.extractImageNodeActions(items, hoverPosition, actions);
   }
@@ -74,34 +73,35 @@ export class GraphActionsService {
   }
 
   extractGraphEntityActions(items: DataTransferData<any>[], origin: { x: number, y: number }): GraphAction[] {
-  let entities: GraphEntity[] = [];
-  const actions: GraphAction[] = [];
+    let entities: GraphEntity[] = [];
+    const actions: GraphAction[] = [];
 
-  for (const item of items) {
-    if (item.token === GRAPH_ENTITY_TOKEN) {
-      entities = item.data as GraphEntity[];
+    for (const item of items) {
+      if (item.token === GRAPH_ENTITY_TOKEN) {
+        entities = item.data as GraphEntity[];
+      }
     }
-  }
 
-  entities = this.normalizeGraphEntities(entities, origin);
+    entities = this.normalizeGraphEntities(entities, origin);
+    const isSingularEntity = entities.length === 1;
 
-  // Create nodes and edges
-  for (const entity of entities) {
-    if (entity.type === GraphEntityType.Node) {
-      const node = entity.entity as UniversalGraphNode;
-      actions.push(new NodeCreation(
-        `Create ${node.display_name} node`, node, true,
-      ));
-    } else if (entity.type === GraphEntityType.Edge) {
-      const edge = entity.entity as UniversalGraphEdge;
-      actions.push(new EdgeCreation(
-        `Create edge`, edge, true,
-      ));
+    // Create nodes and edges
+    for (const entity of entities) {
+      if (entity.type === GraphEntityType.Node) {
+        const node = entity.entity as UniversalGraphNode;
+        actions.push(
+          new NodeCreation(`Create ${node.display_name} node`, node, true, isSingularEntity),
+        );
+      } else if (entity.type === GraphEntityType.Edge) {
+        const edge = entity.entity as UniversalGraphEdge;
+        actions.push(
+          new EdgeCreation(`Create edge`, edge, true, isSingularEntity),
+        );
+      }
     }
-  }
 
-  return actions;
-}
+    return actions;
+  }
 
  normalizeGraphEntities(entities: GraphEntity[], origin: { x: number, y: number }): GraphEntity[] {
   const newEntities: GraphEntity[] = [];
