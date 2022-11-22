@@ -49,9 +49,8 @@ collection_labels = {
     EntityType.PATHWAY.value: 'kegg',
     EntityType.ENTITY.value: '***ARANGO_DB_NAME***',
     EntityType.COMPANY.value: '***ARANGO_DB_NAME***',
-    # TODO: Not sure which collection in which to find these documents...
-    # EntityType.LAB_SAMPLE.value: 'LabSample',
-    # EntityType.LAB_STRAIN.value: 'LabStrain'
+    EntityType.LAB_SAMPLE.value: '***ARANGO_DB_NAME***',
+    EntityType.LAB_STRAIN.value: '***ARANGO_DB_NAME***'
 }
 
 
@@ -236,45 +235,41 @@ def get_delete_global_inclusion_query():
     """
 
 
-def get_global_inclusions_by_type_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
-
-    if entity_type in source_labels:
-        query_label = f'{source_labels[entity_type]}:{query_label}'
-
-    return f"""
-    MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
-    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
-    RETURN
-        id(n) AS internal_id,
-        n.eid AS entity_id,
-        n.name AS entity_name,
-        n.data_source AS data_source,
-        s.name AS synonym,
-        r.hyperlinks AS hyperlinks
+def get_global_inclusions_by_type_query():
+    return """
+    FOR doc IN synonym
+        FILTER 'GlobalInclusion' IN doc.labels
+        FOR v, e IN 1..1 INBOUND doc has_synonym OPTIONS { vertexCollections: @collection }
+            FILTER e.global_inclusion == true
+            FILTER e.inclusion_date != null
+            FILTER @entity_type IN v.labels
+            RETURN {
+                'internal_id': v._key,
+                'entity_id': v.eid,
+                'entity_name': v.name,
+                'data_source': v.data_source,
+                'synonym': doc.name,
+                'hyperlinks': e.hyperlinks
+            }
     """
 
 
-def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
-    if entity_type == EntityType.SPECIES.value:
-        query_label = 'Organism'
-
-    return f"""
-    MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
-    RETURN
-        id(n) AS internal_id,
-        n.eid AS entity_id,
-        n.name AS entity_name,
-        n.data_source AS data_source,
-        s.name AS synonym,
-        r.hyperlinks AS hyperlinks
+def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query():
+    return """
+    FOR doc IN synonym
+        FILTER 'GlobalInclusion' IN doc.labels
+        FOR v, e IN 1..1 INBOUND doc has_synonym OPTIONS { vertexCollections: '***ARANGO_DB_NAME***' }
+            FILTER e.label == 'has_synonym'
+            FILTER @entity_type IN v.labels
+            SORT v._key ASC
+            RETURN {
+                'internal_id': v._key,
+                'entity_id': v.eid,
+                'entity_name': v.name,
+                'data_source': v.data_source,
+                'synonym': doc.name,
+                'hyperlinks': e.hyperlinks
+            }
     """
 
 
