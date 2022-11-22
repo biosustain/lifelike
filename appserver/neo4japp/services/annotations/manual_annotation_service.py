@@ -312,10 +312,11 @@ class ManualAnnotationService:
             # a global could've been added with the wrong entity type
             # so we need to remove those bad labels to prevent
             # incorrect results coming back as synonyms
-            results = self.graph.exec_read_query_with_params(
-                get_node_labels_and_relationship_query(),
-                {'node_ids': [gid for gid, _ in inclusion_ids]})
-
+            results = execute_arango_query(
+                db=get_db(self.arango_client),
+                query=get_node_labels_and_relationship_query(),
+                node_ids=[gid for gid, _ in inclusion_ids]
+            )
             for result in results:
                 mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
                 # remove Taxonomy because there is inconsistency between graph and annotations
