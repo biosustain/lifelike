@@ -1,3 +1,5 @@
+from neo4japp.exceptions import InvalidArgument
+
 from ..constants import EntityType
 
 
@@ -19,17 +21,37 @@ node_labels = {
     EntityType.DISEASE.value: 'Disease',
     EntityType.FOOD.value: 'Food',
     EntityType.PHENOMENA.value: 'Phenomena',
+    EntityType.PHENOTYPE.value: 'Phenotype',
     EntityType.CHEMICAL.value: 'Chemical',
     EntityType.COMPOUND.value: 'Compound',
     EntityType.GENE.value: 'Gene',
     EntityType.SPECIES.value: 'Taxonomy',
-    EntityType.PATHWAY.value: 'Pathway',
     EntityType.PROTEIN.value: 'Protein',
-    EntityType.PHENOTYPE.value: 'Phenotype',
+    EntityType.PATHWAY.value: 'Pathway',
     EntityType.ENTITY.value: 'Entity',
     EntityType.COMPANY.value: 'Company',
     EntityType.LAB_SAMPLE.value: 'LabSample',
     EntityType.LAB_STRAIN.value: 'LabStrain'
+}
+
+
+collection_labels = {
+    EntityType.ANATOMY.value: 'mesh',
+    EntityType.DISEASE.value: 'mesh',
+    EntityType.FOOD.value: 'mesh',
+    EntityType.PHENOMENA.value: 'mesh',
+    EntityType.PHENOTYPE.value: 'mesh',
+    EntityType.CHEMICAL.value: 'chebi',
+    EntityType.COMPOUND.value: 'biocyc',
+    EntityType.GENE.value: 'ncbi',
+    EntityType.SPECIES.value: 'taxonomy',
+    EntityType.PROTEIN.value: 'uniprot',
+    EntityType.PATHWAY.value: 'kegg',
+    EntityType.ENTITY.value: '***ARANGO_DB_NAME***',
+    EntityType.COMPANY.value: '***ARANGO_DB_NAME***',
+    # TODO: Not sure which collection in which to find these documents...
+    # EntityType.LAB_SAMPLE.value: 'LabSample',
+    # EntityType.LAB_STRAIN.value: 'LabStrain'
 }
 
 
@@ -149,17 +171,19 @@ def get_global_inclusions_paginated_query():
     """
 
 
-def get_nodes_by_ids(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
-    if entity_type in source_labels:
-        query_label = f'{source_labels[entity_type]}:{query_label}'
+def get_docs_by_ids_query(entity_type):
+    try:
+        collection = collection_labels[entity_type]
+    except KeyError:
+        raise InvalidArgument(
+            f'Could not query for document with entity type: {entity_type}. No '
+            'collection exists for this type.'
+        )
 
     return f"""
-    MATCH (n:{query_label}) WHERE n.eid IN $ids
-    RETURN n.eid AS entity_id, n.name AS entity_name
+    FOR doc IN {collection}
+    FILTER doc.eid IN @ids
+    RETURN {{'entity_id': doc.eid, 'entity_name': doc.name}}
     """
 
 

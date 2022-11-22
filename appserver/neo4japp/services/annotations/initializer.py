@@ -62,7 +62,8 @@ def get_annotation_graph_service():
 def get_manual_annotation_service():
     return ManualAnnotationService(
         graph=get_annotation_graph_service(),
-        tokenizer=get_annotation_tokenizer()
+        tokenizer=get_annotation_tokenizer(),
+        arango_client=get_or_create_arango_client()
     )
 
 

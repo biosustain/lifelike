@@ -1,18 +1,17 @@
-import uuid
-
+from arango.client import ArangoClient
 from datetime import datetime
-from http import HTTPStatus
-
 from flask import current_app
+from http import HTTPStatus
 from neo4j.exceptions import ServiceUnavailable
 from typing import List, Tuple
-from uuid import uuid4
+import uuid
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
+from neo4japp.services.arangodb import get_db, execute_arango_query
 from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
@@ -35,10 +34,12 @@ class ManualAnnotationService:
     def __init__(
         self,
         graph: AnnotationGraphService,
-        tokenizer: Tokenizer
+        tokenizer: Tokenizer,
+        arango_client: ArangoClient
     ) -> None:
         self.graph = graph
         self.tokenizer = tokenizer
+        self.arango_client = arango_client
 
     def _annotation_exists(
         self,
@@ -132,8 +133,12 @@ class ManualAnnotationService:
                     EntityType.PROTEIN.value,
                     EntityType.SPECIES.value
                 ]:
-                    primary_name = \
-                        self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]
+                    result = execute_arango_query(
+                        db=get_db(self.arango_client),
+                        query=get_docs_by_ids_query(entity_type),
+                        ids=[entity_id]
+                    )
+                    primary_name = {row['entity_id']: row['entity_name'] for row in result}[entity_id]
             except KeyError:
                 pass
             except (BrokenPipeError, ServiceUnavailable):
@@ -499,7 +504,7 @@ class ManualAnnotationService:
                 )
 
             if entity_id == '':
-                entity_id = f'NULL-{str(uuid4())}'
+                entity_id = f'NULL-{str(uuid.uuid4())}'
 
             createval = {
                 'entity_type': entity_type,
