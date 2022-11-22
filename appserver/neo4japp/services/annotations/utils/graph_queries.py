@@ -187,14 +187,6 @@ def get_docs_by_ids_query(entity_type):
     """
 
 
-# NOTE DEPRECATED: just used in old migration
-def get_mesh_by_ids():
-    return """
-    MATCH (n:db_MESH:TopicalDescriptor) WHERE n.eid IN $ids
-    RETURN n.eid AS mesh_id, n.name AS mesh_name
-    """
-
-
 def get_node_labels_and_relationship_query():
     return """
     MATCH (n)-[r:HAS_SYNONYM]-()

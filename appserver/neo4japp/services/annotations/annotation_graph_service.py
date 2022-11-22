@@ -27,7 +27,6 @@ from .utils.graph_queries import (
     get_gene_to_organism_query,
     get_global_inclusions_by_type_query,
     get_***ARANGO_DB_NAME***_global_inclusions_by_type_query,
-    get_mesh_by_ids,
     get_organisms_from_gene_ids_query,
     get_protein_to_organism_query,
 )
@@ -44,11 +43,6 @@ class AnnotationGraphService(GraphConnection):
     def __init__(self, conn):
         super().__init__(conn)
 
-
-    # NOTE DEPRECATED: just used in old migration
-    def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
-        result = self.exec_read_query_with_params(get_mesh_by_ids(), {'ids': mesh_ids})
-        return {row['mesh_id']: row['mesh_name'] for row in result}
 
     def _create_entity_inclusion(self, entity_type: str, inclusion_dict: dict) -> None:
         createfuncs = {
