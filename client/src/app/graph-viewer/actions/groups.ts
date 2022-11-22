@@ -8,15 +8,18 @@ import { GraphAction, GraphActionReceiver } from './actions';
 export class GroupCreation implements GraphAction {
   constructor(public description: string,
               public group: UniversalGraphGroup,
-              public readonly select = false) {
+              public readonly select = false,
+              public readonly focus = false) {
   }
   apply(component: GraphActionReceiver) {
     component.addGroup(this.group);
     if (this.select) {
-      component.selection.replace([{
+      component.selection.add([{
         type: GraphEntityType.Group,
         entity: this.group,
       }]);
+    }
+    if (this.focus) {
       component.focusEditorPanel();
     }
   }
