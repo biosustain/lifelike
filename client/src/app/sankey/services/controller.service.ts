@@ -341,10 +341,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     switchMap(networkTrace =>
       iif(
         () => networkTrace.defaultSizing,
-        of({
-          predefinedValueAccessorId: networkTrace._defaultSizing,
-          ...networkTrace.defaultSizing
-        }),
+        of(networkTrace._defaultSizing),
         defer(() => this.getNetworkTraceBestFittingSizing$(networkTrace))
       )
     )
@@ -376,16 +373,9 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         return iif(
           () => isNil(persumedValueAccessorId),
           this.oneToMany$.pipe(
-            map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
-            map(valueAccessorId => ({
-              predefinedValueAccessorId: valueAccessorId,
-              ...this.pickPartialAccessors(predefinedValueAccessors[valueAccessorId])
-            }))
+            map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height)
           ),
-          of({
-              predefinedValueAccessorId: persumedValueAccessorId,
-            ...this.pickPartialAccessors(predefinedValueAccessors[persumedValueAccessorId])
-          })
+          of(persumedValueAccessorId)
         );
       })
     );
