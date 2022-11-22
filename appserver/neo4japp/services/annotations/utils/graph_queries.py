@@ -189,19 +189,31 @@ def get_docs_by_ids_query(entity_type):
 
 def get_node_labels_and_relationship_query():
     return """
-    MATCH (n)-[r:HAS_SYNONYM]-()
-    WHERE id(n) IN $node_ids AND exists(n.original_entity_types)
-    RETURN id(n) AS node_id, n.eid AS entity_id,
-        [l IN labels(n) WHERE NOT l starts WITH 'db_' AND
-            NOT l IN [
-                'TopicalDescriptor',
-                'TreeNumber',
-                'BioCycClass',
-                'GlobalInclusion',
-                'Complex']
-            ] AS node_labels,
-        n.original_entity_types AS valid_entity_types,
-        collect(DISTINCT r.entity_type) AS rel_entity_types
+    // Review Note: The original cypher query was returning no results even without the ID filter,
+    // so the AQL is not easily testable.
+    FOR doc IN synonym
+        FILTER doc._key IN @ids
+        FILTER doc.original_entity_types != null
+        LET rel_types = (
+            FOR v, e IN 1..1 INBOUND doc has_synonym
+                RETURN {'rel_entity_types': relTypes}
+        )
+        RETURN {
+            'node_id': doc._key,
+            'entity_id': doc.eid,
+            'node_labels': doc.labels[
+                * FILTER
+                CURRENT NOT IN [
+                    'TopicalDescriptor',
+                    'TreeNumber',
+                    'BioCycClass',
+                    'GlobalInclusion',
+                    'Complex'
+                ]
+            ],
+            'valid_entity_types': doc.original_entity_types,
+            'rel_entity_types': rel_types
+        }
     """
 
 
