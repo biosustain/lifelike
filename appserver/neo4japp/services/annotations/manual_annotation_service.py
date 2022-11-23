@@ -604,31 +604,34 @@ class ManualAnnotationService:
     def _global_annotation_exists_in_kg(self, values: dict):
         entity_type = values['entity_type']
         queries = {
-            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.CHEMICAL.value: get_chemical_global_inclusion_exist_query(),
-            EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
-            EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
-            EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query(),
-            EntityType.SPECIES.value: get_species_global_inclusion_exist_query(),
-            EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
+            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query,
+            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query,
+            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query,
+            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query,
+            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query,
+            EntityType.CHEMICAL.value: get_chemical_global_inclusion_exist_query,
+            EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query,
+            EntityType.GENE.value: get_gene_global_inclusion_exist_query,
+            EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query,
+            EntityType.SPECIES.value: get_species_global_inclusion_exist_query,
+            EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query
         }
 
         # query can be empty string because some entity types
         # do not exist in the normal domain/labels
-        query = queries.get(entity_type, '')
+        query_fn = queries.get(entity_type, '')()
         try:
-            check = self.graph.exec_read_query_with_params(query, values)[0] \
-                if query else {'node_exist': False}
+            check = execute_arango_query(
+                db=get_db(self.arango_client),
+                query=query_fn(),
+                **values
+            )[0] if query_fn else {'node_exist': False}
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception:
             current_app.logger.error(
                 f'Failed to create global inclusion, '
-                f'knowledge graph failed with query: {query}.',
+                f'knowledge graph failed with query: {query_fn()}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
@@ -636,14 +639,17 @@ class ManualAnnotationService:
             return check
         else:
             try:
-                query = get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type)
-                check = self.graph.exec_read_query_with_params(query, values)[0]
+                check = execute_arango_query(
+                    db=get_db(self.arango_client),
+                    query=get_***ARANGO_DB_NAME***_global_inclusion_exist_query()
+                    **values,
+                )[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise
             except Exception:
                 current_app.logger.error(
                     f'Failed to create global inclusion, '
-                    f'knowledge graph failed with query: {query}.',
+                    f'knowledge graph failed with query: {query_fn()}.',
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 

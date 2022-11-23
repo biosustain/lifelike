@@ -273,87 +273,183 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query():
     """
 
 
-def get_mesh_global_inclusion_exist_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
+def get_mesh_global_inclusion_exist_query():
     return f"""
-    OPTIONAL MATCH (n:db_MESH)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        '{query_label}' IN labels(n) AS node_has_entity_label,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET meshGlobalInclusion = FIRST(
+        FOR doc IN mesh
+            FILTER doc.eid == @eid
+            RETURN doc
+    )
+    LET synonymWithName = FIRST(
+        FOR doc IN synonym
+            FILTER doc.name == @synonym_name
+            RETURN doc
+    )
+    LET inclusionToSynonymRel = FIRST(
+        FOR rel IN has_synonym
+            FILTER rel._from == meshGlobalInclusion._id
+            FILTER rel._to == synonymWithName._id
+            RETURN rel
+    )
+    RETURN {{
+        'node_exist': meshGlobalInclusion != NULL,
+        'synonym_exist': synonymWithName != NULL AND inclusionToSynonymRel != NULL,
+        'node_has_entity_label': @entity_type IN meshGlobalInclusion.labels
+    }}
     """
 
 
 def get_chemical_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_CHEBI:Chemical)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET chebiGlobalInclusion = FIRST(
+        FOR doc IN chebi
+            FILTER 'Chemical' IN doc.labels
+            FILTER doc.eid == @eid
+            RETURN doc
+    )
+    LET synonymWithName = FIRST(
+        FOR doc IN synonym
+            FILTER doc.name == @synonym_name
+            RETURN doc
+    )
+    LET inclusionToSynonymRel = FIRST(
+        FOR rel IN has_synonym
+            FILTER rel._from == chebiGlobalInclusion._id
+            FILTER rel._to == synonymWithName._id
+            RETURN rel
+    )
+    RETURN {
+        'node_exist': chebiGlobalInclusion != NULL,
+        'synonym_exist': synonymWithName != NULL AND inclusionToSynonymRel != NULL
+    }
     """
 
 
 def get_compound_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_BioCyc:Compound)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET biocycGlobalInclusion = FIRST(
+        FOR doc IN biocyc
+            FILTER 'Compound' IN doc.labels
+            FILTER doc.eid == @eid
+            RETURN doc
+    )
+    LET synonymWithName = FIRST(
+        FOR doc IN synonym
+            FILTER doc.name == @synonym_name
+            RETURN doc
+    )
+    LET inclusionToSynonymRel = FIRST(
+        FOR rel IN has_synonym
+            FILTER rel._from == biocycGlobalInclusion._id
+            FILTER rel._to == synonymWithName._id
+            RETURN rel
+    )
+    RETURN {
+        'node_exist': biocycGlobalInclusion != NULL,
+        'synonym_exist': synonymWithName != NULL AND inclusionToSynonymRel != NULL
+    }
     """
 
 
 def get_gene_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:Gene)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET res = (
+        // Review note: This union may not be necessary if we're strictly expecting either ncbi or biocyc results from this query
+        FOR n IN union(
+            (
+                FOR n1 IN ncbi
+                    FILTER n1.eid == @eid
+                    // Review note: I had to turn this filter off for it to return results in
+                    // the newest db. Same for the one below.
+                    // FILTER n1.master == true
+                    RETURN n1
+            ),
+            (
+                FOR n2 IN biocyc
+                    FILTER n2.eid == @eid
+                    // Review note: I had to turn this filter off for it to return results in
+                    // the newest db. Same for the one below.
+                    // FILTER n2.master == true
+                    RETURN n2
+            )
+        )
+            FILTER 'Gene' IN n.labels
+            LET synList = (
+                FOR v, e IN 1..1 OUTBOUND n has_synonym
+                FILTER v.name == @synonym
+                RETURN 1
+            )
+            RETURN {node_exist: true, synonym_exist: length(synList) > 0}
+    )
+    RETURN length(res) == 0 ? { node_exist: false, synonym_exist: false } : res[0]
     """
 
 
 def get_pathway_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:Pathway)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET res = (
+        FOR n IN biocyc
+            FILTER n.eid == @eid
+            FILTER 'Pathway' IN n.labels
+        LET synList = (
+            FOR v, e IN 1..1 OUTBOUND n has_synonym
+                FILTER v.name == @synonym
+                RETURN 1
+        )
+        RETURN {node_exist: true, synonym_exist: length(synList) > 0}
+    )
+    RETURN length(res) == 0 ? { node_exist: false, synonym_exist: false } : res[0]
     """
 
 
 def get_protein_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_UniProt:Protein)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET res = (
+        FOR n IN uniprot
+            FILTER n.eid == @eid
+            FILTER 'Protein' IN n.labels
+        LET synList = (
+            FOR v, e IN 1..1 OUTBOUND n has_synonym
+                FILTER v.name == @synonym
+                RETURN 1
+        )
+        RETURN {node_exist: true, synonym_exist: length(synList) > 0}
+    )
+    RETURN length(res) == 0 ? { node_exist: false, synonym_exist: false } : res[0]
     """
 
 
 def get_species_global_inclusion_exist_query():
     return """
-    OPTIONAL MATCH (n:db_NCBI:Taxonomy)-[:HAS_SYNONYM]->(s)
-    WHERE n.eid = $entity_id
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) AS synonym_exist
+    LET res = (
+        FOR n IN taxonomy
+            FILTER n.eid == @eid
+        LET synList = (
+            FOR v, e IN 1..1 OUTBOUND n has_synonym
+                FILTER v.name == @synonym
+                RETURN 1
+        )
+        RETURN {node_exist: true, synonym_exist: length(synList) > 0}
+    )
+    RETURN length(res) == 0 ? { node_exist: false, synonym_exist: false } : res[0]
     """
 
 
-def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
+def get_***ARANGO_DB_NAME***_global_inclusion_exist_query():
     return f"""
-    OPTIONAL MATCH (n:db_Lifelike:{query_label})-[r:HAS_SYNONYM]->(s)
-    WHERE n.name = $common_name AND r.entity_type = $entity_type
-    RETURN n IS NOT NULL AS node_exist,
-        $synonym IN collect(s.name) OR
-        CASE WHEN
-            n IS NOT NULL THEN NOT 'NULL_' IN n.eid
-        ELSE false END AS synonym_exist
+    LET res = (
+        FOR n IN ***ARANGO_DB_NAME***
+            FILTER n.name == @common_name
+            FILTER @entity_type IN n.labels
+        LET synList = (
+            FOR v, e IN 1..1 OUTBOUND n has_synonym
+            FILTER v.name == @synonym
+            FILTER e.entity_type == @entity_type
+            RETURN 1
+        )
+        RETURN {{node_exist: true, synonym_exist: length(synList) > 0}}
+    )
+    RETURN length(res) == 0 ? {{ node_exist: false, synonym_exist: false }} : res[0]
     """
 
 
