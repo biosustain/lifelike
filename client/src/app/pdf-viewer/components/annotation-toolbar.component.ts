@@ -1,10 +1,21 @@
-import { Component, ElementRef, NgZone, Output, EventEmitter, Input, HostBinding, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  NgZone,
+  Output,
+  ViewEncapsulation,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { isEmpty, once } from 'lodash-es';
 
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 
 import { AnnotationEditDialogComponent } from './annotation-edit-dialog.component';
 import { Rect } from '../annotation-type';
@@ -55,40 +66,91 @@ export class AnnotationToolbarComponent {
     });
   }
 
-  private detectPageFromRanges(ranges: Range[]): number | undefined {
-    for (const range of ranges) {
-      const element: Element = ranges[0].commonAncestorContainer.parentElement;
-      const pageElement = element.closest('.page');
-      if (pageElement) {
-        return parseInt(pageElement.getAttribute('data-page-number'), 10);
-      }
-    }
-    return null;
+  getPageNumber(page: Element): number {
+    return parseInt(page.getAttribute('data-page-number'), 10);
   }
 
-  openAnnotationPanel(event) {
-    event.preventDefault();
-    const selection = window.getSelection();
-    const text = selection.toString().trim();
-    const ranges = this.getValidSelectionRanges(selection);
-    const currentPage = this.detectPageFromRanges(ranges);
+  wrappingPage(node: Node) {
+    const element = node instanceof Element ? node : node.parentElement;
+    return element.closest('.page');
+  }
 
-    if (ranges.length && currentPage != null) {
+  private detectFirstPageFromRange(range: Range): [Element, boolean] {
+    let multipage = false;
+    for (const containerAccessor of ['commonAncestorContainer', 'startContainer', 'endContainer']) {
+      const wrappingPage = this.wrappingPage(range[containerAccessor]);
+      if (wrappingPage) {
+        return [wrappingPage, multipage];
+      }
+      multipage = true;
+    }
+  }
+
+  openAnnotationDialog(text, pageNumber, ranges) {
       const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
       dialogRef.componentInstance.allText = text;
       dialogRef.componentInstance.keywords = [text];
-      dialogRef.componentInstance.coords = this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()));
-      dialogRef.componentInstance.pageNumber = currentPage;
-      dialogRef.result.then(annotation => {
-        this.annotationCreated.emit(annotation);
-        window.getSelection().empty();
-      }, () => {
-        // reselect text if canceled
-        ranges.forEach(r => window.getSelection().addRange(r));
-      });
-    } else {
-      this.errorHandler.showError(new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer'));
+      dialogRef.componentInstance.coords = this.toPDFRelativeRects(pageNumber, ranges.map(range => range.getBoundingClientRect()));
+      dialogRef.componentInstance.pageNumber = pageNumber;
+      return dialogRef.result.then(
+        annotation => this.annotationCreated.emit(annotation)
+      );
+  }
+
+  async openAnnotationPanel(event) {
+    event.preventDefault();
+    const selection = window.getSelection();
+    const limitSelectionToOnePage = once(async () => {
+      const dialogRef = this.modalService.open(ConfirmDialogComponent);
+      dialogRef.componentInstance.message =
+        'Annotations across pages are not supported, would you like to limit it to the first page?';
+      return dialogRef.result;
+    });
+    let annotationPage;
+    const ranges = [];
+    for (const range of this.getValidSelectionRanges(selection)) {
+      const [page, multipage] = this.detectFirstPageFromRange(range);
+      if (!annotationPage) {
+        annotationPage = page;
+      }
+      if ((page !== annotationPage) || multipage) {
+        if (await limitSelectionToOnePage()) {
+          selection.removeRange(range);
+          if (page !== annotationPage) {
+            // range ends on annotation page
+            if (this.wrappingPage(range.endContainer) === annotationPage) {
+              // select fron begin of the page
+              range.setStartBefore(annotationPage);
+            } else {
+              // if we cannot find right subset of range then keep it deleted
+              continue;
+            }
+          } else if (multipage) {
+            // select till the end of the page
+            range.setEndAfter(annotationPage);
+          }
+          selection.addRange(range);
+        } else {
+          return this.snackBar.open(
+            'Annotation creation has been cancelled.',
+            'Close',
+            {duration: 3000}
+          );
+        }
+      }
+      ranges.push(range);
     }
+    if (isEmpty(ranges)) {
+     return this.errorHandler.showError(
+       new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer')
+     );
+    }
+    const text = selection.toString().trim();
+    const pageNumber = this.getPageNumber(annotationPage);
+    return this.openAnnotationDialog(text, pageNumber, ranges).then(
+      () => window.getSelection().empty(),
+      () => ranges.forEach(r => window.getSelection().addRange(r))
+    );
   }
 
   private toPDFRelativeRects(pageNumber: number, rects: (ClientRect | DOMRect)[]): Rect[] {
@@ -113,15 +175,13 @@ export class AnnotationToolbarComponent {
    *
    * @param selection the selection to parse
    */
-  private getValidSelectionRanges(selection: Selection): Range[] {
-    const ranges: Range[] = [];
+  private *getValidSelectionRanges(selection: Selection): Generator<Range> {
     const container = this.containerRef.nativeElement;
     for (let i = 0; i < selection.rangeCount; i++) {
       const range = selection.getRangeAt(i);
       if (!range.collapsed && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
-        ranges.push(range);
+        yield range;
       }
     }
-    return ranges;
   }
 }
