@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
+import { environment } from 'environments/environment';
 
 import { KeycloakUserData } from '../interfaces';
 
@@ -11,7 +12,7 @@ export class KeycloakAccountService {
 
   // NOTE: Make sure the Keycloak account api base path is included in the `allowedUrls` property of the OAuthModuleConfig object in
   // the auth-module-config file. Otherwise the Keycloak access token won't be added automatically to the headers of these requests.
-  private keycloakAccountApiPath = 'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master/account';
+  private keycloakAccountApiPath = environment.keycloakApiBaseUrl;
 
   constructor(
     private http: HttpClient,

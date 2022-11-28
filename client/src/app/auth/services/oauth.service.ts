@@ -3,13 +3,13 @@ import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Store } from '@ngrx/store';
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
 import { State } from 'app/auth/store/state';
 
 import { AuthActions } from '../store';
-import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class LifelikeOAuthService {
@@ -93,9 +93,9 @@ export class LifelikeOAuthService {
           this.store$.dispatch(AuthActions.oauthLogin({
             oauthLoginData: {
               subject: payload.sub,
-              firstName: payload.first_name,
-              lastName: payload.last_name,
-              username: payload.username
+              firstName: payload.first_name || payload.given_name || payload.name,
+              lastName: payload.last_name || payload.family_name,
+              username: payload.username || payload.preferred_username,
             }
           }));
           return Promise.resolve();

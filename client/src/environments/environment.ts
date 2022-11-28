@@ -3,27 +3,43 @@
 // The list of file replacements can be found in `angular.json`.
 
 interface EnvironmentVars {
-  production: boolean;
-  keggEnabled: boolean;
-  oauthEnabled: boolean;
-  testVar: string;
-  oauthIssuer: string;
-  oauthClientId: string;
-  ***ARANGO_DB_NAME***Version: string;
+  production?: boolean;
+  keggEnabled?: boolean;
+  testVar?: string;
+  oauthEnabled?: boolean;
+  oauthIssuer?: string;
+  oauthClientId?: string;
+  oauthScopes?: string;
+  oauthPasswordChangeLink?: string;
+  keycloakApiBaseUrl?: string;
+  ***ARANGO_DB_NAME***Version?: string;
 }
 
-// Read environment variables (set by env.js) from browser window
-const browserWindow = window || {};
-const envAccessor = '__env';
-const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}) as EnvironmentVars;
+// Read environment variables (set by env.js) into the globalThis object
+const {
+  production = false,
+  keggEnabled = false,
+  testVar = '',
+  oauthEnabled = false,
+  oauthIssuer,
+  oauthClientId,
+  oauthScopes = 'openid profile email offline_access',
+  oauthPasswordChangeLink,
+  keycloakApiBaseUrl,
+  ***ARANGO_DB_NAME***Version = '__VERSION__', // This is statically replaced during build time
+}: EnvironmentVars = globalThis.window?.['__env'];
 
 export const environment = {
-  production: browserWindowEnv.production || false,
-  keggEnabled: browserWindowEnv.keggEnabled || false,
-  oauthEnabled: browserWindowEnv.oauthEnabled || false,
-  oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
-  oauthClientId: browserWindowEnv.oauthClientId || 'client',
-  ***ARANGO_DB_NAME***Version: '__VERSION__', // This is replaced during the docker build stage
+  production,
+  keggEnabled,
+  testVar,
+  oauthEnabled,
+  oauthIssuer,
+  oauthClientId,
+  oauthScopes,
+  oauthPasswordChangeLink,
+  keycloakApiBaseUrl,
+  ***ARANGO_DB_NAME***Version,
 };
 
 /*
