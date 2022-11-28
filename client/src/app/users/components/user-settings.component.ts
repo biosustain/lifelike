@@ -7,7 +7,7 @@ import { AuthSelectors } from 'app/auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AppUser } from 'app/interfaces';
 
-import { environment } from '../../../environments/environment';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-user-settings',
@@ -17,8 +17,7 @@ export class UserSettingsComponent {
   currentUsers$: Observable<AppUser>;
   activeTab: 'profile' | 'security';
 
-  // TODO: Better to have an environment variable for this
-  oauthPasswordChangeLink = 'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master/account/#/security/signingin';
+  oauthPasswordChangeLink = environment.oauthPasswordChangeLink;
 
   get oauthEnabled() {
     return environment.oauthEnabled;

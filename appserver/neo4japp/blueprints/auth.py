@@ -162,11 +162,11 @@ def verify_token(token):
         # Note that this except block should only trigger when a user signs in via OAuth for the
         # first time.
         user = AppUser(
-            username=decoded['username'],
+            username=decoded['preferred_username'],
             email=decoded['email'],
-            first_name=decoded['first_name'],
-            last_name=decoded['last_name'],
-            subject=decoded['sub']
+            first_name=decoded.get('given_name') or decoded.get('name', ''),
+            last_name=decoded.get('family_name', ''),
+            subject=decoded.get('sub')
         )
 
         # Add the "user" role to the new user
