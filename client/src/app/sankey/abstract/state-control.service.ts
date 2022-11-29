@@ -107,7 +107,15 @@ export abstract class StateControlAbstractService<Options extends object, State 
       first(),
       map(delta => transform(
         statePatch,
-        (accumulator, value, key, object) => accumulator[key] = isNil(value) ? delta[key] : value,
+        (accumulator, value, key, object) => {
+          if (isNil(value)) {
+            if (delta.hasOwnProperty(key)) {
+              accumulator[key] = delta[key];
+            }
+          } else {
+            accumulator[key] = value;
+          }
+        },
         {} as Partial<State>
       )),
       tap(stateDelta => this.delta$.next(stateDelta))
