@@ -560,6 +560,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
 
+    if (this.isProjectRoot) {
+      return url + '#project';
+    }
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
         let fragment = '';
@@ -600,7 +603,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     return sources;
   }
-
 
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {

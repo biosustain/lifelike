@@ -1,4 +1,4 @@
-import { assign, filter, isEmpty, isMatch, startsWith } from 'lodash-es';
+import { assign, filter, isEmpty, isMatch, startsWith, isArray } from 'lodash-es';
 
 import { findEntriesKey, findEntriesValue, isNotEmpty } from '../utils';
 import { InternalURIType, Unicodes } from '../constants';
@@ -161,7 +161,9 @@ export const isInternalUri = (uri: AppURL) => uri.isRelative || uri.origin === l
 const internalURITypeMapping: Map<object, InternalURIType> = new Map([
   [['search', 'content'], InternalURIType.Search],
   [['search', 'graph'], InternalURIType.KgSearch],
+  [{pathSegments: ['folders'], fragment: 'project'}, InternalURIType.Project],
   [['folders'], InternalURIType.Directory],
+  [{pathSegments: {...['projects', , 'folders']}, fragment: 'project'}, InternalURIType.Project],
   [['projects', , 'folders'], InternalURIType.Directory],
   [['projects', , 'bioc'], InternalURIType.BioC],
   [['projects', , 'enrichment-table'], InternalURIType.EnrichmentTable],
@@ -176,7 +178,13 @@ export const getInternalURIType = (uri: AppURL) => {
     return findEntriesValue(
       internalURITypeMapping,
         // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
-        expectedPathSegments => isMatch(uri.pathSegments, {...expectedPathSegments})
+        expected =>
+          isMatch(
+            uri,
+            isArray(expected) ?
+              { pathSegments: expected } :
+              expected
+          )
     );
   }
 };

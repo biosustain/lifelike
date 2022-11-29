@@ -132,7 +132,8 @@ export enum InternalURIType {
   EnrichmentTable,
   Map,
   Graph,
-  Pdf
+  Pdf,
+  Project
 }
 
 export enum Unicodes {
