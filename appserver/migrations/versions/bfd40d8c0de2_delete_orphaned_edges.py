@@ -90,8 +90,21 @@ def iterate_maps(migrate_callback):
 
                 # Zip the file back up before saving to the DB
                 zip_bytes2 = io.BytesIO()
-                with zipfile.ZipFile(zip_bytes2, 'x') as zip_file:
-                    zip_file.writestr('graph.json', byte_graph)
+                with zipfile.ZipFile(zip_bytes2, 'x') as new_zip:
+                    new_zip.writestr('graph.json', byte_graph)
+
+                    # Make sure to copy the image bytes into the hash object as well
+                    for node in map_json['nodes']:
+                        if node.get('image_id', None):
+                            image_name = "".join(['images/', node.get('image_id'), '.png'])
+                            try:
+                                image_bytes = zip_file.read(image_name)
+                                new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                            except KeyError:
+                                # For some reason there was a node with an image id, but no corresponding
+                                # image file
+                                continue
+
                 raw_file = zip_bytes2.getvalue()
                 checksum_sha256 = hashlib.sha256(raw_file).digest()
                 session.execute(
