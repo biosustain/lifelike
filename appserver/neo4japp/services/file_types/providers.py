@@ -145,7 +145,7 @@ BIOC_RE = re.compile(r'^ */projects/.+/bioc/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
-PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
+PROJECTS_RE = re.compile(r'(^ */projects/(?!.*/.+).*)|(^ */(projects/.+/)?folders/.*#project)')
 ICON_DATA: dict = {}
 PDF_PAD = 1.0
 
@@ -707,6 +707,8 @@ def get_link_icon_type(node: dict):
             return 'search', link['url']
         elif KGSEARCH_RE.search(link['url']):
             return 'kgsearch', link['url']
+        elif PROJECTS_RE.match(link['url']):
+            return 'project', link['url']
         elif DIRECTORY_RE.search(link['url']):
             return 'directory', link['url']
         elif DOCUMENT_RE.match(link['url']):
@@ -720,8 +722,6 @@ def get_link_icon_type(node: dict):
             else:
                 node['data']['hyperlinks'].remove(link)
             return 'document', None
-        elif PROJECTS_RE.match(link['url']):
-            return 'project', link['url']
         elif BIOC_RE.match(link['url']):
             return 'bioc', link['url']
         elif MAIL_RE.match(link['url']):

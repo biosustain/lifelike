@@ -477,6 +477,9 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         case InternalURIType.Pdf:
           iconCode = Unicodes.Pdf;
           break search;
+        case InternalURIType.Project:
+          iconCode = Unicodes.Project;
+          break search;
         default:
           // Lagacy implementation
           try {
