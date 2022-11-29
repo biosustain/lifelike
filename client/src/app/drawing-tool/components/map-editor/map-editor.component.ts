@@ -230,8 +230,10 @@ export class MapEditorComponent
   canCreateGroupFromSelection() {
     const selection = this.graphCanvas?.selection.get();
     if (selection) {
-      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 1 &&
-        selection.filter(entity => entity.type === GraphEntityType.Group).length === 0;
+      return (
+        selection.filter(entity => entity.type === GraphEntityType.Node).length > 1 &&
+        !selection.find(entity => entity.type === GraphEntityType.Group)
+      );
     }
     return false;
   }
@@ -428,26 +430,40 @@ export class MapEditorComponent
   }
 
   createGroup() {
-    this.graphCanvas?.selection.replace([]);
-    this.graphCanvas?.execute(new GroupCreation(
-      'Create group',
-      {
-        members: this.graphCanvas.selection.get().flatMap(entity => entity.type === GraphEntityType.Node ?
-          [entity.entity as UniversalGraphNode] : []),
-        margin: 10,
-        hash: uuidv4(),
-        display_name: '',
-        label: GROUP_LABEL,
-        sub_labels: [],
-        // This data depends on members, so we can't calculate it now
-        data: {
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100
-        }
-      }, true, true
-    ));
+    const {graphCanvas} = this;
+    if (graphCanvas) {
+      const {selection} = graphCanvas;
+      const members = selection.get().reduce(
+        (r, {type, entity}) =>
+          type === GraphEntityType.Node ?
+            r.concat(entity) :
+            r,
+        [] as UniversalGraphNode[],
+      );
+      selection.replace([]);
+      graphCanvas.execute(
+        new GroupCreation(
+          'Create group',
+          {
+            members,
+            margin: 10,
+            hash: uuidv4(),
+            display_name: '',
+            label: GROUP_LABEL,
+            sub_labels: [],
+            // This data depends on members, so we can't calculate it now
+            data: {
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 100,
+            },
+          },
+          true,
+          true,
+        ),
+      );
+    }
   }
 
   addToGroup() {
