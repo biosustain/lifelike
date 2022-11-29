@@ -67,6 +67,21 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   _data$ = new ReplaySubject<Graph.File>(1);
 
   state$ = this.delta$.pipe(
+    map(delta => merge(
+      {},
+      {
+        networkTraceIdx: 0,
+        normalizeLinks: false,
+        prescalerId: PRESCALER_ID.none,
+        labelEllipsis: {
+          enabled: true,
+          value: LayoutService.labelEllipsis
+        },
+        fontSizeScale: 1.0,
+        shortestPathPlusN: 0
+      },
+      delta
+    )),
     switchMap(delta =>
       iif(
         () => !isNil(delta.viewName) && !isNil(delta.networkTraceIdx),
@@ -94,21 +109,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         of(delta)
       )
     ),
-    map(delta => merge(
-      {},
-      {
-        networkTraceIdx: 0,
-        normalizeLinks: false,
-        prescalerId: PRESCALER_ID.none,
-        labelEllipsis: {
-          enabled: true,
-          value: LayoutService.labelEllipsis
-        },
-        fontSizeScale: 1.0,
-        shortestPathPlusN: 0
-      },
-      delta
-    )),
     switchMap((delta: Partial<SankeyState>) =>
       iif(
         () => !isNil(delta.networkTraceIdx),
