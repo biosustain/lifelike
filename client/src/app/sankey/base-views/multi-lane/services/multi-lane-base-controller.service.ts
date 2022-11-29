@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
 import { merge, isNil, uniq } from 'lodash-es';
 import { of, iif, defer } from 'rxjs';
 
@@ -87,6 +87,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
       )
     )
   ).pipe(
+    takeUntil(this.destroy$),
     debug('MultiLaneBaseControllerService.state$'),
     shareReplay<Base['state']>({bufferSize: 1, refCount: true})
   );
