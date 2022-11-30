@@ -1221,6 +1221,14 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format == 'svg':
             content = substitute_svg_images(content, images, zip_file, folder.name)
 
+        if format == 'pdf' and not self_contained_export:
+            reader = PdfFileReader(content, strict=False)
+            writer = PdfFileWriter()
+            writer.appendPagesFromReader(reader)
+            self.add_file_bookmark(writer, 0, file)
+            content = io.BytesIO()
+            writer.write(content)
+
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
@@ -1248,10 +1256,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ValidationError("Unknown or invalid export format for the requested file.",
                                   requested_format)
         ext = f'.{requested_format}'
-        if len(files) > 1:
-            content = merger(files, links)
-        else:
-            content = self.get_file_export(files[0], requested_format)
+        content = merger(files, links)
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
@@ -1304,6 +1309,17 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_im.save(final_bytes, format='PNG')
         return final_bytes
 
+    def add_file_bookmark(self, writer, page_number, file):
+        file_bookmark = writer.addBookmark(file.path, page_number, bold=True)
+        for line in (
+            f'Description:\t{file.description}',
+            f'Creation date:\t{file.creation_date}',
+            f'Modified date:\t{file.modified_date}',
+        ):
+            writer.addBookmark(
+                line, page_number, file_bookmark
+            )
+
     def merge_pdfs(self, files: List[Files], link_to_page_map=None):
         """ Merge pdfs and add links to map.
         params:
@@ -1340,15 +1356,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             # endregion
             num_of_pages = writer.getNumPages()  # index of first attached page since this point
             writer.appendPagesFromReader(reader)
-            file_bookmark = writer.addBookmark(file.path, num_of_pages, bold=True)
-            for line in (
-                f'Description:\t{file.description}',
-                f'Creation date:\t{file.creation_date}',
-                f'Modified date:\t{file.modified_date}',
-            ):
-                writer.addBookmark(
-                    line, num_of_pages, file_bookmark
-                )
+            self.add_file_bookmark(writer, num_of_pages, file)
 
         # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:
