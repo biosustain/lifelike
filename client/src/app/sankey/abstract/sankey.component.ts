@@ -13,6 +13,7 @@ import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyId, TypeContext, SankeyLinkInterface } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
+import { closePopups } from 'app/shared/DOMutils';
 
 import { representativePositiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
@@ -482,8 +483,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
         this.selection.reset();
 
         // events are consumed by d3_zoom recall mouse down/up on document to close possible popups
-        document.dispatchEvent(new MouseEvent('mousedown'));
-        document.dispatchEvent(new MouseEvent('mouseup'));
+        closePopups();
       }
     });
   }
