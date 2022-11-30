@@ -30,7 +30,7 @@ x-appserver: &appserver
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
-    - LIFELIKE_ARANGO_DB_NAME=***ARANGO_DB_NAME***
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -46,7 +46,7 @@ x-appserver: &appserver
     - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
     - ./appserver:/home/n4j
-    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+    # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
     - elasticsearch
     - graphdatabase
