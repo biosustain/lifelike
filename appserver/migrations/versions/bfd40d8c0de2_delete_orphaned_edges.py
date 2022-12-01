@@ -28,8 +28,6 @@ depends_on = None
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
-conn = op.get_bind()
-
 t_files = table(
     'files',
     column('id', sa.Integer),
@@ -51,21 +49,22 @@ def map_hashes(coll):
     return {node['hash'] for node in coll}
 
 
-def delete_orphaned_edges(map):
-    existing_hashes = map_hashes(map.get('nodes', []))
-    for group in map.get('groups', []):
+def delete_orphaned_edges(map_json):
+    existing_hashes = map_hashes(map_json.get('nodes', []))
+    for group in map_json.get('groups', []):
         existing_hashes.add(group['hash'])
         existing_hashes.update(map_hashes(group.get('members', [])))
     filtered_edges = []
-    for edge in map.get('edges', []):
+    for edge in map_json.get('edges', []):
         if edge['from'] in existing_hashes and edge['to'] in existing_hashes:
             filtered_edges.append(edge)
-    if len(filtered_edges) != len(map['edges']):
-        map['edges'] = filtered_edges
-        return map
+    if len(filtered_edges) != len(map_json['edges']):
+        map_json['edges'] = filtered_edges
+        return map_json
 
 
 def iterate_maps(migrate_callback):
+    conn = op.get_bind()
     session = Session(conn)
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
@@ -79,7 +78,7 @@ def iterate_maps(migrate_callback):
     ))
 
     for chunk in window_chunk(files, 25):
-        for id, content in chunk:
+        for file_id, content in chunk:
             zip_file = zipfile.ZipFile(io.BytesIO(content))
             map_json = json.loads(zip_file.read('graph.json'))
             updated = migrate_callback(map_json)
@@ -109,7 +108,7 @@ def iterate_maps(migrate_callback):
                 checksum_sha256 = hashlib.sha256(raw_file).digest()
                 session.execute(
                     t_files_content.update().where(
-                        t_files_content.c.id == id
+                        t_files_content.c.id == file_id
                     ).values(
                         raw_file=raw_file,
                         checksum_sha256=checksum_sha256
@@ -127,3 +126,6 @@ def upgrade():
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     iterate_maps(delete_orphaned_edges)
+
+def downgrade():
+    pass
