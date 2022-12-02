@@ -63,7 +63,7 @@ class FileHashIdSchema(CamelCaseSchema):
 
 
 class ProjectRootSchema(FileHashIdSchema, StarredFileSchema):
-    pass
+    public = fields.Boolean()
 
 
 ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
@@ -114,6 +114,7 @@ class BulkProjectUpdateRequestSchema(CamelCaseSchema):
     name = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
     description = fields.String(validate=marshmallow.validate.Length(
         max=MAX_FILE_DESCRIPTION_LENGTH))
+    public = fields.Boolean()
 
 
 # Response

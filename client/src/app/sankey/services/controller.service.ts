@@ -67,6 +67,21 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   _data$ = new ReplaySubject<Graph.File>(1);
 
   state$ = this.delta$.pipe(
+    map(delta => merge(
+      {},
+      {
+        networkTraceIdx: 0,
+        normalizeLinks: false,
+        prescalerId: PRESCALER_ID.none,
+        labelEllipsis: {
+          enabled: true,
+          value: LayoutService.labelEllipsis
+        },
+        fontSizeScale: 1.0,
+        shortestPathPlusN: 0
+      },
+      delta
+    )),
     switchMap(delta =>
       iif(
         () => !isNil(delta.viewName) && !isNil(delta.networkTraceIdx),
@@ -94,21 +109,6 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         of(delta)
       )
     ),
-    map(delta => merge(
-      {},
-      {
-        networkTraceIdx: 0,
-        normalizeLinks: false,
-        prescalerId: PRESCALER_ID.none,
-        labelEllipsis: {
-          enabled: true,
-          value: LayoutService.labelEllipsis
-        },
-        fontSizeScale: 1.0,
-        shortestPathPlusN: 0
-      },
-      delta
-    )),
     switchMap((delta: Partial<SankeyState>) =>
       iif(
         () => !isNil(delta.networkTraceIdx),
@@ -341,10 +341,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
     switchMap(networkTrace =>
       iif(
         () => networkTrace.defaultSizing,
-        of({
-          predefinedValueAccessorId: networkTrace._defaultSizing,
-          ...networkTrace.defaultSizing
-        }),
+        of(networkTrace._defaultSizing),
         defer(() => this.getNetworkTraceBestFittingSizing$(networkTrace))
       )
     )
@@ -376,16 +373,9 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         return iif(
           () => isNil(persumedValueAccessorId),
           this.oneToMany$.pipe(
-            map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height),
-            map(valueAccessorId => ({
-              predefinedValueAccessorId: valueAccessorId,
-              ...this.pickPartialAccessors(predefinedValueAccessors[valueAccessorId])
-            }))
+            map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height)
           ),
-          of({
-              predefinedValueAccessorId: persumedValueAccessorId,
-            ...this.pickPartialAccessors(predefinedValueAccessors[persumedValueAccessorId])
-          })
+          of(persumedValueAccessorId)
         );
       })
     );

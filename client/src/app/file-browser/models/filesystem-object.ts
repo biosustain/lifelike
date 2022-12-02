@@ -47,7 +47,7 @@ export class ProjectImpl implements Project, ObservableObject {
   modifiedDate: string;
   root: FilesystemObject;
   privileges: ProjectPrivileges;
-  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  fontAwesomeIcon = `fa-4x ${FAClass.Project}`;
   changed$ = new Subject();
 
   get starred(): boolean {
@@ -57,6 +57,16 @@ export class ProjectImpl implements Project, ObservableObject {
   set starred(value) {
     if (this.root) {
       this.root.update({starred: value});
+    }
+  }
+
+  get public(): boolean {
+    return this.root?.public;
+  }
+
+  set public(value) {
+    if (this.root) {
+      this.root.update({public: value});
     }
   }
 
@@ -338,6 +348,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
+        if (this.isProjectRoot) {
+          return FAClass.Project;
+        }
         return FAClass.Directory;
       case MimeTypes.Map:
         return FAClass.Map;
@@ -525,9 +538,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProjectRoot) {
-          return ['/projects', projectName];
-        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
@@ -550,6 +560,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
 
+    if (this.isProjectRoot) {
+      return url + '#project';
+    }
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
         let fragment = '';
@@ -590,7 +603,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     return sources;
   }
-
 
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {

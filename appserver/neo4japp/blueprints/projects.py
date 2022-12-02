@@ -244,6 +244,9 @@ class ProjectBaseView(MethodView):
                     if getattr(project, field) != params[field]:
                         setattr(project, field, params[field])
                         changed_fields.add(field)
+                if 'public' in params:
+                    project.root.public = params['public']
+                    changed_fields.add('public')
 
         if len(changed_fields):
             try:
