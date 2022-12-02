@@ -31,6 +31,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
 
     const hoverPosition = this.graphView.hoverPosition;
     if (hoverPosition != null) {
+      this.graphView.selection.replace([]);
       this.graphView.execute(new NodeCreation(
         `Create ${node.display_name} node`, {
           hash: makeid(),
@@ -40,7 +41,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
             x: hoverPosition.x,
             y: hoverPosition.y,
           },
-        }, true,
+        }, true, true
       ));
     }
 
