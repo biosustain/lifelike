@@ -121,7 +121,19 @@ export enum FAClass {
   PowerPoint = 'fak fa-powerpoint-solid',
   Word = 'fak fa-word-solid',
   Cytoscape = 'fak fa-cytoscape-solid',
+  Project = 'fas fa-layer-group'
+}
 
+export enum InternalURIType {
+  Search,
+  KgSearch,
+  Directory,
+  BioC,
+  EnrichmentTable,
+  Map,
+  Graph,
+  Pdf,
+  Project
 }
 
 export enum Unicodes {
@@ -142,7 +154,9 @@ export enum Unicodes {
   Excel = '\ue001',
   Word = '\ue002',
   PowerPoint = '\ue003',
-  Cytoscape = '\ue004'
+  Cytoscape = '\ue004',
+  Search = '\uf002',
+  KgSearch = '\uf78a'
 }
 // Colors used to render microsoft icons - they should not change
 export enum CustomIconColors {

@@ -25,14 +25,18 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
         pdf_text += page['pageText']
         for token in page['tokens']:
             # for now ignore any rotated words
-            if token['text'] not in punctuation and all([rect['rotation'] == 0 for rect in token['rects']]):  # noqa
+            if (
+                    token['text'] not in punctuation and
+                    all([rect['rotation'] == 0 for rect in token['rects']])
+            ):
+                token_len = len(token['text'])
+                offset = token['pgIdx']
                 pdf_word = PDFWord(
                     keyword=token['text'],
                     normalized_keyword=token['text'],  # don't need to normalize yet
                     page_number=page['pageNo'],
-                    lo_location_offset=token['pgIdx'],
-                    hi_location_offset=token['pgIdx'] if len(
-                        token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
+                    lo_location_offset=offset,
+                    hi_location_offset=offset if token_len == 1 else offset + token_len - 1,
                     heights=[rect['height'] for rect in token['rects']],
                     widths=[rect['width'] for rect in token['rects']],
                     coordinates=[
@@ -44,7 +48,8 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
                         ] for rect in token['rects']
                     ],
                     previous_words=' '.join(
-                        prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
+                        prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]
+                    ) if token['possibleAbbrev'] else '',
                 )
                 parsed.append(pdf_word)
                 prev_words.append(token['text'])

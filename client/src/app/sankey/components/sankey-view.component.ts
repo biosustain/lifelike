@@ -1,23 +1,46 @@
 import {
-  Component,
-  EventEmitter,
-  ViewChild,
-  ComponentFactoryResolver,
-  Injector,
   AfterViewInit,
+  Component,
+  ComponentFactoryResolver,
+  EventEmitter,
   getModuleFactory,
+  HostListener,
+  Injector,
   NgZone,
   OnInit,
-  HostListener
+  ViewChild,
+  NgModuleRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { KeyValue } from '@angular/common';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tap, switchMap, catchError, map, delay, first, startWith, shareReplay, take } from 'rxjs/operators';
-import { Subscription, BehaviorSubject, Observable, of, ReplaySubject, combineLatest, EMPTY, iif, defer, Subject } from 'rxjs';
-import { isNil, zip, omitBy, assign } from 'lodash-es';
+import {
+  catchError,
+  delay,
+  first,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap,
+  scan,
+} from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  combineLatest,
+  defer,
+  EMPTY,
+  iif,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  Subscription,
+} from 'rxjs';
+import { assign, isNil, omitBy, zip } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -29,7 +52,7 @@ import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
 import { SankeyState, ViewBase } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { mapBufferToJson, mapBlobToBuffer } from 'app/shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
@@ -38,6 +61,8 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { AppURL } from 'app/shared/utils/url';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -45,7 +70,10 @@ import { SankeyAdvancedPanelDirective } from '../directives/advanced-panel.direc
 import { SankeyDetailsPanelDirective } from '../directives/details-panel.directive';
 import { SankeyDirective } from '../directives/sankey.directive';
 import { ControllerService } from '../services/controller.service';
-import { BaseControllerService, DefaultBaseControllerService } from '../services/base-controller.service';
+import {
+  BaseControllerService,
+  DefaultBaseControllerService,
+} from '../services/base-controller.service';
 import { MultiLaneBaseModule } from '../base-views/multi-lane/sankey-viewer-lib.module';
 import { SingleLaneBaseModule } from '../base-views/single-lane/sankey-viewer-lib.module';
 import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from '../constants/DI';
@@ -61,6 +89,7 @@ import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument } from '../model/sankey-document';
 
 interface BaseViewContext {
+  moduleRef: NgModuleRef<any>;
   baseView: DefaultBaseControllerService;
   layout: DefaultLayoutService;
   selection: SankeySelectionService;
@@ -265,7 +294,8 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   );
 
   pendingChanges$ = defer(() => this.baseView$.pipe(
-    switchMap(baseView => baseView.hasPendingChanges$)
+    switchMap(baseView => baseView.hasPendingChanges$),
+    startWith(false),
   ));
 
   state$ = this.sankeyController.state$;
@@ -279,10 +309,12 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   viewBase = ViewBase;
 
   /**
-   * Load different base view components upom base view change
+   * Load different base view components upon base view change
    */
   baseViewContext$ = this.sankeyController.baseViewName$.pipe(
-    map(baseViewName => {
+    scan((prev, baseViewName) => {
+      prev.moduleRef?.destroy();
+
       const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
       const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
@@ -301,11 +333,12 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
       return {
+        moduleRef,
         baseView: moduleRef.injector.get(BaseControllerService),
         layout: sankey.instance.sankey,
         selection: moduleRef.injector.get(SankeySelectionService)
       };
-    }),
+    }, {} as BaseViewContext),
     tap(({layout, baseView}) => {
       this.viewController.layout$.next(layout);
       baseView.delta$.next({});
@@ -359,10 +392,14 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
               }],
               sources: [{
                 domain: object.filename,
-                url
+                url,
               }],
             },
-          } as Partial<UniversalGraphNode>)
+          } as Partial<UniversalGraphNode>),
+          ...GenericDataProvider.getURIs([{
+            uri: new AppURL(object.getURL(false)).toAbsolute(),
+            title: object.filename,
+          }]),
         }))
       )
     )

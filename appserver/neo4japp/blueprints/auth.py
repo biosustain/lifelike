@@ -130,11 +130,15 @@ class TokenService:
         except InvalidTokenError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session is invalid, please try logging back in.')  # noqa
+                message='The current authentication session is invalid, '
+                        'please try logging back in.'
+            )
         except ExpiredSignatureError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session has expired, please try logging back in.')  # noqa
+                message='The current authentication session has expired, '
+                        'please try logging back in.'
+            )
 
 
 @auth.verify_token
@@ -197,7 +201,9 @@ def refresh():
     decoded = token_service.decode_token(token)
     if decoded['typ'] != 'refresh':
         raise JWTTokenException(
-            message='Your authentication session expired, but there was an error attempting to renew it.')  # noqa
+            message='Your authentication session expired, '
+                    'but there was an error attempting to renew it.'
+        )
 
     # Create access & refresh token pair
     token_subj = decoded['sub']

@@ -7,6 +7,8 @@ from enum import Enum
 
 from sendgrid import SendGridAPIClient
 
+from neo4japp.util import Enumd
+
 TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc, GO Dataset
@@ -49,13 +51,26 @@ class SortDirection(Enum):
     DESC = 'desc'
 
 
+KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+
+
 # enrichment labels
-class EnrichmentDomain(Enum):
+class EnrichmentDomain(Enumd):
     UNIPROT = 'UniProt'
     REGULON = 'Regulon'
     STRING = 'String'
     GO = 'GO'
     BIOCYC = 'BioCyc'
+
+
+class KGDomain(Enum):
+    REGULON = 'Regulon'
+    UNIPROT = 'UniProt'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'BioCyc'
+    if KEGG_ENABLED:
+        KEGG = 'KEGG'
 
 
 class LogEventType(Enum):
@@ -147,7 +162,9 @@ DISPLAY_NAME_MAP = {
     TYPE_PHENOTYPE: 'name',
     TYPE_PROMOTER: 'name',
     TYPE_PROTEIN: 'name',
-    TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
+    # NOTE: 'title' tend to be long,
+    # might want to use a different attribute or consider truncating on the client
+    TYPE_PUBLICATION: 'title',
     TYPE_ENZREACTION: 'name',
     TYPE_REACTION: 'name',
     TYPE_REGULATION: 'displayName',
@@ -220,7 +237,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'phenotype',
     },
     'food': {
-        'color': '#8eff69',
+        'color': '#f71698',
         'label': 'food',
     },
     'anatomy': {
@@ -232,11 +249,11 @@ ANNOTATION_STYLES_DICT = {
         'label': 'ENTITY'
     },
     'lab strain': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab strain',
     },
     'lab sample': {
-        'color': '#f71698',
+        'color': '#8eff69',
         'label': 'lab sample',
     },
     'link': {

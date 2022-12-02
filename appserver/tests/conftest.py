@@ -31,9 +31,9 @@ from neo4japp.services import (
 )
 from neo4japp.services.elastic import ElasticService
 from neo4japp.util import (
-    get_first_known_label_from_node,
     snake_to_camel_dict,
 )
+from neo4japp.utils.labels import get_first_known_label_from_node
 
 
 def setup_before_request_callbacks(app: Flask):

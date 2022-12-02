@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 
-import { isNil } from 'lodash-es';
+import { isNil, compact } from 'lodash-es';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -10,6 +10,8 @@ import { ObjectEditDialogComponent, ObjectEditDialogValue } from 'app/file-brows
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
@@ -26,14 +28,14 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   organismTaxId: string;
   domains: string[] = [];
 
-  checks: Array<string> = [
+  checks: Array<string> = compact([
     'Regulon',
     'UniProt',
     'String',
     'GO',
     'BioCyc',
-    'KEGG'
-  ];
+    environment.keggEnabled && 'KEGG'
+  ]);
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,

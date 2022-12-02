@@ -1,6 +1,6 @@
 <div class="module" appContainerBreakpoints *ngIf="(loadTask?.status$ | async) as status">
     <app-module-progress *ngIf="status.running">
-        Downloading annotations...
+        Downloading annotations... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
     </app-module-progress>
 
     <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">

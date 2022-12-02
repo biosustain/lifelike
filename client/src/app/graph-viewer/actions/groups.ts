@@ -1,4 +1,9 @@
-import { GraphEntityType, UniversalGraphGroup, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphEdge,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -8,15 +13,18 @@ import { GraphAction, GraphActionReceiver } from './actions';
 export class GroupCreation implements GraphAction {
   constructor(public description: string,
               public group: UniversalGraphGroup,
-              public readonly select = false) {
+              public readonly select = false,
+              public readonly focus = false) {
   }
   apply(component: GraphActionReceiver) {
     component.addGroup(this.group);
     if (this.select) {
-      component.selection.replace([{
+      component.selection.add([{
         type: GraphEntityType.Group,
         entity: this.group,
       }]);
+    }
+    if (this.focus) {
       component.focusEditorPanel();
     }
   }
@@ -29,16 +37,31 @@ export class GroupCreation implements GraphAction {
  * Represents the deletion of a group.
  */
 export class GroupDeletion implements GraphAction {
-  constructor(public description: string,
-              public group: UniversalGraphGroup) {
+  private removedEdges: UniversalGraphEdge[];
+
+  constructor(
+    public description: string,
+    public group: UniversalGraphGroup,
+  ) {
   }
 
   apply(component: GraphActionReceiver) {
-    component.removeGroup(this.group);
+    if (this.removedEdges != null) {
+      throw new Error('cannot double apply GroupDeletion()');
+    }
+    const {removedEdges} = component.removeGroup(this.group);
+    this.removedEdges = removedEdges;
   }
 
   rollback(component: GraphActionReceiver) {
+    if (this.removedEdges == null) {
+      throw new Error('cannot rollback NodeDeletion() if not applied');
+    }
     component.addGroup(this.group);
+    for (const edge of this.removedEdges) {
+      component.addEdge(edge);
+    }
+    this.removedEdges = null;
   }
 }
 

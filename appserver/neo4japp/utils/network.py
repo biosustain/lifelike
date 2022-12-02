@@ -180,7 +180,7 @@ def _check_acceptable_response(accept_header, content_type_header):
         # Reminder that mime-types have this structure: type/subtype;parameter=value
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
         # See this list of common types for examples:
-        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types  # noqa
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
         acceptable_types = map(
             lambda type: type.split(';')[0].strip(),
             accept_header.split(',')
@@ -216,11 +216,9 @@ def read_url(
     """
     Get the contents at a URL, while controlling access to some degree.
 
-    :param args: arguments for the opener
     :param url: string representation of the request url
     :param max_length: the maximum length to download
     :param headers: object representation of the request headers
-    :param req_content_type: the expected content type of the response
     :param read_chunk_size: the size of each chunk when downloading
     :param buffer: the buffer object to put the data in -- if None, then a new
         memory BytesIO will be created

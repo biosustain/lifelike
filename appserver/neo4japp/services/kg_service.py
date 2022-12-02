@@ -1,14 +1,15 @@
 import json
 import os
 import time
+from urllib.parse import urlencode
 
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import Dict, List
+from typing import List
 
 from neo4japp.constants import (
-    BIOCYC_ORG_ID_DICT,
+    BIOCYC_ORG_ID_DICT, KGDomain,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
@@ -23,10 +24,9 @@ from neo4japp.constants import (
     LogEventType,
 )
 from neo4japp.util import (
-    get_first_known_label_from_list,
-    get_first_known_label_from_node,
-    snake_to_camel_dict
+    snake_to_camel_dict, compact
 )
+from neo4japp.utils.labels import get_first_known_label_from_node, get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
 
 
@@ -208,9 +208,11 @@ class KgService(HybridDBDao):
         return {
             result['node_id']: {
                 'result': result['pathways'],
-                'link': f"https://biocyc.org/gene?orgid={BIOCYC_ORG_ID_DICT[tax_id]}&id={result['biocyc_id']}"  # noqa
-                    if tax_id in BIOCYC_ORG_ID_DICT else f"https://biocyc.org/gene?id={result['biocyc_id']}"  # noqa
-            } for result in results}
+                'link': "https://biocyc.org/gene?" + urlencode(compact(dict(
+                    orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None), id=result['biocyc_id'])
+                ))
+            } for result in results
+        }
 
     def get_go_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
@@ -245,8 +247,27 @@ class KgService(HybridDBDao):
         return {
             result['node_id']: {
                 'result': result['node'],
-                'link': f"http://regulondb.ccg.unam.mx/gene?term={result['regulondb_id']}&organism=ECK12&format=jsp&type=gene"  # noqa
+                'link': "http://regulondb.ccg.unam.mx/gene?" + urlencode(compact(dict(
+                    term=result['regulondb_id'],
+                    organism='ECK12',
+                    format='jsp',
+                    type='gene'
+                )))
             } for result in results}
+
+    def get_genes(self, domain: KGDomain, gene_ids: List[int], tax_id: str):
+        if domain == KGDomain.REGULON:
+            return self.get_regulon_genes(gene_ids)
+        if domain == KGDomain.BIOCYC:
+            return self.get_biocyc_genes(gene_ids, tax_id)
+        if domain == KGDomain.GO:
+            return self.get_go_genes(gene_ids)
+        if domain == KGDomain.STRING:
+            return self.get_string_genes(gene_ids)
+        if domain == KGDomain.UNIPROT:
+            return self.get_uniprot_genes(gene_ids)
+        if domain == KGDomain.KEGG:
+            return self.get_kegg_genes(gene_ids)
 
     def get_kegg_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()

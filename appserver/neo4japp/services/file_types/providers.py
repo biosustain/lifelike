@@ -127,7 +127,7 @@ doi_re = re.compile(
     # match up to 20 characters in the same line (values after # are ~ignored anyway)
     rb'([^\n\f#]{0,20})',
     flags=re.IGNORECASE
-)  # noqa
+)
 protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
 characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
@@ -135,6 +135,9 @@ common_escape_patterns_re = re.compile(rb'\\')
 dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 # Used to match the links in maps during the export
 SANKEY_RE = re.compile(r'^ */projects/.+/sankey/.+$')
+SEARCH_RE = re.compile(r'^ */search/content')
+KGSEARCH_RE = re.compile(r'^ */search/graph')
+DIRECTORY_RE = re.compile(r'^ */(projects/.+/)?folders')
 MAIL_RE = re.compile(r'^ *mailto:.+$')
 ENRICHMENT_TABLE_RE = re.compile(r'^ */projects/.+/enrichment-table/.+$')
 DOCUMENT_RE = re.compile(r'^ */projects/.+/files/.+$')
@@ -142,7 +145,7 @@ BIOC_RE = re.compile(r'^ */projects/.+/bioc/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
-PROJECTS_RE = re.compile(r'^ */projects/(?!.*/.+).*')
+PROJECTS_RE = re.compile(r'(^ */projects/(?!.*/.+).*)|(^ */(projects/.+/)?folders/.*#project)')
 ICON_DATA: dict = {}
 PDF_PAD = 1.0
 
@@ -343,7 +346,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
         # match up to 20 characters in the same line (values after # are ~ignored anyway)
         rb'([^\n\f#]{0,20})',
         flags=re.IGNORECASE
-    )  # noqa
+    )
     protocol_re = re.compile(r'https?:\/\/')
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
     characters_groups_re = re.compile(r'([a-z]+|[A-Z]+|[0-9]+|-+|[^-A-z0-9]+)')
@@ -459,11 +462,13 @@ def create_group_node(group: dict):
     display_name = group['display_name'] or ""
 
     has_border = style.get('lineType') and style.get('lineType') != 'none'
+    href = get_node_href(group)
 
     params = {
         'name': group['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': '',
+        'href': href,
         # We have to inverse the y-axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
@@ -497,6 +502,7 @@ def create_group_node(group: dict):
     label_params = {
         'name': group['hash'] + '_label',
         'label': label,
+        'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
             f"{(-group['data']['y'] - label_offset) / SCALING_FACTOR}!"
@@ -697,6 +703,14 @@ def get_link_icon_type(node: dict):
             return 'enrichment_table', link['url']
         elif SANKEY_RE.match(link['url']):
             return 'sankey', link['url']
+        elif SEARCH_RE.search(link['url']):
+            return 'search', link['url']
+        elif KGSEARCH_RE.search(link['url']):
+            return 'kgsearch', link['url']
+        elif PROJECTS_RE.match(link['url']):
+            return 'project', link['url']
+        elif DIRECTORY_RE.search(link['url']):
+            return 'directory', link['url']
         elif DOCUMENT_RE.match(link['url']):
             doi_src = look_for_doi_link(node)
             if doi_src:
@@ -708,8 +722,6 @@ def get_link_icon_type(node: dict):
             else:
                 node['data']['hyperlinks'].remove(link)
             return 'document', None
-        elif PROJECTS_RE.match(link['url']):
-            return 'project', link['url']
         elif BIOC_RE.match(link['url']):
             return 'bioc', link['url']
         elif MAIL_RE.match(link['url']):
@@ -927,10 +939,7 @@ def create_watermark():
     """
     Create a Lifelike watermark (icon, text, hyperlink) below the pdf.
     We need to ensure that the lowest node is not intersecting it - if so, we push it even lower.
-    :params:
-    :param x_center: middle of the pdf
-    :param y: position of the lowest node bottom on the pdf
-    :param lowest_node: details of the lowest node (used to get BBox)
+
     returns:
     3 dictionaries - each for one of the watermark elements
     """
@@ -1138,11 +1147,17 @@ class MapTypeProvider(BaseFileTypeProvider):
                     try:
                         image_name = node.get('image_id') + '.png'
                         images.append(image_name)
-                        im = zip_file.read("".join(['images/', image_name]))
+                        im = Image.open(zip_file.open("".join(['images/', image_name])))
+                        # Image prescaling is needed because Graphviz crashes on big images
+                        # (it is either size >~1MB or resolution but no clear error is given)
+                        # If an image is too big Graphviz will log cryptic warning that
+                        # the image could not be found
+                        im.resize((
+                            int(node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)),
+                            int(node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT))
+                        ))
                         file_path = os.path.sep.join([folder.name, image_name])
-                        f = open(file_path, "wb")
-                        f.write(im)
-                        f.close()
+                        im.save(file_path)
                     # Note: Add placeholder images instead?
                     except KeyError:
                         name = node.get('image_id') + '.png'
@@ -1206,13 +1221,21 @@ class MapTypeProvider(BaseFileTypeProvider):
         if format == 'svg':
             content = substitute_svg_images(content, images, zip_file, folder.name)
 
+        if format == 'pdf' and not self_contained_export:
+            reader = PdfFileReader(content, strict=False)
+            writer = PdfFileWriter()
+            writer.appendPagesFromReader(reader)
+            self.add_file_bookmark(writer, 0, file)
+            content = io.BytesIO()
+            writer.write(content)
+
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
             filename=f"{file.filename}{ext}"
         )
 
-    def merge(self, files: list, requested_format: str, links=None):
+    def merge(self, files: List[Files], requested_format: str, links=None):
         """ Export, merge and prepare as FileExport the list of files
         :param files: List of Files objects. The first entry is always the main map,
         :param requested_format: export format
@@ -1233,10 +1256,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             raise ValidationError("Unknown or invalid export format for the requested file.",
                                   requested_format)
         ext = f'.{requested_format}'
-        if len(files) > 1:
-            content = merger(files, links)
-        else:
-            content = self.get_file_export(files[0], requested_format)
+        content = merger(files, links)
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
@@ -1289,7 +1309,18 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_im.save(final_bytes, format='PNG')
         return final_bytes
 
-    def merge_pdfs(self, files: list, link_to_page_map=None):
+    def add_file_bookmark(self, writer, page_number, file):
+        file_bookmark = writer.addBookmark(file.path, page_number, bold=True)
+        for line in (
+            f'Description:\t{file.description}',
+            f'Creation date:\t{file.creation_date}',
+            f'Modified date:\t{file.modified_date}',
+        ):
+            writer.addBookmark(
+                line, page_number, file_bookmark
+            )
+
+    def merge_pdfs(self, files: List[Files], link_to_page_map=None):
         """ Merge pdfs and add links to map.
         params:
         :param files: list of files to export.
@@ -1325,15 +1356,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             # endregion
             num_of_pages = writer.getNumPages()  # index of first attached page since this point
             writer.appendPagesFromReader(reader)
-            file_bookmark = writer.addBookmark(file.filename_path, num_of_pages, bold=True)
-            for line in (
-                f'Description:\t{file.description}',
-                f'Creation date:\t{file.creation_date}',
-                f'Modified date:\t{file.modified_date}',
-            ):
-                writer.addBookmark(
-                    line, num_of_pages, file_bookmark
-                )
+            self.add_file_bookmark(writer, num_of_pages, file)
 
         # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:

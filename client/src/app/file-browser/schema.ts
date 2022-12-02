@@ -35,6 +35,7 @@ export interface ProjectSearchRequest extends PaginatedRequestOptions {
 export interface ProjectCreateRequest {
   name: string;
   description: string;
+  public: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export interface ProjectCreateRequest {
 export interface BulkProjectUpdateRequest {
   name?: string;
   description?: string;
+  public?: boolean;
 }
 
 // ========================================

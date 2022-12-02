@@ -108,7 +108,7 @@ class ProjectBaseView(MethodView):
 
     def get_nondeleted_projects(
         self,
-        filter,
+        file_filter,
         accessible_only=False,
         sort=None,
         require_hash_ids: List[str] = None,
@@ -118,9 +118,10 @@ class ProjectBaseView(MethodView):
         Returns files that are guaranteed to be non-deleted that match the
         provided filter.
 
-        :param filter: the SQL Alchemy filter
+        :param file_filter: the SQL Alchemy filter
         :param accessible_only: true to only get projects accessible by the current user
         :param sort: optional list of sort columns
+        :param require_hash_ids: list of expected file hash ids
         :param pagination: optional pagination
         :return: the result, which may be an empty list
         """
@@ -129,8 +130,8 @@ class ProjectBaseView(MethodView):
         query = self.get_nondeleted_project_query(current_user, accessible_only=accessible_only) \
             .order_by(*sort or [])
 
-        if filter is not None:
-            query = query.filter(filter)
+        if file_filter is not None:
+            query = query.filter(file_filter)
 
         if pagination:
             paginated_results = query.paginate(pagination.page, pagination.limit)
@@ -243,6 +244,9 @@ class ProjectBaseView(MethodView):
                     if getattr(project, field) != params[field]:
                         setattr(project, field, params[field])
                         changed_fields.add(field)
+                if 'public' in params:
+                    project.root.public = params['public']
+                    changed_fields.add('public')
 
         if len(changed_fields):
             try:
