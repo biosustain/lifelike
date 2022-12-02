@@ -250,4 +250,4 @@ class HashIdMixin:
     """
     A model with a roughly-ordered hash ID with a bit of randomness.
     """
-    hash_id = db.Column(db.String(36), unique=True, nullable=False, default=generate_hash_id)
+    hash_id = db.Column(db.String(86), unique=True, nullable=False, default=generate_hash_id)
