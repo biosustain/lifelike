@@ -143,7 +143,7 @@ def main(argv):
         opt, entity_type = opts[0]
 
         if opt == '-n':
-            env, db = open_env(entity_type, parentdir / entity_type)
+            env, db = open_env(entity_type, lmdb_path / entity_type)
             # first delete the index to clear the data
             es.indices.delete(index=entity_type, ignore=[404])
             es.indices.create(index=entity_type)

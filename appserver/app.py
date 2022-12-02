@@ -316,11 +316,12 @@ def validate_email(ctx, name, email):
         raise ValueError('Invalid email address')
     return email
 
+
 @app.cli.command("create-user")
 @click.argument("name", nargs=1)
 @click.argument("email", nargs=1, callback=validate_email)
 @click.argument("password", nargs=1, default="password")
-def create_user(name, email):
+def create_user(name, email, password):
     user = AppUser(
         username=name,
         first_name=name,
