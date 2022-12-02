@@ -1,0 +1,61 @@
+version: "3.8"
+
+x-appserver: &appserver
+  image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
+  environment:
+    - FLASK_DEBUG=1
+    - FLASK_ENV=development
+    - FLASK_APP_CONFIG=Testing
+
+    - POSTGRES_HOST=postgres
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=postgres
+
+    - NEO4J_HOST=neo4j
+    - NEO4J_AUTH=neo4j/password
+
+    - REDIS_HOST=redis
+
+    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    - ELASTIC_FILE_INDEX_ID=file_ci
+
+    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+  depends_on:
+    - postgres
+    - elasticsearch
+    - neo4j
+    - redis
+
+services:
+  appserver:
+    <<: *appserver
+    container_name: appserver
+
+  worker:
+    <<: *appserver
+    command: rq worker -c rq_config --with-scheduler
+
+  postgres:
+    image: postgres:13
+    restart: on-failure
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  neo4j:
+    image: neo4j:4.4-community
+    restart: on-failure
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+
+  elasticsearch:
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
+    restart: on-failure
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
