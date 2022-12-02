@@ -1,7 +1,7 @@
 """Increase max len of `hash_id` column on all tables
 
 Revision ID: 647dad6e2adf
-Revises: ab0d6b3ef77a
+Revises: 6d4adebe79eb
 Create Date: 2022-09-21 22:35:04.792597
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '647dad6e2adf'
-down_revision = 'ab0d6b3ef77a'
+down_revision = '6d4adebe79eb'
 branch_labels = None
 depends_on = None
 
