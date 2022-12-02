@@ -11,7 +11,7 @@ CACHE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}/{db}'.format(
     password=os.getenv('REDIS_PASSWORD', ''),
     db=os.getenv('CACHE_REDIS_DB', '0')
 )
-connection_pool=redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
+connection_pool = redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
 redis_server = redis.Redis(connection_pool=connection_pool)
 
 # Helper method to use redis cache
@@ -24,6 +24,8 @@ redis_server = redis.Redis(connection_pool=connection_pool)
 #
 #
 # TODO: switch to the three functions below
+
+
 def redis_cached(
         uid: str,
         # TODO: why is this a function? Better if it's a data type...

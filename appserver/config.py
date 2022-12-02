@@ -1,5 +1,6 @@
 import os
 
+
 class Base():
     """Default values"""
     SITE_NAME = 'Lifelike Knowledge Search'

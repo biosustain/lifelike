@@ -16,6 +16,7 @@ from neo4japp.utils.flask import scope_flask_app_ctx
 
 CACHE_REDIS_URL = f'{BASE_REDIS_URL}/{CACHE_REDIS_DB}'
 
+
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
         truncated_name = name[:55] + '_' + \

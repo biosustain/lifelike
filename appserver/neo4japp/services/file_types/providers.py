@@ -8,26 +8,22 @@ import typing
 import zipfile
 from base64 import b64encode
 from io import BufferedIOBase
-from typing import Optional, List, Dict
+from math import ceil
+from typing import Dict, List, Optional
 
 import bioc
 import graphviz
 import numpy as np
 import requests
 import svg_stack
-from PIL import Image, ImageColor
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PyPDF4.generic import DictionaryObject
-from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
+from bioc.biocjson import fromJSON as biocFromJSON
+from bioc.biocjson import toJSON as biocToJSON
 from flask import current_app
 from graphviz import escape
-from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
+from jsonlines import Reader as BioCJsonIterReader
+from jsonlines import Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
-from math import ceil
-from pdfminer import high_level
-from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
-
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -74,13 +70,18 @@ from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.schemas.formats.graph import validate_graph_content, validate_graph_format
+from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
+from pdfminer import high_level
+from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileReader, PdfFileWriter
+from PyPDF4.generic import DictionaryObject
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -438,7 +439,9 @@ icon_names = [
     'map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
     'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', '***ARANGO_DB_NAME***'
 ]
-ICON_DATA = {}
+
+ICON_DATA: Dict[str, str] = {}
+
 
 def get_icons_data():
     """

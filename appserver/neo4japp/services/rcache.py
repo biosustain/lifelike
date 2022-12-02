@@ -7,12 +7,16 @@ from neo4japp.database import CACHE_REDIS_URL
 DEFAULT_CACHE_SETTINGS = dict(ex=3600 * 24)
 
 cache = None
+
+
 def _get_redis_instance():
     """Memoized redis instance"""
+    global cache
     if not cache:
         connection_pool = redis.BlockingConnectionPool.from_url(CACHE_REDIS_URL)
         cache = redis.Redis(connection_pool=connection_pool)
     return cache
+
 
 # Helper method to use redis cache
 #   If:
@@ -21,8 +25,8 @@ def _get_redis_instance():
 #       only load defined - returns load(result_provider()) if cached,
 #                           but result_provider() otherwise!
 #                           use with caution!!!
-#
-#
+
+
 # TODO: switch to the three functions below
 def redis_cached(
         uid: str,
@@ -51,7 +55,7 @@ def getcache(uid: str):
 
 
 def delcache(uid: str):
-    if getcache(id):
+    if getcache(uid):
         _get_redis_instance().delete(uid)
 
 

@@ -5,21 +5,21 @@ x-appserver: &appserver
   environment:
     - FLASK_DEBUG=1
     - FLASK_ENV=development
-    - FLASK_APP_CONFIG=Testing
-
+    - FLASK_APP_CONFIG=Development
+    # Postgres
     - POSTGRES_HOST=postgres
     - POSTGRES_USER=postgres
     - POSTGRES_PASSWORD=postgres
     - POSTGRES_DB=postgres
-
+    # Neo4j
     - NEO4J_HOST=neo4j
     - NEO4J_AUTH=neo4j/password
-
+    # Redis
     - REDIS_HOST=redis
-
+    # Elasticsearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     - ELASTIC_FILE_INDEX_ID=file_ci
-
+    # LMDB
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
   depends_on:
     - postgres
@@ -58,4 +58,5 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: on-failure
     container_name: redis

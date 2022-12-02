@@ -55,7 +55,7 @@ def forward_request():
     if 400 <= resp.status_code < 600:
         raise StatisticalEnrichmentError(
             'Unable to process request',
-            'An internal error of statistical enrichment service occurred. ' + \
+            'An internal error of statistical enrichment service occurred. ' +
             f'Upstream service status code was: {resp.status_code}',
             code=HTTPStatus.BAD_GATEWAY,
         )

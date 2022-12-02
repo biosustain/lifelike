@@ -86,7 +86,7 @@ def get_bioc_document_service():
 
 def get_lmdb_service():
     this_dir = Path(path.abspath(path.dirname(__file__)))
-    return LMDBService(f"{environ.getenv('LMDB_HOME_FOLDER', this_dir/'lmdb')}/", **configs)
+    return LMDBService(f"{getenv('LMDB_HOME_FOLDER', this_dir/'lmdb')}/", **configs)
 
 
 def get_recognition_service(exclusions, inclusions):

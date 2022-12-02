@@ -463,17 +463,18 @@ RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
 RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
 # Assets
-ASSETS_PATH = Path.cwd() / 'assets'
+# Parent directory of the assets directory
+ASSETS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../assets')
 
 # Start email constants
 LIFELIKE_EMAIL_ACCOUNT = '***ARANGO_DB_NAME***.science@gmail.com'
 MESSAGE_SENDER_IDENTITY = '***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio'
 MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
-RESET_PASS_MAIL_CONTENT = codecs.open(ASSETS_PATH / 'reset_email.html', 'r').read()
+RESET_PASS_MAIL_CONTENT = codecs.open(ASSETS_PATH + '/reset_email.html', 'r').read()
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = 'Lifelike: Copyright Infringement Report Confirmation'
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
-    ASSETS_PATH / 'copyright_report_confirmation.html',
+    ASSETS_PATH + '/copyright_report_confirmation.html',
     'r'
 ).read()
 SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
@@ -490,7 +491,7 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
-IMAGES_RE = re.compile(f'{ASSETS_PATH}/.+\.png')
+IMAGES_RE = re.compile(f'{ASSETS_PATH}/.+\\.png')
 BYTE_ENCODING = 'utf-8'
 
 # Start filesystem API constants
