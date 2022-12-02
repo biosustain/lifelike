@@ -20,7 +20,7 @@ def _call_nlp_service(model: str, text: str) -> dict:
             NLP_SERVICE_ENDPOINT,
             json={'model': model, 'sentence': text},
             headers={'secret': NLP_SERVICE_SECRET},
-            timeout=SERVOCE_REQUEST_TIMEOUT)
+            timeout=SERVICE_REQUEST_TIMEOUT)
         req.raise_for_status()
         return req.json()
 
