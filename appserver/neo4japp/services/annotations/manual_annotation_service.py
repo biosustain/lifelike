@@ -1,6 +1,8 @@
 import uuid
 
 from datetime import datetime
+from http import HTTPStatus
+
 from flask import current_app
 from neo4j.exceptions import ServiceUnavailable
 from typing import List, Tuple
@@ -14,14 +16,14 @@ from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
+from .exceptions import AnnotationLimitationError
 from .annotation_graph_service import AnnotationGraphService
 from .tokenizer import Tokenizer
 from .constants import (
-    EntityType,
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
     MAX_GENE_WORD_LENGTH,
-    MAX_FOOD_WORD_LENGTH
+    MAX_FOOD_WORD_LENGTH, COMMON_WORDS, WORD_CHECK_REGEX, MIN_ENTITY_LENGTH
 )
 from .data_transfer_objects.dto import PDFWord
 from .utils.common import has_center_point
@@ -45,7 +47,8 @@ class ManualAnnotationService:
         custom_annotations: List[dict]
     ):
         for annotation in custom_annotations:
-            if (self._terms_match(term, annotation['meta']['allText'], annotation['meta']['isCaseInsensitive']) and  # noqa
+            if (self._terms_match(term, annotation['meta']['allText'],
+                                  annotation['meta']['isCaseInsensitive']) and
                     len(annotation['rects']) == len(new_annotation_metadata['rects'])):
                 # coordinates can have a small difference depending on
                 # where they come from: annotator or pdf viewer
@@ -55,6 +58,51 @@ class ManualAnnotationService:
                 if all_rects_match:
                     return True
         return False
+
+    def validate_term(self, term, annotation):
+        term_length = len(term.split(' '))
+
+        if annotation['meta']['type'] == EntityType.GENE.value:
+            if term_length > MAX_GENE_WORD_LENGTH:
+                raise AnnotationLimitationError(
+                    message=f'Term "{term}" has {term_length} words, '
+                            f'which crosses the limit ({MAX_GENE_WORD_LENGTH}) '
+                            f'for "Gene" entity type.'
+                )
+        elif annotation['meta']['type'] == EntityType.FOOD.value:
+            if term_length > MAX_FOOD_WORD_LENGTH:
+                raise AnnotationLimitationError(
+                    message=f'Term "{term}" has {term_length} words, '
+                            f'which crosses the limit ({MAX_FOOD_WORD_LENGTH}) '
+                            f'for "Food" entity type.'
+                )
+        else:
+            if term_length > MAX_ENTITY_WORD_LENGTH:
+                raise AnnotationLimitationError(
+                    message=f'Term "{term}" has {term_length} words, '
+                            f'which crosses the maximum term length limit '
+                            f'({MAX_ENTITY_WORD_LENGTH}).'
+                )
+
+        if len(term) <= MIN_ENTITY_LENGTH:
+            raise AnnotationLimitationError(
+                message=f'Term ("{term}") must contain more than {MIN_ENTITY_LENGTH} '
+                        f'characters to be annotatable.'
+            )
+
+        if term.lower() in COMMON_WORDS:
+            raise AnnotationLimitationError(
+                message=f'Term "{term}" has been listed as commonly used word '
+                        f'therefore cannot be annotated.',
+                code=HTTPStatus.BAD_REQUEST
+            )
+
+        if WORD_CHECK_REGEX.match(term):
+            raise AnnotationLimitationError(
+                message=f'Term ("{term}") consisting only of punctuation and digits '
+                        f'cannot be annotated.',
+                code=HTTPStatus.BAD_REQUEST
+            )
 
     def add_inclusions(self, file: Files, user: AppUser, custom_annotation, annotate_all):
         """Adds custom annotation to a given file.
@@ -84,7 +132,8 @@ class ManualAnnotationService:
                     EntityType.PROTEIN.value,
                     EntityType.SPECIES.value
                 ]:
-                    primary_name = self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]  # noqa
+                    primary_name = \
+                        self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]
             except KeyError:
                 pass
             except (BrokenPipeError, ServiceUnavailable):
@@ -94,7 +143,7 @@ class ManualAnnotationService:
                     title='Failed to Create Custom Annotation',
                     message='A system error occurred while creating the annotation, '
                             'we are working on a solution. Please try again later.',
-                    code=500)
+                )
 
         annotation_to_add = {
             **custom_annotation,
@@ -108,27 +157,7 @@ class ManualAnnotationService:
         if annotate_all:
             _, parsed = parse_content(file_id=file.id, exclude_references=False)
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
-
-            if custom_annotation['meta']['type'] == EntityType.GENE.value:
-                max_words = MAX_GENE_WORD_LENGTH
-            elif custom_annotation['meta']['type'] == EntityType.FOOD.value:
-                max_words = MAX_FOOD_WORD_LENGTH
-            else:
-                max_words = MAX_ENTITY_WORD_LENGTH
-
-            if len(term.split(' ')) > max_words:
-                raise AnnotationError(
-                    title='Unable to Annotate',
-                    message=f'There was a problem annotating "{term}". ' +
-                            'Please make sure the term is correct, ' +
-                            'including correct spacing and no extra characters.',
-                    additional_msgs=[
-                        f'We currently only allow up to {MAX_ENTITY_WORD_LENGTH} word(s)'
-                        ' in length for a term. In addition, we'
-                        ' have specific word limits for some entity types:',
-                        f'Gene: Max {MAX_GENE_WORD_LENGTH} word.',
-                        f'Food: Max {MAX_FOOD_WORD_LENGTH} words.'],
-                    code=400)
+            self.validate_term(term, custom_annotation)
 
             matches = self._get_matching_manual_annotations(
                 keyword=term,
@@ -136,35 +165,39 @@ class ManualAnnotationService:
                 tokens_list=self.tokenizer.create(parsed)
             )
 
-            inclusions = [{
-                **annotation_to_add,
-                'pageNumber': meta['page_number'],
-                'rects': meta['rects'],
-                'keywords': meta['keywords'],
-                'uuid': str(uuid.uuid4()),
-                'primaryName': primary_name
-            } for meta in matches if not self._annotation_exists(term, meta, file.custom_annotations)]  # noqa
+            try:
+                abbrev_of = self.tokenizer.abbreviations[term]
+            except KeyError:
+                pass
+            else:
+                raise AnnotationLimitationError(
+                    message=f'Term "{term}" cannot be annotated because it has been '
+                            f'identified as an acronym of "{" ".join(abbrev_of)}".',
+                    # fields=dict(abbrev_of=abbrev_of),
+                )
+
+            inclusions = [
+                {
+                    **annotation_to_add,
+                    'pageNumber': meta['page_number'],
+                    'rects': meta['rects'],
+                    'keywords': meta['keywords'],
+                    'uuid': str(uuid.uuid4()),
+                    'primaryName': primary_name
+                } for meta in matches if
+                not self._annotation_exists(term, meta, file.custom_annotations)
+            ]
 
             if not inclusions:
-                raise AnnotationError(
-                    title='Unable to Annotate',
-                    message=f'There was a problem annotating "{term}". ' +
-                            'Please make sure the term is correct, ' +
-                            'including correct spacing and no extra characters.',
-                    additional_msgs=[
-                        f'We currently only allow up to {MAX_ENTITY_WORD_LENGTH} word(s)'
-                        ' in length for a term. In addition, we'
-                        ' have specific word limits for some entity types:',
-                        f'Gene: Max {MAX_GENE_WORD_LENGTH} word.',
-                        f'Food: Max {MAX_FOOD_WORD_LENGTH} words.'],
-                    code=400)
+                raise AnnotationError()
         else:
             if not self._annotation_exists(term, annotation_to_add, file.custom_annotations):
                 inclusions = [annotation_to_add]
             else:
                 raise AnnotationError(
-                    title='Unable to Annotate',
-                    message='Annotation already exists.', code=400)
+                    message='Annotation already exists.',
+                    code=HTTPStatus.BAD_REQUEST
+                )
 
         if annotation_to_add['meta']['includeGlobally']:
             self.save_global(
@@ -193,8 +226,8 @@ class ManualAnnotationService:
             raise AnnotationError(
                 title='Failed to Create Custom Annotation',
                 message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+                        'we are working on a solution. Please try again later.'
+            )
 
         return inclusions
 
@@ -216,8 +249,11 @@ class ManualAnnotationService:
             removed_annotation_uuids = [
                 annotation['uuid']
                 for annotation in file.custom_annotations
-                if self._terms_match(term, annotation['meta']['allText'], annotation['meta']['isCaseInsensitive']) and  # noqa
-                annotation['meta']['type'] == entity_type
+                if self._terms_match(
+                    term,
+                    annotation['meta']['allText'],
+                    annotation['meta']['isCaseInsensitive']
+                ) and annotation['meta']['type'] == entity_type
             ]
         else:
             removed_annotation_uuids = [uuid]
@@ -232,7 +268,9 @@ class ManualAnnotationService:
             db.session.add(version)
 
             file.custom_annotations = [
-                ann for ann in file.custom_annotations if ann['uuid'] not in removed_annotation_uuids]  # noqa
+                ann for ann in file.custom_annotations if
+                ann['uuid'] not in removed_annotation_uuids
+            ]
 
             db.session.commit()
         except Exception:
@@ -240,8 +278,8 @@ class ManualAnnotationService:
             raise AnnotationError(
                 title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+                        'we are working on a solution. Please try again later.'
+            )
 
         return removed_annotation_uuids
 
@@ -261,8 +299,8 @@ class ManualAnnotationService:
             raise AnnotationError(
                 title='Failed to Remove Global Inclusion',
                 message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+                        'we are working on a solution. Please try again later.'
+            )
 
         try:
             # we need to do some cleaning up
@@ -310,16 +348,17 @@ class ManualAnnotationService:
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception:
+            query = query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])
             current_app.logger.error(
-                f'Failed executing cypher: {query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])}.\n' +  # noqa
+                f'Failed executing cypher: {query}.\n' +
                 f'PARAMETERS: <node_id: {result["node_id"]}>.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise AnnotationError(
                 title='Failed to Remove Global Inclusion',
                 message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+                        'we are working on a solution. Please try again later.'
+            )
 
     def add_exclusion(self, file: Files, user: AppUser, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
@@ -357,8 +396,8 @@ class ManualAnnotationService:
             raise AnnotationError(
                 title='Failed to Create Custom Annotation',
                 message='A system error occurred while creating the annotation, '
-                        'we are working on a solution. Please try again later.',
-                code=500)
+                        'we are working on a solution. Please try again later.'
+            )
 
     def remove_exclusion(self, file: Files, user: AppUser, entity_type, term):
         """ Removes exclusion of automatic annotation from a given file.
@@ -373,7 +412,8 @@ class ManualAnnotationService:
             raise AnnotationError(
                 title='Failed to Annotate',
                 message='File does not have any annotations.',
-                code=404)
+                code=404
+            )
 
         try:
             version = FileAnnotationsVersion()
@@ -392,7 +432,7 @@ class ManualAnnotationService:
                 title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',
-                code=500)
+            )
 
     # TODO: does this belong here?
     def get_file_annotations(self, file):
@@ -442,20 +482,21 @@ class ManualAnnotationService:
         """
         if inclusion_type == ManualAnnotationType.INCLUSION.value:
             try:
-                entity_type = annotation['meta']['type']
-                entity_id = annotation['meta']['id']
-                data_source = annotation['meta']['idType']
+                meta = annotation['meta']
+                entity_type = meta['type']
+                entity_id = meta['id']
+                data_source = meta.get('idType')
                 common_name = annotation['primaryName']
-                synonym = annotation['meta']['allText']
+                synonym = meta['allText']
                 inclusion_date = annotation['inclusion_date']
-                hyperlinks = annotation['meta']['idHyperlinks']
+                hyperlinks = meta['idHyperlinks']
                 username = username
             except KeyError:
                 raise AnnotationError(
                     title='Failed to Create Custom Annotation',
                     message='Could not create global annotation inclusion/exclusion, '
                             'the data is corrupted. Please try again.',
-                    code=500)
+                )
 
             if entity_id == '':
                 entity_id = f'NULL-{str(uuid4())}'
@@ -466,7 +507,7 @@ class ManualAnnotationService:
                 'synonym': synonym,
                 'inclusion_date': inclusion_date,
                 'user': username,
-                'data_source': data_source if data_source else None,
+                'data_source': data_source,
                 'hyperlinks': hyperlinks,
                 'common_name': common_name,
                 'file_uuid': file_hash_id
@@ -488,13 +529,16 @@ class ManualAnnotationService:
             # because they're grouped under TopicalDescriptors
             # so that query returns node_has_entity_label value to check for
             # and add the label for the future
-            if check['node_exist'] and (not check['synonym_exist'] or check.get('node_has_entity_label', False)):  # noqa
+            if check['node_exist'] and (
+                    not check['synonym_exist']
+                    or check.get('node_has_entity_label', False)
+            ):
                 queries = {
-                    EntityType.ANATOMY.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
-                    EntityType.DISEASE.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
-                    EntityType.FOOD.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
-                    EntityType.PHENOMENA.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
-                    EntityType.PHENOTYPE.value: get_create_mesh_global_inclusion_query(entity_type),  # noqa
+                    EntityType.ANATOMY.value: get_create_mesh_global_inclusion_query(entity_type),
+                    EntityType.DISEASE.value: get_create_mesh_global_inclusion_query(entity_type),
+                    EntityType.FOOD.value: get_create_mesh_global_inclusion_query(entity_type),
+                    EntityType.PHENOMENA.value: get_create_mesh_global_inclusion_query(entity_type),
+                    EntityType.PHENOTYPE.value: get_create_mesh_global_inclusion_query(entity_type),
                     EntityType.CHEMICAL.value: get_create_chemical_global_inclusion_query(),
                     EntityType.COMPOUND.value: get_create_compound_global_inclusion_query(),
                     EntityType.GENE.value: get_create_gene_global_inclusion_query(),
@@ -514,7 +558,8 @@ class ManualAnnotationService:
                     raise
                 except Exception:
                     current_app.logger.error(
-                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        f'Failed to create global inclusion, '
+                        f'knowledge graph failed with query: {query}.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
             elif not check['node_exist']:
@@ -525,7 +570,8 @@ class ManualAnnotationService:
                     raise
                 except Exception:
                     current_app.logger.info(
-                        f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                        f'Failed to create global inclusion, '
+                        f'knowledge graph failed with query: {query}.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
         else:
@@ -547,15 +593,16 @@ class ManualAnnotationService:
                         title='Failed to Create Custom Annotation',
                         message='A system error occurred while creating the annotation, '
                                 'we are working on a solution. Please try again later.',
-                        code=500)
+                    )
 
     def _global_annotation_exists_in_kg(self, values: dict):
+        entity_type = values['entity_type']
         queries = {
-            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
-            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
-            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query(values['entity_type']),
-            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
-            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query(values['entity_type']),  # noqa
+            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query(entity_type),
+            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query(entity_type),
+            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query(entity_type),
+            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query(entity_type),
+            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query(entity_type),
             EntityType.CHEMICAL.value: get_chemical_global_inclusion_exist_query(),
             EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
             EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
@@ -566,14 +613,16 @@ class ManualAnnotationService:
 
         # query can be empty string because some entity types
         # do not exist in the normal domain/labels
-        query = queries.get(values['entity_type'], '')
+        query = queries.get(entity_type, '')
         try:
-            check = self.graph.exec_read_query_with_params(query, values)[0] if query else {'node_exist': False}  # noqa
+            check = self.graph.exec_read_query_with_params(query, values)[0] \
+                if query else {'node_exist': False}
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception:
             current_app.logger.error(
-                f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                f'Failed to create global inclusion, '
+                f'knowledge graph failed with query: {query}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
@@ -581,13 +630,14 @@ class ManualAnnotationService:
             return check
         else:
             try:
-                query = get_lifelike_global_inclusion_exist_query(values['entity_type'])
+                query = get_lifelike_global_inclusion_exist_query(entity_type)
                 check = self.graph.exec_read_query_with_params(query, values)[0]
             except (BrokenPipeError, ServiceUnavailable):
                 raise
             except Exception:
                 current_app.logger.error(
-                    f'Failed to create global inclusion, knowledge graph failed with query: {query}.',  # noqa
+                    f'Failed to create global inclusion, '
+                    f'knowledge graph failed with query: {query}.',
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
 

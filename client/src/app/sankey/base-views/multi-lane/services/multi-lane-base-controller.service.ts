@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
 import { merge, isNil, uniq } from 'lodash-es';
 import { of, iif, defer } from 'rxjs';
 
@@ -67,18 +67,27 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
           }
         },
         linkPaletteId: LINK_PALETTE_ID.hue_palette,
-        predefinedValueAccessorId: PREDEFINED_VALUE.input_count,
       },
       delta
     )),
-    switchMap(delta => this.common.options$.pipe(
-        map(({predefinedValueAccessors}) =>
-          this.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId])
+    switchMap(delta =>
+      iif(
+        () => isNil(delta.predefinedValueAccessorId),
+        this.common.networkTraceDefaultSizing$,
+        of(delta.predefinedValueAccessorId)
+      ).pipe(
+        switchMap(predefinedValueAccessorId =>
+          this.common.options$.pipe(
+            map(({predefinedValueAccessors}) =>
+              this.common.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId]),
+            ),
+          ),
         ),
         map(state => merge({}, delta, state))
       )
     )
   ).pipe(
+    takeUntil(this.destroy$),
     debug('MultiLaneBaseControllerService.state$'),
     shareReplay<Base['state']>({bufferSize: 1, refCount: true})
   );

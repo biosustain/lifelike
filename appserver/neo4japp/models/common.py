@@ -83,6 +83,10 @@ class RDBMSBase(db.Model):  # type: ignore
                 the column attributes before they are added as keys in
                 the returned dictionary.  By default uses
                 snake_to_camel to convert to lowerCamelCase.
+            valuefn (function): If supplied, the function is applied to
+                the column values before they are assigned in
+                the returned dictionary.  By default uses
+                snake_to_camel to convert to lowerCamelCase.
 
         Returns:
             a dictionary of the model object

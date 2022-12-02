@@ -112,9 +112,9 @@ export class KgStatisticsComponent {
   totalCount: any = 0;
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) {
-    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() => {
-      return this.http.get<StatisticsDataResponse>('/api/kg-statistics');
-    });
+    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(
+      () => this.http.get<StatisticsDataResponse>('/api/kg-statistics')
+    );
 
     this.loadTask.results$.subscribe(({result, value}) => {
       this._getChartDataEntitiesByDomain(result);

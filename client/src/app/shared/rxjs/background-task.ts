@@ -1,5 +1,9 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { merge, isObject } from 'lodash-es';
+import { first } from 'rxjs/operators';
+
+import { isOfflineError } from '../exceptions';
+import { onlineChangeObservable } from './online-observable';
 
 export enum TaskState {
   Idle = 'idle',
@@ -53,7 +57,7 @@ export class BackgroundTask<T, R> {
   readonly retryInitialDelay = 3000;
   readonly retryDelayMultiplier = 1.5;
   readonly retryMaxDelay = 1000 * 60;
-  readonly retryMaxCount = 0;
+  readonly retryMaxCount = 1;
   readonly delayedRunningInitialDelay = 0;
   readonly delayedRunningMinimumLength = 500;
 
@@ -226,12 +230,19 @@ export class BackgroundTask<T, R> {
         this.error = true;
 
         if (retrying) {
-          const delay = Math.min(this.retryMaxDelay, this.retryInitialDelay
-            * Math.pow(this.retryDelayMultiplier, this.retryCount));
           this.retryCount++;
           this.state = TaskState.Retrying;
           this.nextStatus();
-          setTimeout(this.startRun.bind(this), delay);
+          if (isOfflineError(error)) {
+            // if is offline retry when network status changes
+            onlineChangeObservable.pipe(
+              first(), // retry only on first change
+            ).toPromise().then(this.startRun.bind(this));
+          } else {
+            const delay = Math.min(this.retryMaxDelay, this.retryInitialDelay
+              * Math.pow(this.retryDelayMultiplier, this.retryCount));
+            setTimeout(this.startRun.bind(this), delay);
+          }
         } else {
           this.state = TaskState.RetryLimitExceeded;
           this.errors$.next(error);

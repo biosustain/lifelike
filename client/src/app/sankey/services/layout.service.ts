@@ -233,6 +233,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
 
   positionNodes(x) {
     return switchMap(data => this.update.edited$.pipe(
+        first(),
         switchMap(edited =>
           iif(
             () => edited,
@@ -243,11 +244,11 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                 // Absolute node positioning
                 this.positionNodesHorizontaly(data, horizontal, x);
                 return data;
-              })
-            )
-          )
-        )
-      )
+              }),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

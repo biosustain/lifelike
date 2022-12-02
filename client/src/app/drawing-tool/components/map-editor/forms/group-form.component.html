@@ -35,16 +35,8 @@
                                      (ngModelChange)="doSave()"></app-links-panel>
                 </div>
 
-                <ng-container *ngIf="!overflow" [ngTemplateOutlet]="search"></ng-container>
                 <ng-container *ngIf="overflow" [ngTemplateOutlet]="delete"></ng-container>
 
-            </ng-template>
-        </li>
-        <li ngbNavItem="search" *ngIf="overflow">
-            <a ngbNavLink>Search</a>
-            <ng-template ngbNavContent>
-                <ng-container [ngTemplateOutlet]="search">
-                </ng-container>
             </ng-template>
         </li>
         <li ngbNavItem="style">
@@ -154,38 +146,6 @@
         </div>
     </div>
 </div>
-
-<ng-template #search>
-<!--    <fieldset class="fieldset-properties mb-4"-->
-<!--              *ngIf="(group.display_name != null && group.display_name.length) || group.data?.search">-->
-<!--        <legend>Search Internal <i class="fas fa-external-link-alt ml-1"></i></legend>-->
-
-<!--        <ul class="list-unstyled m-0">-->
-<!--            <li class="text-truncate">-->
-<!--                <div class="btn btn-link p-0" (click)="searchMapNodeInVisualizer(node)">-->
-<!--                    Knowledge Graph-->
-<!--                </div>-->
-<!--            </li>-->
-<!--            <li class="text-truncate">-->
-<!--                <div class="btn btn-link p-0" (click)="searchMapNodeInContent(node, '')">-->
-<!--                    File Content-->
-<!--                </div>-->
-<!--            </li>-->
-<!--            <li class="text-truncate">-->
-<!--                <div class="btn btn-link p-0" (click)="searchMapNodeInContent(node, 'map')">-->
-<!--                    Map Content-->
-<!--                </div>-->
-<!--            </li>-->
-<!--        </ul>-->
-<!--    </fieldset>-->
-<!--    <fieldset class="fieldset-properties mb-4"-->
-<!--              *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">-->
-<!--        <legend>Search External <i class="fas fa-external-link-alt ml-1"></i></legend>-->
-<!--        <app-quick-search [query]="node.display_name"-->
-<!--                          [links]="node.data?.search"></app-quick-search>-->
-<!--    </fieldset>-->
-<!--    <ng-container [ngTemplateOutlet]="delete"></ng-container>-->
-</ng-template>
 
 <ng-template #delete>
     <div class="mb-4">

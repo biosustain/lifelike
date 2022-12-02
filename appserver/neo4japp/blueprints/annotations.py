@@ -406,8 +406,11 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
         gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids_query(
             gene_ids=list(gene_ids.keys())
         )
-        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']],
-                              reverse=True)  # noqa
+        sorted_pairs = sorted(
+            gene_organism_pairs,
+            key=lambda p: gene_ids[p['gene_id']],
+            reverse=True
+        )
 
         for pair in sorted_pairs:
             yield [
@@ -477,7 +480,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 except JSONDecodeError:
                     current_app.logger.error(
                         f'Cannot annotate file with invalid content: {file.hash_id}, '
-                        f'{file.filename}')  # noqa
+                        f'{file.filename}'
+                    )
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
@@ -502,8 +506,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename,
-                        e)  # noqa
+                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e
+                    )
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
@@ -595,8 +599,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         ).identify(
             annotation_methods=configs['annotation_methods']
         ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',  # noqa
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',  # noqa
+            specified_organism_synonym=organism.get('synonym') if organism else '',
+            specified_organism_tax_id=organism.get('tax_id') if organism else '',
             custom_annotations=file.custom_annotations or [],
             filename=file.filename)
 
@@ -651,8 +655,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         ).identify(
             annotation_methods=configs['annotation_methods']
         ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',  # noqa
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',  # noqa
+            specified_organism_synonym=organism.get('synonym') if organism else '',
+            specified_organism_tax_id=organism.get('tax_id') if organism else '',
             custom_annotations=file.custom_annotations or [],
             filename=file.filename,
             enrichment_mappings=enriched.text_index_map)
@@ -680,10 +684,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     # first cell will always have the correct index
                     # update index offset to be relative to the cell again
                     # since they're relative to the combined text
-                    anno['loLocationOffset'] = anno['loLocationOffset'] - (
-                        prev_index + 1) - 1  # noqa
-                    anno['hiLocationOffset'] = anno['loLocationOffset'] + anno[
-                        'keywordLength'] - 1  # noqa
+                    anno['loLocationOffset'] = \
+                        anno['loLocationOffset'] - (prev_index + 1) - 1
+                    anno['hiLocationOffset'] = \
+                        anno['loLocationOffset'] + anno['keywordLength'] - 1
 
                 if 'domain' in cell_text:
                     # imported should come first for each row
@@ -757,7 +761,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             hi_location_offset = annotation['hiLocationOffset']
 
             text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
-                   f'{term}</annotation>'  # noqa
+                   f'{term}' \
+                   f'</annotation>'
 
             if lo_location_offset == 0:
                 prev_ending_index = hi_location_offset
@@ -826,12 +831,11 @@ class GlobalAnnotationExportInclusions(MethodView):
 
         def get_inclusion_for_review(inclusion, file_uuids_map, graph):
             user = AppUser.query.filter_by(
-                id=file_uuids_map[inclusion['file_reference']]).one_or_none()  # noqa
-            deleter = f'User with id {file_uuids_map[inclusion["file_reference"]]} does not ' \
-                      f'exist.'  # noqa
+                id=file_uuids_map[inclusion['file_reference']]
+            ).one_or_none()
             if user is None:
                 deleter = None
-            elif user:
+            else:
                 deleter = f'{user.username} ({user.first_name} {user.last_name})'
 
             return {
@@ -848,9 +852,11 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'comment': ''
             }
 
-        data = [get_inclusion_for_review(
-            inclusion, file_uuids_map, graph) for inclusion in inclusions if
-            inclusion['file_reference'] in file_uuids_map]  # noqa
+        data = [
+            get_inclusion_for_review(inclusion, file_uuids_map, graph)
+            for inclusion in inclusions
+            if inclusion['file_reference'] in file_uuids_map
+        ]
 
         exporter = get_excel_export_service()
         response = make_response(exporter.get_bytes(data), 200)
@@ -981,7 +987,8 @@ class GlobalAnnotationListView(MethodView):
             graph = get_annotation_graph_service()
             global_inclusions = graph.exec_read_query_with_params(
                 get_global_inclusions_paginated_query(),
-                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit})  # noqa
+                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit}
+            )
 
             file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
             file_data_query = db.session.query(

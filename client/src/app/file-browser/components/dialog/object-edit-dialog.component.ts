@@ -60,7 +60,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     public: new FormControl(false),
     annotationConfigs: new FormGroup(
       {
-        excludeReferences: new FormControl(true),
+        excludeReferences: new FormControl(false),
         annotationMethods: new FormGroup(this.defaultAnnotationMethods),
       }, [Validators.required]),
     organism: new FormControl(null),

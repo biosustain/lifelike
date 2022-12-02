@@ -74,3 +74,11 @@ export function isCtrlOrMetaPressed(event: KeyboardEvent | MouseEvent) {
       return event.ctrlKey;
   }
 }
+
+export const closePopups = () =>
+  // events used to trigger popups closing might be consumed by libs like d3_zoom
+  // this funciton triggers synthetic mouse down/up on document to close possible popups
+  (
+    document.dispatchEvent(new MouseEvent('mousedown')) &&
+    document.dispatchEvent(new MouseEvent('mouseup'))
+  );

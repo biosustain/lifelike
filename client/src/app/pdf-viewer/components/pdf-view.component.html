@@ -1,6 +1,6 @@
 <div class="module" *ngIf="(loadTask.status$ | async) as status">
     <app-module-progress *ngIf="status.running">
-         Downloading file...
+         Downloading file... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
     </app-module-progress>
 
     <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">

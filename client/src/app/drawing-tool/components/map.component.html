@@ -1,7 +1,7 @@
 <div class="position-relative h-100">
   <ng-container *ngIf="(loadTask.status$ | async) as status">
     <app-module-progress *ngIf="status.running">
-      Loading map...
+      Loading map... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
     </app-module-progress>
   </ng-container>
 

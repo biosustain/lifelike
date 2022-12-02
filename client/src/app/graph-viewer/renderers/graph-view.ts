@@ -4,22 +4,23 @@ import { Subject } from 'rxjs';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Link } from 'webcola/WebCola/src/layout';
+import { remove } from 'lodash-es';
 
 import {
   GraphEntity,
   GraphEntityType,
   Hyperlink,
-  UniversalGraphGroup,
-  Source,
   KnowledgeMapGraph,
+  Source,
   UniversalGraphEdge,
   UniversalGraphEntity,
+  UniversalGraphGroup,
   UniversalGraphNode,
   UniversalGraphNodelike,
 } from 'app/drawing-tool/services/interfaces';
 import { FindOptions } from 'app/shared/utils/find';
 import { ASSOCIATED_MAPS_REGEX } from 'app/shared/constants';
-import { setDifference } from 'app/shared/utils';
+import { isNotEmpty, setDifference } from 'app/shared/utils';
 
 import { PlacedEdge, PlacedGroup, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
@@ -27,6 +28,7 @@ import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
 import { BoundingBox, isPointIntersecting, Point } from '../utils/canvas/shared';
+import { GroupNode } from '../utils/canvas/graph-groups/group-node';
 
 /**
  * A rendered view of a graph.
@@ -266,6 +268,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     const set = new Set<string>();
     // Note: Should I check only nodes?
     this.nodes.forEach(node => this.checkEntityForLinked(node).forEach(val => set.add(val)));
+    this.groups.forEach(group => this.checkEntityForLinked(group).forEach(val => set.add(val)));
     this.edges.forEach(edge => this.checkEntityForLinked(edge).forEach(val => set.add(val)));
     return set;
   }
@@ -378,6 +381,47 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
+  removeNodeLike<N extends UniversalGraphNodelike>(node: N, from: N[]): {
+    found: boolean,
+    removedEdges: UniversalGraphEdge[],
+  } {
+    const removedNodes = remove(from, n => n === node);
+    const found = isNotEmpty(removedNodes);
+
+    // Terminate early
+    if (!found) {
+      return {
+        found,
+        removedEdges: [],
+      };
+    }
+
+    const removedEdges = remove(
+      this.edges,
+      edge =>
+        this.expectNodelikeByHash(edge.from) === node
+        || this.expectNodelikeByHash(edge.to) === node
+    );
+
+    this.nodelikeHashMap.delete(node.hash);
+    (node as UniversalGraphGroup).members?.forEach(m =>
+      this.groupHashMap.delete(m.hash)
+    );
+    this.tryRemoveNodeFromGroup(node.hash);
+    this.invalidateNodelike(node);
+
+    // TODO: Only adjust selection if needed
+    this.selection.replace([]);
+    this.dragging.replace([]);
+    this.highlighting.replace([]);
+    this.requestRender();
+
+    return {
+      found,
+      removedEdges,
+    };
+  }
+
   /**
    * Remove the given node from the graph.
    * @param node the node
@@ -387,49 +431,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     found: boolean,
     removedEdges: UniversalGraphEdge[],
   } {
-    const removedEdges = [];
-    let foundNode = false;
-
-    let i = this.nodes.length;
-    while (i--) {
-      if (this.nodes[i] === node) {
-        this.nodes.splice(i, 1);
-        foundNode = true;
-        break;
-      }
-    }
-    // Terminate early
-    if (!foundNode) {
-      return {
-        found: false,
-        removedEdges: [],
-      };
-    }
-
-    let j = this.edges.length;
-    while (j--) {
-      const edge = this.edges[j];
-      if (this.expectNodelikeByHash(edge.from) === node
-        || this.expectNodelikeByHash(edge.to) === node) {
-        removedEdges.push(edge);
-        this.edges.splice(j, 1);
-      }
-    }
-
-    this.nodelikeHashMap.delete(node.hash);
-    this.tryRemoveNodeFromGroup(node.hash);
-    this.invalidateNode(node);
-
-    // TODO: Only adjust selection if needed
-    this.selection.replace([]);
-    this.dragging.replace([]);
-    this.highlighting.replace([]);
-    this.requestRender();
-
-    return {
-      found: foundNode,
-      removedEdges,
-    };
+    return this.removeNodeLike(node, this.nodes);
   }
 
   /**
@@ -547,29 +549,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Ungroup nodes
    * @param group - group to be removed
    */
-  removeGroup(group: UniversalGraphGroup): boolean {
-    let foundNode = false;
-
-    for (let i = 0; i < this.groups.length; i++) {
-      const g = this.groups[i];
-      if (group.hash === g.hash) {
-        this.groups.splice(i, 1);
-        foundNode = true;
-        break;
-      }
-    }
-
-    group.members.forEach(node => this.groupHashMap.delete(node.hash));
-    this.invalidateGroup(group);
-
-    // TODO: Only adjust selection if needed
-    this.selection.replace([]);
-    this.dragging.replace([]);
-    this.highlighting.replace([]);
-
-    this.requestRender();
-
-    return foundNode;
+  removeGroup(group: UniversalGraphGroup): {
+    found: boolean,
+    removedEdges: UniversalGraphEdge[],
+  } {
+    return this.removeNodeLike(group, this.groups);
   }
 
   updateGroup(group: UniversalGraphGroup) {

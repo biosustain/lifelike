@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+
 export class UserError {
   constructor({
                 title,
@@ -25,3 +27,5 @@ export class UserError {
 
 export class DeleteNonEmpty extends UserError {
 }
+
+export const isOfflineError = (error) => (error as HttpErrorResponse)?.status === 0 && !navigator.onLine;

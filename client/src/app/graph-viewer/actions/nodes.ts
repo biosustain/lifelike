@@ -6,18 +6,23 @@ import { GraphAction, GraphActionReceiver } from './actions';
  * Represents a new node addition to the graph.
  */
 export class NodeCreation implements GraphAction {
-  constructor(public readonly description: string,
-              public readonly node: UniversalGraphNode,
-              public readonly select = false) {
+  constructor(
+    public readonly description: string,
+    public readonly node: UniversalGraphNode,
+    public readonly select = false,
+    public readonly focus = false,
+  ) {
   }
 
   apply(component: GraphActionReceiver) {
     component.addNode(this.node);
     if (this.select) {
-      component.selection.replace([{
+      component.selection.add([{
         type: GraphEntityType.Node,
         entity: this.node,
       }]);
+    }
+    if (this.focus) {
       component.focusEditorPanel();
     }
   }

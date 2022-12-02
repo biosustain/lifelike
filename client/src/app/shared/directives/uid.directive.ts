@@ -1,11 +1,11 @@
 import { Directive, HostBinding } from '@angular/core';
 
-let counter = 0;
+import { makeid } from '../utils/identifiers';
 
 @Directive({
   selector: '[appUid]',
   exportAs: 'uid'
 })
 export class UidDirective {
-  @HostBinding('id') uid = `uid-${counter++}`;
+  @HostBinding('id') uid = `uid-${makeid()}`;
 }

@@ -1,12 +1,17 @@
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, first, sortBy } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import { LABEL_TOKEN, URI_TOKEN, URIData, } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import {
+  LABEL_TOKEN,
+  LIFELIKE_URI_TOKEN,
+  URI_TOKEN,
+  URIData,
+} from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -61,6 +66,15 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
+  @HostListener('dragenter', ['$event'])
+  dragEnter(event: DragEvent) {
+    if (this.editable) {
+      this.dropTargeted = true;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
   @HostListener('dragend', ['$event'])
   dragEnd(event: DragEvent) {
     this.dropTargeted = false;
@@ -82,29 +96,18 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       let text: string | undefined = null;
       const uriData: URIData[] = [];
 
-      for (const item of items) {
-        if (item.token === URI_TOKEN) {
-          uriData.push(...(item.data as URIData[]));
+      for (const item of sortBy(items, 'confidence')) {
+        if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
+          uriData.unshift(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
           text = item.data as string;
         }
       }
 
-      if (uriData.length) {
-        this.openCreateDialog({
-          url: uriData[0].uri,
-          domain: text.trim(),
-        }).then(result => {
-        }, () => {
-        });
-      } else {
-        this.openCreateDialog({
-          url: '',
-          domain: text.trim(),
-        }).then(result => {
-        }, () => {
-        });
-      }
+      return this.openCreateDialog({
+        url: first(uriData)?.uri?.href ?? '',
+        domain: text.trim(),
+      });
     }
   }
 
@@ -180,7 +183,10 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
   linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
-      openPotentialExternalLink(this.workspaceManager, link.url, {newTab: true, sideBySide: true});
+      openPotentialExternalLink(this.workspaceManager, link.url.toString(), {
+        newTab: true,
+        sideBySide: true,
+      });
     } catch (e) {
       this.messageDialog.display({
         title: 'Invalid Link',

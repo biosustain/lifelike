@@ -1,8 +1,8 @@
-import { Injectable, Component } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Observable, of, from } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
@@ -49,9 +49,9 @@ export class ViewService {
     return of(hashUrl);
   }
 
-  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<URL> {
+  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
     return this.getAppLink(componentInstance, url).pipe(
-      tap((appUrl: AppURL) => appUrl.origin = window.location.href)
+      map((appUrl: AppURL) => appUrl.toAbsolute()),
     );
   }
 }
