@@ -47,6 +47,8 @@ services:
 
   worker:
     <<: *appserver
+    profiles:
+      - app
     command: rq worker -c rq_config --with-scheduler
 
   webserver:
@@ -115,8 +117,7 @@ services:
   neo4j:
     image: neo4j:4.4-community
     restart: unless-stopped
-    profiles:
-      - service
+    profiles: [services]
     ports:
       - 7474:7474
       - 7687:7687
@@ -126,8 +127,7 @@ services:
 
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch
-    profiles:
-      - service
+    profiles: [services]
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -137,8 +137,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    profiles:
-      - service
+    profiles: [services]
     ports:
       - 6379:6379
 

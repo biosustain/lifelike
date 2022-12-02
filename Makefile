@@ -9,15 +9,16 @@ lmdb-fetch:
 
 
 # Bring up Docker Compose services
-profile?=service,app
+profile?=services,app
 args?=-d
 up:
 	docker compose --profile ${profile} up ${args}
 
 
 # Bring down Docker Compose services
+profile?=services,app
 down:
-	docker compose down --volumes --remove-orphans
+	docker compose down --profile ${profile} --volumes --remove-orphans
 
 
 # Sets up commit hooks for linting
