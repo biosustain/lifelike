@@ -2,12 +2,11 @@ import { Component } from '@angular/core';
 
 import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { environment } from 'environments/environment';
 
 import { AuthSelectors } from 'app/auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AppUser } from 'app/interfaces';
-
-import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-user-settings',

@@ -16,6 +16,7 @@ interface EnvironmentVars {
 }
 
 // Read environment variables (set by env.js) into the globalThis object
+const windowObjectEnvKey = '__env';
 const {
   production = false,
   keggEnabled = false,
@@ -27,7 +28,7 @@ const {
   oauthPasswordChangeLink,
   keycloakApiBaseUrl,
   ***ARANGO_DB_NAME***Version = '__VERSION__', // This is statically replaced during build time
-}: EnvironmentVars = globalThis.window?.['__env'];
+}: EnvironmentVars = globalThis.window?.[windowObjectEnvKey] || {};
 
 export const environment = {
   production,

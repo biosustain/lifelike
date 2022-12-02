@@ -3,12 +3,12 @@ import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Store } from '@ngrx/store';
-import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
 import { State } from 'app/auth/store/state';
 
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { AuthActions } from '../store';
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
