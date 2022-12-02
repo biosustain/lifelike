@@ -42,6 +42,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     if (position) {
       const content = event.event.clipboardData.getData('text/plain');
       if (content) {
+        this.graphView.selection.replace([]);
         this.graphView.execute(this.createActionFromPasteContent(content, position));
         event.event.preventDefault();
         return BehaviorResult.Stop;
@@ -81,6 +82,10 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
           [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
         } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
         const hashMap = new Map<string, string>();
+        const isSingularNode = nodes.length === 1;
+        const isSingularEdge = edges.length === 1;
+        const isSingularGroup = groups.length === 1;
+        this.graphView.selection.replace([]);
 
         const createAdjustedNode = <N extends Omit<UniversalGraphNode, 'hash'>>({data, ...rest}: N) => ({
             ...rest,
@@ -95,7 +100,9 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         const pasteNode = <N extends UniversalGraphNode>({hash, ...rest}: N) => {
           const newNode = createAdjustedNode(rest);
           hashMap.set(hash, newNode.hash);
-          actions.push(new NodeCreation('Paste node', newNode, nodes.length === 1));
+          actions.push(
+            new NodeCreation('Paste node', newNode, true, isSingularNode)
+          );
           return newNode;
         };
 
@@ -106,7 +113,9 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
           } as UniversalGraphGroup);
           // This works also for groups, as those inherit from the node
           hashMap.set(hash, newGroup.hash);
-          actions.push(new GroupCreation('Paste group', newGroup, groups.length === 1));
+          actions.push(
+            new GroupCreation('Paste group', newGroup, true, isSingularGroup)
+          );
         }
         for (const node of nodes as UniversalGraphNode[]) {
           if (!hashMap.has(node.hash)) {
@@ -119,7 +128,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
             actions.push(
               new EdgeCreation('Paste edge',
                 {...rest, to: hashMap.get(to), from: hashMap.get(from)} as UniversalGraphEdge,
-                edges.length === 1
+                true, isSingularEdge
               )
             );
           }
@@ -146,7 +155,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         style: {
           showDetail: true
         }
-      }, true,
+      }, true, true
     );
   }
 }

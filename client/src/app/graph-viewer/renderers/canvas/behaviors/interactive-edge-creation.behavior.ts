@@ -145,11 +145,17 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     if (subject && (subject.type === GraphEntityType.Group || subject.type === GraphEntityType.Node)) {
       const entity = subject.entity as UniversalGraphNodelike;
       if (entity !== this.from) {
-        this.graphView.execute(new EdgeCreation('Create connection', {
-          from: this.from.hash,
-          to: entity.hash,
-          label: null,
-        }, true));
+        this.graphView.execute(
+          new EdgeCreation(
+            'Create connection',
+            {
+              from: this.from.hash,
+              to: entity.hash,
+              label: null,
+            },
+            true
+          ),
+        );
         this.graphView.requestRender();
       }
     }

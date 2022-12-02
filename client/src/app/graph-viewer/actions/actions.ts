@@ -59,7 +59,10 @@ export interface GraphActionReceiver {
 
   addGroup(group: UniversalGraphGroup): void;
 
-  removeGroup(group: UniversalGraphGroup): boolean;
+  removeGroup(group: UniversalGraphGroup): {
+    found: boolean,
+    removedEdges: UniversalGraphEdge[],
+  };
 
   updateGroup(group: UniversalGraphGroup): void;
 

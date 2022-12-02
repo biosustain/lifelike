@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { from, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
-import { transform, isEqual, isObject, isEmpty } from 'lodash-es';
+import { transform, isEqual, isObject, isEmpty, identity, unary } from 'lodash-es';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
@@ -279,8 +279,8 @@ export const notDefined = Symbol('notDefined');
  *   that also causes currentValue to be initialized to the first value in the array. If initialValue is not specified, previousValue is
  *   initialized to the first value in the array, and currentValue is initialized to the second value in the array.
  */
-export const reduceIterable = (itrable, callbackfn, initialValue: any = notDefined) => {
-  const interator = itrable[Symbol.iterator]();
+export const reduceIterable = (iterable, callbackfn, initialValue: any = notDefined) => {
+  const interator = iterable[Symbol.iterator]();
   let currentIndex = 0;
   if (initialValue === notDefined) {
     const {done, value} = interator.next();
@@ -291,7 +291,7 @@ export const reduceIterable = (itrable, callbackfn, initialValue: any = notDefin
     currentIndex++;
   }
   for (const value of interator) {
-    initialValue = callbackfn(initialValue, value, currentIndex++, itrable);
+    initialValue = callbackfn(initialValue, value, currentIndex++, iterable);
   }
   return initialValue;
 };
@@ -301,4 +301,20 @@ export const isPromise = value => typeof value?.then === 'function';
 export const inText = (pattern: string, flags: string = 'i') => {
   const compiledExpresion = new RegExp(pattern, flags);
   return (text: string) => compiledExpresion.test(text);
+};
+
+export const findEntriesKey = <K, V>(iterable: Iterable<[K, V]>, predicate: (v: V) => boolean = identity) => {
+  for (const [k, v] of iterable) {
+    if (predicate(v)) {
+      return k;
+    }
+  }
+};
+
+export const findEntriesValue = <K, V>(iterable: Iterable<[K, V]>, predicate: (k: K) => boolean = identity) => {
+  for (const [k, v] of iterable) {
+    if (predicate(k)) {
+      return v;
+    }
+  }
 };

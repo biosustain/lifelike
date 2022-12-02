@@ -9,6 +9,7 @@ import {
   NgZone,
   OnInit,
   ViewChild,
+  NgModuleRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -25,6 +26,7 @@ import {
   switchMap,
   take,
   tap,
+  scan,
 } from 'rxjs/operators';
 import {
   BehaviorSubject,
@@ -87,6 +89,7 @@ import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument } from '../model/sankey-document';
 
 interface BaseViewContext {
+  moduleRef: NgModuleRef<any>;
   baseView: DefaultBaseControllerService;
   layout: DefaultLayoutService;
   selection: SankeySelectionService;
@@ -306,10 +309,12 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
   viewBase = ViewBase;
 
   /**
-   * Load different base view components upom base view change
+   * Load different base view components upon base view change
    */
   baseViewContext$ = this.sankeyController.baseViewName$.pipe(
-    map(baseViewName => {
+    scan((prev, baseViewName) => {
+      prev.moduleRef?.destroy();
+
       const module = baseViewName === ViewBase.sankeyMultiLane ? MultiLaneBaseModule : SingleLaneBaseModule;
       const moduleFactory = getModuleFactory(baseViewName);
       const moduleRef = moduleFactory.create(this.injector);
@@ -328,11 +333,12 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
       this.dynamicComponentRef.set('details', injectComponent(this.detailsSlot.viewContainerRef, SANKEY_DETAILS));
 
       return {
+        moduleRef,
         baseView: moduleRef.injector.get(BaseControllerService),
         layout: sankey.instance.sankey,
         selection: moduleRef.injector.get(SankeySelectionService)
       };
-    }),
+    }, {} as BaseViewContext),
     tap(({layout, baseView}) => {
       this.viewController.layout$.next(layout);
       baseView.delta$.next({});

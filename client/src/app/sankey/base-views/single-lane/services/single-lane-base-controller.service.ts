@@ -1,7 +1,7 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
 import { flatMap, groupBy, intersection, merge, isNil } from 'lodash-es';
-import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
 import { of, Observable, defer, iif } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
@@ -77,16 +77,20 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
       iif(
         () => isNil(delta.predefinedValueAccessorId),
         this.common.networkTraceDefaultSizing$,
-        this.common.options$.pipe(
-          map(({predefinedValueAccessors}) =>
-            this.common.pickPartialAccessors(predefinedValueAccessors[delta.predefinedValueAccessorId]),
-          )
-        ),
+        of(delta.predefinedValueAccessorId)
       ).pipe(
+        switchMap(predefinedValueAccessorId =>
+          this.common.options$.pipe(
+            map(({predefinedValueAccessors}) =>
+              this.common.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId]),
+            ),
+          ),
+        ),
         map(state => merge({}, delta, state))
       )
     )
   ).pipe(
+    takeUntil(this.destroy$),
     debug('SingleLaneBaseControllerService.state$'),
     shareReplay<Base['state']>({bufferSize: 1, refCount: true})
   );
