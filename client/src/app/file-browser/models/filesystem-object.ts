@@ -1,21 +1,35 @@
-import { isNil, isEmpty, has, toPairs, assign, pick, omit } from 'lodash-es';
+import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
-import { KnowledgeMap, Source, UniversalEntityData, KnowledgeMapGraph, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import {
+  KnowledgeMap,
+  KnowledgeMapGraph,
+  Source,
+  UniversalEntityData,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import { MimeTypes, Unicodes, FAClass } from 'app/shared/constants';
+import { FAClass, MimeTypes, Unicodes } from 'app/shared/constants';
 import { CollectionModel, ObservableObject } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { getSupportedFileCodes } from 'app/shared/utils';
-import { FILESYSTEM_IMAGE_HASHID_TYPE, FILESYSTEM_IMAGE_TRANSFER_TYPE } from 'app/drawing-tool/providers/image-entity-data.provider';
+import {
+  FILESYSTEM_IMAGE_HASHID_TYPE,
+  FILESYSTEM_IMAGE_TRANSFER_TYPE,
+} from 'app/drawing-tool/providers/image-entity-data.provider';
+import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { AppURL } from 'app/shared/utils/url';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../providers/filesystem-object-data.provider';
+import {
+  FILESYSTEM_OBJECT_TRANSFER_TYPE,
+  FilesystemObjectTransferData,
+} from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
@@ -33,7 +47,7 @@ export class ProjectImpl implements Project, ObservableObject {
   modifiedDate: string;
   ***ARANGO_USERNAME***: FilesystemObject;
   privileges: ProjectPrivileges;
-  fontAwesomeIcon = 'fa-4x fas fa-layer-group';
+  fontAwesomeIcon = `fa-4x ${FAClass.Project}`;
   changed$ = new Subject();
 
   get starred(): boolean {
@@ -43,6 +57,16 @@ export class ProjectImpl implements Project, ObservableObject {
   set starred(value) {
     if (this.***ARANGO_USERNAME***) {
       this.***ARANGO_USERNAME***.update({starred: value});
+    }
+  }
+
+  get public(): boolean {
+    return this.***ARANGO_USERNAME***?.public;
+  }
+
+  set public(value) {
+    if (this.***ARANGO_USERNAME***) {
+      this.***ARANGO_USERNAME***.update({public: value});
     }
   }
 
@@ -122,8 +146,13 @@ export class ProjectImpl implements Project, ObservableObject {
     };
 
     dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData('text/plain', this.effectiveName);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+
+    GenericDataProvider.setURIs(dataTransfer, [{
+      title: this.effectiveName,
+      uri: new AppURL(this.getURL()).toAbsolute(),
+    }], {action: 'append'});
   }
 }
 
@@ -319,6 +348,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
+        if (this.isProjectRoot) {
+          return FAClass.Project;
+        }
         return FAClass.Directory;
       case MimeTypes.Map:
         return FAClass.Map;
@@ -506,9 +538,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        if (this.isProjectRoot) {
-          return ['/projects', projectName];
-        }
         return ['/projects', projectName, 'folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
@@ -531,6 +560,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
 
+    if (this.isProjectRoot) {
+      return url + '#project';
+    }
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
         let fragment = '';
@@ -551,7 +583,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources = [];
 
     sources.push({
-      domain: this.filename,
+      domain: this.effectiveName,
       url: this.getURL(false, meta),
     });
 
@@ -572,7 +604,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return sources;
   }
 
-
   getTransferData() {
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
@@ -582,7 +613,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const sources: Source[] = this.getGraphEntitySources();
 
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.filename,
+      display_name: this.effectiveName,
       label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
       sub_labels: [],
       data: {
@@ -600,9 +631,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       };
     }
     return {
-      'text/plain': this.filename,
+      'text/plain': this.effectiveName,
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
-      ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node)
+      ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node),
+      ...GenericDataProvider.getURIs([{
+        uri: new AppURL(this.getURL(false)).toAbsolute(),
+        title: this.filename,
+      }]),
     };
   }
 
@@ -612,6 +647,11 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     const dragData = this.getTransferData();
     toPairs(dragData).forEach(args => dataTransfer.setData(...args));
+
+    GenericDataProvider.setURIs(dataTransfer, [{
+      title: this.effectiveName,
+      uri: new AppURL(this.getURL(false)).toAbsolute(),
+    }], {action: 'append'});
   }
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {

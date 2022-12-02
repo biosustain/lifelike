@@ -45,7 +45,11 @@ class EnrichmentAnnotationService(AnnotationService):
             entities_set = set()
             for entity in match.entities:
                 gene_names.add(entity['synonym'])
-                entities_set.add((entity['synonym'], entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+                entities_set.add((
+                    entity['synonym'],
+                    entity['id_type'],
+                    entity.get('hyperlinks', '')
+                ))
             for synonym, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
@@ -74,21 +78,22 @@ class EnrichmentAnnotationService(AnnotationService):
 
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in fallback_gene_organism_matches:
+                fallback_gene_organism_match = fallback_gene_organism_matches[entity_synonym]
                 try:
                     # prioritize common name match over synonym
-                    organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
+                    organisms_to_match = fallback_gene_organism_match[entity_synonym]
                 except KeyError:
                     # an organism can have multiple different genes w/ same synonym
                     # since we don't know which to use, doing this is fine
-                    for d in list(fallback_gene_organism_matches[entity_synonym].values()):
+                    for d in list(fallback_gene_organism_match.values()):
                         organisms_to_match = {**organisms_to_match, **d}
                 try:
-                    gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
+                    gene_id = organisms_to_match[self.specified_organism.organism_id]
                     category = self.specified_organism.category
                 except KeyError:
                     continue
                 else:
-                    if entity_datasource != gene_data_sources[f'{entity_synonym}{organism_id}']:  # noqa
+                    if entity_datasource != gene_data_sources[f'{entity_synonym}{organism_id}']:
                         continue
                     entities_to_create.append(
                         CreateAnnotationObjParams(
@@ -118,7 +123,12 @@ class EnrichmentAnnotationService(AnnotationService):
             entities_set = set()
             for entity in match.entities:
                 protein_names.add(entity['synonym'])
-                entities_set.add((entity['synonym'], entity.get('category', ''), entity['id_type'], entity.get('hyperlinks', '')))  # noqa
+                entities_set.add((
+                    entity['synonym'],
+                    entity.get('category', ''),
+                    entity['id_type'],
+                    entity.get('hyperlinks', '')
+                ))
             for synonym, datasource, category, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
@@ -127,10 +137,12 @@ class EnrichmentAnnotationService(AnnotationService):
         protein_names_list = list(protein_names)
 
         protein_match_time = time.time()
+        organism = self.specified_organism
+        organism_id = organism.organism_id
         fallback_graph_results = \
             self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
-                organisms=[self.specified_organism.organism_id],
+                organisms=[organism_id],
             )
         current_app.logger.info(
             f'Protein fallback organism KG query time {time.time() - protein_match_time}',
@@ -139,13 +151,14 @@ class EnrichmentAnnotationService(AnnotationService):
         fallback_protein_organism_matches = fallback_graph_results.matches
         protein_primary_names = fallback_graph_results.primary_names
 
-        for entity_synonym, category, entity_datasource, entity_hyperlinks, token in entity_token_pairs:  # noqa
+        for entity_synonym, category, entity_datasource, entity_hyperlinks, token \
+                in entity_token_pairs:
             # in LMDB we use the synonym as id and name, so do the same here
             protein_id = entity_synonym
             if entity_synonym in fallback_protein_organism_matches:
                 try:
-                    protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                    category = self.specified_organism.category
+                    protein_id = fallback_protein_organism_matches[entity_synonym][organism_id]
+                    category = organism.category
                 except KeyError:
                     continue
 

@@ -54,6 +54,7 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     const dragEvent = event.event;
     const files = this.getFiles(dragEvent.dataTransfer);
     if (files.length) {
+      this.graphView.selection.replace([]);
       dragEvent.stopPropagation();
       dragEvent.preventDefault();
       this.createImageNodes(files);

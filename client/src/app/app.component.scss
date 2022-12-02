@@ -1,13 +1,7 @@
-@import "src/scss/variables";
-
-// Make the content fill the whole screen
-// There's no better way to do this due to limitations in Angular
-router-outlet + ::ng-deep * {
-  height: 100%;
-}
+@import 'src/scss/variables';
 
 .button-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba($white, .2);
 }
 
 .vertical-nav {
@@ -15,29 +9,21 @@ router-outlet + ::ng-deep * {
 }
 
 footer {
+  align-items: center;
   background: $gray-300;
   border-top: 1px solid $gray-500;
-  box-shadow: 0px -2px 10px rgba(50, 50, 50, 0.15);
-  height: 24px;
-  line-height: 23px;
-  font-size: 12px;
-  text-align: right;
+  box-shadow: 0 -2px 10px rgba($gray-700, .15);
+  display: flex;
+  font-size: $font-size-sm;
+  gap: 1.5em;
+  justify-content: flex-end;
+  line-height: 1;
+  padding: .2em 1.5em;
 
-  span {
-    display: inline-block;
-    height: 23px;
-    overflow: hidden;
-    padding-right: 1.5em;
-
-    &.repo {
-      margin-top: 2px;
-    }
-  }
-
-  img.logo {
-    height: 16px;
-    width: 16px;
-    opacity: 0.7;
+  .logo {
+    height: 1.3em;
+    opacity: .7;
     vertical-align: text-bottom;
+    width: 1.3em;
   }
 }

@@ -28,7 +28,9 @@
          [newTab]="true" preferPane="left">
         <i class="fa fa-folder"></i>
       </a>
-      <a appLink="/search/graph" placement="right" ngbTooltip="Knowledge Graph" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+      <a appLink="/search/graph" placement="right" ngbTooltip="Knowledge Graph" matchExistingTab="/search/graph$"
+         [forceWorkbench]="true"
+         [newTab]="true" preferPane="left">
         <i class="fas fa-chart-network"></i>
       </a>
       <a appLink="/search/content" matchExistingTab="/search/content$" placement="right" ngbTooltip="Search"
@@ -115,24 +117,22 @@
   <!-- /Left menu -->
 
   <!-- Module content -->
-  <div class="flex-fill overflow-auto">
+  <div class="flex-fill overflow-hidden flex-column d-flex mw-0">
     <router-outlet></router-outlet>
 
-    <footer class="fixed-bottom">
+    <footer>
       <span>
-        This project uses code provided by
-        <img src="/favicon.ico" alt="Lifelike Logo" class="logo">
-        <a href="https://***ARANGO_DB_NAME***.bio" target="_blank" rel="noopener">
-          Lifelike.bio
-        </a>
+          This project uses code provided by
+          <img src="/favicon.ico" alt="Lifelike Logo" class="logo">
+          <a href="https://***ARANGO_DB_NAME***.bio" target="_blank" rel="noopener">
+              Lifelike.bio
+          </a>
       </span>
-      <span class="repo">
-        <a href="https://github.com/SBRG/***ARANGO_DB_NAME***" class="github-button"
-          data-color-scheme="no-preference: light; light: light; dark: light;"
-          aria-label="Lifelike Open Source Git Repository">
-          View on GitHub
-        </a>
-      </span>
+      <a href="https://github.com/SBRG/***ARANGO_DB_NAME***" class="github-button"
+         data-color-scheme="no-preference: light; light: light; dark: light;"
+         aria-label="Lifelike Open Source Git Repository">
+        View on GitHub
+      </a>
     </footer>
   </div>
   <!-- /Module content -->

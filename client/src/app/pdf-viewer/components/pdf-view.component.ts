@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription, defer, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -27,9 +27,19 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { AppURL } from 'app/shared/utils/url';
 
-import { AddedAnnotationExclusion, Annotation, Location, RemovedAnnotationExclusion, } from '../annotation-type';
-import { AnnotationDragEvent, AnnotationHighlightResult, PdfViewerLibComponent, } from '../pdf-viewer-lib.component';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  Location,
+  RemovedAnnotationExclusion,
+} from '../annotation-type';
+import {
+  AnnotationDragEvent,
+  AnnotationHighlightResult,
+  PdfViewerLibComponent,
+} from '../pdf-viewer-lib.component';
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -60,14 +70,15 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     moduleContext.register(this);
 
-    this.loadTask = new BackgroundTask(([hashId, loc]) => {
-      return combineLatest(
-        this.filesystemService.get(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-        ),
-        this.pdfAnnService.getAnnotations(hashId));
-    });
+    this.loadTask = new BackgroundTask(([hashId, loc]) =>
+        combineLatest(
+          this.filesystemService.get(hashId),
+          this.filesystemService.getContent(hashId).pipe(
+            mapBlobToBuffer(),
+          ),
+          this.pdfAnnService.getAnnotations(hashId),
+        )
+    );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -172,9 +183,13 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
             type: 'PROJECT_OBJECT',
             id: this.object.hashId + '',
           }],
-          sources
+          sources,
         },
-      } as Partial<UniversalGraphNode>)
+      } as Partial<UniversalGraphNode>),
+      ...GenericDataProvider.getURIs([{
+        uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+        title: this.object.filename,
+      }]),
     });
   });
 
@@ -430,7 +445,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     dataTransfer.setData('text/plain', meta.allText);
     GenericDataProvider.setURIs(dataTransfer, [{
       title: text,
-      uri: new URL(source, window.location.href).href,
+      uri: new AppURL(source).toAbsolute(),
     }]);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: text,

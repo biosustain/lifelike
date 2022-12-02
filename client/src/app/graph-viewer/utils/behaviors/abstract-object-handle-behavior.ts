@@ -1,7 +1,13 @@
 import * as d3 from 'd3'; // TODO: Maybe limit that import
 import { ZoomTransform } from 'd3-zoom';
 
-import { GraphEntity, GraphEntityType, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+  UniversalGraphNodelike,
+} from 'app/drawing-tool/services/interfaces';
 import { BLACK_COLOR, WHITE_COLOR } from 'app/shared/constants';
 
 import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent, } from '../../renderers/behaviors';
@@ -9,11 +15,12 @@ import { PlacedObject } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
 import { Point } from '../canvas/shared';
 
-export abstract class AbstractObjectHandleBehavior<T extends Handle> extends AbstractCanvasBehavior {
-  protected handle: T | undefined;
+export abstract class AbstractObjectHandleBehavior<Hand extends Handle,
+  Target extends UniversalGraphNodelike> extends AbstractCanvasBehavior {
+  protected handle: Hand | undefined;
 
   protected constructor(protected readonly graphView: CanvasGraphView,
-                        protected readonly target: UniversalGraphNode | UniversalGraphGroup) {
+                        protected readonly target: Target) {
     super();
   }
 
@@ -85,7 +92,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     return this.getHandleIntersected(placedObject, {x, y}) ? true : undefined;
   }
 
-  getHandleIntersected(placedObject: PlacedObject, {x, y}: Point): T | undefined {
+  getHandleIntersected(placedObject: PlacedObject, {x, y}: Point): Hand | undefined {
     for (const handle of this.getHandleBoundingBoxes(placedObject)) {
       if (x >= handle.minX && x <= handle.maxX && y >= handle.minY && y <= handle.maxY) {
         return handle;
@@ -102,7 +109,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
     }
   }
 
-  drawHandle(ctx: CanvasRenderingContext2D, transform: ZoomTransform, {minX, minY, maxX, maxY, displayColor}: T) {
+  drawHandle(ctx: CanvasRenderingContext2D, transform: ZoomTransform, {minX, minY, maxX, maxY, displayColor}: Hand) {
     ctx.beginPath();
     ctx.lineWidth = 1 / transform.scale(1).k;
     if (document.activeElement === this.graphView.canvas) {
@@ -117,7 +124,7 @@ export abstract class AbstractObjectHandleBehavior<T extends Handle> extends Abs
 
   }
 
-  abstract getHandleBoundingBoxes(placedObject: PlacedObject): T[];
+  abstract getHandleBoundingBoxes(placedObject: PlacedObject): Hand[];
 
   protected activeDragStart(event: MouseEvent, graphPosition: Point, subject: GraphEntity | undefined) {
   }

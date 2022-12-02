@@ -1,7 +1,10 @@
+import re
 from enum import Enum
 import os
+from string import punctuation
 from typing import Dict, Union
 
+from neo4japp.util import Enumd
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
@@ -24,6 +27,7 @@ PDF_CHARACTER_SPACING_THRESHOLD = .325
 ABBREVIATION_WORD_LENGTH = {3, 4}
 MAX_ABBREVIATION_WORD_LENGTH = 4
 MAX_ENTITY_WORD_LENGTH = 6
+MIN_ENTITY_LENGTH = 2
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
@@ -74,7 +78,7 @@ COMMON_WORDS = set.union(*[
 GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
 
-class EntityType(Enum):
+class EntityType(Enumd):
     ANATOMY = 'Anatomy'
     CHEMICAL = 'Chemical'
     COMPOUND = 'Compound'
@@ -173,7 +177,8 @@ ENTITY_HYPERLINKS: Dict[str, Union[str, Dict[str, str]]] = {
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-    DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',  # noqa
+    DatabaseType.NCBI_TAXONOMY.value:
+        'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     DatabaseType.BIOCYC.value: {
         EntityType.GENE.value: 'https://biocyc.org/gene?orgid=PPUT160488&id=',
         EntityType.COMPOUND.value: 'https://biocyc.org/compound?orgid=META&id='
@@ -189,3 +194,5 @@ DEFAULT_ANNOTATION_CONFIGS = {
         EntityType.GENE.value: {'nlp': False, 'rules_based': True}
     }
 }
+
+WORD_CHECK_REGEX = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))

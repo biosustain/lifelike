@@ -1,10 +1,12 @@
 import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
+import { compact, omitBy, isEmpty } from 'lodash-es';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
+import { environment } from '../../../environments/environment';
 
 
 export class BaseEnrichmentDocument {
@@ -12,14 +14,14 @@ export class BaseEnrichmentDocument {
   organism = '';
   values = new Map<string, string>();
   importGenes: string[] = [];
-  domains: string[] = [
+  domains: string[] = compact([
     'Regulon',
     'UniProt',
     'String',
     'GO',
     'BioCyc',
-    'KEGG'
-  ];
+    environment.keggEnabled && 'KEGG'
+  ]);
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
   fileId = '';
@@ -122,7 +124,7 @@ export class BaseEnrichmentDocument {
     const importGenes = data.genes.split(',');
     const taxID = data.taxId;
     const organism = data.organism;
-    const domains = data.sources.filter(domain => domain.length);
+    const domains = data.sources.filter(domain => domain.length && (domain !== 'KEGG' || environment.keggEnabled));
     const values = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.value || '']));
     return {
       importGenes, taxID, organism, domains, values, result, ...rest
@@ -289,7 +291,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  domainInfo: {
+                  domainInfo: omitBy({
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
                     },
@@ -297,8 +299,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     String: {labels: ['Annotation']},
                     GO: {labels: ['Annotation']},
                     BioCyc: {labels: ['Pathways']},
-                    KEGG: {labels: ['Pathways']}
-                  },
+                    KEGG: environment.keggEnabled && {labels: ['Pathways']}
+                  }, isEmpty),
                   genes: genesList,
                 };
               }),
@@ -377,7 +379,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot !== null ? wrapper.go.link + wrapper.uniprot.result.id :
+            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id :
               'http://amigo.geneontology.org/amigo/search/annotation?q=' + encodeURIComponent(ncbiNode.name)
           },
         };
@@ -386,7 +388,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
     if (domains.includes('BioCyc')) {
       if (wrapper.biocyc !== null) {
-        const text = wrapper.biocyc.result ? wrapper.biocyc.result.join('; ') : '';
+        const text = wrapper.biocyc.result?.join('; ') ?? '';
         results.BioCyc = {
           Pathways: {
             text,
@@ -397,7 +399,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       }
     }
 
-    if (domains.includes('KEGG')) {
+    if (environment.keggEnabled && domains.includes('KEGG')) {
       if (wrapper.kegg !== null) {
         const text = this.shortenTerms(wrapper.kegg.result);
         results.KEGG = {

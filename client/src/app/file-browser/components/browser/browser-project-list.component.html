@@ -46,6 +46,12 @@
                             <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
                                 <i class="fas fa-star text-warning"></i>
                             </button>
+                            <button *ngIf="project.public"
+                                    class="btn btn-sm"
+                                    ngbTooltip="This project is public and can be viewed by any logged-in user."
+                                    container="body">
+                                <i class="fa fa-fw text-icon fa-globe"></i>
+                            </button>
                             <div ngbDropdown class="d-inline-block ml-auto" container="body">
                                 <button class="btn btn-sm" ngbDropdownToggle>
                                     <i class="fas fa-cog fa-fw"></i>

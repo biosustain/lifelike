@@ -6,18 +6,23 @@ import { GraphAction, GraphActionReceiver } from './actions';
  * Represents a new edge addition to the graph.
  */
 export class EdgeCreation implements GraphAction {
-  constructor(public description: string,
-              public edge: UniversalGraphEdge,
-              public readonly select = false) {
+  constructor(
+    public description: string,
+    public edge: UniversalGraphEdge,
+    public readonly select = false,
+    public readonly focus = false
+  ) {
   }
 
   apply(component: GraphActionReceiver) {
     component.addEdge(this.edge);
     if (this.select) {
-      component.selection.replace([{
+      component.selection.add([{
         type: GraphEntityType.Edge,
         entity: this.edge,
       }]);
+    }
+    if (this.focus) {
       component.focusEditorPanel();
     }
   }

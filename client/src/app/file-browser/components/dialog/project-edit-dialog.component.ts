@@ -24,6 +24,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
       Validators.required, noStartOrEndWhitespaceValidator, filenameValidator
     ]),
     description: new FormControl(),
+    public: new FormControl(false),
   });
 
   constructor(modal: NgbActiveModal,
@@ -42,6 +43,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
     this.form.patchValue({
       name: value.name || '',
       description: value.description || '',
+      public: value.public || '',
     });
   }
 
@@ -55,11 +57,13 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
     const projectChanges = {
       name: value.name,
       description: value.description,
+      public: value.public
     };
 
     const request: ProjectCreateRequest = {
       name: value.name,
       description: value.description,
+      public: value.public
     };
 
     return {

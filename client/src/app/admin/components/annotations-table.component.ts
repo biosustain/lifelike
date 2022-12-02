@@ -23,6 +23,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
+import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 
 @Component({
     selector: 'app-annotations-table',
@@ -48,10 +49,10 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         limit: new FormControl(100),
     });
 
-    readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
-        (locator: PaginatedRequestOptions) => this.globalAnnotationService.getAnnotations(
-            locator, this.globalAnnotationType),
-    );
+  readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<GlobalAnnotationListItem>> = new BackgroundTask(
+    (locator: PaginatedRequestOptions) =>
+      this.globalAnnotationService.getAnnotations(locator, this.globalAnnotationType)
+  );
 
     locator: StandardRequestOptions = {
         ...this.defaultLocator,
@@ -118,8 +119,10 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     goToPage(page: number) {
         this.currentPage = page;
         this.locator = {...this.locator, page};
-        this.subscriptions.add(this.globalAnnotationService.getAnnotations(
-            this.locator, this.globalAnnotationType).pipe().subscribe(
+        this.subscriptions.add(
+          this.globalAnnotationService.getAnnotations(this.locator, this.globalAnnotationType).pipe(
+            retryWhenOnline()
+          ).subscribe(
             (annotations => {
                 this.collectionSize = annotations.total;
                 this.results.replace(annotations.results);

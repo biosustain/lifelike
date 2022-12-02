@@ -35,6 +35,11 @@
       <li *ngIf="object.public">
         <i class="fa fa-fw text-icon fa-globe"></i> Public
       </li>
+      <li *ngIf="object.parent">
+        <strong>Path:</strong>
+        <app-object-path class="d-inline-block ml-2" [wrap]="true" [object]="object.parent"
+                         [newTab]="true"></app-object-path>
+      </li>
       <li *ngIf="object.isAnnotatable">
         <strong>Annotated:</strong>
         <span *ngIf="object.annotationDate; else noAnnotations">

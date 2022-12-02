@@ -5,14 +5,10 @@ import itertools
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json, jsonify, request, current_app
+from flask import json, jsonify, request
 from json import JSONDecodeError
-from neo4j.graph import Node as N4jDriverNode
 from string import punctuation, whitespace
-from typing import Any, List, Optional, Type, Iterator, Dict
-
-from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS, LogEventType
-from neo4japp.utils.logger import EventLog
+from typing import Any, Optional, Type, Iterator, Dict
 
 
 def normalize_str(s) -> str:
@@ -38,6 +34,12 @@ def encode_to_str(obj):
         raise TypeError(f'No conversion definition for {obj}')
 
 
+def _snake_to_camel_update(k, v):
+    return {
+        snake_to_camel(encode_to_str(k)): v
+    }
+
+
 def snake_to_camel_dict(d, new_dict: dict) -> dict:
     """Converts a snake_case dict to camelCase while taking into
     consideration a nested list or dict as a value.
@@ -46,13 +48,13 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
         return d
     for k, v in d.items():
         if callable(getattr(v, 'to_dict', None)):
-            new_dict.update({snake_to_camel(encode_to_str(k)): v.to_dict()})
+            new_dict.update(_snake_to_camel_update(k, v.to_dict()))
         elif type(v) is list:
-            new_dict.update({snake_to_camel(encode_to_str(k)): [snake_to_camel_dict(i, {}) for i in v]})  # noqa
+            new_dict.update(_snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v]))
         elif type(v) is dict:
-            new_dict.update({snake_to_camel(encode_to_str(k)): snake_to_camel_dict(v, {})})  # noqa
+            new_dict.update(_snake_to_camel_update(k, snake_to_camel_dict(v, {})))
         else:
-            new_dict.update({snake_to_camel(encode_to_str(k)): v})
+            new_dict.update(_snake_to_camel_update(k, v))
     return new_dict
 
 
@@ -122,9 +124,9 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
         return d
     for k, v in d.items():
         if type(v) is list:
-            new_dict.update({camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]})  # noqa
+            new_dict.update({camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]})
         elif type(v) is dict:
-            new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})  # noqa
+            new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})
         elif type(v) is str:
             # check if a number then convert to Decimal
             # otherwise check if a string representation of dictionary
@@ -140,7 +142,7 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
             try:
                 v = json.loads(v)
                 if type(v) is not list:
-                    new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})  # noqa
+                    new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})
                 else:
                     obj_list = [camel_to_snake_dict(obj, {}) for obj in v]
                     new_dict.update({camel_to_snake(k): obj_list})
@@ -294,7 +296,8 @@ class CasePreservedDict(DictMixin):
 
 @attr.s(frozen=True)
 class SuccessResponse(CamelDictMixin):
-    result: Any = attr.ib()  # Union[ReconBase, CamelDictMixin, List[Union[ReconBase, CamelDictMixin]], str, bool]  # noqa
+    # result: Union[ReconBase, CamelDictMixin, List[Union[ReconBase, CamelDictMixin]], str, bool]
+    result: Any = attr.ib()
     status_code: int = attr.ib(validator=attr.validators.instance_of(int))
 
 
@@ -335,7 +338,7 @@ def jsonify_with_class(
                     # uses `request.form`
                     if has_file:
                         request_data = request.form.to_dict()
-                        request_data['file_input'] = request.files.get('fileInput')  # noqa
+                        request_data['file_input'] = request.files.get('fileInput')
                     else:
                         # set to silent to return as None if empty
                         request_data = request.get_json(silent=True)
@@ -364,7 +367,7 @@ def jsonify_with_class(
                 elif (isinstance(result, list)):
                     for index, _ in enumerate(result):
                         if isinstance(result[index], CamelDictMixin):
-                            result[index] = result[index].to_dict()  # noqa
+                            result[index] = result[index].to_dict()
 
                 return (
                     jsonify({'result': result}),
@@ -392,38 +395,6 @@ def compute_hash(data: dict, **kwargs) -> str:
     return hexdigest
 
 
-def get_first_known_label_from_node(node: N4jDriverNode):
-    try:
-        return get_first_known_label_from_list(node.labels)
-    except ValueError:
-        current_app.logger.warning(
-            f'Node with ID {node.id} had an unexpected list of labels: {node.labels}',
-            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
-        )
-        return 'Unknown'
-
-
-def get_first_known_label_from_list(labels: List[str]):
-    for label in labels:
-        if label in DISPLAY_NAME_MAP.keys():
-            return label
-    raise ValueError('Detected node label of an unknown type!')
-
-
-def get_known_domain_labels_from_node(node: N4jDriverNode):
-    return get_known_domain_labels_from_list(node.labels)
-
-
-def get_known_domain_labels_from_list(labels: List[str]):
-    domain_labels = []
-
-    for label in labels:
-        if label in DOMAIN_LABELS:
-            domain_labels.append(label)
-
-    return domain_labels
-
-
 class AttrDict(dict):
     """ Wrap a python dictionary into an object
     """
@@ -443,3 +414,27 @@ class AttrDict(dict):
             return snake_to_camel_dict(new_dict, {})
         else:
             return new_dict
+
+
+def filter_dict_by_value(condition, d: dict):
+    return {k: v for k, v in d.items() if condition(v)}
+
+
+def compact(d):
+    if isinstance(d, dict):
+        return filter_dict_by_value(lambda v: v, d)
+    raise NotImplementedError
+
+
+def equal_number_of_words(term_a: str, term_b: str) -> bool:
+    return len(term_a.split(' ')) == len(term_b.split(' '))
+
+
+class Enumd(Enum):
+    @classmethod
+    def get(cls, key, default=None):
+        # Non-throwing value accessor modeled to behave like dict.get()
+        try:
+            return cls(key)
+        except ValueError:
+            return default

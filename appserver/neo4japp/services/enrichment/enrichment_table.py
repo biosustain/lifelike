@@ -25,7 +25,9 @@ class EnrichmentTableService(KgService):
         except Exception:
             raise AnnotationError(
                 title='Could not annotate enrichment table',
-                message='Could not annotate enrichment table, there was a problem validating the format.')  # noqa
+                message='Could not annotate enrichment table, '
+                        'there was a problem validating the format.'
+            )
 
         # got here so passed validation
         data = enrichment['result']
@@ -44,21 +46,56 @@ class EnrichmentTableService(KgService):
                 continue
 
             try:
-                cell_texts.append({'text': gene['imported'], 'index': i, 'domain': 'Imported', 'label': 'Imported'})  # noqa
-                cell_texts.append({'text': gene['matched'], 'index': i, 'domain': 'Matched', 'label': 'Matched'})  # noqa
-                cell_texts.append({'text': gene['fullName'], 'index': i, 'domain': 'Full Name', 'label': 'Full Name'})  # noqa
+                cell_texts.append({
+                    'text': gene['imported'],
+                    'index': i,
+                    'domain': 'Imported',
+                    'label': 'Imported'
+                })
+                cell_texts.append({
+                    'text': gene['matched'],
+                    'index': i,
+                    'domain': 'Matched',
+                    'label': 'Matched'
+                })
+                cell_texts.append({
+                    'text': gene['fullName'],
+                    'index': i,
+                    'domain': 'Full Name',
+                    'label': 'Full Name'
+                })
 
                 if gene.get('domains'):
                     for k, v in gene['domains'].items():
                         if k == EnrichmentDomain.REGULON.value:
                             for k2, v2 in v.items():
-                                cell_texts.append({'text': v2['text'], 'index': i, 'domain': k, 'label': k2})  # noqa
+                                cell_texts.append({
+                                    'text': v2['text'],
+                                    'index': i,
+                                    'domain': k,
+                                    'label': k2
+                                })
                         elif k == EnrichmentDomain.BIOCYC.value:
-                            cell_texts.append({'text': v['Pathways']['text'], 'index': i, 'domain': k, 'label': 'Pathways'})  # noqa
+                            cell_texts.append({
+                                'text': v['Pathways']['text'],
+                                'index': i,
+                                'domain': k,
+                                'label': 'Pathways'
+                            })
                         elif k == EnrichmentDomain.GO.value or k == EnrichmentDomain.STRING.value:
-                            cell_texts.append({'text': v['Annotation']['text'], 'index': i, 'domain': k, 'label': 'Annotation'})  # noqa
+                            cell_texts.append({
+                                'text': v['Annotation']['text'],
+                                'index': i,
+                                'domain': k,
+                                'label': 'Annotation'
+                            })
                         elif k == EnrichmentDomain.UNIPROT.value:
-                            cell_texts.append({'text': v['Function']['text'], 'index': i, 'domain': k, 'label': 'Function'})  # noqa
+                            cell_texts.append({
+                                'text': v['Function']['text'],
+                                'index': i,
+                                'domain': k,
+                                'label': 'Function'
+                            })
             except KeyError:
                 current_app.logger.error(
                     f'Missing key when creating enrichment table text row/column mapping.',
@@ -67,7 +104,8 @@ class EnrichmentTableService(KgService):
                 continue
 
         for text in cell_texts:
-            if text['domain'] != EnrichmentDomain.GO.value and text['domain'] != EnrichmentDomain.BIOCYC.value:  # noqa
+            domain = EnrichmentDomain.get(text['domain'])
+            if domain not in (EnrichmentDomain.GO, EnrichmentDomain.BIOCYC):
                 combined_text += text['text']
                 total_index = len(combined_text)
                 text_index_map.append((total_index - 1, text))

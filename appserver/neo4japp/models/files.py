@@ -607,8 +607,11 @@ def _after_file_update(target: Files, changes: dict):
                 files_to_update = [member.hash_id for member in family]
 
             # Only delete a file when it changes from "not-deleted" to "deleted"
-            if 'deletion_date' in changes and changes['deletion_date'][0] is None and \
-                    changes['deletion_date'][1] is not None:  # noqa
+            if (
+                    'deletion_date' in changes and
+                    changes['deletion_date'][0] is None and
+                    changes['deletion_date'][1] is not None
+            ):
                 current_app.logger.info(
                     f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()

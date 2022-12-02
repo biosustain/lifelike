@@ -13,6 +13,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { NodeLegend } from 'app/interfaces';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { wrapText } from 'app/shared/utils/canvas';
 
 import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
 import { WordCloudAnnotationFilterEntityWithLayout } from '../interfaces';
@@ -60,18 +61,20 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   resizeCloud = true;
   cloudResizeObserver: any;
 
+  textAccessor: (object) => string;
+
   constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly legendService: LegendService,
               protected readonly clipboard: ClipboardService) {
     this.layout = cloud();
 
     // Initialize the background task
-    this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
-      return combineLatest(
-        this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(hashId, sortingId),
-      );
-    });
+    this.loadTask = new BackgroundTask(({hashId, sortingId}) =>
+        combineLatest(
+          this.legendService.getAnnotationLegend(),
+          this.annotationsService.getSortedAnnotations(hashId, sortingId),
+        )
+    );
 
     // Set up the cloud resize observer.
     // @ts-ignore // todo: use createResizeObservable
@@ -361,6 +364,32 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     };
   }
 
+  setupFittingTextAccessor() {
+    // Try to mimic how word cloud is measuring size of the word
+    // https://github.com/jasondavies/d3-cloud/blob/v1.2.0/build/d3.layout.cloud.js#L247:L249
+    const ctx = this.layout.canvas()().getContext('2d');
+    const [width] = this.layout.size();
+    // tslint:disable-next-line:no-bitwise - directly from library code
+    const ratio = Math.sqrt(ctx.getImageData(0, 0, 1, 1).data.length >> 2);
+    const measureText = text => ({width: ctx.measureText(text + 'm...').width * ratio});
+    return d => {
+      ctx.save();
+      // tslint:disable-next-line:no-bitwise - directly from library code
+      ctx.font = d.style + ' ' + d.weight + ' ' + ~~((d.size + 1) / ratio) + 'px ' + d.font;
+      // region Ellipsis
+      const {value: computedLine} = wrapText(d.text, width, measureText).next();
+      ctx.restore();
+      if (computedLine?.horizontalOverflow === false && computedLine?.text !== d.text) {
+        return computedLine.text.replace(/-$/, '') + '...';
+      }
+      // endregion
+      // region Text wrap
+      // cloud layout parse multiple line to one...
+      // return [...wrapText(d.text, width, measureText)].map(({line}) => line).join('\n');
+      // endregion
+      return d.text;
+    };
+  }
   /**
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
@@ -383,13 +412,20 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
       // ...And update the cloud layout
       this.layout.size([width, height]);
+      // ...and text accessor since it depends on size
+      this.textAccessor = this.setupFittingTextAccessor();
     }
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
     this.layout
       .words(maxAlgoInputSlice)
-      .padding(3)
+      .padding(d => {
+        // Setting text in last calculated property (padding) since its calculation relies on other props
+        // https://github.com/jasondavies/d3-cloud/blob/v1.2.0/build/d3.layout.cloud.js#L40:L48
+        d.text = this.textAccessor(d);
+        return 3;
+      })
       // max ~48px, min ~12px
       .fontSize(this.fontSize(maxAlgoInputSlice))
       .rotate(() => 0)

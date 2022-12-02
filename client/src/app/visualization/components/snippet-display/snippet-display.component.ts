@@ -1,19 +1,32 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import {
-  EdgeConnectionData,
+  AssociationSnippet,
   DuplicateEdgeConnectionData,
+  EdgeConnectionData,
   NewClusterSnippetsPageRequest,
   NewEdgeSnippetsPageRequest,
-  SidenavSnippetData,
   NewNodePairSnippetsPageRequest,
-  AssociationSnippet,
+  SidenavSnippetData,
 } from 'app/interfaces';
-import { getPubtatorSearchUrl, SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
+import {
+  getPubtatorSearchUrl,
+  SNIPPET_PAGE_LIMIT,
+  SNIPPET_RESULT_LIMIT,
+} from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { AppURL } from 'app/shared/utils/url';
 
 @Component({
     selector: 'app-snippet-display',
@@ -164,10 +177,10 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
         const dataTransfer: DataTransfer = event.dataTransfer;
         dataTransfer.setData('text/plain', snippet.reference.data.sentence);
         GenericDataProvider.setURIs(dataTransfer, [{
-            title: snippet.reference.data.sentence,
-            uri: snippet.publication.data.pmid ?
-                this.getSnippetPubtatorLink(snippet.publication.data.pmid) :
-                snippet.publication.entityUrl,
+          title: snippet.reference.data.sentence,
+          uri: new AppURL(snippet.publication.data.pmid ?
+            this.getSnippetPubtatorLink(snippet.publication.data.pmid) :
+            snippet.publication.entityUrl),
         }]);
     }
 }
