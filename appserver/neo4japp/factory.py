@@ -29,14 +29,7 @@ from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import (
-    close_neo4j_db,
-    close_redis_conn,
-    close_arango_client,
-    db,
-    ma,
-    migrate
-)
+from neo4japp.database import close_neo4j_db, close_redis_conn, db, ma, migrate
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
@@ -174,8 +167,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.config.from_object(config)
     app.teardown_appcontext_funcs = [
         close_neo4j_db,
-        close_redis_conn,
-        close_arango_client
+        close_redis_conn
     ]
 
     cors.init_app(app)

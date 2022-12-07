@@ -31,8 +31,7 @@ from ..constants import LogEventType, TIMEZONE
 from ..database import (
     db,
     get_excel_export_service,
-    get_enrichment_table_service,
-    get_or_create_arango_client
+    get_enrichment_table_service
 )
 from ..exceptions import AnnotationError, ServerException
 from ..models import (
@@ -60,7 +59,6 @@ from ..schemas.annotations import (
 from ..schemas.common import PaginatedRequestSchema
 from ..schemas.enrichment import EnrichmentTableSchema
 from ..schemas.filesystem import BulkFileRequestSchema
-from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
 from ..services.annotations.constants import (
     DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
@@ -382,8 +380,8 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
 class FileAnnotationGeneCountsView(FileAnnotationCountsView):
     def get_rows(self, files: List[Files]):
-        arango_client = get_or_create_arango_client()
         manual_annotations_service = get_manual_annotation_service()
+        annotation_graph_service = get_annotation_graph_service()
 
         yield [
             'gene_id',
@@ -405,7 +403,9 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
                     else:
                         gene_ids[gene_id] = 1
 
-        gene_organism_pairs = get_organisms_from_gene_ids(arango_client, gene_ids)
+        gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids_query(
+            gene_ids=list(gene_ids.keys())
+        )
         sorted_pairs = sorted(
             gene_organism_pairs,
             key=lambda p: gene_ids[p['gene_id']],

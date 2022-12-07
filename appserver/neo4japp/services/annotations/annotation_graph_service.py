@@ -1,43 +1,18 @@
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from flask import current_app
 
 from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, GeneOrProteinToOrganism
-from .utils.lmdb import (
-    create_ner_type_anatomy,
-    create_ner_type_chemical,
-    create_ner_type_compound,
-    create_ner_type_disease,
-    create_ner_type_food,
-    create_ner_type_gene,
-    create_ner_type_phenomena,
-    create_ner_type_phenotype,
-    create_ner_type_protein,
-    create_ner_type_species,
-    create_ner_type_company,
-    create_ner_type_entity,
-    create_ner_type_lab_sample,
-    create_ner_type_lab_strain,
-    EntityIdStr
-)
-from .utils.graph_queries import (
-    get_gene_to_organism_query,
-    get_global_inclusions_by_type_query,
-    get_***ARANGO_DB_NAME***_global_inclusions_by_type_query,
-    get_mesh_by_ids,
-    get_nodes_by_ids,
-    get_organisms_from_gene_ids_query,
-    get_protein_to_organism_query,
-)
+from .utils.lmdb import *
+from .utils.graph_queries import *
 
 from ..common import GraphConnection
 
 from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
-from neo4japp.services.arangodb import execute_arango_query, get_db
 
 
 class AnnotationGraphService(GraphConnection):
@@ -267,10 +242,6 @@ class AnnotationGraphService(GraphConnection):
 
         return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)
 
-
-def get_organisms_from_gene_ids(arango_client, gene_ids: Dict[Any, int]):
-    return execute_arango_query(
-        db=get_db(arango_client),
-        query=get_organisms_from_gene_ids_query(),
-        gene_ids=list(gene_ids.keys())
-    )
+    def get_organisms_from_gene_ids_query(self, gene_ids: List[str]):
+        return self.exec_read_query_with_params(
+            get_organisms_from_gene_ids_query(), {'gene_ids': gene_ids})

@@ -39,16 +39,11 @@ def query_builder(parts):
 
 def get_organisms_from_gene_ids_query():
     return """
-        FOR doc IN ncbi
-            FILTER 'Gene' IN doc.labels
-            FILTER doc.eid IN @gene_ids
-            FOR v IN 1..1 OUTBOUND doc has_taxonomy
-                RETURN {
-                    'gene_id': doc.eid,
-                    'gene_name': doc.name,
-                    'taxonomy_id': v.eid,
-                    'species_name': v.name
-                }
+    MATCH (g:Gene) WHERE g.eid IN $gene_ids
+    WITH g
+    MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
+    RETURN g.eid AS gene_id, g.name as gene_name, t.eid as taxonomy_id,
+        t.name as species_name
     """
 
 

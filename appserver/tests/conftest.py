@@ -1,8 +1,6 @@
 import pytest
 import os
 
-from arango import ArangoClient
-from arango.database import StandardDatabase
 from flask import request as flask_request
 from flask.app import Flask
 from neo4j import GraphDatabase, Session, Transaction, basic_auth
@@ -13,7 +11,7 @@ from typing import Optional
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import DISPLAY_NAME_MAP
-from neo4japp.database import db, reset_dao, create_arango_client
+from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
@@ -31,7 +29,6 @@ from neo4japp.services import (
     KgService,
     VisualizerService,
 )
-from neo4japp.services.arangodb import create_db, get_db
 from neo4japp.services.elastic import ElasticService
 from neo4japp.util import (
     snake_to_camel_dict,
@@ -131,46 +128,6 @@ def graph_driver(request, app):
     url = f'{scheme}://{host}:{port}'
     username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
     return GraphDatabase.driver(url, auth=basic_auth(username, password))
-
-
-@pytest.fixture(scope="function")
-def arango_client(app):
-    arango_client = create_arango_client(
-        hosts=app.config.get('ARANGO_HOST')
-    )
-
-    yield arango_client
-
-    arango_client.close()
-
-
-@pytest.fixture(scope="function")
-def system_db(app, arango_client: ArangoClient):
-    return get_db(
-        arango_client=arango_client,
-        name="_system",
-        username=app.config.get("ARANGO_USERNAME"),
-        password=app.config.get("ARANGO_PASSWORD"),
-    )
-
-
-@pytest.fixture(scope="function")
-def test_arango_db(
-    app, arango_client: ArangoClient, system_db: StandardDatabase
-):
-    create_db(system_db, app.config.get('ARANGO_DB_NAME'))
-
-    test_db_name = app.config.get('ARANGO_DB_NAME')
-    test_db = get_db(
-        arango_client=arango_client,
-        name=test_db_name,
-        username=app.config.get('ARANGO_USERNAME'),
-        password=app.config.get('ARANGO_PASSWORD'),
-    )
-    yield test_db
-
-    # Drop the test database after every test to make it clean before the next one
-    system_db.delete_database(test_db_name)
 
 
 @pytest.fixture(scope='function')

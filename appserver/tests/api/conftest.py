@@ -175,9 +175,9 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
             }
         ]
 
-    # This SO post was useful to find what path to use: https://stackoverflow.com/a/64161240
     monkeypatch.setattr(
-        'neo4japp.blueprints.annotations.get_organisms_from_gene_ids',
+        AnnotationGraphService,
+        'get_organisms_from_gene_ids_query',
         get_organisms_from_gene_ids_result,
     )
 

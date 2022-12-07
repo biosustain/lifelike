@@ -28,11 +28,6 @@ class Base():
     NEO4J_PORT = os.environ.get('NEO4J_PORT')
     NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
 
-    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
-    ARANGO_USERNAME = os.getenv('ARANGO_USERNAME', '***ARANGO_USERNAME***')
-    ARANGO_PASSWORD = os.getenv('ARANGO_PASSWORD', 'password')
-    ARANGO_DB_NAME = os.getenv('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')
-
     AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')
@@ -86,8 +81,6 @@ class Testing(Base):
     TESTING = True
     WTF_CSRF_ENABLED = False
     RQ_CONNECTION_CLASS = 'fakeredis.FakeStrictRedis'
-    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
-    ARANGO_DB_NAME = 'test_arango'
 
 
 class Production(Base):
