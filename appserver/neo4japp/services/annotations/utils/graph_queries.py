@@ -135,8 +135,8 @@ def get_global_inclusions_query():
             FILTER e.label == 'has_synonym' AND e.global_inclusion == true AND e.inclusion_date != null
             SORT LOWER(doc.name)
             RETURN {
-                'node_internal_id': v._key,
-                'syn_node_internal_id': doc._key,
+                'node_internal_id': v._id,
+                'syn_node_internal_id': doc._id,
                 'entity_id': v.eid,
                 'synonym': doc.name,
                 'data_source': v.data_source,
@@ -157,8 +157,8 @@ def get_global_inclusions_paginated_query():
             SORT LOWER(doc.name) ASC
             LIMIT @skip, @limit
             RETURN {
-                'node_internal_id': v._key,
-                'syn_node_internal_id': doc._key,
+                'node_internal_id': v._id,
+                'syn_node_internal_id': doc._id,
                 'entity_id': v.eid,
                 'synonym': doc.name,
                 'data_source': v.data_source,
@@ -191,14 +191,14 @@ def get_node_labels_and_relationship_query():
     // Review Note: The original cypher query was returning no results even without the ID filter,
     // so the AQL is not easily testable.
     FOR doc IN synonym
-        FILTER doc._key IN @ids
+        FILTER doc._id IN @ids
         FILTER doc.original_entity_types != null
         LET rel_types = (
             FOR v, e IN 1..1 INBOUND doc has_synonym
-                RETURN {'rel_entity_types': relTypes}
+                RETURN DISTINCT e.entity_type
         )
         RETURN {
-            'node_id': doc._key,
+            'node_id': doc._id,
             'entity_id': doc.eid,
             'node_labels': doc.labels[
                 * FILTER
@@ -218,22 +218,48 @@ def get_node_labels_and_relationship_query():
 
 def get_delete_global_inclusion_query():
     return """
-    UNWIND $node_ids AS node_ids
-    MATCH (s)-[r:HAS_SYNONYM]-(n)
-    WHERE id(n) = node_ids[0] AND id(s) = node_ids[1]
-    DELETE r
-    WITH s
-    MATCH (s)-[r:HAS_SYNONYM]-()
-    WHERE r.global_inclusion = true AND exists(r.inclusion_date)
-    WITH s, collect(r) AS synonym_rel
-    CALL apoc.do.when(
-        size(synonym_rel) = 0,
-        'REMOVE s:GlobalInclusion', '', {synonym_rel: synonym_rel, s:s}
-    )
-    YIELD value
-    RETURN COUNT(*)
-    """
+        FOR id_pair IN @pairs
+            LET entity_doc_id = id_pair[0]
+            LET synonym_doc_id = id_pair[1]
 
+            // Note that in converting this query from cypher, we've reversed the query: you
+            // cannot read from a collection in Arango after deleting from it, so here we get the
+            // total count of global relationships first, then delete any between the entity node
+            // and the synonym.
+
+            // Get the count of global relationships *before* removing any
+            LET prev_global_rels_for_synonym = LENGTH(
+                FOR doc IN has_synonym
+                    FILTER doc._to == synonym_doc_id
+                    FILTER doc.global_inclusion == true
+                    FILTER doc.inclusion_date != null
+                    RETURN doc
+            )
+
+            // Remove the provided relationships, and return how many were removed
+            LET num_removed = LENGTH(
+                FOR s IN has_synonym
+                    FILTER s._from == entity_doc_id
+                    FILTER s._to == synonym_doc_id
+                    REMOVE s IN has_synonym
+                    RETURN s
+            )
+
+            // Remove the 'GlobalInclusion' label from the synonym if the previous number of global
+            // relationships remaining equals the number we've just removed.
+            FILTER prev_global_rels_for_synonym == num_removed
+            // Review note: The original query returns the count of the results returned from an
+            // apoc call. However, it only does that because it needs to end in a 'RETURN'
+            // statement. We don't actually use those values. I'm opting to not return anything in
+            // this query, because we don't need to.
+            // Another note: shouldn't we delete the synonym if it has no more has_synonym edges?
+            // This should be possible if the synonym is purely a global inclusion, so if we don't
+            // delete it we could be generating orphaned synonyms. I guess in practice it doesn't
+            // really matter, but it's a little smelly.
+            FOR doc IN synonym
+                FILTER doc._id == synonym_doc_id
+                UPDATE doc WITH {labels: REMOVE_VALUE(doc.labels, 'GlobalInclusion')} IN synonym
+    """
 
 def get_global_inclusions_by_type_query():
     return """
@@ -244,7 +270,7 @@ def get_global_inclusions_by_type_query():
             FILTER e.inclusion_date != null
             FILTER @entity_type IN v.labels
             RETURN {
-                'internal_id': v._key,
+                'internal_id': v._id,
                 'entity_id': v.eid,
                 'entity_name': v.name,
                 'data_source': v.data_source,
@@ -261,9 +287,9 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query():
         FOR v, e IN 1..1 INBOUND doc has_synonym OPTIONS { vertexCollections: '***ARANGO_DB_NAME***' }
             FILTER e.label == 'has_synonym'
             FILTER @entity_type IN v.labels
-            SORT v._key ASC
+            SORT v._id ASC
             RETURN {
-                'internal_id': v._key,
+                'internal_id': v._id,
                 'entity_id': v.eid,
                 'entity_name': v.name,
                 'data_source': v.data_source,
@@ -277,12 +303,12 @@ def get_mesh_global_inclusion_exist_query():
     return f"""
     LET meshGlobalInclusion = FIRST(
         FOR doc IN mesh
-            FILTER doc.eid == @eid
+            FILTER doc.eid == @entity_id
             RETURN doc
     )
     LET synonymWithName = FIRST(
         FOR doc IN synonym
-            FILTER doc.name == @synonym_name
+            FILTER doc.name == @synonym
             RETURN doc
     )
     LET inclusionToSynonymRel = FIRST(
@@ -304,12 +330,12 @@ def get_chemical_global_inclusion_exist_query():
     LET chebiGlobalInclusion = FIRST(
         FOR doc IN chebi
             FILTER 'Chemical' IN doc.labels
-            FILTER doc.eid == @eid
+            FILTER doc.eid == @entity_id
             RETURN doc
     )
     LET synonymWithName = FIRST(
         FOR doc IN synonym
-            FILTER doc.name == @synonym_name
+            FILTER doc.name == @synonym
             RETURN doc
     )
     LET inclusionToSynonymRel = FIRST(
@@ -330,12 +356,12 @@ def get_compound_global_inclusion_exist_query():
     LET biocycGlobalInclusion = FIRST(
         FOR doc IN biocyc
             FILTER 'Compound' IN doc.labels
-            FILTER doc.eid == @eid
+            FILTER doc.eid == @entity_id
             RETURN doc
     )
     LET synonymWithName = FIRST(
         FOR doc IN synonym
-            FILTER doc.name == @synonym_name
+            FILTER doc.name == @synonym
             RETURN doc
     )
     LET inclusionToSynonymRel = FIRST(
@@ -358,18 +384,14 @@ def get_gene_global_inclusion_exist_query():
         FOR n IN union(
             (
                 FOR n1 IN ncbi
-                    FILTER n1.eid == @eid
-                    // Review note: I had to turn this filter off for it to return results in
-                    // the newest db. Same for the one below.
-                    // FILTER n1.master == true
+                    FILTER n1.eid == @entity_id
+                    FILTER 'Master' IN n1.labels
                     RETURN n1
             ),
             (
                 FOR n2 IN biocyc
-                    FILTER n2.eid == @eid
-                    // Review note: I had to turn this filter off for it to return results in
-                    // the newest db. Same for the one below.
-                    // FILTER n2.master == true
+                    FILTER n2.eid == @entity_id
+                    FILTER 'Master' IN n2.labels
                     RETURN n2
             )
         )
@@ -389,7 +411,7 @@ def get_pathway_global_inclusion_exist_query():
     return """
     LET res = (
         FOR n IN biocyc
-            FILTER n.eid == @eid
+            FILTER n.eid == @entity_id
             FILTER 'Pathway' IN n.labels
         LET synList = (
             FOR v, e IN 1..1 OUTBOUND n has_synonym
@@ -406,7 +428,7 @@ def get_protein_global_inclusion_exist_query():
     return """
     LET res = (
         FOR n IN uniprot
-            FILTER n.eid == @eid
+            FILTER n.eid == @entity_id
             FILTER 'Protein' IN n.labels
         LET synList = (
             FOR v, e IN 1..1 OUTBOUND n has_synonym
@@ -423,7 +445,7 @@ def get_species_global_inclusion_exist_query():
     return """
     LET res = (
         FOR n IN taxonomy
-            FILTER n.eid == @eid
+            FILTER n.eid == @entity_id
         LET synList = (
             FOR v, e IN 1..1 OUTBOUND n has_synonym
                 FILTER v.name == @synonym
@@ -453,136 +475,313 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query():
     """
 
 
-def get_create_mesh_global_inclusion_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
 
-    query_label = node_labels[entity_type]
+def get_create_mesh_global_inclusion_query():
     return """
-    MATCH (n:db_MESH) WHERE n.eid = $entity_id
-    SET n:replace_with_param
-    MERGE (s: Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = $entity_type,
-        r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    FOR doc IN mesh
+        FILTER doc.eid == @entity_id
+        // First, update the mesh document with the new label (it won't be added if it already
+        // exists). Note that the subqueries are required because you cannot use the OLD/NEW
+        // special variables more than once in a single scope.
+        LET m = FIRST(
+            UPDATE doc WITH {
+                labels: PUSH(doc.labels, @entity_type, true)
+            } IN mesh
+            RETURN NEW
+        )
+        // Then, create a synonym with the given name, if one doesn't exist.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: m._id,
+            _to: s._id,
+        }
+        // TODO: Write comment regarding existing labels in mesh being used in favor of any new ones
+        INSERT {
+            _from: m._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: @entity_type,
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
+    """
 
 
 def get_create_chemical_global_inclusion_query():
     return """
-    MATCH (n:db_CHEBI:Chemical) WHERE n.eid = $entity_id
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = 'Chemical',
-        r.hyperlinks = $hyperlinks
+    FOR c IN chebi
+        FILTER c.eid == @entity_id
+        FILTER 'Chemical' IN c.labels
+        // First, create a synonym with the given name, if one doesn't exist. Note that the
+        // subquery is required because you cannot use the OLD/NEW special variables more than
+        // once in a single scope.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: c._id,
+            _to: s._id,
+        }
+        INSERT {
+            _from: c._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: 'Chemical',
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
     """
 
 
 def get_create_compound_global_inclusion_query():
     return """
-    MATCH (n:db_BioCyc:Compound) WHERE n.eid = $entity_id
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = 'Compound',
-        r.hyperlinks = $hyperlinks
+    FOR b IN biocyc
+        FILTER b.eid == @entity_id
+        FILTER 'Compound' IN b.labels
+        // First, create a synonym with the given name, if one doesn't exist. Note that the
+        // subquery is required because you cannot use the OLD/NEW special variables more than
+        // once in a single scope.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: b._id,
+            _to: s._id,
+        }
+        INSERT {
+            _from: b._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: 'Compound',
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
     """
 
 
 def get_create_gene_global_inclusion_query():
     return """
-    MATCH (n:Gene) WHERE n.eid = $entity_id
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = 'Gene',
-        r.hyperlinks = $hyperlinks
+    FOR g IN UNION (
+        (
+            FOR g1 IN ncbi
+                FILTER g1.eid == @entity_id
+                RETURN g1
+        ),
+        (
+            FOR g2 IN biocyc
+                FILTER g2.eid == @entity_id
+                RETURN g2
+        )
+    )
+        FILTER 'Gene' IN g.labels
+        // First, create a synonym with the given name, if one doesn't exist. Note that the
+        // subquery is required because you cannot use the OLD/NEW special variables more than
+        // once in a single scope.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: g._id,
+            _to: s._id,
+        }
+        INSERT {
+            _from: g._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: 'Gene',
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
     """
 
 
 def get_create_species_global_inclusion_query():
     return """
-    MATCH (n:db_NCBI:Taxonomy) WHERE n.eid = $entity_id
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = 'Species',
-        r.hyperlinks = $hyperlinks
+    FOR t IN taxonomy
+        FILTER t.eid == @entity_id
+        // First, create a synonym with the given name, if one doesn't exist. Note that the
+        // subquery is required because you cannot use the OLD/NEW special variables more than
+        // once in a single scope.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: t._id,
+            _to: s._id,
+        }
+        INSERT {
+            _from: t._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: 'Species',
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
     """
 
 
 def get_create_protein_global_inclusion_query():
     return """
-    MATCH (n:db_UniProt:Protein) WHERE n.eid = $entity_id
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = 'Protein',
-        r.hyperlinks = $hyperlinks
+    FOR p IN uniprot
+        FILTER p.eid == @entity_id
+        FILTER 'Protein' IN p.labels
+        // First, create a synonym with the given name, if one doesn't exist. Note that the
+        // subquery is required because you cannot use the OLD/NEW special variables more than
+        // once in a single scope.
+        LET s = FIRST(
+            UPSERT { name: @synonym }
+            INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+            UPDATE {
+                lowercase_name: lower(@synonym),
+                labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+            } IN synonym
+            RETURN NEW
+        )
+        // Finally, create a new 'has_synonym' relation if there is none between 'm' and 's'. Note
+        // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+        // has_synonym exists between 'm' and 's', a new document is *NOT* created and the existing
+        // document is *NOT* updated.
+        UPSERT {
+            _from: p._id,
+            _to: s._id,
+        }
+        INSERT {
+            _from: p._id,
+            _to: s._id,
+            label: 'has_synonym',
+            inclusion_date: date_format(@inclusion_date, '%z'),
+            global_inclusion: true,
+            user: @user,
+            file_reference: @file_uuid,
+            entity_type: 'Protein',
+            hyperlinks: @hyperlinks
+        }
+        UPDATE OLD IN has_synonym
     """
 
 
-def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
-    if entity_type not in node_labels:
-        return ''
-
-    query_label = node_labels[entity_type]
-    if entity_type == EntityType.SPECIES.value:
-        query_label = 'Organism'
-
+def get_create_***ARANGO_DB_NAME***_global_inclusion_query():
     # NOTE: a new gene should not be created, because
     # we have no option to specify an organism relationship
     # rather a new synonym of an existing gene can be created
     # so no need to add a :Master Gene label
 
     return """
-    MERGE (n:db_Lifelike {name: $common_name})
-    ON CREATE
-    SET n.eid = $entity_id,
-        n:GlobalInclusion:replace_with_param,
-        n.data_source = $data_source,
-        n.name = $common_name
-    WITH n
-    MERGE (s:Synonym {name: $synonym})
-    SET s:GlobalInclusion, s.lowercase_name = toLower($synonym)
-    MERGE (n)-[r:HAS_SYNONYM]->(s)
-    ON CREATE
-    SET r.inclusion_date = apoc.date.parseAsZonedDateTime($inclusion_date),
-        r.global_inclusion = true,
-        r.user = $user,
-        r.file_reference = $file_uuid,
-        r.entity_type = $entity_type,
-        r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    LET mergedLifelikeDoc = FIRST(
+        UPSERT { name: @common_name }
+        INSERT {
+            name: @common_name,
+            eid: @entity_id,
+            data_source: @data_source,
+            labels: ['GlobalInclusion', @entity_type]
+        }
+        UPDATE {
+            eid: @entity_id,
+        } IN ***ARANGO_DB_NAME***
+        RETURN NEW
+    )
+    // First, create a synonym with the given name, if one doesn't exist. Note that the
+    // subquery is required because you cannot use the OLD/NEW special variables more than
+    // once in a single scope.
+    LET s = FIRST(
+        UPSERT { name: @synonym }
+        INSERT { name: @synonym, lowercase_name: lower(@synonym), labels: ['GlobalInclusion'] }
+        UPDATE {
+            lowercase_name: lower(@synonym),
+            labels: PUSH(OLD.labels, 'GlobalInclusion', true)
+        } IN synonym
+        RETURN NEW
+    )
+    // Finally, create a new 'has_synonym' relation if there is none between 'mergedLifelikeDoc' and 's'. Note
+    // that if 's' was just created, this always inserts a new document. Also, if *ANY*
+    // has_synonym exists between 'mergedLifelikeDoc' and 's', a new document is *NOT* created and the existing
+    // document is *NOT* updated.
+    UPSERT {
+        _from: mergedLifelikeDoc._id,
+        _to: s._id,
+    }
+    INSERT {
+        _from: mergedLifelikeDoc._id,
+        _to: s._id,
+        label: 'has_synonym',
+        inclusion_date: date_format(@inclusion_date, '%z'),
+        global_inclusion: true,
+        user: @user,
+        file_reference: @file_uuid,
+        entity_type: @entity_type,
+        hyperlinks: @hyperlinks
+    }
+    UPDATE OLD IN has_synonym
+    """
