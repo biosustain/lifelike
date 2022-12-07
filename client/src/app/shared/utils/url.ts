@@ -1,6 +1,7 @@
-import { assign, filter, isEmpty, startsWith } from 'lodash-es';
+import { assign, filter, isEmpty, isMatch, startsWith, isArray } from 'lodash-es';
 
-import { isNotEmpty } from '../utils';
+import { findEntriesKey, findEntriesValue, isNotEmpty } from '../utils';
+import { InternalURIType, Unicodes } from '../constants';
 
 // tslint:disable-next-line:class-name
 class URL_REGEX {
@@ -40,19 +41,10 @@ interface AppURLInterface {
  * For more documentation check: https://url.spec.whatwg.org/#url-class
  */
 export class AppURL implements URL, AppURLInterface {
-  fragment: string;
-  hostname: string;
-  port: string;
-  protocol: string;
-  username: string;
-  password: string;
-  searchParams: URLSearchParams;
 
   get searchParamsObject() {
     return Object.fromEntries(this.searchParams.entries());
   }
-
-  pathSegments: string[];
 
   get isRelative() {
     return isEmpty(this.hostname);
@@ -73,14 +65,6 @@ export class AppURL implements URL, AppURLInterface {
   get search(): string {
     const search = this.searchParams.toString();
     return search ? `?${search}` : '';
-  }
-
-  /**
-   * Typescript does not allow different type for setter&getter
-   * As workaround providing custom setter to be used with other types
-   */
-  setSearch(value: string[][] | Record<string, string> | string | URLSearchParams) {
-    this.searchParams = new URLSearchParams(value);
   }
 
   set hash(value: string) {
@@ -127,6 +111,27 @@ export class AppURL implements URL, AppURLInterface {
     this.href = urlString;
     assign(this, overwrites);
   }
+  fragment: string;
+  hostname: string;
+  port: string;
+  protocol: string;
+  username: string;
+  password: string;
+  searchParams: URLSearchParams;
+
+  pathSegments: string[];
+
+  static from(url: string|URL|AppURL) {
+    return url instanceof this ? url : new AppURL(String(url));
+  }
+
+  /**
+   * Typescript does not allow different type for setter&getter
+   * As workaround providing custom setter to be used with other types
+   */
+  setSearch(value: string[][] | Record<string, string> | string | URLSearchParams) {
+    this.searchParams = new URLSearchParams(value);
+  }
 
   toAbsolute() {
     this.origin = window.location.href;
@@ -143,4 +148,43 @@ export class AppURL implements URL, AppURLInterface {
 }
 
 export const ***ARANGO_DB_NAME***Url = Object.freeze(new AppURL().toAbsolute());
-export const isInternalUri = (uri: AppURL) => uri.origin === ***ARANGO_DB_NAME***Url.origin;
+export const isInternalUri = (uri: AppURL) => uri.isRelative || uri.origin === ***ARANGO_DB_NAME***Url.origin;
+
+/**This is mapping between indexed path segments and uri types
+ * Examples:
+ * - to identify "http://host.abc/projects/:project_name/enrichment-table/:file_id" as enrichment table
+ *   it's sufficient to say that first path segment equals 'projects' and 3rd one 'enrichment-table'.
+ *   This can be expressed at least in two ways:
+ *    + ['projects', ,'enrichment-table'] - ussing sparse array notation
+ *    + {0: 'projects', 3: 'enrichment-table'} - ussing object
+ */
+const internalURITypeMapping: Map<object, InternalURIType> = new Map([
+  [['search', 'content'], InternalURIType.Search],
+  [['search', 'graph'], InternalURIType.KgSearch],
+  [{pathSegments: ['folders'], fragment: 'project'}, InternalURIType.Project],
+  [['folders'], InternalURIType.Directory],
+  [{pathSegments: {...['projects', , 'folders']}, fragment: 'project'}, InternalURIType.Project],
+  [['projects', , 'folders'], InternalURIType.Directory],
+  [['projects', , 'bioc'], InternalURIType.BioC],
+  [['projects', , 'enrichment-table'], InternalURIType.EnrichmentTable],
+  [['projects', , 'maps'], InternalURIType.Map],
+  [['projects', , 'sankey'], InternalURIType.Graph],
+  [['projects', , 'sankey-many-to-many'], InternalURIType.Graph],
+  [['projects', , 'files'], InternalURIType.Pdf]
+]);
+
+export const getInternalURIType = (uri: AppURL) => {
+  if (isInternalUri(uri)) {
+    return findEntriesValue(
+      internalURITypeMapping,
+        // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
+        expected =>
+          isMatch(
+            uri,
+            isArray(expected) ?
+              { pathSegments: expected } :
+              expected
+          )
+    );
+  }
+};

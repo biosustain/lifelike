@@ -5,7 +5,8 @@
 </ng-template>
 
 <div ngbDropdown class="input-group input-border rounded" placement="bottom-left" container="body">
-  <input id="organism-dropdown"
+  <input #organismDropdown="uid" appUid
+         autocomplete="off"
          class="form-control border-0"
          type="text"
          container="body"
@@ -25,7 +26,7 @@
   </div>
   <div class="invalid-feedback" *ngIf="fetchFailed">Sorry, suggestions could not be loaded.</div>
 
-  <div ngbDropdownMenu aria-labelledby="organism-dropdown">
+  <div ngbDropdownMenu [attr.aria-labelledby]="organismDropdown">
     <ng-container *ngFor="let curatedOrganism of organismShortlist">
       <ng-container *ngTemplateOutlet="organismResult; context: {organism: curatedOrganism, term: inputText}"></ng-container>
     </ng-container>

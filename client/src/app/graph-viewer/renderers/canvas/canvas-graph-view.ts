@@ -31,6 +31,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
+import { closePopups } from 'app/shared/DOMutils';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
@@ -1147,6 +1148,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       event,
     };
     if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(behaviorEvent)))) {
+      event.stopPropagation();
       event.preventDefault();
     }
   }
@@ -1166,6 +1168,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasMouseDown() {
+    closePopups();
     this.mouseDown = true;
   }
 
@@ -1332,7 +1335,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.mouseDown = false;
     this.requestRender();
   }
-
 }
 
 interface CanvasSubject {
