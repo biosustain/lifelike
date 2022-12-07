@@ -53,6 +53,7 @@ x-appserver: &appserver
     - pgdatabase
     - redis
     - pdfparser
+    - arangodb
 
 services:
   appserver:
