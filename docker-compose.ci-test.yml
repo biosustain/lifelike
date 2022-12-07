@@ -72,9 +72,7 @@ services:
     command: redis-server --requirepass password
 
   arangodb:
-    build:
-      context: ./arangodb
-      dockerfile: Dockerfile
+    image: arangodb:3.9
     container_name: arangodb
     environment:
       ARANGO_ROOT_PASSWORD: password
