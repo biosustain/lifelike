@@ -2,11 +2,11 @@ import json
 import time
 
 from flask import current_app
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .annotation_graph_service import get_entity_inclusions
 from .constants import SPECIES_LMDB
-from .data_transfer_objects import PDFWord, SpecifiedOrganismStrain
+from .data_transfer_objects import GlobalInclusions, PDFWord, SpecifiedOrganismStrain
 from .utils.nlp import predict
 from .utils.parsing import parse_content
 
@@ -42,7 +42,7 @@ class Pipeline:
         self.parsed = kwargs.get('parsed', [])
         self.entities = None
         self.global_exclusions = None
-        self.global_inclusions = None
+        self.global_inclusions: Optional[GlobalInclusions] = None
 
     @classmethod
     def parse(self, content_type: str, **kwargs) -> Tuple[str, List[PDFWord]]:

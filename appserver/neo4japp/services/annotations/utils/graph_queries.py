@@ -79,7 +79,8 @@ def get_gene_to_organism_query():
         FILTER s.name IN @genes
         FOR g, synonym_rel IN 1..1 INBOUND s has_synonym
             FILTER 'Gene' IN g.labels
-            FOR t, species_rel IN 1..2 OUTBOUND g GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
+            FOR t, species_rel IN 1..2 OUTBOUND g GRAPH "all"
+                OPTIONS {vertexCollections: 'taxonomy'}
                 FILTER t.eid IN @organisms
                 FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
                 RETURN DISTINCT {
@@ -96,10 +97,12 @@ def get_protein_to_organism_query():
     return """
     FOR s IN synonym
         FILTER s.name IN @proteins
-        FOR p, synonym_rel IN 1..1 INBOUND s has_synonym OPTIONS {vertexCollections: 'uniprot'}
+        FOR p, synonym_rel IN 1..1 INBOUND s has_synonym
+            OPTIONS {vertexCollections: 'uniprot'}
             FILTER 'Protein' IN p.labels
             FILTER synonym_rel.label == 'has_synonym'
-            FOR t, species_rel IN 1..2 OUTBOUND p GRAPH "all" OPTIONS {vertexCollections: 'taxonomy'}
+            FOR t, species_rel IN 1..2 OUTBOUND p GRAPH "all"
+                OPTIONS {vertexCollections: 'taxonomy'}
                 FILTER t.eid IN @organisms
                 FILTER species_rel.label IN ['has_taxonomy', 'has_parent']
                 COLLECT organism = t.eid, protein = s.name INTO protein_ids
@@ -132,7 +135,9 @@ def get_global_inclusions_query():
     FOR doc IN synonym
         FILTER 'GlobalInclusion' IN doc.labels
         FOR v, e IN 1..1 INBOUND doc has_synonym
-            FILTER e.label == 'has_synonym' AND e.global_inclusion == true AND e.inclusion_date != null
+            FILTER e.label == 'has_synonym'
+            FILTER e.global_inclusion == true
+            FILTER e.inclusion_date != null
             SORT LOWER(doc.name)
             RETURN {
                 'node_internal_id': v._id,
@@ -153,7 +158,9 @@ def get_global_inclusions_paginated_query():
     FOR doc IN synonym
         FILTER 'GlobalInclusion' IN doc.labels
         FOR v, e IN 1..1 INBOUND doc has_synonym
-            FILTER e.label == 'has_synonym' AND e.global_inclusion == true AND e.inclusion_date != null
+            FILTER e.label == 'has_synonym'
+            FILTER e.global_inclusion == true
+            FILTER e.inclusion_date != null
             SORT LOWER(doc.name) ASC
             LIMIT @skip, @limit
             RETURN {
@@ -260,6 +267,7 @@ def get_delete_global_inclusion_query():
                 FILTER doc._id == synonym_doc_id
                 UPDATE doc WITH {labels: REMOVE_VALUE(doc.labels, 'GlobalInclusion')} IN synonym
     """
+
 
 def get_global_inclusions_by_type_query():
     return """
@@ -380,7 +388,8 @@ def get_compound_global_inclusion_exist_query():
 def get_gene_global_inclusion_exist_query():
     return """
     LET res = (
-        // Review note: This union may not be necessary if we're strictly expecting either ncbi or biocyc results from this query
+        // Review note: This union may not be necessary if we're strictly expecting either ncbi or
+        // biocyc results from this query
         FOR n IN union(
             (
                 FOR n1 IN ncbi
@@ -473,7 +482,6 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query():
     )
     RETURN length(res) == 0 ? {{ node_exist: false, synonym_exist: false }} : res[0]
     """
-
 
 
 def get_create_mesh_global_inclusion_query():
@@ -764,10 +772,10 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query():
         } IN synonym
         RETURN NEW
     )
-    // Finally, create a new 'has_synonym' relation if there is none between 'mergedLifelikeDoc' and 's'. Note
-    // that if 's' was just created, this always inserts a new document. Also, if *ANY*
-    // has_synonym exists between 'mergedLifelikeDoc' and 's', a new document is *NOT* created and the existing
-    // document is *NOT* updated.
+    // Finally, create a new 'has_synonym' relation if there is none between 'mergedLifelikeDoc'
+    // and 's'. Note that if 's' was just created, this always inserts a new document. Also, if
+    // *ANY* has_synonym exists between 'mergedLifelikeDoc' and 's', a new document is *NOT*
+    // created and the existing document is *NOT* updated.
     UPSERT {
         _from: mergedLifelikeDoc._id,
         _to: s._id,
