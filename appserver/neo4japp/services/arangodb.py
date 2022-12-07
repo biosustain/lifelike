@@ -18,7 +18,7 @@ def get_db(
     password: Optional[str] = None
 ):
     return arango_client.db(
-        name=name or current_app.config.get('LIFELIKE_ARANGO_DB_NAME'),
+        name=name or current_app.config.get('ARANGO_DB_NAME'),
         username=username or current_app.config.get('ARANGO_USERNAME'),
         password=password or current_app.config.get('ARANGO_PASSWORD'),
     )
