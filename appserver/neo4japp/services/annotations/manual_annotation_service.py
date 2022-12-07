@@ -138,7 +138,10 @@ class ManualAnnotationService:
                         query=get_docs_by_ids_query(entity_type),
                         ids=[entity_id]
                     )
-                    primary_name = {row['entity_id']: row['entity_name'] for row in result}[entity_id]
+                    primary_name = {
+                        row['entity_id']: row['entity_name']
+                        for row in result
+                    }[entity_id]
             except KeyError:
                 pass
             except (BrokenPipeError, ServiceUnavailable):
@@ -290,7 +293,7 @@ class ManualAnnotationService:
 
     def remove_global_inclusions(self, inclusion_ids: List[Tuple[int, int]]):
         try:
-            pairs=[[gid, sid] for gid, sid in inclusion_ids]
+            pairs = [[gid, sid] for gid, sid in inclusion_ids]
             execute_arango_query(
                 db=get_db(self.arango_client),
                 query=get_delete_global_inclusion_query(),
@@ -320,7 +323,7 @@ class ManualAnnotationService:
                 query=get_node_labels_and_relationship_query(),
                 ids=[gid for gid, _ in inclusion_ids]
             )
-        except:
+        except Exception:
             current_app.logger.info(
                 f'Failed During Cleanup of Global Inclusion Removal',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
@@ -371,7 +374,7 @@ class ManualAnnotationService:
                     execute_arango_query(
                         db=get_db(self.arango_client),
                         query=query,
-                        node_id = result['node_id']
+                        node_id=result['node_id']
                     )
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
@@ -588,17 +591,45 @@ class ManualAnnotationService:
                     EntityType.ANATOMY.value: (get_create_mesh_global_inclusion_query, mesh_params),
                     EntityType.DISEASE.value: (get_create_mesh_global_inclusion_query, mesh_params),
                     EntityType.FOOD.value: (get_create_mesh_global_inclusion_query, mesh_params),
-                    EntityType.PHENOMENA.value: (get_create_mesh_global_inclusion_query, mesh_params),
-                    EntityType.PHENOTYPE.value: (get_create_mesh_global_inclusion_query, mesh_params),
-                    EntityType.CHEMICAL.value: (get_create_chemical_global_inclusion_query, others_params),
-                    EntityType.COMPOUND.value: (get_create_compound_global_inclusion_query, others_params),
+                    EntityType.PHENOMENA.value: (
+                        get_create_mesh_global_inclusion_query,
+                        mesh_params
+                    ),
+                    EntityType.PHENOTYPE.value: (
+                        get_create_mesh_global_inclusion_query,
+                        mesh_params
+                    ),
+                    EntityType.CHEMICAL.value: (
+                        get_create_chemical_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.COMPOUND.value: (
+                        get_create_compound_global_inclusion_query,
+                        others_params
+                    ),
                     EntityType.GENE.value: (get_create_gene_global_inclusion_query, others_params),
-                    EntityType.PROTEIN.value: (get_create_protein_global_inclusion_query, others_params),
-                    EntityType.SPECIES.value: (get_create_species_global_inclusion_query, others_params),
-                    EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, others_params)
+                    EntityType.PROTEIN.value: (
+                        get_create_protein_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.SPECIES.value: (
+                        get_create_species_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.PATHWAY.value: (
+                        get_pathway_global_inclusion_exist_query,
+                        others_params
+                    )
                 }
 
-                query_fn, params = queries.get(entity_type, '')
+                try:
+                    query_fn, params = queries[entity_type]
+                except KeyError:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, type {entity_type} unrecognized.',
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise
                 try:
                     if not query_fn:
                         query_fn = get_create_***ARANGO_DB_NAME***_global_inclusion_query
@@ -694,9 +725,14 @@ class ManualAnnotationService:
             EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, other_params)
         }
 
-        # query can be empty string because some entity types
-        # do not exist in the normal domain/labels
-        query_fn, params = queries.get(entity_type, '')
+        try:
+            query_fn, params = queries[entity_type]
+        except KeyError:
+            current_app.logger.error(
+                f'Failed to create global inclusion, entity type {entity_type} unrecognized.',
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
+            raise
         try:
             check = execute_arango_query(
                 db=get_db(self.arango_client),
