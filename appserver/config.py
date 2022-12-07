@@ -86,6 +86,8 @@ class Testing(Base):
     TESTING = True
     WTF_CSRF_ENABLED = False
     RQ_CONNECTION_CLASS = 'fakeredis.FakeStrictRedis'
+    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
+    ARANGO_DB_NAME = 'test_arango'
 
 
 class Production(Base):
