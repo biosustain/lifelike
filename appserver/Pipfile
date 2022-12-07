@@ -69,6 +69,7 @@ svg-stack = "==0.1.0"
 memory-profiler = "==0.58.0"
 elastic-apm = {extras = ["flask"], version = "*"}
 rq = "==1.10.1"
+python-arango = "==7.5.2"
 
 [requires]
 python_version = "3.8.2"

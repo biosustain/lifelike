@@ -31,6 +31,12 @@ export class AnnotationsService {
     );
   }
 
+  getGeneCounts(hashId: string): Observable<string> {
+    return this.http.post<string>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/gene-counts`, {}
+    );
+  }
+
   getSortedAnnotations(hashId: string, sort: SortingAlgorithmId) {
     return this.http.post(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/sorted`, {}, {

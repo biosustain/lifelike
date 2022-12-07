@@ -26,6 +26,11 @@ x-appserver: &appserver
     - NEO4J_HOST=graphdatabase
     - NEO4J_AUTH=neo4j/password
     - NEO4J_PORT=7687
+    # Arango
+    - ARANGO_HOST=http://arangodb:8529
+    - ARANGO_USERNAME=root
+    - ARANGO_PASSWORD=password
+    - ARANGO_DB_NAME=lifelike
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -41,13 +46,14 @@ x-appserver: &appserver
     - ASSETS_FOLDER=/home/n4j/assets/
   volumes:
     - ./appserver:/home/n4j
-    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+    # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
     - elasticsearch
     - graphdatabase
     - pgdatabase
     - redis
     - pdfparser
+    - arangodb
 
 services:
   appserver:
@@ -169,6 +175,25 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    networks:
+      - backend
+
+  arangodb:
+    build:
+      # Note that this Dockerfile simply adds a user directory and installs the helper scripts into it, and then executes the default arango
+      # entrypoint as normal.
+      context: ./arangodb
+      dockerfile: Dockerfile
+    container_name: arangodb
+    environment:
+      ARANGO_ROOT_PASSWORD: password
+      LIFELIKE_DB_NAME: lifelike
+    ports:
+      - 8529:8529
+    volumes:
+      - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
+      - ./arangodb/data:/var/lib/arangodb3
+      - ./arangodb/apps:/var/lib/arangodb3-apps
     networks:
       - backend
 
