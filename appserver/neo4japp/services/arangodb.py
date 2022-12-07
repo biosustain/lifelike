@@ -8,14 +8,15 @@ from typing import Dict, List, Optional
 # Helpers
 
 
-def convert_datetime(date_val: str) -> str:
+def convert_datetime(date_val: str) -> datetime:
     try:
         # The inclusions from the original data load don't seem to have timezone info, so try
         # creating a datetime object without it first. This is likely a bug, as the inclusion_date
         # is also not a date object but a raw string.
         return datetime.strptime(date_val, '%Y-%m-%d %H:%M:%S')
     except ValueError:
-        # If the above doesn't work, then the inclusion probably uses the time-zone format, which is the correct one.
+        # If the above doesn't work, then the inclusion probably uses the time-zone format, which
+        # is the correct one.
         return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 

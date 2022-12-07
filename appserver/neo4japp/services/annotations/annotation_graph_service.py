@@ -46,7 +46,11 @@ class AnnotationGraphService(GraphConnection):
         super().__init__(conn)
 
 
-def _create_entity_inclusion(arango_client: ArangoClient, entity_type: str, inclusion_dict: dict) -> None:
+def _create_entity_inclusion(
+    arango_client: ArangoClient,
+    entity_type: str,
+    inclusion_dict: dict
+) -> None:
     createfuncs = {
         EntityType.ANATOMY.value: create_ner_type_anatomy,
         EntityType.CHEMICAL.value: create_ner_type_chemical,
