@@ -36,6 +36,7 @@ def test_user_can_get_gene_annotations_from_pdf(
                                   b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_user_can_get_all_annotations_from_pdf(
         client,
         test_user_with_pdf: Files,
@@ -57,6 +58,7 @@ def test_user_can_get_all_annotations_from_pdf(
                                   b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_user_can_get_global_inclusions(
         client,
         fix_project,
@@ -76,6 +78,7 @@ def test_user_can_get_global_inclusions(
     assert response.get_data() is not None
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_user_can_get_global_exclusions(
         client,
         fix_project,
@@ -95,7 +98,7 @@ def test_user_can_get_global_exclusions(
     assert response.get_data() is not None
 
 
-@pytest.mark.skip('Skipping for now to get code merged')
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_user_can_get_global_list(
         client,
         fix_project,
