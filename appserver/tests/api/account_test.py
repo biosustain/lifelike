@@ -41,6 +41,8 @@ def mocked_lmdb_open(monkeypatch):
     monkeypatch.setattr('lmdb.open', lmdb_open)
 
 
+# This creates a default project, which includes an annotated PDF, hence why we skip it for now
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_admin_can_create_user(client, fix_admin_user, mocked_responses, mocked_lmdb_open):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
