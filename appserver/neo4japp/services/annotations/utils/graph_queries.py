@@ -276,7 +276,9 @@ def get_global_inclusions_by_type_query():
         FOR v, e IN 1..1 INBOUND doc has_synonym OPTIONS { vertexCollections: @collection }
             FILTER e.global_inclusion == true
             FILTER e.inclusion_date != null
-            FILTER @entity_type IN v.labels
+            // Need the 'OR' clause here since documents in the 'taxonomy' collection don't have
+            // any entries in their labels.
+            FILTER @entity_type IN v.labels OR LENGTH(v.labels) == 0
             RETURN {
                 'internal_id': v._id,
                 'entity_id': v.eid,
