@@ -34,6 +34,7 @@ file system schema, as that gets changed.
 """
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -82,6 +83,7 @@ def test_fix_conflicting_annotations_same_types(
         assert fixed[0].meta.type == EntityType.CHEMICAL.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -172,6 +174,7 @@ def test_fix_conflicting_annotations_different_types(
         assert fixed[0].meta.type == EntityType.GENE.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_gene_organism_escherichia_coli_pdf(
     lmdb_setup_test_gene_organism_escherichia_coli_pdf,
     mock_graph_test_gene_organism_escherichia_coli_pdf,
@@ -211,6 +214,7 @@ def test_gene_organism_escherichia_coli_pdf(
     assert keywords['purF'] == EntityType.GENE.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_protein_organism_escherichia_coli_pdf(
     lmdb_setup_test_protein_organism_escherichia_coli_pdf,
     mock_graph_test_protein_organism_escherichia_coli_pdf,
@@ -235,6 +239,7 @@ def test_protein_organism_escherichia_coli_pdf(
     assert keywords['YdhC'] == 'P37597'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_local_inclusion_affect_gene_organism_matching(
     lmdb_setup_test_local_inclusion_affect_gene_organism_matching,
     mock_graph_test_local_inclusion_affect_gene_organism_matching,
@@ -289,6 +294,7 @@ def test_local_inclusion_affect_gene_organism_matching(
     assert annotations[0].meta.id == '388962'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_local_exclusion_affect_gene_organism_matching(
     lmdb_setup_test_local_inclusion_affect_gene_organism_matching,
     get_lmdb_service,
@@ -334,6 +340,7 @@ def test_local_exclusion_affect_gene_organism_matching(
     assert len(annotations) == 0
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_assume_human_gene_after_finding_virus(
     lmdb_setup_test_assume_human_gene_after_finding_virus,
     mock_graph_test_assume_human_gene_after_finding_virus,
@@ -366,6 +373,7 @@ def test_assume_human_gene_after_finding_virus(
     assert keywords['ACE2'] == EntityType.GENE.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_can_find_food_entities(
     lmdb_setup_test_can_find_food_entities,
     get_lmdb_service,
@@ -394,6 +402,7 @@ def test_can_find_food_entities(
     assert keywords['Bacon'] == EntityType.FOOD.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_can_find_anatomy_entities(
     lmdb_setup_test_can_find_anatomy_entities,
     get_lmdb_service,
@@ -422,6 +431,7 @@ def test_can_find_anatomy_entities(
     assert keywords['Claws'] == EntityType.ANATOMY.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 @pytest.mark.parametrize(
     'index, fpath',
     [
@@ -474,6 +484,7 @@ def test_genes_vs_proteins(
         assert annotations[3].meta.type == EntityType.SPECIES.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -506,6 +517,7 @@ def test_fix_false_positive_gene_annotations(
         assert len(fixed) == 1
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -545,6 +557,7 @@ def test_fix_false_positive_protein_annotations(
         assert fixed[0].keyword == 'NS2A'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
     lmdb_setup_test_gene_id_changes_to_result_from_kg_if_matched_with_organism,
     mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism,
@@ -569,6 +582,7 @@ def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
     assert annotations[0].meta.id == '99999'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
     lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching,
     mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching,
@@ -593,6 +607,7 @@ def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
     assert annotations[1].meta.id == '80267'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_chemical_annotations(
     lmdb_setup_test_global_excluded_chemical_annotations,
     get_db_service,
@@ -624,6 +639,7 @@ def test_global_excluded_chemical_annotations(
     assert 'hypofluorite' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_compound_annotations(
     lmdb_setup_test_global_excluded_compound_annotations,
     get_db_service,
@@ -655,6 +671,7 @@ def test_global_excluded_compound_annotations(
     assert 'guanosine' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_disease_annotations(
     lmdb_setup_test_global_excluded_disease_annotations,
     get_db_service,
@@ -687,6 +704,7 @@ def test_global_excluded_disease_annotations(
     assert 'Cold Sore' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_gene_annotations(
     lmdb_setup_test_global_excluded_gene_annotations,
     get_db_service,
@@ -718,6 +736,7 @@ def test_global_excluded_gene_annotations(
     assert 'BOLA3' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_phenotype_annotations(
     lmdb_setup_test_global_excluded_phenotype_annotations,
     get_db_service,
@@ -749,6 +768,7 @@ def test_global_excluded_phenotype_annotations(
     assert 'whey proteins' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_protein_annotations(
     lmdb_setup_test_global_excluded_protein_annotations,
     get_db_service,
@@ -780,6 +800,7 @@ def test_global_excluded_protein_annotations(
     assert 'Wasabi receptor toxin' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_excluded_species_annotations(
     lmdb_setup_test_global_excluded_species_annotations,
     get_db_service,
@@ -811,6 +832,7 @@ def test_global_excluded_species_annotations(
     assert 'human' not in set([anno.keyword for anno in annotations])
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_exclusions_does_not_interfere_with_other_entities(
     lmdb_setup_test_global_exclusions_does_not_interfere_with_other_entities,
     get_db_service,
@@ -843,6 +865,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
     assert annotations[0].meta.type == EntityType.COMPOUND.value
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_chemical_inclusion_annotation(
     mock_global_chemical_inclusion_annotation,
     get_lmdb_service,
@@ -868,6 +891,7 @@ def test_global_chemical_inclusion_annotation(
     assert annotations[0].meta.id == 'CHEBI:789456'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_compound_inclusion_annotation(
     mock_global_compound_inclusion_annotation,
     get_lmdb_service,
@@ -893,6 +917,7 @@ def test_global_compound_inclusion_annotation(
     assert annotations[0].meta.id == 'BIOCYC:321357'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_gene_inclusion_annotation(
     lmdb_setup_test_global_gene_inclusion_annotation,
     mock_graph_test_global_gene_inclusion_annotation,
@@ -920,6 +945,7 @@ def test_global_gene_inclusion_annotation(
     assert annotations[0].meta.id == '59272'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_disease_inclusion_annotation(
     mock_global_disease_inclusion_annotation,
     get_lmdb_service,
@@ -945,6 +971,7 @@ def test_global_disease_inclusion_annotation(
     assert annotations[0].meta.id == 'MESH:852753'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_phenomena_inclusion_annotation(
     mock_global_phenomena_inclusion_annotation,
     get_lmdb_service,
@@ -970,6 +997,7 @@ def test_global_phenomena_inclusion_annotation(
     assert annotations[0].meta.id == 'MESH:842605'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_phenotype_inclusion_annotation(
     mock_global_phenotype_inclusion_annotation,
     get_lmdb_service,
@@ -995,6 +1023,7 @@ def test_global_phenotype_inclusion_annotation(
     assert annotations[0].meta.id == 'FakePheno'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_protein_inclusion_annotation(
     mock_global_protein_inclusion_annotation,
     get_lmdb_service,
@@ -1020,6 +1049,7 @@ def test_global_protein_inclusion_annotation(
     assert annotations[0].meta.id == 'protein-(12345)'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_species_inclusion_annotation(
     mock_global_species_inclusion_annotation,
     get_lmdb_service,
@@ -1045,6 +1075,7 @@ def test_global_species_inclusion_annotation(
     assert annotations[0].meta.id == '0088'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_no_annotation_for_abbreviation(
     lmdb_setup_test_no_annotation_for_abbreviation,
     mock_graph_test_no_annotation_for_abbreviation,
@@ -1077,6 +1108,7 @@ def test_no_annotation_for_abbreviation(
     assert 'Pulmonary Arterial Hypertension' in keywords
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_delta_gene_deletion_detected(
     lmdb_setup_test_gene_organism_escherichia_coli_pdf,
     mock_graph_test_gene_organism_escherichia_coli_pdf,
@@ -1148,6 +1180,7 @@ def test_delta_gene_deletion_detected(
 #     assert annotations[0].meta.id_type == custom['meta']['idType']
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_global_inclusion_normalized_already_in_lmdb(
     lmdb_setup_test_global_inclusion_normalized_already_in_lmdb,
     mock_graph_global_inclusion_normalized_already_in_lmdb,
@@ -1173,6 +1206,7 @@ def test_global_inclusion_normalized_already_in_lmdb(
     assert annotations[1].primary_name == 'CXCL8'
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_gene_matched_to_organism_before_if_closest_is_too_far(
     lmdb_setup_test_new_gene_organism_matching_algorithm,
     mock_graph_test_new_gene_organism_matching_algorithm,
@@ -1200,6 +1234,7 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
     assert '684' in matches['BST2']
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism(
     lmdb_setup_test_new_gene_organism_matching_algorithm,
     mock_graph_test_new_gene_organism_matching_algorithm,
@@ -1227,6 +1262,7 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
     assert '684' in matches['BST2']
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_prioritize_primary_name_that_equals_synonym(
     lmdb_setup_test_prioritize_primary_name_that_equals_synonym,
     get_lmdb_service,
