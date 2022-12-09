@@ -180,7 +180,8 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
           title: snippet.reference.data.sentence,
           uri: new AppURL(snippet.publication.data.pmid ?
             this.getSnippetPubtatorLink(snippet.publication.data.pmid) :
-            snippet.publication.entityUrl),
+            snippet.publication.entityUrl
+          )
         }]);
     }
 }
