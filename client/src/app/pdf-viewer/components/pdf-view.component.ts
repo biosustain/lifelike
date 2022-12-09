@@ -187,7 +187,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
         },
       } as Partial<UniversalGraphNode>),
       ...GenericDataProvider.getURIs([{
-        uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+        uri: this.object.getURL(false).toAbsolute(),
         title: this.object.filename,
       }]),
     });
