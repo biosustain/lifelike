@@ -111,10 +111,13 @@ export class ProjectImpl implements Project, ObservableObject {
     return ['/folders', this.***ARANGO_USERNAME***.hashId];
   }
 
-  getURL(): string {
-    return this.getCommands().map(item => {
-      return encodeURIComponent(item.replace(/^\//, ''));
-    }).join('/');
+  getURL(): AppURL {
+    return new AppURL().update({
+      pathSegments: this.getCommands().map(item =>
+          encodeURIComponent(item.replace(/^\//, ''))
+      ),
+      fragment: 'project'
+    });
   }
 
   get colorHue(): number {
@@ -140,7 +143,7 @@ export class ProjectImpl implements Project, ObservableObject {
         }],
         sources: [{
           domain: 'File Source',
-          url: this.getCommands().join('/'),
+          url: this.getURL().toAbsolute().toString(),
         }],
       },
     };
@@ -151,7 +154,7 @@ export class ProjectImpl implements Project, ObservableObject {
 
     GenericDataProvider.setURIs(dataTransfer, [{
       title: this.effectiveName,
-      uri: new AppURL(this.getURL()).toAbsolute(),
+      uri: this.getURL().toAbsolute(),
     }], {action: 'append'});
   }
 }
@@ -554,29 +557,25 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  getURL(forEditing = true, meta?: Meta): string {
-    // TODO: Move this method to ObjectTypeProvider
-    const url = '/' + this.getCommands(forEditing).map(item => {
-      return encodeURIComponent(item.replace(/^\//, ''));
-    }).join('/');
-
-    if (this.isProjectRoot) {
-      return url + '#project';
-    }
+  // TODO: Move this method to ObjectTypeProvider
+  getURL(forEditing = true, meta?: Meta): AppURL {
+    const url = new AppURL().update({
+      pathSegments: this.getCommands(forEditing).map(item =>
+        encodeURIComponent(item.replace(/^\//, ''))
+      ),
+      fragment: this.isProjectRoot ? 'project' : ''
+    });
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
-        let fragment = '';
         if (!isNil(meta)) {
-          fragment = '#' + [
-            `id=${encodeURIComponent(meta.id)}`,
-            `text=${encodeURIComponent(meta.allText)}`,
-            `color=${encodeURIComponent(annotationTypesMap.get(meta.type.toLowerCase()).color)}`
-          ].join('&');
+          url.fragment = new URLSearchParams({
+            id: meta.id,
+            text: meta.allText,
+            color: annotationTypesMap.get(meta.type.toLowerCase()).color
+          }).toString();
         }
-        return url + fragment;
-      default:
-        return url;
     }
+    return url;
   }
 
   getGraphEntitySources(meta?: Meta): Source[] {
@@ -635,7 +634,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
       ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node),
       ...GenericDataProvider.getURIs([{
-        uri: new AppURL(this.getURL(false)).toAbsolute(),
+        uri: this.getURL(false).toAbsolute(),
         title: this.filename,
       }]),
     };
@@ -650,7 +649,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     GenericDataProvider.setURIs(dataTransfer, [{
       title: this.effectiveName,
-      uri: new AppURL(this.getURL(false)).toAbsolute(),
+      uri: this.getURL(false).toAbsolute(),
     }], {action: 'append'});
   }
 
