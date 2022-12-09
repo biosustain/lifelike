@@ -62,12 +62,14 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
   openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
     if (this.object.mimeType === MimeTypes.Pdf) {
       const url = this.object.getURL();
+      const matchExistingTab = `^/*${escapeRegExp(url.toString())}.*`;
+      url.fragment = new URLSearchParams({annotation: annotation.id}).toString();
       this.workspaceManager.navigateByUrl({
-        url: `${url}#annotation=${encodeURIComponent(annotation.id)}`,
+        url: url.toString(),
         extras: {
           newTab: true,
           sideBySide: true,
-          matchExistingTab: `^/*${escapeRegExp(url)}.*`,
+          matchExistingTab,
           shouldReplaceTab: component => {
               const fileViewComponent = component as PdfViewComponent;
               fileViewComponent.highlightAnnotation(annotation.id);
@@ -77,6 +79,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
       });
     } else if (this.object.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
       const url = this.object.getURL();
+      const matchExistingTab = `^/*${escapeRegExp(url.toString())}.*`;
       const encodedId = encodeURIComponent(annotation.id);
       const encodedText = encodeURIComponent(annotation.text);
       const encodedColor = encodeURIComponent(annotation.color);
@@ -85,7 +88,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
         extras: {
           newTab: true,
           sideBySide: true,
-          matchExistingTab: `^/*${escapeRegExp(url)}.*`,
+          matchExistingTab,
           shouldReplaceTab: component => {
             const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
             enrichmentTableViewerComponent.startAnnotationFind(annotation.id, annotation.text, annotation.color);
