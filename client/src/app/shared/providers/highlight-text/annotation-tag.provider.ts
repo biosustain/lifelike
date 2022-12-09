@@ -14,7 +14,6 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
-import { AppURL } from 'app/shared/utils/url';
 
 import { DropdownController } from '../../utils/dom/dropdown-controller';
 import { GenericDataProvider } from '../data-transfer-data/generic-data.provider';
@@ -156,7 +155,7 @@ export class AnnotationTagHandler extends TagHandler {
       if (object) {
         GenericDataProvider.setURIs(dataTransfer, [{
           title: object.filename,
-          uri: new AppURL(object.getURL(false)).toAbsolute(),
+          uri: object.getURL(false).toAbsolute(),
         }]);
       }
 
