@@ -218,7 +218,7 @@ export class FilesystemObjectActions {
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<boolean> {
     return Promise.resolve(
-      this.clipboard.copy(`${window.location.origin}${object.getURL(forEditing)}`)
+      this.clipboard.copy(object.getURL(forEditing).toAbsolute().toString())
     );
   }
 

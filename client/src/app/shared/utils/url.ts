@@ -26,8 +26,10 @@ interface AppURLInterface {
   hostname: string;
   port: string;
   pathname: string;
+  pathSegments: string[];
   search: string[][] | Record<string, string> | string | URLSearchParams;
   hash: string;
+  fragment: string;
   host: string;
   origin: string;
   relativehref: string;
@@ -107,10 +109,10 @@ export class AppURL implements URL, AppURLInterface {
     Object.assign(this, value.match(URL_REGEX.relativehref).groups);
   }
 
-  constructor(urlString: string = '', overwrites: Partial<AppURLInterface> = {}) {
+  constructor(urlString: string = '') {
     this.href = urlString;
-    assign(this, overwrites);
   }
+
   fragment: string;
   hostname: string;
   port: string;
@@ -131,6 +133,11 @@ export class AppURL implements URL, AppURLInterface {
    */
   setSearch(value: string[][] | Record<string, string> | string | URLSearchParams) {
     this.searchParams = new URLSearchParams(value);
+  }
+
+  update(overwrites: Partial<AppURLInterface>) {
+    assign(this, overwrites);
+    return this;
   }
 
   toAbsolute() {
