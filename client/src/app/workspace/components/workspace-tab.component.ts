@@ -60,7 +60,7 @@ export class WorkspaceTabComponent implements OnChanges {
         } as Partial<UniversalGraphNode>),
         ...GenericDataProvider.getURIs(
           sources.map(({url, domain}) => ({
-            uri: new AppURL(url).toAbsolute(),
+            uri: AppURL.from(url).toAbsolute(),
             title: domain,
           })),
         ),
