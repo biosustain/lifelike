@@ -11,9 +11,10 @@ from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
-    get_search_service_dao,
     get_elastic_service,
-    get_file_type_service
+    get_file_type_service,
+    get_or_create_arango_client,
+    get_search_service_dao,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Files, Projects
@@ -27,6 +28,7 @@ from neo4japp.schemas.search import (
     VizSearchSchema,
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.services.search import get_organisms, get_organism_with_tax_id
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
@@ -350,14 +352,15 @@ bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
 @jsonify_with_class()
 def get_organism(organism_tax_id: str):
-    search_dao = get_search_service_dao()
-    result = search_dao.get_organism_with_tax_id(organism_tax_id)
-    return SuccessResponse(result=result, status_code=200)
+    arango_client = get_or_create_arango_client()
+    return SuccessResponse(
+        result=get_organism_with_tax_id(arango_client, organism_tax_id),
+        status_code=200
+    )
 
 
 @bp.route('/organisms', methods=['POST'])
 @use_kwargs(OrganismSearchSchema)
-def get_organisms(query, limit):
-    search_dao = get_search_service_dao()
-    results = search_dao.get_organisms(query, limit)
-    return jsonify({'result': results})
+def search_organisms(query, limit):
+    arango_client = get_or_create_arango_client()
+    return jsonify({'result': get_organisms(arango_client, query, limit)})
