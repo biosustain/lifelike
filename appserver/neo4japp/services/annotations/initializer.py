@@ -1,10 +1,9 @@
 from os import environ
 
-from neo4japp.database import get_neo4j_driver, get_or_create_arango_client
+from neo4japp.database import get_or_create_arango_client
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
-from .annotation_graph_service import AnnotationGraphService
 from .bioc_service import BiocDocumentService
 from .enrichment_annotation_service import EnrichmentAnnotationService
 from .entity_recognition import EntityRecognitionService
@@ -54,14 +53,8 @@ def get_annotation_db_service():
     return AnnotationDBService()
 
 
-def get_annotation_graph_service():
-    driver = get_neo4j_driver()
-    return AnnotationGraphService(driver)
-
-
 def get_manual_annotation_service():
     return ManualAnnotationService(
-        graph=get_annotation_graph_service(),
         tokenizer=get_annotation_tokenizer(),
         arango_client=get_or_create_arango_client()
     )
@@ -70,7 +63,6 @@ def get_manual_annotation_service():
 def get_annotation_service():
     return AnnotationService(
         db=get_annotation_db_service(),
-        graph=get_annotation_graph_service(),
         arango_client=get_or_create_arango_client(),
     )
 
@@ -78,7 +70,6 @@ def get_annotation_service():
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
         db=get_annotation_db_service(),
-        graph=get_annotation_graph_service(),
         arango_client=get_or_create_arango_client(),
     )
 

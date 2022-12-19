@@ -16,7 +16,6 @@ from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
 from .exceptions import AnnotationLimitationError
-from .annotation_graph_service import AnnotationGraphService
 from .tokenizer import Tokenizer
 from .constants import (
     ManualAnnotationType,
@@ -33,11 +32,9 @@ from .utils.graph_queries import *
 class ManualAnnotationService:
     def __init__(
         self,
-        graph: AnnotationGraphService,
         tokenizer: Tokenizer,
         arango_client: ArangoClient
     ) -> None:
-        self.graph = graph
         self.tokenizer = tokenizer
         self.arango_client = arango_client
 

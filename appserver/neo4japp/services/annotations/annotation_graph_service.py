@@ -32,18 +32,11 @@ from .utils.graph_queries import (
     get_protein_to_organism_query,
 )
 
-from ..common import GraphConnection
-
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import InvalidArgument
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 from neo4japp.services.arangodb import execute_arango_query, get_db
-
-
-class AnnotationGraphService(GraphConnection):
-    def __init__(self, conn):
-        super().__init__(conn)
 
 
 def _create_entity_inclusion(

@@ -26,7 +26,7 @@ from typing import (
 )
 
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
-from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
+from neo4japp.database import get_file_type_service, ElasticConnection
 from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     Files, Projects,
@@ -49,7 +49,7 @@ from app import app
 ParserElement.enablePackrat()
 
 
-class ElasticService(ElasticConnection, GraphConnection):
+class ElasticService(ElasticConnection):
     # Begin indexing methods
     def update_or_create_index(self, index_id, index_mapping_file):
         """Creates an index with the given index id and mapping file. If the index already exists,

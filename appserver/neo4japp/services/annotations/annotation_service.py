@@ -11,11 +11,7 @@ from uuid import uuid4
 from flask import current_app
 
 from .annotation_db_service import AnnotationDBService
-from .annotation_graph_service import (
-    get_genes_to_organisms,
-    get_proteins_to_organisms,
-    AnnotationGraphService
-)
+from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
 from .constants import (
     DatabaseType,
@@ -51,7 +47,6 @@ class AnnotationService:
     def __init__(
         self,
         db: AnnotationDBService,
-        graph: AnnotationGraphService,
         # TODO: I don't think this is the best way to handle the arango client connection, but the
         # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
         # now, but I think we should slowly try to migrate away from the "service-as-an-object"
@@ -59,7 +54,6 @@ class AnnotationService:
         arango_client: ArangoClient
     ) -> None:
         self.db = db
-        self.graph = graph
         self.arango_client = arango_client
 
         self.organism_frequency: Dict[str, int] = {}
