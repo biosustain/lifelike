@@ -137,12 +137,6 @@ class DBConnection:
         self.session = db.session
 
 
-class GraphConnection:
-    def __init__(self):
-        super().__init__()
-        self.graph = get_neo4j_db()
-
-
 class ElasticConnection:
     def __init__(self):
         super().__init__()
@@ -151,7 +145,7 @@ class ElasticConnection:
 
 """
 TODO: Update all of these functions to use
-DBConnection or GraphConnection above.
+DBConnection above.
 
 Separation of concerns/Single responsibility.
 
@@ -214,11 +208,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = get_neo4j_db()
-        g.enrichment_table_service = EnrichmentTableService(
-            graph=graph,
-            session=db.session,
-        )
+        g.enrichment_table_service = EnrichmentTableService(session=db.session)
     return g.enrichment_table_service
 
 

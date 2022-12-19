@@ -33,7 +33,7 @@ class Pipeline:
                 List of PDFWord objects representing words in text.
     """
     def __init__(self, steps: dict, **kwargs):
-        if not all(k in ['adbs', 'ags', 'aers', 'tkner', 'as', 'bs'] for k in steps):
+        if not all(k in ['adbs', 'aers', 'tkner', 'as', 'bs'] for k in steps):
             raise AnnotationError(
                 'Unable to Annotate',
                 'Configurations for the annotation pipeline is incorrect, please try again later.')
