@@ -1,31 +1,14 @@
-import json
-import os
-import time
-from urllib.parse import urlencode
-
 from flask import current_app
+import json
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
+import os
 from typing import List
 
-from neo4japp.constants import (
-    BIOCYC_ORG_ID_DICT, KGDomain,
-)
-from neo4japp.exceptions import ServerException
 from neo4japp.services.common import HybridDBDao
-from neo4japp.models import (
-    DomainURLsMap,
-    GraphNode,
-    GraphRelationship
-)
-from neo4japp.constants import (
-    ANNOTATION_STYLES_DICT,
-    DISPLAY_NAME_MAP,
-    LogEventType,
-)
-from neo4japp.util import (
-    snake_to_camel_dict, compact
-)
+from neo4japp.models import GraphNode, GraphRelationship
+from neo4japp.constants import ANNOTATION_STYLES_DICT, DISPLAY_NAME_MAP, LogEventType
+from neo4japp.util import snake_to_camel_dict
 from neo4japp.utils.labels import get_first_known_label_from_node, get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
 
@@ -144,148 +127,6 @@ class KgService(HybridDBDao):
                 relationships = result[0]['relationships']
 
             return self._neo4j_objs_to_graph_objs(nodes, relationships)
-
-    def get_uniprot_genes(self, ncbi_gene_ids: List[int]):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_uniprot_genes_query,
-            ncbi_gene_ids
-        )
-
-        current_app.logger.info(
-            f'Enrichment UniProt KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        domain = self.session.query(DomainURLsMap).filter(
-            DomainURLsMap.domain == 'uniprot').one_or_none()
-
-        if domain is None:
-            raise ServerException(
-                title='Could not create enrichment table',
-                message='There was a problem finding UniProt domain URLs.')
-
-        return {
-            result['node_id']: {
-                'result': {'id': result['uniprot_id'], 'function': result['function']},
-                'link': domain.base_URL.format(result['uniprot_id'])
-            } for result in results}
-
-    def get_string_genes(self, ncbi_gene_ids: List[int]):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_string_genes_query,
-            ncbi_gene_ids
-        )
-
-        current_app.logger.info(
-            f'Enrichment String KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        return {
-            result['node_id']: {
-                'result': {'id': result['string_id'], 'annotation': result['annotation']},
-                'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}"
-            } for result in results}
-
-    def get_biocyc_genes(
-        self,
-        ncbi_gene_ids: List[int],
-        tax_id: str
-    ):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_biocyc_genes_query,
-            ncbi_gene_ids
-        )
-
-        current_app.logger.info(
-            f'Enrichment Biocyc KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        return {
-            result['node_id']: {
-                'result': result['pathways'],
-                'link': "https://biocyc.org/gene?" + urlencode(compact(dict(
-                    orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None), id=result['biocyc_id'])
-                ))
-            } for result in results
-        }
-
-    def get_go_genes(self, ncbi_gene_ids: List[int]):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_go_genes_query,
-            ncbi_gene_ids,
-        )
-
-        current_app.logger.info(
-            f'Enrichment GO KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        return {
-            result['node_id']: {
-                'result': result['go_terms'],
-                'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
-            } for result in results}
-
-    def get_regulon_genes(self, ncbi_gene_ids: List[int]):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_regulon_genes_query,
-            ncbi_gene_ids
-        )
-
-        current_app.logger.info(
-            f'Enrichment Regulon KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        return {
-            result['node_id']: {
-                'result': result['node'],
-                'link': "http://regulondb.ccg.unam.mx/gene?" + urlencode(compact(dict(
-                    term=result['regulondb_id'],
-                    organism='ECK12',
-                    format='jsp',
-                    type='gene'
-                )))
-            } for result in results}
-
-    def get_genes(self, domain: KGDomain, gene_ids: List[int], tax_id: str):
-        if domain == KGDomain.REGULON:
-            return self.get_regulon_genes(gene_ids)
-        if domain == KGDomain.BIOCYC:
-            return self.get_biocyc_genes(gene_ids, tax_id)
-        if domain == KGDomain.GO:
-            return self.get_go_genes(gene_ids)
-        if domain == KGDomain.STRING:
-            return self.get_string_genes(gene_ids)
-        if domain == KGDomain.UNIPROT:
-            return self.get_uniprot_genes(gene_ids)
-        if domain == KGDomain.KEGG:
-            return self.get_kegg_genes(gene_ids)
-
-    def get_kegg_genes(self, ncbi_gene_ids: List[int]):
-        start = time.time()
-        results = self.graph.read_transaction(
-            self.get_kegg_genes_query,
-            ncbi_gene_ids
-        )
-
-        current_app.logger.info(
-            f'Enrichment KEGG KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
-        )
-
-        return {
-            result['node_id']: {
-                'result': result['pathway'],
-                'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
-            } for result in results}
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
@@ -508,77 +349,6 @@ class KgService(HybridDBDao):
         with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
-    def get_uniprot_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
-            WHERE id(g)=node_id
-            RETURN node_id, x.function AS function, x.eid AS uniprot_id
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
-
-    def get_string_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:HAS_GENE]-(x:db_STRING)
-            WHERE id(g)=node_id
-            RETURN node_id, x.eid AS string_id, x.annotation AS annotation
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
-
-    def get_go_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH(g) WHERE id(g) = node_id
-            OPTIONAL MATCH (g)-[:GO_LINK]-(go1:db_GO)
-            OPTIONAL MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-()-[:GO_LINK]-(go2)
-            RETURN
-                id(g) as node_id,
-                apoc.convert.toSet(collect(go1.name) + collect(go2.name)) AS go_terms
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
-
-    def get_biocyc_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:IS]-(x:db_BioCyc)
-            WHERE id(g)=node_id
-            RETURN node_id, x.pathways AS pathways, x.biocyc_id AS biocyc_id
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
-
-    def get_regulon_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:IS]-(x:db_RegulonDB)
-            WHERE id(g)=node_id
-            RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
-
-    def get_kegg_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
-        return tx.run(
-            """
-            UNWIND $ncbi_gene_ids AS node_id
-            MATCH (g)-[:IS]-(x:db_KEGG)
-            WHERE id(g)=node_id
-            WITH node_id, x
-            MATCH (x)-[:HAS_KO]-()-[:IN_PATHWAY]-(p:Pathway)-[:HAS_PATHWAY]-(gen:Genome)
-            WHERE gen.eid = x.genome
-            RETURN node_id, x.eid AS kegg_id, collect(p.name) AS pathway
-            """,
-            ncbi_gene_ids=ncbi_gene_ids
-        ).data()
 
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
         return list(tx.run("""
