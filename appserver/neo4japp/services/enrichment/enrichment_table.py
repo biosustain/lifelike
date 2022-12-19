@@ -114,6 +114,7 @@ class EnrichmentTableService(RDBMSBaseDao):
         return EnrichmentCellTextMapping(
             text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
 
+
 def match_ncbi_genes(
     arango_client: ArangoClient,
     gene_names: List[str],
@@ -129,13 +130,17 @@ def match_ncbi_genes(
         organism=organism
     )
 
-    return [{
-        'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},
-        'synonym': result['synonym'],
-        'geneArangoId': result['gene_arango_id'],
-        'synonymArangoId': result['syn_arango_id'],
-        'link': f"https://www.ncbi.nlm.nih.gov/gene/{result['gene_id'] if result['gene_id'] else ''}"
-    } for result in results]
+    retval = []
+    for result in results:
+        gene_id = result['gene_id'] if result['gene_id'] else ''
+        retval.append({
+            'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},
+            'synonym': result['synonym'],
+            'geneArangoId': result['gene_arango_id'],
+            'synonymArangoId': result['syn_arango_id'],
+            'link': f"https://www.ncbi.nlm.nih.gov/gene/{gene_id}"
+        })
+    return retval
 
 
 def get_uniprot_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
@@ -156,6 +161,7 @@ def get_uniprot_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
             'result': {'id': result['uniprot_id'], 'function': result['function']},
             'link': f'http://identifiers.org/uniprot/{result["uniprot_id"]}'
         } for result in results}
+
 
 def get_string_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
     start = time.time()
@@ -280,12 +286,11 @@ def get_genes(arango_client: ArangoClient, domain: KGDomain, gene_ids: List[int]
         return get_kegg_genes(arango_client, gene_ids)
 
 
-
 def match_ncbi_genes_query() -> str:
     """Need to collect synonyms because a gene node can have multiple
     synonyms. So it is possible to send duplicate internal node ids to
     a later query."""
-    return  """
+    return """
         FOR s IN synonym
             FILTER s.name IN @gene_names
             FOR g IN INBOUND s has_synonym

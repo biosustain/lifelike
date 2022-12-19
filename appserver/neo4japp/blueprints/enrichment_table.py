@@ -41,7 +41,8 @@ def get_ncbi_enrichment_domains():
     if doc_ids is not None and tax_id is not None:
         arango_client = get_or_create_arango_client()
         domain_nodes = {
-            domain.lower(): get_genes(arango_client, KGDomain(domain), doc_ids, tax_id) for domain in domains
+            domain.lower(): get_genes(arango_client, KGDomain(domain), doc_ids, tax_id)
+            for domain in domains
         }
         df = DataFrame(domain_nodes).replace({np.nan: None}).transpose()
         # Redundant but just following old implementation
