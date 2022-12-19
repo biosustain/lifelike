@@ -70,7 +70,6 @@ from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
     get_annotation_service,
     get_annotation_db_service,
-    get_annotation_graph_service,
     get_annotation_tokenizer,
     get_bioc_document_service,
     get_enrichment_annotation_service,
@@ -586,7 +585,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         pipeline = Pipeline(
             {
                 'adbs': get_annotation_db_service,
-                'ags': get_annotation_graph_service,
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_annotation_service,
@@ -642,7 +640,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         pipeline = Pipeline(
             {
                 'adbs': get_annotation_db_service,
-                'ags': get_annotation_graph_service,
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_enrichment_annotation_service,
