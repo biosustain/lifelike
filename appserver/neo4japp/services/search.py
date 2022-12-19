@@ -1,3 +1,4 @@
+from arango.client import ArangoClient
 import re
 from typing import Any, Dict, List
 
@@ -11,12 +12,13 @@ from neo4japp.data_transfer_objects import (
     FTSTaxonomyRecord
 )
 from neo4japp.models import GraphNode
+from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.services.common import GraphBaseDao
-from neo4japp.util import (
-    normalize_str,
-    snake_to_camel_dict
+from neo4japp.util import normalize_str, snake_to_camel_dict
+from neo4japp.utils.labels import (
+    get_first_known_label_from_list,
+    get_known_domain_labels_from_list
 )
-from neo4japp.utils.labels import get_first_known_label_from_list, get_known_domain_labels_from_list
 from neo4japp.utils.logger import EventLog
 
 
@@ -228,31 +230,6 @@ class SearchService(GraphBaseDao):
 
         return FTSResult(term, records, total_results, page, limit)
 
-    def get_organism_with_tax_id(self, tax_id: str):
-        result = self.graph.read_transaction(self.get_organism_with_tax_id_query, tax_id)
-        return result[0] if len(result) else None
-
-    def get_organisms(self, term: str, limit: int) -> Dict[str, Any]:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return {
-                'limit': limit,
-                'nodes': [],
-                'query': query_term,
-                'total': 0,
-            }
-
-        terms = query_term.split(' ')
-        query_term = ' AND '.join(terms)
-        nodes = self.graph.read_transaction(self.get_organisms_query, query_term, limit)
-
-        return {
-            'limit': limit,
-            'nodes': nodes,
-            'query': query_term,
-            'total': len(nodes),
-        }
-
     def get_synonyms(
         self,
         search_term: str,
@@ -351,31 +328,6 @@ class SearchService(GraphBaseDao):
             # Neo4j driver data types, so we don't have to selectively use `data`.
         ]
 
-    def get_organism_with_tax_id_query(self, tx: Neo4jTx, tax_id: str) -> List[Dict]:
-        return [
-            record for record in tx.run(
-                """
-                MATCH (t:Taxonomy {eid: $tax_id})
-                RETURN t.eid AS tax_id, t.name AS organism_name
-                """,
-                tax_id=tax_id
-            ).data()
-        ]
-
-    def get_organisms_query(self, tx: Neo4jTx, term: str, limit: int) -> List[Dict]:
-        return [
-            record for record in tx.run(
-                """
-                CALL db.index.fulltext.queryNodes("synonymIdx", $term)
-                YIELD node, score
-                MATCH (node)-[]-(t:Taxonomy)
-                with t, collect(node.name) as synonyms LIMIT $limit
-                RETURN t.eid AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
-                """,
-                term=term, limit=limit
-            ).data()
-        ]
-
     def get_synonyms_query(
         self,
         tx: Neo4jTx,
@@ -466,3 +418,52 @@ class SearchService(GraphBaseDao):
             organisms=organisms,
             types=types
         ).data()
+
+
+def get_organisms(arango_client: ArangoClient, term: str, limit: int) -> Dict[str, Any]:
+    nodes = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_organisms_query(),
+        term=term,
+        limit=limit
+    )
+    return {
+        'limit': limit,
+        'nodes': nodes,
+        'query': term,
+        'total': len(nodes),
+    }
+
+
+def get_organism_with_tax_id(arango_client: ArangoClient, tax_id: str):
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_organism_with_tax_id_query(),
+        tax_id=tax_id
+    )
+    return result[0] if len(result) else None
+
+
+def get_organisms_query() -> str:
+    return """
+        FOR n IN synonym_ft
+            SEARCH PHRASE(n.name, @term, 'text_ll')
+            SORT BM25(n) DESC
+            FOR t IN INBOUND n has_synonym OPTIONS { vertexCollections: ["taxonomy" ] }
+                LIMIT @limit
+                RETURN {
+                    tax_id: t.eid,
+                    organism_name: t.name,
+                    synonym: n.name
+                }
+    """
+
+def get_organism_with_tax_id_query() -> str:
+    return """
+        FOR t IN taxonomy
+            FILTER t.eid == @tax_id
+            RETURN {
+                tax_id: t.eid,
+                organism_name: t.name
+            }
+    """
