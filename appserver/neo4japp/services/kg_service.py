@@ -349,7 +349,6 @@ class KgService(HybridDBDao):
         with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
-
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
         return list(tx.run("""
             MATCH (chem:db_CHEBI:Chemical) WHERE chem.eid IN ['18064']
