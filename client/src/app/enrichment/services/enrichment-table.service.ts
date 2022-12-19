@@ -31,13 +31,13 @@ export class EnrichmentTableService {
 
   /**
    * Match enrichment domains to given node ids.
-   * @param nodeIds list of node ids to match to enrichment domains
+   * @param docIds list of document ids to match to enrichment domains
    * @param taxID tax id of organism
    */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string, domains: string[]): Observable<EnrichmentWrapper> {
+  getNCBIEnrichmentDomains(docIds: string[], taxID: string, domains: string[]): Observable<EnrichmentWrapper> {
     return this.http.post<{ result: EnrichmentWrapper }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds, taxID, domains},
+      `/api/enrichment-table/get-ncbi-nodes/enrichment-domains`,
+      {docIds, taxID, domains},
     ).pipe(
       map(resp => resp.result),
     );
@@ -86,8 +86,8 @@ export interface NCBINode {
 }
 
 export interface NCBIWrapper {
-  geneNeo4jId: number;
-  synonymNeo4jId: number;
+  geneArangoId: string;
+  synonymArangoId: string;
   gene: NCBINode;
   link: string;
   synonym: string;
@@ -151,7 +151,7 @@ export interface DomainWrapper {
   string: StringWrapper | null;
   uniprot: UniprotWrapper | null;
   kegg: KeggWrapper | null;
-  node_id: number;
+  doc_id: number;
 }
 
 export interface EnrichmentWrapper {

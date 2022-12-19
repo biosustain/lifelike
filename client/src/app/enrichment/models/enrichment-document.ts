@@ -219,49 +219,49 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       .matchNCBINodes(importGenes, taxID)
       .pipe(
         mergeMap((ncbiNodesData: NCBIWrapper[]) => {
-          const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.geneNeo4jId);
+          const arangoIds = ncbiNodesData.map((wrapper) => wrapper.geneArangoId);
           return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(neo4jIds, taxID, domains)
+            .getNCBIEnrichmentDomains(arangoIds, taxID, domains)
             .pipe(
               map((domainResults: EnrichmentWrapper): EnrichmentResult => {
                 // a gene can point to 2 different synonyms
                 // and a synonym can point to 2 different genes
-                const neo4jIdSynonymMap: Map<number, Map<number, string>> = new Map();
-                const neo4jIdNodeMap: Map<number, Map<number, NCBINode>> = new Map();
-                const neo4jIdLinkMap: Map<number, Map<number, string>> = new Map();
-                const geneSynonymNeo4jIdMap: Map<number, Map<number, number>> = new Map();
+                const arangoIdSynonymMap: Map<string, Map<string, string>> = new Map();
+                const arangoIdNodeMap: Map<string, Map<string, NCBINode>> = new Map();
+                const arangoIdLinkMap: Map<string, Map<string, string>> = new Map();
+                const geneSynonymArangoIdMap: Map<string, Map<string, string>> = new Map();
                 const geneMap: Set<string> = new Set();
                 const genesList: EnrichedGene[] = [];
                 const synonymsSet: Set<string> = new Set();
                 // list of tuples
-                const synonymNeo4jIds: [number, number][] = [];
+                const synonymArangoIds: [string, string][] = [];
 
                 ncbiNodesData.forEach(wrapper => {
-                  geneSynonymNeo4jIdMap.has(wrapper.synonymNeo4jId) ? geneSynonymNeo4jIdMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.geneNeo4jId) : geneSynonymNeo4jIdMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.geneNeo4jId));
+                  geneSynonymArangoIdMap.has(wrapper.synonymArangoId) ? geneSynonymArangoIdMap.get(
+                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.geneArangoId) : geneSynonymArangoIdMap.set(
+                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.geneArangoId));
 
-                  neo4jIdSynonymMap.has(wrapper.synonymNeo4jId) ? neo4jIdSynonymMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.synonym) : neo4jIdSynonymMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.synonym));
+                  arangoIdSynonymMap.has(wrapper.synonymArangoId) ? arangoIdSynonymMap.get(
+                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.synonym) : arangoIdSynonymMap.set(
+                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.synonym));
 
-                  neo4jIdNodeMap.has(wrapper.synonymNeo4jId) ? neo4jIdNodeMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.gene) : neo4jIdNodeMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.gene));
+                  arangoIdNodeMap.has(wrapper.synonymArangoId) ? arangoIdNodeMap.get(
+                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.gene) : arangoIdNodeMap.set(
+                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.gene));
 
-                  neo4jIdLinkMap.has(wrapper.synonymNeo4jId) ? neo4jIdLinkMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.link) : neo4jIdLinkMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.link));
+                  arangoIdLinkMap.has(wrapper.synonymArangoId) ? arangoIdLinkMap.get(
+                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.link) : arangoIdLinkMap.set(
+                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.link));
 
                   synonymsSet.add(wrapper.synonym);
-                  synonymNeo4jIds.push([wrapper.synonymNeo4jId, wrapper.geneNeo4jId]);
+                  synonymArangoIds.push([wrapper.synonymArangoId, wrapper.geneArangoId]);
                 });
 
-                for (const [synId, geneId] of synonymNeo4jIds) {
-                  const synonym = neo4jIdSynonymMap.get(synId).get(geneId);
-                  const node = neo4jIdNodeMap.get(synId).get(geneId);
-                  const link = neo4jIdLinkMap.get(synId).get(geneId);
-                  const domainWrapper = domainResults[geneSynonymNeo4jIdMap.get(synId).get(geneId)] || null;
+                for (const [synId, geneId] of synonymArangoIds) {
+                  const synonym = arangoIdSynonymMap.get(synId).get(geneId);
+                  const node = arangoIdNodeMap.get(synId).get(geneId);
+                  const link = arangoIdLinkMap.get(synId).get(geneId);
+                  const domainWrapper = domainResults[geneSynonymArangoIdMap.get(synId).get(geneId)] || null;
 
                   if (domainWrapper !== null) {
                     geneMap.add(synonym);
