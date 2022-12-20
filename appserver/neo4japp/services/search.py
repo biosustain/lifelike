@@ -53,147 +53,6 @@ class SearchService(GraphBaseDao):
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
         raise NotImplementedError
 
-    def get_synonyms(
-        self,
-        search_term: str,
-        organisms: List[str],
-        types: List[str],
-        page: int,
-        limit: int
-    ) -> List[dict]:
-        results = self.graph.read_transaction(
-            self.get_synonyms_query,
-            search_term,
-            organisms,
-            types,
-            page,
-            limit
-        )
-        synonym_data = []
-
-        for row in results:
-            try:
-                type = get_first_known_label_from_list(row['entity_labels'])
-            except ValueError:
-                type = 'Unknown'
-                current_app.logger.warning(
-                    f"Node had an unexpected list of labels: {row['entity_labels']}",
-                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
-                )
-
-            synonym_data.append({
-                'type': type,
-                'name': row['entity_name'],
-                'organism': row['taxonomy_name'],
-                'synonyms': row['synonyms'],
-            })
-        return synonym_data
-
-    def get_synonyms_count(
-        self,
-        search_term: str,
-        organisms: List[str],
-        types: List[str]
-    ) -> List[dict]:
-        results = self.graph.read_transaction(
-            self.get_synonyms_count_query,
-            search_term,
-            organisms,
-            types
-        )
-        return results[0]['count']
-
-    def get_synonyms_query(
-        self,
-        tx: Neo4jTx,
-        search_term: str,
-        organisms: List[str],
-        types: List[str],
-        page: int,
-        limit: int
-    ) -> List[N4jRecord]:
-        """
-        Gets a list of synoynm data for a given search term. Data includes any matched entities, as
-        well as any linked organism, if there is one.
-        """
-        type_match_str = ''
-        if len(types):
-            type_match_str = ' AND any(x IN $types WHERE x IN labels(entity))'
-
-        tax_match_str = 'OPTIONAL MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy)'
-        if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
-
-        return list(
-            tx.run(
-                f"""
-                MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
-                    <-[:HAS_SYNONYM]-(entity)
-                WHERE NOT 'Protein' IN labels(entity){type_match_str}
-                MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
-                WHERE
-                    size(synonyms.name) > 2 OR
-                    any(x IN ['Chemical', 'Compound'] WHERE x IN labels(entity))
-                WITH
-                    entity,
-                    synonyms.name AS synonyms,
-                    toLower(entity.name) = toLower($search_term) AS matches_term
-                ORDER BY size(synonyms) DESC
-                {tax_match_str}
-                RETURN
-                    entity.name as entity_name,
-                    t.name as taxonomy_name,
-                    labels(entity) as entity_labels,
-                    collect(DISTINCT synonyms) AS synonyms,
-                    COUNT(DISTINCT synonyms) AS synonym_count,
-                    matches_term
-                ORDER BY matches_term DESC
-                SKIP $page
-                LIMIT $limit
-                """,
-                search_term=search_term,
-                organisms=organisms,
-                types=types,
-                page=page,
-                limit=limit
-            )
-        )
-
-    def get_synonyms_count_query(
-        self,
-        tx: Neo4jTx,
-        search_term: str,
-        organisms: List[str],
-        types: List[str]
-    ) -> List[N4jRecord]:
-        """
-        Gets the count of synoynm data for a given search term.
-        """
-        type_match_str = ''
-        if len(types):
-            type_match_str = ' AND all(x IN $types WHERE x IN labels(entity))'
-
-        tax_match_str = ''
-        if len(organisms):
-            tax_match_str = 'MATCH (entity)-[:HAS_TAXONOMY]-(t:Taxonomy) WHERE t.eid IN $organisms'
-
-        return tx.run(
-            f"""
-            MATCH (synonym:Synonym {{lowercase_name: toLower($search_term)}})
-                <-[:HAS_SYNONYM]-(entity)
-            WHERE NOT 'Protein' IN labels(entity){type_match_str}
-            MATCH (entity)-[:HAS_SYNONYM]->(synonyms)
-            WHERE
-                size(synonyms.name) > 2 OR
-                any(x IN labels(entity) WHERE x IN ['Chemical', 'Compound'])
-            {tax_match_str}
-            RETURN count(DISTINCT entity) AS count
-            """,
-            search_term=search_term,
-            organisms=organisms,
-            types=types
-        ).data()
-
 
 def _get_collection_filters(domains: List[str]):
     domains_list = [
@@ -445,6 +304,95 @@ def visualizer_search_count(
     )[0]
 
 
+def get_synonyms(
+    arango_client: ArangoClient,
+    search_term: str,
+    organisms: List[str],
+    types: List[str],
+    skip: int,
+    limit: int
+) -> List[dict]:
+    labels_match_str = 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
+    organism_match_string = f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid IN @organisms' if organisms else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organisms else ''}
+    """
+
+    query_args = {
+        'search_term': search_term,
+        'types': types,
+        'skip': skip,
+        'limit': limit
+    }
+
+    # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
+    if organisms:
+        query_args['organisms'] = organisms
+
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_synonyms_query(labels_match_str, organism_match_string),
+        **query_args
+    )
+
+    synonym_data = []
+    for row in results:
+        try:
+            type = get_first_known_label_from_list(row['entity_labels'])
+        except ValueError:
+            type = 'Unknown'
+            current_app.logger.warning(
+                f"Node had an unexpected list of labels: {row['entity_labels']}",
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            )
+
+        synonym_data.append({
+            'type': type,
+            'name': row['entity_name'],
+            'organism': row['taxonomy_name'],
+            'synonyms': row['synonyms'],
+        })
+    return synonym_data
+
+
+def get_synonyms_count(
+    arango_client: ArangoClient,
+    search_term: str,
+    organisms: List[str],
+    types: List[str]
+) -> int:
+    labels_match_str = 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
+    organism_match_string = f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid IN @organisms' if organisms else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organisms else ''}
+    """
+
+    query_args = {
+        'search_term': search_term,
+        'types': types,
+    }
+
+    # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
+    if organisms:
+        query_args['organisms'] = organisms
+
+    return execute_arango_query(
+        db=get_db(arango_client),
+        query=get_synonyms_count_query(labels_match_str, organism_match_string),
+        **query_args
+    )[0]
+
+
 def get_organisms_query() -> str:
     return """
         FOR n IN synonym_ft
@@ -541,6 +489,77 @@ def visualizer_search_count_query(
                         'taxonomy_id': t.eid,
                         'taxonomy_name': t.name,
                         'go_class': go_class
+                    }}
+        )
+    """
+
+
+def get_synonyms_query(labels_match_str: str, organism_match_string: str) -> str:
+    """
+    Gets a list of synoynm data for a given search term. Data includes any matched entities, as
+    well as any linked organism, if there is one.
+    """
+    return f"""
+        FOR syn IN synonym
+            FILTER syn.lowercase_name == @search_term
+            FOR entity IN INBOUND syn has_synonym
+                FILTER "Protein" NOT IN entity.labels
+                {labels_match_str}
+                LET synonyms = (
+                    FOR syn2 IN OUTBOUND entity has_synonym
+                    // Could use INTERSECTION here?
+                    FILTER
+                        length(syn2.name) > 2 OR
+                        "Chemical" IN entity.labels OR
+                        "Compound" IN entity.labels
+                    RETURN syn2.name
+                )
+                LET matches_term = @search_term == LOWER(entity.name)
+                LET syn_len = length(synonyms)
+                {organism_match_string}
+                SORT matches_term DESC, syn_len DESC
+                LIMIT @skip, @limit
+                RETURN DISTINCT {{
+                    entity_name: entity.name,
+                    taxonomy_name: t.name,
+                    entity_labels: entity.labels,
+                    synonyms: synonyms,
+                    synonym_count: syn_len,
+                    matches_term: matches_term
+                }}
+    """
+
+
+def get_synonyms_count_query(labels_match_str: str, organism_match_string: str) -> str:
+    """
+    Gets the count of synoynm data for a given search term.
+    """
+    return f"""
+        RETURN LENGTH(
+            FOR syn IN synonym
+                FILTER syn.lowercase_name == @search_term
+                FOR entity IN INBOUND syn has_synonym
+                    FILTER "Protein" NOT IN entity.labels
+                    {labels_match_str}
+                    LET synonyms = (
+                        FOR syn2 IN OUTBOUND entity has_synonym
+                        // Could use INTERSECTION here?
+                        FILTER
+                            length(syn2.name) > 2 OR
+                            "Chemical" IN entity.labels OR
+                            "Compound" IN entity.labels
+                        RETURN syn2.name
+                    )
+                    LET matches_term = @search_term == LOWER(entity.name)
+                    LET syn_len = length(synonyms)
+                    {organism_match_string}
+                    RETURN DISTINCT {{
+                        entity_name: entity.name,
+                        taxonomy_name: t.name,
+                        entity_labels: entity.labels,
+                        synonyms: synonyms,
+                        synonym_count: syn_len,
+                        matches_term: matches_term
                     }}
         )
     """
