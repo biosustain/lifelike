@@ -212,14 +212,6 @@ def get_enrichment_table_service():
     return g.enrichment_table_service
 
 
-def get_search_service_dao():
-    if 'search_dao' not in g:
-        from neo4japp.services import SearchService
-        graph = get_neo4j_db()
-        g.search_service_dao = SearchService(graph=graph)
-    return g.search_service_dao
-
-
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
