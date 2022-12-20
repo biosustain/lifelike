@@ -6,11 +6,7 @@ from flask import current_app
 from neo4j import Record as N4jRecord, Transaction as Neo4jTx
 
 from neo4japp.constants import LogEventType
-from neo4japp.data_transfer_objects import (
-    FTSQueryRecord,
-    FTSResult,
-    FTSTaxonomyRecord
-)
+from neo4japp.data_transfer_objects import FTSQueryRecord, FTSTaxonomyRecord
 from neo4japp.models import GraphNode
 from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.services.common import GraphBaseDao
@@ -56,179 +52,6 @@ class SearchService(GraphBaseDao):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
         raise NotImplementedError
-
-    def _visualizer_search_result_formatter(self, result: List[N4jRecord]) -> List[FTSQueryRecord]:
-        formatted_results: List[FTSQueryRecord] = []
-        for record in result:
-            entity = record['entity']
-            literature_id = record['literature_id']
-            taxonomy_id = record.get('taxonomy_id', '')
-            taxonomy_name = record.get('taxonomy_name', '')
-            go_class = record.get('go_class', '')
-
-            try:
-                entity_label = get_first_known_label_from_list(entity["labels"])
-            except ValueError:
-                current_app.logger.warning(
-                    f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
-                    f'{entity["labels"]}',
-                    extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
-                )
-                entity_label = 'Unknown'
-
-            graph_node = GraphNode(
-                # When it exists, we use the literature node ID instead so the node can be expanded
-                # in the visualizer
-                id=literature_id or entity['id'],
-                label=entity_label,
-                sub_labels=entity['labels'],
-                domain_labels=(
-                    get_known_domain_labels_from_list(entity['labels']) +
-                    (['Literature'] if literature_id is not None else [])
-                ),
-                display_name=entity['name'],
-                data=snake_to_camel_dict(entity['data'], {}),
-                url=None,
-            )
-            formatted_results.append(FTSTaxonomyRecord(
-                node=graph_node,
-                taxonomy_id=taxonomy_id if taxonomy_id is not None
-                else 'N/A',
-                taxonomy_name=taxonomy_name if taxonomy_name is not None
-                else 'N/A',
-                go_class=go_class if go_class is not None
-                else 'N/A'
-            ))
-        return formatted_results
-
-    def sanitize_filter(
-        self,
-        domains: List[str],
-        entities: List[str],
-    ):
-        domains_map = {
-            'chebi': 'n:db_CHEBI',
-            'go': 'n:db_GO',
-            'mesh': 'n:db_MESH',
-            'ncbi': 'n:db_NCBI',
-            'uniprot': 'n:db_UniProt'
-        }
-        entities_map = {
-            'biologicalprocess': 'n:BiologicalProcess',
-            'cellularcomponent': 'n:CellularComponent',
-            'chemical': 'n:Chemical',
-            'disease': 'n:Disease',
-            'gene': 'n:Gene',
-            'molecularfunction': 'n:MolecularFunction',
-            'protein': 'n:Protein',
-            'taxonomy': 'n:Taxonomy'
-        }
-        result_domains = []
-        result_entities = []
-
-        # NOTE: If the user supplies an entity/domain that *isn't* in these maps,
-        # they may get unexpected results! We essentially silently ignore any
-        # unexpected values in favor of getting *some* results back.
-
-        for domain in domains:
-            normalized_domain = normalize_str(domain)
-            if normalized_domain in domains_map:
-                result_domains.append(domains_map[normalized_domain])
-            else:
-                current_app.logger.info(
-                    f'Found an unexpected value in `domains` list: {domain}',
-                    extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
-                )
-
-        for entity in entities:
-            normalized_entity = normalize_str(entity)
-            if normalized_entity in entities_map:
-                result_entities.append(entities_map[normalized_entity])
-            else:
-                current_app.logger.info(
-                    f'Found an unexpected value in `entities` list: {entity}',
-                    extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
-                )
-
-        # If the domain list or entity list provided by the user is empty, then assume ALL
-        # domains/entities should be used.
-        result_domains = result_domains if len(result_domains) > 0 else \
-            list(domains_map.values())
-        result_entities = result_entities if len(result_entities) > 0 else \
-            list(entities_map.values())
-
-        return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
-
-    def visualizer_search(
-        self,
-        term: str,
-        organism: str,
-        domains: List[str],
-        entities: List[str],
-        page: int = 1,
-        limit: int = 10,
-    ) -> FTSResult:
-        if not term:
-            return FTSResult(term, [], 0, page, limit)
-
-        if organism:
-            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {eid: $organism})'
-        else:
-            organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
-
-        result_filters = self.sanitize_filter(domains, entities)
-
-        literature_in_selected_domains = any([
-            normalize_str(domain) == 'literature'
-            for domain in domains
-        ])
-        # Return nodes in one or more domains, with mapped Literature data (if it exists)
-        if domains == [] or (len(domains) > 1 and literature_in_selected_domains):
-            literature_match_string = """
-                WITH n, t, n.namespace as go_class
-                OPTIONAL MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
-            """
-        # Return nodes in one or more domains, and *exclude* Literature data from the result
-        elif not literature_in_selected_domains:
-            literature_match_string = """
-                WITH n, t, n.namespace as go_class, NULL as m
-            """
-        # Return only nodes mapped to Literature nodes
-        else:
-            literature_match_string = """
-                WITH n, t, n.namespace as go_class
-                MATCH (n)<-[:MAPPED_TO]-(m:LiteratureEntity)
-            """
-
-        result = self.graph.read_transaction(
-            self.visualizer_search_query,
-            term,
-            organism,
-            (page - 1) * limit,
-            limit,
-            result_filters,
-            organism_match_string,
-            literature_match_string
-        )
-
-        records = self._visualizer_search_result_formatter(result)
-
-        # Wow, this seems barbarian. Fetch 1000 results just to count them?
-        # TODO: Counting should not fetch nor pre-process results!
-        total_results = len(
-            self.graph.read_transaction(
-                self.visualizer_search_query,
-                term,
-                organism,
-                0,
-                1001,
-                result_filters,
-                organism_match_string,
-                literature_match_string
-            )
-        )
-
-        return FTSResult(term, records, total_results, page, limit)
 
     def get_synonyms(
         self,
@@ -279,54 +102,6 @@ class SearchService(GraphBaseDao):
             types
         )
         return results[0]['count']
-
-    def visualizer_search_query(
-        self,
-        tx: Neo4jTx,
-        search_term: str,
-        organism: str,
-        amount: int,
-        limit: int,
-        result_filters: str,
-        organism_match_string: str,
-        literature_match_string: str
-    ) -> List[N4jRecord]:
-        """Need to collect synonyms because a gene node can have multiple
-        synonyms. So it is possible to send duplicate internal node ids to
-        a later query."""
-        return [
-            record for record in tx.run(
-                f"""
-                CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-                YIELD node
-                MATCH (node)-[]-(n)
-                WHERE {result_filters}
-                WITH n
-                {organism_match_string}
-                {literature_match_string}
-                WITH
-                {{
-                    id: id(n),
-                    name: n.name,
-                    labels: labels(n),
-                    data: {{
-                        eid: n.eid,
-                        data_source: n.data_source
-                    }}
-                }} as entity, id(m) as literature_id, t, go_class
-                RETURN DISTINCT entity, literature_id, t.eid AS taxonomy_id,
-                    t.name AS taxonomy_name, go_class AS go_class
-                SKIP $amount
-                LIMIT $limit
-                """,
-                search_term=f'{search_term} OR {search_term}*',
-                organism=organism, amount=amount, limit=limit
-            )
-            # IMPORTANT: We do NOT use `data` here, because if we did we would lose some metadata
-            # attached to the `node` return value. We need this metadata to deterimine node labels.
-            # TODO: Should create a helper function that produces key-value pair records for all
-            # Neo4j driver data types, so we don't have to selectively use `data`.
-        ]
 
     def get_synonyms_query(
         self,
@@ -420,6 +195,146 @@ class SearchService(GraphBaseDao):
         ).data()
 
 
+def _get_collection_filters(domains: List[str]):
+    domains_list = [
+        'chebi',
+        'go',
+        'mesh',
+        'ncbi',
+        'uniprot'
+    ]
+
+    result_domains = []
+
+    # NOTE: If the user supplies an domain that *isn't* in these maps,
+    # they may get unexpected results! We essentially silently ignore any
+    # unexpected values in favor of getting *some* results back.
+
+    for domain in domains:
+        normalized_domain = normalize_str(domain)
+        if normalized_domain in domains_list:
+            result_domains.append(normalized_domain)
+        else:
+            current_app.logger.info(
+                f'Found an unexpected value in `domains` list: {domain}',
+                extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
+            )
+
+    # If the domain list provided by the user is empty, then assume ALL domains/entities should be
+    # used.
+    result_domains = result_domains if len(result_domains) > 0 else domains_list
+
+    return 'FILTER ' + \
+           ' OR '.join([f'IS_SAME_COLLECTION("{domain}", entity._id)' for domain in result_domains])
+
+
+def _get_labels_filter(entities: List[str]):
+    entities_map = {
+        'biologicalprocess': 'BiologicalProcess',
+        'cellularcomponent': 'CellularComponent',
+        'chemical': 'Chemical',
+        'disease': 'Disease',
+        'gene': 'Gene',
+        'molecularfunction': 'MolecularFunction',
+        'protein': 'Protein',
+        'taxonomy': 'Taxonomy'
+    }
+    result_entities = []
+
+    # NOTE: If the user supplies an entity that *isn't* in these maps,
+    # they may get unexpected results! We essentially silently ignore any
+    # unexpected values in favor of getting *some* results back.
+
+    for entity in entities:
+        normalized_entity = normalize_str(entity)
+        if normalized_entity in entities_map:
+            result_entities.append(entities_map[normalized_entity])
+        else:
+            current_app.logger.info(
+                f'Found an unexpected value in `entities` list: {entity}',
+                extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
+            )
+
+    # If the entity list provided by the user is empty, then assume ALL domains/entities should be
+    # used.
+    return result_entities if len(result_entities) > 0 else list(entities_map.values())
+
+
+def _get_literature_match_string(domains: List[str]):
+    literature_in_selected_domains = any([
+        normalize_str(domain) == 'literature'
+        for domain in domains
+    ])
+
+    base_search_string = """
+        LET literature_id = FIRST(
+            FOR lit_doc IN INBOUND entity mapped_to
+                RETURN lit_doc._id
+        )
+    """
+
+    # Return nodes in one or more domains, with mapped Literature data (if it exists)
+    if domains == [] or (len(domains) > 1 and literature_in_selected_domains):
+        return base_search_string
+    # Return nodes in one or more domains, and *exclude* Literature data from the result
+    elif not literature_in_selected_domains:
+        return "LET literature_id = null"
+    # Return only nodes mapped to Literature nodes
+    else:
+        return """
+            LET literature_id = FIRST(
+                FOR lit_doc IN INBOUND entity mapped_to
+                    RETURN lit_doc._id
+            )
+            FILTER literature_id != null
+        """
+
+
+def _visualizer_search_result_formatter(result: List[Dict]) -> List[FTSQueryRecord]:
+    formatted_results: List[FTSQueryRecord] = []
+    for record in result:
+        entity = record['entity']
+        literature_id = record['literature_id']
+        taxonomy_id = record.get('taxonomy_id', '')
+        taxonomy_name = record.get('taxonomy_name', '')
+        go_class = record.get('go_class', '')
+
+        try:
+            entity_label = get_first_known_label_from_list(entity["labels"])
+        except ValueError:
+            current_app.logger.warning(
+                f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
+                f'{entity["labels"]}',
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            )
+            entity_label = 'Unknown'
+
+        graph_node = GraphNode(
+            # When it exists, we use the literature node ID instead so the node can be expanded
+            # in the visualizer
+            id=literature_id or entity['id'],
+            label=entity_label,
+            sub_labels=entity['labels'],
+            domain_labels=(
+                get_known_domain_labels_from_list(entity['labels']) +
+                (['Literature'] if literature_id is not None else [])
+            ),
+            display_name=entity['name'],
+            data=snake_to_camel_dict(entity['data'], {}),
+            url=None,
+        )
+        formatted_results.append(FTSTaxonomyRecord(
+            node=graph_node,
+            taxonomy_id=taxonomy_id if taxonomy_id is not None
+            else 'N/A',
+            taxonomy_name=taxonomy_name if taxonomy_name is not None
+            else 'N/A',
+            go_class=go_class if go_class is not None
+            else 'N/A'
+        ))
+    return formatted_results
+
+
 def get_organisms(arango_client: ArangoClient, term: str, limit: int) -> Dict[str, Any]:
     nodes = execute_arango_query(
         db=get_db(arango_client),
@@ -444,6 +359,92 @@ def get_organism_with_tax_id(arango_client: ArangoClient, tax_id: str):
     return result[0] if len(result) else None
 
 
+def visualizer_search(
+    arango_client: ArangoClient,
+    term: str,
+    organism: str,
+    domains: List[str],
+    entities: List[str],
+    page: int = 1,
+    limit: int = 10,
+) -> List[FTSQueryRecord]:
+    organism_match_string = f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid == @organism' if organism else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organism else ''}
+    """
+    collection_filters = _get_collection_filters(domains)
+    types = _get_labels_filter(entities)
+    literature_match_string = _get_literature_match_string(domains)
+    query = visualizer_search_query(
+        collection_filters,
+        organism_match_string,
+        literature_match_string
+    )
+    query_args = {
+        'term': term,
+        'types': types,
+        'skip': (page - 1) * limit,
+        'limit': limit
+    }
+
+    # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
+    if organism:
+        query_args['organism'] = organism
+
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=query,
+        **query_args
+    )
+
+    return _visualizer_search_result_formatter(result)
+
+
+def visualizer_search_count(
+    arango_client: ArangoClient,
+    term: str,
+    organism: str,
+    domains: List[str],
+    entities: List[str],
+):
+    organism_match_string = f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid == @organism' if organism else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organism else ''}
+    """
+    collection_filters = _get_collection_filters(domains)
+    types = _get_labels_filter(entities)
+    literature_match_string = _get_literature_match_string(domains)
+    count_query = visualizer_search_count_query(
+        collection_filters,
+        organism_match_string,
+        literature_match_string
+    )
+    query_args = {
+        'term': term,
+        'types': types,
+    }
+
+    # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
+    if organism:
+        query_args['organism'] = organism
+
+    return execute_arango_query(
+        db=get_db(arango_client),
+        query=count_query,
+        **query_args
+    )[0]
+
+
 def get_organisms_query() -> str:
     return """
         FOR n IN synonym_ft
@@ -458,6 +459,7 @@ def get_organisms_query() -> str:
                 }
     """
 
+
 def get_organism_with_tax_id_query() -> str:
     return """
         FOR t IN taxonomy
@@ -466,4 +468,79 @@ def get_organism_with_tax_id_query() -> str:
                 tax_id: t.eid,
                 organism_name: t.name
             }
+    """
+
+
+def visualizer_search_query(
+    arango_col_filters: str,
+    organism_match_string: str,
+    literature_match_filter: str
+) -> str:
+    """Need to collect synonyms because a gene node can have multiple
+    synonyms. So it is possible to send duplicate internal node ids to
+    a later query."""
+    return f"""
+        FOR s IN synonym_ft
+            SEARCH PHRASE(s.name, @term, 'text_ll')
+            SORT BM25(s) DESC
+            FOR entity IN INBOUND s has_synonym
+                {arango_col_filters}
+                FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0 OR LENGTH(@types) == 0
+                {organism_match_string}
+                LET go_class = entity.namespace
+                {literature_match_filter}
+                LIMIT @skip, @limit
+                RETURN DISTINCT {{
+                    'entity': {{
+                        'id': entity._id,
+                        'name': entity.name,
+                        'labels': entity.labels,
+                        'data': {{
+                            'eid': entity.eid,
+                            'data_source': entity.data_source
+                        }}
+                    }},
+                    'literature_id': literature_id,
+                    'taxonomy_id': t.eid,
+                    'taxonomy_name': t.name,
+                    'go_class': go_class
+                }}
+    """
+
+
+def visualizer_search_count_query(
+    arango_col_filters: str,
+    organism_match_string: str,
+    literature_match_filter: str
+) -> str:
+    """Need to collect synonyms because a gene node can have multiple
+    synonyms. So it is possible to send duplicate internal node ids to
+    a later query."""
+    return f"""
+        RETURN LENGTH(
+            FOR s IN synonym_ft
+                SEARCH PHRASE(s.name, @term, 'text_ll')
+                SORT BM25(s) DESC
+                FOR entity IN INBOUND s has_synonym
+                    {arango_col_filters}
+                    FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0 OR LENGTH(@types) == 0
+                    {organism_match_string}
+                    LET go_class = entity.namespace
+                    {literature_match_filter}
+                    RETURN DISTINCT {{
+                        'entity': {{
+                            'id': entity._id,
+                            'name': entity.name,
+                            'labels': entity.labels,
+                            'data': {{
+                                'eid': entity.eid,
+                                'data_source': entity.data_source
+                            }}
+                        }},
+                        'literature_id': literature_id,
+                        'taxonomy_id': t.eid,
+                        'taxonomy_name': t.name,
+                        'go_class': go_class
+                    }}
+        )
     """
