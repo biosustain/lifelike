@@ -2,7 +2,7 @@ from arango import ArangoClient
 from arango.database import StandardDatabase
 from datetime import datetime
 from flask import current_app
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 # Helpers
@@ -37,7 +37,7 @@ def get_db(
     )
 
 
-def execute_arango_query(db: StandardDatabase, query: str, **bind_vars) -> List[Dict]:
+def execute_arango_query(db: StandardDatabase, query: str, **bind_vars) -> List[Any]:
     cursor = db.aql.execute(query, ttl=600, max_runtime=600, bind_vars=bind_vars)
     return [row for row in cursor]
 

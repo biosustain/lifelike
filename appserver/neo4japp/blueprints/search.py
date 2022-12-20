@@ -15,7 +15,6 @@ from neo4japp.database import (
     get_elastic_service,
     get_file_type_service,
     get_or_create_arango_client,
-    get_search_service_dao,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Files, Projects
@@ -32,6 +31,8 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.services.search import (
     get_organisms,
     get_organism_with_tax_id,
+    get_synonyms,
+    get_synonyms_count,
     visualizer_search,
     visualizer_search_count
 )
@@ -340,12 +341,13 @@ class SynonymSearchView(FilesystemBaseView):
 
         page = pagination.page
         limit = pagination.limit
-        offset = (page - 1) * limit
+        skip = (page - 1) * limit
+
+        arango_client = get_or_create_arango_client()
 
         try:
-            search_dao = get_search_service_dao()
-            results = search_dao.get_synonyms(search_term, organisms, types, offset, limit)
-            count = search_dao.get_synonyms_count(search_term, organisms, types)
+            results = get_synonyms(arango_client, search_term, organisms, types, skip, limit)
+            count = get_synonyms_count(arango_client, search_term, organisms, types)
         except Exception as e:
             current_app.logger.error(
                 f'Failed to get synonym data for term: {search_term}',
