@@ -1,57 +1,18 @@
 from arango.client import ArangoClient
-import re
 from typing import Any, Dict, List
 
 from flask import current_app
-from neo4j import Record as N4jRecord, Transaction as Neo4jTx
 
 from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import FTSQueryRecord, FTSTaxonomyRecord
 from neo4japp.models import GraphNode
 from neo4japp.services.arangodb import execute_arango_query, get_db
-from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import normalize_str, snake_to_camel_dict
 from neo4japp.utils.labels import (
     get_first_known_label_from_list,
     get_known_domain_labels_from_list
 )
 from neo4japp.utils.logger import EventLog
-
-
-class SearchService(GraphBaseDao):
-
-    def __init__(self, graph):
-        super().__init__(graph)
-
-    def _fulltext_query_sanitizer(self, query):
-        """ Ensures the query is syntactically correct
-        and safe from cypher injections for Neo4j full
-        text search.
-
-        Special characters in Lucene
-        + - && || ! ( ) { } [ ] ^ " ~ * ? : \\ /
-        See docs: http://lucene.apache.org/ for more information
-        We will escape these characters with a forward ( \\ ) slash
-        """
-        lucene_chars = re.compile(r'([\+\-\&\|!\(\)\{\}\[\]\^"~\*\?:\/])')
-
-        def escape(m):
-            """ Adds an escape '\' to reserved Lucene characters"""
-            char = m.group(1)
-            return r'\{c}'.format(c=char)
-
-        query = re.sub(lucene_chars, escape, query).strip()
-        if not query:
-            return query
-
-        # Wrap the query in backticks, doubling existing backticks. This effectively escapes the
-        # query input.
-        return f"`{query.replace('`', '``')}`"
-
-    def predictive_search(self, term: str, limit: int = 5):
-        """ Performs a predictive search; not necessarily a prefix based autocomplete.
-        # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
-        raise NotImplementedError
 
 
 def _get_collection_filters(domains: List[str]):
