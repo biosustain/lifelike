@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { IdType } from 'vis-network';
 
 import {
   GetClusterSnippetsResult,
@@ -23,7 +24,7 @@ export class VisualizationService {
 
     constructor(private http: HttpClient) { }
 
-    getDocument(id: string) {
+    getDocument(id: IdType) {
         return this.http.get<Neo4jResults>(
           `${this.baseUrl}/document/${id}`
         );
@@ -34,7 +35,7 @@ export class VisualizationService {
      * of the depth of 1.
      * @param nodeId the node id from the database
      */
-    expandNode(nodeId: string, filterLabels: string[]) {
+    expandNode(nodeId: IdType, filterLabels: string[]) {
         return this.http.post<{result: Neo4jResults<any, any>}>(
             `${this.baseUrl}/expand`,
             {nodeId, filterLabels},
@@ -101,7 +102,7 @@ export class VisualizationService {
       .pipe(map((resp) => resp.result.associatedData));
   }
 
-    getSnippetsForNodePair(node1Id: string, node2Id: string, page: number, limit: number) {
+    getSnippetsForNodePair(node1Id: IdType, node2Id: IdType, page: number, limit: number) {
       return this.http.post<{result: GetNodePairSnippetsResult}>(
         `${this.baseUrl}/get-snippets-for-node-pair`, {
           page,
