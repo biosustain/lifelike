@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 
-from neo4japp.models import AnnotationStyle, DomainURLsMap
+from neo4japp.constants import DOMAIN_URLS_MAP
+from neo4japp.models import AnnotationStyle
 
 bp = Blueprint('entity-resources', __name__, url_prefix='/entity-resources')
 
@@ -31,8 +32,8 @@ def get_uri():
     """
     payload = request.json
 
-    uri = DomainURLsMap.query.filter_by(domain=payload['domain'])[0]
-    return {'uri': uri.base_URL.format(payload['term'])}
+    uri = DOMAIN_URLS_MAP[payload['domain']]
+    return {'uri': uri.format(payload['term'])}
 
 
 @bp.route('/uri/batch', methods=['POST'])
@@ -60,7 +61,7 @@ def get_uri_batch():
     uris = []
     payload = request.json
     for entry in payload['batch']:
-        uri = DomainURLsMap.query.filter_by(domain=entry['domain'])[0]
+        uri = DOMAIN_URLS_MAP[payload['domain']]
         uris.append({'uri': uri.base_URL.format(entry['term'])})
 
     return {'batch': uris}

@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { isArray, isNil } from 'lodash-es';
-import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription, forkJoin } from 'rxjs';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { DataSet } from 'vis-data';
 
@@ -124,18 +124,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.legendService.getAnnotationLegend().subscribe(legend => {
-      Object.keys(legend).forEach(label => {
-        if (this.LITERATURE_LABELS.includes(label)) {
-          // Keys of the result dict are all lowercase, need to change the first character
-          // to uppercase to match Neo4j labels
-          const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1, 10) + label.slice(10, 11).toUpperCase() + label.slice(11);
-          this.legend.set(formattedLabel, [legend[label].color, '#0c8caa']);
-        }
-      });
-    });
-
-    this.route.queryParams.pipe(
+    const getDocumentObsverable = this.route.queryParams.pipe(
       tap(params => {
         if (params.q != null) {
           this.params = createGraphSearchParamsFromQuery(params as GraphQueryParameters);
@@ -146,14 +135,28 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         if (!params.data) {
           return empty;
         }
-        return this.visService.getBatch(params.data).pipe(
-          map((result: Neo4jResults) => result),
-        );
+        return this.visService.getDocument(params.data);
       }),
       take(1),
-    ).subscribe((result) => {
-      if (result) {
-        this.networkGraphData = this.setupInitialProperties(result);
+    );
+
+    // Join the two observables so we don't create any race conditions. I.e., they both have to complete before we set any data.
+    forkJoin(
+      {
+        legend: this.legendService.getAnnotationLegend(),
+        neo4jResults: getDocumentObsverable
+    }).subscribe(({legend, neo4jResults}) => {
+      Object.keys(legend).forEach(label => {
+        if (this.LITERATURE_LABELS.includes(label)) {
+          // Keys of the result dict are all lowercase, need to change the first character
+          // to uppercase to match Neo4j labels
+          const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1, 10) + label.slice(10, 11).toUpperCase() + label.slice(11);
+          this.legend.set(formattedLabel, [legend[label].color, '#0c8caa']);
+        }
+      });
+
+      if (neo4jResults) {
+        this.networkGraphData = this.setupInitialProperties(neo4jResults);
         this.nodes = new DataSet(this.networkGraphData.nodes);
         this.edges = new DataSet(this.networkGraphData.edges);
       }
