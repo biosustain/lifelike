@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 
+import { IdType } from 'vis-network';
+
 import { VisNode } from 'app/interfaces';
 import {
   AssociatedType,
@@ -12,7 +14,6 @@ import {
 } from 'app/interfaces/visualization.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
-import { IdType } from 'vis-network';
 
 
 @Component({
