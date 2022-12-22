@@ -12,6 +12,7 @@ import {
 } from 'app/interfaces/visualization.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
+import { IdType } from 'vis-network';
 
 
 @Component({
@@ -99,7 +100,7 @@ export class SidenavTypeViewComponent {
     );
   }
 
-  getSnippets(node1Id: string, node2Id: string, limit: number, page: number) {
+  getSnippets(node1Id: IdType, node2Id: IdType, limit: number, page: number) {
     this.visualizationService.getSnippetsForNodePair(
       node1Id,
       node2Id,
