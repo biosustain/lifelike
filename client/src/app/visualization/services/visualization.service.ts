@@ -23,11 +23,10 @@ export class VisualizationService {
 
     constructor(private http: HttpClient) { }
 
-    getBatch(query: string) {
-        return this.http.get<{result: Neo4jResults<any, any>}>(
-            `${this.baseUrl}/batch`,
-            {params: {data: query}}
-        ).pipe(map(resp => resp.result));
+    getDocument(id: string) {
+        return this.http.get<Neo4jResults>(
+          `${this.baseUrl}/document/${id}`
+        );
     }
 
     /**
@@ -35,7 +34,7 @@ export class VisualizationService {
      * of the depth of 1.
      * @param nodeId the node id from the database
      */
-    expandNode(nodeId: number, filterLabels: string[]) {
+    expandNode(nodeId: string, filterLabels: string[]) {
         return this.http.post<{result: Neo4jResults<any, any>}>(
             `${this.baseUrl}/expand`,
             {nodeId, filterLabels},
@@ -96,13 +95,13 @@ export class VisualizationService {
         `${this.baseUrl}/get-associated-type-snippet-count`,
         {
           source_node: request.source_node,
-          associated_nodes: [...request.associated_nodes].sort((a, b) => a - b),
+          associated_nodes: [...request.associated_nodes],
         }
       )
       .pipe(map((resp) => resp.result.associatedData));
   }
 
-    getSnippetsForNodePair(node1Id: number, node2Id: number, page: number, limit: number) {
+    getSnippetsForNodePair(node1Id: string, node2Id: string, page: number, limit: number) {
       return this.http.post<{result: GetNodePairSnippetsResult}>(
         `${this.baseUrl}/get-snippets-for-node-pair`, {
           page,

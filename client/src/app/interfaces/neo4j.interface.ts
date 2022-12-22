@@ -10,7 +10,7 @@ export interface NodeLegend {
 export type DefaultNodeData = Record<string, any>&{eid: any};
 /** Node representation from the backend */
 export interface GraphNode<Data = DefaultNodeData> {
-  id: number;
+  id: string;
   label: string;
   data: Data;
   subLabels: Array<string>;
@@ -21,11 +21,11 @@ export interface GraphNode<Data = DefaultNodeData> {
 
 /** Edge represenattion from the backend */
 export interface GraphRelationship<Data = Record<string, any>> {
-  id: number;
+  id: string;
   label: string;
   data: Data;
-  to: number;
-  from: number;
+  to: string;
+  from: string;
   toLabel: string;
   fromLabel: string;
 }
@@ -40,7 +40,7 @@ export interface VisNode<Data = DefaultNodeData> extends GraphNode<Data> {
 
 export interface DuplicateVisNode<Data = DefaultNodeData> extends VisNode<Data> {
     id: any;
-    duplicateOf: number;
+    duplicateOf: string;
 }
 
 /** VisJS Edge Representations for Client */
@@ -53,9 +53,9 @@ export interface VisEdge<Data = Record<string, any>> extends GraphRelationship<D
 // We may want to update this interface so the type is reflected properly.
 export interface DuplicateVisEdge<Data = Record<string, any>> extends VisEdge<Data> {
     id: any;
-    duplicateOf: number | null;
-    originalFrom: number | null;
-    originalTo: number | null;
+    duplicateOf: string | null;
+    originalFrom: string | null;
+    originalTo: string | null;
 }
 
 export interface Neo4jResults<NodeData = DefaultNodeData, EdgeData = Record<string, any>> {

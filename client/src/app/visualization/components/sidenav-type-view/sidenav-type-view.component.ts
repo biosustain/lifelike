@@ -99,7 +99,7 @@ export class SidenavTypeViewComponent {
     );
   }
 
-  getSnippets(node1Id: number, node2Id: number, limit: number, page: number) {
+  getSnippets(node1Id: string, node2Id: string, limit: number, page: number) {
     this.visualizationService.getSnippetsForNodePair(
       node1Id,
       node2Id,

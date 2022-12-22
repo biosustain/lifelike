@@ -170,17 +170,6 @@ def get_kg_service():
     return g.kg_service
 
 
-def get_visualizer_service():
-    if 'visualizer_service' not in g:
-        from neo4japp.services import VisualizerService
-        graph = get_neo4j_db()
-        g.visualizer_service = VisualizerService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.visualizer_service
-
-
 @scope_flask_app_ctx('file_type_service')
 def get_file_type_service():
     """

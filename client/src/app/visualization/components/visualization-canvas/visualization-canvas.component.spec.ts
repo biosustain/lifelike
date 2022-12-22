@@ -562,7 +562,7 @@ describe('VisualizationCanvasComponent', () => {
         await expect(instance.clusters.size).toEqual(2);
     });
 
-    it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
+    it('isNotAClusteredEdge should detect whether an edge is a cluster edge or not', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
             of(mockGetReferenceTableDataResultOutgoing)
         );
@@ -579,7 +579,7 @@ describe('VisualizationCanvasComponent', () => {
                 direction: Direction.FROM,
             } as ClusterData
         );
-        expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
+        expect(instance.isNotAClusteredEdge(clusterEdge)).toBeFalse();
     });
 
     it('collapseNeighbors should remove all edges connected to the given node', () => {
