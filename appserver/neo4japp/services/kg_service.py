@@ -1,132 +1,17 @@
 from flask import current_app
 import json
 from neo4j import Transaction as Neo4jTx
-from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
 import os
-from typing import List
 
 from neo4japp.services.common import HybridDBDao
-from neo4japp.models import GraphNode, GraphRelationship
-from neo4japp.constants import ANNOTATION_STYLES_DICT, DISPLAY_NAME_MAP, LogEventType
-from neo4japp.util import snake_to_camel_dict
-from neo4japp.utils.labels import get_first_known_label_from_node, get_first_known_label_from_list
+from neo4japp.constants import ANNOTATION_STYLES_DICT, LogEventType
+from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
 
 
 class KgService(HybridDBDao):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
-
-    def _neo4j_objs_to_graph_objs(
-        self,
-        nodes: List[N4jDriverNode],
-        relationships: List[N4jDriverRelationship],
-    ):
-        # TODO: Can possibly use a dispatch method/injection
-        # of sorts to use custom labeling methods for
-        # different type of nodes/edges being converted.
-        # The default does not always set an appropriate label
-        # name.
-        node_dict = {}
-        rel_dict = {}
-
-        for node in nodes:
-            try:
-                label = get_first_known_label_from_node(node)
-            except ValueError:
-                label = 'Unknown'
-                current_app.logger.warning(
-                    f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}",
-                    extra=EventLog(
-                        event_type=LogEventType.KNOWLEDGE_GRAPH.value
-                    ).to_dict()
-                )
-            graph_node = GraphNode(
-                id=node.id,
-                label=get_first_known_label_from_node(node),
-                sub_labels=list(node.labels),
-                domain_labels=[],
-                display_name=node.get(DISPLAY_NAME_MAP[label], 'Unknown'),
-                data=snake_to_camel_dict(dict(node), {}),
-                url=None
-            )
-            node_dict[graph_node.id] = graph_node
-
-        for rel in relationships:
-            graph_rel = GraphRelationship(
-                id=rel.id,
-                label=type(rel).__name__,
-                data=dict(rel),
-                to=rel.end_node.id,
-                _from=rel.start_node.id,
-                to_label=list(rel.end_node.labels)[0],
-                from_label=list(rel.start_node.labels)[0]
-            )
-            rel_dict[graph_rel.id] = graph_rel
-        return {
-            'nodes': [n.to_dict() for n in node_dict.values()],
-            'edges': [r.to_dict() for r in rel_dict.values()]
-        }
-
-    def query_batch(self, data_query: str):
-        """ query batch uses a custom query language (one we make up here)
-        for returning a list of nodes and their relationships.
-        It also works on single nodes with no relationship.
-
-        Example:
-            If we wanted all relationships between
-            the node pairs (node1, node2) and
-            (node3, node4), we will write the
-            query as follows:
-
-                node1,node2&node3,node4
-        """
-
-        # TODO: This no longer works as expected with the refactor of the visualizer
-        # search. May need to refactor this in the future, or just get rid of it.
-        split_data_query = data_query.split('&')
-
-        if len(split_data_query) == 1 and split_data_query[0].find(',') == -1:
-            result = self.graph.read_transaction(
-                lambda tx: list(
-                    tx.run(
-                        'MATCH (n) WHERE ID(n)=$node_id RETURN n AS node',
-                        node_id=int(split_data_query.pop())
-                    )
-                )
-            )
-
-            node = []
-            if len(result) > 0:
-                node = [result[0]['node']]
-
-            return self._neo4j_objs_to_graph_objs(node, [])
-        else:
-            data = [x.split(',') for x in split_data_query]
-            result = self.graph.read_transaction(
-                lambda tx: list(
-                    tx.run(
-                        """
-                        UNWIND $data as node_pair
-                        WITH node_pair[0] as from_id, node_pair[1] as to_id
-                        MATCH (a)-[relationship]->(b)
-                        WHERE ID(a)=from_id AND ID(b)=to_id
-                        RETURN
-                            apoc.convert.toSet(collect(a) + collect(b)) as nodes,
-                            apoc.convert.toSet(collect(relationship)) as relationships
-                        """,
-                        data=data
-                    )
-                )
-            )
-
-            nodes = []
-            relationships = []
-            if len(result) > 0:
-                nodes = result[0]['nodes']
-                relationships = result[0]['relationships']
-
-            return self._neo4j_objs_to_graph_objs(nodes, relationships)
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []

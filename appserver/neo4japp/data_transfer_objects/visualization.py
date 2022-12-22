@@ -19,7 +19,7 @@ class Direction(Enum):
 
 @attr.s(frozen=True)
 class VisNode(CamelDictMixin):
-    id: int = attr.ib()
+    id: str = attr.ib()
     label: str = attr.ib()
     data: dict = attr.ib()
     sub_labels: List[str] = attr.ib()
@@ -32,16 +32,16 @@ class VisNode(CamelDictMixin):
 @attr.s(frozen=True)
 class DuplicateVisNode(VisNode):
     id: str = attr.ib()  # type: ignore
-    duplicate_of: int = attr.ib()
+    duplicate_of: str = attr.ib()
 
 
 @attr.s(frozen=True)
 class VisEdge(CamelDictMixin):
-    id: int = attr.ib()
+    id: str = attr.ib()
     label: str = attr.ib()
     data: dict = attr.ib()
-    to: int = attr.ib()
-    from_: int = attr.ib()
+    to: str = attr.ib()
+    from_: str = attr.ib()
     to_label: str = attr.ib()
     from_label: str = attr.ib()
     arrows: Optional[str] = attr.ib()
@@ -76,9 +76,9 @@ class VisEdge(CamelDictMixin):
 @attr.s(frozen=True)
 class DuplicateVisEdge(VisEdge):
     id: str = attr.ib()  # type: ignore
-    duplicate_of: int = attr.ib()
-    original_from: int = attr.ib()
-    original_to: int = attr.ib()
+    duplicate_of: str = attr.ib()
+    original_from: str = attr.ib()
+    original_to: str = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -91,8 +91,8 @@ class ReferenceTablePair(CamelDictMixin):
 
     @attr.s(frozen=True)
     class EdgeData(CamelDictMixin):
-        original_from: int = attr.ib()
-        original_to: int = attr.ib()
+        original_from: str = attr.ib()
+        original_to: str = attr.ib()
         label: str = attr.ib()
 
     node: NodeData = attr.ib()
@@ -117,8 +117,8 @@ class Snippet(CamelDictMixin):
 class EdgeConnectionData(CamelDictMixin):
     from_label: str = attr.ib()
     to_label: str = attr.ib()
-    from_: int = attr.ib()
-    to: int = attr.ib()
+    from_: str = attr.ib()
+    to: str = attr.ib()
     label: str = attr.ib()
 
     # 'from_' will be formatted as 'from' because it is coming from the client.
@@ -133,10 +133,10 @@ class EdgeConnectionData(CamelDictMixin):
 class DuplicateEdgeConnectionData(CamelDictMixin):
     from_label: str = attr.ib()
     to_label: str = attr.ib()
-    from_: int = attr.ib()
-    to: int = attr.ib()
-    original_from: int = attr.ib()
-    original_to: int = attr.ib()
+    from_: str = attr.ib()
+    to: str = attr.ib()
+    original_from: str = attr.ib()
+    original_to: str = attr.ib()
     label: str = attr.ib()
 
     def build_from_dict_formatter(self, edge_data_input_dict: dict):
@@ -149,7 +149,7 @@ class DuplicateEdgeConnectionData(CamelDictMixin):
 
 @attr.s(frozen=True)
 class ExpandNodeRequest(CamelDictMixin):
-    node_id: int = attr.ib()
+    node_id: str = attr.ib()
     filter_labels: List[str] = attr.ib()
 
 
@@ -178,8 +178,8 @@ class GetSnippetsForClusterRequest(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GetSnippetsFromEdgeResult(CamelDictMixin):
-    from_node_id: int = attr.ib()
-    to_node_id: int = attr.ib()
+    from_node_id: str = attr.ib()
+    to_node_id: str = attr.ib()
     association: str = attr.ib()
     snippets: List[Snippet] = attr.ib()
 
@@ -225,7 +225,7 @@ class GetReferenceTableDataResult(CamelDictMixin):
 @attr.s(frozen=True)
 class AssociatedTypesResult(CamelDictMixin):
     name: str = attr.ib()
-    node_id: int = attr.ib()
+    node_id: str = attr.ib()
     snippet_count: int = attr.ib()
 
 

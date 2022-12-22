@@ -29,7 +29,6 @@ from neo4japp.services import (
     AccountService,
     AuthService,
     KgService,
-    VisualizerService,
 )
 from neo4japp.services.arangodb import create_db, get_db
 from neo4japp.services.elastic import ElasticService
@@ -191,14 +190,6 @@ def account_user(app, session):
 @pytest.fixture(scope='function')
 def kg_service(graph, session):
     return KgService(
-        graph=graph,
-        session=session
-    )
-
-
-@pytest.fixture(scope='function')
-def visualizer_service(app, graph, session):
-    return VisualizerService(
         graph=graph,
         session=session
     )

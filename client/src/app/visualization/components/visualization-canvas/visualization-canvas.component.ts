@@ -339,9 +339,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
     updateSelectedEdges() {
         this.selectedEdges = this.networkGraph.getSelectedEdges().filter(
-            // Cluster edges are strings, normal edges are numbers. We do NOT want to include cluster edges
-            // in our list of selected edges at the moment.
-            edgeId => typeof edgeId === 'number'
+            edgeId => this.isNotAClusteredEdge(edgeId)
         );
     }
 
@@ -374,7 +372,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
         // If a previously connected node has no remaining edges (i.e. it is not connected
         // to any other neighbor), remove it.
-        const nodesToRemove = connectedNodes.map((connectedNodeId: number) => {
+        const nodesToRemove = connectedNodes.map((connectedNodeId: string) => {
             if (this.networkGraph.findNode(connectedNodeId).length !== 0) {
                 const connectedEdges = this.networkGraph.getConnectedEdges(connectedNodeId);
                 if (connectedEdges.length === 0) {
@@ -385,7 +383,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
         this.nodes.remove(nodesToRemove);
     }
 
-    expandOrCollapseNode(nodeId: number) {
+    expandOrCollapseNode(nodeId: string) {
         const nodeRef = this.nodes.get(nodeId);
 
         if (nodeRef.expanded) {
@@ -419,14 +417,18 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
     /**
      * Check that the input is a normal edge and that it isn't currently clustered.
-     * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
-     * used here to deterimine if the input edge is currently clustered; The
-     * output of getClusteredEdges is the input edge + any cluster edges it is contained
-     * in if any.
      * @param edge the id of the edge to check
      */
-    isNotAClusterEdge(edge: IdType) {
-        return typeof edge !== 'string' && this.networkGraph.getClusteredEdges(edge).length === 1;
+    isNotAClusteredEdge(edge: IdType) {
+        const baseEdges = this.networkGraph.getBaseEdges(edge)
+        // If "edge" is a base edge, the value of `getBaseEdges` should be a list with a single value: the edge id itself. If it were a cluster,
+        // it could still be a list with a single value, but that value would NOT be the cluster edge id, it would be whatever base edge
+        // was clustered.
+        const notAClusterEdge = baseEdges.length == 1 && baseEdges.includes(edge);
+        // Furthermore, we can quickly check that "edge" is not in a cluster by checking the length of `getClusteredEdges`: if it is more
+        // than 1, the edge is in at least one cluster.
+        const notInAClusterEdge = this.networkGraph.getClusteredEdges(edge).length == 1
+        return notAClusterEdge && notInAClusterEdge;
     }
 
     /**
@@ -443,7 +445,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
             (edgeId) => {
                 const edge = this.edges.get(edgeId);
                 // First check if this is the correct relationship
-                if (this.isNotAClusterEdge(edgeId) && edge.label === relationship) {
+                if (this.isNotAClusteredEdge(edgeId) && edge.label === relationship) {
                     // Then, check that it is in the correct direction
                     if (direction === Direction.FROM && edge.from === node) {
                         return true;
@@ -470,7 +472,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
         );
 
         this.networkGraph.getConnectedEdges(selectedNode).filter(
-            edge => this.isNotAClusterEdge(edge)
+            edge => this.isNotAClusteredEdge(edge)
         ).forEach(
             edgeId => {
                 const edge = this.edges.get(edgeId);
@@ -511,56 +513,68 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
     }
 
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
-        const maxSnippetCount = referenceTableRows[0].snippetCount;
-        const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
-        const numRowsToShow = referenceTableRows.length > maxRowsToShow ? maxRowsToShow : referenceTableRows.length;
-
-        const maxNodesCellText = `Showing ${numRowsToShow} of ${referenceTableRows.length} clustered nodes`;
-        const rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
-            const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
-            let rowHTMLString = `
-            <tr class="reference-table-row">
-                <td class="entity-name-container" style="color: ${this.legend.get(row.nodeLabel)[0]}">${row.nodeDisplayName}</td>
-                <td class="snippet-count-container">(${row.snippetCount})</td>
-                <td class="snippet-bar-container">
-                    <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
-                </td>
-            </tr>`;
-            if (index === numRowsToShow - 1) {
-                rowHTMLString += `
-                <tr class="reference-table-row">
-                    <td class="max-nodes-cell" colspan="3">${maxNodesCellText}</td>
-                </tr>
-                `;
-            }
-            return rowHTMLString;
-        }).join('\n');
-        const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
-            (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
-        )[0].nodeDisplayName;
-
-        // Get width of SVG
+        let svgHeight, svgWidth, rowsHTMLString;
+        const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
         const FLUFF_WIDTH =  21 + 6; // padding + border
         const WIDTH_MULTIPLIER = 1.5; // multiplier to massage the width to about what we want
-        const svgWidth = Math.max(
-            // width of biggest name + max width of counts + max width of bars + constant width
-            Math.floor(
-                ctx.measureText(longestName).width * WIDTH_MULTIPLIER +
-                ctx.measureText(`(${maxSnippetCount})`).width * WIDTH_MULTIPLIER +
-                100 + FLUFF_WIDTH
-            ),
-            // OR width of the max-nodes-cell + constant width
-            Math.floor(ctx.measureText(maxNodesCellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH)
-        );
+        const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
 
-        // Get height of SVG
-        const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
-        // Add a single extra row to accomodate the max-nodes-cell
-        const numRows = referenceTableRows.slice(0, maxRowsToShow).length + 1;
-        // constant height * # of rows
-        const svgHeight = FLUFF_HEIGHT * numRows;
+        if (referenceTableRows.length) {
+          const maxSnippetCount = referenceTableRows[0]?.snippetCount || 0;
+          const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
+          const numRowsToShow = referenceTableRows.length > maxRowsToShow ? maxRowsToShow : referenceTableRows.length;
 
+          const maxNodesCellText = `Showing ${numRowsToShow} of ${referenceTableRows.length} clustered nodes`;
+          rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
+              const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
+              let rowHTMLString = `
+              <tr class="reference-table-row">
+                  <td class="entity-name-container" style="color: ${this.legend.get(row.nodeLabel)[0]}">${row.nodeDisplayName}</td>
+                  <td class="snippet-count-container">(${row.snippetCount})</td>
+                  <td class="snippet-bar-container">
+                      <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
+                  </td>
+              </tr>`;
+              if (index === numRowsToShow - 1) {
+                  rowHTMLString += `
+                  <tr class="reference-table-row">
+                      <td class="max-nodes-cell" colspan="3">${maxNodesCellText}</td>
+                  </tr>
+                  `;
+              }
+              return rowHTMLString;
+          }).join('\n');
+          const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
+              (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
+          )[0].nodeDisplayName;
+
+          // Get width of SVG
+          svgWidth = Math.max(
+              // width of biggest name + max width of counts + max width of bars + constant width
+              Math.floor(
+                  ctx.measureText(longestName).width * WIDTH_MULTIPLIER +
+                  ctx.measureText(`(${maxSnippetCount})`).width * WIDTH_MULTIPLIER +
+                  100 + FLUFF_WIDTH
+              ),
+              // OR width of the max-nodes-cell + constant width
+              Math.floor(ctx.measureText(maxNodesCellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH)
+          );
+
+          // Get height of SVG
+          // Add a single extra row to accomodate the max-nodes-cell
+          const numRows = referenceTableRows.slice(0, maxRowsToShow).length + 1;
+          // constant height * # of rows
+          svgHeight = FLUFF_HEIGHT * numRows;
+        } else {
+          const cellText = 'Showing 0 of 0 clustered nodes'
+          svgWidth = ctx.measureText(cellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH;
+          svgHeight = FLUFF_HEIGHT;
+          rowsHTMLString = `
+            <tr class="reference-table-row">
+              <td class="max-nodes-cell" colspan="3">${cellText}</td>
+            </tr>
+            `;
+        }
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
@@ -658,7 +672,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
         } as VisEdge;
     }
 
-    createDuplicateEdgeFromOriginal(originalEdge: VisEdge, clusterOrigin: number, duplicateNode: DuplicateVisNode) {
+    createDuplicateEdgeFromOriginal(originalEdge: VisEdge, clusterOrigin: string, duplicateNode: DuplicateVisNode) {
         const newDuplicateEdgeId = 'duplicateEdge:' + uuidv4();
         return {
             ...originalEdge,
@@ -749,7 +763,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
                 id => {
                     const edge = this.edges.get(id);
                     // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
-                    if (this.isNotAClusterEdge(id) && edge.label === relationship) {
+                    if (this.isNotAClusteredEdge(id) && edge.label === relationship) {
                         // Then, check that it is in the correct direction
                         if (direction === Direction.FROM && edge.from === clusterOrigin) {
                             return true;
@@ -769,7 +783,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
             }
 
             const newDuplicateEdge = this.createDuplicateEdgeFromOriginal(
-                this.edges.get(edges[0]), clusterOrigin as number, newDuplicateNode
+                this.edges.get(edges[0]), clusterOrigin as string, newDuplicateNode
             );
 
             return {
@@ -1264,7 +1278,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
         // Check if event is double clicking a node
         if (hoveredNode) {
-            this.expandOrCollapseNode(hoveredNode as number);
+            this.expandOrCollapseNode(hoveredNode as string);
         }
     }
 

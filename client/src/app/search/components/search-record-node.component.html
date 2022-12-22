@@ -4,7 +4,7 @@
       <a
         href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
-        [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
+        [queryParams]="getVisualizerQueryParams({ data: node.node.id })"
       >{{ node.node.displayName }}</a>
       <span
         [ngStyle]="{
