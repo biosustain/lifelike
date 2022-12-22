@@ -420,14 +420,14 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
      * @param edge the id of the edge to check
      */
     isNotAClusteredEdge(edge: IdType) {
-        const baseEdges = this.networkGraph.getBaseEdges(edge)
-        // If "edge" is a base edge, the value of `getBaseEdges` should be a list with a single value: the edge id itself. If it were a cluster,
-        // it could still be a list with a single value, but that value would NOT be the cluster edge id, it would be whatever base edge
-        // was clustered.
-        const notAClusterEdge = baseEdges.length == 1 && baseEdges.includes(edge);
+        const baseEdges = this.networkGraph.getBaseEdges(edge);
+        // If "edge" is a base edge, the value of `getBaseEdges` should be a list with a single value: the edge id itself. If it were a
+        // cluster, it could still be a list with a single value, but that value would NOT be the cluster edge id, it would be whatever
+        // base edge was clustered.
+        const notAClusterEdge = baseEdges.length === 1 && baseEdges.includes(edge);
         // Furthermore, we can quickly check that "edge" is not in a cluster by checking the length of `getClusteredEdges`: if it is more
         // than 1, the edge is in at least one cluster.
-        const notInAClusterEdge = this.networkGraph.getClusteredEdges(edge).length == 1
+        const notInAClusterEdge = this.networkGraph.getClusteredEdges(edge).length === 1;
         return notAClusterEdge && notInAClusterEdge;
     }
 
@@ -513,7 +513,9 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
     }
 
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
-        let svgHeight, svgWidth, rowsHTMLString;
+        let svgHeight;
+        let svgWidth;
+        let rowsHTMLString;
         const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
         const FLUFF_WIDTH =  21 + 6; // padding + border
         const WIDTH_MULTIPLIER = 1.5; // multiplier to massage the width to about what we want
@@ -566,7 +568,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
           // constant height * # of rows
           svgHeight = FLUFF_HEIGHT * numRows;
         } else {
-          const cellText = 'Showing 0 of 0 clustered nodes'
+          const cellText = 'Showing 0 of 0 clustered nodes';
           svgWidth = ctx.measureText(cellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH;
           svgHeight = FLUFF_HEIGHT;
           rowsHTMLString = `
