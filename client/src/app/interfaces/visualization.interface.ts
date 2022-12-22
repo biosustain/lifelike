@@ -22,7 +22,7 @@ export enum AssociatedType {
 }
 
 export interface AssociatedTypeEntry {
-  id: string;
+  id: IdType;
   name: string;
   count: number;
   percentage: number;
@@ -30,13 +30,13 @@ export interface AssociatedTypeEntry {
 
 export interface NodeAssociatedType {
     name: string;
-    nodeId: string;
+    nodeId: IdType;
     snippetCount: number;
 }
 
 export interface ClusterData {
     referenceTableRows: ReferenceTableRow[];
-    relationship: string;
+    relationship: IdType;
     direction: Direction;
 }
 
@@ -46,10 +46,10 @@ export enum Direction {
 }
 
 export interface DuplicateEdgeConnectionData {
-    from: string;
-    to: string;
-    originalFrom: string;
-    originalTo: string;
+    from: IdType;
+    to: IdType;
+    originalFrom: IdType;
+    originalTo: IdType;
     fromLabel: string;
     toLabel: string;
     label: string;
@@ -57,8 +57,8 @@ export interface DuplicateEdgeConnectionData {
 
 export interface NodePair {
   // Note that it's inaccurate to use "from" and "to" terminology here, since the nodes *may* have bidirectional relationships.
-  node1Id: string;
-  node2Id: string;
+  node1Id: IdType;
+  node2Id: IdType;
 }
 
 export interface DuplicateNodeEdgePair<NodeData = object, EdgeData = object> {
@@ -67,8 +67,8 @@ export interface DuplicateNodeEdgePair<NodeData = object, EdgeData = object> {
 }
 
 export interface EdgeConnectionData {
-    from: string;
-    to: string;
+    from: IdType;
+    to: IdType;
     fromLabel: string;
     toLabel: string;
     label: string;
@@ -89,26 +89,26 @@ export interface Reference extends GraphNode<{
         entry2Text: string;
         entry1Type: string;
         entry2Type: string;
-        id: string;
+        id: IdType;
         sentence: string;
     }> {
 }
 
 export interface ReferenceTablePair {
     node: {
-        id: string;
+        id: IdType;
         displayName: string;
         label: string;
     };
     edge: {
-        originalFrom: string;
-        originalTo: string;
+        originalFrom: IdType;
+        originalTo: IdType;
         label: string;
     };
 }
 
 export interface ReferenceTableRow {
-    nodeId: string;
+    nodeId: IdType;
     nodeDisplayName: string;
     nodeLabel: string;
     snippetCount: number;
@@ -174,7 +174,7 @@ export interface SidenavSnippetData {
 // Begin Request Interfaces
 
 export interface ExpandNodeRequest {
-    nodeId: string;
+    nodeId: IdType;
     filterLabels: string[];
 }
 
@@ -207,8 +207,8 @@ export interface ReferenceTableDataRequest {
 }
 
 export interface AssociatedTypeSnippetCountRequest {
-    source_node: string;
-    associated_nodes: string[];
+    source_node: IdType;
+    associated_nodes: IdType[];
 }
 
 // End Request Interfaces
@@ -216,7 +216,7 @@ export interface AssociatedTypeSnippetCountRequest {
 // Begin Response Interfaces
 
 export interface ExpandNodeResult<NodeData = object, EdgeData = object> {
-    expandedNode: string;
+    expandedNode: IdType;
     nodes: VisNode<NodeData>[];
     edges: VisEdge<EdgeData>[];
 }
@@ -246,8 +246,8 @@ export interface GetReferenceTableDataResult {
 
 export interface GetSnippetsResult {
     snippets: AssociationSnippet[];
-    fromNodeId: string;
-    toNodeId: string;
+    fromNodeId: IdType;
+    toNodeId: IdType;
     association: string;
 }
 
