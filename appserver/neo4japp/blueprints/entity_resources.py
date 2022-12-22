@@ -62,6 +62,6 @@ def get_uri_batch():
     payload = request.json
     for entry in payload['batch']:
         uri = DOMAIN_URLS_MAP[entry['domain']]
-        uris.append({'uri': uri.base_URL.format(entry['term'])})
+        uris.append({'uri': uri.format(entry['term'])})
 
     return {'batch': uris}
