@@ -2,7 +2,6 @@ from arango.client import ArangoClient
 from datetime import datetime
 from flask import current_app
 from http import HTTPStatus
-from neo4j.exceptions import ServiceUnavailable
 from typing import List, Tuple
 import uuid
 
@@ -141,7 +140,7 @@ class ManualAnnotationService:
                     }[entity_id]
             except KeyError:
                 pass
-            except (BrokenPipeError, ServiceUnavailable):
+            except BrokenPipeError:
                 raise
             except Exception:
                 raise AnnotationError(
@@ -296,7 +295,7 @@ class ManualAnnotationService:
                 query=get_delete_global_inclusion_query(),
                 pairs=pairs
             )
-        except (BrokenPipeError, ServiceUnavailable):
+        except BrokenPipeError:
             raise
         except Exception:
             current_app.logger.error(
@@ -373,7 +372,7 @@ class ManualAnnotationService:
                         query=query,
                         node_id=result['node_id']
                     )
-                except (BrokenPipeError, ServiceUnavailable):
+                except BrokenPipeError:
                     raise
                 except Exception:
                     query = query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])
@@ -637,7 +636,7 @@ class ManualAnnotationService:
                         query=query_fn(),
                         **params,
                     )
-                except (BrokenPipeError, ServiceUnavailable):
+                except BrokenPipeError:
                     raise
                 except Exception:
                     current_app.logger.error(
@@ -658,7 +657,7 @@ class ManualAnnotationService:
                         query=query,
                         **all_params,
                     )
-                except (BrokenPipeError, ServiceUnavailable):
+                except BrokenPipeError:
                     raise
                 except Exception:
                     current_app.logger.info(
@@ -736,7 +735,7 @@ class ManualAnnotationService:
                 query=query_fn(),
                 **params
             )[0] if query_fn else {'node_exist': False}
-        except (BrokenPipeError, ServiceUnavailable):
+        except BrokenPipeError:
             raise
         except Exception:
             current_app.logger.error(
@@ -754,7 +753,7 @@ class ManualAnnotationService:
                     query=get_***ARANGO_DB_NAME***_global_inclusion_exist_query(),
                     *****ARANGO_DB_NAME***_params,
                 )[0]
-            except (BrokenPipeError, ServiceUnavailable):
+            except BrokenPipeError:
                 raise
             except Exception:
                 current_app.logger.error(

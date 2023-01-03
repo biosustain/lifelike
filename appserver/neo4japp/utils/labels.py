@@ -1,13 +1,12 @@
 from typing import List
 
 from flask import current_app
-from neo4j.graph import Node as N4jDriverNode
 
 from neo4japp.constants import LogEventType, DISPLAY_NAME_MAP, DOMAIN_LABELS
 from neo4japp.utils import EventLog
 
 
-def get_first_known_label_from_node(node: N4jDriverNode):
+def get_first_known_label_from_node(node):
     try:
         return get_first_known_label_from_list(node.labels)
     except ValueError:
@@ -25,7 +24,7 @@ def get_first_known_label_from_list(labels: List[str]):
     raise ValueError('Detected node label of an unknown type!')
 
 
-def get_known_domain_labels_from_node(node: N4jDriverNode):
+def get_known_domain_labels_from_node(node):
     return get_known_domain_labels_from_list(node.labels)
 
 
