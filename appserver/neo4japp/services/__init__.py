@@ -1,4 +1,3 @@
-from .kg_service import KgService
 from .auth import AuthService
 from .account import AccountService
 from .projects import ProjectsService
