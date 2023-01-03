@@ -1,7 +1,5 @@
 import abc
-from datetime import datetime
 
-from neo4j.exceptions import ServiceUnavailable
 from sqlalchemy.exc import SQLAlchemyError
 
 

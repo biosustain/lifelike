@@ -25,11 +25,7 @@ from neo4japp.data_transfer_objects.visualization import (
 )
 from neo4japp.factory import create_app
 from neo4japp.models.neo4j import GraphNode, GraphRelationship
-from neo4japp.services import (
-    AccountService,
-    AuthService,
-    KgService,
-)
+from neo4japp.services import AccountService, AuthService
 from neo4japp.services.arangodb import create_db, get_db
 from neo4japp.services.elastic import ElasticService
 from neo4japp.util import (
@@ -185,14 +181,6 @@ def auth_service(app, session):
 @pytest.fixture(scope='function')
 def account_user(app, session):
     return AccountService(session)
-
-
-@pytest.fixture(scope='function')
-def kg_service(graph, session):
-    return KgService(
-        graph=graph,
-        session=session
-    )
 
 
 @pytest.fixture(scope='function')
