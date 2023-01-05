@@ -21,6 +21,9 @@ def _get_collection_filters(domains: List[str]):
         'go',
         'mesh',
         'ncbi',
+        # Include "taxonomy" here in case no domains were selected by the user. It has no use in
+        # the for loop below.
+        'taxonomy',
         'uniprot'
     ]
 
@@ -34,6 +37,11 @@ def _get_collection_filters(domains: List[str]):
         normalized_domain = normalize_str(domain)
         if normalized_domain in domains_list:
             result_domains.append(normalized_domain)
+
+            # Add taxonomy if ncbi is included, since in the neo4j schema taxonomy nodes were part
+            # of ncbi.
+            if normalized_domain == 'ncbi':
+                result_domains.append('taxonomy')
         else:
             current_app.logger.info(
                 f'Found an unexpected value in `domains` list: {domain}',
@@ -393,26 +401,44 @@ def visualizer_search_query(
             SEARCH PHRASE(s.name, @term, 'text_ll')
             SORT BM25(s) DESC
             FOR entity IN INBOUND s has_synonym
-                {arango_col_filters}
-                FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0 OR LENGTH(@types) == 0
-                {organism_match_string}
                 LET go_class = entity.namespace
+                // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
+                // have labels as they would be redundant.
+                LET labels = UNION(
+                    entity.labels,
+                    IS_SAME_COLLECTION("taxonomy", entity._id) ? ["Taxonomy"] : []
+                )
+                {arango_col_filters}
+                FILTER LENGTH(INTERSECTION(@types, labels)) > 0 OR LENGTH(@types) == 0
+                {organism_match_string}
                 {literature_match_filter}
+                // Need to group these properties to artificially filter distinct values before
+                // hitting the LIMIT clause. Otherwise we won't get the correct number of results.
+                COLLECT
+                    id = entity._id,
+                    name = entity.name,
+                    entity_labels = labels,
+                    eid = entity.eid,
+                    data_source = entity.data_source,
+                    entity_literature_id = literature_id,
+                    taxonomy_id = t.eid,
+                    taxonomy_name = t.name,
+                    entity_go_class = go_class
                 LIMIT @skip, @limit
-                RETURN DISTINCT {{
+                RETURN {{
                     'entity': {{
-                        'id': entity._id,
-                        'name': entity.name,
-                        'labels': entity.labels,
+                        'id': id,
+                        'name': name,
+                        'labels': entity_labels,
                         'data': {{
-                            'eid': entity.eid,
-                            'data_source': entity.data_source
+                            'eid': eid,
+                            'data_source': data_source
                         }}
                     }},
-                    'literature_id': literature_id,
-                    'taxonomy_id': t.eid,
-                    'taxonomy_name': t.name,
-                    'go_class': go_class
+                    'literature_id': entity_literature_id,
+                    'taxonomy_id': taxonomy_id,
+                    'taxonomy_name': taxonomy_name,
+                    'go_class': entity_go_class
                 }}
     """
 
@@ -431,16 +457,23 @@ def visualizer_search_count_query(
                 SEARCH PHRASE(s.name, @term, 'text_ll')
                 SORT BM25(s) DESC
                 FOR entity IN INBOUND s has_synonym
-                    {arango_col_filters}
-                    FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0 OR LENGTH(@types) == 0
-                    {organism_match_string}
                     LET go_class = entity.namespace
+                    // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
+                    // have labels as they would be redundant.
+                    LET labels = UNION(
+                        entity.labels,
+                        IS_SAME_COLLECTION("taxonomy", entity._id) ? ["Taxonomy"] : []
+                    )
+                    {arango_col_filters}
+                    FILTER LENGTH(INTERSECTION(@types, labels)) > 0 OR LENGTH(@types) == 0
+                    {organism_match_string}
                     {literature_match_filter}
+                    // Note that we can use DISTINCT here only because we aren't paginating.
                     RETURN DISTINCT {{
                         'entity': {{
                             'id': entity._id,
                             'name': entity.name,
-                            'labels': entity.labels,
+                            'labels': labels,
                             'data': {{
                                 'eid': entity.eid,
                                 'data_source': entity.data_source
