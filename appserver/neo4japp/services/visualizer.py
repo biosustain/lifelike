@@ -448,49 +448,52 @@ def get_snippets_for_cluster(
 
 def get_expand_query() -> str:
     return """
-        FOR n IN literature
-            FILTER n._id == @node_id
-            LET collection_data = FIRST(
-                FOR m, e IN OUTBOUND n associated
-                    FILTER LENGTH(INTERSECTION(@labels, m.labels)) > 0
-                    COLLECT n_id = e._from INTO groups
-                    RETURN groups
-            )
-            LET from_doc = {
-                "id": n._id,
-                "labels": n.labels,
-                "entity_id": n.eid,
-                "name": n.name
-            }
-            LET to_docs = (
-                FOR row IN collection_data
-                    LET m = row["m"]
+    FOR n IN literature
+        FILTER n._id == @node_id
+        LET associated_nodes_and_edges = (
+            FOR m, e IN ANY n associated
+                FILTER LENGTH(INTERSECTION(@labels, m.labels)) > 0
+                RETURN {
+                    'node': m,
+                    'edge': e
+                }
+        )
+        LET nodes = UNION(
+            (
+                FOR associated IN associated_nodes_and_edges
                     RETURN DISTINCT {
-                        "id": m._id,
-                        "labels": m.labels,
-                        "entity_id": m.eid,
-                        "name": m.name
+                        "id": associated.node._id,
+                        "labels": associated.node.labels,
+                        "entity_id": associated.node.eid,
+                        "name": associated.node.name
                     }
-            )
-            LET rels = (
-                FOR row IN collection_data
-                    LET e = row["e"]
-                    RETURN DISTINCT {
-                        "id": e._id,
-                        "from_labels": DOCUMENT(e._from).labels,
-                        "to_labels": DOCUMENT(e._to).labels,
-                        "from": e._from,
-                        "to": e._to,
-                        "description": e.description,
-                        "association_id": e.association_id,
-                        "type": e.type,
-                        "label": "associated",
-                    }
-            )
-            RETURN {
-                "nodes": UNION([from_doc], to_docs),
-                "relationships": rels
-            }
+            ), [
+                {
+                    "id": n._id,
+                    "labels": n.labels,
+                    "entity_id": n.eid,
+                    "name": n.name
+                }
+            ]
+        )
+        LET edges = (
+            FOR associated IN associated_nodes_and_edges
+                RETURN DISTINCT {
+                    "id": associated.edge._id,
+                    "from_labels": DOCUMENT(associated.edge._from).labels,
+                    "to_labels": DOCUMENT(associated.edge._to).labels,
+                    "from": associated.edge._from,
+                    "to": associated.edge._to,
+                    "description": associated.edge.description,
+                    "association_id": associated.edge.association_id,
+                    "type": associated.edge.type,
+                    "label": "associated",
+                }
+        )
+        RETURN {
+            "nodes": nodes,
+            "relationships": edges
+        }
     """
 
 
