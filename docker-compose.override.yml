@@ -100,6 +100,11 @@ services:
       - FLASK_APP_CONFIG=Development
       - FLASK_DEBUG=1
       - FLASK_ENV=development
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
       # Neo4j
       - NEO4J_SCHEME=bolt
       - NEO4J_HOST=graphdatabase
@@ -119,19 +124,19 @@ services:
     networks:
       - backend
     depends_on:
-      - graphdatabase
+      - arangodb
       - redis
 
   cache-invalidator:
     container_name: cache-invalidator
     build: ./cache-invalidator
     environment:
-      - LOG_LEVEL=debug
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
+      - LOG_LEVEL=DEBUG
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -143,7 +148,7 @@ services:
       - backend
     depends_on:
       - redis
-      - graphdatabase
+      - arangodb
 
   pdfparser:
     container_name: pdfparser
