@@ -16,16 +16,18 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 
-from neo4japp.constants import FILE_MIME_TYPE_MAP
-from migrations.utils import window_chunk
-from neo4japp.models.files import MapLinks, Files
-
 # revision identifiers, used by Alembic.
 revision = '749576d6afe2'
 down_revision = '8f6d4eef042d'
 branch_labels = None
 depends_on = None
 
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
+class MapLinks(sa.Model):
+    __tablename__ = 'map_links'
+    entry_id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    map_id = sa.Column(sa.Integer(), sa.ForeignKey('files.id'), nullable=False)
+    linked_id = sa.Column(sa.Integer(), sa.ForeignKey('files.id'), nullable=False)
 
 def upgrade():
     op.create_table('map_links',
@@ -87,8 +89,8 @@ def data_upgrades():
                     for link in links:
                         if regex.match(link.get('url', "")):
                             hash_id = link['url'].split('/')[-1]
-                            file = session.query(Files).filter(
-                                Files.hash_id == hash_id).one_or_none()
+                            file = session.query(t_files).filter(
+                                t_files.hash_id == hash_id).one_or_none()
                             if file:
                                 if file.id:
                                     entries_to_add.append(MapLinks(map_id=map_id,

@@ -62,7 +62,8 @@ def data_upgrades():
 
     try:
         update_annotations(
-            results, session, update_annotations_add_primary_name)
+            tableclause, results, session, update_annotations_add_primary_name
+        )
     except Exception:
         raise Exception('Migration failed.')
 

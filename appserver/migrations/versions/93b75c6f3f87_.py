@@ -11,8 +11,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
-from neo4japp.models import Files
-
 
 # revision identifiers, used by Alembic.
 revision = '93b75c6f3f87'
@@ -106,7 +104,7 @@ def data_upgrades():
             path = _get_file_path(id, parent_id, filename)
             files_to_update.append({'id': id, 'path': path})
         try:
-            session.bulk_update_mappings(Files, files_to_update)
+            session.bulk_update_mappings(t_files, files_to_update)
             session.commit()
         except Exception:
             raise

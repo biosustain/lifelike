@@ -68,9 +68,11 @@ def data_upgrades():
         ]).where(tableclause.c.custom_annotations != '[]'))
     try:
         update_annotations(
-            anno_results, session, update_annotations_add_primary_name)
+            tableclause, anno_results, session, update_annotations_add_primary_name
+        )
         update_custom_annotations(
-            cust_anno_results, session, update_custom_annotations_add_primary_name)
+            tableclause, cust_anno_results, session, update_custom_annotations_add_primary_name
+        )
     except Exception:
         raise Exception('Migration failed.')
 

@@ -18,13 +18,9 @@ from sqlalchemy.orm.session import Session
 
 import fastjsonschema
 
-from marshmallow import fields
-
-from neo4japp.schemas.base import CamelCaseSchema
+from marshmallow import fields, Schema
 
 from migrations.utils import window_chunk
-from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
-from neo4japp.models import Files, FileContent
 
 # revision identifiers, used by Alembic.
 revision = '92135aa31f3c'
@@ -34,8 +30,22 @@ depends_on = None
 
 
 directory = path.realpath(path.dirname(__file__))
-schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v4.json')
+schema_file = path.join(directory, 'upgrade_data', 'enrichment_tables_v4.json')
 
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
+
+def camelcase(s):
+    parts = iter(s.split("_"))
+    return next(parts) + "".join(i.title() for i in parts)
+
+
+class CamelCaseSchema(Schema):
+    """Schema that uses camel-case for its external representation
+    and snake-case for its internal representation.
+    """
+
+    def on_bind_field(self, field_name, field_obj):
+        field_obj.data_key = camelcase(field_obj.data_key or field_name)
 
 # copied from neo4japp.schemas.enrichment
 # changed to snakecase to easily convert to camelcase
@@ -202,8 +212,8 @@ def data_upgrades():
 
                             current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')  # noqa
             try:
-                session.bulk_update_mappings(Files, files_to_update)
-                session.bulk_update_mappings(FileContent, raws_to_update)
+                session.bulk_update_mappings(tableclause1, files_to_update)
+                session.bulk_update_mappings(tableclause2, raws_to_update)
                 session.commit()
             except Exception:
                 raise

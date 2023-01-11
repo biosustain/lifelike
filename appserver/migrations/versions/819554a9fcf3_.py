@@ -16,7 +16,6 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
-from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = '819554a9fcf3'
@@ -99,7 +98,7 @@ def data_upgrades():
             annotations['genes'] = updated_genes
             collected.append({'id': fid, 'enrichment_annotations': annotations})
         try:
-            session.bulk_update_mappings(Files, collected)
+            session.bulk_update_mappings(tableclause, collected)
             session.commit()
         except Exception:
             session.rollback()

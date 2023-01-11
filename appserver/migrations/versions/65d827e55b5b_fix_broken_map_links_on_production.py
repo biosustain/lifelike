@@ -8,7 +8,6 @@ Create Date: 2021-12-07 00:35:15.548428
 from alembic import context, op
 import hashlib
 import io
-import json
 import logging
 import os
 import re
@@ -16,9 +15,9 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 import zipfile
+import json
+import fastjsonschema
 
-from neo4japp.models.files import FileContent
-from neo4japp.schemas.formats.drawing_tool import validate_map
 
 # revision identifiers, used by Alembic.
 revision = '65d827e55b5b'
@@ -28,6 +27,10 @@ depends_on = None
 
 logger = logging.getLogger('alembic.runtime.migration.' + __name__)
 
+schema_file = 'upgrade_data/map_v3.json'
+
+with open(schema_file, 'rb') as f:
+    validate_map = fastjsonschema.compile(json.load(f))
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -154,7 +157,7 @@ def data_upgrades():
         need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
 
     try:
-        session.bulk_update_mappings(FileContent, need_to_update)
+        session.bulk_update_mappings(t_files_content, need_to_update)
         session.commit()
     except Exception:
         session.rollback()

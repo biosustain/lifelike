@@ -12,7 +12,6 @@ from sqlalchemy import table, column
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
-from neo4japp.models import AppUser
 
 # revision identifiers, used by Alembic.
 revision = '7102b4744622'
@@ -59,7 +58,7 @@ def data_upgrades():
         for id, email in chunk:
             files_to_update.append({'id': id, 'subject': email})
         try:
-            session.bulk_update_mappings(AppUser, files_to_update)
+            session.bulk_update_mappings(t_appuser, files_to_update)
             session.commit()
         except Exception:
             session.rollback()

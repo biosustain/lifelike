@@ -12,12 +12,31 @@ import enum
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
-from neo4japp.models import (
-    AppRole,
-    Projects,
-    projects_collaborator_role,
-)
 
+projects_collaborator_role = sa.Table(
+    'projects_collaborator_role',
+    sa.Column(
+        'appuser_id',
+        sa.Integer,
+        sa.ForeignKey('appuser.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    ),
+    sa.Column(
+        'app_role_id',
+        sa.Integer,
+        sa.ForeignKey('app_role.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    ),
+    sa.Column(
+        'projects_id',
+        sa.Integer,
+        sa.ForeignKey('projects.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    )
+)
 
 # Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
 # it was unused.
@@ -272,17 +291,17 @@ def migration_fix():
         # Sets up the 'READ' role
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.READ.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=read_role_id,
             rule_type=AccessRuleType.ALLOW.name,
         ))
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.WRITE.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=read_role_id,
             rule_type=AccessRuleType.DENY.name,
         ))
@@ -290,17 +309,17 @@ def migration_fix():
         # Sets up the 'WRITE' role
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.READ.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=write_role_id,
             rule_type=AccessRuleType.ALLOW.name,
         ))
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.WRITE.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=write_role_id,
             rule_type=AccessRuleType.ALLOW.name,
         ))
@@ -308,17 +327,17 @@ def migration_fix():
         # Sets up the 'ADMIN' role
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.READ.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=admin_role_id,
             rule_type=AccessRuleType.ALLOW.name,
         ))
         conn.execute(t_access_control_policy.insert().values(
             action=AccessActionType.WRITE.name,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=admin_role_id,
             rule_type=AccessRuleType.ALLOW.name,
         ))

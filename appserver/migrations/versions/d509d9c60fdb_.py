@@ -18,8 +18,6 @@ from sqlalchemy.orm.session import Session
 import fastjsonschema
 
 from migrations.utils import window_chunk
-from neo4japp.constants import FILE_MIME_TYPE_MAP
-from neo4japp.models import FileContent
 
 # revision identifiers, used by Alembic.
 revision = 'd509d9c60fdb'
@@ -27,9 +25,9 @@ down_revision = 'fd1627b3a32e'
 branch_labels = None
 depends_on = None
 
-
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
 directory = path.realpath(path.dirname(__file__))
-schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/map_v2.json')
+schema_file = path.join(directory, 'upgrade_data', 'map_v2.json')
 
 
 def upgrade():
@@ -100,7 +98,7 @@ def data_upgrades():
                         validate_map(json.loads(byte_graph))
                         need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
             try:
-                session.bulk_update_mappings(FileContent, need_to_update)
+                session.bulk_update_mappings(tableclause2, need_to_update)
                 session.commit()
             except Exception:
                 raise

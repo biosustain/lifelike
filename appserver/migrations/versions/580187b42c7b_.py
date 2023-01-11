@@ -12,15 +12,13 @@ import json
 import sqlalchemy as sa
 import zipfile
 
-from neo4japp.constants import FILE_MIME_TYPE_MAP
-
-
 # revision identifiers, used by Alembic.
 revision = '580187b42c7b'
 down_revision = 'fbfb28a836c6'
 branch_labels = None
 depends_on = None
 
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):

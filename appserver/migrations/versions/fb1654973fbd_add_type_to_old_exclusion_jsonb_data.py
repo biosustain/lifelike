@@ -14,8 +14,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.sql.expression import not_
 
-from neo4japp.database import db
-
 # revision identifiers, used by Alembic.
 revision = 'fb1654973fbd'
 down_revision = '9118d3b6dba2'
@@ -48,12 +46,12 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
     session = Session(op.get_bind())
 
-    val = db.column('value', type_=postgresql.JSONB)
+    val = sa.column('value', type_=postgresql.JSONB)
     files = session.query(
         t_files,
     ).select_from(
         t_files,
-        db.func.jsonb_array_elements(t_files.c.excluded_annotations).alias()
+        sa.func.jsonb_array_elements(t_files.c.excluded_annotations).alias()
     ).filter(
         not_(val.has_key('type'))  # noqa
     ).distinct().all()

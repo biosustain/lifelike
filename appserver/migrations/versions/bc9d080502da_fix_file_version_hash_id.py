@@ -8,16 +8,20 @@ Create Date: 2021-03-29 18:08:35.564640
 import itertools
 
 import sqlalchemy as sa
+import timeflake
 from alembic import op
 # revision identifiers, used by Alembic.
 from sqlalchemy.orm import Session
-
-from neo4japp.models.common import generate_hash_id
 
 revision = 'bc9d080502da'
 down_revision = '819554a9fcf3'
 branch_labels = None
 depends_on = None
+
+
+def generate_hash_id():
+    # Roughly-ordered identifier with an extremely low chance of collision
+    return timeflake.random().base62
 
 # Customize these thresholds based on available memory to buffer query results
 CONTENT_QUERY_BATCH_SIZE = 25

@@ -13,9 +13,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.dialects import postgresql
 
-from neo4japp.models import Files
-
-
 # revision identifiers, used by Alembic.
 revision = 'b90a32885a8f'
 down_revision = '600460da634d'
@@ -69,7 +66,7 @@ def update_annotations(session, tableclause, files):
 
             f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
             updated_files.append({'id': f.id, 'annotations': f.annotations})
-    session.bulk_update_mappings(Files, updated_files)
+    session.bulk_update_mappings(tableclause, updated_files)
     session.commit()
 
 

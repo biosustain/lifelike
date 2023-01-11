@@ -13,14 +13,6 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 
-from neo4japp.models import (
-    AppRole,
-    Projects,
-    projects_collaborator_role,
-)
-from neo4japp.models.common import RDBMSBase
-
-
 # Moved this here from the auth models file. We removed this class as part of 6b7a2da00472 because
 # it was unused.
 class AccessRuleType(enum.Enum):
@@ -38,7 +30,7 @@ class AccessActionType(enum.Enum):
 
 # Moved this here from the auth models file. We dropped this table in 6b7a2da00472 because it was
 # unused.
-class AccessControlPolicy(RDBMSBase):
+class AccessControlPolicy(sa.Model):
     """ Which user, group, etc have what access to protected resources """
     id = sa.Column(sa.Integer, primary_key=True)
     action = sa.Column(sa.Enum(AccessActionType), nullable=False)
@@ -67,6 +59,31 @@ revision = '34f922d141bc'
 down_revision = '36d25e171658'
 branch_labels = None
 depends_on = None
+
+projects_collaborator_role = sa.Table(
+    'projects_collaborator_role',
+    sa.Column(
+        'appuser_id',
+        sa.Integer,
+        sa.ForeignKey('appuser.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    ),
+    sa.Column(
+        'app_role_id',
+        sa.Integer,
+        sa.ForeignKey('app_role.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    ),
+    sa.Column(
+        'projects_id',
+        sa.Integer,
+        sa.ForeignKey('projects.id', ondelete='CASCADE'),
+        primary_key=True,
+        index=True
+    )
+)
 
 t_files_content = sa.Table(
     'files_content',
@@ -203,17 +220,17 @@ def data_upgrades():
 
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=admin_role_id,
             rule_type=AccessRuleType.ALLOW,
         ))
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=admin_role_id,
             rule_type=AccessRuleType.ALLOW,
         ))
@@ -225,17 +242,17 @@ def data_upgrades():
 
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=read_role_id,
             rule_type=AccessRuleType.ALLOW,
         ))
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=read_role_id,
             rule_type=AccessRuleType.DENY,
         ))
@@ -247,17 +264,17 @@ def data_upgrades():
 
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=write_role_id,
             rule_type=AccessRuleType.ALLOW,
         ))
         conn.execute(AccessControlPolicy.__table__.insert().values(
             action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
+            asset_type='projects',
             asset_id=projects_id,
-            principal_type=AppRole.__tablename__,
+            principal_type='app_role',
             principal_id=write_role_id,
             rule_type=AccessRuleType.ALLOW,
         ))

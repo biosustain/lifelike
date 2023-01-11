@@ -1,9 +1,35 @@
 import multiprocessing as mp
-
-from neo4japp.models import Files
+from enum import Enum
+# TODO: This is just beyond imaginary wrong
 from neo4japp.services.annotations.initializer import get_annotation_graph_service
-from neo4japp.services.annotations.constants import EntityType
 
+class Enumd(Enum):
+    @classmethod
+    def get(cls, key, default=None):
+        # Non-throwing value accessor modeled to behave like dict.get()
+        try:
+            return cls(key)
+        except ValueError:
+            return default
+
+class EntityType(Enumd):
+    ANATOMY = 'Anatomy'
+    CHEMICAL = 'Chemical'
+    COMPOUND = 'Compound'
+    DISEASE = 'Disease'
+    FOOD = 'Food'
+    GENE = 'Gene'
+    PATHWAY = 'Pathway'
+    PHENOMENA = 'Phenomena'
+    PHENOTYPE = 'Phenotype'
+    PROTEIN = 'Protein'
+    SPECIES = 'Species'
+
+    # non LMDB entity types
+    COMPANY = 'Company'
+    ENTITY = 'Entity'
+    LAB_SAMPLE = 'Lab Sample'
+    LAB_STRAIN = 'Lab Strain'
 
 def window_chunk(q, windowsize=100):
     """Yields chunks of data as a stream with only that chunk
@@ -148,7 +174,7 @@ def update_custom_annotations_add_primary_name(file_id, annotations):
     return {'id': file_id, 'custom_annotations': custom}
 
 
-def update_annotations(results, session, func):
+def update_annotations(tableclause, results, session, func):
     try:
         for chunk in window_chunk(results):
             with mp.Pool(processes=4) as pool:
@@ -158,13 +184,13 @@ def update_annotations(results, session, func):
                         (result.id, result.annotations) for result in chunk
                     ]
                 )
-                session.bulk_update_mappings(Files, updated)
+                session.bulk_update_mappings(tableclause, updated)
                 session.commit()
     except Exception:
         raise Exception('Migration failed.')
 
 
-def update_custom_annotations(results, session, func):
+def update_custom_annotations(tableclause, results, session, func):
     try:
         for chunk in window_chunk(results):
             with mp.Pool(processes=4) as pool:
@@ -174,7 +200,7 @@ def update_custom_annotations(results, session, func):
                         (result.id, result.custom_annotations) for result in chunk
                     ]
                 )
-                session.bulk_update_mappings(Files, updated)
+                session.bulk_update_mappings(tableclause, updated)
                 session.commit()
     except Exception:
         raise Exception('Migration failed.')

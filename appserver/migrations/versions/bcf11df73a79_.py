@@ -5,6 +5,9 @@ Revises: 9476dd461333
 Create Date: 2022-06-22 22:54:49.855656
 
 """
+from os import path
+
+import fastjsonschema
 from alembic import context, op
 import hashlib
 import io
@@ -15,10 +18,11 @@ import zipfile
 
 from migrations.utils import window_chunk
 
-from neo4japp.constants import FILE_MIME_TYPE_MAP
-from neo4japp.models.files import FileContent
-from neo4japp.schemas.formats.drawing_tool import validate_map
+directory = path.realpath(path.dirname(__file__))
+schema_file = path.join(directory, 'upgrade_data', 'map_v3.json')
 
+with open(schema_file, 'rb') as f:
+    validate_map = fastjsonschema.compile(json.load(f))
 
 # revision identifiers, used by Alembic.
 revision = 'bcf11df73a79'
@@ -26,6 +30,7 @@ down_revision = '9476dd461333'
 branch_labels = None
 depends_on = None
 
+FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -127,7 +132,7 @@ def data_upgrades():
                 file_content_to_update.append({'id': id, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
 
         # Flush pending updates to the transaction after every chunk
-        session.bulk_update_mappings(FileContent, file_content_to_update)
+        session.bulk_update_mappings(t_files_content, file_content_to_update)
         session.commit()
 
 

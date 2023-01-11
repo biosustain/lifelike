@@ -5,15 +5,10 @@ Revises: a6f4dec3a2d6
 Create Date: 2020-08-26 22:42:37.828585
 
 """
-from alembic import context
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.types import TIMESTAMP
-
-from neo4japp.database import db
-
 
 # revision identifiers, used by Alembic.
 revision = 'bd32fb61927a'
@@ -70,17 +65,17 @@ t_worksheets = table(
 
 def upgrade():
     # Create columns with nullable constraint, otherwise postgres will throw an error for existing data
-    op.add_column('appuser', sa.Column('creation_date', TIMESTAMP(timezone=True), default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('appuser', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('directory', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('directory', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('files', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('global_list', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('global_list', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('project', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('project_backup', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('projects', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
-    op.add_column('worksheets', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=db.func.now(), server_default=db.func.now(), nullable=True))
+    op.add_column('appuser', sa.Column('creation_date', TIMESTAMP(timezone=True), default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('appuser', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('directory', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('directory', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('files', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('global_list', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('global_list', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('project', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('project_backup', sa.Column('creation_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('projects', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
+    op.add_column('worksheets', sa.Column('modified_date', TIMESTAMP(timezone=True),  default=sa.func.now(), server_default=sa.func.now(), nullable=True))
 
     # After columns are created and seeded, set not null constraint
     op.alter_column('appuser', 'creation_date', nullable=False)

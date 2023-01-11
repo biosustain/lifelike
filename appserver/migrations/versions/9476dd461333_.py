@@ -5,6 +5,9 @@ Revises: 3234be6a4bd8
 Create Date: 2022-06-09 20:53:49.869308
 
 """
+from os import path
+
+import fastjsonschema
 from alembic import context, op
 import hashlib
 import json
@@ -14,17 +17,19 @@ from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
 
-from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
-from neo4japp.models.files import FileContent, Files
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-
-
 # revision identifiers, used by Alembic.
 revision = '9476dd461333'
 down_revision = '3234be6a4bd8'
 branch_labels = None
 depends_on = None
 
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
+
+directory = path.realpath(path.dirname(__file__))
+schema_file = path.join(directory, 'upgrade_data', 'enrichment_tables_v5.json')
+
+with open(schema_file, 'rb') as f:
+    validate_enrichment_table = fastjsonschema.compile(json.load(f))
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -290,8 +295,8 @@ def data_upgrades():
                     file_content_id = unique_content_map[new_hash]
                 files_to_update.append({'id': id, 'enrichment_annotations': enrichment_annos, 'content_id': file_content_id})  # noqa
 
-        session.bulk_update_mappings(Files, files_to_update)
-        session.bulk_update_mappings(FileContent, file_content_to_update)
+        session.bulk_update_mappings(t_files, files_to_update)
+        session.bulk_update_mappings(t_files_content, file_content_to_update)
         session.commit()
 
 
