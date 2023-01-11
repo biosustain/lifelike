@@ -7,4 +7,7 @@ echo "### Starting up cache-invalidator ###"
 __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # wait for arango
 timeout 300 ${__dir__}/wait-for-arango.sh
+
+echo "### All DBs ready, starting statistics calculation ###"
+
 python ${__dir__}/../main.py
