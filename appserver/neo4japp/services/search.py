@@ -399,7 +399,6 @@ def visualizer_search_query(
     return f"""
         FOR s IN synonym_ft
             SEARCH PHRASE(s.name, @term, 'text_ll')
-            SORT BM25(s) DESC
             FOR entity IN INBOUND s has_synonym
                 LET go_class = entity.namespace
                 // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
@@ -415,6 +414,7 @@ def visualizer_search_query(
                 // Need to group these properties to artificially filter distinct values before
                 // hitting the LIMIT clause. Otherwise we won't get the correct number of results.
                 COLLECT
+                    score = BM25(s),
                     id = entity._id,
                     name = entity.name,
                     entity_labels = labels,
@@ -424,8 +424,9 @@ def visualizer_search_query(
                     taxonomy_id = t.eid,
                     taxonomy_name = t.name,
                     entity_go_class = go_class
+                SORT score DESC, name ASC
                 LIMIT @skip, @limit
-                RETURN {{
+                RETURN DISTINCT {{
                     'entity': {{
                         'id': id,
                         'name': name,
@@ -455,7 +456,6 @@ def visualizer_search_count_query(
         RETURN LENGTH(
             FOR s IN synonym_ft
                 SEARCH PHRASE(s.name, @term, 'text_ll')
-                SORT BM25(s) DESC
                 FOR entity IN INBOUND s has_synonym
                     LET go_class = entity.namespace
                     // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
