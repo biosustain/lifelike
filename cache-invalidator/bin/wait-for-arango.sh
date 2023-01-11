@@ -11,6 +11,4 @@ do
     sleep 2
 done
 
-# Run command | https://docs.docker.com/compose/startup-order/
->&2 echo "Arango started - executing command"
-exec $@
+echo "Arango started"
