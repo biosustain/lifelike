@@ -523,7 +523,7 @@ def get_associated_type_snippet_count_query() -> str:
                             snippet.eid
                         ]
             )
-            SORT snippet_count DESC, TO_NUMBER(DOCUMENT(associated_node)._key) ASC
+            SORT snippet_count DESC, associated_node ASC
             RETURN {
                 "node_id": associated_node,
                 "name": DOCUMENT(associated_node).name,
@@ -605,7 +605,7 @@ def get_snippets_from_node_pair_query() -> str:
                 to_id = result.to_id,
                 description = result.description
             INTO groups
-            SORT snippet_count DESC
+            SORT snippet_count DESC, [from_id, to_id] ASC
             RETURN {
                 "snippet_count": snippet_count,
                 "from_id": from_id,
@@ -722,7 +722,7 @@ def get_snippets_from_edges_query() -> str:
                 to_id = result.to_id,
                 description = result.description
             INTO groups
-            SORT snippet_count DESC
+            SORT snippet_count DESC, [from_id, to_id] ASC
             RETURN {
                 "snippet_count": snippet_count,
                 "from_id": from_id,
@@ -753,19 +753,7 @@ def get_snippet_count_from_edges_query() -> str:
                             RETURN DISTINCT [association.description, snippet._id]
                 )
                 LET snippet_count = LENGTH(snippets_result)
-                LET max_pub_year = MAX(
-                    FOR pair IN snippets_result
-                        LET snippet = pair[1]
-                        FOR publication IN OUTBOUND snippet in_pub
-                            RETURN publication.pub_year
-                )
-                SORT
-                    snippet_count DESC,
-                    [
-                        TO_NUMBER(DOCUMENT(source_node)._key),
-                        TO_NUMBER(DOCUMENT(dest_node)._key)
-                    ] ASC,
-                    max_pub_year DESC
+                SORT snippet_count DESC, [source_node, dest_node] ASC
                 RETURN {
                     "from_id": source_node,
                     "to_id": dest_node,
