@@ -26,7 +26,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { BiocAnnotationLocation, Location } from 'app/pdf-viewer/annotation-type';
-import { SEARCH_LINKS } from 'app/shared/links';
+import { LINKS } from 'app/shared/links';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -709,10 +709,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // MESH Handling
     if (identifier && identifier.toLowerCase().startsWith('mesh')) {
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
-      const url = mesh.url;
-      const idPart = identifier.split(':');
-      return url.replace(/%s/, encodeURIComponent(idPart[1]));
+      const [_, idPart] = identifier.split(':');
+      return LINKS.mesh.search(idPart);
     }
 
     // NCBI
@@ -721,11 +719,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       if (type === 'Species') {
         domain = 'ncbi_taxonomy';
       }
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === domain);
-      const url = mesh.url;
-      return url.replace(/%s/, encodeURIComponent(identifier));
+      return LINKS[domain].search(identifier);
     }
-    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
-    return fallback.url.replace(/%s/, encodeURIComponent(identifier));
+    return LINKS.google.search(identifier);
   }
 }

@@ -23,7 +23,7 @@ import {
 } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { SEARCH_LINKS } from 'app/shared/links';
+import { LINKS } from 'app/shared/links';
 import { AnnotationType } from 'app/shared/constants';
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
@@ -95,13 +95,13 @@ export class AnnotationEditDialogComponent
   );
 
   searchLinks$ = this.getFormFieldObservable('text').pipe(
-    map((text) => text?.trim()),
-    map((text) =>
-      SEARCH_LINKS.map((link) => ({
-        domain: link.domain.replace('_', ' '),
-        link: this.substituteLink(link.url, text),
-      }))
-    )
+    map(text => text?.trim()),
+    map(text => Object.values(LINKS).map(link =>
+      ({
+        domain: link.label,
+        link: link.search(text)
+      })
+    ))
   );
 
   databaseTypeChoices$ = this.entityType$.pipe(
@@ -176,9 +176,7 @@ export class AnnotationEditDialogComponent
       includeGlobally,
       isCaseInsensitive: !this.caseSensitiveTypes.has(entityType),
       type: entityType,
-      links: fromPairs(
-        SEARCH_LINKS.map((link) => [link.domain.toLowerCase(), this.substituteLink(link.url, text)])
-      ),
+      links: mapValues(LINKS, linkEntity => linkEntity.search(text))
     } as Meta;
     if (source) {
       meta.idType = source;

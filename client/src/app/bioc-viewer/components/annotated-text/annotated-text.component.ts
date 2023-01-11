@@ -7,7 +7,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 
-import { SEARCH_LINKS } from 'app/shared/links';
+import { LINKS } from 'app/shared/links';
 
 import { Annotation, Infon } from '../bioc.format';
 
@@ -51,10 +51,8 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
     // console.log(payload);
     // MESH Handling
     if (identifier && identifier.toLowerCase().startsWith('mesh')) {
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
-      const url = mesh.url;
-      const idPart = identifier.split(':');
-      return url.replace(/%s/, encodeURIComponent(idPart[1]));
+      const [_, idPart] = identifier.split(':');
+      return LINKS.mesh.search(idPart);
     }
     // NCBI
     if (identifier && !isNaN(Number(identifier))) {
@@ -62,12 +60,9 @@ export class AnnotatedTextComponent implements OnChanges, OnDestroy {
       if (type === 'Species') {
         domain = 'ncbi_taxonomy';
       }
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === domain);
-      const url = mesh.url;
-      return url.replace(/%s/, encodeURIComponent(identifier));
+      return LINKS[domain].search(identifier);
     }
-    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
-    return fallback.url.replace(/%s/, encodeURIComponent(identifier));
+    return LINKS.google.search(identifier);
   }
 
   dragStarted($event) {

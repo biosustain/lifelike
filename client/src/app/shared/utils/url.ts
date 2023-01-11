@@ -29,7 +29,7 @@ interface AppURLInterface {
   pathSegments: string[];
   search: string[][] | Record<string, string> | string | URLSearchParams;
   hash: string;
-  fragment: string;
+  fragment: string|URLSearchParams;
   host: string;
   origin: string;
   relativehref: string;
@@ -112,7 +112,7 @@ export class AppURL implements URL, AppURLInterface {
     this.href = urlString;
   }
 
-  fragment: string;
+  fragment: string|URLSearchParams;
   hostname: string;
   port: string;
   protocol: string;
