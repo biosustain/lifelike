@@ -92,10 +92,11 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     of([
       {
         domain: 'Source File',
-        url: this.sourceFileURL.toString(),
+        url: this.sourceFileURL
       },
     ])
   );
+
 
   ngOnDestroy() {
     this.destroyed.next();

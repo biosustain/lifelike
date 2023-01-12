@@ -172,17 +172,15 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
     } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | NewNodePairSnippetsPageRequest);
   }
 
-  getSnippetPubtatorLink(pmid: string): string {
+    getSnippetPubtatorLink(pmid: string): HttpURL {
     return getPubtatorSearchUrl(pmid);
   }
 
   snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    const snippetUrl = new HttpURL(
-      snippet.publication.data.pmid
+    const snippetUrl = snippet.publication.data.pmid
         ? this.getSnippetPubtatorLink(snippet.publication.data.pmid)
-        : snippet.publication.entityUrl
-    );
+        : new HttpURL(snippet.publication.entityUrl);
 
     dataTransfer.setData('text/plain', snippet.reference.data.sentence);
     GenericDataProvider.setURIs(dataTransfer, [
