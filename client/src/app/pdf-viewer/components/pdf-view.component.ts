@@ -16,6 +16,10 @@ import {
   iif,
 } from 'rxjs';
 import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
+import { uniqueId } from 'lodash-es';
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -273,10 +277,16 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     const loc = event.location;
     const meta = event.meta;
 
-    const source =
-      `/projects/${encodeURIComponent(this.object.project.name)}` +
-      `/files/${encodeURIComponent(this.currentFileId)}` +
-      `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
+    const source = new HttpURL(
+      `/projects/${encodeURIComponent(this.object.project.name)}`
+      + `/files/${encodeURIComponent(this.currentFileId)}`,
+      {
+        fragment: new URLSearchParams({
+          page: String(loc.pageNumber),
+          coords: `${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`
+        })
+      }
+    );
 
     const sources = [
       {
@@ -288,14 +298,14 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     if (this.object.doi) {
       sources.push({
         domain: 'DOI',
-        url: this.object.doi,
+        url: new HttpURL(this.object.doi)
       });
     }
 
     if (this.object.uploadUrl) {
       sources.push({
         domain: 'External URL',
-        url: this.object.uploadUrl,
+        url: new HttpURL(this.object.uploadUrl)
       });
     }
 
@@ -346,17 +356,15 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
               // assumes first link will be main database source link
               // tslint ignore cause other option is destructuring and that
               // also gets name shadowing error
-              url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
-            },
-          ],
+          url: new HttpURL(hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '')
+        }],
           hyperlinks,
           detail: meta.type === 'link' ? meta.allText : '',
         },
         style: {
           showDetail: meta.type === 'link',
         },
-      } as Partial<UniversalGraphNode>)
-    );
+    } as DeepPartial<UniversalGraphNode>));
   }
 
   zoomIn() {

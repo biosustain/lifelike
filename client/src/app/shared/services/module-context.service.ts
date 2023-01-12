@@ -5,6 +5,7 @@ import { ViewService } from 'app/file-browser/services/view.service';
 
 import { WorkspaceManager } from '../workspace-manager';
 import { getURLFromSnapshot } from '../utils/router';
+import { HttpURL } from '../utils/url';
 
 @Injectable()
 export class ModuleContext {
@@ -21,11 +22,11 @@ export class ModuleContext {
     this.componentInstance = componentInstance;
   }
 
-  get appLink() {
-    return this.viewService
-      .getAppLink(this.componentInstance, getURLFromSnapshot(this.route.snapshot, '').toString())
-      .toPromise()
-      .then(({ href }) => href);
+  get appLink(): Promise<HttpURL> {
+    return this.viewService.getAppLink(
+      this.componentInstance,
+      getURLFromSnapshot(this.route.snapshot, '').toString()
+    ).toPromise();
   }
 
   get shareableLink() {

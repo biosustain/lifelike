@@ -30,8 +30,7 @@ export class ViewService {
   }
 
   getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<HttpURL> {
-    url = removeViewModeIfPresent(url);
-    const hashUrl = new HttpURL(url);
+    const hashUrl = new HttpURL(removeViewModeIfPresent(url));
     const linkParamsPromise = (componentInstance as ModuleAwareComponent)?.linkParams;
     if (linkParamsPromise) {
       return from(linkParamsPromise).pipe(

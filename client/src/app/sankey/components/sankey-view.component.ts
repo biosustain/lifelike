@@ -41,6 +41,7 @@ import {
   Subscription,
 } from 'rxjs';
 import { assign, isNil, omitBy, zip } from 'lodash-es';
+import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -406,9 +407,8 @@ export class SankeyViewComponent
                 },
               ],
             },
-          } as Partial<UniversalGraphNode>),
-          ...GenericDataProvider.getURIs([
-            {
+          } as DeepPartial<UniversalGraphNode>),
+          ...GenericDataProvider.getURIs([{
               uri: object.getURL(false).toAbsolute(),
               title: object.filename,
             },

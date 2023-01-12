@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 
+import { DeepPartial } from 'vis-data/declarations/data-interface';
+
 import {
   Source,
   UniversalGraphNode,
@@ -11,6 +13,7 @@ import { getPubtatorSearchUrl } from '../constants';
 import { uuidv4 } from '../utils';
 import { parseURLToDomainName } from '../utils/browser';
 import { getDTCompatibleLabel } from '../utils/drawing-tool';
+import { HttpURL } from '../utils/url';
 
 @Component({
   selector: 'app-node-relationship',
@@ -48,18 +51,13 @@ export class NodeRelationshipComponent {
           hyperlinks: [
             {
               domain: parseURLToDomainName(databaseUrl),
-              url: databaseUrl,
-            },
-          ],
-          references: [
-            {
+          url: new HttpURL(databaseUrl)
+        }],
+        references: [{
               type: 'DATABASE',
               id: databaseUrl,
             },
-          ],
-        },
-      } as Partial<UniversalGraphNode>)
-    );
+    } as DeepPartial<UniversalGraphNode>));
 
     // Prevents the edge dragStart event from overriding the node dragStart
     event.stopPropagation();
@@ -82,11 +80,9 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.leftNodeUrl),
-                url: this.leftNodeUrl,
-              },
-            ],
-            references: [
-              {
+            url: new HttpURL(this.leftNodeUrl),
+          }],
+          references: [{
                 type: 'DATABASE',
                 id: this.leftNodeUrl,
               },
@@ -103,11 +99,9 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.rightNodeUrl),
-                url: this.rightNodeUrl,
-              },
-            ],
-            references: [
-              {
+            url: new HttpURL(this.rightNodeUrl)
+          }],
+          references: [{
                 type: 'DATABASE',
                 id: this.rightNodeUrl,
               },
@@ -128,8 +122,7 @@ export class NodeRelationshipComponent {
             }),
           },
           label: this.edge,
-        },
-      } as Partial<UniversalGraphRelationship>)
-    );
+      }
+    } as DeepPartial<UniversalGraphRelationship>));
   }
 }

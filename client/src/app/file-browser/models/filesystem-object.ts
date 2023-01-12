@@ -117,7 +117,7 @@ export class ProjectImpl implements ObservableObject {
   }
 
   getURL(): HttpURL {
-    return new HttpURL().update({
+    return new HttpURL({
       pathSegments: this.getCommands().map(item =>
           encodeURIComponent(item.replace(/^\//, ''))
       ),
