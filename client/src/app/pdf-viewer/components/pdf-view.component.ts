@@ -42,6 +42,7 @@ import { AnnotationsService } from 'app/file-browser/services/annotations.servic
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { mapIterable, findEntriesValue, findEntriesKey } from 'app/shared/utils';
 import { AppURL, HttpURL } from 'app/shared/utils/url';
+import { AppURL, HttpURL } from 'app/shared/utils/url/url';
 
 import {
   AddedAnnotationExclusion,

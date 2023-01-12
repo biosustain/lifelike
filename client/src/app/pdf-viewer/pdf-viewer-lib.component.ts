@@ -53,6 +53,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { composeInternalLink } from 'app/shared/workspace-manager';
 import { AppURL } from 'app/shared/utils/url';
 import { isNotEmpty } from 'app/shared/utils';
+import { AppURL } from 'app/shared/url/url';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { Annotation, Location, Meta, Rect } from './annotation-type';

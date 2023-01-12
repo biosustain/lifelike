@@ -2,11 +2,11 @@ import { unary, mapValues } from 'lodash-es';
 
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
-import { HttpURL } from './utils/url';
+import { CHEBI2, GOOGLE, NCBI, PUBCHEM, UNIPROT } from './url/constants';
+import { HttpURL } from './url/url';
 
 interface LinkEntity {
   label: string;
-  url: string;
   search: (query: string) => HttpURL;
 }
 
@@ -14,44 +14,36 @@ export const LINKS = mapValues(
   {
     ncbi_taxonomy: {
       label: 'NCBI Taxonomy',
-      url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi',
-      search: (id: string) => new HttpURL(this.url, {search: {id}}),
+      search: NCBI.taxonomy,
     },
     ncbi_gene: {
       label: 'NCBI Gene',
-      url: 'https://www.ncbi.nlm.nih.gov/gene/',
-      search: (term: string) => new HttpURL(this.url, {search: {term}}),
+      search: NCBI.gene,
     },
     uniprot: {
       label: 'UniProt',
-      url: 'https://www.uniprot.org/uniprotkb',
-      search: (query: string) => new HttpURL(this.url, {search: {query}}),
+      search: UNIPROT.search,
     },
     mesh: {
       label: 'MeSH',
-      url: 'https://www.ncbi.nlm.nih.gov/mesh/',
-      search: (term: string) => new HttpURL(this.url, {search: {term}}),
+      search: NCBI.mesh,
     },
     chebi: {
       label: 'ChEBI',
-      url: 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do',
-      search: (searchString: string) => new HttpURL(this.url, {search: {searchString}}),
+      search: CHEBI2.advancedSearch
     },
     pubchem: {
       label: 'PubChem',
-      url: 'https://pubchem.ncbi.nlm.nih.gov/',
-      search: (query: string) => new HttpURL(this.url, {fragment: new URLSearchParams({query})}),
+      search: PUBCHEM.search
     },
     wikipedia: {
       label: 'Wikipedia',
-      url: 'https://www.google.com/search',
-      search: (q: string) => new HttpURL(this.url, {search: {q: 'site:+wikipedia.org+' + q}}),
+      search: GOOGLE.searchWikipedia
     },
     google: {
       label: 'Google',
-      url: 'https://www.google.com/search',
-      search: (q: string) => new HttpURL(this.url, {search: { q }}),
+      search: GOOGLE.search
     },
-  } as Record<string, LinkEntity>,
+  } as unknown as Record<string, LinkEntity>,
   le => Object.freeze(le)
 );

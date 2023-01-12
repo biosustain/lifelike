@@ -12,7 +12,7 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AppURL, isInternalUri } from 'app/shared/utils/url';
+import { AppURL, isInternalUri } from 'app/shared/utils/url/url';
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
 import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
 

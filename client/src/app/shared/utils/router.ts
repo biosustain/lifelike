@@ -2,7 +2,7 @@ import { ActivatedRouteSnapshot } from '@angular/router';
 
 import { flatMap, transform, forOwn } from 'lodash-es';
 
-import { AppURL, HttpURL } from './url';
+import { HttpURL } from '../url/url';
 
 export const getURLFromSnapshot = (route: ActivatedRouteSnapshot, base?) =>
   new HttpURL({

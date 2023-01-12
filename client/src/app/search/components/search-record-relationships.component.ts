@@ -3,10 +3,10 @@ import { Component, Input } from '@angular/core';
 import { isNil } from 'lodash-es';
 
 import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
-import { PUBMED_URL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { getGraphQueryParams } from 'app/search/utils/search';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { NCBI } from 'app/shared/url/constants';
 
 import { getLink } from '../utils/records';
 import { GraphSearchParameters } from '../graph-search';
@@ -17,7 +17,8 @@ import { GraphSearchParameters } from '../graph-search';
   styleUrls: ['./search-record-relationships.component.scss'],
 })
 export class SearchRecordRelationshipsComponent {
-  PUBMED_URL: string = PUBMED_URL;
+
+  readonly NCBI = NCBI;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
   // just disable that check for tslint.
@@ -57,8 +58,6 @@ export class SearchRecordRelationshipsComponent {
   get node(): FTSReferenceRecord {
     return this.prvNode;
   }
-
-  constructor() {}
 
   setChemicalDataStrings(chemical: GraphNode) {
     this.chemicalDisplayName = isNil(chemical.displayName) ? '' : chemical.displayName;

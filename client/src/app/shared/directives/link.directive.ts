@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
 import { openInternalLink } from '../utils/browser';
 import { assignDefined } from '../utils/types';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
-import { HttpURL } from '../utils/url';
+import { HttpURL } from '../utils/url/url';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load

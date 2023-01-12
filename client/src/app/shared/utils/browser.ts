@@ -6,29 +6,8 @@ import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.componen
 
 import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
-import { AppURL, HttpURL } from './url';
 import { isNotEmpty } from '../utils';
-
-/**
- * Create a valid url string suitable for <a> tag href usage.
- * @param url - user provided string that might need enhancement - such as adding http:// for external links
- */
-export function toValidLink(url: string): string {
-  url = url.trim();
-  // Watch out for javascript:!
-  if (url.match(/^(http|ftp)s?:\/\//i)) {
-    return url;
-  } else if (url.match(/^\/\//i)) {
-    return 'http:' + url;
-    // Internal URL begins with single /
-  } else if (url.startsWith('/')) {
-    return url;
-  } else if (url.match(/^mailto:/i)) {
-    return url;
-  } else {
-    return 'http://' + url;
-  }
-}
+import { AppURL, HttpURL } from '../url/url';
 
 export function removeViewModeIfPresent(url: string): string {
   return url.replace(/\/edit[\?#$]?/, '');
@@ -45,8 +24,7 @@ export function openLink(url: string, target = '_blank'): boolean {
     return false;
   }
 
-  url = toValidLink(url);
-  window.open(url, target);
+  window.open(new AppURL(url).toString(), target);
 
   return true;
 }

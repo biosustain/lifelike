@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { BIOCYC, REACTOME } from 'app/shared/url/constants';
+
 import { SankeyEntityDetailsComponent } from '../../abstract/entity-details/entity-details.component';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { TypeContext } from '../../interfaces';
@@ -36,10 +38,10 @@ export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   }
 
   biocycLink(biocycId) {
-    return 'https://biocyc.org/ECOLI/NEW-IMAGE?object=' + encodeURIComponent(biocycId);
+    return BIOCYC.id(biocycId);
   }
 
   reactomeLink(stId) {
-    return 'https://reactome.org/content/detail/' + encodeURIComponent(stId);
+    return REACTOME.id(stId);
   }
 }

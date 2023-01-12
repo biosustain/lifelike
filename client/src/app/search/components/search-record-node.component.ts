@@ -5,7 +5,9 @@ import { FTSQueryRecord } from 'app/interfaces';
 import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { parseURLToDomainName } from 'app/shared/utils/browser';
-import { AppURL } from 'app/shared/utils/url';
+import * as DB from 'app/shared/url/constants';
+import { CHEBI2, GO } from 'app/shared/url/constants';
+import { AppURL } from 'app/shared/url/url';
 
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
@@ -17,6 +19,7 @@ import { getGraphQueryParams } from '../utils/search';
   styleUrls: ['./search-record-node.component.scss'],
 })
 export class SearchRecordNodeComponent {
+  readonly DB = DB;
   private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
@@ -71,9 +74,9 @@ export class SearchRecordNodeComponent {
 
   getNodeDomain(url: URL): string {
     switch (url.hostname) {
-      case DBHostname.UniProt:
+      case DB.UNIPROT.url.hostname:
         return 'UniProt';
-      case DBHostname.NCBI:
+      case DB.NCBI.url.hostname:
         if (url.href.includes('mesh')) {
           return 'MeSH';
         }
@@ -84,9 +87,9 @@ export class SearchRecordNodeComponent {
           return 'NCBI Gene';
         }
         return 'NCBI';
-      case DBHostname.ChEBI:
+      case CHEBI2.url.hostname:
         return 'ChEBI';
-      case DBHostname.GO:
+      case GO.url.hostname:
         return 'GO';
       default:
         return 'Knowledge Graph';

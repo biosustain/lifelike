@@ -34,7 +34,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { HttpURL } from 'app/shared/utils/url';
+import { NCBI } from 'app/shared/url/constants';
+import { HttpURL } from 'app/shared/url/url';
 
 import { Document, Infon, Passage } from './bioc.format';
 
@@ -238,23 +239,23 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const pmcid = doc.passages.find((p) => p.infons['article-id_pmc']);
     const infons = passage.infons || {};
     const file = infons.file;
-    return `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${pmcid.infons['article-id_pmc']}/bin/${file}`;
+    return NCBI.article(pmcid.infons['article-id_pmc'], file);
   }
 
   pmid(doc) {
     const pmid = doc.passages.find((p) => p.infons['article-id_pmid']);
     if (pmid) {
-      const PMID_LINK =
-        'https://www.ncbi.nlm.nih.gov/pubmed/' + String(pmid.infons['article-id_pmid']);
-      const text = 'PMID' + String(pmid.infons['article-id_pmid']);
-      return [text, PMID_LINK];
+      return {
+        domain: `PMID${pmid.infons['article-id_pmid']}`,
+        url: NCBI.pubmed(pmid.infons['article-id_pmid'])
+      };
     }
     const pmc = doc.passages.find((p) => p.infons['article-id_pmc']);
     if (pmc) {
-      const PMCID_LINK =
-        'http://www.ncbi.nlm.nih.gov/pmc/articles/pmc' + String(pmc.infons['article-id_pmc']);
-      const text = 'PMC' + String(pmc.infons['article-id_pmc']);
-      return [text, PMCID_LINK];
+      return {
+        domain: `PMC${pmc.infons['article-id_pmc']}`,
+        url: NCBI.article(pmc.infons['article-id_pmc'])
+      };
     }
 
     return [];
@@ -581,12 +582,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as Element).innerHTML;
     const clazz = (event.target as Element).classList;
-    const type = this.reBindType(clazz && clazz.length > 1 ? clazz[1] : 'link');
-    const pmcidFomDoc = this.pmid(this.biocData[0]);
-    const pmcid = {
-      domain: pmcidFomDoc[0],
-      url: pmcidFomDoc[1],
-    };
+    const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
+    const pmcid = this.pmid(first(this.biocData));
     if (!clazz || clazz.value === '') {
       const node = jQuery((event as any).path[1]);
       const position = jQuery(node).parent().attr('position');

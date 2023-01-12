@@ -1,25 +1,15 @@
 import { OrganismAutocomplete } from 'app/interfaces';
 
-import { HttpURL } from './utils/url';
-
 export const NODE_EXPANSION_LIMIT = 500;
 export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
 export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
 
-export const PUBMED_URL = 'https://pubmed.ncbi.nlm.nih.gov/';
-export const PUBTATOR_URL = 'https://www.ncbi.nlm.nih.gov/research/pubtator/';
-export function getPubtatorSearchUrl(searchTerm: string) {
-  return new HttpURL(PUBTATOR_URL, { search: { view: 'docsum', query: searchTerm } });
-}
-
 export const VIZ_SEARCH_LIMIT = 10;
 
 export enum DBHostname {
   ChEBI = 'www.ebi.ac.uk',
-  UniProt = 'www.uniprot.org',
-  NCBI = 'www.ncbi.nlm.nih.gov',
-  GO = 'amigo.geneontology.org',
+  GO = 'amigo.geneontology.org'
 }
 
 export enum AnnotationType {

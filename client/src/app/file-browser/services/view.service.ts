@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
-import { HttpURL } from 'app/shared/utils/url';
+import { HttpURL } from 'app/shared/url/url';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.

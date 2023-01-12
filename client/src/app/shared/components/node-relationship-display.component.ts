@@ -9,11 +9,11 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { AssociationSnippet } from 'app/interfaces';
 
-import { getPubtatorSearchUrl } from '../constants';
 import { uuidv4 } from '../utils';
 import { parseURLToDomainName } from '../utils/browser';
 import { getDTCompatibleLabel } from '../utils/drawing-tool';
-import { HttpURL } from '../utils/url';
+import { HttpURL } from '../url/url';
+import { NCBI } from '../url/constants';
 
 @Component({
   selector: 'app-node-relationship',
@@ -34,8 +34,6 @@ export class NodeRelationshipComponent {
 
   tooltipPosition = 'above';
   droppedEdgeLengthMod = 7;
-
-  constructor() {}
 
   nodeDragStart(event: DragEvent, displayName: string, label: string, databaseUrl: string) {
     const dataTransfer: DataTransfer = event.dataTransfer;
@@ -117,7 +115,7 @@ export class NodeRelationshipComponent {
               return {
                 type: 'DATABASE',
                 domain: snippet.publication.data.title || 'Unknown',
-                url: getPubtatorSearchUrl(snippet.publication.data.pmid),
+              url: NCBI.pubtator(snippet.publication.data.pmid)
               } as Source;
             }),
           },

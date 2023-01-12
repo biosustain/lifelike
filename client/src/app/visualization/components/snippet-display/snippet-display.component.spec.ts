@@ -11,9 +11,9 @@ import {
   Reference,
   SidenavSnippetData,
 } from 'app/interfaces';
-import { getPubtatorSearchUrl } from 'app/shared/constants';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { NCBI } from 'app/shared/url/constants';
 
 import { SnippetDisplayComponent } from './snippet-display.component';
 
@@ -153,7 +153,7 @@ describe('SnippetDisplayComponentComponent', () => {
 
     const link = pubmedLinks[0];
 
-    expect(link.getAttribute('href')).toEqual(getPubtatorSearchUrl('123456'));
+        expect(link.getAttribute('href')).toEqual(NCBI.pubtator('123456').toString());
     expect(link.textContent).toEqual('123456');
   });
 

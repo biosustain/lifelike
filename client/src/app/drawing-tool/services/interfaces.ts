@@ -1,6 +1,7 @@
 import { ReferenceType } from 'app/shared/references';
 import { WithOptional, WithRequired } from 'app/shared/utils/types';
 import { AppURL } from 'app/shared/utils/url';
+import { AppURL } from 'app/shared/url/url';
 
 export interface UniversalGraphRelationship {
   node1: UniversalGraphNode;
@@ -109,13 +110,13 @@ export interface GraphEntity {
 }
 
 export interface Hyperlink {
-  url: AppURL;
+  url: string|AppURL;
   domain: string;
 }
 
 export interface Source {
   type?: ReferenceType;
-  url: AppURL;
+  url: string|AppURL;
   domain?: string;
 }
 

@@ -7,7 +7,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { Hyperlink, Source } from 'app/drawing-tool/services/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { potentiallyInternalUrl } from 'app/shared/validators';
-import { AppURL } from 'app/shared/utils/url';
+import { AppURL } from 'app/shared/utils/url/url';
 
 @Component({
   selector: 'app-link-edit-dialog',

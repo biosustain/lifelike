@@ -1,9 +1,9 @@
-import { assign, filter, isEmpty, isMatch, startsWith, isArray, isString, isObjectLike } from 'lodash-es';
+import { assign, filter, isArray, isEmpty, isMatch, isString, startsWith } from 'lodash-es';
 
 import { NotImplemented } from 'app/sankey/utils/error';
 
-import { findEntriesKey, findEntriesValue, isNotEmpty } from '../utils';
-import { InternalURIType, Unicodes } from '../constants';
+import { findEntriesValue, isNotEmpty } from '../utils';
+import { InternalURIType } from '../constants';
 
 // tslint:disable-next-line:class-name
 class URL_REGEX {

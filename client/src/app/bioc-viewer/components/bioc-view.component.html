@@ -95,9 +95,9 @@
           </ul>
         </div>
         <div class="meta">
-          <span class="pmid"
-            ><a href="{{ pmid(doc)[1] }} ">{{ pmid(doc)[0] }}</a></span
-          >
+          <span class="pmid" *ngIf="pmid(doc) as pmidDoc">
+            <a [href]="pmidDoc.url">{{ pmidDoc.domain }}</a>
+          </span>
           <span class="authors">
             <span>
               {{ authors(doc) }}

@@ -11,6 +11,7 @@ import {
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+import { GO } from 'app/shared/url/constants';
 
 import {
   DomainWrapper,
@@ -457,11 +458,8 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot
-              ? wrapper.go.link + wrapper.uniprot.result.id
-              : 'http://amigo.geneontology.org/amigo/search/annotation?q=' +
-                encodeURIComponent(ncbiNode.name),
-          },
+            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id : GO.search(ncbiNode.name).toString()
+          }
         };
       }
     }
