@@ -94,6 +94,10 @@ export class GraphActionsService {
           url: appUrl.relativehref,
         };
       }
+      return {
+        ...rest,
+        url
+      };
     };
     return merge(entity, {
       data: omitBy(

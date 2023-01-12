@@ -15,6 +15,7 @@ import { first, uniqueId } from 'lodash-es';
 import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import jQueryType from 'jquery';
+import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -33,6 +34,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { HttpURL } from 'app/shared/utils/url';
 
 import { Document, Infon, Passage } from './bioc.format';
 
@@ -191,19 +193,14 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           sources: [
             {
               domain: this.object.filename,
-              url: [
-                '/projects',
-                encodeURIComponent(this.object.project.name),
-                'bioc',
-                'files',
-                encodeURIComponent(this.object.hashId),
-              ].join('/'),
-            },
-          ],
-        },
-      } as Partial<UniversalGraphNode>),
-      ...GenericDataProvider.getURIs([
-        {
+          url: new HttpURL(
+            ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
+            'files', encodeURIComponent(this.object.hashId)].join('/')
+          )
+        }]
+      }
+    } as DeepPartial<UniversalGraphNode>),
+    ...GenericDataProvider.getURIs([{
           uri: this.object.getURL(false).toAbsolute(),
           title: this.object.filename,
         },
@@ -595,21 +592,18 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const position = jQuery(node).parent().attr('position');
       const startIndex = jQuery(node).attr('start');
       const len = jQuery(node).attr('len');
-      let source = [
-        '/projects',
-        encodeURIComponent(this.object.project.name),
-        'bioc',
-        encodeURIComponent(this.object.hashId),
-      ].join('/');
+      const source = new HttpURL(
+        ['/projects', encodeURIComponent(this.object.project.name),
+        'bioc', encodeURIComponent(this.object.hashId)].join('/')
+      );
       if (position) {
-        source += '#';
-        source += new URLSearchParams({
+        source.fragment = new URLSearchParams({
           offset: position,
           start: startIndex,
           len,
         });
       }
-      const link = meta.idHyperlink || '';
+      const link = new HttpURL(meta.idHyperlink || '');
       dataTransfer.setData('text/plain', this.selectedText);
       dataTransfer.setData(
         'application/***ARANGO_DB_NAME***-node',
@@ -617,13 +611,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           display_name: 'Link',
           label: 'link',
           data: {
-            sources: [
-              {
-                domain: this.object.filename,
-                url: source,
-              },
-              pmcid,
-            ],
+          sources: [
+            {
+              domain: this.object.filename,
+              url: source,
+            },
+            pmcid,
+          ],
             detail: this.selectedText,
             references: [
               {
@@ -639,8 +633,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           style: {
             showDetail: true,
           },
-        } as Partial<UniversalGraphNode>)
-      );
+      } as DeepPartial<UniversalGraphNode>));
       return;
     }
     const id = ((event.target as Element).attributes[`identifier`] || {}).nodeValue;
@@ -652,18 +645,15 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const offset = ((event.target as Element).attributes[`offset`] || {}).nodeValue;
     const search = [];
     const hyperlinks = [];
-    const url = src;
-    const domain = new URL(src).hostname.replace(/^www\./i, '');
-    hyperlinks.push({ url, domain });
-    const hyperlink = meta.idHyperlink || '';
-    let sourceUrl = [
-      '/projects',
-      encodeURIComponent(this.object.project.name),
-      'bioc',
-      encodeURIComponent(this.object.hashId),
-    ].join('/');
+    const url = new HttpURL(src);
+    hyperlinks.push({ url, domain: url.domain });
+    const hyperlink = new HttpURL(meta.idHyperlink || '');
+    const sourceUrl = new HttpURL(
+      ['/projects', encodeURIComponent(this.object.project.name),
+      'bioc', encodeURIComponent(this.object.hashId)].join('/')
+    );
     if (offset) {
-      sourceUrl += '#offset=' + offset;
+      sourceUrl.fragment = new URLSearchParams({offset});
     }
     dataTransfer.setData('text/plain', txt);
     dataTransfer.setData(
@@ -697,8 +687,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         style: {
           showDetail: meta.type === 'link',
         },
-      } as Partial<UniversalGraphNode>)
-    );
+    } as DeepPartial<UniversalGraphNode>));
     event.stopPropagation();
   }
 

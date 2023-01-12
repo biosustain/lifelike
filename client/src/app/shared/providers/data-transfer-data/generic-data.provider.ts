@@ -7,7 +7,7 @@ import {
   DataTransferDataProvider,
   DataTransferToken,
 } from '../../services/data-transfer-data.service';
-import { AppURL, isInternalUri } from '../../utils/url';
+import { AppURL, isInternalUri, HttpURL } from '../../utils/url';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');
@@ -91,7 +91,7 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
       .filter(({ uri }) => isInternalUri(uri))
       .map(({ uri, ...rest }) => ({
         ...rest,
-        uri: new AppURL(uri.relativehref),
+        uri: new HttpURL((uri as HttpURL).relativehref),
       }));
   }
 

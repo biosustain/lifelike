@@ -6,6 +6,8 @@ import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.componen
 
 import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
+import { AppURL, HttpURL } from './url';
+import { isNotEmpty } from '../utils';
 
 /**
  * Create a valid url string suitable for <a> tag href usage.
@@ -32,26 +34,6 @@ export function removeViewModeIfPresent(url: string): string {
   return url.replace(/\/edit[\?#$]?/, '');
 }
 
-/**
- * Returns the string as a valid URL object
- * @param url - user provided string with url
- */
-export function toValidUrl(url: string): URL {
-  // Create a valid href string
-  url = toValidLink(url);
-  let urlObject;
-  try {
-    // This will fail in case of internal URL
-    urlObject = new URL(url);
-  } catch (e) {
-    if (url.startsWith('/')) {
-      urlObject = new URL(url, window.location.href);
-    } else {
-      urlObject = new URL('https://' + url);
-    }
-  }
-  return urlObject;
-}
 
 /**
  * Open a link given by the URL. Handles mailto: and poorly formatted URLs.
@@ -141,15 +123,12 @@ export function openInternalLink(
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
-          const { hash, search, searchParams } = toValidUrl(pathSearchHash);
-          if (search) {
-            component.route.queryParams.next({
-              ...Object.fromEntries(new URLSearchParams(search.slice(1))),
-              ...searchParams,
-            });
+          const {fragment, searchParamsObject } = new HttpURL(pathSearchHash);
+          if (isNotEmpty(searchParamsObject)) {
+            component.route.queryParams.next(searchParamsObject);
           }
-          if (hash) {
-            component.route.fragment.next(hash.slice(1));
+          if (fragment) {
+            component.route.fragment.next(fragment);
           }
         };
         break;
@@ -246,11 +225,10 @@ export function openPotentialExternalLink(
   url: string,
   extras: WorkspaceNavigationExtras = {}
 ): boolean {
-  const urlObject = toValidUrl(url);
-  const openInternally =
-    workspaceManager.isWithinWorkspace() &&
-    window.location.hostname === urlObject.hostname &&
-    (window.location.port || '80') === (urlObject.port || '80');
+  const urlObject = new HttpURL(url);
+  const openInternally = workspaceManager.isWithinWorkspace()
+      && (window.location.hostname === urlObject.hostname
+      && (window.location.port || '80') === (urlObject.port || '80'));
 
   if (openInternally) {
     return openInternalLink(workspaceManager, urlObject, extras);

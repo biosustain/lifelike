@@ -22,7 +22,7 @@ import {
   FILESYSTEM_IMAGE_TRANSFER_TYPE,
 } from 'app/drawing-tool/providers/image-entity-data.provider';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL } from 'app/shared/utils/url';
+import { AppURL, HttpURL } from 'app/shared/utils/url';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {
@@ -116,10 +116,12 @@ export class ProjectImpl implements ObservableObject {
     return ['/folders', this.***ARANGO_USERNAME***.hashId];
   }
 
-  getURL(): AppURL {
-    return new AppURL().update({
-      pathSegments: this.getCommands().map((item) => encodeURIComponent(item.replace(/^\//, ''))),
-      fragment: 'project',
+  getURL(): HttpURL {
+    return new HttpURL().update({
+      pathSegments: this.getCommands().map(item =>
+          encodeURIComponent(item.replace(/^\//, ''))
+      ),
+      fragment: 'project'
     });
   }
 
@@ -150,10 +152,10 @@ export class ProjectImpl implements ObservableObject {
           sources: [
             {
               domain: 'File Source',
-              url: this.getURL().toAbsolute().toString(),
-            },
-          ],
-        },
+              url: this.getURL().toAbsolute()
+            }
+          ]
+        }
       };
 
     dataTransfer.effectAllowed = 'all';
@@ -491,9 +493,9 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   }
 
   // TODO: Move this method to ObjectTypeProvider
-  getURL(forEditing = true, meta?: Meta): AppURL {
-    const url = new AppURL().update({
-      pathSegments: this.getCommands(forEditing).map((item) =>
+  getURL(forEditing = true, meta?: Meta): HttpURL {
+    const url = new HttpURL({
+      pathSegments: this.getCommands(forEditing).map(item =>
         encodeURIComponent(item.replace(/^\//, ''))
       ),
       fragment: this.isProjectRoot ? 'project' : '',

@@ -1,4 +1,6 @@
-import { assign, filter, isEmpty, isMatch, startsWith, isArray } from 'lodash-es';
+import { assign, filter, isEmpty, isMatch, startsWith, isArray, isString, isObjectLike } from 'lodash-es';
+
+import { NotImplemented } from 'app/sankey/utils/error';
 
 import { findEntriesKey, findEntriesValue, isNotEmpty } from '../utils';
 import { InternalURIType, Unicodes } from '../constants';
@@ -36,15 +38,67 @@ interface AppURLInterface {
   href: string;
 }
 
+type URLLike<T extends AppURL = AppURL> = string | Partial<T|AppURL>;
+
 /**
  * Working with JS URL class is nice however it's requirement for url to be absolute is sometimes hard to go around.
  * This class implements same interface but deals well with relative URLs and provides convininet property setters.
  *
- * For more documentation check: https://url.spec.whatwg.org/#url-class
+ * For more documentation check: https://url.spec.whatwg.org/#url-class and https://datatracker.ietf.org/doc/html/rfc1738
  */
-export class AppURL implements URL, AppURLInterface {
+export class AppURL {
+  static readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
+  scheme: string;
+  schemepart: string;
+
+  constructor(...urlLikes: Array<URLLike>) {
+    assign(this, ...urlLikes.map(urlLike =>
+      isString(urlLike) ? AppURL.matcher.exec(urlLike).groups : urlLike,
+    ));
+    const scheme = this.scheme ?? window.location.protocol;
+    switch (scheme) {
+      case 'mailto':
+        return new MailtoURL(this);
+      case 'ftp':
+        return new FtpURL(this);
+      case 'http':
+      case 'https':
+        return new HttpURL(this);
+      default:
+        throw new NotImplemented(`Urls with scheme "${scheme}" are not supported within application.`);
+    }
+  }
+
+  static from(url: URLLike): AppURL {
+    return url instanceof this ? url : new AppURL(String(url));
+  }
+
+  toString() {
+    return this.scheme ? `${this.scheme}:${this.schemepart}` : this.schemepart;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+
+  update(overwrites: Partial<this>): this {
+    assign(this, overwrites);
+    return this;
+  }
+}
+
+export class HttpURL implements AppURL, URL, AppURLInterface {
+
+  set schemepart(schemepart: string) {
+    this.href = schemepart;
+  }
+
+  get schemepart() {
+    return this.href;
+  }
+
   get searchParamsObject() {
-    return Object.fromEntries(this.searchParams.entries());
+    return Object.freeze(Object.fromEntries(this.searchParams.entries()));
   }
 
   get isRelative(): boolean {
@@ -59,11 +113,11 @@ export class AppURL implements URL, AppURLInterface {
     return this.pathSegments.map((segment) => `/${segment}`).join('');
   }
 
-  set search(value: string) {
+  set search(value: any) {
     this.searchParams = new URLSearchParams(value);
   }
 
-  get search(): string {
+  get search(): any {
     const search = this.searchParams.toString();
     return search ? `?${search}` : '';
   }
@@ -108,9 +162,13 @@ export class AppURL implements URL, AppURLInterface {
     Object.assign(this, value.match(URL_REGEX.relativehref).groups);
   }
 
-  constructor(urlString: string = '') {
-    this.href = urlString;
+  constructor(...urlLikes: Array<URLLike<HttpURL>>) {
+    assign(this, ...urlLikes.map(urlLike =>
+      isString(urlLike) ? AppURL.matcher.exec(urlLike).groups : urlLike,
+    ));
   }
+  static readonly matcher: RegExp = new RegExp(URL_REGEX.href);
+  scheme: string;
 
   fragment: string|URLSearchParams;
   hostname: string;
@@ -122,8 +180,12 @@ export class AppURL implements URL, AppURLInterface {
 
   pathSegments: string[];
 
-  static from(url: string | URL | AppURL): AppURL {
-    return url instanceof this ? url : new AppURL(String(url));
+  static from(url: URLLike<HttpURL>) {
+    return url instanceof this ? url : new HttpURL(String(url));
+  }
+
+  get domain() {
+    return this.hostname.replace(/^www\./i, '');
   }
 
   /**
@@ -134,12 +196,12 @@ export class AppURL implements URL, AppURLInterface {
     this.searchParams = new URLSearchParams(value);
   }
 
-  update(overwrites: Partial<AppURLInterface>): AppURL {
+  update(overwrites: Partial<this>): this {
     assign(this, overwrites);
     return this;
   }
 
-  toAbsolute(): AppURL {
+  toAbsolute(): HttpURL {
     this.origin = window.location.href;
     return this;
   }
@@ -153,9 +215,70 @@ export class AppURL implements URL, AppURLInterface {
   }
 }
 
-export const ***ARANGO_DB_NAME***Url = Object.freeze(new AppURL().toAbsolute());
-export const isInternalUri = (uri: AppURL): boolean =>
-  uri.isRelative || uri.origin === ***ARANGO_DB_NAME***Url.origin;
+class FtpURL implements AppURL {
+  static readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
+  scheme: string;
+  schemepart: string;
+
+  constructor(...urlLikes: Array<URLLike<FtpURL>>) {
+    assign(this, ...urlLikes.map(urlLike =>
+      isString(urlLike) ? AppURL.matcher.exec(urlLike).groups : urlLike,
+    ));
+  }
+
+  static from(url: URLLike<FtpURL>): FtpURL {
+    return url instanceof this ? url : new FtpURL(String(url));
+  }
+
+  toString() {
+    return this.scheme ? `${this.scheme}:${this.schemepart}` : this.schemepart;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+
+  update(overwrites: Partial<this>): this {
+    assign(this, overwrites);
+    return this;
+  }
+}
+
+class MailtoURL implements AppURL {
+  static readonly matcher: RegExp = /^(?<email>.*)$/i;
+  scheme: string;
+  email: string;
+  set schemepart(schemepart: string) {
+    assign(this, MailtoURL.matcher.exec(schemepart).groups);
+  }
+
+  get schemepart() {
+    return `${this.email}`;
+  }
+
+  constructor(...urlLikes: Array<URLLike<MailtoURL>>) {
+    assign(this, ...urlLikes.map(urlLike =>
+      isString(urlLike) ? AppURL.matcher.exec(urlLike).groups : urlLike,
+    ));
+  }
+
+  toString() {
+    return this.scheme ? `${this.scheme}:${this.schemepart}` : this.schemepart;
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+
+  update(overwrites: Partial<this>): this {
+    assign(this, overwrites);
+    return this;
+  }
+}
+
+export const ***ARANGO_DB_NAME***Url = Object.freeze(new HttpURL().toAbsolute());
+export const isInternalUri = (uri: AppURL): uri is HttpURL =>
+  (uri as HttpURL).isRelative || (uri as HttpURL).origin === ***ARANGO_DB_NAME***Url.origin;
 
 /**This is mapping between indexed path segments and uri types
  * Examples:

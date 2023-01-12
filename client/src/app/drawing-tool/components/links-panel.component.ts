@@ -13,10 +13,11 @@ import {
   URI_TOKEN,
   URIData,
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
+import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { AppURL, HttpURL } from 'app/shared/utils/url';
 import { VISUALIZER_URI_TOKEN } from 'app/visualization/providers/visualizer-object-data.provider';
 
 import { Hyperlink, Source } from '../services/interfaces';
@@ -119,18 +120,13 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       }
 
       return this.openCreateDialog({
-        url: uri?.href ?? '',
+        url: uri,
         domain: text.trim(),
       });
     }
   }
 
-  openCreateDialog(
-    link: Source | Hyperlink = {
-      domain: '',
-      url: '',
-    }
-  ): Promise<Source> {
+  openCreateDialog(link?: Source | Hyperlink): Promise<Source> {
     const dialogRef = this.modalService.open(LinkEditDialogComponent);
     dialogRef.componentInstance.title = `New ${this.singularTitle}`;
     dialogRef.componentInstance.link = link;
@@ -173,28 +169,19 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
-  getUrlText(url: string) {
-    if (url.startsWith('/')) {
+  getUrlText(url: AppURL) {
+    if ((url as HttpURL).isRelative) {
       return window.location.hostname;
     } else {
       try {
-        const urlObject = new URL(toValidLink(url));
-        return urlObject.hostname.replace(/^www./, '') || url;
+        return (url as HttpURL).domain || url;
       } catch {
         return url;
       }
     }
   }
 
-  toValidUrl(url: string) {
-    try {
-      return toValidLink(url);
-    } catch (e) {
-      return '#';
-    }
-  }
-
-  linkClick(event: Event, link: Source | Hyperlink) {
+  linkClick(event: Event, link: (Source | Hyperlink)) {
     try {
       openPotentialExternalLink(this.workspaceManager, link.url.toString(), {
         newTab: true,

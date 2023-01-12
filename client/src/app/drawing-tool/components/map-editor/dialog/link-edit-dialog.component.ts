@@ -7,7 +7,7 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { Hyperlink, Source } from 'app/drawing-tool/services/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { potentiallyInternalUrl } from 'app/shared/validators';
-import { toValidLink } from 'app/shared/utils/browser';
+import { AppURL } from 'app/shared/utils/url';
 
 @Component({
   selector: 'app-link-edit-dialog',
@@ -41,12 +41,12 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
 
   set link(value: Source | Hyperlink) {
     this._link = value;
-    this.form.patchValue(value);
+    this.form.patchValue(value ?? { domain: '', url: new AppURL() });
   }
 
   getValue(): Source {
     this.link.domain = this.form.controls.domain.value || this.domainDefault;
-    this.link.url = toValidLink(this.form.controls.url.value);
+    this.link.url = new AppURL(this.form.controls.url.value);
     return this.link;
   }
 }

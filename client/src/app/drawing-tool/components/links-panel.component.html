@@ -45,7 +45,7 @@
           [appAutoCloseTooltipOutOfView]="tooltipRef"
         >
           <a
-            [href]="toValidUrl(link.url)"
+            [href]="link.url"
             target="_blank"
             class="text-muted"
             (click)="linkClick($event, link)"
@@ -74,3 +74,4 @@
     </div>
   </div>
 </div>
+

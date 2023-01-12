@@ -5,6 +5,7 @@ import { FTSQueryRecord } from 'app/interfaces';
 import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { parseURLToDomainName } from 'app/shared/utils/browser';
+import { AppURL } from 'app/shared/utils/url';
 
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
@@ -38,15 +39,12 @@ export class SearchRecordNodeComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    let url: URL | string;
-    let domain = '';
+    const url = new AppURL(getLink(this.node));
+    let domain: string;
 
     try {
-      url = new URL(getLink(this.node));
-      domain = parseURLToDomainName(url.href, this.defaultDomain);
+      domain = parseURLToDomainName(url.toString(), this.defaultDomain);
     } catch {
-      // Expect a TypeError here if the url was invalid
-      url = getLink(this.node);
       domain = this.defaultDomain;
     }
 
@@ -61,18 +59,14 @@ export class SearchRecordNodeComponent {
           hyperlinks: [
             {
               domain,
-              url: url.toString(),
-            },
-          ],
-          references: [
-            {
+          url
+        }],
+        references: [{
               type: 'DATABASE',
               id: getLink(this.node),
-            },
-          ],
-        },
-      } as Partial<UniversalGraphNode>)
-    );
+        }]
+      }
+    } as Partial<UniversalGraphNode>));
   }
 
   getNodeDomain(url: URL): string {

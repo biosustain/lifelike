@@ -26,8 +26,8 @@ import {
   SNIPPET_RESULT_LIMIT,
 } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL } from 'app/shared/utils/url';
 import { VISUALIZER_SNIPPET_TRANSFER_TYPE } from 'app/visualization/providers/visualizer-object-data.provider';
+import { AppURL, HttpURL } from 'app/shared/utils/url';
 
 @Component({
   selector: 'app-snippet-display',
@@ -178,7 +178,7 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
 
   snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    const snippetUrl = new AppURL(
+    const snippetUrl = new HttpURL(
       snippet.publication.data.pmid
         ? this.getSnippetPubtatorLink(snippet.publication.data.pmid)
         : snippet.publication.entityUrl

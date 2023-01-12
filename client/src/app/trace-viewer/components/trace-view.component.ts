@@ -16,7 +16,7 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { AppURL } from 'app/shared/utils/url';
+import { HttpURL } from 'app/shared/utils/url';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';
@@ -71,7 +71,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     }))
   );
 
-  sourceFileURL: AppURL;
+  sourceFileURL: HttpURL;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -84,9 +84,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
 
     this.route.params.subscribe(({ hash_id, network_trace_idx, trace_idx }) => {
       this.loadTask.update(hash_id);
-      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`).update({
-        search: { network_trace_idx, trace_idx },
-      });
+      this.sourceFileURL = new HttpURL(`/projects/xxx/sankey/${hash_id}`).update({search: {network_trace_idx, trace_idx}});
     });
   }
 

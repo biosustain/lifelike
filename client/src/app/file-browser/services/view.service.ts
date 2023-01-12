@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
-import { AppURL } from 'app/shared/utils/url';
+import { HttpURL } from 'app/shared/utils/url';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -29,9 +29,9 @@ export class ViewService {
     });
   }
 
-  getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
+  getAppLink(componentInstance: ModuleAwareComponent, url: string): Observable<HttpURL> {
     url = removeViewModeIfPresent(url);
-    const hashUrl = new AppURL(url);
+    const hashUrl = new HttpURL(url);
     const linkParamsPromise = (componentInstance as ModuleAwareComponent)?.linkParams;
     if (linkParamsPromise) {
       return from(linkParamsPromise).pipe(
@@ -44,9 +44,9 @@ export class ViewService {
     return of(hashUrl);
   }
 
-  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<AppURL> {
+  getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<HttpURL> {
     return this.getAppLink(componentInstance, url).pipe(
-      map((appUrl: AppURL) => appUrl.toAbsolute())
+      map((appUrl: HttpURL) => appUrl.toAbsolute()),
     );
   }
 }

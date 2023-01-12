@@ -20,7 +20,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL } from 'app/shared/utils/url';
+import { AppURL, HttpURL } from 'app/shared/utils/url';
 
 @Component({
   selector: 'app-workspace-tab',
@@ -53,16 +53,12 @@ export class WorkspaceTabComponent implements OnChanges {
       compact([
         this.tab.component?.sourceData$,
         this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
-          map(({ href }) => [
-            {
-              url: href,
-              domain: this.tab.title,
-            } as Source,
-          ])
-        ),
-      ])
-    ).pipe(
-      map((sources) => concat(...sources)),
+        map(({href}) => [{
+          url: new HttpURL(href),
+          domain: this.tab.title
+        } as Source]))
+    ])).pipe(
+      map(sources => concat(...sources)),
       map((sources: Source[]) => ({
         'application/***ARANGO_DB_NAME***-node': JSON.stringify({
           display_name: this.tab.title,
@@ -74,7 +70,7 @@ export class WorkspaceTabComponent implements OnChanges {
         } as Partial<UniversalGraphNode>),
         ...GenericDataProvider.getURIs(
           sources.map(({ url, domain }) => ({
-            uri: AppURL.from(url).toAbsolute(),
+            uri: HttpURL.from(url).toAbsolute(),
             title: domain,
           }))
         ),
