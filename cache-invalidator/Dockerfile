@@ -1,4 +1,4 @@
-FROM python:3.11.0a4-slim 
+FROM python:3.10-slim as base
 LABEL app=kg-prototypes
 
 ENV APP_USER ***ARANGO_DB_NAME***
