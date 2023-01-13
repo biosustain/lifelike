@@ -21,11 +21,6 @@ x-appserver: &appserver
     # ElasticSearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     - ELASTIC_FILE_INDEX_ID=file_dev
-    # Neo4j
-    - NEO4J_SCHEME=bolt
-    - NEO4J_HOST=graphdatabase
-    - NEO4J_AUTH=neo4j/password
-    - NEO4J_PORT=7687
     # Arango
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
@@ -49,7 +44,6 @@ x-appserver: &appserver
     # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
     - elasticsearch
-    - graphdatabase
     - pgdatabase
     - redis
     - pdfparser
@@ -105,11 +99,6 @@ services:
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
       - ARANGO_DB_NAME=***ARANGO_DB_NAME***
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -168,18 +157,6 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5431:5432"
-    networks:
-      - backend
-
-  graphdatabase:
-    container_name: graphdatabase
-    image: neo4j:4.4-community
-    environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     networks:
       - backend
 
