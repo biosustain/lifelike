@@ -35,7 +35,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { NCBI } from 'app/shared/url/constants';
-import { HttpURL } from 'app/shared/url/url';
+import { HttpURL } from 'app/shared/url';
 
 import { Document, Infon, Passage } from './bioc.format';
 

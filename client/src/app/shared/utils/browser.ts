@@ -7,7 +7,9 @@ import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.componen
 import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 import { isNotEmpty } from '../utils';
-import { AppURL, HttpURL } from '../url/url';
+import { AppURL, HttpURL } from '../url';
+import { NCBI, CHEBI, UNIPROT, PUBCHEM, BIOCYC, GO } from '../url/constants';
+import { findURLMapping } from '../url/internal';
 
 export function removeViewModeIfPresent(url: string): string {
   return url.replace(/\/edit[\?#$]?/, '');
@@ -216,22 +218,18 @@ export function openPotentialExternalLink(
 }
 
 const DOMAIN_MAP = new Map([
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/gene\/.+$/, 'NCBI Gene'],
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/Taxonomy\/.+$/, 'NCBI Taxonomy'],
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/mesh\/.+$/, 'MeSH'],
-  [/^((https|http)(:\/\/))?(www.)?ebi.ac.uk\/.+$/, 'ChEBI'],
-  [/^((https|http)(:\/\/))?(www.)?uniprot.org\/.+$/, 'UniProt'],
-  [/^((https|http)(:\/\/))?(www.)?amigo.geneontology.org\/.+$/, 'GO'],
-  [/^((https|http)(:\/\/))?(www.)?pubchem.ncbi.nlm.nih.gov\/.+$/, 'PubChem'],
-  [/^((https|http)(:\/\/))?(www.)?biocyc.org\/.+$/, 'BioCyc'],
+  [{ domain: NCBI.url.domain, patchSegments: ['gene'] }, 'NCBI Gene'],
+  [{ domain: NCBI.url.domain, patchSegments: ['Taxonomy'] }, 'NCBI Taxonomy'],
+  [{ domain: NCBI.url.domain, patchSegments: ['mesh'] }, 'MeSH'],
+  [{ domain: CHEBI.url.domain }, 'ChEBI'],
+  [{ domain: UNIPROT.url.domain }, 'UniProt'],
+  [{ domain: GO.url.domain }, 'GO'],
+  [{ domain: PUBCHEM.url.domain }, 'PubChem'],
+  [{ domain: BIOCYC.url.domain }, 'BioCyc'],
 ]);
 
+const domainMapper = findURLMapping(DOMAIN_MAP);
+
 // Match the url address with the domain
-export function parseURLToDomainName(url: string, defaultReturn?: string): string {
-  for (const [re, val] of DOMAIN_MAP.entries()) {
-    if (re.exec(url)) {
-      return val;
-    }
-  }
-  return defaultReturn || 'Link';
-}
+export const parseURLToDomainName = (url: string|AppURL, defaultReturn?: string): string =>
+  domainMapper(AppURL.from(url)) ?? defaultReturn ?? 'Link';

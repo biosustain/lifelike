@@ -12,8 +12,9 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
-import { AppURL, isInternalUri } from 'app/shared/utils/url/url';
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
+import { isInternalUri } from 'app/shared/url/internal';
+import { AppURL } from 'app/shared/url';
 import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
 
 import { MapImageProviderService } from './map-image-provider.service';

@@ -7,7 +7,7 @@ import { stringToHex } from 'app/shared/utils';
 import { parseURLToDomainName } from 'app/shared/utils/browser';
 import * as DB from 'app/shared/url/constants';
 import { CHEBI2, GO } from 'app/shared/url/constants';
-import { AppURL } from 'app/shared/url/url';
+import { AppURL } from 'app/shared/url';
 
 import { GraphSearchParameters } from '../graph-search';
 import { getLink } from '../utils/records';
@@ -46,7 +46,7 @@ export class SearchRecordNodeComponent {
     let domain: string;
 
     try {
-      domain = parseURLToDomainName(url.toString(), this.defaultDomain);
+      domain = parseURLToDomainName(url, this.defaultDomain);
     } catch {
       domain = this.defaultDomain;
     }

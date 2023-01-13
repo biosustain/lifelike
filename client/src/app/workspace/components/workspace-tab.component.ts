@@ -20,7 +20,7 @@ import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
 import { MapComponent } from 'app/drawing-tool/components/map.component';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { HttpURL } from 'app/shared/url/url';
+import { HttpURL } from 'app/shared/url';
 
 @Component({
   selector: 'app-workspace-tab',

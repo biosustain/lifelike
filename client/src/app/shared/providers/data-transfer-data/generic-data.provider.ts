@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { chunk } from 'lodash-es';
 
-import { AppURL, isInternalUri, HttpURL } from 'app/shared/url/url';
+import { AppURL, HttpURL } from 'app/shared/url';
 
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
 } from '../../services/data-transfer-data.service';
+import { isInternalUri } from '../../url/internal';
 
 export const LABEL_TOKEN = new DataTransferToken<string>('label');
 export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');

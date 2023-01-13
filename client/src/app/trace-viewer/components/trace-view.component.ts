@@ -16,7 +16,7 @@ import { TruncatePipe } from 'app/shared/pipes';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import Graph from 'app/shared/providers/graph-type/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { HttpURL } from 'app/shared/url/url';
+import { HttpURL } from 'app/shared/url';
 
 import { getTraceDetailsGraph } from './traceDetails';
 import { TraceNode } from './interfaces';

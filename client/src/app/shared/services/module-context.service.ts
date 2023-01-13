@@ -5,7 +5,7 @@ import { ViewService } from 'app/file-browser/services/view.service';
 
 import { WorkspaceManager } from '../workspace-manager';
 import { getURLFromSnapshot } from '../utils/router';
-import { HttpURL } from '../url/url';
+import { HttpURL } from '../url';
 
 @Injectable()
 export class ModuleContext {

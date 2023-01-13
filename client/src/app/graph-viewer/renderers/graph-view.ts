@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { ZoomBehavior } from 'd3';
 import { Subject } from 'rxjs';
-import { remove } from 'lodash-es';
+import { omitBy, remove, isNil, chain } from 'lodash-es';
 
 import {
   GraphEntity,
@@ -212,14 +212,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // Filter in links that point to desired files
-    return links
-      .filter((source) => {
-        return ASSOCIATED_MAPS_REGEX.test(source.url);
-        // Return hashId of those files (last element of the url address)
-      })
-      .map((source) => {
-        return ASSOCIATED_MAPS_REGEX.exec(source.url)[1];
-      });
+    // Return hashId of those files (last element of the url address)
+    return chain(links)
+      .map(source => ASSOCIATED_MAPS_REGEX.exec(source.url.toString()))
+      .omitBy(isNil)
+      .map(([_, hashId]) => hashId)
+      .value();
   }
 
   /**

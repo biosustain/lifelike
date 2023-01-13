@@ -32,7 +32,8 @@ import {
   InternalURIType,
 } from 'app/shared/constants';
 import { getSupportedFileCodes } from 'app/shared/utils';
-import { AppURL, getInternalURIType } from 'app/shared/url/url';
+import { AppURL } from 'app/shared/url';
+import { getInternalURIType } from 'app/shared/url/internal';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';

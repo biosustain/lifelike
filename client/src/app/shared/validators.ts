@@ -1,6 +1,6 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
-import { AppURL } from './url/url';
+import { AppURL } from './url';
 
 export function nonEmptyList(control: AbstractControl): { [key: string]: any } | null {
   return control.value.length === 0 ? { required: { value: control.value } } : null;

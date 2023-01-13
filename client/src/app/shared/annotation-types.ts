@@ -1,7 +1,7 @@
 import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { BIOCYC, CHEBI2, NCBI, UNIPROT } from './url/constants';
-import { HttpURL } from './url/url';
+import { HttpURL } from './url';
 
 export enum DatabaseType {
   MESH = 'MeSH',

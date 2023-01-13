@@ -12,7 +12,7 @@ import { AssociationSnippet } from 'app/interfaces';
 import { uuidv4 } from '../utils';
 import { parseURLToDomainName } from '../utils/browser';
 import { getDTCompatibleLabel } from '../utils/drawing-tool';
-import { HttpURL } from '../url/url';
+import { HttpURL } from '../url';
 import { NCBI } from '../url/constants';
 
 @Component({

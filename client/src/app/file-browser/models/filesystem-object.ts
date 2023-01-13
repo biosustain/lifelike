@@ -22,7 +22,7 @@ import {
   FILESYSTEM_IMAGE_TRANSFER_TYPE,
 } from 'app/drawing-tool/providers/image-entity-data.provider';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL, HttpURL } from 'app/shared/utils/url/url';
+import { AppURL, HttpURL } from 'app/shared/url';
 
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 import {

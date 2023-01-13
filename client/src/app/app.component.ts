@@ -14,7 +14,7 @@ import { AuthSelectors } from 'app/auth/store';
 import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
-import { HttpURL } from 'app/shared/url/url';
+import { HttpURL } from 'app/shared/url';
 
 import { environment } from '../environments/environment';
 

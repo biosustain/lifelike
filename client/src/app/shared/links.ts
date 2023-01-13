@@ -3,7 +3,7 @@ import { unary, mapValues } from 'lodash-es';
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 
 import { CHEBI2, GOOGLE, NCBI, PUBCHEM, UNIPROT } from './url/constants';
-import { HttpURL } from './url/url';
+import { HttpURL } from './url';
 
 interface LinkEntity {
   label: string;
