@@ -17,12 +17,23 @@ export class AppURL {
   scheme: string;
   schemepart: string;
 
+  /**
+   * Shared among URL classes construct starting point.
+   *
+   * It is designed to handle every url-like entity from string to AppURL.
+   * Passing multiple values allows creating URLs with overwrites.
+   * Commonly new AppURL(appURLInstance, { overwrites }) creates URL copy with applied overwrites.
+   */
   static construct(...urlLikes: Array<URLLike>) {
     assign(this, ...urlLikes.map(urlLike =>
       isString(urlLike) ? AppURL.matcher.exec(urlLike)?.groups ?? {} : urlLike,
     ));
   }
 
+  /**
+   * Returns class instance which implements AppUrl interface.
+   * Based of schema the actual class will differ, so it can constain schema specific accessors.
+   */
   constructor(...urlLikes: Array<URLLike>) {
     AppURL.construct.call(this, ...urlLikes);
     const scheme = this.scheme ?? window.location.protocol;
@@ -39,6 +50,16 @@ export class AppURL {
     }
   }
 
+  /**
+   * Ensures that result is URL object
+   * if passed AppURL then just return
+   * otherwise create new AppURL instance.
+   *
+   * Especially usefull if we have type string | AppUrl
+   * and we want to access AppUrl methods.
+   *
+   * @param url - any url-like object/string
+   */
   static from(url: URLLike): AppURL {
     return url instanceof this ? url : new AppURL(url);
   }
@@ -51,6 +72,10 @@ export class AppURL {
     return this.toString();
   }
 
+  /**
+   * Prevents once defined URL to be modified in place
+   * return - readonly version of URL
+   */
   freeze() {
     return Object.freeze(this);
   }
