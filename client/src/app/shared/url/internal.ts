@@ -1,4 +1,4 @@
-import { isArray, isMatch, partialRight } from 'lodash-es';
+import { isArray, isMatch } from 'lodash-es';
 
 import { findEntriesValue } from '../utils';
 import { InternalURIType } from '../constants';

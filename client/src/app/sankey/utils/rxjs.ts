@@ -12,7 +12,6 @@ import { has, isArray, pick, isEqual, isEmpty, uniq } from 'lodash-es';
 import { Selection as d3_Selection } from 'd3-selection';
 
 import { Many } from 'app/shared/schemas/common';
-import { isNotEmpty } from 'app/shared/utils';
 
 /**
  * Pick property from observable object

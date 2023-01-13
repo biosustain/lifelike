@@ -89,15 +89,9 @@ export class GraphActionsService {
   mapInternalLinks<E extends { data?: UniversalEntityData }>(entity: E): E {
     const mapInternalToRelativeLink = ({ url, ...rest }) => {
       const appUrl = AppURL.from(url);
-      if (isInternalUri(appUrl)) {
-        return {
-          ...rest,
-          url: appUrl.relativehref,
-        };
-      }
       return {
         ...rest,
-        url
+          url: isInternalUri(appUrl) ? appUrl.relativehref : url
       };
     };
     return merge(entity, {

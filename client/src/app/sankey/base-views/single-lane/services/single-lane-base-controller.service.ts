@@ -13,7 +13,7 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
-import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
+import { LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { inputCount } from '../algorithms/linkValues';
 import { Base } from '../interfaces';

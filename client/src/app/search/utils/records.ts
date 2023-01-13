@@ -1,5 +1,5 @@
 import { FTSQueryRecord } from 'app/interfaces';
-import { CHEBI2, NCBI, UNIPROT, GO } from 'app/shared/url/constants';
+import { CHEBI2, GO, NCBI, UNIPROT } from 'app/shared/url/constants';
 
 const DOMAINS_URL = {
   CHEBI: CHEBI2.search,

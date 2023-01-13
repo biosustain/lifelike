@@ -54,9 +54,9 @@ export class WorkspaceTabComponent implements OnChanges {
         this.tab.component?.sourceData$,
         this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
         map(({href}) => [{
-          url: new HttpURL(href),
-          domain: this.tab.title
-        } as Source]))
+          url: href,
+          domain: this.tab.title,
+        } as Source])),
     ])).pipe(
       map(sources => concat(...sources)),
       map((sources: Source[]) => ({

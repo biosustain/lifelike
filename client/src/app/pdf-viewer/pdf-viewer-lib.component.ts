@@ -42,7 +42,10 @@ import {
   filter,
   takeUntil,
 } from 'rxjs/operators';
+import { defer, escape, forEach, isNil, uniqueId } from 'lodash-es';
+import { Observable, Subject, Subscription } from 'rxjs';
 
+import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import { ENTITY_TYPES, EntityType, DatabaseLink, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';

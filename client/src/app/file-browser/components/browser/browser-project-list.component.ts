@@ -7,17 +7,15 @@ import { select } from '@ngrx/store';
 import { isNil } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PaginatedRequestOptions } from 'app/shared/schemas/common';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
-import { AuthSelectors } from 'app/auth/store';
 import { projectImplLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ProjectsService } from '../../services/projects.service';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectList } from '../../models/project-list';
-import { ProjectImpl, FilesystemObject } from '../../models/filesystem-object';
+import { ProjectImpl } from '../../models/filesystem-object';
 import { FilesystemService } from '../../services/filesystem.service';
 
 @Component({

@@ -10,7 +10,6 @@ import {
 
 import { Base } from '../interfaces';
 import { SingleLaneLayoutService } from '../services/single-lane-layout.service';
-import { NetworkTraceData } from '../../../interfaces';
 
 export function inputCount(this: SingleLaneLayoutService, data: Base['data']) {
   const { sortedNodes, dt, maxExpectedValue } = initInputCountCalculation.call(this, data);

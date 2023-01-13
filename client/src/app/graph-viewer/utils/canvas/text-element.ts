@@ -1,8 +1,6 @@
 import { NgZone } from '@angular/core';
 
 import { first, partial } from 'lodash-es';
-
-import { REGEX } from 'app/shared/regex';
 import { wrapText } from 'app/shared/utils/canvas';
 import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
 import { inDevMode } from 'app/shared/utils/debug';

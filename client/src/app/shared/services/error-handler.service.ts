@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 
-import { isNil, compact, defaults } from 'lodash-es';
-import { EMPTY, Observable, of, pipe, throwError, from } from 'rxjs';
-import { catchError, first, map, mergeMap, switchMap } from 'rxjs/operators';
+import { compact, defaults, isNil } from 'lodash-es';
+import { EMPTY, from, Observable, of, pipe, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { UnaryFunction } from 'rxjs/internal/types';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -13,7 +13,7 @@ import { MessageDialog } from './message-dialog.service';
 import { isOfflineError, UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
-import { mapBlobToBuffer, mapBufferToJson, bufferToJson } from '../utils/files';
+import { bufferToJson } from '../utils/files';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',

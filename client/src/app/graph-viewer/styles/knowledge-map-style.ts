@@ -51,6 +51,7 @@ import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
 import { GroupNode } from '../utils/canvas/graph-groups/group-node';
 import { BORDER_BLUE_COLOR, DEFAULT_LABEL_FONT_SIZE, LineTypes } from '../utils/canvas/shared';
 
+
 /**
  * Implements the style used on the Knowledge Graph.
  */

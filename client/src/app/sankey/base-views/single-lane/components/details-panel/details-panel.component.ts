@@ -1,14 +1,14 @@
-import { Component, ViewEncapsulation, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewEncapsulation } from '@angular/core';
 
 import { map, tap } from 'rxjs/operators';
 import { defer, uniq, flatMap } from 'lodash-es';
 
-import { SankeyNode, SankeyLink, SankeyTraceLink, Trace } from 'app/sankey/model/sankey-document';
+import { Trace } from 'app/sankey/model/sankey-document';
 
 import { SankeyAbstractDetailsPanelComponent } from '../../../../abstract/details-panel.component';
 import { SankeySelectionService } from '../../../../services/selection.service';
 import { SelectionEntity, SelectionType } from '../../../../interfaces/selection';
-import { getTraces, getNodeLinks } from '../../../multi-lane/utils';
+import { getNodeLinks } from '../../../multi-lane/utils';
 
 @Component({
   selector: 'app-sankey-single-lane-details-panel',

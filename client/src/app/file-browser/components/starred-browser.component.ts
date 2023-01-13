@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { isNil, partition } from 'lodash-es';
-import { Subscription, combineLatest, Observable, BehaviorSubject } from 'rxjs';
-import { tap, map, switchMap, zip, shareReplay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { map, shareReplay, switchMap } from 'rxjs/operators';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';

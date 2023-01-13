@@ -10,8 +10,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { tap, startWith, map, distinctUntilChanged, switchMap, first } from 'rxjs/operators';
-import { iif, of, BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, iif, Observable, of, Subscription } from 'rxjs';
 import { isEqual } from 'lodash-es';
 
 import { windowResizeObservable, createResizeObservable } from '../rxjs/resize-observable';

@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { escapeRegExp } from 'lodash-es';
-import { combineLatest, defer, of, Subscription } from 'rxjs';
+import { defer, of, Subscription } from 'rxjs';
 
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 import { ENRICHMENT_TABLE_MIMETYPE } from 'app/file-types/providers/enrichment-table.type-provider';

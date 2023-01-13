@@ -1,7 +1,4 @@
-import { Component, Input, HostBinding } from '@angular/core';
-import { userError } from '@angular/compiler-cli/src/transformers/util';
-
-import { Observable, of } from 'rxjs';
+import { Component, HostBinding, Input } from '@angular/core';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 

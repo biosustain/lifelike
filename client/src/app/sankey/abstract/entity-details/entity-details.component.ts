@@ -1,7 +1,6 @@
 import { Input, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import * as CryptoJS from 'crypto-js';
 import { map } from 'rxjs/operators';
 
 import { GraphNode } from 'app/shared/providers/graph-type/interfaces';

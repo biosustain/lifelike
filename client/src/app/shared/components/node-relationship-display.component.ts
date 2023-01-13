@@ -12,7 +12,6 @@ import { AssociationSnippet } from 'app/interfaces';
 import { uuidv4 } from '../utils';
 import { parseURLToDomainName } from '../utils/browser';
 import { getDTCompatibleLabel } from '../utils/drawing-tool';
-import { HttpURL } from '../url';
 import { NCBI } from '../url/constants';
 
 @Component({
@@ -49,13 +48,13 @@ export class NodeRelationshipComponent {
           hyperlinks: [
             {
               domain: parseURLToDomainName(databaseUrl),
-          url: new HttpURL(databaseUrl)
+          url: databaseUrl,
         }],
         references: [{
               type: 'DATABASE',
               id: databaseUrl,
             },
-    } as DeepPartial<UniversalGraphNode>));
+    } as Partial<UniversalGraphNodeTemplate>));
 
     // Prevents the edge dragStart event from overriding the node dragStart
     event.stopPropagation();
@@ -78,7 +77,7 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.leftNodeUrl),
-            url: new HttpURL(this.leftNodeUrl),
+            url: this.leftNodeUrl,
           }],
           references: [{
                 type: 'DATABASE',
@@ -97,7 +96,7 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.rightNodeUrl),
-            url: new HttpURL(this.rightNodeUrl)
+            url: this.rightNodeUrl,
           }],
           references: [{
                 type: 'DATABASE',
@@ -121,6 +120,6 @@ export class NodeRelationshipComponent {
           },
           label: this.edge,
       }
-    } as DeepPartial<UniversalGraphRelationship>));
+    } as Partial<UniversalGraphRelationship>));
   }
 }

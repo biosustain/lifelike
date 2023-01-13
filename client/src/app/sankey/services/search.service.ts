@@ -11,7 +11,6 @@ import {
   shareReplay,
   distinctUntilChanged,
   throttleTime,
-  filter,
   pairwise,
   skip,
 } from 'rxjs/operators';

@@ -1,9 +1,7 @@
-import { isNotEmpty } from 'app/shared/utils';
-
 import { nonNegativeNumber } from '../utils';
 import { DefaultLayoutService } from '../services/layout.service';
 import { ValueProcessingStep } from '../interfaces/valueAccessors';
-import { NetworkTraceData, TypeContext } from '../interfaces';
+import { TypeContext } from '../interfaces';
 import { SankeyLink } from '../model/sankey-document';
 
 export const fixedValue: (value: number) => ValueProcessingStep<TypeContext> = (value) =>

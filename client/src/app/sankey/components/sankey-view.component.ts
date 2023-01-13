@@ -41,7 +41,6 @@ import {
   Subscription,
 } from 'rxjs';
 import { assign, isNil, omitBy, zip } from 'lodash-es';
-import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -60,7 +59,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphNodeTemplate } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
@@ -407,7 +406,7 @@ export class SankeyViewComponent
                 },
               ],
             },
-          } as DeepPartial<UniversalGraphNode>),
+          } as Partial<UniversalGraphNodeTemplate>),
           ...GenericDataProvider.getURIs([{
               uri: object.getURL(false).toAbsolute(),
               title: object.filename,

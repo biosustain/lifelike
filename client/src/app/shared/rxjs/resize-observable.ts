@@ -1,9 +1,8 @@
-import { Observable, animationFrameScheduler } from 'rxjs';
-import { throttleTime, distinctUntilChanged, filter, share, map, tap } from 'rxjs/operators';
-import { isEqual, partialRight, mapValues } from 'lodash-es';
+import { animationFrameScheduler, Observable } from 'rxjs';
+import { distinctUntilChanged, filter, share, throttleTime } from 'rxjs/operators';
+import { isEqual } from 'lodash-es';
 
 import { debug } from './debug';
-import { ExtendedWeakMap } from '../utils/types';
 
 interface CreateResizeObservableConfig {
   leading: boolean;

@@ -12,6 +12,7 @@ import {
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 import { GO } from 'app/shared/url/constants';
+import { AppURL } from 'app/shared/url';
 
 import {
   DomainWrapper,
@@ -458,7 +459,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id : GO.search(ncbiNode.name).toString()
+            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id : GO.search(ncbiNode.name)
           }
         };
       }
@@ -514,7 +515,7 @@ export interface DomainInfoMap {
 export interface EnrichmentValue {
   text: string;
   annotatedText?: string;
-  link: string;
+  link: string|AppURL;
 }
 
 export interface EnrichedGeneDomain {

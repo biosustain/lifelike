@@ -8,7 +8,7 @@ import { FileTypeShorthand } from '../constants';
 import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 import { isNotEmpty } from '../utils';
 import { AppURL, HttpURL } from '../url';
-import { NCBI, CHEBI, UNIPROT, PUBCHEM, BIOCYC, GO } from '../url/constants';
+import { BIOCYC, CHEBI, GO, NCBI, PUBCHEM, UNIPROT } from '../url/constants';
 import { findURLMapping } from '../url/internal';
 
 export function removeViewModeIfPresent(url: string): string {

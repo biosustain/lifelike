@@ -20,10 +20,7 @@ import {
   NewNodePairSnippetsPageRequest,
   SidenavSnippetData,
 } from 'app/interfaces';
-import {
-  SNIPPET_PAGE_LIMIT,
-  SNIPPET_RESULT_LIMIT,
-} from 'app/shared/constants';
+import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { NCBI } from 'app/shared/url/constants';
 import { VISUALIZER_SNIPPET_TRANSFER_TYPE } from 'app/visualization/providers/visualizer-object-data.provider';

@@ -33,7 +33,6 @@ import {
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
 import { ErrorHandler } from './services/error-handler.service';
-import { UserError } from './exceptions';
 
 export interface TabDefaults {
   title: string;

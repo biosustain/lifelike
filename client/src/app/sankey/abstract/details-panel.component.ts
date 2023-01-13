@@ -1,12 +1,7 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-
-import { map, tap } from 'rxjs/operators';
-import { defer, groupBy, mapValues } from 'lodash-es';
+import { Component } from '@angular/core';
 
 import { SankeySelectionService } from '../services/selection.service';
-import { SelectionType, SelectionEntity } from '../interfaces/selection';
-import { ControllerService } from '../services/controller.service';
-import { getTraces } from '../base-views/multi-lane/utils';
+import { SelectionType } from '../interfaces/selection';
 
 @Component({ template: '' })
 export abstract class SankeyAbstractDetailsPanelComponent {

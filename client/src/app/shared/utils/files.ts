@@ -1,6 +1,6 @@
-import { from, Observable, OperatorFunction, Subject } from 'rxjs';
-import { map, mergeMap, switchMap } from 'rxjs/operators';
-import { partialRight, ary } from 'lodash-es';
+import { OperatorFunction } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { ary, partialRight } from 'lodash-es';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';

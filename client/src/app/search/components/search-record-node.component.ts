@@ -2,11 +2,9 @@ import { Component, Input } from '@angular/core';
 
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
-import { DBHostname } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { parseURLToDomainName } from 'app/shared/utils/browser';
 import * as DB from 'app/shared/url/constants';
-import { CHEBI2, GO } from 'app/shared/url/constants';
 import { AppURL } from 'app/shared/url';
 
 import { GraphSearchParameters } from '../graph-search';
@@ -42,7 +40,7 @@ export class SearchRecordNodeComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    const url = new AppURL(getLink(this.node));
+    const url = getLink(this.node);
     let domain: string;
 
     try {
@@ -87,9 +85,9 @@ export class SearchRecordNodeComponent {
           return 'NCBI Gene';
         }
         return 'NCBI';
-      case CHEBI2.url.hostname:
+      case DB.CHEBI2.url.hostname:
         return 'ChEBI';
-      case GO.url.hostname:
+      case DB.GO.url.hostname:
         return 'GO';
       default:
         return 'Knowledge Graph';

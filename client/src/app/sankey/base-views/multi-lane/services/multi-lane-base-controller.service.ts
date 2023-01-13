@@ -11,8 +11,8 @@ import { ControllerService } from 'app/sankey/services/controller.service';
 import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
-import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
-import { SankeyLink, TraceNetwork, SankeyTraceLink, View } from 'app/sankey/model/sankey-document';
+import { LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
+import { SankeyLink, SankeyTraceLink, TraceNetwork, View } from 'app/sankey/model/sankey-document';
 
 import {
   createMapToColor,

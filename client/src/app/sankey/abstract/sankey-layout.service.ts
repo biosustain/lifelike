@@ -53,16 +53,12 @@
 // endregion
 
 import findCircuits from 'elementary-circuits-directed-graph';
-import { ReplaySubject, Subject, Observable } from 'rxjs';
-import { map, tap, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { isEqual } from 'lodash-es';
+import { tap } from 'rxjs/operators';
 
 import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyId, TypeContext } from 'app/sankey/interfaces';
-import { debug } from 'app/shared/rxjs/debug';
 
 import { AttributeAccessors } from '../utils/attribute-accessors';
-import { ErrorMessages } from '../constants/error';
 import { SankeyLink, SankeyNode } from '../model/sankey-document';
 
 export interface Horizontal {

@@ -7,11 +7,6 @@ export const SNIPPET_PAGE_LIMIT = 25;
 
 export const VIZ_SEARCH_LIMIT = 10;
 
-export enum DBHostname {
-  ChEBI = 'www.ebi.ac.uk',
-  GO = 'amigo.geneontology.org'
-}
-
 export enum AnnotationType {
   Chemical = 'Chemical',
   Compound = 'Compound',

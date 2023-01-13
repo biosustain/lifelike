@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-// import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleContext } from '../../services/module-context.service';
 import { CdkNativeDragItegration } from '../../utils/drag';
 

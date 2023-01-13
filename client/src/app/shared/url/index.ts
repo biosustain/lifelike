@@ -1,4 +1,4 @@
-import { assign, filter, isEmpty, isString, startsWith } from 'lodash-es';
+import { assign, filter, isEmpty, isString, startsWith, chain, unary } from 'lodash-es';
 
 import { NotImplemented } from 'app/sankey/utils/error';
 
@@ -78,7 +78,7 @@ export class HttpURL implements AppURL, URL {
   }
 
   get searchParamsObject() {
-    return Object.freeze(Object.fromEntries(this.searchParams?.entries()));
+    return Object.freeze(Object.fromEntries(this.searchParams?.entries() ?? []));
   }
 
   get isRelative(): boolean {
@@ -86,11 +86,18 @@ export class HttpURL implements AppURL, URL {
   }
 
   set pathname(value: string) {
-    this.pathSegments = filter(value.split('/'), isNotEmpty);
+    this.pathSegments = chain(value)
+      .split('/')
+      .filter(isNotEmpty)
+      .map(unary(decodeURIComponent))
+      .value();
   }
 
   get pathname(): string {
-    return this.pathSegments?.map(segment => `/${segment}`).join('') ?? '';
+    return chain(this.pathSegments)
+      .map(segment => `/${encodeURIComponent(segment)}`)
+      .join('')
+      .value() ?? '';
   }
 
   set search(value: any) {
@@ -176,8 +183,7 @@ export class HttpURL implements AppURL, URL {
   }
 
   toAbsolute(): HttpURL {
-    this.origin = window.location.href;
-    return this;
+    return new HttpURL(this, { origin: window.location.href });
   }
 
   toString(): string {

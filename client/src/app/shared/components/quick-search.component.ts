@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 
-import { cloneDeep, forEach } from 'lodash-es';
+import { forEach } from 'lodash-es';
 
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';
 

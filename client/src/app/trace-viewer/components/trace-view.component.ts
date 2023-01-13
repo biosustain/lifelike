@@ -84,7 +84,10 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
 
     this.route.params.subscribe(({ hash_id, network_trace_idx, trace_idx }) => {
       this.loadTask.update(hash_id);
-      this.sourceFileURL = new HttpURL(`/projects/xxx/sankey/${hash_id}`, { search: {network_trace_idx, trace_idx} });
+      this.sourceFileURL = new HttpURL({
+        pathSegments: ['projects', 'xxx', 'sankey', hash_id],
+        search: {network_trace_idx, trace_idx}
+      });
     });
   }
 

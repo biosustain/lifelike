@@ -2,8 +2,8 @@ import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AppURL } from 'app/shared/url';
 
+import { AppURL } from 'app/shared/url';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { Hyperlink, Source } from 'app/drawing-tool/services/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -41,7 +41,7 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
 
   set link(value: Source | Hyperlink) {
     this._link = value;
-    this.form.patchValue(value ?? { domain: '', url: new AppURL() });
+    this.form.patchValue(value ?? { domain: '', url: '' });
   }
 
   getValue(): Source {

@@ -1,10 +1,8 @@
 import { isDevMode } from '@angular/core';
 
 import { map } from 'rxjs/operators';
-import { cloneDeepWith, partialRight } from 'lodash-es';
+import { cloneDeepWith } from 'lodash-es';
 import { MonoTypeOperatorFunction } from 'rxjs';
-
-import { skipStep } from './skipStep';
 
 /**
  * Operator to deeply freeze observable value in development.

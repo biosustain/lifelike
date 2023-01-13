@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-handler.service';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { ErrorLogMeta } from '../schemas/common';
 

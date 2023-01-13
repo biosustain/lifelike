@@ -1,6 +1,6 @@
-import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { isNotEmpty } from 'app/shared/utils';
 

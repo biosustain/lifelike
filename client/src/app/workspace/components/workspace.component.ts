@@ -4,7 +4,6 @@ import {
   ElementRef,
   HostListener,
   OnChanges,
-  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,

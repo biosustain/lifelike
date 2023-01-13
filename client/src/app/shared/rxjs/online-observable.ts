@@ -1,17 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
-
-import { EMPTY, MonoTypeOperatorFunction, Observable, OperatorFunction, throwError } from 'rxjs';
-import {
-  share,
-  startWith,
-  shareReplay,
-  retryWhen,
-  delayWhen,
-  filter,
-  first,
-  tap,
-  switchMap,
-} from 'rxjs/operators';
+import { MonoTypeOperatorFunction, Observable, throwError } from 'rxjs';
+import { first, retryWhen, share, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 
 import { isOfflineError } from '../exceptions';
 
