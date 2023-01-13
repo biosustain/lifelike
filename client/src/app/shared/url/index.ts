@@ -50,6 +50,10 @@ export class AppURL {
   toJSON(): string {
     return this.toString();
   }
+
+  freeze() {
+    return Object.freeze(this);
+  }
 }
 
 // tslint:disable-next-line:class-name
@@ -164,7 +168,7 @@ export class HttpURL implements AppURL, URL {
   password: string;
   searchParams: URLSearchParams;
 
-  pathSegments: string[];
+  pathSegments: Array<string | number | boolean>;
 
   static from(url: URLLike<HttpURL>) {
     return url instanceof this ? url : new HttpURL(url);
@@ -193,6 +197,10 @@ export class HttpURL implements AppURL, URL {
   toJSON(): string {
     return this.toString();
   }
+
+  freeze() {
+    return Object.freeze(this);
+  }
 }
 
 class FtpURL implements AppURL {
@@ -214,6 +222,10 @@ class FtpURL implements AppURL {
 
   toJSON(): string {
     return this.toString();
+  }
+
+  freeze() {
+    return Object.freeze(this);
   }
 }
 
@@ -239,5 +251,9 @@ class MailtoURL implements AppURL {
 
   toJSON(): string {
     return this.toString();
+  }
+
+  freeze() {
+    return Object.freeze(this);
   }
 }

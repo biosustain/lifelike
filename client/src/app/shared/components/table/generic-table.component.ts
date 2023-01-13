@@ -15,6 +15,7 @@ import { Subscription } from 'rxjs';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { HighlightTextService } from '../../services/highlight-text.service';
+import { AppURL } from '../../url';
 
 @Component({
   selector: 'app-generic-table',
@@ -51,7 +52,7 @@ export interface TableCell {
 }
 
 export interface TableLink {
-  link: string;
+  link: string|AppURL;
   linkText: string;
 }
 

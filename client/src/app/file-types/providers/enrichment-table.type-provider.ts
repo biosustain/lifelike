@@ -281,8 +281,8 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           ...biocycLabels.map((label) => {
             const geneDomainResult = gene?.domains?.BioCyc?.[label];
             if (geneDomainResult) {
-              const biocycId = /[\?&]id=([^&#]*)/.exec(geneDomainResult.link)?.[1] ?? '';
-              return { text: biocycId };
+              const link = HttpURL.from(geneDomainResult.link);
+              return {text: link.searchParamsObject.id ?? ''};
             } else {
               return { text: '' };
             }
