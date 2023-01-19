@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 
-import { of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { IdType } from 'vis-network';
+import { of } from "rxjs";
+import { map, catchError } from "rxjs/operators";
+import { IdType } from "vis-network";
 
 import {
   GetClusterSnippetsResult,
@@ -16,31 +16,28 @@ import {
   AssociatedTypeSnippetCountRequest,
   GetAssociatedTypeResult,
   GetNodePairSnippetsResult,
-} from 'app/interfaces';
+} from "app/interfaces";
 
 @Injectable()
 export class VisualizationService {
-    readonly baseUrl = '/api/visualizer';
+  readonly baseUrl = "/api/visualizer";
 
-    constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-    getDocument(id: IdType) {
-        return this.http.get<Neo4jResults>(
-          `${this.baseUrl}/document/${id}`
-        );
-    }
+  getDocument(id: IdType) {
+    return this.http.get<Neo4jResults>(`${this.baseUrl}/document/${id}`);
+  }
 
-    /**
-     * expandNode will take a node id and return all children
-     * of the depth of 1.
-     * @param nodeId the node id from the database
-     */
-    expandNode(nodeId: IdType, filterLabels: string[]) {
-        return this.http.post<{result: Neo4jResults<any, any>}>(
-            `${this.baseUrl}/expand`,
-            {nodeId, filterLabels},
-        ).pipe(map(resp => resp.result));
-    }
+  /**
+   * expandNode will take a node id and return all children
+   * of the depth of 1.
+   * @param nodeId the node id from the database
+   */
+  expandNode(nodeId: IdType, filterLabels: string[]) {
+    return this.http
+      .post<{ result: Neo4jResults<any, any> }>(`${this.baseUrl}/expand`, { nodeId, filterLabels })
+      .pipe(map((resp) => resp.result));
+  }
 
   getReferenceTableData(request: ReferenceTableDataRequest) {
     return this.http
@@ -64,31 +61,31 @@ export class VisualizationService {
       .pipe(map((resp) => resp.result));
   }
 
-    getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
-        return this.http.post<{result: GetEdgeSnippetsResult}>(
-            `${this.baseUrl}/get-snippets-for-edge`, {
-                page: request.page,
-                limit: request.limit,
-                edge: request.queryData,
-            },
-        ).pipe(
-            map(resp => resp.result),
-            catchError(error => of(error)),
-        );
-    }
+  getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
+    return this.http
+      .post<{ result: GetEdgeSnippetsResult }>(`${this.baseUrl}/get-snippets-for-edge`, {
+        page: request.page,
+        limit: request.limit,
+        edge: request.queryData,
+      })
+      .pipe(
+        map((resp) => resp.result),
+        catchError((error) => of(error))
+      );
+  }
 
-    getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
-        return this.http.post<{result: GetClusterSnippetsResult}>(
-            `${this.baseUrl}/get-snippets-for-cluster`, {
-                page: request.page,
-                limit: request.limit,
-                edges: request.queryData,
-            },
-        ).pipe(
-            map(resp => resp.result),
-            catchError(error => of(error)),
-        );
-    }
+  getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+    return this.http
+      .post<{ result: GetClusterSnippetsResult }>(`${this.baseUrl}/get-snippets-for-cluster`, {
+        page: request.page,
+        limit: request.limit,
+        edges: request.queryData,
+      })
+      .pipe(
+        map((resp) => resp.result),
+        catchError((error) => of(error))
+      );
+  }
 
   getAssociatedTypeSnippetCount(request: AssociatedTypeSnippetCountRequest) {
     return this.http
@@ -102,14 +99,14 @@ export class VisualizationService {
       .pipe(map((resp) => resp.result.associatedData));
   }
 
-    getSnippetsForNodePair(node1Id: IdType, node2Id: IdType, page: number, limit: number) {
-      return this.http.post<{result: GetNodePairSnippetsResult}>(
-        `${this.baseUrl}/get-snippets-for-node-pair`, {
-          page,
-          limit,
-          node_1_id: node1Id,
-          node_2_id: node2Id,
-        },
-      ).pipe(map(resp => resp.result));
-    }
+  getSnippetsForNodePair(node1Id: IdType, node2Id: IdType, page: number, limit: number) {
+    return this.http
+      .post<{ result: GetNodePairSnippetsResult }>(`${this.baseUrl}/get-snippets-for-node-pair`, {
+        page,
+        limit,
+        node_1_id: node1Id,
+        node_2_id: node2Id,
+      })
+      .pipe(map((resp) => resp.result));
+  }
 }
