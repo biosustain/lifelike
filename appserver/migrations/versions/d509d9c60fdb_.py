@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 import fastjsonschema
 
 from migrations.utils import window_chunk
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from neo4japp.models import FileContent
 

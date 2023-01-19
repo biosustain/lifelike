@@ -1,15 +1,25 @@
 from __future__ import with_statement
 
 import logging
+from functools import cached_property
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, event, select
 from sqlalchemy import pool
 import sqlalchemy_utils
 
 from alembic import context
 
 from flask import current_app
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import Update, Insert
+
+from migrations.utils import window_chunk
+
+# flake8: noqa: OIG001 # This file does contain additional validation code
+# it runs always against latest appserver therefore can be safly imported
+from neo4japp.database import get_file_type_service
+from neo4japp.models import FileContent, Files
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -34,6 +44,70 @@ target_metadata = current_app.extensions['migrate'].db.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+class ContentUpdateValidator:
+    def __init__(self, conn):
+        self.conn = conn
+        self.updated_file_content_ids = set()
+        self.unidentified_update_to_file_contents = False
+
+    @cached_property
+    def receive_before_execute_callback(self):
+        def receive_before_execute(_, clauseelement, multiparams, params):
+            updated_file_content_ids = set()
+            unidentified_update_to_file_contents = False
+            if isinstance(clauseelement, (Update, Insert)) and clauseelement.table.name == FileContent.__tablename__:
+                for params in multiparams:
+                    if len(params) > 0:
+                        for p in params:
+                                content_id = p.get('id')
+                                if content_id:
+                                    if p.get('raw_file'):
+                                        updated_file_content_ids.add(content_id)
+                                else:
+                                    unidentified_update_to_file_contents = True
+                    else:
+                        unidentified_update_to_file_contents = True
+                self.update_change_list(updated_file_content_ids, unidentified_update_to_file_contents)
+
+        return receive_before_execute
+
+    def __enter__(self):
+        event.listen(self.conn, 'before_execute', self.receive_before_execute_callback)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        event.remove(self.conn, 'before_execute', self.receive_before_execute_callback)
+        if exc_type == None:
+            self.validate_file_contents()
+
+    def update_change_list(self, updated_file_content_ids, unidentified_update_to_file_contents):
+        if unidentified_update_to_file_contents:
+            logger.warning(
+                'Unidentified file content update - '
+                'all files will be validated as finall step of migrating database'
+            )
+            self.unidentified_update_to_file_contents = unidentified_update_to_file_contents
+        if len(updated_file_content_ids) > 0:
+            logger.info(
+                'Identified file contents update for ids: ' +
+                ', '.join(str(content_id) for content_id in updated_file_content_ids)
+            )
+            self.updated_file_content_ids.update(updated_file_content_ids)
+
+    def validate_file_contents(self):
+        if len(self.updated_file_content_ids) > 0 or self.unidentified_update_to_file_contents:
+            session = Session(self.conn)
+            query = session.execute(
+                select([Files.mime_type, FileContent.raw_file, FileContent.id])
+            )
+            if not self.unidentified_update_to_file_contents:
+                query = query.where(FileContent.id.in_(self.updated_file_content_ids))
+            file_type_service = get_file_type_service()
+            for chunk in window_chunk(session.execute(query), 25):
+                for entity in chunk:
+                    provider = file_type_service.get(entity)
+                    provider.validate_content(entity.raw_file)
+
 
 
 def run_migrations_offline():
@@ -107,7 +181,8 @@ def run_migrations_online():
         )
 
         with context.begin_transaction():
-            context.run_migrations()
+            with ContentUpdateValidator(connection):
+                context.run_migrations()
 
 
 if context.is_offline_mode():
