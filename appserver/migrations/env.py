@@ -1,7 +1,8 @@
 from __future__ import with_statement
 
 import logging
-from functools import cached_property
+from functools import cached_property, cache
+from io import BufferedIOBase, BytesIO
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, event, select
@@ -11,7 +12,7 @@ import sqlalchemy_utils
 from alembic import context
 
 from flask import current_app
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 from sqlalchemy.sql import Update, Insert
 
 from migrations.utils import window_chunk
@@ -45,7 +46,11 @@ target_metadata = current_app.extensions['migrate'].db.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-class ContentUpdateValidator:
+class MigrationValidator:
+    logger = logging.getLogger('alembic.runtime.validation')
+    class ValidationException(Exception):
+        pass
+
     def __init__(self, conn):
         self.conn = conn
         self.updated_file_content_ids = set()
@@ -72,23 +77,36 @@ class ContentUpdateValidator:
 
         return receive_before_execute
 
+    # Printing unique messages within revision
+    @cache
+    def _revision_notify(self, revision, *args, level=logging.INFO, **kwargs):
+        self.logger.log(level, *args, **kwargs)
+
+    # Wrap notification with revision id - log unique messages
+    def _per_revision_notify(self, *args, **kwargs):
+        self._revision_notify(
+            context.get_context().get_current_revision(),
+            *args,
+            **kwargs
+        )
+
     def __enter__(self):
         event.listen(self.conn, 'before_execute', self.receive_before_execute_callback)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         event.remove(self.conn, 'before_execute', self.receive_before_execute_callback)
-        if exc_type == None:
+        if exc_type is None: # if no error has been thrown
             self.validate_file_contents()
 
     def update_change_list(self, updated_file_content_ids, unidentified_update_to_file_contents):
         if unidentified_update_to_file_contents:
-            logger.warning(
+            self._per_revision_notify(
                 'Unidentified file content update - '
                 'all files will be validated as finall step of migrating database'
             )
             self.unidentified_update_to_file_contents = unidentified_update_to_file_contents
         if len(updated_file_content_ids) > 0:
-            logger.info(
+            self._per_revision_notify(
                 'Identified file contents update for ids: ' +
                 ', '.join(str(content_id) for content_id in updated_file_content_ids)
             )
@@ -97,16 +115,49 @@ class ContentUpdateValidator:
     def validate_file_contents(self):
         if len(self.updated_file_content_ids) > 0 or self.unidentified_update_to_file_contents:
             session = Session(self.conn)
-            query = session.execute(
-                select([Files.mime_type, FileContent.raw_file, FileContent.id])
-            )
+            query = Query(Files).join(Files.content)
             if not self.unidentified_update_to_file_contents:
-                query = query.where(FileContent.id.in_(self.updated_file_content_ids))
+                query = query.filter(FileContent.id.in_(self.updated_file_content_ids))
+                self._per_revision_notify(
+                    'Validating file contents of: ',
+                    self.updated_file_content_ids
+                )
+            else:
+                self._per_revision_notify('Validating all files contents')
+
             file_type_service = get_file_type_service()
-            for chunk in window_chunk(session.execute(query), 25):
+            for chunk in window_chunk(
+                    session.execute(
+                        query.with_entities(
+                            Files.mime_type.label('mime_type'),
+                            FileContent.raw_file.label('raw_file'),
+                            FileContent.id.label('id')
+                        )
+                    ),
+                    25
+            ):
                 for entity in chunk:
-                    provider = file_type_service.get(entity)
-                    provider.validate_content(entity.raw_file)
+                    exceptions = []
+                    try:
+                        provider = file_type_service.get(entity)
+                        provider.validate_content(BytesIO(entity.raw_file))
+                    except Exception as validation_exception:
+                        # TODO after migrating to python 3.11: use .add_note
+                        try:
+                            raise self.ValidationException(
+                                f'FileContent(id={entity.id}) {validation_exception}'
+                            ) from validation_exception
+                        except Exception as validation_exception:
+                            self.logger.exception(validation_exception)
+                            exceptions.append(validation_exception)
+                    if len(exceptions) > 0:
+                        raise self.ValidationException(
+                            '\n'.join((
+                                f'{len(exceptions)} file content are not passing current validation rules:',
+                                *map(lambda exception: f'\t{exception}', exceptions)
+                            ))
+                        )
+
 
 
 
@@ -181,7 +232,7 @@ def run_migrations_online():
         )
 
         with context.begin_transaction():
-            with ContentUpdateValidator(connection):
+            with MigrationValidator(context.get_bind()):
                 context.run_migrations()
 
 
