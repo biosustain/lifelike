@@ -17,11 +17,13 @@ from neo4japp.data_transfer_objects.visualization import (
     Direction,
     DuplicateEdgeConnectionData,
     EdgeConnectionData,
+    GetBulkReferenceTableDataResult,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GetNodePairSnippetsResult,
     GetReferenceTableDataResult,
     GetSnippetsFromEdgeResult,
+    ReferenceTableDataRequest,
     ReferenceTablePair,
     ReferenceTableRow,
     Snippet,
@@ -316,7 +318,20 @@ def get_reference_table_data(
 
     return GetReferenceTableDataResult(
         reference_table_rows=reference_table_rows,
-        direction=direction
+        direction=direction,
+        description=description
+    )
+
+
+def get_bulk_reference_table_data(
+    arango_client: ArangoClient,
+    associations: List[ReferenceTableDataRequest]
+):
+    reference_tables = []
+    for request in associations:
+        reference_tables.append(get_reference_table_data(arango_client, request.node_edge_pairs))
+    return GetBulkReferenceTableDataResult(
+        reference_tables=reference_tables
     )
 
 
@@ -741,10 +756,11 @@ def get_snippet_count_from_edges_query() -> str:
         FOR source_node IN @from_ids
             FOR dest_node IN @to_ids
                 LET associations = (
-                    FOR v, e, has_assoc_path IN 1..2 OUTBOUND source_node has_association
-                        FILTER has_assoc_path.vertices[-1]._id == dest_node
-                        FILTER has_assoc_path.vertices[1].description == @description
-                        RETURN DISTINCT has_assoc_path.vertices[1]
+                    FOR doc IN associated
+                        FILTER doc._from == source_node
+                        FILTER doc._to == dest_node
+                        FILTER doc.description == @description
+                        RETURN DOCUMENT(doc.association_id)
                 )
                 FILTER LENGTH(associations) > 0
                 LET snippets_result = (
