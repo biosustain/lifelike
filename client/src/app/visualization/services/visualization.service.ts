@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 
+import { isNil } from "lodash-es";
 import { of } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { IdType } from "vis-network";
@@ -16,6 +17,12 @@ import {
   AssociatedTypeSnippetCountRequest,
   GetAssociatedTypeResult,
   GetNodePairSnippetsResult,
+  GraphNode,
+  GraphRelationship,
+  VisNode,
+  VisEdge,
+  BulkReferenceTableDataRequest,
+  GetBulkReferenceTableDataResult,
 } from "app/interfaces";
 
 @Injectable()
@@ -23,6 +30,63 @@ export class VisualizationService {
   readonly baseUrl = "/api/visualizer";
 
   constructor(private http: HttpClient) {}
+
+
+  /**
+   * This function is used to modify the API response to a format
+   * vis.js will understand. vis.js uses a limited set
+   * of properties for rendering the network graph.
+   * @param result - a list of nodes and edges for conversion
+   */
+  convertGraphToVisJSFormat({ nodes, edges }: Neo4jResults, legend: Map<string, string[]>) {
+    return {
+      nodes: nodes
+        .map((n: GraphNode) => this.convertNodeToVisJSFormat(n, legend))
+        .filter((val) => val !== null),
+      edges: edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e)),
+    };
+  }
+
+  convertNodeToVisJSFormat(n: GraphNode, legend: Map<string, string[]>): VisNode {
+    if (isNil(n.displayName) || isNil(n.label)) {
+      console.error(`Node does not have expected label and displayName properties ${n}`);
+      return null;
+    }
+    const color = legend.get(n.label) ?legend.get(n.label)[0] : "#000000";
+    const border = legend.get(n.label) ? legend.get(n.label)[1] : "#000000";
+    return {
+      ...n,
+      expanded: false,
+      primaryLabel: n.label,
+      font: {
+        color,
+      },
+      color: {
+        background: "#FFFFFF",
+        border,
+        hover: {
+          background: "#FFFFFF",
+          border,
+        },
+        highlight: {
+          background: "#FFFFFF",
+          border,
+        },
+      },
+      label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + "..." : n.displayName,
+    };
+  }
+
+  convertEdgeToVisJSFormat(e: GraphRelationship): VisEdge {
+    return {
+      ...e,
+      color: {
+        color: "#0c8caa",
+      },
+      label: e.data.description,
+      arrows: "to",
+    };
+  }
 
   getDocument(id: IdType) {
     return this.http.get<Neo4jResults>(`${this.baseUrl}/document/${id}`);
@@ -41,24 +105,14 @@ export class VisualizationService {
 
   getReferenceTableData(request: ReferenceTableDataRequest) {
     return this.http
-      .post<{ result: GetReferenceTableDataResult }>(`${this.baseUrl}/get-reference-table-data`, {
-        nodeEdgePairs: [...request.nodeEdgePairs].sort(
-          (
-            { node: { displayName: a1 }, edge: { originalFrom: a2, originalTo: a3 } },
-            { node: { displayName: b1 }, edge: { originalFrom: b2, originalTo: b3 } }
-          ) => {
-            const a = `${a1}${a2}${a3}`;
-            const b = `${b1}${b2}${b3}`;
-            if (a > b) {
-              return -1;
-            } else if (a < b) {
-              return 1;
-            }
-            return 0;
-          }
-        ),
-      })
+      .post<{ result: GetReferenceTableDataResult }>(`${this.baseUrl}/get-reference-table`, request)
       .pipe(map((resp) => resp.result));
+  }
+
+  getBulkReferenceTableData(request: BulkReferenceTableDataRequest) {
+    return this.http
+      .post<{ result: GetBulkReferenceTableDataResult }>(`${this.baseUrl}/get-reference-tables`, request)
+      .pipe(map((resp) => resp.result.referenceTables));
   }
 
   getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {

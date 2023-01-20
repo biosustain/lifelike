@@ -159,6 +159,11 @@ class ReferenceTableDataRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class BulkReferenceTableDataRequest(CamelDictMixin):
+    associations: List[ReferenceTableDataRequest] = attr.ib()
+
+
+@attr.s(frozen=True)
 class GetSnippetsForEdgeRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
@@ -219,7 +224,13 @@ class GetNodePairSnippetsResult(CamelDictMixin):
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
     direction: str = attr.ib()
+    description: str = attr.ib()
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetBulkReferenceTableDataResult(CamelDictMixin):
+    reference_tables: List[GetReferenceTableDataResult] = attr.ib()
 
 
 @attr.s(frozen=True)
