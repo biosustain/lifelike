@@ -30,7 +30,7 @@ def test_get_reference_table_data(
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
-        '/visualizer/get-reference-table-data',
+        '/visualizer/get-reference-table',
         data=json.dumps({
             'node_edge_pairs': [
                 {

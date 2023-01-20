@@ -5,6 +5,7 @@ from flask_apispec import use_kwargs
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_or_create_arango_client
 from neo4japp.data_transfer_objects.visualization import (
+    BulkReferenceTableDataRequest,
     ExpandNodeRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
@@ -18,6 +19,7 @@ from neo4japp.request_schemas.visualizer import (
 from neo4japp.services.visualizer import (
     expand_graph,
     get_associated_type_snippet_count,
+    get_bulk_reference_table_data,
     get_document_for_visualizer,
     get_reference_table_data,
     get_snippets_for_edge,
@@ -44,12 +46,20 @@ def expand_graph_node(req: ExpandNodeRequest):
     return SuccessResponse(result=node, status_code=200)
 
 
-@bp.route('/get-reference-table-data', methods=['POST'])
+@bp.route('/get-reference-table', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
-def get_ref_table_data(req: ReferenceTableDataRequest):
+def get_ref_table(req: ReferenceTableDataRequest):
     arango_client = get_or_create_arango_client()
     reference_table_data = get_reference_table_data(arango_client, req.node_edge_pairs)
     return SuccessResponse(reference_table_data, status_code=200)
+
+
+@bp.route('/get-reference-tables', methods=['POST'])
+@jsonify_with_class(BulkReferenceTableDataRequest)
+def get_ref_tables(req: BulkReferenceTableDataRequest):
+    arango_client = get_or_create_arango_client()
+    result = get_bulk_reference_table_data(arango_client, req.associations)
+    return SuccessResponse(result, status_code=200)
 
 
 @bp.route('/get-snippets-for-edge', methods=['POST'])
