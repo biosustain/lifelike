@@ -19,7 +19,7 @@ export class EnrichmentService implements OnDestroy {
     if (!openFile) {
       openFile = {
         // metadata can be mutated (example params edit)
-        get: this.filesystemService.get(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1)),
+        get: this.filesystemService.open(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1)),
         // data is not mutable
         getContent: this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1)),
         ref: new Set()

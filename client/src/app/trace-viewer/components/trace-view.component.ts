@@ -36,7 +36,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
 
   loadTask = new BackgroundTask((id: string) =>
       combineLatest([
-        this.filesystemService.get(id),
+        this.filesystemService.open(id),
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson(),

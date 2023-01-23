@@ -72,7 +72,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([hashId, loc]) =>
         combineLatest(
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId).pipe(
             mapBlobToBuffer(),
           ),

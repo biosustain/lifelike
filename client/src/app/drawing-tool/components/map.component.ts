@@ -96,7 +96,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   ) {
     this.loadTask = new BackgroundTask(
       (hashId) => combineLatest([
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId),
           this.getBackupBlob(),
         ])

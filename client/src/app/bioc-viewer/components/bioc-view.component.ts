@@ -64,7 +64,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([hashId]) =>
         combineLatest(
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId).pipe(
             mapBlobToBuffer(),
             mapBufferToJsons<Document>(),
