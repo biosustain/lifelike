@@ -128,28 +128,6 @@ export interface LaunchApp {
   };
 }
 
-/**
- * Map schema definition
- */
-export interface KnowledgeMap {
-  id?: string | number;
-  author?: string;
-  label: string;
-  description: string;
-  /** JSON representation of graph */
-  graph: KnowledgeMapGraph;
-  /** ISO-8601 timestamp of when project was last updated */
-  modified_date?: string;
-  /** Whether or not project is public to userbase */
-  public?: boolean;
-  /** URI for project */
-  hash_id?: string;
-  /** ID of the user who made the project */
-  user_id?: number;
-  /** Name of the project this map is found in */
-  project_name?: string;
-}
-
 export const DETAIL_NODE_LABELS = new Set(['note', 'link', 'image']);
 
 export function isCommonNodeDisplayName(label: string, displayName: string) {
