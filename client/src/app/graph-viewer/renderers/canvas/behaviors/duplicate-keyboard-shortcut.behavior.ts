@@ -3,7 +3,7 @@ import { partition, groupBy, mapValues, map, uniq, uniqBy } from 'lodash-es';
 import { GraphEntityType, UniversalGraphEdge, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
-import { uuidv4 } from 'app/shared/utils/identifiers';
+import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -40,15 +40,14 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       this.graphView.selection.replace([]);
 
       const cloneNode = ({hash, data, ...rest}, select) => {
-        const newNode = {
+        const newNode = createNode({
           ...rest,
-          hash: uuidv4(),
           data: {
             ...data,
             x: data.x + this.DEFAULT_OFFSET,
             y: data.y + this.DEFAULT_OFFSET,
           }
-        } as UniversalGraphNode;
+        });
         hashMap.set(hash, newNode.hash);
         actions.push(
           new NodeCreation('Duplicate node', newNode, select, isSingularNode)
@@ -57,16 +56,15 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       };
 
       for (const {hash, data, members, ...rest} of groups) {
-        const newGroup = {
+        const newGroup = createGroupNode({
           ...rest,
-          hash: uuidv4(),
           data: {
             ...data,
             x: data.x + this.DEFAULT_OFFSET,
             y: data.y + this.DEFAULT_OFFSET,
           },
           members: members.map(node => cloneNode(node, false))
-        } as UniversalGraphGroup;
+        });
         // This works also for groups, as those inherit from the node
         hashMap.set(hash, newGroup.hash);
         actions.push(

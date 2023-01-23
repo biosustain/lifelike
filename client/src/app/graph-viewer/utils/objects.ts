@@ -1,27 +1,32 @@
-// TODO: Use a library
-function isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-}
+import { defaultsDeep, assign } from 'lodash-es';
 
-// todo: same as lodash merge?
-export function mergeDeep(target, ...sources) {
-  if (!sources.length) {
-    return target;
-  }
-  const source = sources.shift();
+import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) {
-          Object.assign(target, {[key]: {}});
-        }
-        mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, {[key]: source[key]});
-      }
-    }
-  }
+import { NODE_DEFAULTS, GROUP_DEFAULTS, IMAGE_DEFAULTS } from '../defaults';
 
-  return mergeDeep(target, ...sources);
-}
+/**
+ * Create new node object (with new hash and default values)
+ * @param partialNode - object to be transformed into node (it will mutate)
+ */
+export const createNode = partialNode => assign(defaultsDeep(partialNode, NODE_DEFAULTS), { hash: uuidv4() });
+
+/**
+ * Create new group node object (with new hash and default values)
+ * @param partialGroup - object to be transformed into group node (it will mutate)
+ */
+export const createGroupNode = partialGroup =>
+  createNode(
+    defaultsDeep(partialGroup, GROUP_DEFAULTS)
+  );
+
+/**
+ * Create new image node object (with new hash and default values)
+ * @param partialImage - object to be transformed into image node (it will mutate)
+ */
+export const createImageNode = partialImage =>
+  assign(
+    createNode(
+      defaultsDeep(partialImage, IMAGE_DEFAULTS)
+    ),
+    { imageId: makeid() }
+  );

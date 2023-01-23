@@ -1,3 +1,5 @@
+import { merge } from 'lodash-es';
+
 import {
   GraphEntity,
   GraphEntityType,
@@ -5,7 +7,6 @@ import {
   UniversalGraphEdge,
   UniversalGraphNode
 } from 'app/drawing-tool/services/interfaces';
-import { mergeDeep } from 'app/graph-viewer/utils/objects';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -20,12 +21,12 @@ export class GraphEntityUpdate implements GraphAction {
   }
 
   apply(component: GraphActionReceiver) {
-    mergeDeep(this.entity.entity, this.updatedData);
+    merge(this.entity.entity, this.updatedData);
     this.matchAndUpdateEntity(component);
   }
 
   rollback(component: GraphActionReceiver) {
-    mergeDeep(this.entity.entity, this.originalData);
+    merge(this.entity.entity, this.originalData);
     this.matchAndUpdateEntity(component);
   }
 

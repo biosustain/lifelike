@@ -2,7 +2,7 @@
 /**
  * universally unique identitifer generator
  */
-function uuidv4() {
+export function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
 
     /* tslint:disable */
@@ -17,7 +17,7 @@ function uuidv4() {
 /**
  * random short sequence generator
  */
-function makeid(length = 3) {
+export function makeid(length = 3) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
@@ -26,8 +26,3 @@ function makeid(length = 3) {
   }
   return result;
 }
-
-export {
-  uuidv4,
-  makeid,
-};

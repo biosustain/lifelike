@@ -1,6 +1,6 @@
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { makeid } from 'app/shared/utils/identifiers';
+import { createNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -32,16 +32,19 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
     const hoverPosition = this.graphView.hoverPosition;
     if (hoverPosition != null) {
       this.graphView.selection.replace([]);
-      this.graphView.execute(new NodeCreation(
-        `Create ${node.display_name} node`, {
-          hash: makeid(),
-          ...node,
-          data: {
-            ...node.data,
-            x: hoverPosition.x,
-            y: hoverPosition.y,
-          },
-        }, true, true
+      this.graphView.execute(
+        new NodeCreation(
+          `Create ${node.display_name} node`,
+          createNode({
+            ...node,
+            data: {
+              ...node.data,
+              x: hoverPosition.x,
+              y: hoverPosition.y,
+            },
+          }),
+          true,
+          true,
       ));
     }
 
