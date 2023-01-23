@@ -31,14 +31,41 @@ export interface GraphClipboardData {
  * Implements the paste key.
  */
 export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
+  private readonly CASCADE_OFFSET = 50;
+  private burstPosition: { x: number, y: number };
+  private burstIteration = 0;
+
   // TODO: fix boundPaste if not coming in next patch
   constructor(private readonly graphView: CanvasGraphView,
               protected readonly dataTransferDataService: DataTransferDataService) {
     super();
   }
 
+
+  calculatePosition() {
+    const {burstPosition, CASCADE_OFFSET} = this;
+    const cursorPosition = this.graphView.currentHoverPosition;
+    if (cursorPosition) {
+      let nextPastePosition = cursorPosition;
+      const manhattanDistanceFromLastPasteBurst = (
+        Math.abs(cursorPosition.x - burstPosition?.x) + Math.abs(cursorPosition.y - burstPosition?.y)
+      );
+      if (manhattanDistanceFromLastPasteBurst <= CASCADE_OFFSET) {
+        this.burstIteration++;
+        nextPastePosition = {
+          x: burstPosition.x + this.burstIteration * CASCADE_OFFSET,
+          y: burstPosition.y + this.burstIteration * CASCADE_OFFSET,
+        };
+      } else {
+        this.burstPosition = nextPastePosition;
+        this.burstIteration = 0;
+      }
+      return nextPastePosition;
+    }
+  }
+
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const position = this.graphView.currentHoverPosition;
+    const position = this.calculatePosition();
     if (position) {
       const content = event.event.clipboardData.getData('text/plain');
       if (content) {
