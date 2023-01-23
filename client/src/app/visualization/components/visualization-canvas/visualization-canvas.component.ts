@@ -362,7 +362,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
   }
 
   getAssociationKeyForCluster(description: string, direction: string) {
-    return `${description}/${direction}`;
+    return `${description}$${direction}`;
   }
 
   clusterExpansionResults(result: ExpandNodeResult) {
@@ -1044,9 +1044,12 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
 
   getBulkReferenceTableDataRequestObj(associations: Map<string, DuplicateNodeEdgePair[]>) {
     return {
-      associations: Array.from(associations.values()).map(pairs => {
+      associations: Array.from(associations.keys()).map(key => {
+        const [description, direction] = key.split('$');
         return {
-          nodeEdgePairs: pairs.map((pair) => {
+          description,
+          direction: direction as Direction,
+          nodeEdgePairs: associations.get(key).map((pair) => {
             return {
               node: {
                 id: pair.node.id,

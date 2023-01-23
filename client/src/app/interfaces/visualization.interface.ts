@@ -203,6 +203,8 @@ export interface NewNodePairSnippetsPageRequest {
 
 export interface ReferenceTableDataRequest {
   nodeEdgePairs: ReferenceTablePair[];
+  direction?: Direction;
+  description?: string;
 }
 
 export interface BulkReferenceTableDataRequest {
