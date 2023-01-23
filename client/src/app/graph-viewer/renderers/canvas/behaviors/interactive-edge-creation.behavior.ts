@@ -7,10 +7,11 @@ import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AbstractObjectHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-object-handle-behavior';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { HANDLE_BLUE_COLOR } from 'app/shared/constants';
+import { DEFAULT_FONT_SIZE } from 'app/sankey/services/layout.service';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
-import { Point } from '../../../utils/canvas/shared';
+import { CanvasFont, Point } from '../../../utils/canvas/shared';
 
 
 const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
@@ -71,15 +72,27 @@ class ActiveEdgeCreationHandle extends AbstractObjectHandleBehavior<Handle, Univ
     const nodeRadiusHandle = this.size / 2 * noZoomScaleHandle;
     const xHandle = (maxX - minX) / 2 + minX;
     const yHandle = (maxY - minY) / 2 + minY;
+    const scaledfont = new CanvasFont(
+      ctx.font,
+      { size: DEFAULT_FONT_SIZE * noZoomScaleHandle }
+    );
+
+    ctx.save();
     ctx.moveTo(xHandle, yHandle);
     ctx.arc(xHandle, yHandle, nodeRadiusHandle, 0, 2 * Math.PI);
     ctx.strokeStyle = '#2B7CE9';
     ctx.stroke();
+    ctx.font = String(scaledfont);
     ctx.fillStyle = HANDLE_BLUE_COLOR;
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText('+', xHandle, yHandle + 4, this.size * 2);
+    ctx.fillText(
+      '+',
+      xHandle,
+      yHandle + 5 * noZoomScaleHandle
+    );
+    ctx.restore();
   }
 
   getHandleBoundingBoxes(placedNode: PlacedNode): Handle[] {
