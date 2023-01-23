@@ -282,7 +282,7 @@ export class FilesystemService {
         tap(items => {
           items.forEach((child: FilesystemObject) => {
             if (child.type === 'file') {
-              const file = child.data as PdfFile;
+              const file = child as PdfFile;
               child.annotationsTooltipContent = this.generateTooltipContent(file);
             }
           });
@@ -294,7 +294,7 @@ export class FilesystemService {
   private generateTooltipContent(file: PdfFile): string {
     const outdated = Array
       .from(Object.entries(this.lmdbsDates$))
-      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotationsDate));
     if (outdated.length === 0) {
       return '';
     }
