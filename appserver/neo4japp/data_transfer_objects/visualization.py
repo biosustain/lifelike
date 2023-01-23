@@ -156,6 +156,8 @@ class ExpandNodeRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
     node_edge_pairs: List[ReferenceTablePair] = attr.ib()
+    description: Optional[str] = attr.ib()
+    direction: Optional[str] = attr.ib()
 
 
 @attr.s(frozen=True)

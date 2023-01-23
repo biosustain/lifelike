@@ -281,7 +281,9 @@ def get_snippets_from_edges(
 
 def get_reference_table_data(
     arango_client: ArangoClient,
-    node_edge_pairs: List[ReferenceTablePair]
+    node_edge_pairs: List[ReferenceTablePair],
+    description: str = None,
+    direction: str = None
 ):
     # For duplicate edges, We need to remember which true node ID pairs map to which
     # duplicate node ID pairs, otherwise when we send the data back to the frontend
@@ -295,8 +297,10 @@ def get_reference_table_data(
     # of the cluster edge). We remove the duplicates so we don't get weird query results.
     from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
     to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
-    description = node_edge_pairs[0].edge.label  # Every edge should have the same label
-    direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
+    if description is None:
+        description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+    if direction is None:
+        direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
     counts = execute_arango_query(
         get_db(arango_client),
@@ -329,7 +333,14 @@ def get_bulk_reference_table_data(
 ):
     reference_tables = []
     for request in associations:
-        reference_tables.append(get_reference_table_data(arango_client, request.node_edge_pairs))
+        reference_tables.append(
+            get_reference_table_data(
+                arango_client,
+                request.node_edge_pairs,
+                request.description,
+                request.direction
+            )
+        )
     return GetBulkReferenceTableDataResult(
         reference_tables=reference_tables
     )
