@@ -1,8 +1,33 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain, keys } from 'lodash-es';
-import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
+import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer, from } from 'rxjs';
+import {
+  merge,
+  transform,
+  clone,
+  flatMap,
+  pick,
+  isEqual,
+  uniq,
+  isNil,
+  omit,
+  get,
+  chain,
+  keys,
+  isEmpty,
+} from 'lodash-es';
+import {
+  switchMap,
+  map,
+  first,
+  shareReplay,
+  distinctUntilChanged,
+  startWith,
+  pairwise,
+  tap,
+  takeUntil,
+  filter
+} from 'rxjs/operators';
 import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
@@ -20,6 +45,10 @@ import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { TrackingService } from 'app/shared/services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { ModuleContext } from 'app/shared/services/module-context.service';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -55,13 +84,38 @@ interface Utils<Nodes> {
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> {
+export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> implements OnDestroy {
   constructor(
     readonly warningController: WarningControllerService,
-    private readonly messageDialog: MessageDialog
+    private readonly messageDialog: MessageDialog,
+    private readonly moduleContext: ModuleContext,
+    private readonly tracking: TrackingService
   ) {
     super();
+
+    this.delta$.pipe(
+      takeUntil(this.destroyed$),
+      map(({networkTraceIdx, viewName}) => ({networkTraceIdx, viewName})),
+      filter(isNotEmpty),
+      distinctUntilChanged(isEqual),
+      switchMap(delta => from(this.moduleContext.appLink).pipe(
+        map(href => ({...delta, href}))
+      ))
+    ).subscribe(({networkTraceIdx, viewName, href}) => {
+      let label = `networkTraceIdx:\t${networkTraceIdx}`;
+      if (viewName) {
+        label += `\nviewName:\t${viewName}`;
+      }
+      this.tracking.register({
+          category: TRACKING_CATEGORIES.sankey,
+          action: TRACKING_ACTIONS.navigateWithin,
+          label,
+          url: href
+      });
+    });
   }
+
+  destroyed$ = new Subject();
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   _data$ = new ReplaySubject<Graph.File>(1);
@@ -357,6 +411,10 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
   normalizeLinks$ = this.stateAccessor('normalizeLinks');
   fileUpdated$ = new Subject<Graph.File>();
+
+  ngOnDestroy() {
+    this.destroyed$.next();
+  }
 
   pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
 

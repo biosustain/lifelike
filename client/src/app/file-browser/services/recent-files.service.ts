@@ -128,7 +128,7 @@ export class RecentFilesService extends RecentFileHashesService {
       const filesystemService = this.injector.get<FilesystemService>(FilesystemService);
       return zip(
         ...fileHashes.map(fileHash =>
-          filesystemService.get(fileHash, false).pipe(
+          filesystemService.get(fileHash).pipe(
             catchError(() => {
               // if file does not exist, delete from list
               this.deleteFromHashes(fileHash);

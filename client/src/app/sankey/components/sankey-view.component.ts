@@ -166,7 +166,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
-        this.filesystemService.get(hashId),
+        this.filesystemService.open(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
