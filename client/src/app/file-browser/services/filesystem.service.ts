@@ -4,8 +4,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, of, throwError, from } from 'rxjs';
+import { Observable, of, throwError, from, combineLatest } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
+import { UnaryFunction, OperatorFunction } from 'rxjs/internal/types';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
@@ -13,6 +14,8 @@ import { serializePaginatedParams } from 'app/shared/utils/params';
 import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { TrackingService } from 'app/shared/services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import {
@@ -46,7 +49,8 @@ export class FilesystemService {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly http: HttpClient,
-              protected readonly recentFilesService: RecentFilesService) {
+              protected readonly recentFilesService: RecentFilesService,
+              private readonly tracking: TrackingService) {
   }
 
   // TODO: Type this method
@@ -89,12 +93,35 @@ export class FilesystemService {
     );
   }
 
-  get(hashId: string, updateRecent = true): Observable<FilesystemObject> {
+  /**
+   * Access file metadata and record it as file opening action
+   * @param hashId - file hash id
+   */
+  open(
+    hashId: string,
+  ): Observable<FilesystemObject> {
+    return this.get(hashId).pipe(
+      tap((file: FilesystemObject) => {
+        this.recentFilesService.addToList(file);
+        this.tracking.register({
+          category: TRACKING_CATEGORIES.filesystem,
+          action: TRACKING_ACTIONS.openedFile,
+          label: `${file.mimeType} ${file.path}`,
+          url: `/file/${file.hashId}`,
+        });
+      }),
+    );
+  }
+
+  /**
+   * Access file metadata
+   * @param hashId - file hash id
+   */
+  get(hashId: string): Observable<FilesystemObject> {
     return this.http.get<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
     ).pipe(
-      map(data => new FilesystemObject().update(data.result)),
-      tap(fileObj => updateRecent && this.recentFilesService.addToList(fileObj)),
+      map(data => new FilesystemObject().update(data.result))
     );
   }
 

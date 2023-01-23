@@ -29,6 +29,8 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { GraphSearchParameters } from 'app/search/graph-search';
+import { TrackingService } from 'app/shared/services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
 
 import { VisualizationService } from '../../services/visualization.service';
 
@@ -75,6 +77,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     private workspaceManager: WorkspaceManager,
     private readonly progressDialog: ProgressDialog,
     private readonly messageDialog: MessageDialog,
+    private readonly tracking: TrackingService
   ) {
     this.legend = new Map<string, string[]>();
 
@@ -206,6 +209,13 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * @param query string to search for
    */
   search(query: string) {
+    this.tracking.register({
+      category: TRACKING_CATEGORIES.visualiser,
+      action: TRACKING_ACTIONS.search,
+      label: query,
+      url: this.tracking.toString()
+    });
+
     this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
   }
 
@@ -303,6 +313,14 @@ export class VisualizationComponent implements OnInit, OnDestroy {
 
   expandNode(expandNodeRequest: ExpandNodeRequest) {
     const {nodeId, filterLabels} = expandNodeRequest;
+
+    this.tracking.register({
+      category: TRACKING_CATEGORIES.visualiser,
+      action: TRACKING_ACTIONS.expandNode,
+      label: 'nodeId',
+      value: nodeId,
+      url: this.tracking.toString()
+    });
 
     if (filterLabels.length === 0) {
       this.openNoResultsFromExpandDialog();
