@@ -2,7 +2,6 @@ import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import {
-  KnowledgeMap,
   KnowledgeMapGraph,
   Source,
   UniversalEntityData,
@@ -31,11 +30,10 @@ import {
   FilesystemObjectTransferData,
 } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
-export class ProjectImpl implements Project, ObservableObject {
+export class ProjectImpl implements ObservableObject {
   /**
    * Legacy ID field that needs to go away.
    */
@@ -78,7 +76,7 @@ export class ProjectImpl implements Project, ObservableObject {
     return this.name;
   }
 
-  get directory(): Directory {
+  get directory() {
     return this.root ? this.root.directory : null;
   }
 
@@ -164,7 +162,7 @@ export class ProjectImpl implements Project, ObservableObject {
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
  * amount of code for the refactor.
  */
-export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap, ObservableObject {
+export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObject {
   hashId: string;
   filename: string;
   user: AppUser;
@@ -294,20 +292,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * @deprecated
    */
-  get directory(): Directory {
+  get directory(): FilesystemObject {
     // noinspection JSDeprecatedSymbols
     if (this.type === 'dir') {
       return this;
     } else {
       throw new Error('no directory available');
     }
-  }
-
-  /**
-   * @deprecated
-   */
-  get file_id(): string {
-    return this.hashId;
   }
 
   /**
@@ -428,96 +419,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  /**
-   * @deprecated
-   */
-  get name(): string {
-    return this.filename;
-  }
-
   get effectiveName(): string {
     if (this.isProjectRoot) {
       return this.project.name;
     } else {
       return this.filename;
     }
-  }
-
-  /**
-   * @deprecated
-   */
-  get label(): string {
-    return this.filename;
-  }
-
-  /**
-   * @deprecated
-   */
-  get graph(): KnowledgeMapGraph {
-    return null;
-  }
-
-  /**
-   * @deprecated
-   */
-  get upload_url(): string {
-    return this.uploadUrl;
-  }
-
-  /**
-   * @deprecated
-   */
-  get annotations_date(): string {
-    return this.annotationsDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get annotationDate(): string {
-    return this.annotationsDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get creation_date(): string {
-    return this.creationDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get modified_date(): string {
-    return this.modifiedDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get modificationDate(): string {
-    return this.modifiedDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get creator(): User {
-    return this.user;
-  }
-
-  /**
-   * @deprecated
-   */
-  get id(): string {
-    return this.hashId;
-  }
-
-  /**
-   * @deprecated
-   */
-  get data(): Directory | KnowledgeMap | PdfFile {
-    return this;
   }
 
   get new(): boolean {
@@ -532,7 +439,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
     );
   }
 
@@ -662,7 +569,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       // Sort files by timestamp
       b.updatedTimestamp - a.updatedTimestamp ||
       // Sort files by name
-      a.name.localeCompare(b.name)
+      a.filename.localeCompare(b.filename)
     );
   }
 

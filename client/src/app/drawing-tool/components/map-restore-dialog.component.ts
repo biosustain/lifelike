@@ -4,15 +4,14 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
-
-import { KnowledgeMap, } from '../services/interfaces';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-map-restore-dialog',
   templateUrl: './map-restore-dialog.component.html',
 })
 export class MapRestoreDialogComponent extends CommonDialogComponent<boolean> {
-  @Input() map: KnowledgeMap;
+  @Input() map: FilesystemObject;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
