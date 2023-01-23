@@ -158,5 +158,4 @@ export class EdgeFormComponent implements AfterViewInit {
       element.select();
     }
   }
-
 }
