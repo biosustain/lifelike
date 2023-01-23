@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { from, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
-import { transform, isEqual, isObject, isEmpty, identity, unary } from 'lodash-es';
+import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } from 'lodash-es';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
@@ -318,3 +318,16 @@ export const findEntriesValue = <K, V>(iterable: Iterable<[K, V]>, predicate: (k
     }
   }
 };
+
+export const freezeDeep = obj =>
+  Object.freeze(
+  transform(
+    obj,
+    (result, value, key) => {
+      if (isObjectLike(value)) {
+        result[key] = freezeDeep(value);
+      }
+    },
+    obj
+  )
+  );

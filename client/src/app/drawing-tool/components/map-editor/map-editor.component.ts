@@ -16,7 +16,6 @@ import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canva
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
 import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
-import { uuidv4 } from 'app/shared/utils/identifiers';
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
@@ -25,6 +24,7 @@ import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 import { ImageBlob } from 'app/shared/utils/forms';
 import { isNotEmpty } from 'app/shared/utils';
+import { createGroupNode } from 'app/graph-viewer/utils/objects';
 
 import { GraphEntityType, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
@@ -444,21 +444,9 @@ export class MapEditorComponent
       graphCanvas.execute(
         new GroupCreation(
           'Create group',
-          {
-            members,
-            margin: 10,
-            hash: uuidv4(),
-            display_name: '',
-            label: GROUP_LABEL,
-            sub_labels: [],
-            // This data depends on members, so we can't calculate it now
-            data: {
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 100,
-            },
-          },
+          createGroupNode({
+            members
+          }),
           true,
           true,
         ),
