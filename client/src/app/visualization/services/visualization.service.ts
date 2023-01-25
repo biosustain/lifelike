@@ -99,7 +99,7 @@ export class VisualizationService {
    */
   expandNode(nodeId: IdType, filterLabels: string[]) {
     return this.http
-      .post<{ result: Neo4jResults<any, any> }>(`${this.baseUrl}/expand`, { nodeId, filterLabels })
+      .post<{ result: GetBulkReferenceTableDataResult }>(`${this.baseUrl}/expand`, { nodeId, filterLabels })
       .pipe(map((resp) => resp.result));
   }
 
@@ -107,12 +107,6 @@ export class VisualizationService {
     return this.http
       .post<{ result: GetReferenceTableDataResult }>(`${this.baseUrl}/get-reference-table`, request)
       .pipe(map((resp) => resp.result));
-  }
-
-  getBulkReferenceTableData(request: BulkReferenceTableDataRequest) {
-    return this.http
-      .post<{ result: GetBulkReferenceTableDataResult }>(`${this.baseUrl}/get-reference-tables`, request)
-      .pipe(map((resp) => resp.result.referenceTables));
   }
 
   getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {

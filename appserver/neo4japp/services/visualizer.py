@@ -1,6 +1,7 @@
 from arango.client import ArangoClient
 from flask.globals import current_app
-from typing import List
+from typing import Dict, List
+from uuid import uuid4
 
 from neo4japp.constants import (
     LogEventType,
@@ -23,8 +24,6 @@ from neo4japp.data_transfer_objects.visualization import (
     GetNodePairSnippetsResult,
     GetReferenceTableDataResult,
     GetSnippetsFromEdgeResult,
-    ReferenceTableDataRequest,
-    ReferenceTablePair,
     ReferenceTableRow,
     Snippet,
     GetAssociatedTypesResult,
@@ -109,66 +108,66 @@ def get_document_for_visualizer(arango_client: ArangoClient, doc_id: str):
     ).to_dict()
 
 
-def expand_graph(arango_client: ArangoClient, node_id: str, filter_labels: List[str]):
-    results = execute_arango_query(
+def expand_node_as_clusters(arango_client: ArangoClient, node_id: str, filter_labels: List[str]):
+    expansion_results = execute_arango_query(
         get_db(arango_client),
         query=get_expand_query(),
         node_id=node_id,
         labels=filter_labels
     )
 
-    node_data = []
-    edge_data = []
-    if len(results) > 0:
-        node_data = results[0]['nodes']
-        edge_data = results[0]['relationships']
+    associations = dict()
+    for row in expansion_results:
+        description = row['description']
+        direction = row['direction']
+        pairs = row['pairs']
+        association_key = f'{description}${direction}'
 
-    nodes = []
-    for data in node_data:
-        try:
-            label = get_first_known_label_from_list(data['labels'])
-        except ValueError:
-            label = 'Unknown'
-        nodes.append({
-            'id': data['id'],
-            'label': label,
-            'domainLabels': [],
-            'data': {
-                'name': data['name'],
-                'id': data['entity_id'],
-            },
-            'subLabels': data['labels'],
-            'displayName': data['name'],
-            'entityUrl': _get_uri_of_node_data(data['id'], label, data['entity_id'])
-        })
+        duplicate_node_edge_pairs = []
+        for pair in pairs:
+            node = pair['node']
+            edge = pair['edge']
+            node_label = get_first_known_label_from_list(node['labels'])
+            node_as_duplicate = {
+                **node,
+                'id': f'duplicateNode:{uuid4()}',
+                'duplicate_of': node['id'],
+                'label': node_label,
+                'entity_url': _get_uri_of_node_data(node['id'], node_label, node['data']['id'])
+            }
 
-    edges = []
-    for data in edge_data:
-        try:
-            from_label = get_first_known_label_from_list(data['from_labels'])
-        except ValueError:
-            from_label = 'Unknown'
+            edge_as_duplicate = {
+                **edge,
+                'to_label': get_first_known_label_from_list(edge['to_labels']),
+                'from_label': get_first_known_label_from_list(edge['from_labels']),
+                'id': f'duplicateNode:{uuid4()}',
+                'duplicate_of': edge['id'],
+                'from': node_id if edge['from'] == node_id else node_as_duplicate['id'],
+                'to': node_id if edge['to'] == node_id else node_as_duplicate['id'],
+                'original_from': edge['from'],
+                'original_to': edge['to'],
+            }
 
-        try:
-            to_label = get_first_known_label_from_list(data['to_labels'])
-        except ValueError:
-            to_label = 'Unknown'
+            duplicate_node_edge_pairs.append({
+                'node': node_as_duplicate,
+                'edge': edge_as_duplicate
+            })
+        associations[association_key] = duplicate_node_edge_pairs
 
-        edges.append({
-            'id': data['id'],
-            'label': data['label'],
-            'data': {
-                'description': data['description'],
-                'association_id': data['association_id'],
-                'type': data['type'],
-            },
-            'to': data['to'],
-            'from': data['from'],
-            'toLabel': to_label,
-            'fromLabel': from_label,
-        })
-
-    return {'nodes': nodes, 'edges': edges}
+    reference_tables = []
+    for association, node_edge_pairs in associations.items():
+        description, direction = association.split('$')
+        reference_tables.append(
+            get_reference_table_data(
+                arango_client,
+                node_edge_pairs,
+                description,
+                direction
+            )
+        )
+    return GetBulkReferenceTableDataResult(
+        reference_tables=reference_tables
+    )
 
 
 def get_associated_type_snippet_count(
@@ -281,7 +280,7 @@ def get_snippets_from_edges(
 
 def get_reference_table_data(
     arango_client: ArangoClient,
-    node_edge_pairs: List[ReferenceTablePair],
+    node_edge_pairs: List[Dict],
     description: str = None,
     direction: str = None
 ):
@@ -289,16 +288,16 @@ def get_reference_table_data(
     # duplicate node ID pairs, otherwise when we send the data back to the frontend
     # we won't know which duplicate nodes we should match the snippet data with
     ids_to_pairs = {
-        (pair.edge.original_from, pair.edge.original_to): pair
+        (pair['edge']['original_from'], pair['edge']['original_to']): pair
         for pair in node_edge_pairs
     }
 
     # One of these lists will have all duplicates (depends on the direction
     # of the cluster edge). We remove the duplicates so we don't get weird query results.
-    from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
-    to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
+    from_ids = list({pair['edge']['original_from'] for pair in node_edge_pairs})
+    to_ids = list({pair['edge']['original_to'] for pair in node_edge_pairs})
     if description is None:
-        description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+        description = node_edge_pairs[0]['edge']['label']  # Every edge should have the same label
     if direction is None:
         direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
@@ -314,35 +313,17 @@ def get_reference_table_data(
     for row in counts:
         pair = ids_to_pairs[(row['from_id'], row['to_id'])]
         reference_table_rows.append(ReferenceTableRow(
-            node_id=pair.node.id,
-            node_display_name=pair.node.display_name,
-            node_label=pair.node.label,
+            node_id=pair['node']['id'],
+            node_display_name=pair['node']['display_name'],
+            node_label=pair['node']['label'],
             snippet_count=row['count'],
         ))
 
     return GetReferenceTableDataResult(
         reference_table_rows=reference_table_rows,
+        duplicate_node_edge_pairs=node_edge_pairs,
         direction=direction,
         description=description
-    )
-
-
-def get_bulk_reference_table_data(
-    arango_client: ArangoClient,
-    associations: List[ReferenceTableDataRequest]
-):
-    reference_tables = []
-    for request in associations:
-        reference_tables.append(
-            get_reference_table_data(
-                arango_client,
-                request.node_edge_pairs,
-                request.description,
-                request.direction
-            )
-        )
-    return GetBulkReferenceTableDataResult(
-        reference_tables=reference_tables
     )
 
 
@@ -474,52 +455,40 @@ def get_snippets_for_cluster(
 
 def get_expand_query() -> str:
     return """
-    FOR n IN literature
-        FILTER n._id == @node_id
-        LET associated_nodes_and_edges = (
+        FOR n IN literature
+            FILTER n._id == @node_id
             FOR m, e IN ANY n associated
                 FILTER LENGTH(INTERSECTION(@labels, m.labels)) > 0
-                RETURN {
-                    'node': m,
-                    'edge': e
-                }
-        )
-        LET nodes = UNION(
-            (
-                FOR associated IN associated_nodes_and_edges
-                    RETURN DISTINCT {
-                        "id": associated.node._id,
-                        "labels": associated.node.labels,
-                        "entity_id": associated.node.eid,
-                        "name": associated.node.name
+                COLLECT description = e.description, outgoing = e._from == n._id INTO pairs = {
+                    "node": {
+                        "id": m._id,
+                        "display_name": m.name,
+                        "data": {
+                            "name": m.name,
+                            "id": m.eid,
+                        },
+                        "labels": m.labels,
+                        "domain_labels": [],
+                    },
+                    "edge": {
+                        "id": e._id,
+                        "from": e._from,
+                        "to": e._to,
+                        "from_labels": DOCUMENT(e._from).labels,
+                        "to_labels": DOCUMENT(e._to).labels,
+                        "data": {
+                            "description": e.description,
+                            "association_id": e.association_id,
+                            "type": e.type,
+                        },
+                        "label": "associated"
                     }
-            ), [
-                {
-                    "id": n._id,
-                    "labels": n.labels,
-                    "entity_id": n.eid,
-                    "name": n.name
                 }
-            ]
-        )
-        LET edges = (
-            FOR associated IN associated_nodes_and_edges
-                RETURN DISTINCT {
-                    "id": associated.edge._id,
-                    "from_labels": DOCUMENT(associated.edge._from).labels,
-                    "to_labels": DOCUMENT(associated.edge._to).labels,
-                    "from": associated.edge._from,
-                    "to": associated.edge._to,
-                    "description": associated.edge.description,
-                    "association_id": associated.edge.association_id,
-                    "type": associated.edge.type,
-                    "label": "associated",
+                RETURN {
+                    "description": description,
+                    "direction": outgoing ? "Outgoing" : "Incoming",
+                    "pairs": pairs
                 }
-        )
-        RETURN {
-            "nodes": nodes,
-            "relationships": edges
-        }
     """
 
 

@@ -61,9 +61,9 @@ export interface NodePair {
   node2Id: IdType;
 }
 
-export interface DuplicateNodeEdgePair<NodeData = object, EdgeData = object> {
-  node: DuplicateVisNode<NodeData>;
-  edge: DuplicateVisEdge<EdgeData>;
+export interface DuplicateNodeEdgePair {
+  node: DuplicateVisNode;
+  edge: DuplicateVisEdge;
 }
 
 export interface EdgeConnectionData {
@@ -220,12 +220,6 @@ export interface AssociatedTypeSnippetCountRequest {
 
 // Begin Response Interfaces
 
-export interface ExpandNodeResult<NodeData = object, EdgeData = object> {
-  expandedNode: IdType;
-  nodes: VisNode<NodeData>[];
-  edges: VisEdge<EdgeData>[];
-}
-
 export interface GetEdgeSnippetsResult {
   queryData: EdgeConnectionData;
   snippetData: GetSnippetsResult;
@@ -246,6 +240,7 @@ export interface GetNodePairSnippetsResult {
 
 export interface GetReferenceTableDataResult {
   referenceTableRows: ReferenceTableRow[];
+  duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
   direction: Direction;
   description: string;
 }

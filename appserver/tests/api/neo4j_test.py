@@ -6,21 +6,6 @@ def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
-@pytest.mark.skip(
-    reason='Does not work unless we upgrade the Neo4j docker image to 4.0+ because of apoc function'
-)
-def test_expand(client, gas_gangrene):
-    response = client.post(
-        '/visualizer/expand',
-        data=json.dumps({
-            'node_id': 1,
-            'filter_labels': ['Chemical', 'Disease', 'Gene'],
-        }), content_type='application/json'
-    )
-
-    assert response.status_code == 200
-
-
 @pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_reference_table_data(
     client,
