@@ -12,7 +12,7 @@ import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspac
 import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 
 import { FilesystemObject } from '../models/filesystem-object';
@@ -91,9 +91,9 @@ export class ObjectListComponent {
       } else {
         const progressDialogRef = this.progressDialog.display({
           title: `Download ${getObjectLabel(target)}`,
-          progressObservables: [new BehaviorSubject<Progress>(new Progress({
+          progressObservables: [new ProgressSubject({
             status: 'Generating download...',
-          }))],
+          })],
         });
         this.filesystemService.getContent(target.hashId).pipe(
           map(blob => {

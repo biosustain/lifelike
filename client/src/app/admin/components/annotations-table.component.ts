@@ -12,7 +12,7 @@ import { GlobalAnnotationListItem } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import {
   PaginatedRequestOptions,
@@ -158,9 +158,9 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     }
 
     exportGlobalExclusions() {
-        const progressObservables = [new BehaviorSubject<Progress>(new Progress({
+        const progressObservables = [new ProgressSubject({
             status: 'Preparing file for download...'
-        }))];
+        })];
         const progressDialogRef = this.progressDialog.display({
             title: `Exporting global exclusions`,
             progressObservables,
@@ -180,9 +180,9 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     }
 
     exportGlobalInclusions() {
-        const progressObservables = [new BehaviorSubject<Progress>(new Progress({
+        const progressObservables = [new ProgressSubject({
             status: 'Preparing file for download...'
-        }))];
+        })];
         const progressDialogRef = this.progressDialog.display({
             title: `Exporting global inclusions`,
             progressObservables,

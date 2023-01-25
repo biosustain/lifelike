@@ -8,7 +8,7 @@ import { uniqueId } from 'lodash-es';
 import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
@@ -298,9 +298,9 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     dialogRef.result.then((annotateAll: boolean) => {
       const progressDialogRef = this.progressDialog.display({
         title: `Adding Annotations`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Adding annotations to the file...',
-        }))],
+        })],
       });
 
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, {

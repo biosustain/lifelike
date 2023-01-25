@@ -39,8 +39,9 @@ from neo4japp.database import (
 )
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
-from neo4japp.schemas.common import ErrorResponseSchema
-from neo4japp.utils.logger import ErrorLog
+from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
+from neo4japp.utils.logger import ErrorLog, WarningLog
+from neo4japp.warnings import ServerWarning
 
 apm = ElasticAPM()
 
@@ -204,6 +205,8 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(BrokenPipeError, handle_error)
     app.register_error_handler(ServiceUnavailable, handle_error)
+    app.register_error_handler(ServerWarning, handle_warning)
+    app.register_error_handler(Warning, partial(handle_generic_warning, 199))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
 
     # Initialize Elastic APM if configured
@@ -250,6 +253,29 @@ def handle_error(ex):
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
+def handle_warning(warn):
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_app.logger.warning(
+        f'Request returned a handled warning <{type(warn)}>',
+        exc_info=warn,
+        extra={
+            **{'to_sentry': False},
+            **WarningLog(
+                warning_name=f'{type(warn)}',
+                event_type=LogEventType.SENTRY_WARNINIG.value,
+                username=current_user,
+            ).to_dict()
+        }
+    )
+
+    warn.version = GITHUB_HASH
+    if current_app.debug:
+        warn.stacktrace = ''.join(traceback.format_exception(
+            etype=type(warn), value=warn, tb=warn.__traceback__))
+
+    return jsonify(WarningResponseSchema().dump(warn)), warn.code
+
+
 def handle_generic_error(code: int, ex: Exception):
     # create a default server error
     # display to user the default error message
@@ -276,6 +302,33 @@ def handle_generic_error(code: int, ex: Exception):
             etype=type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(ErrorResponseSchema().dump(newex)), newex.code
+
+
+def handle_generic_warning(code: int, ex: Warning):
+    # create a default server warning
+    # display to user the default warning message
+    # but log with the real warning message below
+    newex = ServerWarning()
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_app.logger.error(
+        f'Request caused a unhandled exception <{type(ex)}>',
+        exc_info=ex,
+        extra={
+            **{'to_sentry': False},
+            **WarningLog(
+                warning_name=f'{type(ex)}',
+                event_type=LogEventType.SENTRY_WARNINIG.value,
+                username=current_user,
+            ).to_dict()
+        }
+    )
+
+    newex.version = GITHUB_HASH
+    if current_app.debug:
+        newex.stacktrace = ''.join(traceback.format_exception(
+            etype=type(ex), value=ex, tb=ex.__traceback__))
+
+    return jsonify(WarningResponseSchema().dump(newex)), newex.code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):

@@ -1,17 +1,30 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpEvent,
+  HttpEventType, HttpHeaderResponse, HttpProgressEvent, HttpResponse,
+  HttpSentEvent, HttpUserEvent,
+} from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, of, throwError, from, combineLatest } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { UnaryFunction, OperatorFunction } from 'rxjs/internal/types';
+import { forEach, assign, merge } from 'lodash-es';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { serializePaginatedParams } from 'app/shared/utils/params';
-import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+  WarningResponse,
+} from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { TrackingService } from 'app/shared/services/tracking.service';
@@ -71,10 +84,8 @@ export class FilesystemService {
     );
   }
 
-  create(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
-    bodyValue?: FilesystemObject,
-  }> {
-    return this.http.post(
+  create(request: ObjectCreateRequest): Observable<HttpEvent<SingleResult<FilesystemObject>>> {
+    return this.http.post<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects`,
       objectToMixedFormData(request),
       {
@@ -83,13 +94,14 @@ export class FilesystemService {
         responseType: 'json',
       }
     ).pipe(
-      map(event => {
-        if (event.type === HttpEventType.Response) {
-          const body: SingleResult<FilesystemObjectData> = event.body as SingleResult<FilesystemObjectData>;
-          (event as any).bodyValue = new FilesystemObject().update(body.result);
-        }
-        return event;
-      }),
+      map((event) =>
+        event.type === HttpEventType.Response ?
+          merge(
+            event,
+            {body: {result: new FilesystemObject().update(event.body.result)}},
+          ) as any as HttpResponse<SingleResult<FilesystemObject>> :
+          event
+      ),
     );
   }
 

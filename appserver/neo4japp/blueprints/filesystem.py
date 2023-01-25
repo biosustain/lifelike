@@ -90,6 +90,7 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
+from neo4japp.warnings import ServerWarning
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -411,6 +412,7 @@ class FilesystemBaseView(MethodView):
         :param params: the parameters
         :param user: the user that is making the change
         """
+        warnings = []
         # ========================================
         # Check
         # ========================================
@@ -529,6 +531,8 @@ class FilesystemBaseView(MethodView):
                     try:
                         provider.validate_content(buffer)
                         buffer.seek(0)  # Must rewind
+                    except Warning as w:
+                        warnings.append(w)
                     except ValueError:
                         raise ValidationError(f"The provided file may be corrupt for files of type "
                                               f"'{file.mime_type}' (which '{file.hash_id}' is of).",
@@ -563,7 +567,7 @@ class FilesystemBaseView(MethodView):
                 "filename"
             )
 
-    def get_file_response(self, hash_id: str, user: AppUser):
+    def get_file_response(self, hash_id: str, user: AppUser, warnings: List[ServerWarning] = []):
         """
         Fetch a file and return a response that can be sent to the client. Permissions
         are checked and this method will throw a relevant response exception.
@@ -596,6 +600,7 @@ class FilesystemBaseView(MethodView):
             'result.children.children',  # We aren't loading sub-children
         )).dump({
             'result': return_file,
+            'warnings': warnings
         }))
 
     def get_bulk_file_response(
@@ -740,6 +745,7 @@ class FileListView(FilesystemBaseView):
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def post(self, params):
         """Endpoint to create a new file or to clone a file into a new one."""
+        warnings = []
 
         current_user = g.current_user
         file_type_service = get_file_type_service()
@@ -863,12 +869,17 @@ class FileListView(FilesystemBaseView):
             try:
                 provider.validate_content(buffer)
                 buffer.seek(0)  # Must rewind
+            except Warning as w:
+                warnings.append(w)
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-            # Get the DOI
-            file.doi = provider.extract_doi(buffer)
-            buffer.seek(0)  # Must rewind
+            else:
+                try:
+                    # Get the DOI only if content could be validated
+                    file.doi = provider.extract_doi(buffer)
+                    buffer.seek(0)  # Must rewind
+                except Warning as w:
+                    warnings.append(w)
 
             # Save the file content if there's any
             if size:
@@ -930,7 +941,7 @@ class FileListView(FilesystemBaseView):
         # Return new file
         # ========================================
 
-        return self.get_file_response(file.hash_id, current_user)
+        return self.get_file_response(file.hash_id, current_user, warnings)
 
     @use_args(lambda request: BulkFileRequestSchema(),
               locations=['json', 'form', 'files', 'mixed_form_json'])

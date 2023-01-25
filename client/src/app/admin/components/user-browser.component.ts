@@ -12,7 +12,7 @@ import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { AuthActions, AuthSelectors } from 'app/auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
@@ -109,9 +109,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     modalRef.result.then(newUser => {
       const progressDialogRef = this.progressDialog.display({
         title: `Creating User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Creating user...',
-        }))],
+        })],
       });
 
       this.accountService.createUser(newUser)
@@ -141,9 +141,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         modalRef.result.then((userUpdateData: UserUpdateData) => {
           const progressDialogRef = this.progressDialog.display({
             title: `Updating User`,
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new ProgressSubject({
               status: 'Updating user...',
-            }))],
+            })],
           });
           this.accountService.updateUser(userUpdateData, selectedUser.hashId)
           .pipe(this.errorHandler.create({label: 'Update user'}))
@@ -176,9 +176,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     if (confirm('Unlock user ' + user.username + '?')) {
       const progressDialogRef = this.progressDialog.display({
         title: `Unlocking User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Unlocking user...',
-        }))],
+        })],
       });
       this.accountService.unlockUser(user.hashId)
         .pipe(this.errorHandler.create({label: 'Unlock user'}))

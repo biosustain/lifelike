@@ -45,6 +45,7 @@ from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarningGroup, ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
@@ -540,6 +541,7 @@ def reannotate_files(user, password):
 
 def add_file(filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes):
     """Helper for adding a generic file to the database."""
+    warnings = []
     user = db.session.query(AppUser).filter(AppUser.id == user_id).one()
     parent = db.session.query(Files).filter(Files.id == parent_id).one()
 
@@ -584,12 +586,14 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     try:
         provider.validate_content(buffer)
         buffer.seek(0)  # Must rewind
+    except ServerWarning as w:
+        warnings.append(w)
     except ValueError as e:
         raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-    # Get the DOI
-    file.doi = provider.extract_doi(buffer)
-    buffer.seek(0)  # Must rewind
+    else:
+        # Try to get the DOI only if content can be validated
+        file.doi = provider.extract_doi(buffer)
+        buffer.seek(0)  # Must rewind
 
     # Save the file content if there's any
     if size:
@@ -630,6 +634,9 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
 
     db.session.commit()
     # rollback in case of error?
+
+    if warnings:
+        raise ServerWarningGroup(warnings=warnings)
 
 
 @app.cli.command('merge-maps')

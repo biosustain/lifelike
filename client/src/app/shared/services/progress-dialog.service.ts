@@ -4,14 +4,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { NgbModalOptions } from '@ng-bootstrap/ng-bootstrap/modal/modal-config';
 
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 
 import { ProgressDialogComponent } from '../components/dialog/progress-dialog.component';
 import { openModal } from '../utils/modals';
 
 export interface ProgressDialogArguments {
   title: string;
-  progressObservables: Observable<Progress>[];
+  progressObservables: ProgressSubject[];
   onCancel?: () => void;
 }
 

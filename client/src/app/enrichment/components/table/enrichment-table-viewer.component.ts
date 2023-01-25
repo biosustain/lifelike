@@ -28,7 +28,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
@@ -218,9 +218,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   save() {
     const progressDialogRef = this.progressDialog.display({
       title: 'Working...',
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+      progressObservables: [new ProgressSubject({
         status: 'Saving enrichment table...',
-      }))],
+      })],
     });
     const observable = combineLatest(
       this.object$,

@@ -15,7 +15,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
@@ -124,9 +124,9 @@ export class AbstractObjectTypeProviderHelper {
     dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       const progressDialogRef = this.progressDialog.display({
         title: 'Working...',
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
         status: `Saving changes to ${getObjectLabel(target)}...`,
-      }))],
+      })],
       });
       return this.filesystemService.save([target.hashId], value.request, {
         [target.hashId]: target,

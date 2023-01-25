@@ -14,7 +14,7 @@ import { MessageArguments, MessageDialog } from 'app/shared/services/message-dia
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ResultMapping } from 'app/shared/schemas/common';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
@@ -52,9 +52,9 @@ export class FilesystemObjectActions {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
-    const progressObservables = [new BehaviorSubject<Progress>(new Progress({
+    const progressObservables = [new ProgressSubject({
       status: message,
-    }))];
+    })];
     return this.progressDialog.display({
       title,
       progressObservables,

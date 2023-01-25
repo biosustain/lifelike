@@ -9,7 +9,7 @@ import { concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { StorageService } from 'app/shared/services/storage.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 // TODO: Deprecate after LL-2840
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
@@ -113,9 +113,9 @@ export class AdminSettingsComponent {
     }
 
     submit() {
-        const progressObservables = [new BehaviorSubject<Progress>(new Progress({
+        const progressObservables = [new ProgressSubject({
             status: 'Uploading user manual...',
-        }))];
+        })];
         const progressDialogRef = this.progressDialog.display({
             title: 'Saving manual as ***ARANGO_DB_NAME***-user-manual.pdf...',
             progressObservables,

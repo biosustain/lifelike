@@ -27,7 +27,7 @@ import { createGraphSearchParamsFromQuery, getGraphQueryParams, GraphQueryParame
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { GraphSearchParameters } from 'app/search/graph-search';
 import { TrackingService } from 'app/shared/services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
@@ -230,9 +230,9 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   openLoadingClustersDialog() {
     this.loadingClustersDialogRef = this.progressDialog.display({
       title: `Node Expansion`,
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+      progressObservables: [new ProgressSubject({
         status: 'Loading clusters...',
-      }))],
+      })],
       onCancel: () => {},
     });
 

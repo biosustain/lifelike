@@ -1,8 +1,9 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { finalize, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, of, throwError } from 'rxjs';
+import { first } from 'lodash-es';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
@@ -23,7 +24,7 @@ import {
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import { SearchType } from 'app/search/shared';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectContentSource, ObjectCreateRequest } from 'app/file-browser/schema';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
@@ -94,9 +95,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           return dialogRef.result.then((value: EnrichmentTableEditDialogValue) => {
             const progressDialogRef = this.progressDialog.display({
               title: 'Enrichment Table Creating',
-              progressObservables: [new BehaviorSubject<Progress>(new Progress({
+              progressObservables: [new ProgressSubject({
                 status: 'Generating data for enrichment table...',
-              }))],
+              })],
             });
 
             const document = value.document;
@@ -104,20 +105,32 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             return document.refreshData().pipe(
               mergeMap(newDocument => newDocument.save()),
               tap(() => progressDialogRef.close()),
-              mergeMap(blob =>
-                from(this.objectCreationService.executePutWithProgressDialog([{
-                    ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
-                    contentValue: blob,
-                  }], [{
+              map(blob => ({
+                ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
+                contentValue: blob
+              } as ObjectCreateRequest)),
+              switchMap(request =>
+                this.objectCreationService.executePutWithProgressDialog(
+                  [request],
+                  [{
                     organism: {
                       organism_name: document.organism,
                       synonym: document.organism,
-                      tax_id: document.taxID
+                      tax_id: document.taxID,
+                    },
+                  }],
+                ).pipe(
+                  map(results => {
+                    const result = results.get(request);
+                    if (results instanceof Error) {
+                      throw result;
                     }
-                  }])
-                )),
+                    return result as FilesystemObject;
+                  })
+                )
+              ),
               finalize(() => progressDialogRef.close()),
-            ).toPromise().then(results => results.pop());
+            ).toPromise();
           });
         },
       },
@@ -127,9 +140,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   openEditDialog(target: FilesystemObject, options: {} = {}): Promise<EnrichmentTableEditDialogValue> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Edit Enrichment Table',
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+      progressObservables: [new ProgressSubject({
         status: 'Getting table information for editing...',
-      }))],
+      })],
     });
 
     return this.filesystemService.getContent(target.hashId).pipe(
@@ -143,9 +156,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
         dialogRef.componentInstance.accept = (value: EnrichmentTableEditDialogValue) => {
           const progressDialog2Ref = this.progressDialog.display({
             title: 'Working...',
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new ProgressSubject({
               status: 'Updating enrichment table...',
-            }))],
+            })],
           });
 
           // old files can have outdated or corrupted data/schema

@@ -7,6 +7,7 @@ import textwrap
 import typing
 import zipfile
 from base64 import b64encode
+from dataclasses import dataclass
 from io import BufferedIOBase
 from typing import Optional, List
 
@@ -81,6 +82,7 @@ from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
+from neo4japp.warnings import ServerWarning
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -259,6 +261,14 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             raise ValueError("Directories can't have content")
 
 
+@dataclass
+class TextExtractionNotAllowed(ServerWarning):
+    title: str = \
+        "Autor of this PDF disallowed content extraction"
+    message: Optional[str] = \
+        "Content of this file will not be automatically annotated within ***ARANGO_DB_NAME***"
+
+
 class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_PDF
     SHORTHAND = 'pdf'
@@ -278,7 +288,9 @@ class PDFTypeProvider(BaseFileTypeProvider):
         fp = io.BytesIO(data)
         try:
             high_level.extract_text(fp, page_numbers=[0], caching=False)
-        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
+        except PDFTextExtractionNotAllowed as e:
+            raise TextExtractionNotAllowed() from e
+        except PDFEncryptionError:
             raise FileUploadError(
                 title='Failed to Read PDF',
                 message='This pdf is locked and cannot be loaded into Lifelike.')
@@ -303,6 +315,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
         fp = io.BytesIO(data)
         try:
             text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        except PDFTextExtractionNotAllowed as e:
+            raise TextExtractionNotAllowed() from e
         except Exception:
             raise FileUploadError(
                 title='Failed to Read PDF',

@@ -14,7 +14,7 @@ import {
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import {
   TermsOfServiceDialogComponent,
@@ -148,9 +148,9 @@ export class AuthEffects {
     exhaustMap(({userUpdateData, hashId}) => {
       const progressDialogRef = this.progressDialog.display({
         title: `Updating User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Updating user...',
-        }))],
+        })],
       });
       return this.accountService.updateUser(userUpdateData, hashId).pipe(
         map(() => {
@@ -190,9 +190,9 @@ export class AuthEffects {
     exhaustMap(({userUpdateData}) => {
       const progressDialogRef = this.progressDialog.display({
         title: `Updating User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Updating user...',
-        }))],
+        })]
       });
       return this.keycloakAccountService.updateCurrentUser(userUpdateData).pipe(
         map(() => {

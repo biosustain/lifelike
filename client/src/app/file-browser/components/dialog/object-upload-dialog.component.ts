@@ -10,7 +10,7 @@ import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotatio
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
 
-import { ObjectEditDialogComponent } from './object-edit-dialog.component';
+import { ObjectEditDialogComponent, ObjectEditDialogValue } from './object-edit-dialog.component';
 import { ObjectCreateRequest } from '../../schema';
 
 @Component({
@@ -26,7 +26,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
 
   // TODO: We can think about removing this after we add task queue for annotations
-  readonly maxFileCount = 5;
+  readonly maxFileCount = 15;
 
   fileList: FileInput<any>[] = [];
   selectedFile: FileInput<any> = null;
@@ -43,6 +43,10 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
               protected readonly progressDialog: ProgressDialog,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog, modalService);
+  }
+
+  applyValue(value: any) {
+
   }
 
   // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.

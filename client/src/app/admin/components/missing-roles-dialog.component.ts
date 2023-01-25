@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { AppUser, UserUpdateData } from 'app/interfaces';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { AccountService } from 'app/users/services/account.service';
@@ -46,9 +46,9 @@ export class MissingRolesDialogComponent extends CommonFormDialogComponent<boole
     const updateData: UserUpdateData = {roles: ['user']};
     const progressDialogRef = this.progressDialog.display({
             title: `Updating User`,
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new ProgressSubject({
               status: 'Updating user...',
-            }))],
+            })]
           });
     this.accountService.updateUser(updateData, user.hashId)
     .pipe(this.errorHandler.create({label: 'Update user role'}))

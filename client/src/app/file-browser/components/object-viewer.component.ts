@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
@@ -47,9 +47,9 @@ export class ObjectViewerComponent implements OnDestroy {
   downloadObject(target: FilesystemObject) {
     const progressDialogRef = this.progressDialog.display({
       title: `Download ${getObjectLabel(target)}`,
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+      progressObservables: [new ProgressSubject({
         status: 'Generating download...',
-      }))],
+      })]
     });
     this.filesystemService.getContent(target.hashId).pipe(
       map(blob => {

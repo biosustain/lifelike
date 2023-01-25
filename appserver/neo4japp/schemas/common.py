@@ -65,3 +65,22 @@ class ErrorResponseSchema(CamelCaseSchema):
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
         attribute='fields', allow_none=True)
+
+
+class WarningResponseSchema(CamelCaseSchema):
+    """All errors are emitted with this schema."""
+    title = fields.String()
+    type = fields.String()
+    message = fields.String()
+    additional_msgs = fields.List(fields.String())
+    stacktrace = fields.String()
+    code = fields.Integer()
+    version = fields.String()
+    fields_ = fields.Dict(
+        keys=fields.String(),
+        values=fields.Raw(),  # raw means can be anything
+        attribute='fields', allow_none=True)
+
+
+class WarningSchema(CamelCaseSchema):
+    warnings = fields.List(fields.Nested(WarningResponseSchema))

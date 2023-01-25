@@ -4,16 +4,18 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { select, Store } from '@ngrx/store';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { AccountService } from 'app/users/services/account.service';
+import { BuildInfo } from 'app/interfaces';
+import { MetaDataService } from 'app/shared/services/metadata.service';
 
 import { AuthActions, AuthSelectors } from '../store';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
@@ -30,6 +32,7 @@ export class LoginComponent {
 
   unsupportedBrowser: boolean;
   errorMessage: string = null;
+  readonly buildInfo$: Observable<BuildInfo> = this.metadataService.getBuildInfo();
 
   constructor(
     private store: Store<State>,
@@ -39,6 +42,7 @@ export class LoginComponent {
     private readonly progressDialog: ProgressDialog,
     private readonly snackBar: MatSnackBar,
     private readonly errorHandler: ErrorHandler,
+    private readonly metadataService: MetaDataService,
     private readonly accountService: AccountService
   ) {
     this.unsupportedBrowser = this.platform.SAFARI; // Add additional browsers here as necessary
@@ -74,9 +78,9 @@ export class LoginComponent {
     return modalRef.result.then(email => {
       const progressDialogRef = this.progressDialog.display({
         title: `Sending request`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        progressObservables: [new ProgressSubject({
           status: 'Sending request...',
-        }))],
+        })]
       });
       this.accountService.resetPassword(email.email)
         .pipe()

@@ -14,7 +14,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
@@ -106,9 +106,9 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<ModelList<Collaborator>> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Updating Collaborators',
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+      progressObservables: [new ProgressSubject({
         status: 'Updating collaborators',
-      }))],
+      })],
     });
 
     return this.projectsService.saveCollaborators(this.project.hashId, request).pipe(

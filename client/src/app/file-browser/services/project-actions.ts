@@ -8,7 +8,7 @@ import { Store, select } from '@ngrx/store';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { DeleteNonEmpty } from 'app/shared/exceptions';
 import { wrapExceptions } from 'app/shared/rxjs/wrapExceptions';
 import { State } from 'app/***ARANGO_USERNAME***-store';
@@ -48,7 +48,7 @@ export class ProjectActions {
     const progressDialogRef = this.progressDialog.display({
       title,
       progressObservables: [
-        of(new Progress({status: message}))
+        new ProgressSubject({status: message})
       ],
     });
     return observable => observable.pipe(

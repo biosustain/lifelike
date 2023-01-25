@@ -15,7 +15,7 @@ import { finalize, tap, first, map } from 'rxjs/operators';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressSubject } from 'app/interfaces/common-dialog.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -91,9 +91,9 @@ export class FilesystemObjectTargetDirective {
         if (transferData.privileges.writable) {
           const progressDialogRef = this.progressDialog.display({
             title: 'File Move',
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
+            progressObservables: [new ProgressSubject({
               status: 'Moving to the new folder...',
-            }))],
+            })],
           });
 
           this.filesystemService.save([transferData.hashId], {

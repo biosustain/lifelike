@@ -1,10 +1,26 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output, SimpleChanges,
+} from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { asyncScheduler, Observable, Subscription } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { asyncScheduler, BehaviorSubject, Observable, Subscription, combineLatest, defer } from 'rxjs';
+import { throttleTime, map, combineAll } from 'rxjs/operators';
+import { flatMap } from 'lodash-es';
 
-import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import {
+  Progress,
+  ProgressArguments,
+  ProgressMode,
+  ProgressSubject,
+} from 'app/interfaces/common-dialog.interface';
+
+import { isNotEmpty } from '../../utils';
 
 
 /**
@@ -14,60 +30,54 @@ import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
   selector: 'app-progress-dialog',
   templateUrl: './progress-dialog.component.html',
 })
-export class ProgressDialogComponent implements OnInit, OnDestroy {
+export class ProgressDialogComponent {
   @Input() title: string;
-  @Input()
-  progressObservables: Observable<Progress>[];
-
+  @Input() progressObservables: ProgressSubject[];
+  persist: boolean;
+  closable$: Observable<boolean> = defer(() =>
+    combineLatest([
+      ...this.progressObservables.map(po => po.warnings$),
+      ...this.progressObservables.map(po => po.errors$)
+    ]).pipe(
+      map(progressWarnings => flatMap(progressWarnings)),
+      map(warnings => isNotEmpty(warnings)),
+    ),
+  );
 
   @Input() cancellable = false;
   @Output() readonly progressCancel = new EventEmitter<any>();
-  /**
-   * Periodically updated with the progress of the upload.
-   */
-  lastProgresses: Progress[] = [];
 
-
-  private progressSubscription = new Subscription();
-
-
-  constructor(public activeModal: NgbActiveModal) {
-  }
-
-  ngOnInit() {
-    for (let i = 0; i < this.progressObservables.length; i++) {
-      const progressObservable = this.progressObservables[i];
-      this.lastProgresses.push(new Progress());
-      this.progressSubscription.add(progressObservable
-        .pipe(throttleTime(250, asyncScheduler, {
-          leading: true,
-          trailing: true,
-        })) // The progress bar cannot be updated more than once every 250ms due to its CSS animation
-        .subscribe(value => this.lastProgresses[i] = value));
-    }
-  }
-
-  ngOnDestroy() {
-    this.progressSubscription.unsubscribe();
-  }
+  constructor(public activeModal: NgbActiveModal) {}
 
   cancel() {
     this.activeModal.dismiss();
     this.progressCancel.emit();
   }
+
+  close() {
+    this.persist = isNotEmpty(
+      flatMap([
+        ...this.progressObservables.map(po => po.warnings),
+        ...this.progressObservables.map(po => po.errors),
+      ]),
+    );
+    if (!this.persist) {
+      this.cancel();
+    }
+  }
 }
 
-export function getProgressStatus(event, loadingStatus: string, finishStatus: string): Progress {
+export function getProgressStatus(event, loadingStatus: string, finishStatus: string): ProgressArguments {
   if (event.loaded >= event.total) {
-    return new Progress({
+    return {
       mode: ProgressMode.Buffer,
       status: loadingStatus,
       value: event.loaded / event.total,
-    });
+    };
   }
-  return new Progress({
+  return {
       mode: ProgressMode.Determinate,
       status: finishStatus,
       value: event.loaded / event.total,
-    });
+    };
 }
