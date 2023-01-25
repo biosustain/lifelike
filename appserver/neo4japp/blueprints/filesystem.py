@@ -90,7 +90,7 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
-from neo4japp.warnings import ServerWarning
+from neo4japp.warnings import ServerWarning, ServerWarningGroup
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -560,12 +560,15 @@ class FilesystemBaseView(MethodView):
 
         try:
             db.session.commit()
-        except IntegrityError as e:
+        except IntegrityError:
             db.session.rollback()
             raise ValidationError(
                 "No two items (folder or file) can share the same name.",
                 "filename"
             )
+
+        if warnings:
+            raise ServerWarningGroup(warnings=warnings)
 
     def get_file_response(self, hash_id: str, user: AppUser, warnings: List[ServerWarning] = []):
         """
