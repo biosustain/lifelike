@@ -8,7 +8,6 @@ import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { DataSet } from 'vis-data';
 
 import {
-  ExpandNodeResult,
   GetClusterSnippetsResult,
   GetEdgeSnippetsResult,
   GraphNode,
@@ -46,7 +45,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   nodes: DataSet<VisNode | GraphNode>;
   edges: DataSet<VisEdge | GraphRelationship>;
 
-  expandNodeResult: ExpandNodeResult;
   getEdgeSnippetsResult: GetEdgeSnippetsResult;
   getClusterSnippetsResult: GetClusterSnippetsResult;
   getSnippetsError: HttpErrorResponse;

@@ -1,25 +1,6 @@
 import pytest
 
 
-@pytest.mark.skip(
-    reason='Does not work unless we upgrade the Neo4j docker image to 4.0+ because of apoc function'
-)
-def test_expand_node_gets_no_results_for_node_with_no_relationships(
-    visualizer_service,
-    gas_gangrene
-):
-    expand_query_result = visualizer_service.expand_graph(
-        node_id=gas_gangrene.identity,
-        filter_labels=['Chemical', 'Disease', 'Gene'],
-    )
-
-    assert expand_query_result.get('nodes', None) is not None
-    assert expand_query_result.get('nodes', None) is not None
-
-    assert expand_query_result['nodes'] == []
-    assert expand_query_result['edges'] == []
-
-
 @pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_reference_table_data(
     visualizer_service,

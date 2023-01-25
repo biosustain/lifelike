@@ -12,7 +12,6 @@ import {
   DuplicateVisEdge,
   DuplicateVisNode,
   Neo4jGraphConfig,
-  Neo4jResults,
   VisEdge,
   VisNode,
 } from 'app/interfaces/neo4j.interface';
@@ -24,7 +23,7 @@ import {
   Direction,
   DuplicateEdgeConnectionData,
   EdgeConnectionData,
-  ExpandNodeResult,
+  GetBulkReferenceTableDataResult,
   GetClusterSnippetsResult,
   GetEdgeSnippetsResult,
   GetReferenceTableDataResult,
@@ -335,103 +334,6 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
     this.collapseNeighbors(nodeRef);
   }
 
-  processExpansionResults(expandedNode: IdType, results: Neo4jResults): ExpandNodeResult {
-    const nodeRef = this.nodes.get(expandedNode) as VisNode;
-    const visJSDataFormat = this.visService.convertGraphToVisJSFormat(results, this.legend);
-    let { nodes, edges } = visJSDataFormat;
-
-    // If the expanded node has no connecting relationships, notify the user
-    if (edges.length === 0) {
-      this.openNoResultsFromExpandDialog();
-      this.loadingClustersDialogRef.close();
-      return;
-    }
-
-    // Sets the node expand state to true
-    nodes = nodes.map((n) => {
-      if (n.id === expandedNode) {
-        return { ...n, expanded: !nodeRef.expanded };
-      }
-      return n;
-    });
-
-    this.nodes.update(nodes);
-    this.edges.update(edges);
-
-    return { nodes, edges, expandedNode } as ExpandNodeResult;
-  }
-
-  getAssociationKeyForCluster(description: string, direction: string) {
-    return `${description}$${direction}`;
-  }
-
-  clusterExpansionResults(result: ExpandNodeResult) {
-    try {
-      if (!isNil(result)) {
-        const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
-        let newClusterCount = 0;
-        edgeLabelsOfExpandedNode.forEach(
-          (directionList) => (newClusterCount += directionList.length)
-        );
-
-        if (edgeLabelsOfExpandedNode.size === 0) {
-          throw new Error('Something strange occurred: attempted to cluster a node with zero relationships!')
-        }
-
-        const associations = new Map<string, DuplicateNodeEdgePair[]>();
-        edgeLabelsOfExpandedNode.forEach((directionList, relationship) => {
-          directionList.forEach((direction) => {
-            const neighborNodesWithRel = this.getNeighborsWithRelationship(
-              relationship,
-              result.expandedNode,
-              direction
-            );
-            const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
-              neighborNodesWithRel,
-              relationship,
-              result.expandedNode,
-              direction
-            );
-
-            // This is very similar to the implementation of `updateGraphWithDuplicates`, except that here we only delete
-            // the existing nodes/edges, and don't add the duplicates. We will add the duplicates later, in `createCluster`
-            const nodesToRemove = [];
-            const edgesToRemove = [];
-
-            duplicateNodeEdgePairs.forEach((pair) => {
-              const duplicateNode = pair.node;
-              const duplicateEdge = pair.edge;
-              const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
-
-              if (edges.length === 1) {
-                // If the original node is being clustered on its last unclustered edge,
-                // remove it entirely from the canvas.
-                nodesToRemove.push(duplicateNode.duplicateOf);
-                edgesToRemove.push(duplicateEdge.duplicateOf);
-              } else if (
-                this.networkGraph.getConnectedNodes(duplicateNode.duplicateOf).length === 1
-              ) {
-                // Otherwise, don't remove the original node, and only remove the original edge if the
-                // candidate node is not connected to any other node.
-                edgesToRemove.push(duplicateEdge.duplicateOf);
-              }
-            });
-
-            associations.set(this.getAssociationKeyForCluster(relationship, direction), duplicateNodeEdgePairs)
-            this.edges.remove(edgesToRemove);
-            this.nodes.remove(nodesToRemove);
-          });
-        });
-        this.bulkCreateClusters(result.expandedNode, associations);
-      }
-    } catch (error) {
-      this.openErrorDialog('Clustering Error', error);
-      this.clusteringSubscription.unsubscribe();
-      this.openClusteringRequests = 0;
-      this.finishedClustering.emit(true);
-    }
-  }
-
   expandNode(nodeId: IdType, filterLabels: string[]) {
     if (filterLabels.length === 0) {
       this.openNoResultsFromExpandDialog();
@@ -441,9 +343,34 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
     this.openLoadingClustersDialog();
 
     this.visService.expandNode(nodeId, filterLabels).subscribe(
-      (r: Neo4jResults) => {
-        const processedResult = this.processExpansionResults(nodeId, r);
-        this.clusterExpansionResults(processedResult);
+      (bulkResult: GetBulkReferenceTableDataResult) => {
+        // If the expanded node has no connecting relationships, notify the user
+        if (bulkResult.referenceTables.length === 0) {
+          this.loadingClustersDialogRef.close();
+          this.openNoResultsFromExpandDialog();
+          return;
+        }
+
+        // Set the origin node's expand state to true
+        let nodeRef = this.nodes.get(nodeId) as VisNode;
+        nodeRef = {...nodeRef, expanded: true}
+        this.nodes.update(nodeRef)
+
+        bulkResult.referenceTables
+          // Sorting the tables by length makes creating clusters faster by doing the smallest tables first
+          .sort((a, b) => a.referenceTableRows.length - b.referenceTableRows.length)
+          .forEach((table: GetReferenceTableDataResult) => {
+            let { referenceTableRows, duplicateNodeEdgePairs, direction, description } = table;
+            duplicateNodeEdgePairs = duplicateNodeEdgePairs.map(pair => {
+              return {
+                node: this.visService.convertNodeToVisJSFormat(pair.node, this.legend),
+                edge: this.visService.convertEdgeToVisJSFormat(pair.edge)
+              } as DuplicateNodeEdgePair}
+            )
+            this.processGetReferenceTableResults(nodeId, duplicateNodeEdgePairs, referenceTableRows, description, direction);
+          });
+        // Done loading clusters so close the dialog automatically
+        this.loadingClustersDialogRef.close();
       },
       (error) => {
         this.loadingClustersDialogRef.close();
@@ -1066,24 +993,6 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
         } as ReferenceTableDataRequest;
       })
     } as BulkReferenceTableDataRequest;
-  }
-
-  bulkCreateClusters(
-    originNode: IdType,
-    associations: Map<string, DuplicateNodeEdgePair[]>
-  ) {
-    this.visService.getBulkReferenceTableData(
-      this.getBulkReferenceTableDataRequestObj(associations)
-    ).subscribe(
-      (referenceTables) => {
-        referenceTables.forEach((table: GetReferenceTableDataResult) => {
-          const { referenceTableRows, direction, description } = table;
-          const duplicateNodeEdgePairs = associations.get(this.getAssociationKeyForCluster(description, direction));
-          this.processGetReferenceTableResults(originNode, duplicateNodeEdgePairs, referenceTableRows, description, direction);
-        });
-        // Done loading clusters so close the dialog automatically
-        this.loadingClustersDialogRef.close();
-    });
   }
 
   getDuplicateNodeEdgePairsFromCluster(clusterNodeId: IdType) {
