@@ -84,8 +84,14 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
             code=400
         )
 
+    print('Received request to get snippets for cluster')
+
     arango_client = get_or_create_arango_client()
+    from datetime import datetime
+    start = datetime.now()
     result = get_snippets_for_cluster(arango_client, req.edges, req.page, req.limit)
+    finish = datetime.now() - start
+    print(f'Took {finish}ms to get snippets for cluster')
     return SuccessResponse(result, status_code=200)
 
 

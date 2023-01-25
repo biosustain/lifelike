@@ -35,7 +35,7 @@ from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
 
 
-def _get_uri_of_node_data(id: int, label: str, entity_id: str):
+def _get_uri_of_node_data(id: str, label: str, entity_id: str):
     """Given node meta data returns the appropriate
     URL formatted with the node entity identifier.
     """
@@ -104,7 +104,7 @@ def get_document_for_visualizer(arango_client: ArangoClient, doc_id: str):
         domain_labels=[],
         display_name=doc.get(DISPLAY_NAME_MAP[label], 'Unknown'),
         data=snake_to_camel_dict(doc, {}),
-        url=None
+        url=_get_uri_of_node_data(doc['_id'], label, doc['eid'])
     ).to_dict()
 
 
@@ -496,17 +496,15 @@ def get_associated_type_snippet_count_query() -> str:
     return """
         FOR associated_node IN @associated_nodes
             LET association_paths = (
-                FOR v, assoc_edge IN ANY associated_node associated
+                FOR assoc_edge IN associated
                     FILTER
                         (assoc_edge._from == @source_node AND assoc_edge._to == associated_node) OR
                         (assoc_edge._from == associated_node AND assoc_edge._to == @source_node)
-                    FOR v2, e2, has_assoc_path IN 1..2 OUTBOUND assoc_edge._from has_association
-                        FILTER has_assoc_path.vertices[-1]._id == assoc_edge._to
-                        RETURN DISTINCT {
-                            "association": has_assoc_path.vertices[1],
-                            "from_id": assoc_edge._from,
-                            "to_id": assoc_edge._to
-                        }
+                    RETURN DISTINCT {
+                        "association": assoc_edge.association_id,
+                        "from_id": assoc_edge._from,
+                        "to_id": assoc_edge._to
+                    }
             )
             LET snippet_count = COUNT(
                 FOR obj IN association_paths
@@ -530,63 +528,61 @@ def get_associated_type_snippet_count_query() -> str:
 def get_snippets_from_node_pair_query() -> str:
     return """
         LET unpaginated_results = (
-            FOR v, assoc_edge IN ANY @node_2_id associated
+            FOR assoc_edge IN associated
                 FILTER
                     (assoc_edge._from == @node_1_id AND assoc_edge._to == @node_2_id) OR
                     (assoc_edge._from == @node_2_id AND assoc_edge._to == @node_1_id)
                 LET from_id = assoc_edge._from
                 LET to_id = assoc_edge._to
-                FOR v2, e2, has_assoc_path IN 1..2 OUTBOUND from_id has_association
-                    FILTER has_assoc_path.vertices[-1]._id == to_id
-                    LET association = has_assoc_path.vertices[1]
-                    LET references = (
-                        FOR snippet IN INBOUND association indicates
-                            // If there are multiple "indicates" between the association and
-                            // snippet, just get one of them to avoid extra rows
-                            LET indicates_rel = FIRST(
-                                FOR doc IN indicates
-                                    FILTER doc._from == snippet._id
-                                    FILTER doc._to == association._id
-                                    RETURN doc
-                            )
-                            FOR publication IN OUTBOUND snippet in_pub
-                                SORT publication.pub_year DESC
-                                RETURN DISTINCT {
-                                    "snippet": snippet,
-                                    "publication": publication,
-                                    "indicates_rel": indicates_rel,
+                LET association = DOCUMENT(assoc_edge.association_id)
+                LET references = (
+                    FOR snippet IN INBOUND association indicates
+                        // If there are multiple "indicates" between the association and
+                        // snippet, just get one of them to avoid extra rows
+                        LET indicates_rel = FIRST(
+                            FOR doc IN indicates
+                                FILTER doc._from == snippet._id
+                                FILTER doc._to == association._id
+                                RETURN doc
+                        )
+                        FOR publication IN OUTBOUND snippet in_pub
+                            SORT publication.pub_year DESC
+                            RETURN DISTINCT {
+                                "snippet": snippet,
+                                "publication": publication,
+                                "indicates_rel": indicates_rel,
+                            }
+                )
+                LET snippet_count = LENGTH(references)
+                SORT snippet_count DESC, [from_id, to_id] ASC
+                FOR reference IN references
+                    RETURN DISTINCT {
+                        "snippet_count": snippet_count,
+                        "from_id": from_id,
+                        "to_id": to_id,
+                        "description": association.description,
+                        "reference": {
+                            "snippet": {
+                                "id": reference.snippet.eid,
+                                "data": {
+                                    "entry1_text": reference.indicates_rel.entry1_text,
+                                    "entry2_text": reference.indicates_rel.entry2_text,
+                                    "entry1_type": association.entry1_type,
+                                    "entry2_type": association.entry2_type,
+                                    "sentence": reference.snippet.sentence
                                 }
-                    )
-                    LET snippet_count = LENGTH(references)
-                    SORT snippet_count DESC, [from_id, to_id] ASC
-                    FOR reference IN references
-                        RETURN DISTINCT {
-                            "snippet_count": snippet_count,
-                            "from_id": from_id,
-                            "to_id": to_id,
-                            "description": association.description,
-                            "reference": {
-                                "snippet": {
-                                    "id": reference.snippet.eid,
-                                    "data": {
-                                        "entry1_text": reference.indicates_rel.entry1_text,
-                                        "entry2_text": reference.indicates_rel.entry2_text,
-                                        "entry1_type": association.entry1_type,
-                                        "entry2_type": association.entry2_type,
-                                        "sentence": reference.snippet.sentence
-                                    }
-                                },
-                                "publication": {
-                                    "id": reference.publication.pmid,
-                                    "data": {
-                                        "journal": reference.publication.journal,
-                                        "title": reference.publication.title,
-                                        "pmid": reference.publication.pmid,
-                                        "pub_year": reference.publication.pub_year
-                                    }
+                            },
+                            "publication": {
+                                "id": reference.publication.pmid,
+                                "data": {
+                                    "journal": reference.publication.journal,
+                                    "title": reference.publication.title,
+                                    "pmid": reference.publication.pmid,
+                                    "pub_year": reference.publication.pub_year
                                 }
                             }
                         }
+                    }
         )
         LET paginated_results = (
             FOR result IN unpaginated_results
@@ -617,17 +613,15 @@ def get_snippets_from_node_pair_query() -> str:
 def get_snippet_count_from_node_pair_query() -> str:
     return """
         LET association_paths = (
-            FOR v, assoc_edge IN ANY @node_2_id associated
+            FOR assoc_edge IN associated
                 FILTER
                     (assoc_edge._from == @node_1_id AND assoc_edge._to == @node_2_id) OR
                     (assoc_edge._from == @node_2_id AND assoc_edge._to == @node_1_id)
-                FOR v2, e2, has_assoc_path IN 1..2 OUTBOUND assoc_edge._from has_association
-                    FILTER has_assoc_path.vertices[-1]._id == assoc_edge._to
-                    RETURN DISTINCT {
-                        "association": has_assoc_path.vertices[1],
-                        "from_id": assoc_edge._from,
-                        "to_id": assoc_edge._to
-                    }
+                RETURN DISTINCT {
+                    "association": DOCUMENT(assoc_edge.association_id),
+                    "from_id": assoc_edge._from,
+                    "to_id": assoc_edge._to
+                }
         )
         LET snippet_count = COUNT(
             FOR obj IN association_paths
@@ -648,62 +642,61 @@ def get_snippets_from_edges_query() -> str:
         LET unpaginated_results = (
             FOR source_node IN @from_ids
                 FOR dest_node IN @to_ids
-                    FOR v, assoc_edge IN INBOUND dest_node associated
+                    FOR assoc_edge IN associated
+                        FILTER assoc_edge._to == dest_node
                         FILTER assoc_edge._from == source_node
+                        FILTER assoc_edge.description == @description
                         LET from_id = assoc_edge._from
                         LET to_id = assoc_edge._to
-                        FOR v2, e2, has_assoc_path IN 1..2 OUTBOUND from_id has_association
-                            FILTER has_assoc_path.vertices[-1]._id == to_id
-                            LET association = has_assoc_path.vertices[1]
-                            FILTER association.description == @description
-                            LET references = (
-                                FOR snippet IN INBOUND association indicates
-                                    // If there are multiple "indicates" between the association
-                                    // and snippet, just get one of them to avoid extra rows
-                                    LET indicates_rel = FIRST(
-                                        FOR doc IN indicates
-                                            FILTER doc._from == snippet._id
-                                            FILTER doc._to == association._id
-                                            RETURN doc
-                                    )
-                                    FOR publication IN OUTBOUND snippet in_pub
-                                        SORT publication.pub_year DESC
-                                        RETURN DISTINCT {
-                                            "snippet": snippet,
-                                            "publication": publication,
-                                            "indicates_rel": indicates_rel,
+                        LET association = DOCUMENT(assoc_edge.association_id)
+                        LET references = (
+                            FOR snippet IN INBOUND association indicates
+                                // If there are multiple "indicates" between the association
+                                // and snippet, just get one of them to avoid extra rows
+                                LET indicates_rel = FIRST(
+                                    FOR doc IN indicates
+                                        FILTER doc._from == snippet._id
+                                        FILTER doc._to == association._id
+                                        RETURN doc
+                                )
+                                FOR publication IN OUTBOUND snippet in_pub
+                                    SORT publication.pub_year DESC
+                                    RETURN DISTINCT {
+                                        "snippet": snippet,
+                                        "publication": publication,
+                                        "indicates_rel": indicates_rel,
+                                    }
+                        )
+                        LET snippet_count = LENGTH(references)
+                        SORT snippet_count DESC, [from_id, to_id] ASC
+                        FOR reference IN references
+                            RETURN DISTINCT {
+                                "snippet_count": snippet_count,
+                                "from_id": from_id,
+                                "to_id": to_id,
+                                "description": association.description,
+                                "reference": {
+                                    "snippet": {
+                                        "id": reference.snippet.eid,
+                                        "data": {
+                                            "entry1_text": reference.indicates_rel.entry1_text,
+                                            "entry2_text": reference.indicates_rel.entry2_text,
+                                            "entry1_type": association.entry1_type,
+                                            "entry2_type": association.entry2_type,
+                                            "sentence": reference.snippet.sentence
                                         }
-                            )
-                            LET snippet_count = LENGTH(references)
-                            SORT snippet_count DESC, [from_id, to_id] ASC
-                            FOR reference IN references
-                                RETURN DISTINCT {
-                                    "snippet_count": snippet_count,
-                                    "from_id": from_id,
-                                    "to_id": to_id,
-                                    "description": association.description,
-                                    "reference": {
-                                        "snippet": {
-                                            "id": reference.snippet.eid,
-                                            "data": {
-                                                "entry1_text": reference.indicates_rel.entry1_text,
-                                                "entry2_text": reference.indicates_rel.entry2_text,
-                                                "entry1_type": association.entry1_type,
-                                                "entry2_type": association.entry2_type,
-                                                "sentence": reference.snippet.sentence
-                                            }
-                                        },
-                                        "publication": {
-                                            "id": reference.publication.pmid,
-                                            "data": {
-                                                "journal": reference.publication.journal,
-                                                "title": reference.publication.title,
-                                                "pmid": reference.publication.pmid,
-                                                "pub_year": reference.publication.pub_year
-                                            }
+                                    },
+                                    "publication": {
+                                        "id": reference.publication.pmid,
+                                        "data": {
+                                            "journal": reference.publication.journal,
+                                            "title": reference.publication.title,
+                                            "pmid": reference.publication.pmid,
+                                            "pub_year": reference.publication.pub_year
                                         }
                                     }
                                 }
+                            }
         )
         LET paginated_results = (
             FOR result IN unpaginated_results
