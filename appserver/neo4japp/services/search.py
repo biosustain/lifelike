@@ -317,6 +317,55 @@ class SearchService(GraphBaseDao):
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
         a later query."""
+        print(f"""
+                CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
+                YIELD node
+                MATCH (node)-[]-(n)
+                WHERE {result_filters}
+                WITH n
+                {organism_match_string}
+                {literature_match_string}
+                WITH
+                {{
+                    id: id(n),
+                    name: n.name,
+                    labels: labels(n),
+                    data: {{
+                        eid: n.eid,
+                        data_source: n.data_source
+                    }}
+                }} as entity, id(m) as literature_id, t, go_class
+                RETURN DISTINCT entity, literature_id, t.eid AS taxonomy_id,
+                    t.name AS taxonomy_name, go_class AS go_class
+                SKIP $amount
+                LIMIT $limit
+                """)
+
+        with open('viz_search_query.txt', 'w') as query_fp:
+            query_fp.writelines(f"""
+                CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
+                YIELD node
+                MATCH (node)-[]-(n)
+                WHERE {result_filters}
+                WITH n
+                {organism_match_string}
+                {literature_match_string}
+                WITH
+                {{
+                    id: id(n),
+                    name: n.name,
+                    labels: labels(n),
+                    data: {{
+                        eid: n.eid,
+                        data_source: n.data_source
+                    }}
+                }} as entity, id(m) as literature_id, t, go_class
+                RETURN DISTINCT entity, literature_id, t.eid AS taxonomy_id,
+                    t.name AS taxonomy_name, go_class AS go_class
+                SKIP $amount
+                LIMIT $limit
+                """)
+
         return [
             record for record in tx.run(
                 f"""
