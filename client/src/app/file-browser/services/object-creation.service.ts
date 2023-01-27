@@ -3,16 +3,19 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { defer, from, iif, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, combineLatest, defer, from, iif, Observable, of, throwError, merge, partition } from 'rxjs';
 import {
+  bufferCount,
   bufferWhen,
   catchError,
   filter,
   map,
   mergeMap,
-  reduce,
+  reduce, shareReplay,
   switchMap,
   tap,
+  publish,
+  concatMap,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -22,11 +25,10 @@ import {
   forEach,
   groupBy,
   isEqual,
-  partition,
   some,
   unionBy,
   zip,
-  fromPairs, mapValues,
+  fromPairs, mapValues, omit, mapKeys, chain,
 } from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -129,8 +131,22 @@ class CreationProgressSubject extends ProgressSubject {
   }
 }
 
+class ObjectCreationTask {
+  progress$: CreationProgressSubject;
+  uploadStatus$: any;
+  annotationStatus$: any;
+
+  constructor(public request: ObjectCreateRequest, public annotationOption: PDFAnnotationGenerationRequest) {
+    this.progress$ = new CreationProgressSubject(request.filename);
+    this.uploadStatus$ = new BehaviorSubject('');
+    this.annotationStatus$ = new BehaviorSubject('');
+  }
+}
+
 @Injectable()
 export class ObjectCreationService {
+  private readonly MAX_PARALLEL_CREATION_CALLS = 3;
+  private readonly MAX_PARALLEL_ANNOTATION_CALLS = 1;
 
   private subscription;
 
@@ -144,6 +160,8 @@ export class ObjectCreationService {
               protected readonly filesystemService: FilesystemService) {
   }
 
+
+
   /**
    * Handles the filesystem PUT request(s) with a progress dialog.
    * @param requests the request(s) data
@@ -154,126 +172,96 @@ export class ObjectCreationService {
     requests: ObjectCreateRequest[],
     annotationOptions: PDFAnnotationGenerationRequest[]
   ): Observable<Map<ObjectCreateRequest, FilesystemObject|Error>> {
-    const requestList = zip(requests, annotationOptions).map(([request, ao]) => {
-      const progressObservable = new CreationProgressSubject(request.filename);
-      return ({
-        request,
-        annotationOption: ao,
-        progressObservable
-      });
-    });
+    const objectCreationTasks = zip(requests, annotationOptions).map(
+      ([request, ao]) => {
+        const connection = this.filesystemService.create(request).pipe(shareReplay({bufferSize: 1, refCount: true}));
+        return {
+          progress: connection.pipe(
+            map(event => omit(event, 'body'))
+          ),
+          response: connection.pipe(
+            filter(({type}) => type === HttpEventType.Response),
+            map(event => (event as HttpResponse<SingleResult<FilesystemObject>>).body)
+          )
+        };
+      }
+    );
     const progressDialogRef = this.progressDialog.display({
       title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
-      progressObservables: requestList.map(r => r.progressObservable),
+      progressObservables: objectCreationTasks.map(r => r.progress),
     });
-    return from(requestList).pipe(
+    return from(objectCreationTasks).pipe(
       mergeMap(
-        creation =>
-          this.filesystemService.create(creation.request)
-            .pipe(
-              tap(event => {
-                switch (event.type) {
-                  /**
-                   * The request was sent out over the wire.
-                   */
-                  case HttpEventType.Sent:
-                    creation.progressObservable.send();
-                    break;
-                  /**
-                   * An upload progress event was received.
-                   */
-                  case HttpEventType.UploadProgress:
-                    creation.progressObservable.uploadProgress(event.loaded / event.total);
-                    break;
-                  /**
-                   * The response status code and headers were received.
-                   */
-                  case HttpEventType.ResponseHeader:
-                    creation.progressObservable.responseHeader();
-                    break;
-                  /**
-                   * A download progress event was received.
-                   */
-                  case HttpEventType.DownloadProgress:
-                    creation.progressObservable.downloadProgress(event.loaded / event.total);
-                    break;
-                  /**
-                   * The full response including the body was received.
-                   */
-                  case HttpEventType.Response:
-                    creation.progressObservable.doneUploading();
-                    break;
-                  /**
-                   * A custom event from an interceptor or a backend.
-                   */
-                  case HttpEventType.User:
-                  default:
-                }
-              }),
-              filter(({type}) => type === HttpEventType.Response),
-              this.errorHandler.create({label: 'Create object'}),
-              catchError(error => {
-                creation.progressObservable.errorUploading(error);
-                // Pass error through as value (inspired by Promise.allSettled)
-                return of({
-                  ...creation,
-                  status: 'rejected',
-                  reason: error,
-                });
-              }),
-              map(({body: {warnings, result}}: HttpResponse<SingleResult<FilesystemObject>>) => {
-                forEach(
-                  warnings,
-                  warning => creation.progressObservable.warning(warning),
-                );
-                // Pass through as value (inspired by Promise.allSettled)
-                return {
-                  ...creation,
-                  status: 'fulfilled',
-                  value: result,
-                  warnings,
-                };
-              }),
-            ),
-        3,
+        ({response, ...rest}) => response.pipe(
+          map(({result, warnings}) => ({result, warnings, ...rest})),
+        ),
+        this.MAX_PARALLEL_CREATION_CALLS,
       ),
-      // Batch annotation generation requests
-      bufferWhen(() => idle()),
-      switchMap(resultBatch => {
-        const [resultsToAnnotate, resultsNotAnnotatable] = partition(
-          resultBatch,
+      publish(multicasted$ => {
+        const [annotatableResults$, notAnnotatableResults$] = partition(
+          multicasted$,
           ({
-             status,
-             value,
+             result,
              warnings,
            }) =>
             status === 'fulfilled' &&
-            (value as FilesystemObject).isAnnotatable &&
+            (result as FilesystemObject).isAnnotatable &&
             !some(warnings, ({type}) => type === 'TextExtractionNotAllowed'),
         );
-        forEach(resultsNotAnnotatable, result => {
-          result.progressObservable.done();
-        });
-        const uniqeAnnotationConfigs = unionBy(
-          resultsToAnnotate.map(({annotationOption}) => annotationOption),
-          isEqual,
-        );
-        // generateAnnotations can be called for multiple files but within one config
-        const resultsToAnnotateGroupedByAnnotationConfig = groupBy(
-          resultsToAnnotate,
-          resultToAnnotate => uniqeAnnotationConfigs.findIndex(
-            ac => isEqual(resultToAnnotate.annotationOption, ac),
+
+        return merge(
+          annotatableResults$.pipe(
+            // Batch annotation generation requests
+            bufferWhen(() => idle()),
+            // bufferCount(1, 1),
+            concatMap(resultsToAnnotate => {
+              const uniqeAnnotationConfigs = chain(resultsToAnnotate)
+                .map(({annotationOption}) => annotationOption ?? {})
+                .unionBy(isEqual)
+                .value();
+              // generateAnnotations can be called for multiple files but within one config
+              const resultsToAnnotateGroupedByAnnotationConfig = chain(resultsToAnnotate)
+                .entries()
+                .groupBy(
+                  resultToAnnotate => uniqeAnnotationConfigs
+                    .findIndex(ac => isEqual(resultToAnnotate.annotationOption, ac)),
+                )
+                .map(([annotationOptionIndex, resultsToAnnotate]) => {
+                  const connection = this.annotationsService.generateAnnotations(
+                    resultsToAnnotate.map(result => result.hashId),
+                    uniqeAnnotationConfigs[annotationOptionIndex]
+                  ).pipe(shareReplay({bufferSize: 1, refCount: true}));
+                  return {
+                    results: resultsToAnnotate,
+                    progress: connection,
+                    response: connection
+                  };
+                })
+                .value();
+              return from(resultsToAnnotateGroupedByAnnotationConfig);
+            }),
+            mergeMap(
+              ({response, ...rest}) => response.pipe(
+                map(annotationResult => ({annotationResult, ...rest})),
+              ),
+              this.MAX_PARALLEL_ANNOTATION_CALLS,
+            )
           ),
+          notAnnotatableResults$,
         );
-        return iif(
-          () => isNotEmpty(resultsToAnnotateGroupedByAnnotationConfig),
+      }),
+
+
+
+
+
           from(entries(resultsToAnnotateGroupedByAnnotationConfig)).pipe(
             mergeMap(
               ([annotationOptionIndex, results]) => {
                 const hashIds = results.map(resultToAnnotate => {
                   // Then we show progress for the annotation generation (although
                   // we can't actually show a progress percentage)
-                  resultToAnnotate.progressObservable.annotating();
+                  resultToAnnotate.progress$.annotating();
                   return (resultToAnnotate.value as FilesystemObject).hashId;
                 });
 
@@ -294,15 +282,15 @@ export class ObjectCreationService {
                     forEach(entries(mapping), ([hashId, annotationResult]) => {
                       const resultToAnnotate = find(results, r => r.value.hashId === hashId);
                       if (annotationResult.success) {
-                        resultToAnnotate.progressObservable.done();
+                        resultToAnnotate.progress$.done();
                       } else {
                         if (annotationResult.error) {
-                          resultToAnnotate.progressObservable.errorAnnotating(annotationResult.error);
+                          resultToAnnotate.progress$.errorAnnotating(annotationResult.error);
                         } else {
                           if (annotationResult.attempted) {
-                            resultToAnnotate.progressObservable.atteptedAnnotating();
+                            resultToAnnotate.progress$.atteptedAnnotating();
                           } else {
-                            resultToAnnotate.progressObservable.done();
+                            resultToAnnotate.progress$.done();
                           }
                         }
                       }
@@ -320,7 +308,212 @@ export class ObjectCreationService {
                   }))
                 );
               },
-              3,
+              this.MAX_PARALLEL_ANNOTATION_CALLS,
+            ),
+            map(annotationResults => ({annotationResults, resultBatch})),
+          ),
+          of({annotationResults: {}, resultBatch})
+        );
+      })
+          ),
+          notAnnotatableResults$
+        );
+      }),
+      //
+      //       {
+      //           switch (event.type) {
+      //             /**
+      //              * The request was sent out over the wire.
+      //              */
+      //             case HttpEventType.Sent:
+      //               creationTask.progress$.send();
+      //               break;
+      //             /**
+      //              * An upload progress event was received.
+      //              */
+      //             case HttpEventType.UploadProgress:
+      //               creationTask.progress$.uploadProgress(event.loaded / event.total);
+      //               break;
+      //             /**
+      //              * The response status code and headers were received.
+      //              */
+      //             case HttpEventType.ResponseHeader:
+      //               creationTask.progress$.responseHeader();
+      //               break;
+      //             /**
+      //              * A download progress event was received.
+      //              */
+      //             case HttpEventType.DownloadProgress:
+      //               creationTask.progress$.downloadProgress(event.loaded / event.total);
+      //               break;
+      //             /**
+      //              * The full response including the body was received.
+      //              */
+      //             case HttpEventType.Response:
+      //               creationTask.progress$.doneUploading();
+      //               break;
+      //             /**
+      //              * A custom event from an interceptor or a backend.
+      //              */
+      //             case HttpEventType.User:
+      //             default:
+      //           }
+      //       })
+      //     )
+      //   };
+      // }),
+      // mergeMap(
+      //   creationTask =>
+      //     this.filesystemService.create(creationTask.request)
+      //       .pipe(
+      //         tap(event => {
+      //           creationTask.uploadStatus$.next(event.type);
+      //           switch (event.type) {
+      //             /**
+      //              * The request was sent out over the wire.
+      //              */
+      //             case HttpEventType.Sent:
+      //               creationTask.progress$.send();
+      //               break;
+      //             /**
+      //              * An upload progress event was received.
+      //              */
+      //             case HttpEventType.UploadProgress:
+      //               creationTask.progress$.uploadProgress(event.loaded / event.total);
+      //               break;
+      //             /**
+      //              * The response status code and headers were received.
+      //              */
+      //             case HttpEventType.ResponseHeader:
+      //               creationTask.progress$.responseHeader();
+      //               break;
+      //             /**
+      //              * A download progress event was received.
+      //              */
+      //             case HttpEventType.DownloadProgress:
+      //               creationTask.progress$.downloadProgress(event.loaded / event.total);
+      //               break;
+      //             /**
+      //              * The full response including the body was received.
+      //              */
+      //             case HttpEventType.Response:
+      //               creationTask.progress$.doneUploading();
+      //               break;
+      //             /**
+      //              * A custom event from an interceptor or a backend.
+      //              */
+      //             case HttpEventType.User:
+      //             default:
+      //           }
+      //         }),
+      //         this.errorHandler.create({label: 'Create object'}),
+      //         filter(({type}) => type === HttpEventType.Response),
+      //         catchError(error => {
+      //           creationTask.uploadStatus$.next(error);
+      //           // creationTask.progress$.errorUploading(error);
+      //           // Pass error through as value (inspired by Promise.allSettled)
+      //           return of(creationTask);
+      //         }),
+      //         map(({body: {warnings, result}}: HttpResponse<SingleResult<FilesystemObject>>) => {
+      //           forEach(
+      //             warnings,
+      //             warning => creationTask.progress$.warning(warning),
+      //           );
+      //           // Pass through as value (inspired by Promise.allSettled)
+      //           return {
+      //             ...creationTask,
+      //             status: 'fulfilled',
+      //             value: result,
+      //             warnings,
+      //           };
+      //         }),
+      //       ),
+      //   this.MAX_PARALLEL_CREATION_CALLS,
+      // ),
+      // Batch annotation generation requests
+      bufferWhen(() => idle()),
+      // bufferCount(1, 1),
+      switchMap(resultBatch => {
+        const [resultsToAnnotate, resultsNotAnnotatable] = partition(
+          resultBatch,
+          ({
+             result,
+             warnings,
+           }) =>
+            status === 'fulfilled' &&
+            (result as FilesystemObject).isAnnotatable &&
+            !some(warnings, ({type}) => type === 'TextExtractionNotAllowed'),
+        );
+        forEach(resultsNotAnnotatable, result => {
+          result.progress$.done();
+        });
+        const uniqeAnnotationConfigs = unionBy(
+          resultsToAnnotate.map(({annotationOption}) => annotationOption),
+          isEqual,
+        );
+        // generateAnnotations can be called for multiple files but within one config
+        const resultsToAnnotateGroupedByAnnotationConfig = groupBy(
+          resultsToAnnotate,
+          resultToAnnotate => uniqeAnnotationConfigs.findIndex(
+            ac => isEqual(resultToAnnotate.annotationOption, ac),
+          ),
+        );
+        return iif(
+          () => isNotEmpty(resultsToAnnotateGroupedByAnnotationConfig),
+          from(entries(resultsToAnnotateGroupedByAnnotationConfig)).pipe(
+            mergeMap(
+              ([annotationOptionIndex, results]) => {
+                const hashIds = results.map(resultToAnnotate => {
+                  // Then we show progress for the annotation generation (although
+                  // we can't actually show a progress percentage)
+                  resultToAnnotate.progress$.annotating();
+                  return (resultToAnnotate.value as FilesystemObject).hashId;
+                });
+
+                return this.annotationsService.generateAnnotations(
+                  hashIds, uniqeAnnotationConfigs[annotationOptionIndex] || {},
+                ).pipe(
+                  catchError(error =>
+                    of({
+                      mapping: fromPairs(
+                        hashIds.map(hashId =>
+                          [hashId, {error: error?.error} as AnnotationGenerationResultData]
+                        )
+                      ),
+                      missing: []
+                    })
+                  ),
+                  tap(({mapping}) => {
+                    forEach(entries(mapping), ([hashId, annotationResult]) => {
+                      const resultToAnnotate = find(results, r => r.value.hashId === hashId);
+                      if (annotationResult.success) {
+                        resultToAnnotate.progress$.done();
+                      } else {
+                        if (annotationResult.error) {
+                          resultToAnnotate.progress$.errorAnnotating(annotationResult.error);
+                        } else {
+                          if (annotationResult.attempted) {
+                            resultToAnnotate.progress$.atteptedAnnotating();
+                          } else {
+                            resultToAnnotate.progress$.done();
+                          }
+                        }
+                      }
+                    });
+                  }),
+                  map(({mapping, missing}) => ({
+                    mapping: mapValues(
+                      mapping,
+                      m => ({
+                        ...m,
+                        error: (m.error as any)?.message ?? m.error
+                      }),
+                    ),
+                    missing
+                  }))
+                );
+              },
+              this.MAX_PARALLEL_ANNOTATION_CALLS,
             ),
             map(annotationResults => ({annotationResults, resultBatch})),
           ),
@@ -357,9 +550,7 @@ export class ObjectCreationService {
         ),
       ),
       tap(results => {
-        if (!results.some(({warnings}) => isNotEmpty(warnings))) {
-          progressDialogRef.componentInstance.close();
-        }
+        progressDialogRef.componentInstance.close();
       }),
       map(results =>
         results.reduce(

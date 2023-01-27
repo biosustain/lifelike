@@ -88,7 +88,8 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
         raise ServerException(
             'Parsing Error',
             'The request to the parsing service timed out.')
-    except (requests.exceptions.RequestException, Exception):
+    except (requests.exceptions.RequestException, Exception) as e:
+        print(e)
         raise ServerException(
             'Parsing Error',
             'An unexpected error occurred with the parsing service.')
