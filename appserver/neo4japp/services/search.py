@@ -398,7 +398,9 @@ def visualizer_search_query(
     a later query."""
     return f"""
         FOR s IN synonym_ft
-            SEARCH PHRASE(s.name, @term, 'text_ll')
+            SEARCH
+                PHRASE(s.name, @term, 'text_ll') OR
+                PHRASE(s.name, {{STARTS_WITH: TOKENS(@term, "text_ll")[0]}}, 'text_ll')
             FOR entity IN INBOUND s has_synonym
                 LET go_class = entity.namespace
                 // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
