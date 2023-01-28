@@ -527,7 +527,7 @@ def get_associated_type_snippet_count_query() -> str:
 
 def get_snippets_from_node_pair_query() -> str:
     return """
-        LET unpaginated_results = (
+        LET paginated_results = (
             FOR assoc_edge IN associated
                 FILTER
                     (assoc_edge._from == @node_1_id AND assoc_edge._to == @node_2_id) OR
@@ -536,15 +536,10 @@ def get_snippets_from_node_pair_query() -> str:
                 LET to_id = assoc_edge._to
                 LET association = DOCUMENT(assoc_edge.association_id)
                 LET references = (
-                    FOR snippet IN INBOUND association indicates
-                        // If there are multiple "indicates" between the association and
-                        // snippet, just get one of them to avoid extra rows
-                        LET indicates_rel = FIRST(
-                            FOR doc IN indicates
-                                FILTER doc._from == snippet._id
-                                FILTER doc._to == association._id
-                                RETURN doc
-                        )
+                    FOR snippet, indicates_rel IN INBOUND association indicates
+                    // If there are multiple "indicates" between the association
+                    // and snippet, just get one of them to avoid extra rows
+                    OPTIONS {order: "bfs", uniqueVertices: "global"}
                         FOR publication IN OUTBOUND snippet in_pub
                             SORT publication.pub_year DESC
                             RETURN DISTINCT {
@@ -556,6 +551,7 @@ def get_snippets_from_node_pair_query() -> str:
                 LET snippet_count = LENGTH(references)
                 SORT snippet_count DESC, [from_id, to_id] ASC
                 FOR reference IN references
+                    LIMIT @skip, @limit
                     RETURN DISTINCT {
                         "snippet_count": snippet_count,
                         "from_id": from_id,
@@ -583,11 +579,6 @@ def get_snippets_from_node_pair_query() -> str:
                             }
                         }
                     }
-        )
-        LET paginated_results = (
-            FOR result IN unpaginated_results
-                LIMIT @skip, @limit
-                return result
         )
         FOR result IN paginated_results
             COLLECT
