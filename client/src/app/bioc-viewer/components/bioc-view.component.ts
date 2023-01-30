@@ -32,7 +32,6 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { AppURL } from 'app/shared/utils/url';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 
 import { Document, Infon, Passage } from './bioc.format';
@@ -65,7 +64,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([hashId]) =>
         combineLatest(
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId).pipe(
             mapBlobToBuffer(),
             mapBufferToJsons<Document>(),
@@ -195,7 +194,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>),
     ...GenericDataProvider.getURIs([{
-      uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+      uri: this.object.getURL(false).toAbsolute(),
       title: this.object.filename,
     }]),
   }));

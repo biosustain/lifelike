@@ -1,6 +1,6 @@
-import pytest
+from arango.database import StandardDatabase
 import json
-
+import pytest
 
 from neo4japp.models import Files, AppUser
 
@@ -13,9 +13,14 @@ def test_user_can_get_gene_annotations_from_pdf(
         client,
         test_user_with_pdf: Files,
         fix_admin_user: AppUser,
+        test_arango_db: StandardDatabase,
         mock_get_combined_annotations_result,
         mock_get_organisms_from_gene_ids_result,
 ):
+    # Create the necessary collections in arango before calling the API. These are empty of course.
+    test_arango_db.create_collection('ncbi')
+    test_arango_db.create_collection('has_taxonomy', edge=True)
+
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id

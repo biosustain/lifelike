@@ -9,8 +9,8 @@ import {
   UniversalGraphEdge,
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { uuidv4 } from 'app/shared/utils/identifiers';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -31,14 +31,41 @@ export interface GraphClipboardData {
  * Implements the paste key.
  */
 export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
+  private readonly CASCADE_OFFSET = 50;
+  private burstPosition: { x: number, y: number };
+  private burstIteration = 0;
+
   // TODO: fix boundPaste if not coming in next patch
   constructor(private readonly graphView: CanvasGraphView,
               protected readonly dataTransferDataService: DataTransferDataService) {
     super();
   }
 
+
+  calculatePosition() {
+    const {burstPosition, CASCADE_OFFSET} = this;
+    const cursorPosition = this.graphView.currentHoverPosition;
+    if (cursorPosition) {
+      let nextPastePosition = cursorPosition;
+      const manhattanDistanceFromLastPasteBurst = (
+        Math.abs(cursorPosition.x - burstPosition?.x) + Math.abs(cursorPosition.y - burstPosition?.y)
+      );
+      if (manhattanDistanceFromLastPasteBurst <= CASCADE_OFFSET) {
+        this.burstIteration++;
+        nextPastePosition = {
+          x: burstPosition.x + this.burstIteration * CASCADE_OFFSET,
+          y: burstPosition.y + this.burstIteration * CASCADE_OFFSET,
+        };
+      } else {
+        this.burstPosition = nextPastePosition;
+        this.burstIteration = 0;
+      }
+      return nextPastePosition;
+    }
+  }
+
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const position = this.graphView.currentHoverPosition;
+    const position = this.calculatePosition();
     if (position) {
       const content = event.event.clipboardData.getData('text/plain');
       if (content) {
@@ -87,18 +114,17 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         const isSingularGroup = groups.length === 1;
         this.graphView.selection.replace([]);
 
-        const createAdjustedNode = <N extends Omit<UniversalGraphNode, 'hash'>>({data, ...rest}: N) => ({
+        const adjust = <N extends UniversalGraphNode>({data, ...rest}: N) => ({
             ...rest,
-            hash: uuidv4(),
             data: {
               ...data,
               x: data.x - centerOfMass.x + position.x,
               y: data.y - centerOfMass.y + position.y,
             }
-          });
+          } as N);
 
         const pasteNode = <N extends UniversalGraphNode>({hash, ...rest}: N) => {
-          const newNode = createAdjustedNode(rest);
+          const newNode = adjust(createNode(rest));
           hashMap.set(hash, newNode.hash);
           actions.push(
             new NodeCreation('Paste node', newNode, true, isSingularNode)
@@ -107,10 +133,10 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         };
 
         for (const {hash, members, ...rest} of groups as UniversalGraphGroup[]) {
-          const newGroup = createAdjustedNode({
+          const newGroup = adjust(createGroupNode({
             ...rest,
             members: members.map(node => pasteNode(node))
-          } as UniversalGraphGroup);
+          }));
           // This works also for groups, as those inherit from the node
           hashMap.set(hash, newGroup.hash);
           actions.push(
@@ -142,20 +168,21 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     }
 
     return new NodeCreation(
-      `Paste content from clipboard`, {
+      `Paste content from clipboard`,
+      createNode({
         display_name: 'Note',
-        hash: uuidv4(),
         label: 'note',
-        sub_labels: [],
         data: {
           x: position.x,
           y: position.y,
           detail: content,
         },
         style: {
-          showDetail: true
-        }
-      }, true, true
+          showDetail: true,
+        },
+      }),
+      true,
+      true,
     );
   }
 }

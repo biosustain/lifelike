@@ -1,27 +1,25 @@
-import { Directory, Project } from 'app/file-browser/services/project-space.service';
-import { KnowledgeMap } from 'app/drawing-tool/services/interfaces';
+import { FilesystemObject, ProjectImpl } from 'app/file-browser/models/filesystem-object';
 
 import { PdfFile } from './pdf-files.interface';
 import { User } from './auth.interface';
 
 export interface DirectoryContent {
-  dir: Directory;
-  path: Directory[];
+  dir: FilesystemObject;
+  path: FilesystemObject[];
   objects: DirectoryObject[];
 }
 
 export interface DirectoryObject {
   type: 'dir' | 'file' | 'map';
-  id?: any;
-  name: string;
+  hashId?: any;
+  filename: string;
   description?: string;
-  annotationDate?: string;
+  annotationsDate?: string;
   creationDate?: string;
-  modificationDate?: string;
+  modifiedDate?: string;
   doi?: string;
   highlight?: string[];
   highlightAnnotated?: boolean[];
-  creator?: User;
-  project: Pick<Project, 'projectName'>;
-  data?: Directory | KnowledgeMap | PdfFile;
+  user?: User;
+  project: Pick<ProjectImpl, 'projectName'>;
 }

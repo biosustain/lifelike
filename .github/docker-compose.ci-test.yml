@@ -21,11 +21,17 @@ x-appserver: &appserver
     - ELASTIC_FILE_INDEX_ID=file_ci
     # LMDB
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
+    # Arango
+    - ARANGO_HOST=http://arangodb:8529
+    - ARANGO_USERNAME=***ARANGO_USERNAME***
+    - ARANGO_PASSWORD=password
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
   depends_on:
     - postgres
     - elasticsearch
     - neo4j
     - redis
+    - arangodb
 
 services:
   appserver:
@@ -60,3 +66,10 @@ services:
     image: redis:7-alpine
     restart: on-failure
     container_name: redis
+
+  arangodb:
+    image: arangodb:3.9
+    container_name: arangodb
+    environment:
+      ARANGO_ROOT_PASSWORD: password
+      LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***

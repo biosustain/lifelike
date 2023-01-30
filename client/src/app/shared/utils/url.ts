@@ -26,8 +26,10 @@ interface AppURLInterface {
   hostname: string;
   port: string;
   pathname: string;
+  pathSegments: string[];
   search: string[][] | Record<string, string> | string | URLSearchParams;
   hash: string;
+  fragment: string;
   host: string;
   origin: string;
   relativehref: string;
@@ -46,15 +48,15 @@ export class AppURL implements URL, AppURLInterface {
     return Object.fromEntries(this.searchParams.entries());
   }
 
-  get isRelative() {
+  get isRelative(): boolean {
     return isEmpty(this.hostname);
   }
 
-  set pathname(value) {
+  set pathname(value: string) {
     this.pathSegments = filter(value.split('/'), isNotEmpty);
   }
 
-  get pathname() {
+  get pathname(): string {
     return this.pathSegments.map(segment => `/${segment}`).join('');
   }
 
@@ -71,46 +73,46 @@ export class AppURL implements URL, AppURLInterface {
     this.fragment = startsWith(value, '#') ? value.slice(1) : undefined;
   }
 
-  get hash() {
+  get hash(): string {
     return this.fragment ? `#${this.fragment}` : '';
   }
 
-  get host() {
+  get host(): string {
     return (this.hostname ?? '') + (this.port ? `:${this.port}` : '');
   }
 
-  set host(value) {
+  set host(value: string) {
     Object.assign(this, value.match(URL_REGEX.host).groups);
   }
 
-  get origin() {
+  get origin(): string {
     return (this.protocol ? `${this.protocol}//` : '') + this.host;
   }
 
-  set origin(value) {
+  set origin(value: string) {
     Object.assign(this, value.match(URL_REGEX.origin).groups);
   }
 
-  get href() {
+  get href(): string {
     return this.origin + this.pathname + this.search + this.hash;
   }
 
-  set href(value) {
+  set href(value: string) {
     Object.assign(this, value.match(URL_REGEX.href).groups);
   }
 
-  get relativehref() {
+  get relativehref(): string {
     return this.pathname + this.search + this.hash;
   }
 
-  set relativehref(value) {
+  set relativehref(value: string) {
     Object.assign(this, value.match(URL_REGEX.relativehref).groups);
   }
 
-  constructor(urlString: string = '', overwrites: Partial<AppURLInterface> = {}) {
+  constructor(urlString: string = '') {
     this.href = urlString;
-    assign(this, overwrites);
   }
+
   fragment: string;
   hostname: string;
   port: string;
@@ -121,7 +123,7 @@ export class AppURL implements URL, AppURLInterface {
 
   pathSegments: string[];
 
-  static from(url: string|URL|AppURL) {
+  static from(url: string|URL|AppURL): AppURL {
     return url instanceof this ? url : new AppURL(String(url));
   }
 
@@ -133,7 +135,12 @@ export class AppURL implements URL, AppURLInterface {
     this.searchParams = new URLSearchParams(value);
   }
 
-  toAbsolute() {
+  update(overwrites: Partial<AppURLInterface>): AppURL {
+    assign(this, overwrites);
+    return this;
+  }
+
+  toAbsolute(): AppURL {
     this.origin = window.location.href;
     return this;
   }
@@ -148,7 +155,7 @@ export class AppURL implements URL, AppURLInterface {
 }
 
 export const ***ARANGO_DB_NAME***Url = Object.freeze(new AppURL().toAbsolute());
-export const isInternalUri = (uri: AppURL) => uri.isRelative || uri.origin === ***ARANGO_DB_NAME***Url.origin;
+export const isInternalUri = (uri: AppURL): boolean => uri.isRelative || uri.origin === ***ARANGO_DB_NAME***Url.origin;
 
 /**This is mapping between indexed path segments and uri types
  * Examples:

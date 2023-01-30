@@ -7,6 +7,8 @@ import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
+import { environment } from '../environments/environment';
+
 interface StatisticsDataResponse {
   [domain: string]: {
     [entity: string]: number
@@ -117,6 +119,9 @@ export class KgStatisticsComponent {
     );
 
     this.loadTask.results$.subscribe(({result, value}) => {
+      if (!environment.keggEnabled) {
+        delete result.KEGG;
+      }
       this._getChartDataEntitiesByDomain(result);
       this._getChartDataAllDomains(result);
     });

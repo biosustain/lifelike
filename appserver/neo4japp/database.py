@@ -1,8 +1,10 @@
 import hashlib
 import os
 
+from arango import ArangoClient
+from arango.http import DefaultHTTPClient
 from elasticsearch import Elasticsearch
-from flask import g
+from flask import g, current_app
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -106,6 +108,23 @@ def _connect_to_elastic():
         timeout=180,
         hosts=ELASTICSEARCH_HOSTS
     )
+
+
+def create_arango_client(hosts=None) -> ArangoClient:
+    # Need a custom HTTP client for Arango because the default timeout is only 60s
+    class CustomHTTPClient(DefaultHTTPClient):
+        REQUEST_TIMEOUT = 1000
+
+    hosts = hosts or current_app.config.get('ARANGO_HOST')
+    return ArangoClient(hosts=hosts, http_client=CustomHTTPClient())
+
+
+def close_arango_client(error):
+    """Closes the database again at the end of the request."""
+    arango_client = g.pop("arango_client", None)
+
+    if arango_client is not None:
+        arango_client.close()
 
 
 class DBConnection:
@@ -238,6 +257,12 @@ def get_elastic_service():
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
     return ExcelExportService()
+
+
+def get_or_create_arango_client() -> ArangoClient:
+    if not hasattr(g, "arango_conn"):
+        g.arango_client = create_arango_client()
+    return g.arango_client
 
 
 def reset_dao():

@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { iif, of } from 'rxjs';
+import { combineLatest, iif, of } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
-import { merge, isNil, omitBy } from 'lodash-es';
+import { merge, isNil, omitBy, flatMap, unary, isEmpty } from 'lodash-es';
 
-import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 import { IMAGE_DEFAULT_SIZE, IMAGE_LABEL } from 'app/shared/constants';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { DataTransferData } from 'app/shared/services/data-transfer-data.service';
@@ -14,6 +14,7 @@ import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AppURL, isInternalUri } from 'app/shared/utils/url';
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
+import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
 
 import { MapImageProviderService } from './map-image-provider.service';
 import { IMAGE_TOKEN, ImageTransferData } from '../providers/image-entity-data.provider';
@@ -34,51 +35,54 @@ export class GraphActionsService {
 
   fromDataTransferItems(items: DataTransferData<any>[], hoverPosition: Point): Promise<GraphAction[]> {
     const actions = this.extractGraphEntityActions(items, hoverPosition);
-    return this.extractImageNodeActions(items, hoverPosition, actions);
+    return this.extractImageNodeActions(items, hoverPosition).then(imageNodeActions =>
+      actions.concat(imageNodeActions)
+    );
   }
 
-  async extractImageNodeActions(items: DataTransferData<any>[], {x, y}: Point, actions: GraphAction[]): Promise<GraphAction[]> {
-    const imageItems = items.filter(item => item.token === IMAGE_TOKEN);
-
-    let node;
-    const imageId = makeid();
-    await of(...imageItems).pipe(
-      switchMap(item => {
-        const data = item.data as ImageTransferData;
-        node = data.node;
-        // If the image was dropped, we have the blob inside DataTransfer. If the image was dragged from within the LL,
-        // We need to load it's content.
-        return iif(
-          () => Boolean(data.blob),
-          of(data.blob),
-          this.filesystemService.getContent(data.hash),
-        );
-      }),
-      switchMap(blob => {
-          return this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId));
-      }),
-      take(imageItems.length),
-      map(dimensions => {
-      // Scale smaller side up to 300 px
-      const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
-      return (new NodeCreation(`Insert image`, {
-        ...node,
-        hash: uuidv4(),
-        image_id: imageId,
-        label: IMAGE_LABEL,
-        data: {
-          ...node.data,
-          x,
-          y,
-          width: dimensions.width * ratio,
-          height: dimensions.height * ratio,
-        },
-      }, true));
-    }),
-    tap(action => actions.push(action)),
+  extractImageNodeActions(items: DataTransferData<any>[], {x, y}: Point): Promise<GraphAction[]> {
+    const imageItems = items
+        .filter(item => item.token === IMAGE_TOKEN);
+    if (isEmpty(imageItems)) {
+      return Promise.resolve([]);
+    }
+    return combineLatest(
+      ...imageItems
+        .map(({data}: { data: ImageTransferData }) => {
+          const imageNode = createImageNode(data.node);
+          const {imageId} = imageNode;
+          // If the image was dropped, we have the blob inside DataTransfer. If the image was dragged from within the LL,
+          // We need to load it's content.
+          return iif(
+            () => Boolean(data.blob),
+            of(data.blob),
+            this.filesystemService.getContent(data.hash),
+          ).pipe(
+            switchMap(blob =>
+              this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId)),
+            ),
+            map(dimensions => {
+              // Scale smaller side up to 300 px
+              const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
+              return new NodeCreation(
+                `Insert image`,
+                merge(
+                  imageNode,
+                  {
+                    data: {
+                      x,
+                      y,
+                      width: dimensions.width * ratio,
+                      height: dimensions.height * ratio,
+                    }
+                  }
+                ),
+                true
+              );
+            }),
+          );
+        }),
     ).toPromise();
-
-    return actions;
   }
 
   mapInternalLinks<E extends {data?: UniversalEntityData}>(entity: E): E {

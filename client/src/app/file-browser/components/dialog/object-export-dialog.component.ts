@@ -67,7 +67,11 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
   }
 
   setLinkedExportSupported() {
-    this.isLinkedExportSupported = this.isMapExport && this._linkedExporters.includes(this.exporters[this.form.get('exporter').value].name);
+    this.isLinkedExportSupported =
+      this.isMapExport &&
+      this._linkedExporters.includes(
+        this.exporters[this.form.get('exporter').value].name
+      );
   }
 }
 

@@ -61,7 +61,6 @@
     "vis-network": "9.0.2",
     "vis-util": "5.0.2",
     "web-animations-js": "^2.3.2",
-    "webcola": "^3.4.0",
     "zone.js": "~0.10.2"
   },
   "devDependencies": {

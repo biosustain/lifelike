@@ -32,6 +32,11 @@ class Base():
     AZURE_ACCOUNT_STORAGE_KEY = os.getenv('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.getenv('AZURE_BLOB_STORAGE_URL')
 
+    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
+    ARANGO_USERNAME = os.getenv('ARANGO_USERNAME', '***ARANGO_USERNAME***')
+    ARANGO_PASSWORD = os.getenv('ARANGO_PASSWORD', 'password')
+    ARANGO_DB_NAME = os.getenv('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')
+
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
         POSTGRES_PASSWORD,
@@ -74,6 +79,8 @@ class Testing(Base):
     TESTING = True
     WTF_CSRF_ENABLED = False
     RQ_CONNECTION_CLASS = 'fakeredis.FakeStrictRedis'
+    ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
+    ARANGO_DB_NAME = 'test_arango'
 
 
 class Production(Base):

@@ -104,7 +104,4 @@ export class GroupFormComponent extends EntityForm  {
   }
 
   // TODO: Search related stuff?
-
-
-
 }

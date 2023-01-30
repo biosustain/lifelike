@@ -73,7 +73,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     } as ObjectCreateRequest];
   }
 
-  async fileChanged(event) {
+  async fileChanged(event: { target: HTMLInputElement }) {
     const uploadLimit = this.maxFileCount - this.fileList.length;
     for (let i = 0; (i < event.target.files.length) && (i < uploadLimit); i++) {
       const targetFile = event.target.files[i];

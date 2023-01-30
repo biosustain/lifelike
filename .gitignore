@@ -4,6 +4,9 @@
 # System Files
 .DS_Store
 Thumbs.db
+appserver/.bash_history
+.mypy_cache/
+client/yarn-error.log
 
 # VSCode
 .vscode/**
@@ -15,5 +18,44 @@ Thumbs.db
 .idea/
 
 # .env Files (to protect secrets)
+azure-secrets.env
 .env*
 !.env.example
+
+#virtual envSironments
+.venv/
+venv/
+outputs/
+
+# LMDB files
+appserver/neo4japp/services/annotations/**/*.mdb
+appserver/neo4japp/services/annotations/**/*.mdb.old
+appserver/neo4japp/services/annotations/datasets/**/*.csv
+appserver/neo4japp/services/annotations/datasets/**/*.tsv
+
+# profiler results
+appserver/profilers/results/
+
+# nlp pdfs
+appserver/neo4japp/services/annotations/nlp_data_output/pdfs/*.pdf
+appserver/neo4japp/services/annotations/nlp_data_output/annotations/*.json
+appserver/neo4japp/services/annotations/nlp_data_output/*.txt
+
+# Backups
+*.backup
+
+# gcloud service accounts
+*ansible_service_account*
+
+# ansible secrets
+.vault_secrets_pw
+
+# Neo4j Volume
+neo4j/
+
+# Arango volumes
+arangodb/data/*
+arangodb/apps/*
+
+# Arango seed data
+arangodb/bin/seed_data

@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { FindOptions } from 'app/shared/utils/find';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL } from 'app/shared/utils/url';
 
 import { FilesystemObject } from '../models/filesystem-object';
 
@@ -72,7 +71,7 @@ export class ObjectInfoComponent implements OnInit {
 
     GenericDataProvider.setURIs(event.dataTransfer, [{
       title: this.object.effectiveName,
-      uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+      uri: this.object.getURL(false).toAbsolute(),
     }], {action: 'append'});
   }
 }
