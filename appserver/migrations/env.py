@@ -102,7 +102,7 @@ class MigrationValidator:
         if unidentified_update_to_file_contents:
             self._per_revision_notify(
                 'Unidentified file content update - '
-                'all files will be validated as finall step of migrating database'
+                'all files will be validated as final step of migrating database'
             )
             self.unidentified_update_to_file_contents = unidentified_update_to_file_contents
         if len(updated_file_content_ids) > 0:

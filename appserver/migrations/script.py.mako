@@ -36,7 +36,7 @@ directory = path.realpath(path.dirname(__file__))
 #    id = Column(Integer, primary_key=True, autoincrement=True)
 #    mime_type = Column(String(127), nullable=False)
 #
-## Ps be carefull when copying models from appserver as they might contain undesired lifecycle hooks
+## Ps be careful when copying models from appserver as they might contain undesired lifecycle hooks
 
 def upgrade():
     # session = Session(op.get_bind())
