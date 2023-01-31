@@ -94,14 +94,14 @@ class LogEventType(Enum):
     REDIS = 'redis'
 
 
-DOMAIN_LABELS = [
-    'db_CHEBI',
-    'db_GO',
-    'db_Literature',
-    'db_MESH',
-    'db_NCBI',
-    'db_UniProt',
-]
+DATA_SOURCES = {
+    'NCBI Gene': 'NCBI',
+    'NCBI Taxonomy': 'NCBI',
+    'CheBI': 'CHEBI',
+    'GO': 'GO',
+    'MeSH': 'MESH',
+    'UniProt': 'UniProt'
+}
 
 BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
