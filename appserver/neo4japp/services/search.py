@@ -10,7 +10,7 @@ from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.util import normalize_str, snake_to_camel_dict
 from neo4japp.utils.labels import (
     get_first_known_label_from_list,
-    get_known_domain_labels_from_list
+    get_known_domain_labels_from_data_source
 )
 from neo4japp.utils.logger import EventLog
 
@@ -144,7 +144,7 @@ def _visualizer_search_result_formatter(result: List[Dict]) -> List[FTSQueryReco
             label=entity_label,
             sub_labels=entity['labels'],
             domain_labels=(
-                get_known_domain_labels_from_list(entity['labels']) +
+                get_known_domain_labels_from_data_source(entity['data']['data_source']) +
                 (['Literature'] if literature_id is not None else [])
             ),
             display_name=entity['name'],
