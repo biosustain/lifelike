@@ -72,7 +72,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([hashId, loc]) =>
         combineLatest(
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId).pipe(
             mapBlobToBuffer(),
           ),
@@ -187,7 +187,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
         },
       } as Partial<UniversalGraphNode>),
       ...GenericDataProvider.getURIs([{
-        uri: new AppURL(this.object.getURL(false)).toAbsolute(),
+        uri: this.object.getURL(false).toAbsolute(),
         title: this.object.filename,
       }]),
     });

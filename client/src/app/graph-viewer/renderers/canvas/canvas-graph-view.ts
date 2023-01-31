@@ -1309,7 +1309,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     };
 
     this.behaviors.apply(behavior => behavior.dragEnd(behaviorEvent));
-    this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
     this.requestRender();

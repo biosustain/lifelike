@@ -1,11 +1,11 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { filter } from 'lodash-es';
+import { filter, merge } from 'lodash-es';
 
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 import { IMAGE_DEFAULT_SIZE, SizeUnits, IMAGE_LABEL } from 'app/shared/constants';
+import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -89,24 +89,28 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
   private createImageNode(file: File, xOffset = 0, yOffset = 0) {
     const position = this.graphView.currentHoverPosition;
     if (position) {
-      const imageId = makeid();
+      const imageNode = createImageNode({});
+      const {imageId} = imageNode;
       this.mapImageProvider.doInitialProcessing(imageId, file).subscribe(dimensions => {
         // Scale smaller side up to 300 px
         const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
-        this.graphView.execute(new NodeCreation(
-        `Insert image`, {
-          hash: uuidv4(),
-          image_id: imageId,
-          display_name: '',
-          label: IMAGE_LABEL,
-          sub_labels: [],
-          data: {
-            x: position.x + xOffset,
-            y: position.y + yOffset,
-            width: dimensions.width * ratio,
-            height: dimensions.height * ratio,
-          },
-        }, true));
+        this.graphView.execute(
+          new NodeCreation(
+            `Insert image`,
+            merge(
+              imageNode,
+              {
+                data: {
+                  x: position.x + xOffset,
+                  y: position.y + yOffset,
+                  width: dimensions.width * ratio,
+                  height: dimensions.height * ratio,
+                },
+              },
+            ),
+            true,
+          ),
+        );
       });
       return BehaviorResult.Stop;
     }

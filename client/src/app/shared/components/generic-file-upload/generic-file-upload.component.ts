@@ -35,7 +35,7 @@ export class GenericFileUploadComponent implements OnInit, OnDestroy {
         this.resetFileInputSub.unsubscribe();
     }
 
-    onFileChange(event: any) {
+    onFileChange(event: { target: HTMLInputElement }) {
         // It's possible -- if the user cancels file selection after having already selected a file -- for the change event to not include
         // any files. In such a case, we just don't emit a change (because the file _didn't_ actually change).
         if (event.target.files.length > 0) {

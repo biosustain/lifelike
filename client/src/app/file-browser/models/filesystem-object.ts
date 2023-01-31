@@ -2,7 +2,6 @@ import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import {
-  KnowledgeMap,
   KnowledgeMapGraph,
   Source,
   UniversalEntityData,
@@ -31,11 +30,10 @@ import {
   FilesystemObjectTransferData,
 } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { Directory, Project } from '../services/project-space.service';
 import { createDragImage } from '../utils/drag';
 
 // TODO: Rename this class after #unifiedfileschema
-export class ProjectImpl implements Project, ObservableObject {
+export class ProjectImpl implements ObservableObject {
   /**
    * Legacy ID field that needs to go away.
    */
@@ -78,7 +76,7 @@ export class ProjectImpl implements Project, ObservableObject {
     return this.name;
   }
 
-  get directory(): Directory {
+  get directory() {
     return this.***ARANGO_USERNAME*** ? this.***ARANGO_USERNAME***.directory : null;
   }
 
@@ -111,10 +109,13 @@ export class ProjectImpl implements Project, ObservableObject {
     return ['/folders', this.***ARANGO_USERNAME***.hashId];
   }
 
-  getURL(): string {
-    return this.getCommands().map(item => {
-      return encodeURIComponent(item.replace(/^\//, ''));
-    }).join('/');
+  getURL(): AppURL {
+    return new AppURL().update({
+      pathSegments: this.getCommands().map(item =>
+          encodeURIComponent(item.replace(/^\//, ''))
+      ),
+      fragment: 'project'
+    });
   }
 
   get colorHue(): number {
@@ -140,7 +141,7 @@ export class ProjectImpl implements Project, ObservableObject {
         }],
         sources: [{
           domain: 'File Source',
-          url: this.getCommands().join('/'),
+          url: this.getURL().toAbsolute().toString(),
         }],
       },
     };
@@ -151,7 +152,7 @@ export class ProjectImpl implements Project, ObservableObject {
 
     GenericDataProvider.setURIs(dataTransfer, [{
       title: this.effectiveName,
-      uri: new AppURL(this.getURL()).toAbsolute(),
+      uri: this.getURL().toAbsolute(),
     }], {action: 'append'});
   }
 }
@@ -161,7 +162,7 @@ export class ProjectImpl implements Project, ObservableObject {
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
  * amount of code for the refactor.
  */
-export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap, ObservableObject {
+export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObject {
   hashId: string;
   filename: string;
   user: AppUser;
@@ -291,20 +292,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   /**
    * @deprecated
    */
-  get directory(): Directory {
+  get directory(): FilesystemObject {
     // noinspection JSDeprecatedSymbols
     if (this.type === 'dir') {
       return this;
     } else {
       throw new Error('no directory available');
     }
-  }
-
-  /**
-   * @deprecated
-   */
-  get file_id(): string {
-    return this.hashId;
   }
 
   /**
@@ -425,96 +419,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  /**
-   * @deprecated
-   */
-  get name(): string {
-    return this.filename;
-  }
-
   get effectiveName(): string {
     if (this.isProjectRoot) {
       return this.project.name;
     } else {
       return this.filename;
     }
-  }
-
-  /**
-   * @deprecated
-   */
-  get label(): string {
-    return this.filename;
-  }
-
-  /**
-   * @deprecated
-   */
-  get graph(): KnowledgeMapGraph {
-    return null;
-  }
-
-  /**
-   * @deprecated
-   */
-  get upload_url(): string {
-    return this.uploadUrl;
-  }
-
-  /**
-   * @deprecated
-   */
-  get annotations_date(): string {
-    return this.annotationsDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get annotationDate(): string {
-    return this.annotationsDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get creation_date(): string {
-    return this.creationDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get modified_date(): string {
-    return this.modifiedDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get modificationDate(): string {
-    return this.modifiedDate;
-  }
-
-  /**
-   * @deprecated
-   */
-  get creator(): User {
-    return this.user;
-  }
-
-  /**
-   * @deprecated
-   */
-  get id(): string {
-    return this.hashId;
-  }
-
-  /**
-   * @deprecated
-   */
-  get data(): Directory | KnowledgeMap | PdfFile {
-    return this;
   }
 
   get new(): boolean {
@@ -529,7 +439,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
       isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.name).includes(normalizedFilter)
+        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
     );
   }
 
@@ -554,29 +464,25 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
-  getURL(forEditing = true, meta?: Meta): string {
-    // TODO: Move this method to ObjectTypeProvider
-    const url = '/' + this.getCommands(forEditing).map(item => {
-      return encodeURIComponent(item.replace(/^\//, ''));
-    }).join('/');
-
-    if (this.isProjectRoot) {
-      return url + '#project';
-    }
+  // TODO: Move this method to ObjectTypeProvider
+  getURL(forEditing = true, meta?: Meta): AppURL {
+    const url = new AppURL().update({
+      pathSegments: this.getCommands(forEditing).map(item =>
+        encodeURIComponent(item.replace(/^\//, ''))
+      ),
+      fragment: this.isProjectRoot ? 'project' : ''
+    });
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
-        let fragment = '';
         if (!isNil(meta)) {
-          fragment = '#' + [
-            `id=${encodeURIComponent(meta.id)}`,
-            `text=${encodeURIComponent(meta.allText)}`,
-            `color=${encodeURIComponent(annotationTypesMap.get(meta.type.toLowerCase()).color)}`
-          ].join('&');
+          url.fragment = new URLSearchParams({
+            id: meta.id,
+            text: meta.allText,
+            color: annotationTypesMap.get(meta.type.toLowerCase()).color
+          }).toString();
         }
-        return url + fragment;
-      default:
-        return url;
     }
+    return url;
   }
 
   getGraphEntitySources(meta?: Meta): Source[] {
@@ -635,7 +541,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
       ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node),
       ...GenericDataProvider.getURIs([{
-        uri: new AppURL(this.getURL(false)).toAbsolute(),
+        uri: this.getURL(false).toAbsolute(),
         title: this.filename,
       }]),
     };
@@ -650,7 +556,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     GenericDataProvider.setURIs(dataTransfer, [{
       title: this.effectiveName,
-      uri: new AppURL(this.getURL(false)).toAbsolute(),
+      uri: this.getURL(false).toAbsolute(),
     }], {action: 'append'});
   }
 
@@ -663,7 +569,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       // Sort files by timestamp
       b.updatedTimestamp - a.updatedTimestamp ||
       // Sort files by name
-      a.name.localeCompare(b.name)
+      a.filename.localeCompare(b.filename)
     );
   }
 

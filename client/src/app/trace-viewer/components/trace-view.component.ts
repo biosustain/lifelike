@@ -36,7 +36,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
 
   loadTask = new BackgroundTask((id: string) =>
       combineLatest([
-        this.filesystemService.get(id),
+        this.filesystemService.open(id),
         this.filesystemService.getContent(id).pipe(
           mapBlobToBuffer(),
           mapBufferToJson(),
@@ -94,7 +94,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
 
     this.route.params.subscribe(({hash_id, network_trace_idx, trace_idx}) => {
       this.loadTask.update(hash_id);
-      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`, {search: {network_trace_idx, trace_idx}});
+      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`).update({search: {network_trace_idx, trace_idx}});
     });
   }
 

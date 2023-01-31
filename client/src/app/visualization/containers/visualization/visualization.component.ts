@@ -27,6 +27,8 @@ import {
   GraphQueryParameters,
 } from 'app/search/utils/search';
 import { GraphSearchParameters } from 'app/search/graph-search';
+import { TrackingService } from 'app/shared/services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
 
 import { VisualizationService } from '../../services/visualization.service';
 
@@ -67,6 +69,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     private visService: VisualizationService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
+    private readonly tracking: TrackingService
   ) {
     this.legend = new Map<string, string[]>();
 
@@ -210,7 +213,14 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * @param query string to search for
    */
   search(query: string) {
-    this.workspaceManager.navigateByUrl({ url: `/search?q=${query}` });
+    this.tracking.register({
+      category: TRACKING_CATEGORIES.visualiser,
+      action: TRACKING_ACTIONS.search,
+      label: query,
+      url: this.tracking.toString()
+    });
+
+    this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
   }
 
   /**

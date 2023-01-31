@@ -14,7 +14,7 @@ import {
   URI_TOKEN,
   URIData,
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { makeid } from 'app/shared/utils/identifiers';
+import { createNode } from 'app/graph-viewer/utils/objects';
 
 import {
   GraphEntity,
@@ -106,14 +106,10 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
           token: GRAPH_ENTITY_TOKEN,
           data: [{
             type: GraphEntityType.Node,
-            entity: {
-              hash: makeid(),
+            entity: createNode({
               display_name: isLink ? 'Link' : 'Note',
               label: isLink ? 'link' : 'note',
-              sub_labels: [],
               data: {
-                x: 0,
-                y: 0,
                 detail: text,
                 sources: uriData.map(item => ({
                   domain: item.title,
@@ -123,7 +119,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
               style: {
                 showDetail: !isLink,
               },
-            },
+            }),
           }],
           confidence: 0,
         });

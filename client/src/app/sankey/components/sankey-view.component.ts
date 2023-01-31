@@ -62,7 +62,6 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { AppURL } from 'app/shared/utils/url';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -167,7 +166,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
 
     this.loadTask = new BackgroundTask(hashId =>
       combineLatest([
-        this.filesystemService.get(hashId),
+        this.filesystemService.open(hashId),
         this.filesystemService.getContent(hashId).pipe(
           mapBlobToBuffer(),
           mapBufferToJson()
@@ -397,7 +396,7 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
             },
           } as Partial<UniversalGraphNode>),
           ...GenericDataProvider.getURIs([{
-            uri: new AppURL(object.getURL(false)).toAbsolute(),
+            uri: object.getURL(false).toAbsolute(),
             title: object.filename,
           }]),
         }))

@@ -35,7 +35,7 @@ export class AdminSettingsComponent {
         private worksheetViewerService: EnrichmentTableService,
     ) {}
 
-    fileChanged(event) {
+    fileChanged(event: { target: HTMLInputElement }) {
         if (event.target.files.length) {
             const file = event.target.files[0];
             this.form.get('files').setValue([file]);

@@ -8,15 +8,15 @@ export function getObjectCommands(object: DirectoryObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID
-      return ['/projects', object.project.projectName, 'folders', object.id];
+      return ['/projects', object.project.projectName, 'folders', object.hashId];
     case 'file':
-      if (object.name.slice(object.name.length - 11) === '.enrichment') {
-        return ['/projects', object.project.projectName, 'enrichment-table', object.id];
+      if (object.filename.slice(object.filename.length - 11) === '.enrichment') {
+        return ['/projects', object.project.projectName, 'enrichment-table', object.hashId];
       } else {
-        return ['/projects', object.project.projectName, 'files', object.id];
+        return ['/projects', object.project.projectName, 'files', object.hashId];
       }
     case 'map':
-      return ['/projects', object.project.projectName, 'maps', object.id];
+      return ['/projects', object.project.projectName, 'maps', object.hashId];
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }
@@ -26,15 +26,15 @@ export function getObjectMatchExistingTab(object: DirectoryObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID
-      return `^/+projects/[^/]+/folders/${escapeRegExp(object.id)}([?#].*)?`;
+      return `^/+projects/[^/]+/folders/${escapeRegExp(object.hashId)}([?#].*)?`;
     case 'file':
-      if (object.name.slice(object.name.length - 11) === '.enrichment') {
-        return `^/+projects/[^/]+/enrichment-table/${escapeRegExp(object.id)}([?#].*)?`;
+      if (object.filename.slice(object.filename.length - 11) === '.enrichment') {
+        return `^/+projects/[^/]+/enrichment-table/${escapeRegExp(object.hashId)}([?#].*)?`;
       } else {
-        return `^/+projects/[^/]+/files/${escapeRegExp(object.id)}([?#].*)?`;
+        return `^/+projects/[^/]+/files/${escapeRegExp(object.hashId)}([?#].*)?`;
       }
     case 'map':
-      return `^/+projects/[^/]+/maps/${escapeRegExp(object.id)}/edit([?#].*)?`;
+      return `^/+projects/[^/]+/maps/${escapeRegExp(object.hashId)}/edit([?#].*)?`;
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }

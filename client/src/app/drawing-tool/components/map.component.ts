@@ -96,7 +96,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   ) {
     this.loadTask = new BackgroundTask(
       (hashId) => combineLatest([
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId),
           this.getBackupBlob(),
         ])
@@ -241,7 +241,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   emitModuleProperties() {
     this.modulePropertiesChange.emit({
-      title: this.map ? this.map.label : 'Map',
+      title: this.map ? this.map.filename : 'Map',
       fontAwesomeIcon: 'project-diagram',
       badge: this.unsavedChanges$.getValue() ? '*' : null,
     });

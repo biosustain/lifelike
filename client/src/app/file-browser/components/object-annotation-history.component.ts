@@ -36,7 +36,7 @@ export class ObjectAnnotationHistoryComponent {
   }
 
   refresh() {
-    this.log$ = this.object ? this.filesystemService.getAnnotationHistory(this.object.id, {
+    this.log$ = this.object ? this.filesystemService.getAnnotationHistory(this.object.hashId, {
       page: this.page,
       limit: this.limit,
     }).pipe(

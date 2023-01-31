@@ -1,9 +1,6 @@
 import * as d3 from 'd3';
 import { ZoomBehavior } from 'd3';
 import { Subject } from 'rxjs';
-import * as cola from 'webcola';
-import { InputNode, Layout } from 'webcola';
-import { Link } from 'webcola/WebCola/src/layout';
 import { remove } from 'lodash-es';
 
 import {
@@ -69,12 +66,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   protected groupHashMap: Map<string, UniversalGraphGroup> = new Map();
 
   /**
-   * Keep track of fixed X/Y positions that come from dragging nodes. These
-   * values are passed to the automatic layout routines .
-   */
-  readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
-
-  /**
    * Stores the counters for linked documents
    */
   linkedDocuments: Set<string> = new Set();
@@ -98,13 +89,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * d3-zoom object used to handle zooming.
    */
   protected zoom: ZoomBehavior<Element, unknown>;
-
-  /**
-   * webcola object used for automatic layout.
-   * Initialized in {@link ngAfterViewInit}.
-   */
-    // TODO: Inspect that. Is this deprecated?
-  cola: Layout;
 
   /**
    * Indicates whether we are panning or zooming.
@@ -131,11 +115,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   readonly searchHighlighting = new CacheGuardedEntityList(this);
   readonly searchFocus = new CacheGuardedEntityList(this);
-
-  /**
-   * Whether nodes are arranged automatically.
-   */
-  automaticLayoutEnabled = false;
 
   /**
    * Holds currently active behaviors. Behaviors provide UI for the graph.
@@ -188,10 +167,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
 
   constructor() {
-    this.cola = cola
-      .d3adaptor(d3)
-      .on('tick', this.colaTicked.bind(this))
-      .on('end', this.colaEnded.bind(this));
   }
 
   /**
@@ -339,8 +314,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       },
       new Map(),
     );
-
-    this.nodePositionOverrideMap.clear();
 
     this.requestRender();
   }
@@ -1023,27 +996,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   }
 
   // ========================================
-  // Events
-  // ========================================
-
-  /**
-   * Called when webcola (used for layout) has ticked.
-   */
-  private colaTicked(): void {
-    // TODO: Turn off caching temporarily instead or do something else
-    this.invalidateAll();
-    this.requestRender();
-  }
-
-  /**
-   * Called when webcola (used for layout) has stopped. Cola will stop after finishing
-   * performing the layout.
-   */
-  private colaEnded(): void {
-    this.automaticLayoutEnabled = false;
-  }
-
-  // ========================================
   // History
   // ========================================
 
@@ -1121,132 +1073,4 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
       }
     }
   }
-
-  // ========================================
-  // Layout
-  // ========================================
-
-  /**
-   * Apply a graph layout algorithm to the nodes.
-   */
-  startGraphLayout() {
-    this.automaticLayoutEnabled = true;
-
-    const nodePositionOverrideMap = this.nodePositionOverrideMap;
-
-    const layoutNodes: GraphLayoutNode[] = this.nodes.map((d, i) => new class implements GraphLayoutNode {
-      index: number = i;
-      reference: UniversalGraphNode = d;
-      vx = 0;
-      vy = 0;
-
-      get x() {
-        return d.data.x;
-      }
-
-      set x(x) {
-        d.data.x = x;
-      }
-
-      get y() {
-        return d.data.y;
-      }
-
-      set y(y) {
-        d.data.y = y;
-      }
-
-      get fixed() {
-        return nodePositionOverrideMap.has(this.reference) ? 1 : 0;
-      }
-
-      get px() {
-        const position = nodePositionOverrideMap.get(this.reference);
-        if (position) {
-          return position[0];
-        } else {
-          return null;
-        }
-      }
-
-      get py() {
-        const position = nodePositionOverrideMap.get(this.reference);
-        if (position) {
-          return position[1];
-        } else {
-          return null;
-        }
-      }
-    }());
-
-    const layoutNodeHashMap: Map<string, GraphLayoutNode> = layoutNodes.reduce(
-      (map, d) => {
-        map.set(d.reference.hash, d);
-        return map;
-      }, new Map());
-
-    const layoutLinks: GraphLayoutLink[] = this.edges.map(d => {
-      const source = layoutNodeHashMap.get(this.expectNodelikeByHash(d.from).hash);
-      if (!source) {
-        throw new Error('state error - source did not link up');
-      }
-      const target = layoutNodeHashMap.get(this.expectNodelikeByHash(d.to).hash);
-      if (!target) {
-        throw new Error('state error - source did not link up');
-      }
-      return {
-        reference: d,
-        source,
-        target,
-      };
-    });
-
-    this.cola
-      .nodes(layoutNodes)
-      .links(layoutLinks)
-      .symmetricDiffLinkLengths(50)
-      .handleDisconnected(false)
-      .size([this.width, this.height])
-      .start(10);
-  }
-
-  /**
-   * Stop automatic re-arranging of nodes.
-   */
-  stopGraphLayout() {
-    this.cola.stop();
-    this.automaticLayoutEnabled = false;
-  }
-}
-
-/**
- * Represents the object mirroring a {@link UniversalGraphNode} that is
- * passed to the layout algorithm.
- */
-interface GraphLayoutNode extends InputNode {
-  /**
-   * A link to the original node that this object is mirroring.
-   */
-  reference: UniversalGraphNode;
-  index: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  fx?: number;
-  fy?: number;
-}
-
-/**
- * Represents the object mirroring a {@link UniversalGraphEdge} that is
- * passed to the layout algorithm.
- */
-interface GraphLayoutLink extends Link<GraphLayoutNode> {
-  /**
-   * A link to the original edge that this object is mirroring.
-   */
-  reference: UniversalGraphEdge;
-  source: GraphLayoutNode;
-  target: GraphLayoutNode;
-  index?: number;
 }

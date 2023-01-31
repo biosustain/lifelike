@@ -25,6 +25,8 @@ import { FindOptions } from 'app/shared/utils/find';
 import { getChoicesFromQuery } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { TrackingService } from 'app/shared/services/tracking.service';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -81,7 +83,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
               protected readonly zone: NgZone,
               protected readonly errorHandler: ErrorHandler,
               protected readonly messageDialog: MessageDialog,
-              protected readonly objectTypeService: ObjectTypeService) {
+              protected readonly objectTypeService: ObjectTypeService,
+              private readonly tracking: TrackingService) {
     super(route, workspaceManager);
     objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
       this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
@@ -120,7 +123,14 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         droppedFolders: []
       });
     }
-    return this.contentSearchService.search(this.serializeParams(params)).pipe(
+    const serialisedParams = this.serializeParams(params);
+    this.tracking.register({
+      category: TRACKING_CATEGORIES.search,
+      action: TRACKING_ACTIONS.search,
+      label: JSON.stringify(serialisedParams),
+      url: this.route.toString()
+    });
+    return this.contentSearchService.search(serialisedParams).pipe(
       this.errorHandler.create({label: 'Content search'}),
       tap(response => {
         this.highlightTerms = response.query.phrases;
