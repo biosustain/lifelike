@@ -10,7 +10,7 @@ const DOMAINS_URL = {
 };
 
 export function getLink(data: FTSQueryRecord) {
-  const domain = data.node.domainLabels[0].split('_')[1];
+  const domain = data.node.domainLabels[0];
   const type = data.node.label;
   if (domain === 'NCBI' && type === 'Gene') {
     return DOMAINS_URL[domain + '_' + type] + data.node.data.eid;
