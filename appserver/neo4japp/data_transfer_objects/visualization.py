@@ -228,7 +228,7 @@ class GetReferenceTableDataResult(CamelDictMixin):
     direction: str = attr.ib()
     description: str = attr.ib()
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
-    duplicate_node_edge_pairs: List[ReferenceTablePair] = attr.ib()
+    duplicate_node_edge_pairs: List[Dict] = attr.ib()
 
 
 @attr.s(frozen=True)
