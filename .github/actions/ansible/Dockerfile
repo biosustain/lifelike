@@ -1,4 +1,4 @@
-FROM alpine:3
+FROM alpine:latest
 LABEL app=kg-prototypes
 
 ENV ANSIBLE_HOST_KEY_CHECKING=False
