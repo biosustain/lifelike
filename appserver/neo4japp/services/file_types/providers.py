@@ -24,7 +24,7 @@ from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
-from math import ceil
+from math import ceil, floor
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
 
@@ -68,7 +68,11 @@ from neo4japp.constants import (
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
     WATERMARK_ICON_SIZE,
-    COLOR_TO_REPLACE, DEFAULT_FONT_RATIO
+    COLOR_TO_REPLACE,
+    DEFAULT_FONT_RATIO,
+    NODE_LINE_HEIGHT,
+    MAX_NODE_HEIGHT,
+    NODE_INSET
 )
 from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
@@ -435,6 +439,32 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     return io.BytesIO(bytes(text_content, BYTE_ENCODING))
 
 
+def get_fitting_lines(text, style, data):
+    if not text:
+        return []
+    fontsize = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    line_height = NODE_LINE_HEIGHT * fontsize
+    node_effective_height = data.get('height', MAX_NODE_HEIGHT - 2 * NODE_INSET)
+    max_lines = floor(node_effective_height / line_height)
+    if 'width' in data:
+        max_character_per_line = (data['width'] - 2 * NODE_INSET) / (fontsize * DEFAULT_FONT_RATIO)
+    else:
+        max_character_per_line = min(10 + len(text) // 4, MAX_LINE_WIDTH)
+    line_wrapper = textwrap.TextWrapper(
+        width=ceil(max_character_per_line),
+        replace_whitespace=False
+    )
+    # TextWrapper wrap is to be called per paragraf
+    # (https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.replace_whitespace)
+    lines = []
+    for paragraph in text.splitlines():
+        # Text wrapper of '' returns [] but we want [''] to not swallow empty lines
+        lines.extend(line_wrapper.wrap(paragraph) if paragraph else [''])
+        if len(lines) > max_lines:
+            lines = lines[:max_lines]
+    return lines
+
+
 def get_icons_data():
     """
     Lazy loading of the byte icon data from the PNG files
@@ -491,23 +521,19 @@ def create_group_node(group: dict):
         return params, None
 
     border_width = style.get('lineWidthScale', 1.0) if has_border else 0.0
-    # Try to match the front-end max width by assuming that average font width is equal to 50%%
-    # of the height - and adjusting the text to be roughly of the image width
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label = escape('\n'.join(textwrap.TextWrapper(
-        width=int(group['data']['width'] / (label_font_size * 0.5)),
-        replace_whitespace=False).wrap(display_name)))
+    label_lines = get_fitting_lines(display_name, style, params['data'])
     label_offset = -group['data']['height'] / 2.0 - LABEL_OFFSET - \
-        (label_font_size / 2.0 * (1 + label.count('\n'))) - border_width
+        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     label_params = {
         'name': group['hash'] + '_label',
-        'label': label,
+        'label': escape('\n'.join(label_lines)),
         'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
             f"{(-group['data']['y'] - label_offset) / SCALING_FACTOR}!"
         ),
-        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+        'fontsize': f"{label_font_size}",
         'penwidth': '0.0',
         'fontcolor': style.get('fillColor') or 'black',
     }
@@ -526,30 +552,21 @@ def create_default_node(node: dict):
     :return: baseline dict with Graphviz paramaters
     """
     style = node.get('style', {})
-    # Ensure that display name is of type string, as it can be None
-    display_name = node['display_name'] or ""
-    fontsize = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    if 'width' in node['data']:
-        width = node['data']['width']
-        max_character_per_line = width / (fontsize * DEFAULT_FONT_RATIO)
-    else:
-        width = DEFAULT_NODE_WIDTH
-        max_character_per_line = min(10 + len(display_name) // 4, MAX_LINE_WIDTH)
+    data = node['data']
+    label_lines = get_fitting_lines(node['display_name'], style, data)
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': escape('\n'.join(textwrap.TextWrapper(
-            width=ceil(max_character_per_line),
-            replace_whitespace=False).wrap(display_name))),
+        'label': escape('\n'.join(label_lines)),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{-node['data']['y'] / SCALING_FACTOR}!"
+            f"{data['x'] / SCALING_FACTOR},"
+            f"{-data['y'] / SCALING_FACTOR}!"
         ),
         # Resize the node base on font size, as otherwise the margin would be smaller than
         # in the Lifelike map editor
-        'width': f"{width / SCALING_FACTOR}",
-        'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
+        'width': f"{data.get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+        'height': f"{data.get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
         'shape': 'box',
         'style': 'rounded,filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
@@ -558,7 +575,7 @@ def create_default_node(node: dict):
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fillcolor': style.get('bgColor') or 'white',
-        'fontsize': f"{fontsize}",
+        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
         if style.get('lineType') != 'none' else '0.0'
@@ -573,22 +590,19 @@ def create_image_label(node: dict):
     :returns: label params
     """
     style = node.get('style', {})
-    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
-    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
+    data = node['data']
+    height = data.get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    # width = data.get('width', DEFAULT_IMAGE_NODE_WIDTH)
     border_width = style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
-    # Try to match the front-end max width by assuming that average font width is equal to 50%%
-    # of the height - and adjusting the text to be roughly of the image width
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label = escape('\n'.join(textwrap.TextWrapper(
-        width=int(width / (label_font_size * 0.5)),
-        replace_whitespace=False).wrap(node['display_name'] or "")))
-    label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
-                                                   (1 + label.count('\n'))) - border_width
+    label_lines = get_fitting_lines(node['display_name'], style, data)
+    label_offset = -height / 2.0 - LABEL_OFFSET - \
+        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     return {
-        'label': label,
+        'label': escape('\n'.join(label_lines)),
         'pos': (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{(-node['data']['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
+            f"{data['x'] / SCALING_FACTOR},"
+            f"{(-data['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
         ),
         'fontsize': f"{label_font_size}",
         'penwidth': '0.0',
@@ -635,26 +649,21 @@ def create_detail_node(node: dict, params: dict):
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
     :returns: modified params dict
-    TODO: Mimic the text metric and text breaking from the drawing-tool
     """
+    style = node.get('style', {})
     detail_text = node['data'].get('detail', '')
-    if detail_text:
-        if node['data'].get('sources'):
-            # Check if the node was dragged from the pdf - if so, it will have a source link
-            if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
-                detail_text = detail_text[:DETAIL_TEXT_LIMIT]
-                detail_text = detail_text.rstrip('\\')
-        # Split lines to inspect their length and replace them with '\l' later
-        # Use regex to split, otherwise \n (text, not new lines) are matched as well
-        lines = re.split("\n", detail_text)
-        # Escape the characters and break lines longer than max line width
-        lines = list(map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
-                                                                     ).wrap(escape(x))), lines))
-        # '\l' is graphviz special new line, which placed at the end of the line will align it
-        # to the left - we use that instead of \n (and add one at the end to align last line)
-        detail_text = r"\l".join(lines) + r'\l'
-
-    params['label'] = detail_text
+    # Check if the node was dragged from the pdf - if so, it will have a source link
+    if (
+            detail_text
+            and (any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources', []))
+                 and len(detail_text) > DETAIL_TEXT_LIMIT)
+    ):
+        detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+        detail_text = detail_text.rstrip('\\')
+    detail_lines = get_fitting_lines(detail_text, style, node['data'])
+    # '\l' is graphviz special new line, which placed at the end of the line will align it
+    # to the left - we use that instead of \n (and add one at the end to align last line)
+    params['label'] = '\l'.join(map(escape, detail_lines)).replace('\n', '\l') + '\l'  # noqa: W605
     if params['fillcolor'] == 'white':
         params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                          {'bgcolor': 'black'}
@@ -664,9 +673,11 @@ def create_detail_node(node: dict, params: dict):
     if doi_src:
         node['link'] = doi_src
 
-    if not node.get('style', {}).get('strokeColor'):
+    if not style.get('strokeColor'):
         # No border by default
         params['penwidth'] = '0.0'
+
+    params['margin'] = "0.2,0.2"
     return params
 
 
