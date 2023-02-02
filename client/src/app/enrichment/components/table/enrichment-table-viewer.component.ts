@@ -10,6 +10,7 @@ import {
   QueryList,
   ViewChild,
   ViewChildren,
+  NgZone,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -62,7 +63,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly progressDialog: ProgressDialog,
               protected readonly changeDetectorRef: ChangeDetectorRef,
               protected readonly elementRef: ElementRef,
-              protected readonly filesystemObjectActions: FilesystemObjectActions) {
+              protected readonly filesystemObjectActions: FilesystemObjectActions,
+              private readonly ngZone: NgZone) {
     this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
@@ -129,7 +131,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
-    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
+    this.ngZone.runOutsideAngular(() =>
+      this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this))
+    );
   }
 
   ngAfterViewInit() {
