@@ -97,7 +97,7 @@ class LogEventType(Enum):
 DATA_SOURCES = {
     'NCBI Gene': 'NCBI',
     'NCBI Taxonomy': 'NCBI',
-    'CheBI': 'CHEBI',
+    'ChEBI': 'CHEBI',
     'GO': 'GO',
     'MeSH': 'MESH',
     'UniProt': 'UniProt'
