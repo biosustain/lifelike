@@ -18,6 +18,7 @@ import { CopyToClipboardDirective } from './copy-to-clipboard.directive';
 import { RotateDirective } from './rotate.directive';
 import { UidDirective } from './uid.directive';
 import { AutoGrowDirective } from './auto-grow.directive';
+import { InnerXMLDirective } from './innerXML.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -27,6 +28,7 @@ const directives = [
   LinkWithHrefDirective,
   FormInputDirective,
   AutoFocusDirective,
+  InnerXMLDirective,
   ContainerBreakpointsDirective,
   TabSelectableDirective,
   ContextMenuDirective,

@@ -1,0 +1,26 @@
+@use "variables";
+
+app-xml-annotation {
+  user-select: text;
+
+  // restyle tooltip to match old implementation
+  ngb-tooltip-window.tooltip {
+    padding: 0;
+    opacity: 1 !important;
+
+    .arrow {
+      display: none;
+    }
+
+    .tooltip-inner {
+      box-shadow: variables.$popover-box-shadow;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background-color: #fff;
+      text-align: left;
+      overflow: auto;
+      width: 200px;
+      color: black;
+      padding: 0;
+    }
+  }
+}

@@ -14,13 +14,14 @@
     </ng-container>
   </thead>
 
-  <tbody *ngIf="entries">
+  <!-- Make it relative so tooltips are aligned correctly when header is sticky -->
+  <tbody *ngIf="entries" [style.position]="'relative'">
     <ng-container>
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
           <div>
             <span *ngIf="entry.text && entry.text.indexOf('snippet') > -1; else noHighlight">
-              <app-highlight-text [highlight]="entry.text" [object]="object" [eventSubscriptions]="false"></app-highlight-text>
+              <app-highlight-text [appInnerXML]="entry.text" [object]="object"></app-highlight-text>
             </span>
             <ng-template #noHighlight>{{ entry.text }}</ng-template>
           </div>
