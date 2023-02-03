@@ -88,6 +88,32 @@ def _get_labels_filter(entities: List[str]):
     return result_entities if len(result_entities) > 0 else list(entities_map.values())
 
 
+def _get_organism_match_string(organism: str):
+    return f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid == @organism' if organism else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organism else ''}
+    """
+
+def _get_organisms_match_string(organisms: List[str]):
+    return f"""
+        LET t = FIRST(
+            FOR tax IN OUTBOUND entity has_taxonomy
+            OPTIONS {{ vertexCollections: ["taxonomy"]}}
+                {'FILTER tax.eid IN @organisms' if organisms else ''}
+                RETURN tax
+        )
+        {'FILTER t != null' if organisms else ''}
+    """
+
+def _get_labels_match_string(types: List[str]):
+    return 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
+
+
 def _get_literature_match_string(domains: List[str]):
     literature_in_selected_domains = any([
         normalize_str(domain) == 'literature'
@@ -109,18 +135,14 @@ def _get_literature_match_string(domains: List[str]):
         return "LET literature_id = null"
     # Return only nodes mapped to Literature nodes
     else:
-        return """
-            LET literature_id = FIRST(
-                FOR lit_doc IN INBOUND entity mapped_to
-                    RETURN lit_doc._id
-            )
-            FILTER literature_id != null
+        return base_search_string + """
+            \nFILTER literature_id != null
         """
 
 
-def _visualizer_search_result_formatter(result: List[Dict]) -> List[FTSQueryRecord]:
+def _visualizer_search_result_formatter(result: dict) -> List[FTSQueryRecord]:
     formatted_results: List[FTSQueryRecord] = []
-    for record in result:
+    for record in result['rows']:
         entity = record['entity']
         literature_id = record['literature_id']
         taxonomy_id = record.get('taxonomy_id', '')
@@ -160,7 +182,7 @@ def _visualizer_search_result_formatter(result: List[Dict]) -> List[FTSQueryReco
             go_class=go_class if go_class is not None
             else 'N/A'
         ))
-    return formatted_results
+    return {'rows': formatted_results, 'count': result['count']}
 
 
 def get_organisms(arango_client: ArangoClient, term: str, limit: int) -> Dict[str, Any]:
@@ -196,22 +218,19 @@ def visualizer_search(
     page: int = 1,
     limit: int = 10,
 ) -> List[FTSQueryRecord]:
-    organism_match_string = f"""
-        LET t = FIRST(
-            FOR tax IN OUTBOUND entity has_taxonomy
-            OPTIONS {{ vertexCollections: ["taxonomy"]}}
-                {'FILTER tax.eid == @organism' if organism else ''}
-                RETURN tax
-        )
-        {'FILTER t != null' if organism else ''}
-    """
     collection_filters = _get_collection_filters(domains)
     types = _get_labels_filter(entities)
     literature_match_string = _get_literature_match_string(domains)
+    organism_match_string = _get_organism_match_string(organism)
     query = visualizer_search_query(
         collection_filters,
         organism_match_string,
-        literature_match_string
+        literature_match_string,
+        organism_required=True if organism else False,
+        literature_required=(
+            len(domains) == 1 and
+            any([normalize_str(domain) == 'literature' for domain in domains])
+        )
     )
     query_args = {
         'term': term,
@@ -228,49 +247,9 @@ def visualizer_search(
         db=get_db(arango_client),
         query=query,
         **query_args
-    )
+    )[0]
 
     return _visualizer_search_result_formatter(result)
-
-
-def visualizer_search_count(
-    arango_client: ArangoClient,
-    term: str,
-    organism: str,
-    domains: List[str],
-    entities: List[str],
-):
-    organism_match_string = f"""
-        LET t = FIRST(
-            FOR tax IN OUTBOUND entity has_taxonomy
-            OPTIONS {{ vertexCollections: ["taxonomy"]}}
-                {'FILTER tax.eid == @organism' if organism else ''}
-                RETURN tax
-        )
-        {'FILTER t != null' if organism else ''}
-    """
-    collection_filters = _get_collection_filters(domains)
-    types = _get_labels_filter(entities)
-    literature_match_string = _get_literature_match_string(domains)
-    count_query = visualizer_search_count_query(
-        collection_filters,
-        organism_match_string,
-        literature_match_string
-    )
-    query_args = {
-        'term': term,
-        'types': types,
-    }
-
-    # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
-    if organism:
-        query_args['organism'] = organism
-
-    return execute_arango_query(
-        db=get_db(arango_client),
-        query=count_query,
-        **query_args
-    )[0]
 
 
 def get_synonyms(
@@ -281,16 +260,8 @@ def get_synonyms(
     skip: int,
     limit: int
 ) -> List[dict]:
-    labels_match_str = 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
-    organism_match_string = f"""
-        LET t = FIRST(
-            FOR tax IN OUTBOUND entity has_taxonomy
-            OPTIONS {{ vertexCollections: ["taxonomy"]}}
-                {'FILTER tax.eid IN @organisms' if organisms else ''}
-                RETURN tax
-        )
-        {'FILTER t != null' if organisms else ''}
-    """
+    labels_match_str = _get_labels_match_string(types)
+    organism_match_string = _get_organisms_match_string(organisms)
 
     query_args = {
         'search_term': search_term,
@@ -335,16 +306,8 @@ def get_synonyms_count(
     organisms: List[str],
     types: List[str]
 ) -> int:
-    labels_match_str = 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
-    organism_match_string = f"""
-        LET t = FIRST(
-            FOR tax IN OUTBOUND entity has_taxonomy
-            OPTIONS {{ vertexCollections: ["taxonomy"]}}
-                {'FILTER tax.eid IN @organisms' if organisms else ''}
-                RETURN tax
-        )
-        {'FILTER t != null' if organisms else ''}
-    """
+    labels_match_str = _get_labels_match_string(types)
+    organism_match_string = _get_organisms_match_string(organisms)
 
     query_args = {
         'search_term': search_term,
@@ -391,73 +354,143 @@ def get_organism_with_tax_id_query() -> str:
 def visualizer_search_query(
     arango_col_filters: str,
     organism_match_string: str,
-    literature_match_filter: str
+    literature_match_filter: str,
+    organism_required: bool,
+    literature_required: bool
 ) -> str:
     """Need to collect synonyms because a gene node can have multiple
     synonyms. So it is possible to send duplicate internal node ids to
     a later query."""
-    return f"""
-        FOR s IN synonym_ft
-            SEARCH
-                PHRASE(s.name, @term, 'text_ll') OR
-                PHRASE(s.name, {{STARTS_WITH: TOKENS(@term, "text_ll")[0]}}, 'text_ll')
-            FOR entity IN INBOUND s has_synonym
-                LET go_class = entity.namespace
-                // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
-                // have labels as they would be redundant.
-                LET labels = UNION(
-                    entity.labels,
-                    IS_SAME_COLLECTION("taxonomy", entity._id) ? ["Taxonomy"] : []
-                )
-                {arango_col_filters}
-                FILTER LENGTH(INTERSECTION(@types, labels)) > 0 OR LENGTH(@types) == 0
+
+    # The purpose of these dynamically chosen query strings is to prevent extra traversals from
+    # being calculated. If organism or literature matching is not strictly required for a match,
+    # we wait to do the matching until the last, paginated slice of data is acquired. This can mean
+    # the difference between performing a traversal on potentially hundreds or thousands of
+    # relationships, to instead just a handful.
+
+    # It is especially useful when we need to find neither a literature nor an organism match. This
+    # also has the benefit of allowing us to return the total count of results as well, rather than
+    # do so in a separate query.
+    both_required_str = f"""
+        LET filtered_results = (
+            FOR result IN unfiltered_results
+                LET entity = result.entity.id
                 {organism_match_string}
                 {literature_match_filter}
-                // Need to group these properties to artificially filter distinct values before
-                // hitting the LIMIT clause. Otherwise we won't get the correct number of results.
-                COLLECT
-                    score = BM25(s),
-                    id = entity._id,
-                    name = entity.name,
-                    entity_labels = labels,
-                    eid = entity.eid,
-                    data_source = entity.data_source,
-                    entity_literature_id = literature_id,
-                    taxonomy_id = t.eid,
-                    taxonomy_name = t.name,
-                    entity_go_class = go_class
-                SORT score DESC, name ASC
-                LIMIT @skip, @limit
-                RETURN DISTINCT {{
-                    'entity': {{
-                        'id': id,
-                        'name': name,
-                        'labels': entity_labels,
-                        'data': {{
-                            'eid': eid,
-                            'data_source': data_source
-                        }}
-                    }},
-                    'literature_id': entity_literature_id,
-                    'taxonomy_id': taxonomy_id,
-                    'taxonomy_name': taxonomy_name,
-                    'go_class': entity_go_class
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': literature_id,
+                    'taxonomy_id': t.eid,
+                    'taxonomy_name': t.name,
+                    'go_class': result.go_class
                 }}
+        )
+        LET final_count = LENGTH(filtered_results)
+        LET final_result = (
+            FOR result in filtered_results
+                LIMIT @skip, @limit
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': result.literature_id,
+                    'taxonomy_id': result.taxonomy_id,
+                    'taxonomy_name': result.taxonomy_name,
+                    'go_class': result.go_class
+                }}
+        )
+        """
+
+    literature_required_str = f"""
+        LET filtered_results = (
+            FOR result IN unfiltered_results
+                LET entity = result.entity.id
+                {literature_match_filter}
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': literature_id,
+                    'go_class': result.go_class
+                }}
+        )
+        LET final_count = LENGTH(filtered_results)
+        LET final_result = (
+            FOR result IN filtered_results
+                // Limit BEFORE the organism matching to prevent unnecessary traversals
+                LIMIT @skip, @limit
+                LET entity = result.entity.id
+                {organism_match_string}
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': result.literature_id,
+                    'taxonomy_id': t.eid,
+                    'taxonomy_name': t.name,
+                    'go_class': result.go_class
+                }}
+        )
+    """
+
+    organism_required_str = f"""
+        LET filtered_results = (
+            FOR result IN unfiltered_results
+                LET entity = result.entity.id
+                {organism_match_string}
+                RETURN {{
+                    'entity': result.entity,
+                    'taxonomy_id': t.eid,
+                    'taxonomy_name': t.name,
+                    'go_class': result.go_class
+                }}
+        )
+        LET final_count = LENGTH(filtered_results)
+        LET final_result = (
+            FOR result IN filtered_results
+                // Limit BEFORE the literature matching to prevent unnecessary traversals
+                LIMIT @skip, @limit
+                LET entity = result.entity.id
+                {literature_match_filter}
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': literature_id,
+                    'taxonomy_id': result.taxonomy_id,
+                    'taxonomy_name': result.taxonomy_name,
+                    'go_class': result.go_class
+                }}
+        )
+    """
+
+    neither_required_str = f"""
+        LET final_count = LENGTH(unfiltered_results)
+        LET final_result = (
+            FOR result IN unfiltered_results
+                // Limit BEFORE matching to prevent unnecessary traversals
+                LIMIT @skip, @limit
+                LET entity = result.entity.id
+                {organism_match_string}
+                {literature_match_filter}
+                RETURN {{
+                    'entity': result.entity,
+                    'literature_id': literature_id,
+                    'taxonomy_id': t.eid,
+                    'taxonomy_name': t.name,
+                    'go_class': result.go_class
+                }}
+        )
     """
 
 
-def visualizer_search_count_query(
-    arango_col_filters: str,
-    organism_match_string: str,
-    literature_match_filter: str
-) -> str:
-    """Need to collect synonyms because a gene node can have multiple
-    synonyms. So it is possible to send duplicate internal node ids to
-    a later query."""
+    if organism_required and literature_required:
+        pagination_query_str = both_required_str
+    elif organism_required:
+        pagination_query_str = organism_required_str
+    elif literature_required:
+        pagination_query_str = literature_required_str
+    else:
+        pagination_query_str = neither_required_str
+
     return f"""
-        RETURN LENGTH(
+        LET unfiltered_results = (
             FOR s IN synonym_ft
-                SEARCH PHRASE(s.name, @term, 'text_ll')
+                SEARCH
+                    PHRASE(s.name, @term, 'text_ll') OR
+                    PHRASE(s.name, {{STARTS_WITH: TOKENS(@term, "text_ll")[0]}}, 'text_ll')
                 FOR entity IN INBOUND s has_synonym
                     LET go_class = entity.namespace
                     // Need to manually add "Taxonomy" to the label list since taxonomy docs don't
@@ -468,25 +501,33 @@ def visualizer_search_count_query(
                     )
                     {arango_col_filters}
                     FILTER LENGTH(INTERSECTION(@types, labels)) > 0 OR LENGTH(@types) == 0
-                    {organism_match_string}
-                    {literature_match_filter}
-                    // Note that we can use DISTINCT here only because we aren't paginating.
+                    COLLECT
+                        score = BM25(s),
+                        id = entity._id,
+                        name = entity.name,
+                        entity_labels = labels,
+                        eid = entity.eid,
+                        data_source = entity.data_source,
+                        entity_go_class = go_class
+                    SORT score DESC, name ASC
                     RETURN DISTINCT {{
                         'entity': {{
-                            'id': entity._id,
-                            'name': entity.name,
-                            'labels': labels,
+                            'id': id,
+                            'name': name,
+                            'labels': entity_labels,
                             'data': {{
-                                'eid': entity.eid,
-                                'data_source': entity.data_source
+                                'eid': eid,
+                                'data_source': data_source
                             }}
                         }},
-                        'literature_id': literature_id,
-                        'taxonomy_id': t.eid,
-                        'taxonomy_name': t.name,
-                        'go_class': go_class
+                        'go_class': entity_go_class
                     }}
         )
+        {pagination_query_str}
+        RETURN {{
+            'count': final_count,
+            'rows': final_result
+        }}
     """
 
 
