@@ -4,7 +4,7 @@
       <a
         href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
-        [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
+        [queryParams]="getVisualizerQueryParams({ data: node.node.id })"
       >{{ node.node.displayName }}</a>
       <span
         [ngStyle]="{
@@ -26,7 +26,7 @@
               'padding': '0 5px'
             }">
             <ng-container *ngIf="domain === 'Literature'; else nonLiteratureDomain">{{ domain }}</ng-container>
-            <ng-template #nonLiteratureDomain>{{ domain.split('_')[1] }}</ng-template>
+            <ng-template #nonLiteratureDomain>{{ domain }}</ng-template>
       </span>
     </h5>
   </div>

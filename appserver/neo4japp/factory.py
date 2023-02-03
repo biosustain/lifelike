@@ -5,7 +5,6 @@ import sentry_sdk
 import traceback
 
 from elasticapm.contrib.flask import ElasticAPM
-from neo4j.exceptions import ServiceUnavailable
 from functools import partial
 from flask import (
     current_app,
@@ -30,7 +29,6 @@ from werkzeug.utils import find_modules, import_string
 
 from neo4japp.constants import LogEventType
 from neo4japp.database import (
-    close_neo4j_db,
     close_redis_conn,
     close_arango_client,
     db,
@@ -175,7 +173,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app = Flask(name)
     app.config.from_object(config)
     app.teardown_appcontext_funcs = [
-        close_neo4j_db,
         close_redis_conn,
         close_arango_client
     ]
@@ -205,7 +202,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(BrokenPipeError, handle_error)
-    app.register_error_handler(ServiceUnavailable, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
 
     # Initialize Elastic APM if configured
@@ -226,7 +222,7 @@ def register_blueprints(app, pkgname):
 
 
 def handle_error(ex):
-    if isinstance(ex, BrokenPipeError) or isinstance(ex, ServiceUnavailable):
+    if isinstance(ex, BrokenPipeError):
         # hopefully these were caught at the query level
         ex = ServerException(message=str(ex))
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'

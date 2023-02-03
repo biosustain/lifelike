@@ -9,7 +9,7 @@ pycodestyle = "==2.7.0"
 
 [packages]
 redis = "==3.5.2"
-neo4j = "==4.2.1"
+python-arango = "==7.5.2"
 
 [requires]
 python_version = "3.8"

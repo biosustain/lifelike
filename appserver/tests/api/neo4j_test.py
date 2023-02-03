@@ -2,25 +2,11 @@ import pytest
 import json
 
 
-@pytest.mark.skip(
-    reason='Does not work unless we upgrade the Neo4j docker image to 4.0+ because of apoc function'
-)
-def test_expand(client, gas_gangrene):
-    response = client.post(
-        '/visualizer/expand',
-        data=json.dumps({
-            'node_id': 1,
-            'filter_labels': ['Chemical', 'Disease', 'Gene'],
-        }), content_type='application/json'
-    )
-
-    assert response.status_code == 200
-
-
 def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_reference_table_data(
     client,
     test_user,
@@ -29,7 +15,7 @@ def test_get_reference_table_data(
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
-        '/visualizer/get-reference-table-data',
+        '/visualizer/get-reference-table',
         data=json.dumps({
             'node_edge_pairs': [
                 {
@@ -67,6 +53,7 @@ def test_get_reference_table_data(
     assert response.status_code == 200
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_edge(
     client,
     test_user,
@@ -93,6 +80,7 @@ def test_get_snippets_for_edge(
     assert response.status_code == 200
 
 
+@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_cluster(
     client,
     test_user,

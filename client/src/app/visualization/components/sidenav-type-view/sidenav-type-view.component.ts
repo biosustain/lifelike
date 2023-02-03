@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 
+import { IdType } from 'vis-network';
+
 import { VisNode } from 'app/interfaces';
 import {
   AssociatedType,
@@ -99,7 +101,7 @@ export class SidenavTypeViewComponent {
     );
   }
 
-  getSnippets(node1Id: number, node2Id: number, limit: number, page: number) {
+  getSnippets(node1Id: IdType, node2Id: IdType, limit: number, page: number) {
     this.visualizationService.getSnippetsForNodePair(
       node1Id,
       node2Id,

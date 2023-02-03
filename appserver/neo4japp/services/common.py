@@ -1,7 +1,5 @@
 import abc
-from datetime import datetime
 
-from neo4j.exceptions import ServiceUnavailable
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -60,97 +58,6 @@ class DatabaseConnection(metaclass=abc.ABCMeta):
         as a nested class.
         """
         raise NotImplementedError
-
-
-class GraphConnection(DatabaseConnection):
-    def __init__(self, conn):
-        self.conn = conn
-
-    class _context(TransactionContext):
-        def __init__(self, conn):
-            self.conn = conn
-
-        def __enter__(self):
-            self.session = self.conn.session()
-            return self.session
-
-        def __exit__(self, exc_type, exc_val, exc_traceback):
-            self.session.close()
-
-    def convert_datetime(self, graph_date):
-        """Convert a neo4j Datetime to python datetime"""
-        return datetime(
-            graph_date.year,
-            graph_date.month,
-            graph_date.day,
-            graph_date.hour,
-            graph_date.minute,
-            int(graph_date.second),
-            int(graph_date.second * 1000000 % 1000000),
-            tzinfo=graph_date.tzinfo)
-
-    def begin(self, **kwargs):
-        return self._context(self.conn)
-
-    def exec_read_query(self, query: str):
-        try:
-            with self.begin() as session:
-                return session.read_transaction(lambda tx: list(tx.run(query)))
-        except BrokenPipeError:
-            raise BrokenPipeError(
-                'The graph connection became stale while processing data. '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
-            raise ServiceUnavailable(
-                'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
-
-    def exec_write_query(self, query: str):
-        try:
-            with self.begin() as session:
-                return session.write_transaction(lambda tx: list(tx.run(query)))
-        except BrokenPipeError:
-            raise BrokenPipeError(
-                'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
-            raise ServiceUnavailable(
-                'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
-
-    def exec_read_query_with_params(self, query: str, values: dict):
-        try:
-            with self.begin() as session:
-                return session.read_transaction(lambda tx: list(tx.run(query, **values)))
-        except BrokenPipeError:
-            raise BrokenPipeError(
-                'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
-            raise ServiceUnavailable(
-                'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
-
-    def exec_write_query_with_params(self, query: str, values: dict):
-        try:
-            with self.begin() as session:
-                return session.write_transaction(lambda tx: list(tx.run(query, **values)))
-        except BrokenPipeError:
-            raise BrokenPipeError(
-                'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
-            raise ServiceUnavailable(
-                'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
 
 
 class GraphBaseDao:

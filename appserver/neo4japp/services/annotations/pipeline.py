@@ -2,13 +2,15 @@ import json
 import time
 
 from flask import current_app
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
+from .annotation_graph_service import get_entity_inclusions
 from .constants import SPECIES_LMDB
-from .data_transfer_objects import PDFWord, SpecifiedOrganismStrain
+from .data_transfer_objects import GlobalInclusions, PDFWord, SpecifiedOrganismStrain
 from .utils.nlp import predict
 from .utils.parsing import parse_content
 
+from neo4japp.database import get_or_create_arango_client
 from neo4japp.constants import LogEventType, FILE_MIME_TYPE_PDF
 from neo4japp.exceptions import AnnotationError
 from neo4japp.util import normalize_str
@@ -31,7 +33,7 @@ class Pipeline:
                 List of PDFWord objects representing words in text.
     """
     def __init__(self, steps: dict, **kwargs):
-        if not all(k in ['adbs', 'ags', 'aers', 'tkner', 'as', 'bs'] for k in steps):
+        if not all(k in ['adbs', 'aers', 'tkner', 'as', 'bs'] for k in steps):
             raise AnnotationError(
                 'Unable to Annotate',
                 'Configurations for the annotation pipeline is incorrect, please try again later.')
@@ -40,7 +42,7 @@ class Pipeline:
         self.parsed = kwargs.get('parsed', [])
         self.entities = None
         self.global_exclusions = None
-        self.global_inclusions = None
+        self.global_inclusions: Optional[GlobalInclusions] = None
 
     @classmethod
     def parse(self, content_type: str, **kwargs) -> Tuple[str, List[PDFWord]]:
@@ -75,12 +77,12 @@ class Pipeline:
         excluded_annotations: List[dict],
         custom_annotations: List[dict]
     ):
+        arango_client = get_or_create_arango_client()
         db_service = self.steps['adbs']()
-        graph_service = self.steps['ags']()
 
         start = time.time()
         self.global_exclusions = db_service.get_entity_exclusions(excluded_annotations)
-        self.global_inclusions = graph_service.get_entity_inclusions(custom_annotations)
+        self.global_inclusions = get_entity_inclusions(arango_client, custom_annotations)
         current_app.logger.info(
             f'Time to process entity exclusions/inclusions {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()

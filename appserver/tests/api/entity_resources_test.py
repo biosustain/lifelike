@@ -46,7 +46,7 @@ def test_user_can_get_uri(client, test_user, uri_fixture):
     assert post_response.json == {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'}  # noqa
 
 
-def test_user_can_get_many_uris(client, test_user, uri_fixture):
+def test_user_can_get_many_uris(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     headers['content_type'] = 'application/json'

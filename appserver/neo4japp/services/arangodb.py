@@ -1,10 +1,23 @@
 from arango import ArangoClient
 from arango.database import StandardDatabase
+from datetime import datetime
 from flask import current_app
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 # Helpers
+
+
+def convert_datetime(date_val: str) -> datetime:
+    try:
+        # The inclusions from the original data load don't seem to have timezone info, so try
+        # creating a datetime object without it first. This is likely a bug, as the inclusion_date
+        # is also not a date object but a raw string.
+        return datetime.strptime(date_val, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        # If the above doesn't work, then the inclusion probably uses the time-zone format, which
+        # is the correct one.
+        return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def get_version(client: ArangoClient):
@@ -24,7 +37,7 @@ def get_db(
     )
 
 
-def execute_arango_query(db: StandardDatabase, query: str, **bind_vars) -> List[Dict]:
+def execute_arango_query(db: StandardDatabase, query: str, **bind_vars) -> List[Any]:
     cursor = db.aql.execute(query, ttl=600, max_runtime=600, bind_vars=bind_vars)
     return [row for row in cursor]
 

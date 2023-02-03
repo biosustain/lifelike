@@ -7,8 +7,7 @@ class Base():
     JWT_ALGORITHM = getenv('JWT_ALGORITHM', 'HS256')
     JWT_AUDIENCE = getenv('JWT_AUDIENCE', None)
 
-    NEO4J_HOST = getenv('NEO4J_HOST', 'localhost')
-    NEO4J_SCHEME = getenv('NEO4J_SCHEME', 'bolt')
-    NEO4J_AUTH = getenv('NEO4J_AUTH', 'neo4j/password')
-    NEO4J_PORT = getenv('NEO4J_PORT', '7687')
-    NEO4J_DATABASE = getenv('NEO4J_DATABASE', 'neo4j')
+    ARANGO_HOST = getenv('ARANGO_HOST', 'http://localhost:8529')
+    ARANGO_USERNAME = getenv('ARANGO_USERNAME', '***ARANGO_USERNAME***')
+    ARANGO_PASSWORD = getenv('ARANGO_PASSWORD', 'password')
+    ARANGO_DB_NAME = getenv('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')

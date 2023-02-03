@@ -9,7 +9,6 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from jwt import PyJWKClient
-from neo4j import Driver, GraphDatabase, basic_auth
 from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
@@ -58,36 +57,6 @@ db = SQLAlchemy(
 # Note that this client should only be used when JWKS_URL has been configured!
 jwt_client = PyJWKClient(os.getenv('JWKS_URL', ''))
 
-_neo4j_driver: Driver = None
-
-
-def get_neo4j_driver():
-    global _neo4j_driver
-    if _neo4j_driver is None:
-        host = os.getenv('NEO4J_HOST', '0.0.0.0')
-        scheme = os.getenv('NEO4J_SCHEME', 'bolt')
-        port = os.getenv('NEO4J_PORT', '7687')
-        url = f'{scheme}://{host}:{port}'
-        username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
-        _neo4j_driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
-    return _neo4j_driver
-
-
-# TODO: with the DatabaseConnection class
-# these functions that save to `g` are no longer needed
-# remove them when possible
-def get_neo4j_db():
-    if not hasattr(g, 'neo4j_db'):
-        graph = get_neo4j_driver()
-        g.neo4j_db = graph.session()
-    return g.neo4j_db
-
-
-def close_neo4j_db(e=None):
-    neo4j_db = g.pop('neo4j_db', None)
-    if neo4j_db:
-        neo4j_db.close()
-
 
 def get_redis_connection(db: int = 0) -> Redis:
     if not hasattr(g, 'redis_conn'):
@@ -116,7 +85,12 @@ def create_arango_client(hosts=None) -> ArangoClient:
         REQUEST_TIMEOUT = 1000
 
     hosts = hosts or current_app.config.get('ARANGO_HOST')
-    return ArangoClient(hosts=hosts, http_client=CustomHTTPClient())
+    return ArangoClient(
+        hosts=hosts,
+        # Without this setting any requests to Arango will fail because we don't have a valid cert
+        verify_override=False,
+        http_client=CustomHTTPClient()
+    )
 
 
 def close_arango_client(error):
@@ -133,12 +107,6 @@ class DBConnection:
         self.session = db.session
 
 
-class GraphConnection:
-    def __init__(self):
-        super().__init__()
-        self.graph = get_neo4j_db()
-
-
 class ElasticConnection:
     def __init__(self):
         super().__init__()
@@ -147,7 +115,7 @@ class ElasticConnection:
 
 """
 TODO: Update all of these functions to use
-DBConnection or GraphConnection above.
+DBConnection above.
 
 Separation of concerns/Single responsibility.
 
@@ -159,28 +127,6 @@ It also helps avoid circular dependencies if these
 get_*() functions are moved elsewhere. This problem does
 not apply to the AnnotationServices (except manual and sorted).
 """
-
-
-def get_kg_service():
-    if 'kg_service' not in g:
-        from neo4japp.services import KgService
-        graph = get_neo4j_db()
-        g.kg_service = KgService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.kg_service
-
-
-def get_visualizer_service():
-    if 'visualizer_service' not in g:
-        from neo4japp.services import VisualizerService
-        graph = get_neo4j_db()
-        g.visualizer_service = VisualizerService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.visualizer_service
 
 
 @scope_flask_app_ctx('file_type_service')
@@ -210,20 +156,8 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = get_neo4j_db()
-        g.enrichment_table_service = EnrichmentTableService(
-            graph=graph,
-            session=db.session,
-        )
+        g.enrichment_table_service = EnrichmentTableService(session=db.session)
     return g.enrichment_table_service
-
-
-def get_search_service_dao():
-    if 'search_dao' not in g:
-        from neo4japp.services import SearchService
-        graph = get_neo4j_db()
-        g.search_service_dao = SearchService(graph=graph)
-    return g.search_service_dao
 
 
 def get_authorization_service():
@@ -272,7 +206,6 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'kg_service',
         'user_file_import_service',
         'search_dao',
         'authorization_service',

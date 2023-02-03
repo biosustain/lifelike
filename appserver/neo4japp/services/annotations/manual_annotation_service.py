@@ -1,23 +1,20 @@
-import uuid
-
+from arango.client import ArangoClient
 from datetime import datetime
-from http import HTTPStatus
-
 from flask import current_app
-from neo4j.exceptions import ServiceUnavailable
+from http import HTTPStatus
 from typing import List, Tuple
-from uuid import uuid4
+import uuid
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
+from neo4japp.services.arangodb import get_db, execute_arango_query
 from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
 from .exceptions import AnnotationLimitationError
-from .annotation_graph_service import AnnotationGraphService
 from .tokenizer import Tokenizer
 from .constants import (
     ManualAnnotationType,
@@ -34,11 +31,11 @@ from .utils.graph_queries import *
 class ManualAnnotationService:
     def __init__(
         self,
-        graph: AnnotationGraphService,
-        tokenizer: Tokenizer
+        tokenizer: Tokenizer,
+        arango_client: ArangoClient
     ) -> None:
-        self.graph = graph
         self.tokenizer = tokenizer
+        self.arango_client = arango_client
 
     def _annotation_exists(
         self,
@@ -132,11 +129,18 @@ class ManualAnnotationService:
                     EntityType.PROTEIN.value,
                     EntityType.SPECIES.value
                 ]:
-                    primary_name = \
-                        self.graph.get_nodes_from_node_ids(entity_type, [entity_id])[entity_id]
+                    result = execute_arango_query(
+                        db=get_db(self.arango_client),
+                        query=get_docs_by_ids_query(entity_type),
+                        ids=[entity_id]
+                    )
+                    primary_name = {
+                        row['entity_id']: row['entity_name']
+                        for row in result
+                    }[entity_id]
             except KeyError:
                 pass
-            except (BrokenPipeError, ServiceUnavailable):
+            except BrokenPipeError:
                 raise
             except Exception:
                 raise AnnotationError(
@@ -285,20 +289,23 @@ class ManualAnnotationService:
 
     def remove_global_inclusions(self, inclusion_ids: List[Tuple[int, int]]):
         try:
-            self.graph.exec_write_query_with_params(
-                get_delete_global_inclusion_query(),
-                {'node_ids': [[gid, sid] for gid, sid in inclusion_ids]})
-        except (BrokenPipeError, ServiceUnavailable):
+            pairs = [[gid, sid] for gid, sid in inclusion_ids]
+            execute_arango_query(
+                db=get_db(self.arango_client),
+                query=get_delete_global_inclusion_query(),
+                pairs=pairs
+            )
+        except BrokenPipeError:
             raise
         except Exception:
             current_app.logger.error(
                 f'Failed executing cypher: {get_delete_global_inclusion_query()}.\n' +
-                f'PARAMETERS: <node_ids: {inclusion_ids}>.',
+                f'PARAMETERS: <pairs: {pairs}>.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise AnnotationError(
                 title='Failed to Remove Global Inclusion',
-                message='A system error occurred while creating the annotation, '
+                message='A system error occurred while deleting the annotation, '
                         'we are working on a solution. Please try again later.'
             )
 
@@ -307,58 +314,78 @@ class ManualAnnotationService:
             # a global could've been added with the wrong entity type
             # so we need to remove those bad labels to prevent
             # incorrect results coming back as synonyms
-            results = self.graph.exec_read_query_with_params(
-                get_node_labels_and_relationship_query(),
-                {'node_ids': [gid for gid, _ in inclusion_ids]})
-
-            for result in results:
-                mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
-                # remove Taxonomy because there is inconsistency between graph and annotations
-                # annotation uses Species instead
-                if EntityType.SPECIES.value in result['rel_entity_types']:
-                    mismatch.remove('Taxonomy')
-
-                s = ''
-                for label in list(mismatch):
-                    if label not in result['valid_entity_types']:
-                        if label == 'Anatomy':
-                            s += ':Anatomy'
-                        elif label == 'Chemical':
-                            s += ':Chemical'
-                        elif label == 'Compound':
-                            s += ':Compound'
-                        elif label == 'Disease':
-                            s += ':Disease'
-                        elif label == 'Food':
-                            s += ':Food'
-                        elif label == 'Gene':
-                            s += ':Gene'
-                        elif label == 'Phenomena':
-                            s += ':Phenomena'
-                        elif label == 'Phenotype':
-                            s += ':Phenotype'
-                        elif label == 'Protein':
-                            s += ':Protein'
-                        elif label == 'Taxonomy':
-                            s += ':Taxonomy'
-                if s:
-                    self.graph.exec_write_query_with_params(
-                        query_builder(['MATCH (n) WHERE id(n) = $node_id', f'REMOVE n{s}']),
-                        {'node_id': result['node_id']})
-        except (BrokenPipeError, ServiceUnavailable):
-            raise
+            results = execute_arango_query(
+                db=get_db(self.arango_client),
+                query=get_node_labels_and_relationship_query(),
+                ids=[gid for gid, _ in inclusion_ids]
+            )
         except Exception:
-            query = query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])
-            current_app.logger.error(
-                f'Failed executing cypher: {query}.\n' +
-                f'PARAMETERS: <node_id: {result["node_id"]}>.',
+            current_app.logger.info(
+                f'Failed During Cleanup of Global Inclusion Removal',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise AnnotationError(
-                title='Failed to Remove Global Inclusion',
-                message='A system error occurred while creating the annotation, '
+                title='Global Inclusion Deleted, But Cleanup Failed',
+                message='A system error occurred after deleting the annotation, '
                         'we are working on a solution. Please try again later.'
             )
+        for result in results:
+            mismatch = set(result['node_labels']) - set(result['rel_entity_types'])
+            # remove Taxonomy because there is inconsistency between graph and annotations
+            # annotation uses Species instead
+            if EntityType.SPECIES.value in result['rel_entity_types']:
+                mismatch.remove('Taxonomy')
+
+            s = []
+            for label in list(mismatch):
+                if label not in result['valid_entity_types']:
+                    if label == 'Anatomy':
+                        s.append('Anatomy')
+                    elif label == 'Chemical':
+                        s.append('Chemical')
+                    elif label == 'Compound':
+                        s.append('Compound')
+                    elif label == 'Disease':
+                        s.append('Disease')
+                    elif label == 'Food':
+                        s.append('Food')
+                    elif label == 'Gene':
+                        s.append('Gene')
+                    elif label == 'Phenomena':
+                        s.append('Phenomena')
+                    elif label == 'Phenotype':
+                        s.append('Phenotype')
+                    elif label == 'Protein':
+                        s.append('Protein')
+                    elif label == 'Taxonomy':
+                        s.append('Taxonomy')
+            if len(s):
+                try:
+                    query = """
+                        FOR doc IN synonym
+                            FILTER doc._key == @node_id
+                            FOR val IN @labels
+                                UPDATE doc WITH {labels: REMOVE_VALUE(doc.labels, val)} IN synonym
+                    """
+                    execute_arango_query(
+                        db=get_db(self.arango_client),
+                        query=query,
+                        node_id=result['node_id']
+                    )
+                except BrokenPipeError:
+                    raise
+                except Exception:
+                    query = query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])
+                    current_app.logger.error(
+                        f'Failed executing cypher: {query}.\n' +
+                        f'PARAMETERS: <node_id: {result["node_id"]}>.',
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Global Inclusion Deleted, But Cleanup Failed',
+                        message='A system error occurred after deleting the annotation, '
+                                'we are working on a solution. Please try again later.'
+                    )
 
     def add_exclusion(self, file: Files, user: AppUser, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
@@ -461,6 +488,11 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
+    # TODO: Seems like there is some unexpected behavior in saving a new global: If both the
+    # entity and the synonym already exist, no global is created. This is probably "correct" in the
+    # sense that the term should get annotated without the existence of the global, but it's very
+    # confusing because the new annotation will not appear in the global list. A term annotated in
+    # this way is effectively the same as a local annotation.
     def save_global(
         self,
         annotation: dict,
@@ -499,9 +531,9 @@ class ManualAnnotationService:
                 )
 
             if entity_id == '':
-                entity_id = f'NULL-{str(uuid4())}'
+                entity_id = f'NULL-{str(uuid.uuid4())}'
 
-            createval = {
+            all_params = {
                 'entity_type': entity_type,
                 'entity_id': entity_id,
                 'synonym': synonym,
@@ -516,7 +548,7 @@ class ManualAnnotationService:
             # NOTE:
             # definition of `main node`: the node that contains the common/primary name
             # e. g `Homo sapiens` is the common/primary name, while `human` is the synonym
-            check = self._global_annotation_exists_in_kg(createval)
+            check = self._global_annotation_exists_in_kg(all_params)
             # several possible scenarios
             # 1. main node exists and synonym exists
             # 2. main node exists and synonym does not exist
@@ -533,46 +565,110 @@ class ManualAnnotationService:
                     not check['synonym_exist']
                     or check.get('node_has_entity_label', False)
             ):
-                queries = {
-                    EntityType.ANATOMY.value: get_create_mesh_global_inclusion_query(entity_type),
-                    EntityType.DISEASE.value: get_create_mesh_global_inclusion_query(entity_type),
-                    EntityType.FOOD.value: get_create_mesh_global_inclusion_query(entity_type),
-                    EntityType.PHENOMENA.value: get_create_mesh_global_inclusion_query(entity_type),
-                    EntityType.PHENOTYPE.value: get_create_mesh_global_inclusion_query(entity_type),
-                    EntityType.CHEMICAL.value: get_create_chemical_global_inclusion_query(),
-                    EntityType.COMPOUND.value: get_create_compound_global_inclusion_query(),
-                    EntityType.GENE.value: get_create_gene_global_inclusion_query(),
-                    EntityType.PROTEIN.value: get_create_protein_global_inclusion_query(),
-                    EntityType.SPECIES.value: get_create_species_global_inclusion_query(),
-                    EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
+                mesh_params = {
+                    'entity_type': entity_type,
+                    'entity_id': entity_id,
+                    'synonym': synonym,
+                    'inclusion_date': inclusion_date,
+                    'user': username,
+                    'file_uuid': file_hash_id,
+                    'hyperlinks': hyperlinks,
+                }
+                others_params = {
+                    'entity_id': entity_id,
+                    'synonym': synonym,
+                    'inclusion_date': inclusion_date,
+                    'user': username,
+                    'file_uuid': file_hash_id,
+                    'hyperlinks': hyperlinks,
                 }
 
-                query = queries.get(entity_type, '')
+                queries = {
+                    EntityType.ANATOMY.value: (get_create_mesh_global_inclusion_query, mesh_params),
+                    EntityType.DISEASE.value: (get_create_mesh_global_inclusion_query, mesh_params),
+                    EntityType.FOOD.value: (get_create_mesh_global_inclusion_query, mesh_params),
+                    EntityType.PHENOMENA.value: (
+                        get_create_mesh_global_inclusion_query,
+                        mesh_params
+                    ),
+                    EntityType.PHENOTYPE.value: (
+                        get_create_mesh_global_inclusion_query,
+                        mesh_params
+                    ),
+                    EntityType.CHEMICAL.value: (
+                        get_create_chemical_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.COMPOUND.value: (
+                        get_create_compound_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.GENE.value: (get_create_gene_global_inclusion_query, others_params),
+                    EntityType.PROTEIN.value: (
+                        get_create_protein_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.SPECIES.value: (
+                        get_create_species_global_inclusion_query,
+                        others_params
+                    ),
+                    EntityType.PATHWAY.value: (
+                        get_pathway_global_inclusion_exist_query,
+                        others_params
+                    )
+                }
+
                 try:
-                    if query:
-                        self.graph.exec_write_query_with_params(query, createval)
-                    else:
-                        query = get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type)
-                        self.graph.exec_write_query_with_params(query, createval)
-                except (BrokenPipeError, ServiceUnavailable):
+                    query_fn, params = queries[entity_type]
+                except KeyError:
+                    current_app.logger.error(
+                        f'Failed to create global inclusion, type {entity_type} unrecognized.',
+                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise
+                try:
+                    if not query_fn:
+                        query_fn = get_create_***ARANGO_DB_NAME***_global_inclusion_query
+                        params = all_params
+
+                    execute_arango_query(
+                        db=get_db(self.arango_client),
+                        query=query_fn(),
+                        **params,
+                    )
+                except BrokenPipeError:
                     raise
                 except Exception:
                     current_app.logger.error(
                         f'Failed to create global inclusion, '
-                        f'knowledge graph failed with query: {query}.',
+                        f'knowledge graph failed with query: {query_fn()}.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Global Inclusion',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.'
                     )
             elif not check['node_exist']:
                 try:
-                    query = get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type)
-                    self.graph.exec_write_query_with_params(query, createval)
-                except (BrokenPipeError, ServiceUnavailable):
+                    query = get_create_***ARANGO_DB_NAME***_global_inclusion_query()
+                    execute_arango_query(
+                        db=get_db(self.arango_client),
+                        query=query,
+                        **all_params,
+                    )
+                except BrokenPipeError:
                     raise
                 except Exception:
                     current_app.logger.info(
                         f'Failed to create global inclusion, '
                         f'knowledge graph failed with query: {query}.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise AnnotationError(
+                        title='Failed to Create Global Inclusion',
+                        message='A system error occurred while creating the annotation, '
+                                'we are working on a solution. Please try again later.'
                     )
         else:
             if not self._global_annotation_exists(annotation, inclusion_type):
@@ -597,32 +693,54 @@ class ManualAnnotationService:
 
     def _global_annotation_exists_in_kg(self, values: dict):
         entity_type = values['entity_type']
+        mesh_params = {
+            'entity_type': entity_type,
+            'entity_id': values['entity_id'],
+            'synonym': values['synonym'],
+        }
+        ***ARANGO_DB_NAME***_params = {
+            'common_name': values['common_name'],
+            'entity_type': entity_type,
+            'synonym': values['synonym'],
+        }
+        other_params = {
+            'entity_id': values['entity_id'],
+            'synonym': values['synonym'],
+        }
         queries = {
-            EntityType.ANATOMY.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.DISEASE.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.FOOD.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.PHENOMENA.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.PHENOTYPE.value: get_mesh_global_inclusion_exist_query(entity_type),
-            EntityType.CHEMICAL.value: get_chemical_global_inclusion_exist_query(),
-            EntityType.COMPOUND.value: get_compound_global_inclusion_exist_query(),
-            EntityType.GENE.value: get_gene_global_inclusion_exist_query(),
-            EntityType.PROTEIN.value: get_protein_global_inclusion_exist_query(),
-            EntityType.SPECIES.value: get_species_global_inclusion_exist_query(),
-            EntityType.PATHWAY.value: get_pathway_global_inclusion_exist_query()
+            EntityType.ANATOMY.value: (get_mesh_global_inclusion_exist_query, mesh_params),
+            EntityType.DISEASE.value: (get_mesh_global_inclusion_exist_query, mesh_params),
+            EntityType.FOOD.value: (get_mesh_global_inclusion_exist_query, mesh_params),
+            EntityType.PHENOMENA.value: (get_mesh_global_inclusion_exist_query, mesh_params),
+            EntityType.PHENOTYPE.value: (get_mesh_global_inclusion_exist_query, mesh_params),
+            EntityType.CHEMICAL.value: (get_chemical_global_inclusion_exist_query, other_params),
+            EntityType.COMPOUND.value: (get_compound_global_inclusion_exist_query, other_params),
+            EntityType.GENE.value: (get_gene_global_inclusion_exist_query, other_params),
+            EntityType.PROTEIN.value: (get_protein_global_inclusion_exist_query, other_params),
+            EntityType.SPECIES.value: (get_species_global_inclusion_exist_query, other_params),
+            EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, other_params)
         }
 
-        # query can be empty string because some entity types
-        # do not exist in the normal domain/labels
-        query = queries.get(entity_type, '')
         try:
-            check = self.graph.exec_read_query_with_params(query, values)[0] \
-                if query else {'node_exist': False}
-        except (BrokenPipeError, ServiceUnavailable):
+            query_fn, params = queries[entity_type]
+        except KeyError:
+            current_app.logger.error(
+                f'Failed to create global inclusion, entity type {entity_type} unrecognized.',
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            )
+            raise
+        try:
+            check = execute_arango_query(
+                db=get_db(self.arango_client),
+                query=query_fn(),
+                **params
+            )[0] if query_fn else {'node_exist': False}
+        except BrokenPipeError:
             raise
         except Exception:
             current_app.logger.error(
                 f'Failed to create global inclusion, '
-                f'knowledge graph failed with query: {query}.',
+                f'knowledge graph failed with query: {query_fn()}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
 
@@ -630,17 +748,24 @@ class ManualAnnotationService:
             return check
         else:
             try:
-                query = get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type)
-                check = self.graph.exec_read_query_with_params(query, values)[0]
-            except (BrokenPipeError, ServiceUnavailable):
+                check = execute_arango_query(
+                    db=get_db(self.arango_client),
+                    query=get_***ARANGO_DB_NAME***_global_inclusion_exist_query(),
+                    *****ARANGO_DB_NAME***_params,
+                )[0]
+            except BrokenPipeError:
                 raise
             except Exception:
                 current_app.logger.error(
                     f'Failed to create global inclusion, '
-                    f'knowledge graph failed with query: {query}.',
+                    f'knowledge graph failed with query: {query_fn()}.',
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
-
+                raise AnnotationError(
+                    title='Failed to Create Global Inclusion',
+                    message='A system error occurred while creating the annotation, '
+                            'we are working on a solution. Please try again later.'
+                )
         return check
 
     def _global_annotation_exists(self, annotation, inclusion_type):

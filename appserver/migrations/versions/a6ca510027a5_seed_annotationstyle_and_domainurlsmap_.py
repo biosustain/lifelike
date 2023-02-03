@@ -13,8 +13,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 
-from neo4japp.models import AnnotationStyle, DomainURLsMap
-
 
 # revision identifiers, used by Alembic.
 revision = 'a6ca510027a5'
