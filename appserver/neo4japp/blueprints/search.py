@@ -34,7 +34,6 @@ from neo4japp.services.search import (
     get_synonyms,
     get_synonyms_count,
     visualizer_search,
-    visualizer_search_count
 )
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import EventLog, UserEventLog
@@ -75,15 +74,8 @@ def viz_search(
         domains=domains,
         entities=entities,
     )
-    total = visualizer_search_count(
-        arango_client,
-        term=query,
-        organism=organism,
-        domains=domains,
-        entities=entities,
-    )
     return jsonify({
-        'result': FTSResult(query, results, total, page, limit).to_dict(),
+        'result': FTSResult(query, results['rows'], results['count'], page, limit).to_dict(),
     })
 
 
