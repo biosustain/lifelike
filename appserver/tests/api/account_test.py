@@ -1,9 +1,9 @@
+from arango.database import StandardDatabase
 import json
-import re
-from types import SimpleNamespace
-
 import pytest
+import re
 import responses
+from types import SimpleNamespace
 
 from neo4japp.models import AppUser
 from tests.helpers.api import generate_jwt_headers
@@ -41,13 +41,18 @@ def mocked_lmdb_open(monkeypatch):
     monkeypatch.setattr('lmdb.open', lmdb_open)
 
 
-# This creates a default project, which includes an annotated PDF, hence why we skip it for now
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
-def test_admin_can_create_user(client, fix_admin_user, mocked_responses, mocked_lmdb_open):
+@pytest.mark.skip('Skipping until pdfparser can be properly mocked')
+def test_admin_can_create_user(
+    client,
+    fix_admin_user,
+    test_arango_db: StandardDatabase,
+    mocked_responses,
+    mocked_lmdb_open
+):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
-    # Mocked responses from pdfparser
+    # # Mocked responses from pdfparser
     mocked_responses.add(
         responses.POST,
         re.compile('.+/token/rect/.+'),
