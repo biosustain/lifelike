@@ -40,8 +40,8 @@ def get_annotation_legend():
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node_as_clusters(req: ExpandNodeRequest):
     arango_client = get_or_create_arango_client()
-    node = expand_node_as_clusters(arango_client, req.node_id, req.filter_labels)
-    return SuccessResponse(result=node, status_code=200)
+    clusters = expand_node_as_clusters(arango_client, req.node_id, req.filter_labels)
+    return SuccessResponse(result=clusters, status_code=200)
 
 
 @bp.route('/get-reference-table', methods=['POST'])
@@ -84,14 +84,8 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
             code=400
         )
 
-    print('Received request to get snippets for cluster')
-
     arango_client = get_or_create_arango_client()
-    from datetime import datetime
-    start = datetime.now()
     result = get_snippets_for_cluster(arango_client, req.edges, req.page, req.limit)
-    finish = datetime.now() - start
-    print(f'Took {finish}ms to get snippets for cluster')
     return SuccessResponse(result, status_code=200)
 
 
