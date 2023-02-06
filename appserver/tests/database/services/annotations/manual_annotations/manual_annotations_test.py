@@ -10,10 +10,10 @@ from neo4japp.services.annotations.constants import EntityType
 directory = path.realpath(path.dirname(__file__))
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_add_custom_annotation_inclusion_annotate_all(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner
 ):
@@ -40,10 +40,10 @@ def test_add_custom_annotation_inclusion_annotate_all(
     assert len(inclusions) == 2
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_add_custom_annotation_inclusion_multi_word(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner
 ):
@@ -71,10 +71,10 @@ def test_add_custom_annotation_inclusion_multi_word(
     assert len(inclusions) == 2
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_add_custom_annotation_inclusion(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner
 ):
@@ -101,10 +101,10 @@ def test_add_custom_annotation_inclusion(
     assert len(inclusions) == 1
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_add_custom_annotation_inclusion_multi_word_gene_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner
 ):
@@ -131,10 +131,10 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
         )
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_add_custom_annotation_inclusion_multi_word_food_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner
 ):
