@@ -1,19 +1,18 @@
-import pytest
-import os
-
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from flask import request as flask_request
 from flask.app import Flask
 from neo4j import GraphDatabase, Session, Transaction, basic_auth
-import responses
 from neo4j.graph import Node, Relationship
 from pathlib import Path
+import pytest
+import os
+import responses
 from typing import Optional
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import DISPLAY_NAME_MAP
-from neo4japp.database import db, reset_dao, create_arango_client
+from neo4japp.database import create_arango_client, db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
@@ -32,6 +31,8 @@ from neo4japp.util import (
     snake_to_camel_dict,
 )
 from neo4japp.utils.labels import get_first_known_label_from_node
+
+from .constants import DOCUMENT_COLLECTIONS, EDGE_COLLECTIONS, GRAPHS
 
 
 def setup_before_request_callbacks(app: Flask):
@@ -128,6 +129,7 @@ def graph_driver(request, app):
     return GraphDatabase.driver(url, auth=basic_auth(username, password))
 
 
+# Arango fixtures
 @pytest.fixture(scope="function")
 def arango_client(app):
     arango_client = create_arango_client(
@@ -149,19 +151,47 @@ def system_db(app, arango_client: ArangoClient):
     )
 
 
+def _create_empty_document_collections(arango_db: StandardDatabase):
+    for collection in DOCUMENT_COLLECTIONS:
+        arango_db.create_collection(collection)
+
+
+def _create_empty_edge_collections(arango_db: StandardDatabase):
+    for collection in EDGE_COLLECTIONS:
+        arango_db.create_collection(collection, edge=True)
+
+
+def _create_empty_graphs(arango_db: StandardDatabase):
+    edge_definitions = [
+        {
+            'edge_collection': edge_collection,
+            'from_vertex_collections': DOCUMENT_COLLECTIONS,
+            'to_vertex_collections': DOCUMENT_COLLECTIONS,
+        }
+        for edge_collection in EDGE_COLLECTIONS
+    ]
+    for graph in GRAPHS:
+        arango_db.create_graph(graph, edge_definitions)
+
+
 @pytest.fixture(scope="function")
 def test_arango_db(
     app, arango_client: ArangoClient, system_db: StandardDatabase
 ):
-    create_db(system_db, app.config.get('ARANGO_DB_NAME'))
-
     test_db_name = app.config.get('ARANGO_DB_NAME')
+    create_db(system_db, test_db_name)
+
     test_db = get_db(
         arango_client=arango_client,
         name=test_db_name,
         username=app.config.get('ARANGO_USERNAME'),
         password=app.config.get('ARANGO_PASSWORD'),
     )
+
+    _create_empty_document_collections(test_db)
+    _create_empty_edge_collections(test_db)
+    _create_empty_graphs(test_db)
+
     yield test_db
 
     # Drop the test database after every test to make it clean before the next one
