@@ -82,9 +82,9 @@ def get_annotation_service(get_db_service, get_graph_service, request):
 
 
 @pytest.fixture(scope='function')
-def get_manual_annotation_service(get_graph_service):
+def get_manual_annotation_service(arango_client):
     return ManualAnnotationService(
-        graph=get_graph_service, tokenizer=Tokenizer())
+        arango_client=arango_client, tokenizer=Tokenizer())
 
 
 @pytest.fixture(scope='function')
