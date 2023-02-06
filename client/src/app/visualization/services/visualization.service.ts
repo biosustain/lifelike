@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
-import { isNil } from "lodash-es";
-import { of } from "rxjs";
-import { map, catchError } from "rxjs/operators";
-import { IdType } from "vis-network";
+import { isNil } from 'lodash-es';
+import { of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { IdType } from 'vis-network';
 
 import {
   GetClusterSnippetsResult,
@@ -21,13 +21,12 @@ import {
   GraphRelationship,
   VisNode,
   VisEdge,
-  BulkReferenceTableDataRequest,
   GetBulkReferenceTableDataResult,
-} from "app/interfaces";
+} from 'app/interfaces';
 
 @Injectable()
 export class VisualizationService {
-  readonly baseUrl = "/api/visualizer";
+  readonly baseUrl = '/api/visualizer';
 
   constructor(private http: HttpClient) {}
 
@@ -52,8 +51,8 @@ export class VisualizationService {
       console.error(`Node does not have expected label and displayName properties ${n}`);
       return null;
     }
-    const color = legend.get(n.label) ?legend.get(n.label)[0] : "#000000";
-    const border = legend.get(n.label) ? legend.get(n.label)[1] : "#000000";
+    const color = legend.get(n.label) ?legend.get(n.label)[0] : '#000000';
+    const border = legend.get(n.label) ? legend.get(n.label)[1] : '#000000';
     return {
       ...n,
       expanded: false,
@@ -62,18 +61,18 @@ export class VisualizationService {
         color,
       },
       color: {
-        background: "#FFFFFF",
+        background: '#FFFFFF',
         border,
         hover: {
-          background: "#FFFFFF",
+          background: '#FFFFFF',
           border,
         },
         highlight: {
-          background: "#FFFFFF",
+          background: '#FFFFFF',
           border,
         },
       },
-      label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + "..." : n.displayName,
+      label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...' : n.displayName,
     };
   }
 
@@ -81,10 +80,10 @@ export class VisualizationService {
     return {
       ...e,
       color: {
-        color: "#0c8caa",
+        color: '#0c8caa',
       },
       label: e.data.description,
-      arrows: "to",
+      arrows: 'to',
     };
   }
 
