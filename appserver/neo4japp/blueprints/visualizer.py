@@ -25,7 +25,7 @@ from neo4japp.services.visualizer import (
     get_snippets_for_node_pair
 
 )
-from neo4japp.util import SuccessResponse, jsonify_with_class
+from neo4japp.util import SuccessResponse, jsonify_with_class, camel_to_snake_dict
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
@@ -51,18 +51,7 @@ def get_ref_table(req: ReferenceTableDataRequest):
     reference_table_data = get_reference_table_data(
         arango_client,
         [
-            {
-                'node': {
-                    'id': pair.node.id,
-                    'display_name': pair.node.display_name,
-                    'label': pair.node.label
-                },
-                'edge': {
-                    'original_from': pair.edge.original_from,
-                    'original_to': pair.edge.original_to,
-                    'label': pair.edge.label
-                }
-            }
+            camel_to_snake_dict(pair.to_dict())
             for pair in req.node_edge_pairs
         ]
     )
