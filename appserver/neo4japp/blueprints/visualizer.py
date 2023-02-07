@@ -50,7 +50,21 @@ def get_ref_table(req: ReferenceTableDataRequest):
     arango_client = get_or_create_arango_client()
     reference_table_data = get_reference_table_data(
         arango_client,
-        [pair.to_dict() for pair in req.node_edge_pairs]
+        [
+            {
+                'node': {
+                    'id': pair.node.id,
+                    'display_name': pair.node.display_name,
+                    'label': pair.node.label
+                },
+                'edge': {
+                    'original_from': pair.edge.original_from,
+                    'original_to': pair.edge.original_to,
+                    'label': pair.edge.label
+                }
+            }
+            for pair in req.node_edge_pairs
+        ]
     )
     return SuccessResponse(reference_table_data, status_code=200)
 

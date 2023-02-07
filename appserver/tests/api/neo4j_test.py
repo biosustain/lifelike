@@ -6,45 +6,32 @@ def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_reference_table_data(
     client,
     test_user,
-    gas_gangrene_treatment_cluster_node_edge_pairs,
+    test_arango_db
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/visualizer/get-reference-table',
         data=json.dumps({
-            'node_edge_pairs': [
+            'nodeEdgePairs': [
                 {
                     'node': {
                         'id': f'duplicateNode:1',
                         'label': 'Chemical',
-                        'data': {},
-                        'sub_labels': [],
-                        'display_name': 'penicillins',
-                        'primary_label': 'Chemical',
-                        'color': {},
-                        'expanded': False,
-                        'duplicate_of': 1,
+                        'displayName': 'penicillins',
                     },
                     'edge': {
-                        'id': 'duplicateEdge:1',
                         'label': 'ASSOCIATED',
-                        'data': {},
-                        'to': 'duplicateNode:1',
-                        'from_': 'duplicateNode:2',
-                        'to_label': 'Disease',
-                        'from_label': 'Chemical',
-                        'arrows': 'to',
-                        'duplicate_of': 1,
-                        'original_from': 2,
-                        'original_to': 1,
+                        'originalFrom': '2',
+                        'originalTo': '1',
                     },
                 },
             ],
+            'description': 'treatment/therapy',
+            'direction': 'Outgoing'
         }),
         headers=headers,
         content_type='application/json'
@@ -53,10 +40,10 @@ def test_get_reference_table_data(
     assert response.status_code == 200
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_edge(
     client,
     test_user,
+    test_arango_db
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -80,10 +67,10 @@ def test_get_snippets_for_edge(
     assert response.status_code == 200
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_cluster(
     client,
     test_user,
+    test_arango_db
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
