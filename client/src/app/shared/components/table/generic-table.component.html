@@ -4,7 +4,7 @@
       <tr class="table-secondary" *ngFor="let row of HEADER">
         <th
           *ngFor="let col of row"
-          class="border-top text-center text-truncate"
+          class="text-center text-truncate"
           style="z-index: 1"
           [attr.colspan]="col.span"
         >
@@ -38,6 +38,5 @@
         </td>
       </tr>
     </ng-container>
-    <tr></tr>
   </tbody>
 </table>
