@@ -1,4 +1,4 @@
-FROM fedora:32 as base
+FROM fedora:33 as base
 LABEL app=kg-prototypes
 
 # Install dependencies
