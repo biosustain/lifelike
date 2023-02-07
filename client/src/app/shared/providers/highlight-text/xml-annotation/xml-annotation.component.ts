@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { escape, uniqueId, isString, entries } from 'lodash-es';
 import Color from 'color';
 
 import { ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
@@ -20,7 +21,7 @@ import {
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 
-import { SEARCH_LINKS } from '../../../links';
+import { LINKS } from '../../../links';
 import { annotationTypesMap } from '../../../annotation-styles';
 import { HighlightTextService, XMLTag } from '../../../services/highlight-text.service';
 import { WorkspaceManager } from '../../../workspace-manager';
@@ -72,10 +73,10 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
         (ENTITY_TYPE_MAP[type] as EntityType)?.links.find((link) => link.name === idType)?.url +
         this.annoId;
       this.idHyperlinks = idHyperlinks?.map((link) => JSON.parse(link));
-      // links should be sorted in the order that they appear in SEARCH_LINKS
-      this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
-        url: links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(allText)),
-        label: domain.replace('_', ' '),
+      // links should be sorted in the order that they appear in LINKS
+      this.searchLinks = entries(LINKS).map(([key, link]) => ({
+        url: links[key] || link.search(allText),
+        label: link.label
       }));
       this.searchInternalLinks = this.highlightTextService.composeSearchInternalLinks(allText);
       this.backgroundColor = this.toAnnotationBackgroundColor(this.getAnnotationColor());
