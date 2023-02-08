@@ -54,7 +54,7 @@ def add_document_to_collection(
     overwrite: bool = False,
 ) -> Dict:
     collection = db.collection(colxn_name)
-    return collection.insert(doc, return_new=True, overwrite=overwrite)
+    return collection.insert(doc, return_new=True, overwrite=overwrite)['new']
 
 
 def add_many_to_collection(

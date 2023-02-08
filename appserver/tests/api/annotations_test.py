@@ -1,6 +1,4 @@
-from arango.database import StandardDatabase
 import json
-import pytest
 
 from neo4japp.models import Files, AppUser
 
@@ -13,7 +11,7 @@ def test_user_can_get_gene_annotations_from_pdf(
     client,
     test_user_with_pdf: Files,
     fix_admin_user: AppUser,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_get_combined_annotations_result,
     mock_get_organisms_from_gene_ids_result,
 ):
@@ -36,7 +34,7 @@ def test_user_can_get_all_annotations_from_pdf(
     client,
     test_user_with_pdf: Files,
     fix_admin_user: AppUser,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_get_combined_annotations_result,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -58,7 +56,7 @@ def test_user_can_get_global_inclusions(
     client,
     fix_project,
     fix_admin_user,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_global_compound_inclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -78,7 +76,7 @@ def test_user_can_get_global_exclusions(
     client,
     fix_project,
     fix_admin_user,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_global_gene_exclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -98,7 +96,7 @@ def test_user_can_get_global_list(
     client,
     fix_project,
     fix_admin_user,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_global_list,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')

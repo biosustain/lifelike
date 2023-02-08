@@ -1,4 +1,3 @@
-from arango.database import StandardDatabase
 import json
 import pytest
 import re
@@ -45,7 +44,7 @@ def mocked_lmdb_open(monkeypatch):
 def test_admin_can_create_user(
     client,
     fix_admin_user,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mocked_responses,
     mocked_lmdb_open
 ):

@@ -1,14 +1,22 @@
-import pytest
+from neo4japp.data_transfer_objects.visualization import Direction
+from neo4japp.services.visualizer import (
+    get_reference_table_data,
+    get_snippets_for_cluster,
+    get_snippets_for_edge
+)
+from neo4japp.util import camel_to_snake_dict
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_reference_table_data(
-    visualizer_service,
+    arango_client,
     gas_gangrene_treatment_cluster_node_edge_pairs,
     gas_gangrene_with_associations_and_references,
 ):
-    get_reference_table_data_result = visualizer_service.get_reference_table_data(
-        gas_gangrene_treatment_cluster_node_edge_pairs,
+    get_reference_table_data_result = get_reference_table_data(
+        arango_client=arango_client,
+        node_edge_pairs=[camel_to_snake_dict(pair.to_dict()) for pair in gas_gangrene_treatment_cluster_node_edge_pairs],
+        description='treatment/therapy (including investigatory)',
+        direction=Direction.TO.value
     )
 
     assert get_reference_table_data_result.reference_table_rows is not None
@@ -22,13 +30,13 @@ def test_get_reference_table_data(
     assert reference_table_rows[1].snippet_count == 2
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_edge(
-    visualizer_service,
+    arango_client,
     gas_gangrene_treatement_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_edge_data_result = visualizer_service.get_snippets_for_edge(
+    get_edge_data_result = get_snippets_for_edge(
+        arango_client=arango_client,
         edge=gas_gangrene_treatement_edge_data,
         page=1,
         limit=25,
@@ -57,13 +65,13 @@ def test_get_snippets_for_edge(
         assert False
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_edge_low_limit(
-    visualizer_service,
+    arango_client,
     gas_gangrene_treatement_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_edge_data_result = visualizer_service.get_snippets_for_edge(
+    get_edge_data_result = get_snippets_for_edge(
+        arango_client=arango_client,
         edge=gas_gangrene_treatement_edge_data,
         page=1,
         limit=1,
@@ -83,13 +91,13 @@ def test_get_snippets_for_edge_low_limit(
     assert result.snippets[0].reference.data['sentence'] in sentences
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_edge_orders_by_pub_year(
-    visualizer_service,
+    arango_client,
     gas_gangrene_alleviates_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_edge_data_result = visualizer_service.get_snippets_for_edge(
+    get_edge_data_result = get_snippets_for_edge(
+        arango_client=arango_client,
         edge=gas_gangrene_alleviates_edge_data,
         page=1,
         limit=25,
@@ -108,13 +116,13 @@ def test_get_snippets_for_edge_orders_by_pub_year(
     assert 'penicillin was found to reduce' in reference_node2['data']['sentence']
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_cluster(
-    visualizer_service,
+    arango_client,
     gas_gangrene_treatement_duplicate_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_cluster_data_result = visualizer_service.get_snippets_for_cluster(
+    get_cluster_data_result = get_snippets_for_cluster(
+        arango_client=arango_client,
         edges=gas_gangrene_treatement_duplicate_edge_data,
         page=1,
         limit=25,
@@ -147,13 +155,13 @@ def test_get_snippets_for_cluster(
         assert False
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_cluster_low_limit(
-    visualizer_service,
+    arango_client,
     gas_gangrene_treatement_duplicate_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_cluster_data_result = visualizer_service.get_snippets_for_cluster(
+    get_cluster_data_result = get_snippets_for_cluster(
+        arango_client=arango_client,
         edges=gas_gangrene_treatement_duplicate_edge_data,
         page=1,
         limit=1,
@@ -177,13 +185,13 @@ def test_get_snippets_for_cluster_low_limit(
     assert result.snippets[0].reference.data['sentence'] in sentences
 
 
-@pytest.mark.skip('Skipping until ArangoDB has been fully integrated.')
 def test_get_snippets_for_cluster_orders_by_pub_year(
-    visualizer_service,
+    arango_client,
     gas_gangrene_alleviates_duplicate_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_cluster_data_result = visualizer_service.get_snippets_for_cluster(
+    get_cluster_data_result = get_snippets_for_cluster(
+        arango_client=arango_client,
         edges=gas_gangrene_alleviates_duplicate_edge_data,
         page=1,
         limit=25,

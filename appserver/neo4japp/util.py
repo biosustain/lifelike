@@ -116,10 +116,13 @@ def camel_to_snake(s):
     return ''.join(buf)
 
 
-def camel_to_snake_dict(d, new_dict: dict) -> dict:
+def camel_to_snake_dict(d, new_dict: dict = None) -> dict:
     """Converts a camelCase dict to snake case while taking into
     consideration a nested list or dict as a value.
     """
+    if new_dict is None:
+        new_dict = dict()
+
     if type(d) is not dict:
         return d
     for k, v in d.items():
