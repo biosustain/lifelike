@@ -208,7 +208,7 @@ export interface ReferenceTableDataRequest {
 }
 
 export interface BulkReferenceTableDataRequest {
-  associations: ReferenceTableDataRequest[]
+  associations: ReferenceTableDataRequest[];
 }
 
 export interface AssociatedTypeSnippetCountRequest {
@@ -246,7 +246,7 @@ export interface GetReferenceTableDataResult {
 }
 
 export interface GetBulkReferenceTableDataResult {
-  referenceTables: GetReferenceTableDataResult[]
+  referenceTables: GetReferenceTableDataResult[];
 }
 
 export interface GetSnippetsResult {
