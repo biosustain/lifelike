@@ -51,7 +51,7 @@ export class VisualizationService {
       console.error(`Node does not have expected label and displayName properties ${n}`);
       return null;
     }
-    const color = legend.get(n.label) ?legend.get(n.label)[0] : '#000000';
+    const color = legend.get(n.label) ? legend.get(n.label)[0] : '#000000';
     const border = legend.get(n.label) ? legend.get(n.label)[1] : '#000000';
     return {
       ...n,

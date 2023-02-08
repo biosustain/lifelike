@@ -58,9 +58,7 @@ import { VisualizationService } from 'app/visualization/services/visualization.s
   styleUrls: ['./visualization-canvas.component.scss'],
   providers: [ContextMenuControlService],
 })
-export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
-  implements OnInit, AfterViewInit
-{
+export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> implements OnInit, AfterViewInit {
   @Output() finishedClustering = new EventEmitter<boolean>();
   @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
   @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
@@ -353,20 +351,20 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
 
         // Set the origin node's expand state to true
         let nodeRef = this.nodes.get(nodeId) as VisNode;
-        nodeRef = {...nodeRef, expanded: true}
-        this.nodes.update(nodeRef)
+        nodeRef = {...nodeRef, expanded: true};
+        this.nodes.update(nodeRef);
 
         bulkResult.referenceTables
           // Sorting the tables by length makes creating clusters faster by doing the smallest tables first
           .sort((a, b) => a.referenceTableRows.length - b.referenceTableRows.length)
           .forEach((table: GetReferenceTableDataResult) => {
-            let { referenceTableRows, duplicateNodeEdgePairs, direction, description } = table;
-            duplicateNodeEdgePairs = duplicateNodeEdgePairs.map(pair => {
+            const { referenceTableRows, direction, description } = table;
+            const duplicateNodeEdgePairs = table.duplicateNodeEdgePairs.map(pair => {
               return {
                 node: this.visService.convertNodeToVisJSFormat(pair.node, this.legend),
                 edge: this.visService.convertEdgeToVisJSFormat(pair.edge)
-              } as DuplicateNodeEdgePair}
-            )
+              } as DuplicateNodeEdgePair;
+            });
             this.processGetReferenceTableResults(nodeId, duplicateNodeEdgePairs, referenceTableRows, description, direction);
           });
         // Done loading clusters so close the dialog automatically
@@ -1441,7 +1439,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
 
   openErrorDialog(title: string, error: string) {
     this.messageDialog.display({
-      title: title,
+      title,
       message: error,
       type: MessageType.Error,
     } as MessageArguments);
