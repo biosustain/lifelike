@@ -9,6 +9,10 @@ from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.jobs import bad_job, bad_then_good_job
 
 
+# Note that some of these tests assume the 'worker' container is running, or at least that there is
+# a rq worker running somewhere in the Lifelike docker environment.
+
+
 def test_can_create_rq_service(rq_service: RedisQueueService):
     assert rq_service is not None
 
