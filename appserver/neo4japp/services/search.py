@@ -99,6 +99,7 @@ def _get_organism_match_string(organism: str):
         {'FILTER t != null' if organism else ''}
     """
 
+
 def _get_organisms_match_string(organisms: List[str]):
     return f"""
         LET t = FIRST(
@@ -109,6 +110,7 @@ def _get_organisms_match_string(organisms: List[str]):
         )
         {'FILTER t != null' if organisms else ''}
     """
+
 
 def _get_labels_match_string(types: List[str]):
     return 'FILTER LENGTH(INTERSECTION(@types, entity.labels)) > 0' if types else ''
@@ -140,7 +142,7 @@ def _get_literature_match_string(domains: List[str]):
         """
 
 
-def _visualizer_search_result_formatter(result: dict) -> List[FTSQueryRecord]:
+def _visualizer_search_result_formatter(result: dict) -> dict:
     formatted_results: List[FTSQueryRecord] = []
     for record in result['rows']:
         entity = record['entity']
@@ -217,7 +219,7 @@ def visualizer_search(
     entities: List[str],
     page: int = 1,
     limit: int = 10,
-) -> List[FTSQueryRecord]:
+) -> dict:
     collection_filters = _get_collection_filters(domains)
     types = _get_labels_filter(entities)
     literature_match_string = _get_literature_match_string(domains)
@@ -474,7 +476,6 @@ def visualizer_search_query(
                 }}
         )
     """
-
 
     if organism_required and literature_required:
         pagination_query_str = both_required_str
