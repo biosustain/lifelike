@@ -2,14 +2,17 @@
 @use 'variables';
 @use 'sankey';
 
+@mixin link-color($color) {
+  fill: $color;
+  stroke: darken($color, this.$darken-link-stroke);
+}
+
 app-sankey-single-lane {
   --active-opacity: #{ this.$active-opacity };
   --inactive-opacity: #{ this.$inactive-opacity };
 
-  @include sankey.sankey;
-
-  svg g {
-    .nodes g {
+  @include sankey.sankey {
+    @include sankey.node {
       rect {
         fill: this.$node-color;
         stroke: this.$node-border-colour;
@@ -23,12 +26,7 @@ app-sankey-single-lane {
         }
       }
     }
-
-    .links path {
-      @mixin link-color($color) {
-        fill: $color;
-        stroke: darken($color, this.$darken-link-stroke);
-      }
+    @include sankey.link {
       @include link-color(this.$link-color);
 
       @each $type, $color in this.$edge-color-map {
@@ -44,4 +42,5 @@ app-sankey-single-lane {
       }
     }
   }
+;
 }
