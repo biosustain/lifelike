@@ -31,6 +31,7 @@ import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { closePopups } from 'app/shared/DOMutils';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -110,6 +111,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   }
 
   onTableScroll(e) {
+    closePopups();
     this.scrollTopAmount = e.target.scrollTop;
   }
 
