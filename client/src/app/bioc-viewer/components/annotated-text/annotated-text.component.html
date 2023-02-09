@@ -12,6 +12,9 @@
           [attr.annType]="part.infons.type"
           (dragstart)="dragStarted($event)"
           [attr.position]="position + '-' + index"
+          container="body"
+		      #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
     ></span>
     <ng-template #tooltip>
         <dl>
