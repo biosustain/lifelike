@@ -19,6 +19,7 @@ import { RotateDirective } from './rotate.directive';
 import { UidDirective } from './uid.directive';
 import { AutoGrowDirective } from './auto-grow.directive';
 import { InnerXMLDirective } from './innerXML.directive';
+import { AutoCloseTooltipOutOfViewDirective } from './auto-close-tooltip-out-of-view.directive';
 
 const directives = [
   AbstractLinkDirective,
@@ -44,7 +45,8 @@ const directives = [
   RotateDirective,
   AutoGrowDirective,
   UidDirective,
-  ElementObserverDirective
+  ElementObserverDirective,
+  AutoCloseTooltipOutOfViewDirective
 ];
 
 @NgModule({
