@@ -1,6 +1,12 @@
 import { partition, groupBy, mapValues, map, uniq, uniqBy } from 'lodash-es';
 
-import { GraphEntityType, UniversalGraphEdge, UniversalGraphGroup, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphEdge,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+  UniversalGraphNodeTemplate,
+} from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
@@ -39,7 +45,7 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       const isSingularGroup = groups.length === 1;
       this.graphView.selection.replace([]);
 
-      const cloneNode = ({hash, data, ...rest}, select) => {
+      const cloneNode = ({hash, data, ...rest}: UniversalGraphNodeTemplate, select) => {
         const newNode = createNode({
           ...rest,
           data: {
