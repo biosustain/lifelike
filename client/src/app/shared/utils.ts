@@ -8,6 +8,7 @@ import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 import { FAClass, CustomIconColors, Unicodes } from './constants';
+import { RecursiveReadonly } from './utils/types';
 
 /**
  * Splits a pascal-case (e.g. "TheQuickRedFox") string, separating the words by a " " character. E.g. "The Quick Red Fox".
@@ -319,15 +320,15 @@ export const findEntriesValue = <K, V>(iterable: Iterable<[K, V]>, predicate: (k
   }
 };
 
-export const freezeDeep = obj =>
+export const freezeDeep = <O extends Record<string, any>>(obj: O) =>
   Object.freeze(
-  transform(
-    obj,
-    (result, value, key) => {
-      if (isObjectLike(value)) {
-        result[key] = freezeDeep(value);
-      }
-    },
-    obj
-  )
-  );
+    transform(
+      obj,
+      (result, value, key) => {
+        if (isObjectLike(value)) {
+          result[key] = freezeDeep((value as object));
+        }
+      },
+      obj as Record<string, any>,
+    ),
+  ) as RecursiveReadonly<O>;

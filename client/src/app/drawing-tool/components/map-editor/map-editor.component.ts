@@ -306,9 +306,9 @@ export class MapEditorComponent
 
       actionPromise.then(actions => {
         if (actions.length) {
-        this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
-        this.graphCanvas.focus();
-      }
+          this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
+          this.graphCanvas.focus();
+        }
       });
     }
   }
