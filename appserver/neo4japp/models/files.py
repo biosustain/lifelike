@@ -27,7 +27,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Mapper
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
 
