@@ -46,7 +46,11 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
         }
         this.setMemoryImage(id, url);
         subscriber.next({height, width});
-       };
+        subscriber.complete();
+      };
+      return function unsubscribe() {
+        img.remove();
+      };
      });
   }
 

@@ -90,8 +90,8 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     const position = this.graphView.currentHoverPosition;
     if (position) {
       const imageNode = createImageNode({});
-      const {imageId} = imageNode;
-      this.mapImageProvider.doInitialProcessing(imageId, file).subscribe(dimensions => {
+      const {image_id} = imageNode;
+      this.mapImageProvider.doInitialProcessing(image_id, file).subscribe(dimensions => {
         // Scale smaller side up to 300 px
         const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
         this.graphView.execute(

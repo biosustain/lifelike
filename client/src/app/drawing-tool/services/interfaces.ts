@@ -1,4 +1,5 @@
 import { ReferenceType } from 'app/shared/references';
+import { WithOptional, WithRequired } from 'app/shared/utils/types';
 
 export interface UniversalGraphRelationship {
   node1: UniversalGraphNode;
@@ -54,9 +55,17 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate =
-  Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>
-  & { data?: Partial<UniversalEntityData>, style?: Partial<UniversalNodeStyle> };
+export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, 'data' | 'style' | 'hash'> &
+  {
+    data?: Partial<UniversalGraphNode['data']>,
+    style?: Partial<UniversalGraphNode['style']>,
+    hash?: Partial<UniversalGraphNode['hash']>
+  };
+
+export type UniversalGraphImageNodeTemplate = WithRequired<UniversalGraphNodeTemplate, 'image_id'>;
+
+export type UniversalGraphGroupTemplate = UniversalGraphNodeTemplate &
+  WithOptional<UniversalGraphGroup, 'margin'>;
 
 export interface UniversalEdgeStyle {
   fontSizeScale?: number;
