@@ -105,7 +105,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     const content = new Blob([bytes], {
       type: 'application/json;charset=utf-8'
     });
-    const hashesOfLinked = Array.from(this.graphCanvas.getHashesOfLinked());
+    const hashesOfLinked: string[] = Array.from(this.graphCanvas.getHashesOfLinked());
     // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
     forkJoin(newImageBlobs).pipe(defaultIfEmpty([])).subscribe((imageBlobs: Blob[]) => {
       const newImages: ImageBlob[] = [];

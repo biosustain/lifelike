@@ -1,6 +1,6 @@
 import {
   AfterViewInit,
-  Component,
+  Component, ContentChild,
   EventEmitter,
   Input,
   NgZone,
@@ -9,6 +9,8 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ContentChildren,
+  ViewChildren,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -39,10 +41,12 @@ import { DataTransferDataService } from 'app/shared/services/data-transfer-data.
 import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
+import { GraphView } from 'app/graph-viewer/renderers/graph-view';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
+import { GraphViewDirective } from '../directives/graph-view.directive';
 
 @Component({
   selector: 'app-map',
@@ -56,17 +60,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild('canvas', {static: true}) canvasChild;
+  @ViewChild(GraphViewDirective, {static: true}) graphCanvas!: GraphViewDirective;
 
-  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
+  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]> = new BackgroundTask(
+    (hashId) => combineLatest([
+      this.filesystemService.get(hashId),
+      this.filesystemService.getContent(hashId),
+      this.getBackupBlob(),
+    ]),
+  );
   loadSubscription: Subscription;
 
   _locator: string | undefined;
   @Input() map: FilesystemObject | undefined;
   @Input() contentValue: Blob | undefined;
   pendingInitialize = false;
-
-  graphCanvas: CanvasGraphView;
 
   protected readonly subscriptions = new Subscription();
   historyChangesSubscription: Subscription;
@@ -92,18 +100,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly dataTransferDataService: DataTransferDataService,
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
-    readonly graphActionsService: GraphActionsService
+    readonly graphActionsService: GraphActionsService,
   ) {
-    this.loadTask = new BackgroundTask(
-      (hashId) => combineLatest([
-          this.filesystemService.get(hashId),
-          this.filesystemService.getContent(hashId),
-          this.getBackupBlob(),
-        ])
-    );
     const isInEditMode = this.isInEditMode.bind(this);
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result: [mapFile, mapBlob, backupBlob], value}) => {
+    this.loadSubscription = this.loadTask.results$.subscribe(({
+                                                                result: [mapFile, mapBlob, backupBlob],
+                                                                value,
+                                                              }) => {
       this.map = mapFile;
 
       if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
@@ -143,31 +147,22 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
-    Promise.resolve().then(() => {
-      const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService)); // from below
-      this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-        nodeRenderStyle: style,
-        edgeRenderStyle: style,
-        groupRenderStyle: style,
-      });
+    this.registerGraphBehaviors();
 
-      this.registerGraphBehaviors();
-
-      this.graphCanvas.startParentFillResizeListener();
-      this.ngZone.runOutsideAngular(() => {
-        this.graphCanvas.startAnimationLoop();
-      });
-
-      this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-        this.search();
-      });
-
-      this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
-        this.emitModuleProperties();
-      });
-
-      this.initializeMap();
+    this.graphCanvas.startParentFillResizeListener();
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.startAnimationLoop();
     });
+
+    this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
+      this.search();
+    });
+
+    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
+      this.emitModuleProperties();
+    });
+
+    this.initializeMap();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -199,10 +194,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
         if (this.highlightTerms != null && this.highlightTerms.length) {
           this.graphCanvas.highlighting.replace(
-            this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
+            this.graphCanvas.findMatching(this.highlightTerms, {
+              keepSearchSpecialChars: true,
+              wholeWord: true,
+            }),
           );
         }
-    });
+      });
   }
 
   openMap(mapBlob: Blob, mapFile: FilesystemObject): Observable<KnowledgeMapGraph> {
@@ -217,7 +215,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         // Data is corrupt
         // TODO: Prevent the user from editing or something so the user doesnt lose data?
         throw e;
-      })
+      }),
     );
   }
 
