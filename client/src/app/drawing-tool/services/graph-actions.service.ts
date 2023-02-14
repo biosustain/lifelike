@@ -50,7 +50,7 @@ export class GraphActionsService {
       ...imageItems
         .map(({data}: { data: ImageTransferData }) => {
           const imageNode = createImageNode(data.node);
-          const {imageId} = imageNode;
+          const {image_id} = imageNode;
           // If the image was dropped, we have the blob inside DataTransfer. If the image was dragged from within the LL,
           // We need to load it's content.
           return iif(
@@ -59,7 +59,7 @@ export class GraphActionsService {
             this.filesystemService.getContent(data.hash),
           ).pipe(
             switchMap(blob =>
-              this.mapImageProviderService.doInitialProcessing(imageId, new File([blob], imageId)),
+              this.mapImageProviderService.doInitialProcessing(image_id, new File([blob], image_id)),
             ),
             map(dimensions => {
               // Scale smaller side up to 300 px
