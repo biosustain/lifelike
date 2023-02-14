@@ -1,15 +1,14 @@
-import jwt
-import sentry_sdk
-
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
+import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import sentry_sdk
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import db, jwt_client
+from neo4japp.database import db, get_projects_service, jwt_client
 from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     AuthenticationError,
@@ -272,6 +271,8 @@ def login():
             user.failed_login_count = 0
 
             try:
+                projects_service = get_projects_service()
+                projects_service.create_initial_project(user)
                 db.session.add(user)
                 db.session.commit()
             except SQLAlchemyError:
