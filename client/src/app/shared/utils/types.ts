@@ -2,9 +2,12 @@ export type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export type RecursiveReadonly<T> = {
+  readonly [P in keyof T]: RecursiveReadonly<T[P]>;
+};
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 /**
  * Common describtion of getSet behaviour
