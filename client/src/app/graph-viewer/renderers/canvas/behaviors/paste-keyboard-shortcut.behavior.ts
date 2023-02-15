@@ -16,6 +16,7 @@ import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../beh
 import { CanvasGraphView } from '../canvas-graph-view';
 import { GroupCreation } from '../../../actions/groups';
 import { EdgeCreation } from '../../../actions/edges';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 /**
  * We use this string to know that it's our own JSON.
@@ -36,8 +37,11 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   private burstIteration = 0;
 
   // TODO: fix boundPaste if not coming in next patch
-  constructor(private readonly graphView: CanvasGraphView,
-              protected readonly dataTransferDataService: DataTransferDataService) {
+  constructor(
+    private readonly graphView: CanvasGraphView,
+    protected readonly dataTransferDataService: DataTransferDataService,
+    protected readonly errorHandler: ErrorHandler
+  ) {
     super();
   }
 
@@ -164,7 +168,8 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         }
       }
     } catch (e) {
-      // TODO: throw error?
+      console.error(e);
+      this.errorHandler.logError(e);
     }
 
     return new NodeCreation(

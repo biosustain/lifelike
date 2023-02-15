@@ -166,7 +166,7 @@ export class MapEditorComponent
     this.graphCanvas.behaviors.add('duplicate-keyboard-shortcut',
       new DuplicateKeyboardShortcutBehavior(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
-      new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
+      new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService, this.errorHandler), -100);
     this.graphCanvas.behaviors.add('image-upload',
       new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut',
