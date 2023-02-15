@@ -5,6 +5,8 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 
 import { Subscription } from 'rxjs';
@@ -18,14 +20,13 @@ import { HighlightTextService } from '../../services/highlight-text.service';
   templateUrl: './generic-table.component.html',
   styleUrls: ['./generic-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ HighlightTextService ]
 })
-export class GenericTableComponent implements OnInit, OnDestroy {
+export class GenericTableComponent implements OnChanges {
   HEADER: TableHeader[][];
 
   // Number of columns can be inferred from the headers
   numColumns: number[];
-
-  protected readonly subscriptions = new Subscription();
 
   @Input() object: FilesystemObject | undefined;
   // Probably don't need setters for all of these
@@ -41,14 +42,10 @@ export class GenericTableComponent implements OnInit, OnDestroy {
               protected readonly elementRef: ElementRef) {
   }
 
-  ngOnInit() {
-    this.subscriptions.add(this.highlightTextService.addEventListeners(this.elementRef.nativeElement, {
-      object: this.object,
-    }));
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+  ngOnChanges({object}: SimpleChanges) {
+    if (object) {
+      this.highlightTextService.object = object.currentValue;
+    }
   }
 }
 

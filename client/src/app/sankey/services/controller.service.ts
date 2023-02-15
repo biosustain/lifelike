@@ -123,17 +123,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   state$ = this.delta$.pipe(
     map(delta => merge(
       {},
-      {
-        networkTraceIdx: 0,
-        normalizeLinks: false,
-        prescalerId: PRESCALER_ID.none,
-        labelEllipsis: {
-          enabled: true,
-          value: LayoutService.labelEllipsis
-        },
-        fontSizeScale: 1.0,
-        shortestPathPlusN: 0
-      },
+      { networkTraceIdx: 0 },
       delta
     )),
     switchMap(delta =>
@@ -163,6 +153,21 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         of(delta)
       )
     ),
+    map(delta => merge(
+      {},
+      {
+        networkTraceIdx: 0,
+        normalizeLinks: false,
+        prescalerId: PRESCALER_ID.none,
+        labelEllipsis: {
+          enabled: true,
+          value: LayoutService.labelEllipsis
+        },
+        fontSizeScale: 1.0,
+        shortestPathPlusN: 0
+      },
+      delta
+    )),
     switchMap((delta: Partial<SankeyState>) =>
       iif(
         () => !isNil(delta.networkTraceIdx),
