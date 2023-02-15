@@ -1,10 +1,6 @@
 from io import BufferedIOBase, BytesIO
-from typing import Dict, List, Optional, Tuple
-
-import typing
-
 import magic
-from werkzeug.datastructures import FileStorage
+from typing import cast, Dict, List, Optional, Tuple
 
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
@@ -120,7 +116,7 @@ class BaseFileTypeProvider:
         # Files of this file type cannot be indexed until you override this method
         # You can actually just return a blob of text (encoded in UTF-8)
         # with all the relevant keywords
-        return typing.cast(BufferedIOBase, BytesIO())
+        return cast(BufferedIOBase, BytesIO())
 
     def should_highlight_content_text_matches(self) -> bool:
         """
@@ -188,7 +184,7 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         if self.mime_type.startswith('text/'):
             return buffer  # Have Elasticsearch index these files
         else:
-            return typing.cast(BufferedIOBase, BytesIO())
+            return cast(BufferedIOBase, BytesIO())
 
     def should_highlight_content_text_matches(self) -> bool:
         if self.mime_type.startswith('text/'):

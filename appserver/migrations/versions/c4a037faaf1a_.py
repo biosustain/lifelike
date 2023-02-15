@@ -5,21 +5,18 @@ Revises: e32ff16900a3
 Create Date: 2021-12-15 23:25:29.713828
 
 """
+from alembic import context, op
+import fastjsonschema
 import hashlib
 import json
-import fastjsonschema
-
-from alembic import context
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.sql import table, column, and_
-from sqlalchemy.orm.session import Session
 from os import path
+import sqlalchemy as sa
+from sqlalchemy.orm.session import Session
 
-from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
 from neo4japp.models import Files, FileContent
+
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'c4a037faaf1a'
@@ -54,24 +51,24 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    tableclause1 = table(
+    tableclause1 = sa.table(
         'files',
-        column('id', sa.Integer),
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        sa.column('id', sa.Integer),
+        sa.column('content_id', sa.Integer),
+        sa.column('mime_type', sa.String))
 
-    tableclause2 = table(
+    tableclause2 = sa.table(
         'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary))
+        sa.column('id', sa.Integer),
+        sa.column('raw_file', sa.LargeBinary),
+        sa.column('checksum_sha256', sa.Binary))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
         tableclause1.c.id.label('file_id'),
         tableclause2.c.id.label('file_content_id'),
         tableclause2.c.raw_file
     ]).where(
-        and_(
+        sa.and_(
             tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
             tableclause1.c.content_id == tableclause2.c.id
         )
@@ -121,12 +118,10 @@ def data_upgrades():
                                 file_obj['content_id'] = file_content_hashes[new_hash]
                                 files_to_update.append(file_obj)
 
-            try:
-                session.bulk_update_mappings(Files, files_to_update)
-                session.bulk_update_mappings(FileContent, raws_to_update)
-                session.commit()
-            except Exception:
-                raise
+            session.bulk_update_mappings(Files, files_to_update)
+            session.bulk_update_mappings(FileContent, raws_to_update)
+            session.commit()
+
 
 
 def data_downgrades():

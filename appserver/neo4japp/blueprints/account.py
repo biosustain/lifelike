@@ -1,50 +1,50 @@
-import json
-import logging
-import random
-import re
-import secrets
-import string
-from pathlib import Path
-from uuid import uuid4
 
 from flask import Blueprint, g, jsonify, current_app
 from flask.views import MethodView
+import json
+import logging
+from pathlib import Path
+import random
+import re
+import secrets
 from sendgrid.helpers.mail import Mail
+import string
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
+from uuid import uuid4
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.annotations import FileAnnotationsGenerationView
 from neo4japp.blueprints.auth import login_exempt
-from neo4japp.exceptions import RecordNotFound
 from neo4japp.constants import (
+    FILE_MIME_TYPE_MAP,
+    LogEventType,
     MAX_ALLOWED_LOGIN_FAILURES,
-    MESSAGE_SENDER_IDENTITY,
-    RESET_PASS_MAIL_CONTENT,
-    MIN_TEMP_PASS_LENGTH,
     MAX_TEMP_PASS_LENGTH,
-    RESET_PASSWORD_SYMBOLS,
+    MESSAGE_SENDER_IDENTITY,
+    MIN_TEMP_PASS_LENGTH,
+    RESET_PASS_MAIL_CONTENT,
     RESET_PASSWORD_ALPHABET,
-    SEND_GRID_API_CLIENT,
     RESET_PASSWORD_EMAIL_TITLE,
-    LogEventType, FILE_MIME_TYPE_MAP
+    RESET_PASSWORD_SYMBOLS,
+    SEND_GRID_API_CLIENT,
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
-from neo4japp.exceptions import ServerException, NotAuthorized
-from neo4japp.models import AppUser, AppRole, Projects, Files, FileContent
+from neo4japp.exceptions import NotAuthorized, RecordNotFound, ServerException
+from neo4japp.models import AppRole, AppUser, Files, FileContent, Projects
 from neo4japp.models.auth import user_role
 from neo4japp.models.files import FileAnnotationsVersion
 from neo4japp.schemas.account import (
     UserListSchema,
     UserProfileSchema,
-    UserSearchSchema,
     UserProfileListSchema,
+    UserChangePasswordSchema,
     UserCreateSchema,
+    UserSearchSchema,
     UserUpdateSchema,
-    UserChangePasswordSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.services.file_types.providers import MapTypeProvider
@@ -447,10 +447,7 @@ def reset_password(email: str):
         html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
                                                     lastname=target.last_name,
                                                     password=new_password))
-    try:
-        SEND_GRID_API_CLIENT.send(message)
-    except Exception as e:
-        raise
+    SEND_GRID_API_CLIENT.send(message)
 
     target.set_password(new_password)
     target.forced_password_reset = True

@@ -1,12 +1,11 @@
 import attr
-import functools
-import hashlib
-import itertools
-
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from flask import json, jsonify, request
 from json import JSONDecodeError
+import functools
+import hashlib
+import itertools
 from string import punctuation, whitespace
 from typing import Any, Optional, Type, Iterator, Dict
 
@@ -146,7 +145,6 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
                 else:
                     obj_list = [camel_to_snake_dict(obj, {}) for obj in v]
                     new_dict.update({camel_to_snake(k): obj_list})
-
             except JSONDecodeError:
                 # not a string representation of JSON or number type
                 new_dict.update({camel_to_snake(k): v})

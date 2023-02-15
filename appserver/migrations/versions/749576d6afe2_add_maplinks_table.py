@@ -5,19 +5,16 @@ Revises: 8f6d4eef042d
 Create Date: 2021-10-30 14:21:27.076408
 
 """
+from alembic import context, op
+from io import BytesIO
 import json
 import re
-import zipfile
-from io import BytesIO
-
-from alembic import context
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
+import zipfile
 
 from neo4japp.constants import FILE_MIME_TYPE_MAP
-from migrations.utils import window_chunk
 from neo4japp.models.files import MapLinks, Files
 
 # revision identifiers, used by Alembic.
@@ -97,6 +94,9 @@ def data_upgrades():
             pass
 
     try:
+        # TODO: This doesn't seem right...probably shouldn't just completely ignore a commit
+        # exception without a good reason. Not going to change it now since this migration is
+        # pretty old.
         session.bulk_save_objects(entries_to_add)
         session.commit()
     except Exception:

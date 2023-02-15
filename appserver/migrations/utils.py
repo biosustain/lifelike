@@ -69,16 +69,14 @@ def get_primary_names(annotations):
             elif anno['meta']['type'] == EntityType.SPECIES.value:
                 organism_ids.add(meta_id)
 
-    try:
-        chemical_names = neo4j.get_nodes_from_node_ids(EntityType.CHEMICAL.value, list(chemical_ids))  # noqa
-        compound_names = neo4j.get_nodes_from_node_ids(EntityType.COMPOUND.value, list(compound_ids))  # noqa
-        disease_names = neo4j.get_nodes_from_node_ids(EntityType.DISEASE.value, list(disease_ids))
-        gene_names = neo4j.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
-        protein_names = neo4j.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))
-        organism_names = neo4j.get_nodes_from_node_ids(EntityType.SPECIES.value, list(organism_ids))  # noqa
-        mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
-    except Exception:
-        raise
+    chemical_names = neo4j.get_nodes_from_node_ids(EntityType.CHEMICAL.value, list(chemical_ids))  # noqa
+    compound_names = neo4j.get_nodes_from_node_ids(EntityType.COMPOUND.value, list(compound_ids))  # noqa
+    disease_names = neo4j.get_nodes_from_node_ids(EntityType.DISEASE.value, list(disease_ids))
+    gene_names = neo4j.get_nodes_from_node_ids(EntityType.GENE.value, list(gene_ids))
+    protein_names = neo4j.get_nodes_from_node_ids(EntityType.PROTEIN.value, list(protein_ids))
+    organism_names = neo4j.get_nodes_from_node_ids(EntityType.SPECIES.value, list(organism_ids))  # noqa
+    mesh_names = neo4j.get_mesh_from_mesh_ids(list(mesh_ids))
+
 
     for anno in annotations:
         if not anno.get('primaryName'):
@@ -149,32 +147,27 @@ def update_custom_annotations_add_primary_name(file_id, annotations):
 
 
 def update_annotations(results, session, func):
-    try:
-        for chunk in window_chunk(results):
-            with mp.Pool(processes=4) as pool:
-                updated = pool.starmap(
-                    func,
-                    [
-                        (result.id, result.annotations) for result in chunk
-                    ]
-                )
-                session.bulk_update_mappings(Files, updated)
-                session.commit()
-    except Exception:
-        raise Exception('Migration failed.')
+    for chunk in window_chunk(results):
+        with mp.Pool(processes=4) as pool:
+            updated = pool.starmap(
+                func,
+                [
+                    (result.id, result.annotations) for result in chunk
+                ]
+            )
+            session.bulk_update_mappings(Files, updated)
+            session.commit()
+
 
 
 def update_custom_annotations(results, session, func):
-    try:
-        for chunk in window_chunk(results):
-            with mp.Pool(processes=4) as pool:
-                updated = pool.starmap(
-                    func,
-                    [
-                        (result.id, result.custom_annotations) for result in chunk
-                    ]
-                )
-                session.bulk_update_mappings(Files, updated)
-                session.commit()
-    except Exception:
-        raise Exception('Migration failed.')
+    for chunk in window_chunk(results):
+        with mp.Pool(processes=4) as pool:
+            updated = pool.starmap(
+                func,
+                [
+                    (result.id, result.custom_annotations) for result in chunk
+                ]
+            )
+            session.bulk_update_mappings(Files, updated)
+            session.commit()

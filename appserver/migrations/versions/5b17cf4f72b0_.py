@@ -6,7 +6,6 @@ Revises: 2105594e7b33
 Create Date: 2020-11-09 10:38:04.249132
 
 """
-from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
@@ -98,7 +97,6 @@ def data_upgrades():
                 )
 
         session.commit()
-
     except Exception as exc:
         session.rollback()
         session.close()

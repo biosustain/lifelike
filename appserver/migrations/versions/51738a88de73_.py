@@ -5,14 +5,14 @@ Revises: cf9f210458c8
 Create Date: 2022-01-14 22:33:40.360405
 
 """
-from alembic import context
-from alembic import op
+from alembic import context, op
 import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 
-from migrations.utils import window_chunk
 from neo4japp.models import Files
+
+from migrations.utils import window_chunk
 
 
 # revision identifiers, used by Alembic.
@@ -127,11 +127,8 @@ def data_upgrades():
                 'organism_taxonomy_id': organism_taxonomy_id
             })
 
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
 
 
 def data_downgrades():

@@ -1,28 +1,25 @@
-import hashlib
-import io
-import itertools
-import json
-import os
-from typing import Set, cast
-from urllib.error import HTTPError
-import zipfile
-
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
+import hashlib
+import io
+import itertools
+import json
 from marshmallow import ValidationError
 from more_itertools import flatten
+import os
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
+from sqlalchemy.orm import aliased, contains_eager, joinedload, lazyload, raiseload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from typing import cast, Dict, Iterable, List, Literal, Optional, Set, Tuple, Union
 from webargs.flaskparser import use_args
-from itertools import chain
+from urllib.error import HTTPError
+import zipfile
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
@@ -1359,7 +1356,7 @@ class FileExportView(FilesystemBaseView):
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
             raise ValidationError
-        for node in chain(
+        for node in itertools.chain(
                 json_graph['nodes'],
                 flatten(
                     map(
@@ -1391,7 +1388,6 @@ class FileExportView(FilesystemBaseView):
                             files = self.get_all_linked_maps(
                                 child_file, map_hash_set, files, link_to_page_map
                             )
-
                         except RecordNotFound:
                             current_app.logger.info(
                                 f'Map file: {map_hash} requested for linked '

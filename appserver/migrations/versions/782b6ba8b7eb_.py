@@ -8,11 +8,8 @@ Create Date: 2020-05-04 23:15:48.765478
 
 """
 from os import path
-
-from alembic import context
-from alembic import op
+from alembic import context, op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import table, column
 
 
@@ -81,10 +78,7 @@ def data_upgrades():
             })
 
             if len(rows) == 250:
-                try:
-                    conn.execute(tableclause1.insert().values(rows))
-                except Exception:
-                    raise
+                conn.execute(tableclause1.insert().values(rows))
 
 
 def data_downgrades():

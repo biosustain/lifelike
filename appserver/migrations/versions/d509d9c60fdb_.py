@@ -5,21 +5,19 @@ Revises: fd1627b3a32e
 Create Date: 2021-07-22 21:04:14.956129
 
 """
+from alembic import context, op
+import fastjsonschema
 import hashlib
 import json
-from alembic import context
-from alembic import op
-import sqlalchemy as sa
-
 from os import path
+import sqlalchemy as sa
 from sqlalchemy.sql import table, column, and_
 from sqlalchemy.orm.session import Session
 
-import fastjsonschema
-
-from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from neo4japp.models import FileContent
+
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'd509d9c60fdb'
@@ -99,11 +97,9 @@ def data_upgrades():
                         new_hash = hashlib.sha256(byte_graph).digest()
                         validate_map(json.loads(byte_graph))
                         need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
-            try:
-                session.bulk_update_mappings(FileContent, need_to_update)
-                session.commit()
-            except Exception:
-                raise
+            session.bulk_update_mappings(FileContent, need_to_update)
+            session.commit()
+
 
 
 def data_downgrades():

@@ -10,9 +10,9 @@ from alembic import context, op
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
-from migrations.utils import window_chunk
 from neo4japp.models.auth import AppUser
 
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'ab0d6b3ef77a'
@@ -49,8 +49,5 @@ def data_upgrades():
         appusers_to_update = []
         for id, in chunk:
             appusers_to_update.append({'id': id, 'failed_login_count': 0})
-        try:
-            session.bulk_update_mappings(AppUser, appusers_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(AppUser, appusers_to_update)
+        session.commit()

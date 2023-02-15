@@ -1,5 +1,6 @@
 from dataclasses import dataclass, asdict
 from http import HTTPStatus
+from json import dumps
 from typing import Union, Tuple, Optional
 
 
@@ -26,7 +27,14 @@ class ServerException(Exception):
         return type(self).__name__
 
     def __str__(self):
-        return f'<Exception> {self.title}:{self.message}'
+        base_msg = f'<Exception> {self.title}: {self.message}'
+        fields_msg = ''
+        if self.fields is not None:
+            fields_msg = (
+                f'\n\nThe following fields were provided to the exception:\n' +
+                dumps(self.fields, indent=4)
+            )
+        return base_msg + fields_msg
 
     def to_dict(self):
         return asdict(self)

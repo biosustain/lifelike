@@ -5,25 +5,22 @@ Revises: 92135aa31f3c
 Create Date: 2021-08-04 15:23:47.303357
 
 """
-import json
 from alembic import context
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
-
-from os import path
-from sqlalchemy.sql import table, column, and_
-from sqlalchemy.orm.session import Session
-
 import fastjsonschema
-
+import json
+from os import path
 from marshmallow import fields
+import sqlalchemy as sa
+from sqlalchemy.orm.session import Session
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import table, column, and_
 
+from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
+from neo4japp.models import Files
 from neo4japp.schemas.base import CamelCaseSchema
 
 from migrations.utils import window_chunk
-from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
-from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = '0b082b5d8f1f'
@@ -181,11 +178,9 @@ def data_upgrades():
 
                                 if 'data.result.version' in err:
                                     annos['result']['version'] = current_version
-            try:
-                session.bulk_update_mappings(Files, files_to_update)
-                session.commit()
-            except Exception:
-                raise
+            session.bulk_update_mappings(Files, files_to_update)
+            session.commit()
+
 
 
 def data_downgrades():

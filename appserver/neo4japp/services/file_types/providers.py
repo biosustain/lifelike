@@ -1,85 +1,81 @@
-import io
-import json
-import os
-import re
-import tempfile
-import textwrap
-import typing
-import zipfile
 from base64 import b64encode
-from io import BufferedIOBase
-from typing import Optional, List
-
 import bioc
-import graphviz
-import numpy as np
-import requests
-import svg_stack
-from PIL import Image, ImageColor
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PyPDF4.generic import DictionaryObject
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from flask import current_app
-from graphviz import escape
+from graphviz import escape, Digraph
+import io
+import json
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
 from math import ceil, floor
+import numpy as np
+import os
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from PyPDF4.generic import DictionaryObject
+import re
+import requests
+import svg_stack
+import tempfile
+import textwrap
+from typing import cast, List, Optional, Tuple
+import zipfile
 
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
-    BORDER_STYLES_DICT,
-    DEFAULT_BORDER_COLOR,
-    DEFAULT_FONT_SIZE,
-    DEFAULT_NODE_WIDTH,
-    DEFAULT_NODE_HEIGHT,
-    MAX_LINE_WIDTH,
-    BASE_ICON_DISTANCE,
-    IMAGE_HEIGHT_INCREMENT,
-    FONT_SIZE_MULTIPLIER,
-    SCALING_FACTOR,
-    FILE_MIME_TYPE_DIRECTORY,
-    FILE_MIME_TYPE_PDF,
-    FILE_MIME_TYPE_BIOC,
-    FILE_MIME_TYPE_MAP,
-    FILE_MIME_TYPE_GRAPH,
-    FILE_MIME_TYPE_ENRICHMENT_TABLE,
-    ICON_SIZE,
-    LIFELIKE_DOMAIN,
-    BYTE_ENCODING,
-    LABEL_OFFSET,
-    PDF_MARGIN,
-    NAME_NODE_OFFSET,
-    TRANSPARENT_PIXEL,
-    FILENAME_LABEL_MARGIN,
-    FILENAME_LABEL_FONT_SIZE,
-    IMAGES_RE,
     ASSETS_PATH,
-    ICON_NODES,
-    RELATION_NODES,
-    DETAIL_TEXT_LIMIT,
-    DEFAULT_IMAGE_NODE_WIDTH,
-    DEFAULT_IMAGE_NODE_HEIGHT,
-    LogEventType,
-    IMAGE_BORDER_SCALE,
-    WATERMARK_DISTANCE,
-    WATERMARK_WIDTH,
-    WATERMARK_ICON_SIZE,
+    BASE_ICON_DISTANCE,
+    BORDER_STYLES_DICT,
+    BYTE_ENCODING,
     COLOR_TO_REPLACE,
+    DEFAULT_BORDER_COLOR,
     DEFAULT_FONT_RATIO,
-    NODE_LINE_HEIGHT,
+    DEFAULT_FONT_SIZE,
+    DEFAULT_IMAGE_NODE_HEIGHT,
+    DEFAULT_IMAGE_NODE_WIDTH,
+    DEFAULT_NODE_HEIGHT,
+    DEFAULT_NODE_WIDTH,
+    DETAIL_TEXT_LIMIT,
+    FILENAME_LABEL_FONT_SIZE,
+    FILENAME_LABEL_MARGIN,
+    FILE_MIME_TYPE_BIOC,
+    FILE_MIME_TYPE_DIRECTORY,
+    FILE_MIME_TYPE_ENRICHMENT_TABLE,
+    FILE_MIME_TYPE_GRAPH,
+    FILE_MIME_TYPE_MAP,
+    FILE_MIME_TYPE_PDF,
+    FONT_SIZE_MULTIPLIER,
+    ICON_NODES,
+    ICON_SIZE,
+    IMAGES_RE,
+    IMAGE_BORDER_SCALE,
+    IMAGE_HEIGHT_INCREMENT,
+    LABEL_OFFSET,
+    LIFELIKE_DOMAIN,
+    LogEventType,
+    MAX_LINE_WIDTH,
     MAX_NODE_HEIGHT,
-    NODE_INSET
+    NAME_NODE_OFFSET,
+    NODE_INSET,
+    NODE_LINE_HEIGHT,
+    PDF_MARGIN,
+    RELATION_NODES,
+    SCALING_FACTOR,
+    TRANSPARENT_PIXEL,
+    WATERMARK_DISTANCE,
+    WATERMARK_ICON_SIZE,
+    WATERMARK_WIDTH,
 )
 from neo4japp.exceptions import FileUploadError
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
-from neo4japp.services.file_types.exports import FileExport, ExportFormatError
+from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
@@ -110,6 +106,10 @@ def is_valid_doi(doi):
                             }
                             ).status_code not in [400, 404]
     except Exception as e:
+        current_app.logger.error(
+            f'An unexpected error occurred while requesting DOI: {doi}',
+            exc_info=e,
+        )
         return False
 
 
@@ -224,7 +224,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # yield 0 matches on test case
                 # # is it a DOI in common format?
                 # doi = (url + folderRegistrant + likelyDOIName)
-                # if self._is_valid_doi(doi):
+                # if is_valid_doi(doi):
                 #     print('match by common format xxx')
                 #     return doi
                 # in very rare cases there is \n in text containing doi
@@ -254,7 +254,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         # Figure out file size
         buffer.seek(0, io.SEEK_END)
         size = buffer.tell()
@@ -268,13 +268,13 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: io.BufferedIOBase) -> List[Tuple[float, str]]:
         return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         data = buffer.read()
         buffer.seek(0)
 
@@ -293,7 +293,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                         'unlocked and openable.'
             )
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+    def extract_doi(self, buffer: io.BufferedIOBase) -> Optional[str]:
         data = buffer.read()
         buffer.seek(0)
 
@@ -316,21 +316,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
         doi = _search_doi_in(bytes(text, encoding='utf8'))
 
         return doi
-
-    def _is_valid_doi(self, doi):
-        try:
-            # not [bad request, not found] but yes to 403 - no access
-            return requests.get(doi,
-                                headers={
-                                    # sometimes request is filtered if there is no user-agent header
-                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
-                                                  "AppleWebKit/537.36 "
-                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                                  "Safari/537.36"
-                                }
-                                ).status_code not in [400, 404]
-        except Exception as e:
-            return False
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
@@ -357,7 +342,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     common_escape_patterns_re = re.compile(rb'\\')
     dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: io.BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
@@ -370,7 +355,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
     ALLOWED_TYPES = ['.xml', '.bioc']
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: io.BufferedIOBase) -> List[Tuple[float, str]]:
         try:
             # If it is xml file and bioc
             self.check_xml_and_bioc(buffer)
@@ -387,12 +372,12 @@ class BiocTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         with BioCJsonIterReader(buffer) as reader:
             for obj in reader:
                 passage = biocFromJSON(obj, level=bioc.DOCUMENT)
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+    def extract_doi(self, buffer: io.BufferedIOBase) -> Optional[str]:
         data = buffer.read()
         buffer.seek(0)
 
@@ -409,7 +394,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
                 writer.write(biocToJSON(doc))
         buffer.seek(0)
 
-    def check_xml_and_bioc(self, buffer: BufferedIOBase):
+    def check_xml_and_bioc(self, buffer: io.BufferedIOBase):
         tree = etree.parse(buffer)
         system_url: str = tree.docinfo.system_url
         result = system_url.lower().find('bioc')
@@ -1005,7 +990,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: io.BufferedIOBase) -> List[Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
@@ -1018,7 +1003,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         """
         Validates whether the uploaded file is a Lifelike map - a zip containing graph.json file
         describing the map and optionally, folder with the images. If there are any images specified
@@ -1041,7 +1026,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         except (zipfile.BadZipFile, KeyError):
             raise ValueError
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: io.BufferedIOBase):
         # Do not catch exceptions here - there are handled in elastic_service.py
         zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
         content_json = json.loads(zip_file.read('graph.json'))
@@ -1069,7 +1054,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             string_list.append('' if detail is None else detail)
 
         content.write(' '.join(string_list))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+        return cast(io.BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         """
@@ -1102,7 +1087,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             )
             raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
 
-        graph = graphviz.Digraph(
+        graph = Digraph(
             escape(file.filename),
             comment=file.description.encode('unicode_escape') if file.description else None,
             engine='fdp',
@@ -1427,11 +1412,16 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
         new_zip.close()
 
-        # Remember to always rewind when working with BufferedIOBase
+        # Remember to always rewind when working with io.BufferedIOBase
         new_content.seek(0)
-        return typing.cast(BufferedIOBase, new_content)
+        return cast(io.BufferedIOBase, new_content)
 
-    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+    def prepare_content(
+        self,
+        buffer: io.BufferedIOBase,
+        params: dict,
+        file: Files
+    ) -> io.BufferedIOBase:
         """
         Evaluate the changes in the images and create a new blob to store in the content.
         Since we cannot delete files from an archive, we need to copy everything (except for
@@ -1451,11 +1441,11 @@ class GraphTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'Graph'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: io.BufferedIOBase) -> List[Tuple[float, str]]:
         try:
             # If the data validates, I guess it's a map?
             if os.path.splitext(str(
-                    # buffer in here is actually wrapper of BufferedIOBase and it contains
+                    # buffer in here is actually wrapper of io.BufferedIOBase and it contains
                     # filename even if type check fails
                     buffer.filename  # type: ignore[attr-defined]
             ))[1] == '.graph':
@@ -1470,19 +1460,19 @@ class GraphTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         data = json.loads(buffer.read())
         validate_graph_format(data)
         if 'version' in data:
             validate_graph_content(data)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: io.BufferedIOBase):
         content_json = json.load(buffer)
         content = io.StringIO()
         string_list = set(extract_text(content_json))
 
         content.write(' '.join(list(string_list)))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+        return cast(io.BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
@@ -1490,7 +1480,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(self, buffer: io.BufferedIOBase) -> List[Tuple[float, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
@@ -1505,11 +1495,11 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: io.BufferedIOBase):
         data = json.loads(buffer.read())
         validate_enrichment_table(data)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: io.BufferedIOBase):
         data = json.load(buffer)
         content = io.StringIO()
 
@@ -1540,7 +1530,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
                                 content.write(value['text'])
                 content.write('.\r\n\r\n')
 
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+        return cast(io.BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
 
     def should_highlight_content_text_matches(self) -> bool:
         return True

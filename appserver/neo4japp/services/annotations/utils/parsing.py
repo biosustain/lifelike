@@ -1,5 +1,4 @@
 import requests
-
 from string import punctuation
 from typing import List, Tuple
 
@@ -77,20 +76,28 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
         data = {'text': kwargs['text']}
 
     try:
-        req = requests.post(url, data=data, timeout=REQUEST_TIMEOUT)
+        request_args = {'url': url, 'data': data, 'timeout': REQUEST_TIMEOUT}
+        # Unfortunately can't **request_args here, otherwise mypy complains.
+        req = requests.post(url=url, data=data, timeout=REQUEST_TIMEOUT)
         resp = req.json()
         req.close()
     except requests.exceptions.ConnectTimeout:
         raise ServerException(
             'Parsing Error',
-            'The request timed out while trying to connect to the parsing service.')
+            'The request timed out while trying to connect to the parsing service.',
+            fields=request_args
+        )
     except requests.exceptions.Timeout:
         raise ServerException(
             'Parsing Error',
-            'The request to the parsing service timed out.')
+            'The request to the parsing service timed out.',
+            fields=request_args
+        )
     except (requests.exceptions.RequestException, Exception):
         raise ServerException(
             'Parsing Error',
-            'An unexpected error occurred with the parsing service.')
+            'An unexpected error occurred with the parsing service.',
+            fields=request_args
+        )
 
     return process_parsed_content(resp)

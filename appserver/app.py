@@ -627,6 +627,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
         except IntegrityError as e:
             # Warning: this could catch some other integrity error
             db.session.rollback()
+            raise e
 
     db.session.commit()
     # rollback in case of error?

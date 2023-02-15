@@ -9,12 +9,13 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.sql import table, column, and_
+from sqlalchemy.sql import table, column
 from sqlalchemy.orm.session import Session
 
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF
 from neo4japp.models import Files
 from neo4japp.services.annotations.constants import DEFAULT_ANNOTATION_CONFIGS
+
 from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
@@ -65,11 +66,8 @@ def data_upgrades():
                 files_to_update.append(
                     {'id': fid, 'annotation_configs': DEFAULT_ANNOTATION_CONFIGS})
 
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
 
 
 def data_downgrades():

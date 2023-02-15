@@ -6,7 +6,6 @@ Revises: f40355507984
 Create Date: 2020-11-04 13:11:14.540418
 
 """
-from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
@@ -100,7 +99,7 @@ def data_upgrades():
                     is_case_insensitive = False
                 updated_annotation = {**global_annotation['annotation']}
                 updated_annotation['meta']['isCaseInsensitive'] = is_case_insensitive
-                
+
             else:
                 is_case_insensitive = True
                 if global_annotation['annotation']['type'] in case_sensitive_types:
@@ -120,7 +119,7 @@ def data_upgrades():
     except Exception as exc:
         session.rollback()
         session.close()
-        raise Exception(exc)
+        raise exc
 
 
 def data_downgrades():

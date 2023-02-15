@@ -5,26 +5,22 @@ Revises: d509d9c60fdb
 Create Date: 2021-07-27 17:35:58.662599
 
 """
+from alembic import context, op
+import fastjsonschema
 import hashlib
 import json
-from alembic import context
-from alembic import op
+from marshmallow import fields
+from os import path
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-
-from os import path
 from sqlalchemy.sql import table, column, and_
 from sqlalchemy.orm.session import Session
 
-import fastjsonschema
-
-from marshmallow import fields
-
+from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
+from neo4japp.models import Files, FileContent
 from neo4japp.schemas.base import CamelCaseSchema
 
 from migrations.utils import window_chunk
-from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
-from neo4japp.models import Files, FileContent
 
 # revision identifiers, used by Alembic.
 revision = '92135aa31f3c'
@@ -201,12 +197,10 @@ def data_upgrades():
                                 enriched_table['result']['version'] = current_version
 
                             current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')  # noqa
-            try:
-                session.bulk_update_mappings(Files, files_to_update)
-                session.bulk_update_mappings(FileContent, raws_to_update)
-                session.commit()
-            except Exception:
-                raise
+            session.bulk_update_mappings(Files, files_to_update)
+            session.bulk_update_mappings(FileContent, raws_to_update)
+            session.commit()
+
 
 
 def data_downgrades():

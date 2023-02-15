@@ -5,13 +5,11 @@ Revises: b90a32885a8f
 Create Date: 2020-12-02 18:54:06.498369
 
 """
-from alembic import context
-from alembic import op
+from alembic import context, op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
-from sqlalchemy.dialects import postgresql
 
 from migrations.utils import (
     update_annotations,
@@ -60,11 +58,8 @@ def data_upgrades():
             tableclause.c.annotations
         ]).where(tableclause.c.annotations != '[]'))
 
-    try:
-        update_annotations(
-            results, session, update_annotations_add_primary_name)
-    except Exception:
-        raise Exception('Migration failed.')
+    update_annotations(
+        results, session, update_annotations_add_primary_name)
 
 
 def data_downgrades():

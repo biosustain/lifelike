@@ -8,7 +8,6 @@ Create Date: 2020-12-07 19:42:02.759863
 from alembic import context
 from alembic import op
 import sqlalchemy as sa
-
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.dialects import postgresql
@@ -66,13 +65,10 @@ def data_upgrades():
             tableclause.c.id,
             tableclause.c.custom_annotations
         ]).where(tableclause.c.custom_annotations != '[]'))
-    try:
-        update_annotations(
-            anno_results, session, update_annotations_add_primary_name)
-        update_custom_annotations(
-            cust_anno_results, session, update_custom_annotations_add_primary_name)
-    except Exception:
-        raise Exception('Migration failed.')
+    update_annotations(
+        anno_results, session, update_annotations_add_primary_name)
+    update_custom_annotations(
+        cust_anno_results, session, update_custom_annotations_add_primary_name)
 
 
 def data_downgrades():

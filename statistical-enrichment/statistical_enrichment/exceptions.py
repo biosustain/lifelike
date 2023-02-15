@@ -47,7 +47,7 @@ class ServerException(Exception):
         self._transaction_id = transaction_id
 
     def __str__(self):
-        return f'<Exception> {self.title}:{self.message}'
+        return f'<Exception> {self.title}: {self.message}'
 
     def to_dict(self):
         retval = {}

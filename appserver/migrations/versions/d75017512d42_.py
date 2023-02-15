@@ -5,20 +5,18 @@ Revises: ba94cdb023f4
 Create Date: 2021-08-12 15:53:55.446163
 
 """
+from alembic import context, op
 import json
-from alembic import context
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-
 from sqlalchemy.sql import table, column, and_, or_
 from sqlalchemy.orm.session import Session
-
 from urllib.parse import urlparse
 
-from migrations.utils import window_chunk
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF
 from neo4japp.models import Files
+
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'd75017512d42'
@@ -93,11 +91,8 @@ def data_upgrades():
 
                 annotations_json['documents'][0]['passages'][0]['annotations'] = annotations
                 files_to_update.append({'id': fid, 'annotations': annotations_json})
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
 
     # custom annotations
 
@@ -128,11 +123,8 @@ def data_upgrades():
                 except KeyError:
                     pass
             files_to_update.append({'id': fid, 'custom_annotations': custom_annotations})
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
 
     # excluded annotations
 
@@ -162,11 +154,8 @@ def data_upgrades():
                 except KeyError:
                     pass
             files_to_update.append({'id': fid, 'excluded_annotations': excluded_annotations})
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
 
 
 def data_downgrades():

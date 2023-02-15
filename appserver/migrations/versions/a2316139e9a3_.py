@@ -6,20 +6,17 @@ Revises: 5a16c1f00f2e
 Create Date: 2021-10-22 01:33:29.692083
 
 """
+from alembic import context, op
 import hashlib
-from alembic import context
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
-from sqlalchemy import table, column, and_
-
-import zipfile
 from io import BytesIO
+import sqlalchemy as sa
 from sqlalchemy.orm import Session
+import zipfile
 
-from migrations.utils import window_chunk
 from neo4japp.models import FileContent
 from neo4japp.constants import FILE_MIME_TYPE_MAP
+
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'a2316139e9a3'
@@ -51,22 +48,22 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    t_files = table(
+    t_files = sa.table(
         'files',
-        column('id', sa.Integer),
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        sa.column('id', sa.Integer),
+        sa.column('content_id', sa.Integer),
+        sa.column('mime_type', sa.String))
 
-    t_files_version = table(
+    t_files_version = sa.table(
         'file_version',
-        column('id', sa.Integer),
-        column('content_id', sa.Integer),
-        column('file_id', sa.Integer))
+        sa.column('id', sa.Integer),
+        sa.column('content_id', sa.Integer),
+        sa.column('file_id', sa.Integer))
 
-    t_files_content = table(
+    t_files_content = sa.table(
         'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary))
+        sa.column('id', sa.Integer),
+        sa.column('raw_file', sa.LargeBinary))
 
     files = conn.execution_options(stream_results=True).execute(sa.select([
         t_files_content.c.id,
@@ -74,7 +71,7 @@ def data_upgrades():
     ]).where(
         t_files_content.c.id.in_(
             sa.select([t_files_version.c.content_id]).where(
-                and_(
+                sa.and_(
                     t_files.c.mime_type == FILE_MIME_TYPE_MAP,
                     t_files.c.id == t_files_version.c.file_id
                 )
@@ -100,11 +97,8 @@ def data_upgrades():
                 new_hash = hashlib.sha256(new_bytes).digest()
                 files_to_update.append({'id': id, 'raw_file': new_bytes,
                                         'checksum_sha256': new_hash})
-        try:
-            session.bulk_update_mappings(FileContent, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(FileContent, files_to_update)
+        session.commit()
 
 
 def data_downgrades():

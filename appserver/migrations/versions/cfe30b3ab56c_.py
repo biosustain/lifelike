@@ -9,9 +9,9 @@ from alembic import context, op
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
-from migrations.utils import window_chunk
 from neo4japp.models import Files
 
+from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'cfe30b3ab56c'
@@ -107,11 +107,9 @@ def data_upgrades():
             # Include the existing modified date here to make sure the ORM doesn't automatically
             # update it
             files_to_update.append({'id': id, 'path': path, 'modified_date': modified_date})
-        try:
-            session.bulk_update_mappings(Files, files_to_update)
-            session.commit()
-        except Exception:
-            raise
+        session.bulk_update_mappings(Files, files_to_update)
+        session.commit()
+
 
 
 def data_downgrades():
