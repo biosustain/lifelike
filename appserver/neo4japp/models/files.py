@@ -104,8 +104,7 @@ class FileContent(RDBMSBase):
 
     @property
     def raw_file_base64(self):
-        byt = self.raw_file
-        base64.b64encode(self.raw_file)
+        byt = base64.b64encode(self.raw_file)
         return byt.decode('utf-8')
 
     @raw_file_base64.setter
