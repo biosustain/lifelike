@@ -6,7 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 from uuid import uuid4
 
 from neo4japp.constants import (
@@ -154,7 +154,7 @@ class ProjectsService(RDBMSBaseDao):
         master_initial_pdf: Files,
         initial_project: Projects,
         user: AppUser
-    ):
+    ) -> Files:
         new_pdf_file = Files(
             hash_id=str(uuid4()),
             filename=master_initial_pdf.filename,
@@ -316,17 +316,10 @@ class ProjectsService(RDBMSBaseDao):
         )
 
 
-    def create_initial_project(self, user: AppUser):
-        """
-        Create a initial project for the user.
-        This method is designed to fail siletly if the project name already exists
-        or if initial project template does not exist.
-        :param user: user to create initial project for
-        """
+    def _add_project(self, user: AppUser) -> Union[Projects, None]:
         project = Projects()
         project.name = f'{user.username}-example'
         project.description = f'Initial project for {user.username}'
-
         try:
             db.session.begin_nested()
             self.create_project_uncommitted(user, project)
@@ -352,7 +345,19 @@ class ProjectsService(RDBMSBaseDao):
                     f'project name: {project.name}. See attached exception info for details.',
                     exc_info=e
                 )
-                return
+        else:
+            return project
+
+
+    def create_initial_project(self, user: AppUser):
+        """
+        Create a initial project for the user.
+        This method is designed to fail siletly if the project name already exists
+        or if initial project template does not exist.
+        :param user: user to create initial project for
+        """
+
+        new_project = self._add_project(user)
 
         # Create the initial pdf
         master_initial_pdf = db.session.query(
@@ -363,7 +368,7 @@ class ProjectsService(RDBMSBaseDao):
                 Files.mime_type == FILE_MIME_TYPE_PDF
             )
         ).one()
-        new_pdf_file = self._add_initial_pdf(master_initial_pdf, project, user)
+        new_pdf_file = self._add_initial_pdf(master_initial_pdf, new_project, user)
 
         # Create the initial enrichment table
         master_initial_et = db.session.query(
@@ -374,7 +379,7 @@ class ProjectsService(RDBMSBaseDao):
                 Files.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE
             )
         ).one()
-        self._add_initial_enrichment(master_initial_et, project, user)
+        self._add_initial_enrichment(master_initial_et, new_project, user)
 
         # Create the initial map
         master_initial_map = db.session.query(
@@ -389,6 +394,6 @@ class ProjectsService(RDBMSBaseDao):
             master_initial_map,
             master_initial_pdf,
             new_pdf_file,
-            project,
+            new_project,
             user
         )
