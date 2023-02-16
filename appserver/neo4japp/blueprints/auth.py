@@ -271,8 +271,6 @@ def login():
             user.failed_login_count = 0
 
             try:
-                projects_service = get_projects_service()
-                projects_service.create_initial_project(user)
                 db.session.add(user)
                 db.session.commit()
             except SQLAlchemyError:
