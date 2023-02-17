@@ -1,4 +1,12 @@
-import { mapValues, groupBy, map, chain } from 'lodash-es';
+import {
+  mapValues as _mapValues,
+  groupBy as _groupBy,
+  map as _map,
+  flow as _flow,
+  filter as _filter,
+  flatMap as _flatMap,
+  reduce as _reduce
+} from 'lodash/fp';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import {
@@ -11,6 +19,7 @@ import {
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
+import { SelectionEntity } from 'app/sankey/interfaces/selection';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -90,24 +99,27 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
 
       // First try to read the data as JSON
       if (type === TYPE_STRING) {
-        const centerOfMass = chain(selection)
-          .filter(s => s.type !== GraphEntityType.Edge)
-          .flatMap(({entity}) => ((entity as UniversalGraphGroup).members ?? [entity]) as UniversalGraphNode[])
-          .reduce(
+        const centerOfMass = _flow(
+          _filter((e: GraphEntity) => e.type !== GraphEntityType.Edge),
+          _flatMap(({entity}) => ((entity as UniversalGraphGroup).members ?? [entity]) as UniversalGraphNode[]),
+          _reduce(
             (prev, {data: {x = 0, y = 0}}) => ({
                 x: prev.x + x,
                 y: prev.y + y,
                 s: prev.s + 1
             }),
             {x: 0, y: 0, s: 0}
-          )
-          .thru(({x, y, s}) => ({x: x / s, y: y / s}))
-          .value();
+          ),
+          ({x, y, s}) => ({x: x / s, y: y / s})
+        )(selection);
         const {
           [GraphEntityType.Edge]: edges = [] as UniversalGraphEdge[],
           [GraphEntityType.Node]: nodes = [] as UniversalGraphNode[],
           [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
-        } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
+        } = _flow(
+          _groupBy('type'),
+          _mapValues(_map('entity'))
+        )(selection);
         const hashMap = new Map<string, string>();
         const isSingularNode = nodes.length === 1;
         const isSingularEdge = edges.length === 1;
