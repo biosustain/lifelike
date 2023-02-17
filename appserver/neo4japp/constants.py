@@ -38,6 +38,8 @@ DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
 
+MASTER_INITIAL_PROJECT_NAME = 'master-initial-project'
+
 FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
 FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
