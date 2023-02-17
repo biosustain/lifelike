@@ -1,7 +1,25 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { max, min, sum } from 'd3-array';
-import { merge, omit, isNil, clone, range, isEqual, assign, flatMap, chain, map as lodashMap } from 'lodash-es';
+import {
+  assign as _assign,
+  omit as _omit,
+} from 'lodash-es';
+import {
+  merge as _merge,
+  mergeAll as _mergeAll,
+  isNil as _isNil,
+  clone as _clone,
+  range as _range,
+  isEqual as _isEqual,
+  assignAll as _assignAll,
+  flatMap as _flatMap,
+  map as _map,
+  sortBy as _sortBy,
+  flow as _flow,
+  values as _values,
+  groupBy as _groupBy,
+} from 'lodash/fp';
 import { map, tap, switchMap, shareReplay, filter, takeUntil, catchError, first, distinctUntilChanged } from 'rxjs/operators';
 import { combineLatest, iif, ReplaySubject, Subject, EMPTY, Observable, of, BehaviorSubject, OperatorFunction } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -32,7 +50,7 @@ interface LayerPlaceholder {
 }
 
 function medianBy<T>(arr: T[], fn: (e: T) => number): number {
-  const sortedArray = lodashMap(arr, fn).sort((a, b) => a - b);
+  const sortedArray = _map(fn)(arr).sort((a, b) => a - b);
   const middleIndex = sortedArray.length / 2;
   if (middleIndex % 1 === 0) {
       // Two middle numbers (e.g. [1, 2, 3, 4]), so to get the median take the average of the two
@@ -50,21 +68,21 @@ export const groupByTraceGroupWithAccumulation = (nextNodeCallback) => {
   const traceGroupOrder = new Set();
   return function(links) {
     links.forEach(({trace}) => {
-      this.warningController.assert(!isNil(trace), ErrorMessages.missingLinkTrace);
+      this.warningController.assert(!_isNil(trace), ErrorMessages.missingLinkTrace);
       traceGroupOrder.add(trace.group);
     });
     const groups = [...traceGroupOrder];
 
-    return chain(links)
-      .groupBy(link => nextNodeCallback(link)?.id)
-      .values()
-      .map(nodeLinks => ({
+    return _flow(
+      _groupBy(link => nextNodeCallback(link)?.id),
+      _values,
+      _map(nodeLinks => ({
         nodeLinks,
-        avgGroup: medianBy(nodeLinks, ({trace}) => groups.indexOf(trace.group))
-      }))
-      .sortBy('avgGroup')
-      .flatMap(({nodeLinks}) => nodeLinks)
-      .value();
+        avgGroup: medianBy(nodeLinks, ({trace}) => groups.indexOf(trace.group)),
+      })),
+      _sortBy('avgGroup'),
+      _flatMap(({nodeLinks}: any) => nodeLinks),
+    )(links);
   };
 };
 
@@ -76,7 +94,7 @@ export type DefaultLayoutService = LayoutService<TypeContext>;
 /**
  * Helper so we can create columns copy with minimum overhead
  */
-const copy2DArray = (arr: any[][]) => arr.map(clone);
+const copy2DArray = (arr: any[][]) => arr.map(_clone);
 
 type NodeColumns<Base extends TypeContext> = (Base['node'] | LayerPlaceholder)[][];
 
@@ -180,9 +198,9 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     switchMap(viewPort =>
       this.baseView.common.view$.pipe(
         map(view =>
-          isNil(view) ?
+          _isNil(view) ?
             viewPort :
-            assign(
+            _assign(
               {},
               viewPort,
               {
@@ -194,21 +212,21 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
         )
       )
     ),
-    distinctUntilChanged(isEqual),
+    distinctUntilChanged(_isEqual),
     debug<ProcessedExtent>('extent$'),
     shareReplay(1)
   );
 
   horizontal$: Observable<Horizontal> = this.extent$.pipe(
     map(({x0, x1, width}) => ({x0, x1, width})),
-    distinctUntilChanged(isEqual),
+    distinctUntilChanged(_isEqual),
     debug('horizontal$'),
     shareReplay(1)
   );
 
   vertical$: Observable<Vertical> = this.extent$.pipe(
     map(({y0, y1, height}) => ({y0, y1, height})),
-    distinctUntilChanged(isEqual),
+    distinctUntilChanged(_isEqual),
     debug('vertical$'),
     shareReplay(1)
   );
@@ -293,9 +311,9 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
           data,
           preprocessedLinks,
           preprocessedNodes,
-          merge(
-            omit(preprocessedLinks, ['nodes', 'links']),
-            omit(preprocessedNodes, ['nodes', 'links'])
+          _merge(
+            _omit(preprocessedLinks, ['nodes', 'links']),
+            _omit(preprocessedNodes, ['nodes', 'links'])
           )
         );
 
@@ -350,8 +368,8 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     const virtualPaths = new ExtendedMap<string, ExtendedArray<LayerPlaceholder>>();
 
     for (const link of data.links) {
-      let virtualPathStartLayer;
-      let virtualPathEndLayer;
+      let virtualPathStartLayer: number;
+      let virtualPathEndLayer: number;
       if (link.circular) {
         virtualPathStartLayer = link.target.layer;
         virtualPathEndLayer = link.source.layer;
@@ -366,7 +384,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
       }
       const id = link.source.id + ' ' + link.target.id;
       const virtualPath = virtualPaths.getSet(id, new ExtendedArray());
-      range(virtualPathStartLayer, virtualPathEndLayer).forEach(layer =>
+      _range(virtualPathStartLayer, virtualPathEndLayer).forEach(layer =>
         virtualPath.getSetLazily(layer, () => {
           const newNode = {
             value: 0,
@@ -379,7 +397,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
     }
 
     return {
-      nodesAndPlaceholders: flatMap(columnsWithLinkPlaceholders, column => column),
+      nodesAndPlaceholders: _flatMap(column => column)(columnsWithLinkPlaceholders),
       columnsWithLinkPlaceholders
     } as VirtualNodesContext<Base>;
   }
@@ -602,7 +620,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                 ]).pipe(
                   switchMap(([view, reset]) =>
                     iif(
-                      () => isNil(view),
+                      () => _isNil(view),
                       of(verticalContext).pipe(
                         // Calculate the nodes' and links' vertical position within their respective column
                         //     Also readjusts sankeyCircular size if circular links are needed, and node x's
@@ -663,7 +681,7 @@ export class LayoutService<Base extends TypeContext> extends SankeyAbstractLayou
                   first(),
                   switchMap(view =>
                     iif(
-                      () => isNil(view),
+                      () => _isNil(view),
                       of(data).pipe(this.positionNodes(x)),
                       of(data)
                     )
