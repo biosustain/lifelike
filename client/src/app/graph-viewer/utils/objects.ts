@@ -1,4 +1,4 @@
-import { defaultsDeep, assign, chain, merge, cloneDeep } from 'lodash-es';
+import { defaultsDeep, assign, merge, cloneDeep } from 'lodash-es';
 
 import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
 import {
