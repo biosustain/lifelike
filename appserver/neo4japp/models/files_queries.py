@@ -1,11 +1,19 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-from typing import Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import and_, inspect, literal
+from sqlalchemy import (
+    and_,
+    column,
+    inspect,
+    literal,
+    select,
+    table,
+    Integer as sa_Integer,
+)
 from sqlalchemy.orm import aliased, contains_eager, defer, joinedload, lazyload, Query, raiseload
+from typing import Optional, Union, Literal
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects
@@ -429,3 +437,34 @@ class FileHierarchy:
                 }
             else:
                 file.calculated_starred = None
+
+
+def get_descendants_of_file_query(***ARANGO_USERNAME***_file_id: int):
+    t_files = table(
+        'files',
+        column('id', sa_Integer),
+        column('parent_id', sa_Integer)
+    )
+
+    parent_file = select([
+        t_files.c.id,
+        t_files.c.parent_id
+    ]).where(
+        t_files.c.id == ***ARANGO_USERNAME***_file_id
+    ).cte(recursive=True)
+
+    parent_alias = parent_file.alias()
+    children_alias = parent_file.union_all(
+        select([
+            t_files.c.id,
+            t_files.c.parent_id
+        ]).where(
+            t_files.c.parent_id == parent_alias.c.id
+        )
+    )
+
+    return select([
+        children_alias.c.id
+    ]).where(
+        children_alias.c.id != ***ARANGO_USERNAME***_file_id
+    )
