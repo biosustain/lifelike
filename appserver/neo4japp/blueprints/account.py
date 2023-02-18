@@ -115,7 +115,6 @@ class AccountView(MethodView):
             'results': results,
         }))
 
-
     @use_args(UserCreateSchema)
     def post(self, params: dict):
         admin_or_private_access = g.current_user.has_role('admin') or \
@@ -156,11 +155,22 @@ class AccountView(MethodView):
             projects_service.create_initial_project(app_user)
             db.session.add(app_user)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise ServerException(
+                title='Unexpected Database Transaction Error',
+                message='Something unexpected occurred while adding the user to the database.',
+                fields={
+                    'user_id': app_user.id if app_user.id is not None else 'N/A',
+                    'username': app_user.username,
+                    'user_email': app_user.email
+                },
+                stacktrace=str(e)
+            )
+        except ServerException:
             db.session.rollback()
             raise
         return jsonify(dict(result=app_user.to_dict()))
-
 
     @use_args(UserUpdateSchema)
     def put(self, params: dict, hash_id):
