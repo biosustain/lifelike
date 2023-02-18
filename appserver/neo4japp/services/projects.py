@@ -19,6 +19,7 @@ from neo4japp.constants import (
     TIMEZONE,
 )
 from neo4japp.database import db, get_authorization_service
+from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import (
@@ -153,7 +154,6 @@ class ProjectsService(RDBMSBaseDao):
         )
         self.session.commit()
 
-
     def _add_pdf(
         self,
         master_pdf: Files,
@@ -202,7 +202,6 @@ class ProjectsService(RDBMSBaseDao):
             f'pending transaction. User: {user.id}.'
         )
 
-
     def _add_enrichment(
         self,
         master_et: Files,
@@ -248,10 +247,9 @@ class ProjectsService(RDBMSBaseDao):
         db.session.add(new_et_file_annotations_version)
         db.session.flush()
         current_app.logger.info(
-            f'Enrichment annotations version with id {new_et_file_annotations_version.id} flushed to ' +
-            f'pending transaction. User: {user.id}.'
+            f'Enrichment annotations version with id {new_et_file_annotations_version.id} ' +
+            f'flushed to pending transaction. User: {user.id}.'
         )
-
 
     def _add_map(
         self,
@@ -323,7 +321,6 @@ class ProjectsService(RDBMSBaseDao):
             f'User: {user.id}.'
         )
 
-
     def _add_sankey(
         self,
         master_sankey: Files,
@@ -351,7 +348,6 @@ class ProjectsService(RDBMSBaseDao):
             f'User: {user.id}.'
         )
 
-
     def _add_folder(
         self,
         master_folder: Files,
@@ -378,7 +374,6 @@ class ProjectsService(RDBMSBaseDao):
             f'User: {user.id}.'
         )
         return new_folder.id
-
 
     def _add_project(self, user: AppUser) -> Union[Projects, None]:
         project = Projects()
@@ -411,7 +406,8 @@ class ProjectsService(RDBMSBaseDao):
                 )
         else:
             return project
-
+        finally:
+            return None
 
     def _get_all_master_project_files(self) -> List[Files]:
         master_initial_***ARANGO_USERNAME***_folder_id = db.session.query(
@@ -438,7 +434,6 @@ class ProjectsService(RDBMSBaseDao):
         ).order_by(
             asc(Files.path)
         ).all()
-
 
     def _copy_master_files(
         self,
@@ -507,12 +502,21 @@ class ProjectsService(RDBMSBaseDao):
                     file_hash_id_map
                 )
 
-
     def create_initial_project(self, user: AppUser):
         """
         Create a initial project for the user.
         :param user: user to create initial project for
         """
-
         new_project = self._add_project(user)
-        self._copy_master_files(new_project, user)
+        if new_project is not None:
+            self._copy_master_files(new_project, user)
+        else:
+            raise ServerException(
+                title='User Initial Project Creation Error',
+                message=f'There was an issue creating the initial project for the user.',
+                fields={
+                    'user_id': user.id,
+                    'username': user.username,
+                    'user_email': user.email
+                },
+            )
