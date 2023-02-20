@@ -13,6 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import AnnotationStyle, DomainURLsMap
 
 

@@ -13,6 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.session import Session
 
 # revision identifiers, used by Alembic.
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.services.file_types.providers import PDFTypeProvider
 
 revision = '42cb9144dd13'

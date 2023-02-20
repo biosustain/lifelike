@@ -17,6 +17,7 @@ from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 import zipfile
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models.files import FileContent
 from neo4japp.schemas.formats.drawing_tool import validate_map
 

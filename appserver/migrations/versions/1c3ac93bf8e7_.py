@@ -5,6 +5,7 @@ Revises: 290f9d53c7f2
 Create Date: 2020-09-14 16:11:19.709898
 
 """
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 import copy
 import json
 import uuid

@@ -1,5 +1,6 @@
 import multiprocessing as mp
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 from neo4japp.services.annotations.initializer import get_annotation_graph_service
 from neo4japp.services.annotations.constants import EntityType

@@ -19,6 +19,7 @@ import fastjsonschema
 
 from marshmallow import fields
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.schemas.base import CamelCaseSchema
 
 from migrations.utils import window_chunk
