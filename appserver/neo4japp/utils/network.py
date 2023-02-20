@@ -203,6 +203,13 @@ def _check_acceptable_response(accept_header, content_type_header):
     )
 
 
+def check_acceptable_size(length, max_length=MAX_FILE_SIZE):
+    if length > max_length:
+        raise ContentTooLongError(
+            "file downloaded exceeded max ({} > {})".format(length, max_length)
+        )
+
+
 def read_url(
     url,
     max_length=MAX_FILE_SIZE,
@@ -259,9 +266,7 @@ def read_url(
     server_length = conn.headers.get('Content-Length')
     if server_length is not None:
         try:
-            if int(server_length) > max_length:
-                raise ContentTooLongError(
-                    f'Response Content-Length too big ({server_length} > {max_length})')
+            check_acceptable_size(int(server_length), max_length)
         except ValueError:
             pass
 
@@ -280,9 +285,7 @@ def read_url(
 
         # Check length
         length_downloaded += chunk_len
-        if length_downloaded > max_length:
-            raise ContentTooLongError(
-                "file downloaded exceeded max ({} > {})".format(length_downloaded, max_length))
+        check_acceptable_size(length_downloaded, max_length)
 
         buffer.write(chunk)
 
