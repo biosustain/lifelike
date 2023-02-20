@@ -174,3 +174,7 @@ class AccessRequestRequiredError(ServerException):
             self.message = \
                 f'You have "{self.curr_access}" access. Please request "{self.req_access}" ' \
                 f'access at minimum for this content.'
+
+
+class GDownException(Exception):
+    code = 400
