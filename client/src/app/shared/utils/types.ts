@@ -40,11 +40,11 @@ export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implemen
     return value;
   }
 
-  getSetLazily(key: K, valueAccessor: () => V) {
+  getSetLazily(key: K, valueAccessor: (key: K) => V) {
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -59,11 +59,11 @@ export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
     return value;
   }
 
-  getSetLazily(key: K, valueAccessor: () => V): V {
+  getSetLazily(key: K, valueAccessor: (key: K) => V): V {
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -112,7 +112,7 @@ export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {
     if (existingValue !== undefined) {
       return existingValue;
     }
-    return this[index] = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    return this[index] = valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor;
   }
 }
 

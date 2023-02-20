@@ -19,6 +19,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
 
 import { AnnotationEditDialogComponent } from './annotation-edit-dialog.component';
 import { Rect } from '../annotation-type';
+import { PDFAnnotationService } from '../services/pdf-annotation.service';
 
 @Component({
   selector: 'app-annotation-toolbar',
@@ -32,7 +33,9 @@ export class AnnotationToolbarComponent {
               protected readonly modalService: NgbModal,
               protected readonly zone: NgZone,
               protected readonly snackBar: MatSnackBar,
-              protected readonly errorHandler: ErrorHandler) {
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly pdfAnnotation: PDFAnnotationService
+  ) {
   }
 
   @Input() set position(position) {
@@ -48,8 +51,6 @@ export class AnnotationToolbarComponent {
   @HostBinding('class.active') @Input() active: boolean;
 
   @Input() containerRef;
-
-  @Output() annotationCreated = new EventEmitter();
 
   @HostBinding('style') style: { [klass: string]: string } | null;
 
@@ -93,7 +94,7 @@ export class AnnotationToolbarComponent {
       dialogRef.componentInstance.coords = this.toPDFRelativeRects(pageNumber, ranges.map(range => range.getBoundingClientRect()));
       dialogRef.componentInstance.pageNumber = pageNumber;
       return dialogRef.result.then(
-        annotation => this.annotationCreated.emit(annotation)
+        annotation => this.pdfAnnotation.annotationCreated(annotation)
       );
   }
 
