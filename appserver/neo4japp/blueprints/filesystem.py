@@ -3,6 +3,7 @@ import io
 import itertools
 import json
 import os
+import urllib
 from typing import Set, cast
 from urllib.error import HTTPError
 import zipfile
@@ -23,6 +24,7 @@ from sqlalchemy.sql.expression import text
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from webargs.flaskparser import use_args
 from itertools import chain
+import gdown
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
@@ -44,7 +46,7 @@ from neo4japp.exceptions import (
     InvalidArgument,
     RecordNotFound,
     NotAuthorized,
-    UnsupportedMediaTypeError
+    UnsupportedMediaTypeError, GDownException
 )
 from neo4japp.models import (
     Projects,
@@ -84,10 +86,11 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
+from neo4japp.utils.SizeLimitedBuffer import SizeLimitedBuffer
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.network import ContentTooLongError, read_url
+from neo4japp.utils.network import ContentTooLongError, read_url, check_acceptable_size
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
 
@@ -1080,16 +1083,28 @@ class FileListView(FilesystemBaseView):
                 # Note that in the future, we may wish to upload files of many different types
                 # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
                 # now it is the expectation.
-                buffer = read_url(
-                    url=url,
-                    headers={
-                        'User-Agent': self.url_fetch_user_agent,
-                        'Accept': FILE_MIME_TYPE_PDF,
-                    },
-                    max_length=self.file_max_size,
-                    prefer_direct_downloads=True,
-                    timeout=self.url_fetch_timeout
-                )
+                if urllib.parse.urlparse(url).netloc == 'drive.google.com':
+                    buffer = gdown.download(url, SizeLimitedBuffer(self.file_max_size), fuzzy=True)
+                    if buffer is None:
+                        # currently gdown fails silently - wrote path for it
+                        # https://github.com/wkentaro/gdown/pull/244
+                        # if they do not accept we should consider ussing fork
+                        raise GDownException()
+                    file_type_service = get_file_type_service()
+                    if file_type_service.detect_mime_type(buffer) != FILE_MIME_TYPE_PDF:
+                        raise UnsupportedMediaTypeError()
+                    buffer.seek(0)  # Must rewind
+                else:
+                    buffer = read_url(
+                        url=url,
+                        headers={
+                            'User-Agent': self.url_fetch_user_agent,
+                            'Accept': FILE_MIME_TYPE_PDF,
+                        },
+                        max_length=self.file_max_size,
+                        prefer_direct_downloads=True,
+                        timeout=self.url_fetch_timeout
+                    )
             except UnsupportedMediaTypeError as e:
                 # The server did not respect our request for a PDF and did not throw a 406, so
                 # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
@@ -1101,7 +1116,7 @@ class FileListView(FilesystemBaseView):
                             'the original website and upload the file from your device.',
                     code=e.code
                 )
-            except HTTPError as http_err:
+            except (HTTPError, GDownException) as http_err:
                 # Should be raised because of the 'Accept' content type header above.
                 if http_err.code == 406:
                     raise FileUploadError(
@@ -1121,7 +1136,7 @@ class FileListView(FilesystemBaseView):
                                 'file to your computer from the original website and upload the ' +
                                 'file from your device.'
                     )
-            except ContentTooLongError:
+            except (ContentTooLongError, OverflowError):
                 raise FileUploadError(
                     title='File Upload Error',
                     message='Your file could not be uploaded. The requested file is too large. ' +
