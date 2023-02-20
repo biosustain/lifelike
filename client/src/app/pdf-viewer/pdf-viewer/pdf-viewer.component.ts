@@ -1,17 +1,23 @@
 import {
   Component,
-  Input,
-  Output,
   ElementRef,
   EventEmitter,
-  OnChanges,
-  SimpleChanges,
-  OnInit,
+  HostBinding,
   HostListener,
+  Input,
+  NgZone,
+  OnChanges,
   OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
   ViewChild,
-  NgZone
+  ViewEncapsulation,
 } from '@angular/core';
+
+import { distinctUntilChanged, map, pairwise, startWith, takeUntil } from 'rxjs/operators';
+import { isEqual, omit } from 'lodash-es';
+import { ReplaySubject, Subject } from 'rxjs';
 
 /**
  * current pdf.js build contains optional chaining
@@ -19,9 +25,14 @@ import {
  */
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 import * as viewerx from 'pdfjs-dist/legacy/web/pdf_viewer';
-import { PDFDocumentProxy, PDFPageProxy, DocumentInitParameters, PDFDocumentLoadingTask } from 'pdfjs-dist/types/display/api';
+import {
+  DocumentInitParameters,
+  PDFDocumentLoadingTask,
+  PDFDocumentProxy,
+  PDFPageProxy,
+} from 'pdfjs-dist/types/display/api';
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
-import { PDFProgressData, PDFViewerParams, PDFSource } from './interfaces';
+import { PDFProgressData, PDFSource, PDFViewerParams } from './interfaces';
 import { createEventBus } from '../utils/event-bus-utils';
 import { FindState, RenderTextMode } from '../utils/constants';
 
@@ -54,6 +65,8 @@ Object.freeze(DEFAULT_DOCUMENT_INIT_PARAMETERS);
 })
 export class PdfViewerComponent
   implements OnChanges, OnInit, OnDestroy {
+  static CSS_UNITS: number = 96.0 / 72.0;
+  static BORDER_WIDTH = 9;
 
 
   @Input()
@@ -141,6 +154,8 @@ export class PdfViewerComponent
     this.internalFitToPage = Boolean(value);
   }
 
+  @HostBinding('class.selecting') @Input() selecting = false;
+
   @Input()
   set showBorders(value: boolean) {
     this.internalShowBorders = Boolean(value);
@@ -181,8 +196,6 @@ export class PdfViewerComponent
       : this.pdfSinglePageFindController;
   }
 
-  static CSS_UNITS: number = 96.0 / 72.0;
-  static BORDER_WIDTH = 9;
   @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
 
   private pdfMultiPageViewer;
@@ -226,8 +239,10 @@ export class PdfViewerComponent
   @Output() errorCallback = new EventEmitter<any>();
   @Output() progressCallback = new EventEmitter<PDFProgressData>();
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
-  @Input()
-  src: PDFSource;
+  @Input() src: PDFSource;
+  @Input() search: string;
+  private destroy$ = new Subject<any>();
+  private search$ = new ReplaySubject<string>(1);
 
   static getLinkTarget(type: string) {
     switch (type) {
@@ -265,13 +280,25 @@ export class PdfViewerComponent
       this.isInitialized = true;
       this.setupMultiPageViewer();
       this.setupSinglePageViewer();
+      this.search$.pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      ).subscribe(search =>
+        this.pdfFindController.executeCommand(
+          'find',
+          {
+            query: search ?? '',
+            highlightAll: true,
+            phraseSearch: true,
+          },
+        ),
+      );
     }
   }
 
   ngOnDestroy() {
-    if (this.internalPdf) {
-      this.internalPdf.destroy();
-    }
+    this.internalPdf?.destroy();
+    this.destroy$.next();
   }
 
   @HostListener('window:resize', [])
@@ -289,24 +316,23 @@ export class PdfViewerComponent
     }, 100);
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges({src, renderText, showAll, page, search}: SimpleChanges) {
     if (isSSR()) {
       return;
     }
-
-    if ('src' in changes) {
+    if (src) {
       this.loadPDF();
     } else if (this.internalPdf) {
-      if ('renderText' in changes) {
+      if (renderText) {
         this.getCurrentViewer().textLayerMode = this.internalRenderText
           ? this.internalRenderTextMode
           : RenderTextMode.DISABLED;
         this.resetPdfDocument();
-      } else if ('showAll' in changes) {
+      } else if (showAll) {
         this.resetPdfDocument();
       }
-      if ('page' in changes) {
-        if (changes.page.currentValue === this.internalLatestScrolledPage) {
+      if (page) {
+        if (page.currentValue === this.internalLatestScrolledPage) {
           return;
         }
 
@@ -317,6 +343,33 @@ export class PdfViewerComponent
 
       this.update();
     }
+    if (search) {
+      this.search$.next(search.currentValue);
+    }
+  }
+
+  public searchPrev() {
+    this.pdfFindController.executeCommand(
+      'findagain',
+      {
+        query: this.search,
+        highlightAll: true,
+        phraseSearch: true,
+        findPrevious: true,
+      },
+    );
+  }
+
+  public searchNext() {
+    this.pdfFindController.executeCommand(
+      'findagain',
+      {
+        query: this.search,
+        highlightAll: true,
+        phraseSearch: true,
+        findPrevious: false,
+      },
+    );
   }
 
   public convertCoordinates(pageNum: number, rect: number[]): Promise<any> {
@@ -398,6 +451,14 @@ export class PdfViewerComponent
     }
   }
 
+  updatefindmatchescount({source, matchesCount, rawQuery = true}) {
+    return this.matchesCountUpdated.emit({
+      matchesCount,
+      searching: Boolean(rawQuery) &&
+        (this.pdfMultiPageLinkService?.pagesCount !== source?.pageMatchesLength?.length)
+    });
+  }
+
   private setupMultiPageViewer() {
     pdfjsViewer.TextLayerBuilder.disableTextLayer = this.internalRenderText ?
       this.internalRenderTextMode : RenderTextMode.DISABLED;
@@ -405,14 +466,6 @@ export class PdfViewerComponent
     this.setExternalLinkTarget(this.internalExternalLinkTarget);
 
     const eventBus = createEventBus(pdfjsViewer);
-
-    eventBus.on('pagerendered', e => {
-      this.pageRendered.emit(e);
-    });
-
-    eventBus.on('pagesinit', e => {
-      this.afterLoadComplete.emit(this.internalPdf);
-    });
 
     eventBus.on('pagechanging', e => {
       if (this.pageScrollTimeout) {
@@ -425,6 +478,14 @@ export class PdfViewerComponent
       }, 100);
     });
 
+    eventBus.on('pagesinit', e => {
+      this.afterLoadComplete.emit(this.internalPdf);
+    });
+
+    eventBus.on('pagerendered', e => {
+      this.pageRendered.emit(e);
+    });
+
     eventBus.on('textlayerrendered', e => {
       this.textLayerRendered.emit(e);
     });
@@ -432,26 +493,16 @@ export class PdfViewerComponent
     /*
     This event id fired when total number of matches has changed.
      */
-    eventBus.on('updatefindmatchescount', e => {
-      let ready = true;
-      try {
-        ready = Object.keys(e.source._pendingFindMatches).length === 0;
-      } catch (e) {
-        console.warn('Read of pendingFindMatches is no longer supported, continiued with limited functionality.');
-      }
-      this.matchesCountUpdated.emit({matchesCount: e.matchesCount, ready});
-    });
+    eventBus.on('updatefindmatchescount', event => this.updatefindmatchescount(event));
 
     /*
     This event id fired when:
       + navigate to next/prev match
       + search state change ( FindState; fires only for first match )
      */
-    eventBus.on('updatefindcontrolstate', e => {
-      this.findControlStateUpdated.emit(e);
-      if (e.state !== FindState.NOT_FOUND) {
-        this.matchesCountUpdated.emit({matchesCount: e.matchesCount});
-      }
+    eventBus.on('updatefindcontrolstate', event => {
+      this.findControlStateUpdated.emit(omit(event, 'source'));
+      this.updatefindmatchescount(event);
     });
 
     this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({
@@ -505,13 +556,17 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
-    eventBus.on('updatefindmatchescount', e => {
-      this.matchesCountUpdated.emit(e.matchesCount);
-    });
+    /*
+    This event id fired when total number of matches has changed.
+     */
+    eventBus.on('updatefindmatchescount', e => this.updatefindmatchescount(e));
 
-    eventBus.on('updatefindcontrolstate', e => {
-      this.findControlStateUpdated.emit(e);
-    });
+    /*
+    This event id fired when:
+      + navigate to next/prev match
+      + search state change ( FindState; fires only for first match )
+     */
+    eventBus.on('updatefindcontrolstate', e => this.findControlStateUpdated.emit(e));
 
     this.pdfSinglePageLinkService = new pdfjsViewer.PDFLinkService({
       eventBus,
