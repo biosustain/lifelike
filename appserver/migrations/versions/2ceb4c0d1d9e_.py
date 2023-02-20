@@ -5,6 +5,7 @@ Revises: 20a288c39ff2
 Create Date: 2021-03-22 20:25:50.418793
 
 """
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from alembic import context
 from alembic import op
 from sqlalchemy import and_
