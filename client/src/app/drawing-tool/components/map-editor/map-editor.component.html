@@ -62,8 +62,8 @@
         </app-search-control>
     </app-module-header>
     <div class="position-relative overflow-hidden flex-fill">
-        <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
-            <div *ngIf="locks.length && lockCheckingActive; else locksReleased"
+        <ng-container *ngIf="map && (lockService.lockAcquired === false || !lockService.lockCheckingActive)">
+            <div *ngIf="lockService.locks.length && lockService.lockCheckingActive; else locksReleased"
                  class="lock-panel alert alert-danger"
             >
                 <div>
@@ -72,7 +72,7 @@
                 </div>
 
                 <ul class="m-0">
-                    <li *ngFor="let lock of locks">
+                    <li *ngFor="let lock of lockService.locks">
                         {{ lock.user.firstName }} {{ lock.user.lastName }}
                     </li>
                 </ul>
@@ -99,7 +99,7 @@
                   [gutterSize]="2">
             <as-split-area [order]="0" class="overflow-hidden">
                 <div class="graph-container">
-                    <canvas #canvas class="graph-view" [class.drop-target]="dropTargeted"></canvas>
+                    <canvas appGraphView></canvas>
                 </div>
             </as-split-area>
             <as-split-area size="256"

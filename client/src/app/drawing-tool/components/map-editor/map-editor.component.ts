@@ -1,15 +1,39 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  NgZone,
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { cloneDeep } from 'lodash-es';
 import { forkJoin, from, Observable, of, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, defaultIfEmpty, finalize, map, switchMap, tap } from 'rxjs/operators';
+import {
+  auditTime,
+  catchError,
+  defaultIfEmpty,
+  finalize,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
-import { CompoundAction, GraphAction, GraphActionReceiver, } from 'app/graph-viewer/actions/actions';
+import {
+  CompoundAction,
+  GraphAction,
+  GraphActionReceiver,
+} from 'app/graph-viewer/actions/actions';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
-import { LockError } from 'app/file-browser/services/filesystem.service';
+import { LockError, FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectLock } from 'app/file-browser/models/object-lock';
 import { GROUP_LABEL, MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
@@ -25,12 +49,28 @@ import { ShouldConfirmUnload } from 'app/shared/modules';
 import { ImageBlob } from 'app/shared/utils/forms';
 import { isNotEmpty } from 'app/shared/utils';
 import { createGroupNode } from 'app/graph-viewer/utils/objects';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
+import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { GraphActionsService } from 'app/drawing-tool/services/graph-actions.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ObjectTypeService } from 'app/file-types/services/object-type.service';
+import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import { GraphEntityType, UniversalGraphGroup, KnowledgeMapGraph, UniversalGraphNode } from '../../services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphGroup,
+  KnowledgeMapGraph,
+  UniversalGraphNode,
+} from '../../services/interfaces';
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
+import { GraphViewDirective } from '../../directives/graph-view.directive';
+import { LockService } from './lock.service';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -40,28 +80,58 @@ import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
     './map-editor.component.scss',
   ],
   providers: [
-    ModuleContext
-  ]
+    ModuleContext,
+    LockService,
+  ],
 })
 export class MapEditorComponent
   extends MapViewComponent<Blob | undefined>
   implements OnInit, OnDestroy, AfterViewInit, ShouldConfirmUnload {
   @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
+
+  constructor(
+    filesystemService: FilesystemService,
+    objectTypeService: ObjectTypeService,
+    snackBar: MatSnackBar,
+    modalService: NgbModal,
+    messageDialog: MessageDialog,
+    ngZone: NgZone,
+    route: ActivatedRoute,
+    errorHandler: ErrorHandler,
+    workspaceManager: WorkspaceManager,
+    filesystemObjectActions: FilesystemObjectActions,
+    dataTransferDataService: DataTransferDataService,
+    mapImageProviderService: MapImageProviderService,
+    graphActionsService: GraphActionsService,
+    progressDialog: ProgressDialog,
+    moduleContext: ModuleContext,
+    readonly lockService: LockService,
+  ) {
+    super(
+      filesystemService,
+      objectTypeService,
+      snackBar,
+      modalService,
+      messageDialog,
+      ngZone,
+      route,
+      errorHandler,
+      workspaceManager,
+      filesystemObjectActions,
+      dataTransferDataService,
+      mapImageProviderService,
+      graphActionsService,
+      progressDialog,
+      moduleContext,
+    );
+    // Set it after parent constructor finished
+    this.lockService.locator = this.locator;
+  }
+
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
 
-  private readonly lockCheckTimeInterval = 1000 * 30;
-  private readonly slowLockCheckTimeInterval = 1000 * 60 * 2;
-  private readonly veryInactiveDuration = 1000 * 60 * 30;
-  private readonly inactiveDuration = 1000 * 60 * 5;
-
-  private lockIntervalId = null;
-  private lockStartIntervalId = null;
-  lockAcquired: boolean | undefined = null;
-  locks: ObjectLock[] = [];
-  private lastLockCheckTime = window.performance.now();
-  private lastActivityTime = window.performance.now();
   reloadPopupDismissed = false;
   infoPanel = new InfoPanel();
   activeTab: string;
@@ -70,6 +140,18 @@ export class MapEditorComponent
 
   providerSubscription$ = new Subscription();
 
+  set locator(value) {
+    // Unless called from parent constructor context it is defined
+    if (this.lockService) {
+      this.lockService.locator = value;
+    }
+    super.locator = value;
+  }
+
+  get locator() {
+    return super.locator;
+  }
+
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
@@ -77,52 +159,25 @@ export class MapEditorComponent
       }
     });
 
-    this.ngZone.runOutsideAngular(() => {
-      // TODO: Does this ever fire? We don't drag the canvas...
-      this.canvasChild.nativeElement.addEventListener('dragend', e => {
-        this.dragEnd(e);
-      });
-
-      this.canvasChild.nativeElement.addEventListener('dragenter', e => {
-        this.dragEnter(e);
-      });
-
-      this.canvasChild.nativeElement.addEventListener('dragleave', e => {
-        this.dragLeave(e);
-      });
-
-      this.canvasChild.nativeElement.addEventListener('dragover', e => {
-        this.dragOver(e);
-      });
-
-      this.canvasChild.nativeElement.addEventListener('drop', e => {
-        this.drop(e);
-      });
-    });
-
-    this.startLockInterval();
+    this.lockService.startLockInterval();
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    Promise.resolve().then(() => {
-      this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
-        this.unsavedChanges$.next(true);
-      }));
+    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+      this.unsavedChanges$.next(true);
+    }));
 
-      this.subscriptions.add(this.graphCanvas.editorPanelFocus$.subscribe(() => {
-        this.focusSidebar();
-      }));
-    });
+    this.subscriptions.add(this.graphCanvas.editorPanelFocus$.subscribe(() => {
+      this.focusSidebar();
+    }));
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
     this.providerSubscription$.unsubscribe();
     this.autoSaveSubscription.unsubscribe();
-
-    this.clearLockInterval();
   }
 
   getBackupBlob(): Observable<Blob | null> {
@@ -156,7 +211,7 @@ export class MapEditorComponent
       });
     }
 
-    this.acquireLock();
+    this.lockService.acquireLock();
   }
 
   registerGraphBehaviors() {
@@ -195,9 +250,9 @@ export class MapEditorComponent
               blob,
               filename: hash,
             })),
-            tap(imageHash => console.log(imageHash))
-          )
-        )
+            tap(imageHash => console.log(imageHash)),
+          ),
+        ),
       ).pipe(
         defaultIfEmpty([]),
         switchMap((newImages: ImageBlob[]) =>
@@ -207,21 +262,21 @@ export class MapEditorComponent
               type: MimeTypes.Map,
             }),
             newImages,
-          })
-        )
+          }),
+        ),
       );
     }
   }
 
   restore(version: ObjectVersion) {
     this.providerSubscription$ = this.openMap(version.contentValue, version.originalObject).subscribe(graph => {
-        this.graphCanvas.execute(new KnowledgeMapRestore(
-          `Restore map to '${version.hashId}'`,
-          this.graphCanvas,
-          graph,
-          cloneDeep(this.graphCanvas.getGraph()),
-        ));
-      });
+      this.graphCanvas.execute(new KnowledgeMapRestore(
+        `Restore map to '${version.hashId}'`,
+        this.graphCanvas,
+        graph,
+        cloneDeep(this.graphCanvas.getGraph()),
+      ));
+    });
   }
 
   /**
@@ -256,62 +311,6 @@ export class MapEditorComponent
     });
   }
 
-  dragEnd(event: DragEvent) {
-    this.ngZone.run(() => {
-      this.dropTargeted = false;
-    });
-  }
-
-  dragEnter(event: DragEvent) {
-    this.ngZone.run(() => {
-      this.dropTargeted = true;
-    });
-  }
-
-  dragLeave(event: DragEvent) {
-    this.ngZone.run(() => {
-      this.dropTargeted = false;
-    });
-  }
-
-  dragOver(event: DragEvent) {
-    this.ngZone.run(() => {
-      this.dropTargeted = true;
-    });
-    // As this event fire continuously, and we only need to check that once, do not re-check after the first one
-    if (event.dataTransfer.dropEffect !== 'link') {
-      if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
-          this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
-        event.dataTransfer.dropEffect = 'link';
-        event.preventDefault();
-      }
-    }
-
-  }
-
-  drop(event: DragEvent) {
-    event.preventDefault();
-
-    this.ngZone.run(() => {
-      this.dropTargeted = false;
-    });
-
-    const hoverPosition = this.graphCanvas.hoverPosition;
-    if (hoverPosition != null) {
-      const items = this.dataTransferDataService.extract(event.dataTransfer);
-      if (isNotEmpty(items)) {
-        this.graphCanvas.selection.replace([]);
-      }
-      const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
-
-      actionPromise.then(actions => {
-        if (actions.length) {
-          this.graphCanvas.execute(new CompoundAction('Drag to map', actions));
-          this.graphCanvas.focus();
-        }
-      });
-    }
-  }
 
   private focusSidebar() {
     // Focus the input on the sidebar
@@ -324,82 +323,11 @@ export class MapEditorComponent
     }, 100);
   }
 
-  get lockCheckingActive(): boolean {
-    return this.lockIntervalId != null || this.lockStartIntervalId != null;
-  }
-
-  acquireLock() {
-    const monotonicNow = window.performance.now();
-
-    if (monotonicNow - this.lastActivityTime > this.veryInactiveDuration) {
-      // If the user is inactive for too long, stop hitting our poor server
-      this.clearLockInterval();
-    } else if (monotonicNow - this.lastActivityTime > this.inactiveDuration) {
-      // If the user is inactive for a bit, let's slow down the checking interval
-      if (monotonicNow - this.lastLockCheckTime < this.slowLockCheckTimeInterval) {
-        return;
-      }
-    }
-
-    if (this.lockAcquired === false) {
-      this.filesystemService.getLocks(this.locator).pipe(
-        finalize(() => this.lastLockCheckTime = window.performance.now()),
-      ).subscribe(locks => {
-        this.ngZone.run(() => {
-          this.locks = locks;
-        });
-      });
-    } else {
-      this.filesystemService.acquireLock(this.locator).pipe(
-        finalize(() => this.lastLockCheckTime = window.performance.now()),
-        catchError(error => {
-          if (!(error instanceof LockError)) {
-            this.errorHandler.showError(error);
-          }
-          return throwError(error);
-        }),
-      ).subscribe(locks => {
-        this.lockAcquired = true;
-        this.ngZone.run(() => {
-          this.locks = locks;
-        });
-      }, (err: LockError) => {
-        this.lockAcquired = false;
-        this.ngZone.run(() => {
-          this.locks = 'locks' in err ? err.locks : [];
-        });
-      });
-    }
-  }
-
-  startLockInterval() {
-    this.lockAcquired = null;
-
-    // Make the timer start near the crossing of the second hand, to make it look like the
-    // lock indication is live, even through we actually check infrequently
-    this.lockStartIntervalId = setTimeout(() => {
-      this.lockIntervalId = setInterval(this.acquireLock.bind(this), this.lockCheckTimeInterval);
-    }, (60 - new Date().getSeconds() + 1));
-
-    this.acquireLock();
-  }
-
-  clearLockInterval() {
-    if (this.lockStartIntervalId != null) {
-      clearInterval(this.lockStartIntervalId);
-      this.lockStartIntervalId = null;
-    }
-    if (this.lockIntervalId != null) {
-      clearInterval(this.lockIntervalId);
-      this.lockIntervalId = null;
-    }
-  }
-
   reload() {
     const doReload = () => {
-      this.clearLockInterval();
+      this.lockService.clearLockInterval();
       this.loadTask.update(this.locator);
-      this.startLockInterval();
+      this.lockService.startLockInterval();
     };
     if (this.unsavedChanges$.value) {
       if (confirm('You have unsaved changes. Are you sure that you want to reload?')) {
@@ -414,15 +342,8 @@ export class MapEditorComponent
     this.reloadPopupDismissed = true;
   }
 
-  @HostListener('window:mousemove', ['$event'])
-  mouseMove(event: MouseEvent) {
-    this.lastActivityTime = window.performance.now();
-  }
-
   @HostListener('window:keydown', ['$event'])
   keyDown(event: KeyboardEvent) {
-    this.lastActivityTime = window.performance.now();
-
     if (isCtrlOrMetaPressed(event) && event.key === 's') {
       this.save();
       event.preventDefault();
@@ -445,7 +366,7 @@ export class MapEditorComponent
         new GroupCreation(
           'Create group',
           createGroupNode({
-            members
+            members,
           }),
           true,
           true,
@@ -465,7 +386,7 @@ export class MapEditorComponent
     this.graphCanvas?.execute(new GroupExtension(
       'Add new members to group',
       group,
-      newMembers
+      newMembers,
     ));
   }
 
