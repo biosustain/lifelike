@@ -2,17 +2,19 @@
 .husky
 
 # System Files
+.run
 .DS_Store
+.mypy_cache/
 Thumbs.db
 appserver/.bash_history
-.mypy_cache/
+appserver/.local
 client/yarn-error.log
+graph-db/.run
+statistical-enrichment/.bash_history
+statistical-enrichment/.local
 
 # VSCode
-.vscode/**
-!.vscode/launch.json
-!.vscode/settings.json
-!.vscode/extensions.json
+.vscode/
 
 # IntelliJ
 .idea/
@@ -22,7 +24,7 @@ azure-secrets.env
 .env*
 !.env.example
 
-#virtual envSironments
+#virtual environments
 .venv/
 venv/
 outputs/
