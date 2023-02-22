@@ -2,7 +2,7 @@ import base64
 import click
 from collections import namedtuple
 import copy
-from flask import current_app, request
+from flask import current_app, request, g
 import hashlib
 import importlib
 import io
@@ -45,6 +45,7 @@ from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarningGroup, ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
@@ -77,6 +78,11 @@ def default_login_required():
         return
 
     return login_required_dummy_view()
+
+
+@app.before_request
+def init_warning_set():
+    g.warnings = list()
 
 
 @app.before_request
@@ -584,12 +590,17 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     try:
         provider.validate_content(buffer)
         buffer.seek(0)  # Must rewind
+    except ServerWarning as w:
+        g.warnings.append(w)
     except ValueError as e:
         raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-    # Get the DOI
-    file.doi = provider.extract_doi(buffer)
-    buffer.seek(0)  # Must rewind
+    else:
+        try:
+            # Get the DOI only if content could be validated
+            file.doi = provider.extract_doi(buffer)
+            buffer.seek(0)  # Must rewind
+        except Warning as w:
+            g.warnings.append(w)
 
     # Save the file content if there's any
     if size:

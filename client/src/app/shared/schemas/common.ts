@@ -39,6 +39,7 @@ export interface ResultQuery {
 
 export interface SingleResult<T> {
   result: T;
+  warnings: WarningResponse[];
 }
 
 export interface ResultMapping<T> {
@@ -50,6 +51,18 @@ export interface ResultList<T> {
   total: number;
   results: T[];
   query?: ResultQuery;
+}
+
+export interface WarningResponse {
+  title: string;
+  message: string;
+  type: string;
+  additionalMsgs?: string[];
+  stacktrace?: string;
+  code?: number;
+  version?: string;
+  transactionId?: string;
+  fields?: { [key: string]: string[] };
 }
 
 export interface ErrorResponse {
