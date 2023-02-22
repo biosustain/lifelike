@@ -4,6 +4,11 @@ from typing import Union, Tuple, Optional
 
 
 @dataclass(repr=False)
+class HandledException(Exception):
+    exception: Exception
+
+
+@dataclass(repr=False)
 class ServerException(Exception):
     """
     Create a new exception.

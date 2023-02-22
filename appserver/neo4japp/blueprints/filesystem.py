@@ -46,7 +46,9 @@ from neo4japp.exceptions import (
     InvalidArgument,
     RecordNotFound,
     NotAuthorized,
-    UnsupportedMediaTypeError, GDownException
+    UnsupportedMediaTypeError,
+    GDownException,
+    HandledException
 )
 from neo4japp.models import (
     Projects,
@@ -536,6 +538,8 @@ class FilesystemBaseView(MethodView):
                         raise ValidationError(f"The provided file may be corrupt for files of type "
                                               f"'{file.mime_type}' (which '{file.hash_id}' is of).",
                                               "contentValue")
+                    except HandledException:
+                        pass
 
                     new_content_id = FileContent.get_or_create(buffer)
                     buffer.seek(0)  # Must rewind
@@ -868,10 +872,15 @@ class FileListView(FilesystemBaseView):
                 buffer.seek(0)  # Must rewind
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-            # Get the DOI
-            file.doi = provider.extract_doi(buffer)
-            buffer.seek(0)  # Must rewind
+            except HandledException:
+                pass
+            else:
+                try:
+                    # Get the DOI only if content could be validated
+                    file.doi = provider.extract_doi(buffer)
+                    buffer.seek(0)  # Must rewind
+                except Warning as w:
+                    g.warnings.append(w)
 
             # Save the file content if there's any
             if size:

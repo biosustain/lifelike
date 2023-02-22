@@ -66,7 +66,7 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
           object.parent = options.parent;
           return this.objectCreationService.openCreateDialog(object, {
             title: 'New Folder',
-          }).then(results => results.pop());
+          });
         },
       },
     }];

@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { clone, first } from 'lodash-es';
+import { clone, first, values, chain } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -28,7 +28,7 @@ import { ObjectVersion } from '../models/object-version';
 import { ObjectExportDialogComponent, ObjectExportDialogValue, } from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
-import { ObjectCreationService } from './object-creation.service';
+import { ObjectCreationService, CreateResultMapping } from './object-creation.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
@@ -103,7 +103,7 @@ export class FilesystemObjectActions {
    * Open a dialog to upload a file.
    * @param parent the folder to put the new file in
    */
-  openUploadDialog(parent: FilesystemObject): Promise<FilesystemObject[]> {
+  openUploadDialog(parent: FilesystemObject): Promise<FilesystemObject> {
     const object = new FilesystemObject();
     object.parent = parent;
     return this.objectCreationService.openCreateDialog(object, {
@@ -129,7 +129,7 @@ export class FilesystemObjectActions {
       request: {
         contentHashId: target.hashId,
       },
-    }).then(result => result.pop());
+    });
   }
 
   /**
@@ -236,7 +236,8 @@ export class FilesystemObjectActions {
         const annotationConfigs = object.annotationConfigs;
         const organism = object.fallbackOrganism;
         return this.annotationsService.generateAnnotations(
-          [object.hashId], {annotationConfigs, organism});
+          [object.hashId], {annotationConfigs, organism}
+        ).body$;
       });
 
     const results: ResultMapping<AnnotationGenerationResultData>[] = [];

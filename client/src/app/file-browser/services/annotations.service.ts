@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEventType } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map, publish, refCount } from 'rxjs/operators';
 
-import { ResultList, ResultMapping } from 'app/shared/schemas/common';
+import { ResultList, ResultMapping, SingleResult } from 'app/shared/schemas/common';
 import { Annotation } from 'app/pdf-viewer/annotation-type';
 import {
   SortingAlgorithmId
@@ -16,8 +16,9 @@ import {
   PDFAnnotationGenerationRequest,
   AnnotationGenerationResultData,
   CustomAnnotationCreateRequest,
-  CustomAnnotationDeleteRequest,
+  CustomAnnotationDeleteRequest, HttpObservableResponse,
 } from '../schema';
+import { FilesystemObject } from '../models/filesystem-object';
 
 @Injectable()
 export class AnnotationsService {
@@ -47,13 +48,32 @@ export class AnnotationsService {
   }
 
   generateAnnotations(hashIds: string[], request: PDFAnnotationGenerationRequest = {}):
-    Observable<ResultMapping<AnnotationGenerationResultData>> {
-    return this.http.post<ResultMapping<AnnotationGenerationResultData>>(
+    HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>> {
+    const progress$ =  this.http.post<ResultMapping<AnnotationGenerationResultData>>(
       `/api/filesystem/annotations/generate`, {
         hashIds,
         ...request,
       },
+      {
+        observe: 'events',
+        reportProgress: true,
+        responseType: 'json',
+      },
+    ).pipe(
+      // Wait for connect before emitting
+      publish()
     );
+    return {
+      // Progress subscribe is not returning values until we subscribe to body$
+      progress$,
+      body$: progress$.pipe(
+        // Send connect upon subscribe
+        refCount(),
+        filter(({type}) => type === HttpEventType.Response),
+        // Cast to any cause typesript does not understand above filter syntax
+        map(response => (response as any).body as ResultMapping<AnnotationGenerationResultData>)
+      )
+    };
   }
 
   addCustomAnnotation(hashId: string, request: CustomAnnotationCreateRequest): Observable<Annotation[]> {
