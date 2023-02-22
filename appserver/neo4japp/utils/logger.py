@@ -24,6 +24,12 @@ class ErrorLog(UserEventLog, EventLog):
 
 
 @attr.s(frozen=True)
+class WarningLog(UserEventLog, EventLog):
+    """ Used to describe warnings """
+    warning_name: str = attr.ib()
+
+
+@attr.s(frozen=True)
 class ClientErrorLog(ErrorLog):
     """ Used to describe client side errors """
     url: str = attr.ib()

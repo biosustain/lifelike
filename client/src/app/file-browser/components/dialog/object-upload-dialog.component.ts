@@ -45,6 +45,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     super(modal, messageDialog, modalService);
   }
 
+  // Empty overwrite prevents attempt of returned value to update dialog form
+  applyValue(value: any) {
+
+  }
+
   // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.
   // @ts-ignore
   getValue(): ObjectCreateRequest[] {

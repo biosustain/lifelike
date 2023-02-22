@@ -1,17 +1,27 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpEvent,
+  HttpEventType,
+  HttpResponse,
+} from '@angular/common/http';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, of, throwError, from, combineLatest } from 'rxjs';
-import { catchError, map, tap, switchMap } from 'rxjs/operators';
-import { UnaryFunction, OperatorFunction } from 'rxjs/internal/types';
+import { ConnectableObservable, from, Observable, of, throwError } from 'rxjs';
+import { catchError, filter, map, publish, refCount, switchMap, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { serializePaginatedParams } from 'app/shared/utils/params';
-import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult, } from 'app/shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { TrackingService } from 'app/shared/services/tracking.service';
@@ -23,6 +33,7 @@ import {
   FileAnnotationHistoryResponse,
   FileHierarchyResponse,
   FilesystemObjectData,
+  HttpObservableResponse,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
   ObjectExportRequest,
@@ -71,26 +82,41 @@ export class FilesystemService {
     );
   }
 
-  create(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
-    bodyValue?: FilesystemObject,
-  }> {
-    return this.http.post(
+  create(request: ObjectCreateRequest): HttpObservableResponse<SingleResult<FilesystemObject>> {
+    const progress$ = this.http.post<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects`,
       objectToMixedFormData(request),
       {
         observe: 'events',
         reportProgress: true,
         responseType: 'json',
-      }
+      },
     ).pipe(
-      map(event => {
-        if (event.type === HttpEventType.Response) {
-          const body: SingleResult<FilesystemObjectData> = event.body as SingleResult<FilesystemObjectData>;
-          (event as any).bodyValue = new FilesystemObject().update(body.result);
-        }
-        return event;
-      }),
-    );
+      map(event =>
+        event.type === HttpEventType.Response ?
+          {
+            ...event,
+            body: {
+              ...event.body,
+              result: new FilesystemObject().update(event.body.result)
+            },
+          } as HttpResponse<SingleResult<FilesystemObject>> :
+          event
+      ),
+      // Wait for connect before emitting
+      publish()
+    ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>;
+    return {
+      // Progress subscribe is not returning values until we subscribe to body$
+      progress$,
+      body$: progress$.pipe(
+        // Send connect upon subscribe
+        refCount(),
+        filter(({type}) => type === HttpEventType.Response),
+        // Cast to any cause typesript does not understand above filter syntax
+        map(response => (response as any).body as SingleResult<FilesystemObject>)
+      )
+    };
   }
 
   /**

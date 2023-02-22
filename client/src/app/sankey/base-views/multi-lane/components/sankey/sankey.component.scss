@@ -6,17 +6,18 @@ app-sankey-multi-lane {
   --active-opacity: #{ this.$active-opacity };
   --inactive-opacity: #{ this.$inactive-opacity };
 
-  @include sankey.sankey {
-    @include sankey.node {
-      rect {
-        stroke: variables.$black;
-        stroke-opacity: this.$node-stroke-opacity;
-      }
+  @include sankey.sankey;
+
+  svg g {
+    .nodes g rect {
+      stroke: variables.$black;
+      stroke-opacity: this.$node-stroke-opacity;
     }
-    @include sankey.link {
+
+    .links path {
       fill: none;
       stroke: variables.$black;
       stroke-opacity: this.$link-stroke-opacity;
     }
-  };
+  }
 }

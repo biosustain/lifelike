@@ -5,7 +5,10 @@ import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
+import {
+  CreateDialogOptions,
+  CreateResultMapping,
+} from 'app/file-browser/services/object-creation.service';
 import { ObjectEditDialogComponent, ObjectEditDialogValue, } from 'app/file-browser/components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';

@@ -7,6 +7,7 @@ import textwrap
 import typing
 import zipfile
 from base64 import b64encode
+from dataclasses import dataclass
 from io import BufferedIOBase
 from typing import Optional, List
 
@@ -19,7 +20,7 @@ from PIL import Image, ImageColor
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from PyPDF4.generic import DictionaryObject
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
-from flask import current_app
+from flask import current_app, g
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
@@ -74,7 +75,7 @@ from neo4japp.constants import (
     MAX_NODE_HEIGHT,
     NODE_INSET
 )
-from neo4japp.exceptions import FileUploadError
+from neo4japp.exceptions import FileUploadError, HandledException
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -85,6 +86,7 @@ from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
+from neo4japp.warnings import ServerWarning
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -263,6 +265,14 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             raise ValueError("Directories can't have content")
 
 
+@dataclass
+class TextExtractionNotAllowedWarning(ServerWarning):
+    title: str = \
+        "Author of this PDF disallowed content extraction"
+    message: Optional[str] = \
+        "Content of this file will not be automatically annotated within lifelike"
+
+
 class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_PDF
     SHORTHAND = 'pdf'
@@ -282,7 +292,11 @@ class PDFTypeProvider(BaseFileTypeProvider):
         fp = io.BytesIO(data)
         try:
             high_level.extract_text(fp, page_numbers=[0], caching=False)
-        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
+        except PDFTextExtractionNotAllowed as e:
+            # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
+            g.warnings.append(TextExtractionNotAllowedWarning())
+            raise HandledException(e)
+        except PDFEncryptionError:
             raise FileUploadError(
                 title='Failed to Read PDF',
                 message='This pdf is locked and cannot be loaded into Lifelike.')
@@ -307,13 +321,18 @@ class PDFTypeProvider(BaseFileTypeProvider):
         fp = io.BytesIO(data)
         try:
             text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+        except PDFTextExtractionNotAllowed as e:
+            # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
+            g.warnings.append(TextExtractionNotAllowedWarning())
+            raise HandledException(e)
         except Exception:
             raise FileUploadError(
                 title='Failed to Read PDF',
                 message='An error occurred while reading this pdf. Please check if the pdf is ' +
                         'unlocked and openable.'
             )
-        doi = _search_doi_in(bytes(text, encoding='utf8'))
+        else:
+            doi = _search_doi_in(bytes(text, encoding='utf8'))
 
         return doi
 

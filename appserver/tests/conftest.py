@@ -3,7 +3,7 @@ import os
 
 from arango import ArangoClient
 from arango.database import StandardDatabase
-from flask import request as flask_request
+from flask import request as flask_request, g
 from flask.app import Flask
 from neo4j import GraphDatabase, Session, Transaction, basic_auth
 import responses
@@ -55,6 +55,10 @@ def setup_before_request_callbacks(app: Flask):
             return
 
         return login_required_dummy_view()
+
+    @app.before_request
+    def init_warning_set():
+        g.warnings = list()
 
 
 def setup_request_callbacks(app: Flask):

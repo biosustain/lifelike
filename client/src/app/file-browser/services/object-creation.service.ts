@@ -1,29 +1,126 @@
-import { HttpEventType } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, iif, of, merge } from 'rxjs';
-import { filter, map, mergeMap, tap } from 'rxjs/operators';
+import {
+  defer,
+  from,
+  iif,
+  Observable,
+  of,
+  throwError,
+  Subject,
+  concat,
+  ConnectableObservable, EMPTY,
+} from 'rxjs';
+import {
+  bufferWhen,
+  catchError,
+  filter,
+  map,
+  mergeMap,
+  reduce,
+  concatMap,
+  tap, switchMap, startWith, endWith, publish, refCount, scan, shareReplay, finalize
+} from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {
+  assign,
+  entries,
+  find,
+  forEach,
+  groupBy,
+  isEqual,
+  partition,
+  some,
+  unionBy,
+  zip,
+  fromPairs, mapValues, startsWith, omit,
+} from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ResultMapping } from 'app/shared/schemas/common';
-import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import {
+  ErrorResponse,
+  ResultMapping,
+  SingleResult,
+  WarningResponse,
+} from 'app/shared/schemas/common';
+import {
+  Progress,
+  ProgressArguments,
+  ProgressMode
+} from 'app/interfaces/common-dialog.interface';
+import { isNotEmpty } from 'app/shared/utils';
+import { idle } from 'app/shared/rxjs/idle-observable';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
+import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
-import { PDFAnnotationGenerationRequest, ObjectCreateRequest, AnnotationGenerationResultData } from '../schema';
+import {
+  ObjectCreateRequest,
+  PDFAnnotationGenerationRequest,
+  AnnotationGenerationResultData,
+  FilesystemObjectData, HttpObservableResponse,
+} from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
+import File = GraphNS.File;
+
+interface CreationResult {
+  result?: FilesystemObject;
+  warnings?: WarningResponse[];
+  errors?: ErrorResponse[];
+}
+
+type AnnotationResult = AnnotationGenerationResultData & {
+  error: ErrorResponse;
+  missing: boolean
+};
+
+interface CreationAnnotationResult {
+  creation: CreationResult | null;
+  annotation: AnnotationResult | null;
+}
+
+interface Task<Result> {
+  body$: Observable<Result>;
+  progress$: Observable<ProgressArguments>;
+}
+
+interface PutTask {
+  request: ObjectCreateRequest;
+  creation: Task<SingleResult<FilesystemObject>>;
+  annotation: Task<ResultMapping<AnnotationGenerationResultData> | { error: ErrorResponse }> & {
+    options: PDFAnnotationGenerationRequest,
+    call$: Subject<HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>
+  };
+}
+
+interface CreateToAnnotateStep {
+  annotationTask?: HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>;
+  creationTaskBatch: {
+    request: PutTask['request'],
+    creation: SingleResult<FilesystemObject>,
+    annotation: PutTask['annotation']
+  }[];
+}
+
+interface AnnotationResultStep extends CreateToAnnotateStep {
+  annotationResult: ResultMapping<AnnotationGenerationResultData> | { error: ErrorResponse };
+}
+
+export type CreateResultMapping = Map<ObjectCreateRequest, CreationAnnotationResult>;
 
 @Injectable()
 export class ObjectCreationService {
 
-  private subscription;
+  private readonly MAX_PARALLEL_CREATIONS = 3;
+  private readonly MAX_PARALLEL_ANNOTATIONS = 1;
 
   constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly snackBar: MatSnackBar,
@@ -36,104 +133,348 @@ export class ObjectCreationService {
   }
 
 
+  private composeCreationTask(request: ObjectCreateRequest): Task<SingleResult<FilesystemObject>> {
+    const {progress$, body$} = this.filesystemService.create(request);
+    return {
+      body$,
+      progress$: progress$.pipe(
+        map(event => {
+          switch (event.type) {
+            /**
+             * The request was sent out over the wire.
+             */
+            case HttpEventType.Sent:
+              return {
+                mode: ProgressMode.Determinate,
+                status: `Sending upload headers for ${request.filename || 'file'}...`,
+              };
+            /**
+             * An upload progress event was received.
+             */
+            case HttpEventType.UploadProgress:
+              return {
+                mode: ProgressMode.Determinate,
+                status: `Transmitting ${request.filename || 'file'}...`,
+                value: event.loaded / event.total,
+              };
+            /**
+             * The response status code and headers were received.
+             */
+            case HttpEventType.ResponseHeader:
+              return {
+                mode: ProgressMode.Indeterminate,
+                status: `${request.filename || 'File'} transmitted; saving...`,
+              };
+            /**
+             * A download progress event was received.
+             */
+            case HttpEventType.DownloadProgress:
+              return {
+                mode: ProgressMode.Determinate,
+                status: `Downloading server response for ${request.filename || 'file'}...`,
+                value: event.loaded / event.total,
+              };
+            /**
+             * The full response including the body was received.
+             */
+            case HttpEventType.Response:
+              return {
+                mode: ProgressMode.Determinate,
+                status: `Done uploading ${request.filename || 'file'}...`,
+                value: 1,
+                warnings: event.body?.warnings,
+              };
+            /**
+             * A custom event from an interceptor or a backend.
+             */
+            case HttpEventType.User:
+            default:
+          }
+        }),
+        startWith({
+          mode: ProgressMode.Indeterminate,
+          status: `Preparing ${request.filename || 'file'}`,
+        }),
+        catchError(error =>
+          of({
+            mode: ProgressMode.Determinate,
+            status: `Error occurred during upload/parsing of ${request.filename || 'file'}!`,
+            value: 0,
+            errors: [error],
+          }),
+        ),
+        endWith({
+          mode: ProgressMode.Determinate,
+          status: `Done with ${request.filename || 'file'}...`,
+          value: 1,
+        }),
+        shareReplay({bufferSize: 1, refCount: true}),
+      ),
+    } as Task<SingleResult<FilesystemObject>>;
+  }
+
+  private composeAnnotationTask(
+    request,
+    annotationCall$: Observable<null | HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>,
+  ): Task<ResultMapping<AnnotationGenerationResultData>> {
+    return {
+      body$: annotationCall$.pipe(
+        switchMap(annotationCall =>
+          annotationCall?.body$ ?? of(null)
+        ),
+      ),
+      progress$: annotationCall$?.pipe(
+        switchMap(annotationCall =>
+          annotationCall?.progress$.pipe(
+              map(event => {
+                switch (event.type) {
+                  /**
+                   * The request was sent out over the wire.
+                   */
+                  case HttpEventType.Sent:
+                    return {
+                      mode: ProgressMode.Determinate,
+                      status: `Sending upload headers for ${request.filename || 'file'}...`,
+                    };
+                  /**
+                   * An upload progress event was received.
+                   */
+                  case HttpEventType.UploadProgress:
+                    return {
+                      mode: ProgressMode.Determinate,
+                      status: `Transmitting ${request.filename || 'file'}...`,
+                      value: event.loaded / event.total,
+                    };
+                  /**
+                   * The response status code and headers were received.
+                   */
+                  case HttpEventType.ResponseHeader:
+                    return {
+                      mode: ProgressMode.Indeterminate,
+                      status: `${request.filename || 'File'} transmitted; saving...`,
+                    };
+                  /**
+                   * A download progress event was received.
+                   */
+                  case HttpEventType.DownloadProgress:
+                    return {
+                      mode: ProgressMode.Determinate,
+                      status: `Downloading server response for ${request.filename || 'file'}...`,
+                      value: event.loaded / event.total,
+                    };
+                  /**
+                   * The full response including the body was received.
+                   */
+                  case HttpEventType.Response:
+                    const result = event.body.mapping?.[request.hashId];
+                    if (result.error) {
+                      return {
+                        mode: ProgressMode.Determinate,
+                        status: `${request.filename || 'File'} saved; Error occured while parsing and identifying annotations...`,
+                        value: 1,
+                        errors: [
+                          {
+                            title: '',
+                            message: result.error,
+                          } as ErrorResponse,
+                        ],
+                      };
+                    }
+                    if (result.attempted) {
+                      return {
+                        mode: ProgressMode.Determinate,
+                        status: `${request.filename || 'File'} saved; Attempted parsing and identifying annotations...`,
+                        value: 1,
+                      };
+                    }
+                    const missing = event.body.missing[request.hashId];
+                    if (missing) {
+                      return {
+                        mode: ProgressMode.Determinate,
+                        status: `${request.filename || 'File'} saved; Missing annotations...`,
+                        value: 1,
+                      };
+                    }
+                    if (result.success) {
+                      return {
+                        mode: ProgressMode.Determinate,
+                        status: `Done uploading and annotating ${request.filename || 'file'}...`,
+                        value: 1,
+                      };
+                    }
+                  /**
+                   * A custom event from an interceptor or a backend.
+                   */
+                  // tslint:disable-next-line:no-switch-case-fall-through
+                  case HttpEventType.User:
+                  default:
+                    return {
+                      mode: ProgressMode.Determinate,
+                      status: `Unknown state of annotating ${request.filename || 'file'}...`,
+                      value: 1,
+                    };
+                }
+              }),
+              startWith({
+                mode: ProgressMode.Indeterminate,
+                status: `${request.filename || 'File'} saved; Parsing and identifying annotations...`,
+              }),
+              catchError(error =>
+                of({
+                  mode: ProgressMode.Determinate,
+                  status: `Error occurred during annotating of ${request.filename || 'file'}!`,
+                  value: 0,
+                  errors: [error],
+                }),
+              ),
+              endWith({
+                mode: ProgressMode.Determinate,
+                status: `Done uploading and annotating ${request.filename || 'file'}...`,
+                value: 1,
+              }),
+              shareReplay({bufferSize: 1, refCount: true}),
+            ) ?? EMPTY
+        ),
+      ),
+    };
+  }
+
+  private parseAnnotationStatus(
+    annotationResult: ResultMapping<AnnotationGenerationResultData> | { error: ErrorResponse },
+    hashId: string,
+  ): (AnnotationGenerationResultData | {}) & { missing: boolean, error: ErrorResponse } {
+    return assign(
+      (annotationResult as ResultMapping<AnnotationGenerationResultData>)?.mapping?.[hashId] ?? {},
+      {
+        missing: (annotationResult as ResultMapping<AnnotationGenerationResultData>)?.missing?.includes(hashId) ?? false,
+      },
+      omit(annotationResult, 'mapping', 'missing') as { error: ErrorResponse },
+    );
+  }
+
+
   /**
    * Handles the filesystem PUT request(s) with a progress dialog.
    * @param requests the request(s) data
    * @param annotationOptions options for the annotation process(es)
    * @return the created object(s)
    */
-  executePutWithProgressDialog(requests: ObjectCreateRequest[],
-                               annotationOptions: PDFAnnotationGenerationRequest[]):
-    Promise<FilesystemObject[]> {
-    const progressObservables = [];
-    for (const req of requests) {
-      progressObservables.push(new BehaviorSubject<Progress>(new Progress({
-        status: `Preparing ${req.filename || 'file'}`,
-      })));
-    }
+  executePutWithProgressDialog(
+    requests: ObjectCreateRequest[],
+    annotationOptions: PDFAnnotationGenerationRequest[],
+  ): Observable<CreateResultMapping> {
+    const putTasks: PutTask[] = zip(requests, annotationOptions).map(([request, options]) => {
+      const annotationCall$ = new Subject<HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>();
+      return ({
+        request,
+        creation: this.composeCreationTask(request),
+        annotation: {
+          ...this.composeAnnotationTask(request, annotationCall$),
+          options,
+          call$: annotationCall$,
+        },
+      });
+    });
     const progressDialogRef = this.progressDialog.display({
       title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
-      progressObservables,
+      progressObservables: putTasks.map(({creation, annotation}) =>
+        concat(creation.progress$, annotation.progress$).pipe(
+          // Accumulate warnings and errors
+          scan((prev, next) => ({
+            ...next,
+            warnings: [
+              ...(prev.warnings ?? []),
+              ...(next.warnings ?? []),
+            ],
+            errors: [
+              ...(prev.errors ?? []),
+              ...(next.errors ?? []),
+            ],
+          })),
+          map(args => new Progress(args)),
+        ),
+      ),
     });
-    let results: [FilesystemObject[], ResultMapping<AnnotationGenerationResultData>[]] = null;
-    const promiseList: Promise<FilesystemObject>[] = [];
-    for (let i = 0; i < requests.length; i++) {
-      const request = requests[i];
-      const annotationOption = annotationOptions[i] || {};
-      const promise = this.filesystemService.create(request)
-      .pipe(
-        tap(event => {
-          // First we show progress for the upload itself
-          if (event.type === HttpEventType.UploadProgress) {
-            if (event.loaded === event.total && event.total) {
-              progressObservables[i].next(new Progress({
-                mode: ProgressMode.Indeterminate,
-                status: `${request.filename || 'File'} transmitted; saving...`,
-              }));
-            } else {
-              progressObservables[i].next(new Progress({
-                mode: ProgressMode.Determinate,
-                status: `Transmitting ${request.filename || 'file' }...`,
-                value: event.loaded / event.total,
-              }));
-            }
-          }
-        }),
-        filter(event => event.bodyValue != null),
-        map((event): FilesystemObject => event.bodyValue),
-        mergeMap((object: FilesystemObject) => {
-          // Then we show progress for the annotation generation (although
-          // we can't actually show a progress percentage)
-          progressObservables[i].next(new Progress({
-            mode: ProgressMode.Indeterminate,
-            status: `${request.filename || 'file'} saved; Parsing and identifying annotations...`,
-          }));
-          const annotationsService = this.annotationsService.generateAnnotations(
-            [object.hashId], annotationOption || {},
-          ).pipe(map(res => {
-            const check = Object.entries(res.mapping).map(r => r[1].success);
-            if (check.some(c => c === false)) {
-                results = [[object], [res]];
-                const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
-                modalRef.componentInstance.objects = results[0];
-                modalRef.componentInstance.results = results[1];
-            }
-            return object;
-          }));
-
-          return iif(
-            () => object.isAnnotatable,
-            merge(annotationsService),
-            of(object)
-          );
-        }),
-        this.errorHandler.create({label: 'Create object'})
-      ).toPromise();
-      promise.then( _ => {
-        progressObservables[i].next(new Progress({
-          mode: ProgressMode.Determinate,
-          status: `Done with ${request.filename || 'file' }...`,
-          value: 1,
-        }));
-      }, _ => {
-        progressObservables[i].next(new Progress({
-          mode: ProgressMode.Determinate,
-          status: `Error occurred during upload/parsing of ${request.filename || 'file' }!`,
-          value: 0,
-        }));
-      });
-      promiseList.push(promise);
-    }
-
-    const finalPromise = Promise.allSettled(promiseList);
-    this.subscription = finalPromise.then(_ => {
-      progressDialogRef.close();
-    }, ( error ) => {
-      progressDialogRef.close();
-      console.error(error);
-    });
-    // Filter and return only successful uploads - we have already thrown errors
-    return finalPromise.then(result => result.flatMap(res => res.status === 'fulfilled' ? [res.value] : []));
+    return from(putTasks).pipe(
+      mergeMap(
+        ({request, creation, annotation}) => creation.body$.pipe(
+          this.errorHandler.create({label: 'Create object'}),
+          catchError(() => of(null as SingleResult<FilesystemObject> | null)),
+          map(creationResult => ({
+            request,
+            creation: creationResult,
+            annotation,
+          })),
+        ),
+        this.MAX_PARALLEL_CREATIONS,
+      ),
+      // Batch annotation generation requests
+      bufferWhen(() => idle()),
+      concatMap(resultBatch => {
+        const [resultsToAnnotate, resultsNotAnnotatable] = partition(
+          resultBatch,
+          ({creation: {result, warnings}}) =>
+            result?.isAnnotatable &&
+            !some(warnings, ({type}) => type === 'TextExtractionNotAllowedWarning'),
+        );
+        const uniqeAnnotationConfigs: PDFAnnotationGenerationRequest[] = unionBy(
+          resultsToAnnotate.map(({annotation: {options}}) => options),
+          isEqual,
+        );
+        // generateAnnotations can be called for multiple files but within one config
+        const resultsToAnnotateGroupedByAnnotationConfig = groupBy(
+          resultsToAnnotate,
+          resultToAnnotate => uniqeAnnotationConfigs.findIndex(
+            ac => isEqual(resultToAnnotate.annotation.options, ac),
+          ),
+        );
+        return from(entries(resultsToAnnotateGroupedByAnnotationConfig)).pipe(
+          map(([uniqeAnnotationConfigIndex, creationTaskBatch]) =>
+            ({
+              annotationTask: this.annotationsService.generateAnnotations(
+                creationTaskBatch.map(task => task.creation.result.hashId),
+                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex],
+              ),
+              creationTaskBatch,
+            } as CreateToAnnotateStep),
+          ),
+          startWith({
+            annotationTask: null,
+            creationTaskBatch: resultsNotAnnotatable,
+          } as CreateToAnnotateStep),
+          tap(({annotationTask, creationTaskBatch}) =>
+            forEach(creationTaskBatch, ({annotation: {call$}}) => call$.next(annotationTask)),
+          ),
+        );
+      }),
+      mergeMap(({annotationTask, creationTaskBatch}) =>
+          (annotationTask?.body$ ?? of(null)).pipe(
+            this.errorHandler.create({label: 'Annotate objects'}),
+            catchError((annotationError: ErrorResponse) =>
+              of({error: annotationError}),
+            ),
+            map(annotationResult => ({
+              annotationResult,
+              creationTaskBatch,
+            } as AnnotationResultStep)),
+          ),
+        this.MAX_PARALLEL_ANNOTATIONS,
+      ),
+      scan(
+        (acc, {annotationResult, creationTaskBatch}) => {
+          forEach(creationTaskBatch, creationTask => {
+            const hashId = creationTask.creation.result?.hashId;
+            acc.set(creationTask.request, {
+              ...creationTask,
+              annotation: this.parseAnnotationStatus(annotationResult, hashId),
+            } as CreationAnnotationResult);
+          });
+          return acc;
+        },
+        new Map<ObjectCreateRequest, CreationAnnotationResult>(),
+      ),
+      finalize(() => progressDialogRef.componentInstance?.close())
+    );
   }
 
   /**
@@ -142,7 +483,7 @@ export class ObjectCreationService {
    * @param options options for the dialog
    */
   openCreateDialog(target: FilesystemObject,
-                   options: CreateDialogOptions = {}): Promise<FilesystemObject[]> {
+                   options: CreateDialogOptions = {}): Promise<FilesystemObject> {
     const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
@@ -151,7 +492,7 @@ export class ObjectCreationService {
       'forceAnnotationOptions',
       'promptParent',
       'parentLabel',
-      'request'
+      'request',
     ];
     for (const key of keys) {
       if (key in options) {
@@ -161,9 +502,10 @@ export class ObjectCreationService {
     dialogRef.componentInstance.accept = ((requests: ObjectCreateRequest[]) => {
       const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
         organism: request?.fallbackOrganism,
-        annotationConfigs: request?.annotationConfigs
+        annotationConfigs: request?.annotationConfigs,
       }));
-      return this.executePutWithProgressDialog(requests, annotationOptions);
+      return this.executePutWithProgressDialog(requests, annotationOptions).toPromise()
+        .then(resultsMapping => resultsMapping.values().next().value.creation.result);
     });
     return dialogRef.result;
   }

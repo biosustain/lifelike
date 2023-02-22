@@ -4,16 +4,13 @@
 @import '~bootstrap/scss/mixins/deprecate';
 @import '~bootstrap/scss/mixins/nav-divider';
 
-// region Constants
 $search-accent-color: variables.$red;
 $selection-accent-color: #ff0;
 $node-label-shadow: rgba(187, 187, 187, .9);
 $input-spacing: map-get(variables.$spacers, 2);
 $active-stroke-width: 3px;
 $trasition: 100ms;
-// endregion
 
-// region Utils
 @mixin panel-divider {
   width: 100%;
   clear: both;
@@ -28,205 +25,8 @@ $trasition: 100ms;
   text-align: left;
 }
 
-@mixin search-blink($what) {
-  @keyframes searchBlink#{$what} {
-    50% {
-      #{$what}: $search-accent-color;
-    }
-  }
-  animation-duration: 750ms;
-  animation-name: searchBlink#{$what};
-}
-
-@mixin label-shadow {
-  foreignObject div {
-    box-shadow: 0 0 $active-stroke-width $active-stroke-width $node-label-shadow;
-    background-color: $node-label-shadow;
-  }
-}
-
-@mixin active($active) {
-  @if ($active) {
-    opacity: var(--active-opacity);
-  } @else {
-    opacity: var(--inactive-opacity);
-  }
-}
-
-@mixin focused-border {
-  rect {
-    stroke: $selection-accent-color;
-    stroke-width: $active-stroke-width;
-  }
-}
-
-@mixin node {
-  svg > g .nodes g {
-    @content
-  }
-}
-
-@mixin link {
-  svg > g .links path {
-    @content
-  }
-}
-// endregion
-
-// region Behaviours
-@mixin focused {
-  @include node {
-    &[focused="true"] {
-      foreignObject div {
-        // allow for whole label to be visible
-        max-width: fit-content;
-        // blink background when focused
-        @include search-blink("background-color");
-      }
-    }
-  }
-  @include link {
-    &[focused="true"] {
-      fill: $search-accent-color;
-      @include search-blink("fill");
-    }
-  }
-}
-
-@mixin highlighted {
-  @include node {
-    &[highlighted="false"] {
-      // fade away other nodes
-      @include active($active: false);
-    }
-  }
-  @include link {
-  }
-}
-
-@mixin transitively-selected {
-  @include node {
-    &[transitively-selected="false"] {
-      // fade away other nodes
-      @include active($active: false);
-    }
-    &[transitively-selected="true"] {
-      // mark nodes to not fade away
-      @include active($active: true);
-    }
-  }
-  @include link {
-    &[transitively-selected="false"] {
-      @include active($active: false);
-    }
-    &[transitively-selected="true"] {
-      @include active($active: true);
-    }
-  }
-}
-
-@mixin selected {
-  @include node {
-    &[selected="false"] {
-      // fade away other nodes
-      @include active($active: false);
-    }
-    &[selected="true"] {
-      // mark nodes to not fade away
-      @include active($active: true);
-    }
-    &[selected="true"] {
-      // add focus border
-      @include focused-border;
-      // render label shadow
-      @include label-shadow;
-    }
-    &[selected="true"] {
-      // enlarge text on interaction
-      font-size: 2em;
-    }
-    &[selected="true"] {
-      foreignObject div {
-        // allow for whole label to be visible
-        max-width: fit-content;
-      }
-    }
-  }
-  @include link {
-    &[selected="true"] {
-      stroke: $selection-accent-color;
-      stroke-width: $active-stroke-width;
-    }
-    &[selected="false"] {
-      @include active($active: false);
-    }
-    &[selected="true"] {
-      stroke: $selection-accent-color;
-      stroke-width: $active-stroke-width;
-    }
-  }
-}
-
-@mixin searched {
-  @include node {
-    &[searched="true"] {
-      // render label shadow
-      @include label-shadow;
-
-      foreignObject div {
-        // render red border on searched labels
-        box-shadow: 0 0 0 $active-stroke-width $search-accent-color;
-      }
-    }
-  }
-  @include link {
-    &[searched="true"] {
-      stroke: $search-accent-color;
-    }
-  }
-}
-
-@mixin hover {
-  @include node {
-    &:hover {
-      // mark nodes to not fade away
-      @include active($active: true);
-    }
-
-    &:hover {
-      // add focus border
-      @include focused;
-      // render label shadow
-      @include label-shadow;
-    }
-
-    &:hover {
-      // enlarge text on interaction
-      font-size: 2em;
-    }
-
-    &:hover {
-      foreignObject div {
-        // allow for whole label to be visible
-        max-width: fit-content;
-      }
-    }
-  }
-  @include link {
-    &:hover {
-      stroke: $selection-accent-color;
-      stroke-width: $active-stroke-width;
-    }
-
-    &:hover {
-      @include active($active: true);
-    }
-  }
-}
-// endregion
-
-// region Components
 @mixin advanced-panel {
+
   form {
     text-align: left;
 
@@ -367,6 +167,40 @@ $trasition: 100ms;
   }
 }
 
+@mixin search-blink($what) {
+  @keyframes searchBlink#{$what} {
+    50% {
+      #{$what}: $search-accent-color;
+    }
+  }
+  animation-duration: 750ms;
+  animation-name: searchBlink#{$what};
+}
+
+@mixin labelShadow {
+  foreignObject div {
+    box-shadow: 0 0 $active-stroke-width $active-stroke-width $node-label-shadow;
+    background-color: $node-label-shadow;
+  }
+}
+
+
+@mixin active($active) {
+  @if ($active) {
+    opacity: var(--active-opacity);
+  } @else {
+    opacity: var(--inactive-opacity);
+  }
+}
+
+
+@mixin focused {
+  rect {
+    stroke: $selection-accent-color;
+    stroke-width: $active-stroke-width;
+  }
+}
+
 @mixin sankey {
   display: block;
   height: 100%;
@@ -425,8 +259,63 @@ $trasition: 100ms;
               transform: translate(#{$node-width / 2 + $label-margin}, -50%);
             }
           }
+
+
+          &[highlighted="false"],
+          &[transitively-selected="false"],
+          &[selected="false"] {
+            // fade away other nodes
+            @include active($active: false);
+          }
+
+          &:hover,
+          &[selected="true"],
+          &[transitively-selected="true"] {
+            // mark nodes to not fade away
+            @include active($active: true);
+          }
+
+          &:hover,
+          &[selected="true"] {
+            // add focus border
+            @include focused;
+            // render label shadow
+            @include labelShadow;
+          }
+
+          &[searched="true"] {
+            // render label shadow
+            @include labelShadow;
+
+            foreignObject div {
+              // render red border on searched labels
+              box-shadow: 0 0 0 $active-stroke-width $search-accent-color;
+            }
+          }
+
+          &:hover,
+          &[focused="true"],
+          &[selected="true"] {
+            // enlarge text on interaction
+            font-size: 2em;
+          }
+
+          &:hover,
+          &[focused="true"],
+          &[selected="true"] {
+            foreignObject div {
+              // allow for whole label to be visible
+              max-width: fit-content;
+            }
+          }
+
+          &[focused="true"] foreignObject div {
+            // blink background when focused
+            @include search-blink("background-color");
+          }
         }
       }
+
       .links path {
         //transition: opacity $trasition, fill $trasition;
 
@@ -438,17 +327,33 @@ $trasition: 100ms;
           // Try preventing drawing line like this -=-=-=-=-=-=-
           fill: transparent;
         }
+
+        &[selected="false"],
+        &[transitively-selected="false"] {
+          @include active($active: false);
+        }
+
+        &:hover,
+        &[selected="true"] {
+          stroke: $selection-accent-color;
+          stroke-width: $active-stroke-width;
+        }
+
+        &:hover,
+        &[selected="true"],
+        &[transitively-selected="true"] {
+          @include active($active: true);
+        }
+
+        &[searched="true"] {
+          stroke: $search-accent-color;
+        }
+
+        &[focused="true"] {
+          fill: $search-accent-color;
+          @include search-blink("fill");
+        }
       }
     }
   }
-
-  @include highlighted;
-  @include transitively-selected;
-  @include selected;
-  @include searched;
-  @include hover;
-  @content;
-  @include searched;
-  @include focused;
 }
-// endregion
