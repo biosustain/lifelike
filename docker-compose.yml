@@ -1,168 +1,20 @@
-version: "3.9"
-
-# ----------------------------------------
-# Appserver template anchor
-# ----------------------------------------
-x-appserver: &appserver
-  build: ./appserver
-  restart: unless-stopped
-  environment:
-    # Flask
-    - FLASK_ENV=development
-
-    # Postgres
-    - POSTGRES_HOST=postgres
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_DB=postgres
-
-    # Arango
-    - ARANGO_HOST=http://arangodb:8529
-    - ARANGO_USERNAME=***ARANGO_USERNAME***
-    - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
-
-    # Neo4j
-    - NEO4J_HOST=neo4j
-    - NEO4J_AUTH=neo4j/password
-
-    # Redis
-    - REDIS_HOST=redis
-
-    # Statistical Enrichment
-    - STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5010
-
-    # PDF Parser
-    - PDFPARSER_URL=http://pdfparser:7600
-
-    # ElasticSearch
-    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-  volumes:
-    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+version: '3.8'
 
 services:
-  # ----------------------------------------
-  # Internal services
-  # ----------------------------------------
-  appserver:
-    <<: *appserver
-    profiles:
-      - app
-    ports:
-      - 5000:5000
+    appserver:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
 
-  worker:
-    <<: *appserver
-    profiles:
-      - app
-    command: rq worker -c rq_config --with-scheduler
+    webserver:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
 
-  webserver:
-    build: ./client
-    restart: unless-stopped
-    profiles:
-      - app
-    ports:
-      - 8080:80
+    pdfparser:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-pdfparser:latest
 
-  statistical-enrichment:
-    build: ./statistical-enrichment
-    restart: unless-stopped
-    profiles:
-      - app
-    ports:
-      - 5010:5010
-    environment:
-      # Flask
-      - FLASK_APP_CONFIG=Development
-      - FLASK_DEBUG=1
-      - FLASK_ENV=development
+    filebeat:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
 
-      # Neo4j
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+    cache-invalidator:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
 
-      # Redis
-      - REDIS_HOST=redis
-
-  cache-invalidator:
-    build: ./cache-invalidator
-    restart: unless-stopped
-    profiles:
-      - app
-    environment:
-      # Flask
-      - LOG_LEVEL=debug
-
-      # Neo4j
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
-
-      # Redis
-      - REDIS_HOST=redis
-
-  pdfparser:
-    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
-    restart: unless-stopped
-    profiles:
-      - service
-    tty: true
-    ports:
-      - 7600:7600
-
-  postgres:
-    image: postgres:14
-    restart: unless-stopped
-    profiles:
-      - service
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_PASSWORD=postgres
-
-  arangodb:
-    build:
-      # Note that this Dockerfile simply adds a user directory and installs the helper scripts into it, and then executes the default arango
-      # entrypoint as normal.
-      context: ./arangodb
-      dockerfile: Dockerfile
-    container_name: arangodb
-    environment:
-      ARANGO_ROOT_PASSWORD: password
-      LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***
-    ports:
-      - 8529:8529
-    volumes:
-      - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
-      - ./arangodb/data:/var/lib/arangodb3
-      - ./arangodb/apps:/var/lib/arangodb3-apps
-
-  neo4j:
-    image: neo4j:4.4-community
-    restart: unless-stopped
-    profiles: [services]
-    ports:
-      - 7474:7474
-      - 7687:7687
-    environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
-
-  elasticsearch:
-    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch
-    profiles: [services]
-    environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - http.max_content_length=200mb
-    ports:
-      - 9200:9200
-
-  redis:
-    image: redis:7-alpine
-    profiles: [services]
-    ports:
-      - 6379:6379
-
-volumes:
-  lmdb:
+    statistical-enrichment:
+        image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
