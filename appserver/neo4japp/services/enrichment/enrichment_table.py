@@ -291,108 +291,115 @@ def match_ncbi_genes_query() -> str:
     synonyms. So it is possible to send duplicate internal node ids to
     a later query."""
     return """
-        FOR s IN synonym
-            FILTER s.name IN @gene_names
-            FOR g IN INBOUND s has_synonym
-                FILTER 'Gene' IN g.labels
-                FOR t IN OUTBOUND g has_taxonomy
-                    FILTER t.eid == @organism
-                    RETURN {
-                        synonym: s.name,
-                        syn_arango_id: s._id,
-                        gene_arango_id: g._id,
-                        gene_id: g.eid,
-                        gene_name: g.name,
-                        gene_full_name: g.full_name
-                    }
+        FOR name IN @gene_names
+            FOR s IN synonym
+                FILTER s.name == name
+                FOR g IN INBOUND s has_synonym
+                    FILTER 'Gene' IN g.labels
+                    FOR t IN OUTBOUND g has_taxonomy
+                        FILTER t.eid == @organism
+                        RETURN {
+                            synonym: s.name,
+                            syn_arango_id: s._id,
+                            gene_arango_id: g._id,
+                            gene_id: g.eid,
+                            gene_name: g.name,
+                            gene_full_name: g.full_name
+                        }
     """
 
 
 def get_uniprot_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            FOR x IN INBOUND n has_gene OPTIONS { vertexCollections:'uniprot' }
-                RETURN {
-                    doc_id: n._id,
-                    function: x.function,
-                    uniprot_id: x.eid
-                }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FOR x IN INBOUND n has_gene OPTIONS { vertexCollections:'uniprot' }
+                    RETURN {
+                        doc_id: n._id,
+                        function: x.function,
+                        uniprot_id: x.eid
+                    }
     """
 
 
 def get_string_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            FILTER 'Gene' IN n.labels
-            FOR x  IN INBOUND n has_gene  OPTIONS { vertexCollections: ["string"] }
-                RETURN {
-                    doc_id: n._id,
-                    string_id: x.eid,
-                    annotation: x.annotation,
-                }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x  IN INBOUND n has_gene  OPTIONS { vertexCollections: ["string"] }
+                    RETURN {
+                        doc_id: n._id,
+                        string_id: x.eid,
+                        annotation: x.annotation,
+                    }
     """
 
 
 def get_go_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            LET go_terms = (
-                FOR g IN OUTBOUND n go_link OPTIONS { vertexCollections:'go' }
-                RETURN g.name
-            )
-            FILTER length(go_terms) > 0
-            RETURN {
-                doc_id: n._id,
-                go_terms: go_terms
-            }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                LET go_terms = (
+                    FOR g IN OUTBOUND n go_link OPTIONS { vertexCollections:'go' }
+                    RETURN g.name
+                )
+                FILTER length(go_terms) > 0
+                RETURN {
+                    doc_id: n._id,
+                    go_terms: go_terms
+                }
     """
 
 
 def get_biocyc_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            FOR b IN INBOUND n is OPTIONS { vertexCollections:'biocyc' }
-                RETURN {
-                    doc_id: n._id,
-                    pathways: b.pathways,
-                    biocyc_id: b.biocyc_id
-                }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FOR b IN INBOUND n is OPTIONS { vertexCollections:'biocyc' }
+                    RETURN {
+                        doc_id: n._id,
+                        pathways: b.pathways,
+                        biocyc_id: b.biocyc_id
+                    }
     """
 
 
 def get_regulon_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            FILTER 'Gene' IN n.labels
-            FOR x IN INBOUND n is OPTIONS { vertexCollections: ["regulondb"] }
-                RETURN {
-                    doc_id: n._id,
-                    node: x,
-                    regulondb_id: x.regulondb_id
-                }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x IN INBOUND n is OPTIONS { vertexCollections: ["regulondb"] }
+                    RETURN {
+                        doc_id: n._id,
+                        node: x,
+                        regulondb_id: x.regulondb_id
+                    }
     """
 
 
 def get_kegg_genes_query() -> str:
     return """
-        FOR n IN ncbi
-            FILTER n._id IN @ncbi_gene_ids
-            FILTER 'Gene' IN n.labels
-            FOR x IN INBOUND n is OPTIONS { vertexCollections: ["kegg"] }
-                FOR gnm IN OUTBOUND x has_ko
-                    LET pathway = (
-                        FOR pth IN OUTBOUND gnm in_pathway
-                        RETURN pth.name
-                    )
-                    FILTER length(pathway)  > 0
-                    RETURN {
-                        doc_id: n._id,
-                        kegg_id: x.eid,
-                        pathway: pathway
-                    }
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x IN INBOUND n is OPTIONS { vertexCollections: ["kegg"] }
+                    FOR gnm IN OUTBOUND x has_ko
+                        LET pathway = (
+                            FOR pth IN OUTBOUND gnm in_pathway
+                            RETURN pth.name
+                        )
+                        FILTER length(pathway)  > 0
+                        RETURN {
+                            doc_id: n._id,
+                            kegg_id: x.eid,
+                            pathway: pathway
+                        }
     """
