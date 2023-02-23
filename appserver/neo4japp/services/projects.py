@@ -467,6 +467,16 @@ class ProjectsService(RDBMSBaseDao):
                     user,
                     file_hash_id_map
                 )
+            else:
+                self._add_generic_file(
+                    master_file,
+                    master_file.content_id,
+                    new_project,
+                    new_folder_stack[-1],
+                    user,
+                    file_hash_id_map,
+                    mime_type=master_file.mime_type
+                )
 
 
     def create_initial_project(self, user: AppUser):
