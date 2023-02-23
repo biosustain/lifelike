@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Sequence, Union
 from uuid import uuid4
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_BIOC,
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     FILE_MIME_TYPE_GRAPH,
@@ -307,6 +308,26 @@ class ProjectsService(RDBMSBaseDao):
             mime_type=FILE_MIME_TYPE_GRAPH,
         )
 
+    def _add_bioc(
+        self,
+        master_bioc: Files,
+        project: Projects,
+        parent_id: int,
+        user: AppUser,
+        hash_id_map: Dict[str, str]
+    ):
+        self._add_generic_file(
+            master_bioc,
+            master_bioc.content_id,
+            project,
+            parent_id,
+            user,
+            hash_id_map,
+            mime_type=FILE_MIME_TYPE_BIOC,
+            # Very important that DOI is copied over!
+            doi=master_bioc.doi
+        )
+
     def _add_folder(
         self,
         master_folder: Files,
@@ -438,6 +459,15 @@ class ProjectsService(RDBMSBaseDao):
                     user,
                     file_hash_id_map
                 )
+            elif master_file.mime_type == FILE_MIME_TYPE_BIOC:
+                self._add_bioc(
+                    master_file,
+                    new_project,
+                    new_folder_stack[-1],
+                    user,
+                    file_hash_id_map
+                )
+
 
     def create_initial_project(self, user: AppUser):
         """
