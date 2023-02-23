@@ -28,7 +28,6 @@ from neo4japp.models.files import (
     FileContent,
     FileAnnotationsVersion,
 )
-from neo4japp.models.files_queries import get_descendants_of_file_query
 from neo4japp.models.projects import projects_collaborator_role, Projects
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
@@ -154,102 +153,79 @@ class ProjectsService(RDBMSBaseDao):
         )
         self.session.commit()
 
-    def _add_pdf(
+    def _add_generic_file(
         self,
-        master_pdf: Files,
+        master_file: Files,
+        master_file_content_id: int,
         project: Projects,
         parent_id: int,
         user: AppUser,
-        hash_id_map: Dict[str, str]
-    ):
-        new_pdf = Files(
-            hash_id=hash_id_map[master_pdf.hash_id],
-            filename=master_pdf.filename,
+        hash_id_map: Dict[str, str],
+        **kwargs
+    ) -> Files:
+        new_file = Files(
+            hash_id=hash_id_map[master_file.hash_id],
+            filename=master_file.filename,
             parent_id=parent_id,
-            mime_type=FILE_MIME_TYPE_PDF,
-            content_id=master_pdf.content_id,
+            content_id=master_file_content_id,
             user_id=user.id,
             public=False,
             pinned=False,
-            path=f'/{project.name}/{master_pdf.filename}',
-            description=master_pdf.description,
-            annotations=master_pdf.annotations,
-            annotations_date=datetime.now(TIMEZONE),
-            annotation_configs=master_pdf.annotation_configs,
-            organism_name=master_pdf.organism_name,
-            organism_synonym=master_pdf.organism_synonym,
-            organism_taxonomy_id=master_pdf.organism_taxonomy_id,
+            path=f'/{project.name}/{master_file.filename}',
+            description=master_file.description,
+            # First we add the properties shared by all files, then leave room for any file-type
+            # specific properties
+            **kwargs
         )
-        db.session.add(new_pdf)
+        db.session.add(new_file)
         db.session.flush()
         current_app.logger.info(
-            f'Initial PDF with id {new_pdf.id} flushed to pending transaction. ' +
+            f'Initial file with id {new_file.id} flushed to pending transaction. ' +
             f'User: {user.id}.'
         )
+        return new_file
 
-        new_pdf_file_annotations_version = FileAnnotationsVersion(
-            file_id=new_pdf.id,
+    def _add_file_annotations_version(self, file: Files, user: AppUser):
+        new_file_annotations_version = FileAnnotationsVersion(
+            file_id=file.id,
             hash_id=str(uuid4()),
             cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
             custom_annotations=[],
             excluded_annotations=[],
             user_id=user.id
         )
-        db.session.add(new_pdf_file_annotations_version)
+        db.session.add(new_file_annotations_version)
         db.session.flush()
         current_app.logger.info(
-            f'PDF annotations version with id {new_pdf_file_annotations_version.id} flushed to ' +
+            f'Annotations version with id {new_file_annotations_version.id} flushed to ' +
             f'pending transaction. User: {user.id}.'
         )
 
-    def _add_enrichment(
+    def _add_annotatable_file(
         self,
-        master_et: Files,
+        master_file: Files,
         project: Projects,
         parent_id: int,
         user: AppUser,
-        hash_id_map: Dict[str, str]
+        hash_id_map: Dict[str, str],
+        mime_type: str
     ):
-        new_et_file = Files(
-            hash_id=hash_id_map[master_et.hash_id],
-            filename=master_et.filename,
-            parent_id=parent_id,
-            mime_type=FILE_MIME_TYPE_ENRICHMENT_TABLE,
-            content_id=master_et.content_id,
-            user_id=user.id,
-            public=False,
-            pinned=False,
-            path=f'/{project.name}/{master_et.filename}',
-            description=master_et.description,
-            annotations=master_et.annotations,
-            enrichment_annotations=master_et.enrichment_annotations,
+        new_file = self._add_generic_file(
+            master_file,
+            master_file.content_id,
+            project,
+            parent_id,
+            user,
+            hash_id_map,
+            mime_type=mime_type,
+            annotations=master_file.annotations,
             annotations_date=datetime.now(TIMEZONE),
-            annotation_configs=master_et.annotation_configs,
-            organism_name=master_et.organism_name,
-            organism_synonym=master_et.organism_synonym,
-            organism_taxonomy_id=master_et.organism_taxonomy_id,
+            annotation_configs=master_file.annotation_configs,
+            organism_name=master_file.organism_name,
+            organism_synonym=master_file.organism_synonym,
+            organism_taxonomy_id=master_file.organism_taxonomy_id,
         )
-        db.session.add(new_et_file)
-        db.session.flush()
-        current_app.logger.info(
-            f'Initial enrichment table with id {new_et_file.id} flushed to pending transaction. ' +
-            f'User: {user.id}.'
-        )
-
-        new_et_file_annotations_version = FileAnnotationsVersion(
-            file_id=new_et_file.id,
-            hash_id=str(uuid4()),
-            cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-            custom_annotations=[],
-            excluded_annotations=[],
-            user_id=user.id
-        )
-        db.session.add(new_et_file_annotations_version)
-        db.session.flush()
-        current_app.logger.info(
-            f'Enrichment annotations version with id {new_et_file_annotations_version.id} ' +
-            f'flushed to pending transaction. User: {user.id}.'
-        )
+        self._add_file_annotations_version(new_file, user)
 
     def _add_map(
         self,
@@ -303,22 +279,14 @@ class ProjectsService(RDBMSBaseDao):
             update_map_links
         )
         map_content_id = FileContent().get_or_create(updated_map_content)
-        new_map_file = Files(
-            hash_id=hash_id_map[master_map.hash_id],
-            filename=master_map.filename,
-            parent_id=parent_id,
+        self._add_generic_file(
+            master_map,
+            map_content_id,
+            project,
+            parent_id,
+            user,
+            hash_id_map,
             mime_type=FILE_MIME_TYPE_MAP,
-            content_id=map_content_id,
-            user_id=user.id,
-            public=False,
-            pinned=False,
-            path=f'/{project.name}/{master_map.filename}',
-        )
-        db.session.add(new_map_file)
-        db.session.flush()
-        current_app.logger.info(
-            f'Initial map with id {new_map_file.id} flushed to pending transaction. ' +
-            f'User: {user.id}.'
         )
 
     def _add_sankey(
@@ -329,23 +297,14 @@ class ProjectsService(RDBMSBaseDao):
         user: AppUser,
         hash_id_map: Dict[str, str]
     ):
-        new_sankey_file = Files(
-            hash_id=hash_id_map[master_sankey.hash_id],
-            filename=master_sankey.filename,
-            parent_id=parent_id,
+        self._add_generic_file(
+            master_sankey,
+            master_sankey.content_id,
+            project,
+            parent_id,
+            user,
+            hash_id_map,
             mime_type=FILE_MIME_TYPE_GRAPH,
-            content_id=master_sankey.content_id,
-            user_id=user.id,
-            public=False,
-            pinned=False,
-            path=f'/{project.name}/{master_sankey.filename}',
-            description=master_sankey.description,
-        )
-        db.session.add(new_sankey_file)
-        db.session.flush()
-        current_app.logger.info(
-            f'Initial sankey with id {new_sankey_file.id} flushed to pending transaction. ' +
-            f'User: {user.id}.'
         )
 
     def _add_folder(
@@ -356,22 +315,14 @@ class ProjectsService(RDBMSBaseDao):
         user: AppUser,
         hash_id_map: Dict[str, str]
     ) -> int:
-        new_folder = Files(
-            hash_id=hash_id_map[master_folder.hash_id],
-            filename=master_folder.filename,
-            parent_id=parent_id,
+        new_folder = self._add_generic_file(
+            master_folder,
+            None,
+            project,
+            parent_id,
+            user,
+            hash_id_map,
             mime_type=FILE_MIME_TYPE_DIRECTORY,
-            content_id=None,
-            user_id=user.id,
-            public=False,
-            pinned=False,
-            path=f'/{project.name}/{master_folder.filename}',
-        )
-        db.session.add(new_folder)
-        db.session.flush()
-        current_app.logger.info(
-            f'Folder with id {new_folder.id} flushed to pending transaction. ' +
-            f'User: {user.id}.'
         )
         return new_folder.id
 
@@ -404,33 +355,26 @@ class ProjectsService(RDBMSBaseDao):
                     f'project name: {project.name}. See attached exception info for details.',
                     exc_info=e
                 )
-        else:
-            return project
+                # If we couldn't create and add the project, then return None
+                project = None
         finally:
-            return None
+            return project
 
     def _get_all_master_project_files(self) -> List[Files]:
-        master_initial_root_folder_id = db.session.query(
-            Files.id
+        master_initial_root_folder = db.session.query(
+            Files
         ).join(
             Projects,
             and_(
                 Projects.root_id == Files.id,
                 Projects.name == MASTER_INITIAL_PROJECT_NAME
             )
-        ).scalar()
-
-        all_master_project_file_ids = [
-            result
-            for result, in db.session.execute(
-                get_descendants_of_file_query(master_initial_root_folder_id)
-            )
-        ]
+        ).one()
 
         return db.session.query(
             Files
         ).filter(
-            Files.id.in_([master_initial_root_folder_id] + all_master_project_file_ids)
+            Files.path.startswith(master_initial_root_folder.path)
         ).order_by(
             asc(Files.path)
         ).all()
@@ -477,21 +421,14 @@ class ProjectsService(RDBMSBaseDao):
                     user,
                     file_hash_id_map
                 )
-            elif master_file.mime_type == FILE_MIME_TYPE_PDF:
-                self._add_pdf(
+            elif master_file.mime_type in [FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]:
+                self._add_annotatable_file(
                     master_file,
                     new_project,
                     new_folder_stack[-1],
                     user,
-                    file_hash_id_map
-                )
-            elif master_file.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE:
-                self._add_enrichment(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map
+                    file_hash_id_map,
+                    master_file.mime_type
                 )
             elif master_file.mime_type == FILE_MIME_TYPE_GRAPH:
                 self._add_sankey(
