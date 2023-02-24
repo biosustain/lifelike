@@ -5,8 +5,8 @@ Revises: 647dad6e2adf
 Create Date: 2023-02-09 23:40:44.192896
 
 """
-from alembic import context
-from alembic import op
+import uuid
+from alembic import context, op
 from sqlalchemy import (
     select,
     Boolean,
@@ -16,7 +16,6 @@ from sqlalchemy import (
     String,
     Table,
 )
-import uuid
 
 # revision identifiers, used by Alembic.
 revision = '3d1cdf7b9d1b'
@@ -83,14 +82,14 @@ def data_upgrades():
         new_superuser_id = conn.execute(
             t_appuser.insert().values(
                 hash_id=str(uuid.uuid4()),
-                username='superuser',
-                email='superuser@lifelike.bio',
-                first_name='super',
-                last_name='user',
+                username='lifelike-bot',
+                email='lifelike.bot@lifelike.bio',
+                first_name='lifelike',
+                last_name='bot',
                 password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
                 failed_login_count=0,
                 forced_password_reset=False,
-                subject='superuser@lifelike.bio'
+                subject='lifelike.bot@lifelike.bio'
             )
         ).inserted_primary_key[0]
 
@@ -98,7 +97,7 @@ def data_upgrades():
             select([
                 t_app_role.c.id,
             ]).where(
-                t_app_role.c.name.in_(['private-data-access', 'admin', 'user']
+                t_app_role.c.name.in_(['user']
             ))
         ).fetchall()
 

@@ -1,42 +1,43 @@
-from flask import Blueprint, g, jsonify, current_app
-from flask.views import MethodView
-from pathlib import Path
 import random
 import re
 import secrets
+import string
+
+from flask import Blueprint, current_app, g, jsonify
+from flask.views import MethodView
+from pathlib import Path
 from sendgrid.helpers.mail import Mail
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import select
-import string
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import login_exempt
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
-    MESSAGE_SENDER_IDENTITY,
-    RESET_PASS_MAIL_CONTENT,
-    MIN_TEMP_PASS_LENGTH,
     MAX_TEMP_PASS_LENGTH,
-    RESET_PASSWORD_SYMBOLS,
+    MESSAGE_SENDER_IDENTITY,
+    MIN_TEMP_PASS_LENGTH,
+    RESET_PASS_MAIL_CONTENT,
     RESET_PASSWORD_ALPHABET,
-    SEND_GRID_API_CLIENT,
     RESET_PASSWORD_EMAIL_TITLE,
-    LogEventType,
+    RESET_PASSWORD_SYMBOLS,
+    SEND_GRID_API_CLIENT,
+    LogEventType
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import NotAuthorized, RecordNotFound, ServerException
-from neo4japp.models.auth import user_role, AppUser, AppRole
+from neo4japp.models.auth import AppRole, AppUser, user_role
 from neo4japp.schemas.account import (
+    UserChangePasswordSchema,
+    UserCreateSchema,
     UserListSchema,
+    UserProfileListSchema,
     UserProfileSchema,
     UserSearchSchema,
-    UserProfileListSchema,
-    UserCreateSchema,
-    UserUpdateSchema,
-    UserChangePasswordSchema
+    UserUpdateSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.logger import EventLog, UserEventLog
