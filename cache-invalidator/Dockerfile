@@ -1,6 +1,7 @@
 FROM python:3.8-slim-buster
 
-# Install pipenv
+# Install dependencies
+RUN apt-get update && apt-get install -y curl && apt-get clean
 RUN pip install pipenv
 
 WORKDIR /app

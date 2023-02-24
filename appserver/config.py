@@ -16,17 +16,11 @@ class Base():
     JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', 'account')
     JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
 
-    POSTGRES_HOST = os.getenv('POSTGRES_HOST')
-    POSTGRES_PORT = os.getenv('POSTGRES_PORT')
-    POSTGRES_USER = os.getenv('POSTGRES_USER')
-    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-    POSTGRES_DB = os.getenv('POSTGRES_DB')
-
-    NEO4J_HOST = os.getenv('NEO4J_HOST')
-    NEO4J_SCHEME = os.getenv('NEO4J_SCHEME')
-    NEO4J_AUTH = os.getenv('NEO4J_AUTH')
-    NEO4J_PORT = os.getenv('NEO4J_PORT')
-    NEO4J_DATABASE = os.getenv('NEO4J_DATABASE')
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+    POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'postgres')
+    POSTGRES_DB = os.getenv('POSTGRES_DB', 'postgres')
 
     ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
     ARANGO_USERNAME = os.getenv('ARANGO_USERNAME', '***ARANGO_USERNAME***')

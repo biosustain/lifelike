@@ -1,7 +1,7 @@
 FROM fedora:32 as base
 
 # Install dependencies
-RUN dnf install graphviz python-pip python3-devel -y \
+RUN dnf install graphviz python-pip python3-devel postgresql net-tools -y \
     && dnf groupinstall 'Development Tools' -y \
     && dnf clean packages
 RUN pip install pipenv

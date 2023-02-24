@@ -9,9 +9,11 @@ x-appserver: &appserver
   environment:
     # Flask
     - FLASK_ENV=development
+    - FLASK_APP_CONFIG=Development
 
     # Postgres
     - POSTGRES_HOST=postgres
+    - POSTGRES_PORT=5432
     - POSTGRES_USER=postgres
     - POSTGRES_PASSWORD=postgres
     - POSTGRES_DB=postgres
@@ -22,12 +24,12 @@ x-appserver: &appserver
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***
 
-    # Neo4j
-    - NEO4J_HOST=neo4j
-    - NEO4J_AUTH=neo4j/password
-
     # Redis
     - REDIS_HOST=redis
+    - REDIS_PORT=6379
+    - REDIS_USERNAME=default
+    - REDIS_PASSWORD=password
+    - REDIS_SSL=false
 
     # Statistical Enrichment
     - STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5010
@@ -37,8 +39,6 @@ x-appserver: &appserver
 
     # ElasticSearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-  volumes:
-    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
 
 services:
   # ----------------------------------------
@@ -46,30 +46,27 @@ services:
   # ----------------------------------------
   appserver:
     <<: *appserver
-    profiles:
-      - app
+    profiles: [app]
     ports:
       - 5000:5000
 
   worker:
     <<: *appserver
-    profiles:
-      - app
+    profiles: [app]
     command: rq worker -c rq_config --with-scheduler
 
   webserver:
     build: ./client
     restart: unless-stopped
-    profiles:
-      - app
+    profiles: [app]
     ports:
       - 8080:80
+      - 4200:4200
 
   statistical-enrichment:
     build: ./statistical-enrichment
     restart: unless-stopped
-    profiles:
-      - app
+    profiles: [app]
     ports:
       - 5010:5010
     environment:
@@ -78,34 +75,44 @@ services:
       - FLASK_DEBUG=1
       - FLASK_ENV=development
 
-      # Neo4j
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
 
       # Redis
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=default
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
 
   cache-invalidator:
     build: ./cache-invalidator
     restart: unless-stopped
-    profiles:
-      - app
+    profiles: [app]
     environment:
       # Flask
       - LOG_LEVEL=debug
 
-      # Neo4j
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
 
       # Redis
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=default
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
 
   pdfparser:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-pdfparser
     restart: unless-stopped
-    profiles:
-      - service
+    profiles: [services]
     tty: true
     ports:
       - 7600:7600
@@ -113,8 +120,7 @@ services:
   postgres:
     image: postgres:14
     restart: unless-stopped
-    profiles:
-      - service
+    profiles: [services]
     ports:
       - 5432:5432
     environment:
@@ -126,7 +132,7 @@ services:
       # entrypoint as normal.
       context: ./arangodb
       dockerfile: Dockerfile
-    container_name: arangodb
+    profiles: [services]
     environment:
       ARANGO_ROOT_PASSWORD: password
       LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***
@@ -136,17 +142,6 @@ services:
       - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
       - ./arangodb/data:/var/lib/arangodb3
       - ./arangodb/apps:/var/lib/arangodb3-apps
-
-  neo4j:
-    image: neo4j:4.4-community
-    restart: unless-stopped
-    profiles: [services]
-    ports:
-      - 7474:7474
-      - 7687:7687
-    environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
 
   elasticsearch:
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch
@@ -163,6 +158,3 @@ services:
     profiles: [services]
     ports:
       - 6379:6379
-
-volumes:
-  lmdb:
