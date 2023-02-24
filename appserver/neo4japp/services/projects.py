@@ -290,9 +290,8 @@ class ProjectsService(RDBMSBaseDao):
                     exc_info=e
                 )
                 # If we couldn't create and add the project, then return None
-                project = None
-        finally:
-            return project
+                return None
+        return project
 
     def _get_all_master_project_files(self) -> List[Files]:
         master_initial_***ARANGO_USERNAME***_folder = db.session.query(
