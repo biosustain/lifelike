@@ -16,6 +16,12 @@ x-appserver: &appserver
     - POSTGRES_PASSWORD=postgres
     - POSTGRES_DB=postgres
 
+    # Arango
+    - ARANGO_HOST=http://arangodb:8529
+    - ARANGO_USERNAME=***ARANGO_USERNAME***
+    - ARANGO_PASSWORD=password
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+
     # Neo4j
     - NEO4J_HOST=neo4j
     - NEO4J_AUTH=neo4j/password
