@@ -11,6 +11,7 @@ RUN pipenv install --deploy --dev --system
 
 # Copy application file
 COPY main.py ./
+COPY bin ./bin
 
 # Set non-***ARANGO_USERNAME*** runtime user
 RUN groupadd -g 999 appuser && \
