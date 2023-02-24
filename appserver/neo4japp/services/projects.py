@@ -1,7 +1,7 @@
-from datetime import datetime
+import re
+
 from flask import current_app
 from io import BytesIO
-import re
 from sqlalchemy import and_, asc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
@@ -10,26 +10,16 @@ from typing import Dict, List, Optional, Sequence, Union
 from uuid import uuid4
 
 from neo4japp.constants import (
-    FILE_MIME_TYPE_BIOC,
     FILE_MIME_TYPE_DIRECTORY,
-    FILE_MIME_TYPE_ENRICHMENT_TABLE,
-    FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_MAP,
-    FILE_MIME_TYPE_PDF,
-    MASTER_INITIAL_PROJECT_NAME,
-    TIMEZONE,
+    MASTER_INITIAL_PROJECT_NAME
 )
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.models.common import generate_hash_id
-from neo4japp.models.files import (
-    AnnotationChangeCause,
-    Files,
-    FileContent,
-    FileAnnotationsVersion,
-)
-from neo4japp.models.projects import projects_collaborator_role, Projects
+from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion, FileContent, Files
+from neo4japp.models.projects import Projects, projects_collaborator_role
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
 
@@ -157,26 +147,29 @@ class ProjectsService(RDBMSBaseDao):
     def _add_generic_file(
         self,
         master_file: Files,
-        master_file_content_id: int,
+        content_id: int,
         project: Projects,
         parent_id: int,
         user: AppUser,
         hash_id_map: Dict[str, str],
-        **kwargs
     ) -> Files:
         new_file = Files(
             hash_id=hash_id_map[master_file.hash_id],
             filename=master_file.filename,
             parent_id=parent_id,
-            content_id=master_file_content_id,
+            content_id=content_id,
             user_id=user.id,
             public=False,
             pinned=False,
-            path=f'/{project.name}/{master_file.filename}',
             description=master_file.description,
-            # First we add the properties shared by all files, then leave room for any file-type
-            # specific properties
-            **kwargs
+            mime_type=master_file.mime_type,
+            doi=master_file.doi,
+            annotations=master_file.annotations,
+            annotations_date=master_file.annotations_date,
+            annotation_configs=master_file.annotation_configs,
+            organism_name=master_file.organism_name,
+            organism_synonym=master_file.organism_synonym,
+            organism_taxonomy_id=master_file.organism_taxonomy_id,
         )
         db.session.add(new_file)
         db.session.flush()
@@ -184,6 +177,10 @@ class ProjectsService(RDBMSBaseDao):
             f'Initial file with id {new_file.id} flushed to pending transaction. ' +
             f'User: {user.id}.'
         )
+
+        if master_file.annotations:
+            self._add_file_annotations_version(new_file, user)
+
         return new_file
 
     def _add_file_annotations_version(self, file: Files, user: AppUser):
@@ -201,32 +198,6 @@ class ProjectsService(RDBMSBaseDao):
             f'Annotations version with id {new_file_annotations_version.id} flushed to ' +
             f'pending transaction. User: {user.id}.'
         )
-
-    def _add_annotatable_file(
-        self,
-        master_file: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str],
-        mime_type: str
-    ):
-        new_file = self._add_generic_file(
-            master_file,
-            master_file.content_id,
-            project,
-            parent_id,
-            user,
-            hash_id_map,
-            mime_type=mime_type,
-            annotations=master_file.annotations,
-            annotations_date=datetime.now(TIMEZONE),
-            annotation_configs=master_file.annotation_configs,
-            organism_name=master_file.organism_name,
-            organism_synonym=master_file.organism_synonym,
-            organism_taxonomy_id=master_file.organism_taxonomy_id,
-        )
-        self._add_file_annotations_version(new_file, user)
 
     def _add_map(
         self,
@@ -287,65 +258,7 @@ class ProjectsService(RDBMSBaseDao):
             parent_id,
             user,
             hash_id_map,
-            mime_type=FILE_MIME_TYPE_MAP,
         )
-
-    def _add_sankey(
-        self,
-        master_sankey: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str]
-    ):
-        self._add_generic_file(
-            master_sankey,
-            master_sankey.content_id,
-            project,
-            parent_id,
-            user,
-            hash_id_map,
-            mime_type=FILE_MIME_TYPE_GRAPH,
-        )
-
-    def _add_bioc(
-        self,
-        master_bioc: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str]
-    ):
-        self._add_generic_file(
-            master_bioc,
-            master_bioc.content_id,
-            project,
-            parent_id,
-            user,
-            hash_id_map,
-            mime_type=FILE_MIME_TYPE_BIOC,
-            # Very important that DOI is copied over!
-            doi=master_bioc.doi
-        )
-
-    def _add_folder(
-        self,
-        master_folder: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str]
-    ) -> int:
-        new_folder = self._add_generic_file(
-            master_folder,
-            None,
-            project,
-            parent_id,
-            user,
-            hash_id_map,
-            mime_type=FILE_MIME_TYPE_DIRECTORY,
-        )
-        return new_folder.id
 
     def _add_project(self, user: AppUser) -> Union[Projects, None]:
         project = Projects()
@@ -423,18 +336,7 @@ class ProjectsService(RDBMSBaseDao):
                 master_folder_stack = master_folder_stack[:cutoff + 1]  # Include the cutoff index
                 new_folder_stack = new_folder_stack[:cutoff + 1]
 
-            # If this file is a folder itself, then first create a copy and add it to the stacks
-            if master_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
-                new_folder = self._add_folder(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map
-                )
-                master_folder_stack.append(master_file.id)
-                new_folder_stack.append(new_folder)
-            elif master_file.mime_type == FILE_MIME_TYPE_MAP:
+            if master_file.mime_type == FILE_MIME_TYPE_MAP:
                 self._add_map(
                     master_file,
                     new_project,
@@ -442,42 +344,19 @@ class ProjectsService(RDBMSBaseDao):
                     user,
                     file_hash_id_map
                 )
-            elif master_file.mime_type in [FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]:
-                self._add_annotatable_file(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map,
-                    master_file.mime_type
-                )
-            elif master_file.mime_type == FILE_MIME_TYPE_GRAPH:
-                self._add_sankey(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map
-                )
-            elif master_file.mime_type == FILE_MIME_TYPE_BIOC:
-                self._add_bioc(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map
-                )
             else:
-                self._add_generic_file(
+                new_file = self._add_generic_file(
                     master_file,
                     master_file.content_id,
                     new_project,
                     new_folder_stack[-1],
                     user,
                     file_hash_id_map,
-                    mime_type=master_file.mime_type
                 )
-
+                # If this file is a folder, then add it to the stacks
+                if master_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
+                    master_folder_stack.append(master_file.id)
+                    new_folder_stack.append(new_file.id)
 
     def create_initial_project(self, user: AppUser):
         """
