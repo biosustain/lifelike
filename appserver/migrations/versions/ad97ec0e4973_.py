@@ -5,35 +5,27 @@ Revises: 3d1cdf7b9d1b
 Create Date: 2023-02-09 20:59:14.824234
 
 """
+import enum
+import fastjsonschema
+import hashlib
+import io
+import json
+import os
+import re
+import typing
+import uuid
+import zipfile
+
 from alembic import context, op
 from datetime import datetime, timezone
-import enum
 from flask_sqlalchemy import SQLAlchemy
-import hashlib
-import json
+from marshmallow import ValidationError
 from pathlib import Path
-import re
-from sqlalchemy import (
-    func,
-    select,
-    BINARY,
-    Boolean,
-    Column,
-    Enum,
-    Integer,
-    LargeBinary,
-    MetaData,
-    String,
-    Table,
-    Text
-)
+from sqlalchemy import (BINARY, Boolean, Column, Enum, Integer, LargeBinary, MetaData, String,
+                        Table, Text, func, select)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import TIMESTAMP
-import uuid
-
-from neo4japp.services.file_types.providers import MapTypeProvider
-
 
 # revision identifiers, used by Alembic.
 revision = 'ad97ec0e4973'
@@ -42,6 +34,12 @@ branch_labels = None
 depends_on = None
 
 db = SQLAlchemy()
+
+# reference to this directory
+directory = os.path.realpath(os.path.dirname(__file__))
+with open(os.path.join(directory, '../upgrade_data/map_v3.json'), 'r') as f:
+    validate_map = fastjsonschema.compile(json.load(f))
+
 
 INITIAL_PROJECT_FILES_PATH = Path('migrations/upgrade_data/initial_project')
 ET_ANNOTATIONS_FILENAME = 'et_annotations.json'
@@ -174,6 +172,48 @@ def downgrade():
     # "downgrade" the database. Changes to the database that we intend to
     # push to production should always be added to a NEW migration.
     # (i.e. "downgrade forward"!)
+
+
+# Copied from MapProvider
+def _update_map(params: dict, file_content, updater=lambda x: x):
+    try:
+        zip_file = zipfile.ZipFile(file_content)
+    except zipfile.BadZipfile:
+        raise ValidationError('Previous content of the map is corrupted!')
+
+    images_to_delete = params.get('deleted_images') or []
+    new_images = params.get('new_images') or []
+
+    new_content = io.BytesIO()
+    new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False)
+
+    # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
+    # to make sure that the graph.json is not copied as well.
+    images_to_delete.append('graph')
+    files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                        os.path.basename(hash_id).split('.')[0] not in images_to_delete]
+    for filename in files_to_copy:
+        new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
+
+    for image in new_images:
+        new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
+    if params.get('content_value') is not None:
+        new_graph = params['content_value'].read()
+    else:
+        graph_json = json.loads(zip_file.read('graph.json'))
+        new_graph_json = updater(graph_json)
+        validate_map(new_graph_json)
+        new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
+
+    # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata! If
+    # the timestamp is included, otherwise identical zips will have different checksums. This
+    # is true for the two `writestr` calls above as well.
+    new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
+    new_zip.close()
+
+    # Remember to always rewind when working with BufferedIOBase
+    new_content.seek(0)
+    return typing.cast(io.BufferedIOBase, new_content)
 
 
 def _create_file_content(conxn: Connection, master_file_path: str):
@@ -337,7 +377,7 @@ def _create_master_map(
         return map_json
 
     map_filename = map_metadata['filename']
-    updated_map_content = MapTypeProvider().update_map(
+    updated_map_content = _update_map(
         {},
         INITIAL_PROJECT_FILES_PATH / map_filename,
         update_map_links
