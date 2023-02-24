@@ -72,6 +72,12 @@ ENV OAUTH_ISSUER ""
 # Client ID of the OAuth application
 ENV OAUTH_CLIENT_ID ""
 
+# OAuth password change external link
+ENV OAUTH_PASSWORD_CHANGE_LINK = ""
+
+# Base URL for Keycloak auth API
+ENV KEYCLOAK_API_BASE_URL = ""
+
 # List of space delimited list of non-stantdard MIME types
 # which are known to benefit from gzip compression (text based content)
 ENV GZIP_EXTRA_TYPES text/tsv vnd.***ARANGO_DB_NAME***.document/bioc vnd.***ARANGO_DB_NAME***.document/enrichment-table vnd.***ARANGO_DB_NAME***.document/graph vnd.***ARANGO_DB_NAME***.document/map
