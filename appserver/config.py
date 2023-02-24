@@ -13,7 +13,7 @@ class Base():
 
     JWKS_URL = os.getenv('JWKS_URL', None)
     JWT_SECRET = os.getenv('JWT_SECRET', 'secrets')
-    JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', 'account')
+    JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', None)
     JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
 
     POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
