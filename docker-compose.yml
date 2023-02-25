@@ -32,7 +32,8 @@ x-appserver: &appserver
     - REDIS_SSL=false
 
     # Statistical Enrichment
-    - STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5010
+    - SE_HOST=statistical-enrichment
+    - SE_PORT=5010
 
     # PDF Parser
     - PDFPARSER_URL=http://pdfparser:7600

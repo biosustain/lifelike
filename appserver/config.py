@@ -27,6 +27,9 @@ class Base():
     ARANGO_PASSWORD = os.getenv('ARANGO_PASSWORD', 'password')
     ARANGO_DB_NAME = os.getenv('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')
 
+    SE_HOST = os.getenv('SE_HOST', 'localhost')
+    SE_PORT = os.getenv('SE_PORT', '5010')
+
     AZURE_ACCOUNT_STORAGE_NAME = os.getenv('AZURE_ACCOUNT_STORAGE_NAME')
     AZURE_ACCOUNT_STORAGE_KEY = os.getenv('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.getenv('AZURE_BLOB_STORAGE_URL')

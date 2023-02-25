@@ -1,20 +1,19 @@
 import json
 import logging
-import os
 from http import HTTPStatus
 
 import requests
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, current_app, request
 from neo4japp.exceptions import StatisticalEnrichmentError
 from requests.exceptions import ConnectionError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-url = os.getenv('STATISTICAL_ENRICHMENT_URL', 'http://localhost:5010')
-
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 def forward_request():
+    host_port = f'{current_app.config["SE_HOST"]}:{current_app.config["SE_PORT"]}'
+    url = f'{request.scheme}://{request.path.replace(bp.url_prefix, host_port)}'
     try:
         resp = requests.request(
             url=url,
