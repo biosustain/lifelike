@@ -22,7 +22,15 @@ import {
   mergeMap,
   reduce,
   concatMap,
-  tap, switchMap, startWith, endWith, publish, refCount, scan, shareReplay, finalize
+  tap,
+  switchMap,
+  startWith,
+  endWith,
+  publish,
+  refCount,
+  scan,
+  shareReplay,
+  finalize,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -460,7 +468,7 @@ export class ObjectCreationService {
           ),
         this.MAX_PARALLEL_ANNOTATIONS,
       ),
-      scan(
+      reduce(
         (acc, {annotationResult, creationTaskBatch}) => {
           forEach(creationTaskBatch, creationTask => {
             const hashId = creationTask.creation.result?.hashId;
