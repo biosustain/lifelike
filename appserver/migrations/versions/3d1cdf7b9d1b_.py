@@ -23,6 +23,15 @@ down_revision = '647dad6e2adf'
 branch_labels = None
 depends_on = None
 
+BOT = dict(
+    username='***ARANGO_DB_NAME***-bot',
+    email='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio',
+    first_name='***ARANGO_DB_NAME***',
+    last_name='bot',
+    password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
+    subject='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio'
+)
+
 t_app_role = Table(
     'app_role',
     MetaData(),
@@ -40,8 +49,6 @@ t_appuser = Table(
     Column('first_name', String),
     Column('last_name', String),
     Column('password_hash', String),
-    Column('failed_login_count', Integer),
-    Column('forced_password_reset', Boolean),
     Column('subject', String),
 )
 
@@ -74,7 +81,7 @@ def data_upgrades():
     existing_superuser = conn.execute(select([
         t_appuser.c.id,
     ]).where(
-        t_appuser.c.email == 'superuser@***ARANGO_DB_NAME***.bio'
+        t_appuser.c.email == BOT['email']
     )).scalar()
 
     if existing_superuser is None:
@@ -82,14 +89,7 @@ def data_upgrades():
         new_superuser_id = conn.execute(
             t_appuser.insert().values(
                 hash_id=str(uuid.uuid4()),
-                username='***ARANGO_DB_NAME***-bot',
-                email='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio',
-                first_name='***ARANGO_DB_NAME***',
-                last_name='bot',
-                password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
-                failed_login_count=0,
-                forced_password_reset=False,
-                subject='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio'
+                **BOT
             )
         ).inserted_primary_key[0]
 
