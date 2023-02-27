@@ -293,8 +293,6 @@ export class SankeySingleLaneComponent
       takeUntil(this.destroyed$),
       switchMap(colorLinkByType =>
         this.renderedLinks$.pipe(
-          // if fresh start update all, if re-render update only new
-          map((linkSelection, iterationCount) => iterationCount === 0 ? linkSelection : linkSelection.enter()),
           tap(linksSelection => {
               if (colorLinkByType) {
                 linksSelection
