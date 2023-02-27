@@ -37,6 +37,7 @@ x-appserver: &appserver
 
     # PDF Parser
     - PDFPARSER_URL=http://pdfparser:7600
+    - BASE_URL=http://appserver:5000
 
     # ElasticSearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
