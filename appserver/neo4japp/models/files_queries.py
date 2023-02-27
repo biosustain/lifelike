@@ -1,11 +1,11 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
+from typing import Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect, literal
 from sqlalchemy.orm import aliased, contains_eager, defer, joinedload, lazyload, Query, raiseload
-from typing import Optional, Union, Literal
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects

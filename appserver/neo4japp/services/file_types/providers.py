@@ -1450,6 +1450,46 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_content.seek(0)
         return typing.cast(BufferedIOBase, new_content)
 
+    def links_updater(self, hash_id_map, project_name_map):
+        def update_links(map_data):
+            new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
+            for node in map_data['nodes']:
+                for source in node['data'].get('sources', []):
+                    link_search = re.search(new_link_re, source['url'])
+                    if link_search is not None:
+                        project_name = link_search.group(1)
+                        hash_id = link_search.group(2)
+                        if hash_id in hash_id_map:
+                            for old_project_name, new_project_name in project_name_map.items():
+                                source['url'] = source['url'].replace(
+                                    old_project_name,
+                                    new_project_name
+                                ).replace(
+                                    hash_id,
+                                    hash_id_map[hash_id]
+                                )
+
+            for edge in map_data['edges']:
+                if 'data' in edge:
+                    for source in edge['data'].get('sources', []):
+                        link_search = re.search(new_link_re, source['url'])
+                        if link_search is not None:
+                            project_name = link_search.group(1)
+                            hash_id = link_search.group(2)
+                            if hash_id in hash_id_map:
+                                for old_project_name, new_project_name in project_name_map.items():
+                                    source['url'] = source['url'].replace(
+                                        old_project_name,
+                                        new_project_name
+                                    ).replace(
+                                        hash_id,
+                                        hash_id_map[hash_id]
+                                    )
+
+            return map
+        return update_links
+
+
     def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
         """
         Evaluate the changes in the images and create a new blob to store in the content.

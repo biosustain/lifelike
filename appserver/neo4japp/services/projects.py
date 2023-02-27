@@ -1,25 +1,25 @@
-import re
+from io import BytesIO
+from typing import Sequence, Optional, Tuple, Dict, List, Union
+from uuid import uuid4
 
 from flask import current_app
-from io import BytesIO
 from sqlalchemy import and_, asc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
-from typing import Dict, List, Optional, Sequence, Union
-from uuid import uuid4
 
-from neo4japp.constants import (
-    FILE_MIME_TYPE_DIRECTORY,
-    FILE_MIME_TYPE_MAP,
+from neo4japp.constants import FILE_MIME_TYPE_MAP, FILE_MIME_TYPE_DIRECTORY, \
     MASTER_INITIAL_PROJECT_NAME
-)
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException
-from neo4japp.models.auth import AppRole, AppUser
+from neo4japp.models import (
+    AppUser,
+    AppRole,
+    Projects,
+    projects_collaborator_role, Files,
+)
 from neo4japp.models.common import generate_hash_id
-from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion, FileContent, Files
-from neo4japp.models.projects import Projects, projects_collaborator_role
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause, FileContent
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
 
@@ -145,32 +145,24 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
 
     def _add_generic_file(
-        self,
-        master_file: Files,
-        content_id: int,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str],
+            self,
+            master_file: Files,
+            content_id: int,
+            parent_id: int,
+            user: AppUser,
+            hash_id_map: Dict[str, str],
     ) -> Files:
-        new_file = Files(
-            hash_id=hash_id_map[master_file.hash_id],
-            filename=master_file.filename,
-            parent_id=parent_id,
-            content_id=content_id,
-            user_id=user.id,
-            public=False,
-            pinned=False,
-            description=master_file.description,
-            mime_type=master_file.mime_type,
-            doi=master_file.doi,
-            annotations=master_file.annotations,
-            annotations_date=master_file.annotations_date,
-            annotation_configs=master_file.annotation_configs,
-            organism_name=master_file.organism_name,
-            organism_synonym=master_file.organism_synonym,
-            organism_taxonomy_id=master_file.organism_taxonomy_id,
-        )
+        new_file = Files({
+            **master_file,
+            **dict(
+                hash_id=hash_id_map[master_file.hash_id],
+                filename=master_file.filename,
+                parent_id=parent_id,
+                content_id=content_id,
+                user_id=user.id,
+            )
+        })
+
         db.session.add(new_file)
         db.session.flush()
         current_app.logger.info(
@@ -186,7 +178,6 @@ class ProjectsService(RDBMSBaseDao):
     def _add_file_annotations_version(self, file: Files, user: AppUser):
         new_file_annotations_version = FileAnnotationsVersion(
             file_id=file.id,
-            hash_id=str(uuid4()),
             cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
             custom_annotations=[],
             excluded_annotations=[],
@@ -199,66 +190,21 @@ class ProjectsService(RDBMSBaseDao):
             f'pending transaction. User: {user.id}.'
         )
 
-    def _add_map(
-        self,
-        master_map: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
-        hash_id_map: Dict[str, str]
+    def _remap_map_content(
+            self,
+            master_map_content: FileContent,
+            hash_id_map: Dict[str, str],
+            project_name_map: Dict[str, str]
     ):
-        def update_map_links(map_json):
-            new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
-            for node in map_json['nodes']:
-                for source in node['data'].get('sources', []):
-                    link_search = re.search(new_link_re, source['url'])
-                    if link_search is not None:
-                        project_name = link_search.group(1)
-                        hash_id = link_search.group(2)
-                        if hash_id in hash_id_map:
-                            source['url'] = source['url'].replace(
-                                project_name,
-                                project.name
-                            ).replace(
-                                hash_id,
-                                hash_id_map[hash_id]
-                            )
-
-            for edge in map_json['edges']:
-                if 'data' in edge:
-                    for source in edge['data'].get('sources', []):
-                        link_search = re.search(new_link_re, source['url'])
-                        if link_search is not None:
-                            project_name = link_search.group(1)
-                            hash_id = link_search.group(2)
-                            if hash_id in hash_id_map:
-                                source['url'] = source['url'].replace(
-                                    project_name,
-                                    project.name
-                                ).replace(
-                                    hash_id,
-                                    hash_id_map[hash_id]
-                                )
-
-            return map_json
-
         # Create initial map for this user
         mapTypeProvider = MapTypeProvider()
-        map_content = BytesIO(master_map.content.raw_file)
+        map_content = BytesIO(master_map_content.raw_file)
         updated_map_content = mapTypeProvider.update_map(
             {},
             map_content,
-            update_map_links
+            mapTypeProvider.links_updater(hash_id_map, project_name_map)
         )
-        map_content_id = FileContent().get_or_create(updated_map_content)
-        self._add_generic_file(
-            master_map,
-            map_content_id,
-            project,
-            parent_id,
-            user,
-            hash_id_map,
-        )
+        return FileContent().get_or_create(updated_map_content)
 
     def _add_project(self, user: AppUser) -> Union[Projects, None]:
         project = Projects()
@@ -313,9 +259,9 @@ class ProjectsService(RDBMSBaseDao):
         ).all()
 
     def _copy_master_files(
-        self,
-        new_project: Projects,
-        user: AppUser
+            self,
+            new_project: Projects,
+            user: AppUser
     ):
         master_files = self._get_all_master_project_files()
 
@@ -335,27 +281,28 @@ class ProjectsService(RDBMSBaseDao):
                 master_folder_stack = master_folder_stack[:cutoff + 1]  # Include the cutoff index
                 new_folder_stack = new_folder_stack[:cutoff + 1]
 
+            content_id = master_file.content_id
+
+            # If this file is map we need to update internal links
             if master_file.mime_type == FILE_MIME_TYPE_MAP:
-                self._add_map(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map
-                )
-            else:
-                new_file = self._add_generic_file(
-                    master_file,
-                    master_file.content_id,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
+                content_id = self._remap_map_content(
+                    master_file.content,
                     file_hash_id_map,
+                    {}
                 )
-                # If this file is a folder, then add it to the stacks
-                if master_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
-                    master_folder_stack.append(master_file.id)
-                    new_folder_stack.append(new_file.id)
+
+            new_file = self._add_generic_file(
+                master_file,
+                content_id,
+                new_folder_stack[-1],
+                user,
+                file_hash_id_map,
+            )
+
+            # If this file is a folder, then add it to the stacks
+            if master_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
+                master_folder_stack.append(master_file.id)
+                new_folder_stack.append(new_file.id)
 
     def create_initial_project(self, user: AppUser):
         """

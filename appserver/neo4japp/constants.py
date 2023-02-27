@@ -2,9 +2,9 @@ import codecs
 import os
 import re
 import string
-
 from datetime import timezone
 from enum import Enum
+
 from sendgrid import SendGridAPIClient
 
 from neo4japp.util import Enumd

@@ -9,7 +9,6 @@ import uuid
 from alembic import context, op
 from sqlalchemy import (
     select,
-    Boolean,
     Column,
     Integer,
     MetaData,
