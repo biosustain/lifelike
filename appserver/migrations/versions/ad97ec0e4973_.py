@@ -1,35 +1,30 @@
 """Add sample project
 
 Revision ID: ad97ec0e4973
-Revises: 3d1cdf7b9d1b
+Revises: 5f165b2231f9
 Create Date: 2023-02-09 20:59:14.824234
 
 """
 import enum
 import fastjsonschema
-import hashlib
-import io
 import json
 import os
-import re
-import typing
 import uuid
-import zipfile
 
 from alembic import context, op
-from datetime import datetime, timezone
+from datetime import timezone
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import ValidationError
 from pathlib import Path
-from sqlalchemy import (BINARY, Boolean, Column, Enum, Integer, LargeBinary, MetaData, String,
-                        Table, Text, func, select)
+from sqlalchemy import Boolean, Column, Integer, MetaData, String, Table, Text, func, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import TIMESTAMP
 
+from migrations.constants import LIFELIKE_SUPERUSER
+
 # revision identifiers, used by Alembic.
 revision = 'ad97ec0e4973'
-down_revision = '3d1cdf7b9d1b'
+down_revision = '5f165b2231f9'
 branch_labels = None
 depends_on = None
 
@@ -83,29 +78,6 @@ t_files = Table(
     Column('organism_name', String),
     Column('organism_synonym', String),
     Column('organism_taxonomy_id', String),
-)
-
-t_file_annotations_version = Table(
-    'file_annotations_version',
-    MetaData(),
-    Column('id', Integer, primary_key=True),
-    Column('hash_id', String),
-    Column('file_id', Integer),
-    Column('cause', Enum(AnnotationChangeCause)),
-    Column('custom_annotations', JSONB, default='[]'),
-    Column('excluded_annotations', JSONB, default='[]'),
-    Column('user_id', Integer),
-    Column('creation_date', TIMESTAMP(timezone=True), default=func.now()),
-    Column('modified_date', TIMESTAMP(timezone=True), default=func.now()),
-)
-
-t_files_content = Table(
-    'files_content',
-    MetaData(),
-    Column('id', Integer, primary_key=True),
-    Column('raw_file', LargeBinary),
-    Column('checksum_sha256', BINARY(32)),
-    Column('creation_date', TIMESTAMP(timezone=True), default=func.now()),
 )
 
 t_projects = Table(
@@ -174,272 +146,12 @@ def downgrade():
     # (i.e. "downgrade forward"!)
 
 
-# Copied from MapProvider
-def _update_map(params: dict, file_content, updater=lambda x: x):
-    try:
-        zip_file = zipfile.ZipFile(file_content)
-    except zipfile.BadZipfile:
-        raise ValidationError('Previous content of the map is corrupted!')
-
-    images_to_delete = params.get('deleted_images') or []
-    new_images = params.get('new_images') or []
-
-    new_content = io.BytesIO()
-    new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False)
-
-    # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
-    # to make sure that the graph.json is not copied as well.
-    images_to_delete.append('graph')
-    files_to_copy = [hash_id for hash_id in zip_file.namelist() if
-                        os.path.basename(hash_id).split('.')[0] not in images_to_delete]
-    for filename in files_to_copy:
-        new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
-
-    for image in new_images:
-        new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
-    if params.get('content_value') is not None:
-        new_graph = params['content_value'].read()
-    else:
-        graph_json = json.loads(zip_file.read('graph.json'))
-        new_graph_json = updater(graph_json)
-        validate_map(new_graph_json)
-        new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
-
-    # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata! If
-    # the timestamp is included, otherwise identical zips will have different checksums. This
-    # is true for the two `writestr` calls above as well.
-    new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
-    new_zip.close()
-
-    # Remember to always rewind when working with BufferedIOBase
-    new_content.seek(0)
-    return typing.cast(io.BufferedIOBase, new_content)
-
-
-def _create_file_content(conxn: Connection, master_file_path: str):
-    with open(master_file_path, 'rb') as fp:
-        content = fp.read()
-
-    checksum_sha256 = hashlib.sha256(content).digest()
-
-    # Check if the file already exists in the DB (this is probably true!)
-    file_content_id = conxn.execute(select([
-        t_files_content.c.id,
-    ]).where(
-        t_files_content.c.checksum_sha256 == checksum_sha256
-    )).scalar()
-
-    if file_content_id is None:
-        file_content_id = conxn.execute(
-            t_files_content.insert().values(
-                raw_file=content,
-                checksum_sha256=checksum_sha256,
-            )
-        ).inserted_primary_key[0]
-    return file_content_id
-
-
-def _create_master_pdf(
-    conxn: Connection,
-    pdf_metadata: dict,
-    superuser_id: int,
-    master_folder_id: int
-) -> str:
-    pdf_filename = pdf_metadata['filename']
-    pdf_file_content_id = _create_file_content(conxn, INITIAL_PROJECT_FILES_PATH / pdf_filename)
-    pdf_hash_id = str(uuid.uuid4())
-
-    with open(INITIAL_PROJECT_FILES_PATH / PDF_ANNOTATIONS_FILENAME) as pdf_anno_fp:
-        pdf_annotations = json.load(pdf_anno_fp)['annotations']
-
-    new_pdf_file = conxn.execute(
-        t_files.insert().values(
-            hash_id=pdf_hash_id,
-            filename=pdf_filename,
-            parent_id=master_folder_id,
-            mime_type=FILE_MIME_TYPE_PDF,
-            content_id=pdf_file_content_id,
-            user_id=superuser_id,
-            public=False,
-            pinned=False,
-            path=f'{MASTER_PROJECT_FOLDER_PATH}/{pdf_filename}',
-            annotations=pdf_annotations,
-            annotations_date=datetime.now(TIMEZONE),
-            organism_name=pdf_metadata['organism_name'],
-            organism_synonym=pdf_metadata['organism_synonym'],
-            organism_taxonomy_id=pdf_metadata['organism_taxonomy_id'],
-        )
-    ).inserted_primary_key[0]
-
-    # Also make sure to add the FileAnnotationsVersion row
-    conxn.execute(
-        t_file_annotations_version.insert().values(
-            file_id=new_pdf_file,
-            hash_id=str(uuid.uuid4()),
-            cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-            custom_annotations=[],
-            excluded_annotations=[],
-            user_id=superuser_id
-        )
-    )
-
-    return pdf_hash_id
-
-
-def _create_master_enrichment_table(
-    conxn: Connection,
-    et_metadata: dict,
-    superuser_id: int,
-    master_folder_id: int
-):
-    et_filename = et_metadata['filename']
-    et_file_content_id = _create_file_content(conxn, INITIAL_PROJECT_FILES_PATH / et_filename)
-
-    with open(INITIAL_PROJECT_FILES_PATH / ET_ANNOTATIONS_FILENAME) as et_anno_fp:
-        et_annotations = json.load(et_anno_fp)
-        annotations = et_annotations['annotations']
-        enrichment_annotations = et_annotations['enrichment_annotations']
-
-    new_et_file = conxn.execute(
-        t_files.insert().values(
-            hash_id=str(uuid.uuid4()),
-            filename=et_filename,
-            parent_id=master_folder_id,
-            mime_type=FILE_MIME_TYPE_ENRICHMENT_TABLE,
-            content_id=et_file_content_id,
-            user_id=superuser_id,
-            public=False,
-            pinned=False,
-            path=f'{MASTER_PROJECT_FOLDER_PATH}/{et_filename}',
-            description=et_metadata['description'],
-            annotations=annotations,
-            enrichment_annotations=enrichment_annotations,
-            annotations_date=datetime.now(TIMEZONE),
-            annotation_configs=et_metadata['annotation_configs'],
-            organism_name=et_metadata['organism_name'],
-            organism_synonym=et_metadata['organism_synonym'],
-            organism_taxonomy_id=et_metadata['organism_taxonomy_id'],
-        )
-    ).inserted_primary_key[0]
-
-
-    # Also make sure to add the FileAnnotationsVersion row
-    conxn.execute(
-        t_file_annotations_version.insert().values(
-            file_id=new_et_file,
-            hash_id=str(uuid.uuid4()),
-            cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-            custom_annotations=[],
-            excluded_annotations=[],
-            user_id=superuser_id
-        )
-    )
-
-
-def _create_master_map(
-    conxn: Connection,
-    map_metadata: dict,
-    superuser_id: int,
-    master_folder_id: int,
-    master_pdf_hash_id: str
-):
-    def update_map_links(map_json):
-        new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
-        for node in map_json['nodes']:
-            for source in node['data'].get('sources', []):
-                link_search = re.search(new_link_re, source['url'])
-                if link_search is not None:
-                    project_name = link_search.group(1)
-                    hash_id = link_search.group(2)
-                    if hash_id in map_metadata['hash_mapping']:
-                        source['url'] = source['url'].replace(
-                            project_name,
-                            MASTER_PROJECT_NAME
-                        ).replace(
-                            hash_id,
-                            master_pdf_hash_id
-                        )
-        for edge in map_json['edges']:
-            if 'data' in edge:
-                for source in edge['data'].get('sources', []):
-                    link_search = re.search(new_link_re, source['url'])
-                    if link_search is not None:
-                        project_name = link_search.group(1)
-                        hash_id = link_search.group(2)
-                    if hash_id in map_metadata['hash_mapping']:
-                            source['url'] = source['url'].replace(
-                                project_name,
-                                MASTER_PROJECT_NAME
-                            ).replace(
-                                hash_id,
-                                master_pdf_hash_id
-                            )
-        return map_json
-
-    map_filename = map_metadata['filename']
-    updated_map_content = _update_map(
-        {},
-        INITIAL_PROJECT_FILES_PATH / map_filename,
-        update_map_links
-    )
-    buffer = updated_map_content.read()
-    checksum_sha256 = hashlib.sha256(buffer).digest()
-
-    # Check if the file already exists in the DB (this is probably true!)
-    file_content_id = conxn.execute(select([
-        t_files_content.c.id,
-    ]).where(
-        t_files_content.c.checksum_sha256 == checksum_sha256
-    )).scalar()
-
-    if file_content_id is None:
-        file_content_id = conxn.execute(
-            t_files_content.insert().values(
-                raw_file=buffer,
-                checksum_sha256=checksum_sha256,
-            )
-        ).inserted_primary_key[0]
-
-    conxn.execute(
-        t_files.insert().values(
-            hash_id=str(uuid.uuid4()),
-            filename=map_filename,
-            parent_id=master_folder_id,
-            mime_type=FILE_MIME_TYPE_MAP,
-            content_id=file_content_id,
-            user_id=superuser_id,
-            public=False,
-            pinned=False,
-            path=f'{MASTER_PROJECT_FOLDER_PATH}/{map_filename}',
-        )
-    )
-
-def _create_files(conxn: Connection, superuser_id: int, master_folder_id: int):
-    with open(INITIAL_PROJECT_FILES_PATH / 'metadata.json', 'r') as metadata_json:
-        metadata = json.load(metadata_json)
-
-    master_pdf_hash_id = _create_master_pdf(conxn, metadata['files']['pdf'], superuser_id, master_folder_id)
-    _create_master_enrichment_table(
-        conxn,
-        metadata['files']['enrichment_table'],
-        superuser_id,
-        master_folder_id
-    )
-    _create_master_map(
-        conxn,
-        metadata['files']['map'],
-        superuser_id,
-        master_folder_id,
-        master_pdf_hash_id
-    )
-
-
 def _get_superuser_id(conxn: Connection):
     # Get superuser id
     return conxn.execute(select([
         t_appuser.c.id,
     ]).where(
-        t_appuser.c.email == 'superuser@***ARANGO_DB_NAME***.bio'
+        t_appuser.c.email == LIFELIKE_SUPERUSER
     )).scalar()
 
 
@@ -501,6 +213,24 @@ def _add_all_admins_to_master_project(conxn: Connection, master_project_id: int)
             )
         )
 
+def _add_superuser_as_project_owner(conxn, superuser_id: int, master_project: int):
+    project_read_and_write = conxn.execute(
+        select([
+            t_app_role.c.id,
+        ]).where(
+            t_app_role.c.name.in_(['project-write', 'project-read'])
+        )
+    ).fetchall()
+
+    for role, in project_read_and_write:
+        conxn.execute(
+            t_projects_collaborator_role.insert().values(
+                appuser_id=superuser_id,
+                app_role_id=role,
+                projects_id=master_project,
+            )
+        )
+
 
 def data_upgrades():
     """Add optional data upgrade migrations here"""
@@ -509,8 +239,8 @@ def data_upgrades():
     superuser_id = _get_superuser_id(conxn)
     master_initial_folder_id = _create_***ARANGO_USERNAME***_file_for_master_project(conxn, superuser_id)
     master_initial_project_id = _create_master_project(conxn, master_initial_folder_id)
+    _add_superuser_as_project_owner(conxn, superuser_id, master_initial_project_id)
     _add_all_admins_to_master_project(conxn, master_initial_project_id)
-    _create_files(conxn, superuser_id, master_initial_folder_id)
 
 
 def data_downgrades():
