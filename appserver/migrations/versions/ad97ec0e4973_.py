@@ -30,19 +30,7 @@ depends_on = None
 
 db = SQLAlchemy()
 
-# reference to this directory
-directory = os.path.realpath(os.path.dirname(__file__))
-with open(os.path.join(directory, '../upgrade_data/map_v3.json'), 'r') as f:
-    validate_map = fastjsonschema.compile(json.load(f))
-
-
-INITIAL_PROJECT_FILES_PATH = Path('migrations/upgrade_data/initial_project')
-ET_ANNOTATIONS_FILENAME = 'et_annotations.json'
-PDF_ANNOTATIONS_FILENAME = 'pdf_annotations.json'
 FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
-FILE_MIME_TYPE_PDF = 'application/pdf'
-FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
-FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
 MASTER_PROJECT_NAME = 'master-initial-project'
 MASTER_PROJECT_FOLDER_PATH = f'/{MASTER_PROJECT_NAME}'
 TIMEZONE = timezone.utc
