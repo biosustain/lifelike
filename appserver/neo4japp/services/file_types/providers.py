@@ -82,6 +82,7 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
@@ -294,7 +295,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
             high_level.extract_text(fp, page_numbers=[0], caching=False)
         except PDFTextExtractionNotAllowed as e:
             # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
-            g.warnings.append(TextExtractionNotAllowedWarning())
+            warn(TextExtractionNotAllowedWarning())
             raise HandledException(e)
         except PDFEncryptionError:
             raise FileUploadError(
@@ -323,7 +324,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
             text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
         except PDFTextExtractionNotAllowed as e:
             # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
-            g.warnings.append(TextExtractionNotAllowedWarning())
+            warn(TextExtractionNotAllowedWarning())
             raise HandledException(e)
         except Exception:
             raise FileUploadError(

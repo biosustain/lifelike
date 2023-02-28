@@ -4,6 +4,7 @@ from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
+from neo4japp.util import get_warnings
 from neo4japp.utils.request import Pagination
 
 
@@ -62,10 +63,12 @@ class ErrorResponseSchema(CamelCaseSchema):
     stacktrace = fields.String()
     code = fields.Integer()
     version = fields.String()
+    transaction_id = fields.String()
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
-        attribute='fields', allow_none=True)
+        attribute='fields', allow_none=True
+    )
 
 
 class WarningResponseSchema(CamelCaseSchema):
@@ -80,8 +83,12 @@ class WarningResponseSchema(CamelCaseSchema):
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
-        attribute='fields', allow_none=True)
+        attribute='fields', allow_none=True
+    )
 
 
 class WarningSchema(CamelCaseSchema):
-    warnings = fields.Function(lambda obj: [WarningResponseSchema().dump(w) for w in g.warnings])
+    warnings = fields.Method('get_warnings')
+
+    def get_warnings(self, obj):
+        return [WarningResponseSchema().dump(w) for w in get_warnings()]
