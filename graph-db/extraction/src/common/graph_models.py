@@ -50,6 +50,8 @@ class Item(object):
         elif value_type == 'int':
             if value.isdigit():
                 self.attributes[key] = int(value)
+        elif value_type == 'bool':
+            self.attributes[key] = bool(value)
         elif value_type == 'number' and value != 'NIL':
             try:
                 f = float(value)

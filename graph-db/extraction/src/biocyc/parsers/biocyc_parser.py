@@ -19,7 +19,7 @@ ENTITIES = [
     NODE_REACTION, NODE_PATHWAY,
     NODE_ENZ_REACTION,
     NODE_REGULATION,
-    # NODE_PRIMARY
+    NODE_PRIMARY
 ]
 
 PARSERS = {
@@ -29,7 +29,7 @@ PARSERS = {
     NODE_ENZ_REACTION: enzymereaction_parser.EnzymeReactionParser,
     NODE_GENE: gene_parser.GeneParser,
     NODE_PATHWAY: pathway_parser.PathwayParser,
-    # NODE_PRIMARY: primary_parser.PrimaryParser,
+    NODE_PRIMARY: primary_parser.PrimaryParser,
     NODE_PROMOTER: promoter_parser.PromoterParser,
     NODE_PROTEIN: protein_parser.ProteinParser,
     NODE_REACTION: reaction_parser.ReactionParser,
