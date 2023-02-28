@@ -45,8 +45,6 @@ from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
-INITIAL_PROJECT_PATH = Path('fixtures/initial_project')
-
 
 class AccountView(MethodView):
 
