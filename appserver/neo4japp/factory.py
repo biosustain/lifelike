@@ -240,15 +240,19 @@ def handle_error(ex):
                 error_name=f'{type(ex)}',
                 expected=True,
                 event_type=LogEventType.SENTRY_HANDLED.value,
+                transaction_id=ex.transaction_id,
                 username=current_user,
             ).to_dict()
         }
     )
 
     ex.version = GITHUB_HASH
-    if current_app.debug:
-        ex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
+    if current_app.config.get('FORWARD_STACKTRACE'):
+        ex.stacktrace = ''.join(
+            traceback.format_exception(
+                etype=type(ex), value=ex, tb=ex.__traceback__
+            )
+        )
 
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
@@ -291,6 +295,7 @@ def handle_generic_error(code: int, ex: Exception):
                 error_name=f'{type(ex)}',
                 expected=True,
                 event_type=LogEventType.SENTRY_UNHANDLED.value,
+                transaction_id=g.transaction_id,
                 username=current_user,
             ).to_dict()
         }
@@ -359,6 +364,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
 
     ex = ServerException(message=message, code=code, fields=fields)
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    transaction_id = request.headers.get('X-Transaction-Id', '')
 
     ex.version = GITHUB_HASH
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code

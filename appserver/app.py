@@ -2,6 +2,8 @@ import base64
 import click
 from collections import namedtuple
 import copy
+
+import sentry_sdk
 from flask import current_app, request, g
 import hashlib
 import importlib
@@ -39,13 +41,15 @@ from neo4japp.exceptions import OutdatedVersionException
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
+from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
+from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarningGroup, ServerWarning
+from neo4japp.warnings import ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
@@ -53,7 +57,35 @@ logger = logging.getLogger(__name__)
 
 
 @app.before_request
+def init_exceptions_handling():
+    g.warnings = list()
+
+    g.transaction_id = request.headers.get('X-Transaction-Id')
+    if not g.transaction_id:
+        g.transaction_id = generate_hash_id()
+        warn(
+            ServerWarning('Request did not contain required "X-Transaction-Id" header')
+        )
+
+
+@app.before_request
+def check_version_header():
+    """
+    API version content negotiation. Check if the client requested a specific version,
+    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
+    """
+    requested_version = request.headers.get("Accept-Lifelike-Version")
+    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+        raise OutdatedVersionException(
+            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
+            'changes'
+        )
+
+
+@app.before_request
 def request_navigator_log():
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag('transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
@@ -78,25 +110,6 @@ def default_login_required():
         return
 
     return login_required_dummy_view()
-
-
-@app.before_request
-def init_warning_set():
-    g.warnings = list()
-
-
-@app.before_request
-def check_version_header():
-    """
-    API version content negotiation. Check if the client requested a specific version,
-    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
-    """
-    requested_version = request.headers.get("Accept-Lifelike-Version")
-    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
-        raise OutdatedVersionException(
-            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
-            'changes'
-        )
 
 
 @app.cli.command("seed")
@@ -591,7 +604,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
         provider.validate_content(buffer)
         buffer.seek(0)  # Must rewind
     except ServerWarning as w:
-        g.warnings.append(w)
+        warn(w)
     except ValueError as e:
         raise ValidationError(f"The provided file may be corrupt: {str(e)}")
     else:
@@ -599,8 +612,8 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
             # Get the DOI only if content could be validated
             file.doi = provider.extract_doi(buffer)
             buffer.seek(0)  # Must rewind
-        except Warning as w:
-            g.warnings.append(w)
+        except ServerWarning as w:
+            warn(w)
 
     # Save the file content if there's any
     if size:
