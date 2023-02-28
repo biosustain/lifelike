@@ -6,7 +6,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
   <changeSet id="Create BioCyc constraints and indexes" author="---">
-    <comment>Create constraints and indexes for BioCyc nodes, created on 02-15-2023</comment>
+    <comment>Create constraints and indexes for BioCyc nodes, created on 02-28-2023</comment>
     <sql>
     CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
 CREATE INDEX index_db_BioCyc_biocyc_id IF NOT EXISTS FOR (n:db_BioCyc) ON (n.biocyc_id);
@@ -50,7 +50,7 @@ CREATE INDEX index_EnzReaction_name IF NOT EXISTS FOR (n:EnzReaction) ON (n.name
   </changeSet>
 
 
-  <changeSet id="load Species from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Species from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Species.tsv from mcap243233cyc-data-24.0.zip, 1 rows
     </comment>
@@ -73,7 +73,7 @@ SET n:Species:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.genom
   </changeSet>
 
 
-  <changeSet id="load BioCycClass from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load BioCycClass from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc BioCycClass.tsv from mcap243233cyc-data-24.0.zip, 7697 rows
     </comment>
@@ -96,7 +96,7 @@ SET n:BioCycClass:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.u
   </changeSet>
 
 
-  <changeSet id="load Compound from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Compound from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Compound.tsv from mcap243233cyc-data-24.0.zip, 5554 rows
     </comment>
@@ -119,7 +119,7 @@ SET n:Compound:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.abbr
   </changeSet>
 
 
-  <changeSet id="load Gene from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Gene from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Gene.tsv from mcap243233cyc-data-24.0.zip, 3078 rows
     </comment>
@@ -142,7 +142,7 @@ SET n:Gene:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.accessio
   </changeSet>
 
 
-  <changeSet id="load TranscriptionUnit from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TranscriptionUnit from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc TranscriptionUnit.tsv from mcap243233cyc-data-24.0.zip, 1683 rows
     </comment>
@@ -165,7 +165,7 @@ SET n:TranscriptionUnit:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.url=row.url
   </changeSet>
 
 
-  <changeSet id="load RNA from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load RNA from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc RNA.tsv from mcap243233cyc-data-24.0.zip, 101 rows
     </comment>
@@ -188,7 +188,7 @@ SET n:RNA:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=row.u
   </changeSet>
 
 
-  <changeSet id="load Protein from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Protein from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Protein.tsv from mcap243233cyc-data-24.0.zip, 2965 rows
     </comment>
@@ -211,7 +211,7 @@ SET n:Protein:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=r
   </changeSet>
 
 
-  <changeSet id="load Reaction from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Reaction from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Reaction.tsv from mcap243233cyc-data-24.0.zip, 1415 rows
     </comment>
@@ -234,7 +234,7 @@ SET n:Reaction:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.ec_n
   </changeSet>
 
 
-  <changeSet id="load Pathway from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Pathway from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc Pathway.tsv from mcap243233cyc-data-24.0.zip, 230 rows
     </comment>
@@ -257,7 +257,7 @@ SET n:Pathway:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.url=r
   </changeSet>
 
 
-  <changeSet id="load EnzReaction from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load EnzReaction from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         load BioCyc EnzReaction.tsv from mcap243233cyc-data-24.0.zip, 1815 rows
     </comment>
@@ -280,7 +280,7 @@ SET n:EnzReaction:db_mcap243233cyc,n.biocyc_id=row.biocyc_id,n.name=row.name,n.u
   </changeSet>
 
 
-  <changeSet id="load Species synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Species synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Species-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -304,7 +304,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load BioCycClass synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load BioCycClass synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc BioCycClass-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -328,7 +328,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Compound synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Compound synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Compound-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -352,7 +352,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Gene synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Gene synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Gene-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -376,7 +376,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Protein synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Protein synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Protein-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -400,7 +400,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Reaction synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Reaction synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Reaction-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -424,7 +424,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load Pathway synonyms from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Pathway synonyms from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc Pathway-synonyms.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -448,7 +448,7 @@ MERGE (b)-[r:HAS_SYNONYM]->(a)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in BioCycClass-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, BioCycClass-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -473,7 +473,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in Compound-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, Compound-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -498,7 +498,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Compound CHEBI_LINK from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Compound CHEBI_LINK from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load Compound CHEBI_LINK: Compound-dblinks.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -523,7 +523,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ELEMENT_OF relationship in TranscriptionUnit-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load ELEMENT_OF relationship in TranscriptionUnit-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc ELEMENT_OF relationships, TranscriptionUnit-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -548,7 +548,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, RNA-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -573,7 +573,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load ENCODES relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc ENCODES relationships, RNA-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -598,7 +598,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load MODIFIED_TO relationship in RNA-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc MODIFIED_TO relationships, RNA-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -623,7 +623,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load ENCODES relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load ENCODES relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc ENCODES relationships, Protein-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -648,7 +648,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load COMPONENT_OF relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc COMPONENT_OF relationships, Protein-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -673,7 +673,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in Protein-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, Protein-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -698,7 +698,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Protein GO_LINK from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Protein GO_LINK from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load Protein GO_LINK: Protein-dblinks.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -723,7 +723,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, Reaction-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -748,7 +748,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load CONSUMED_BY relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc CONSUMED_BY relationships, Reaction-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -773,7 +773,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load PRODUCES relationship in Reaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc PRODUCES relationships, Reaction-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -798,7 +798,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load Reaction ENZYME_LINK from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load Reaction ENZYME_LINK from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load Reaction ENZYME_LINK: Reaction-dblinks.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -823,7 +823,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load TYPE_OF relationship in Pathway-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc TYPE_OF relationships, Pathway-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -848,7 +848,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load IN_PATHWAY relationship in Pathway-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc IN_PATHWAY relationships, Pathway-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -873,7 +873,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load CATALYZES relationship in EnzReaction-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc CATALYZES relationships, EnzReaction-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -898,7 +898,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load CONSUMED_BY relationship in Primary-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load CONSUMED_BY relationship in Primary-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc CONSUMED_BY relationships, Primary-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
@@ -924,7 +924,7 @@ RETURN COUNT(*)
   </changeSet>
 
 
-  <changeSet id="load PRODUCES relationship in Primary-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-15-2023" author="---">
+  <changeSet id="load PRODUCES relationship in Primary-rels.tsv from mcap243233cyc-data-24.0.zip, date 02-28-2023" author="---">
     <comment>
         Load BioCyc PRODUCES relationships, Primary-rels.tsv from mcap243233cyc-data-24.0.zip
     </comment>
