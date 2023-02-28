@@ -2,6 +2,8 @@ from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Union, Tuple, Optional
 
+from neo4japp.util import get_transaction_id
+
 
 @dataclass(repr=False)
 class HandledException(Exception):
@@ -30,8 +32,12 @@ class ServerException(Exception):
     def type(self):
         return type(self).__name__
 
+    @property
+    def transaction_id(self):
+        return get_transaction_id()
+
     def __str__(self):
-        return f'<Exception> {self.title}:{self.message}'
+        return f'<Exception {self.transaction_id}> {self.title}:{self.message}'
 
     def to_dict(self):
         return asdict(self)

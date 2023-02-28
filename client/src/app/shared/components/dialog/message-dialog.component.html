@@ -13,9 +13,10 @@
       <p>{{msg}}</p>
     </div>
 
-    <div *ngIf="stacktrace" class="detail">
+    <div *ngIf="stacktrace || transactionId" class="detail">
       <div class="detail-title">Technical Details</div>
-      <pre>{{stacktrace}}</pre>
+      <div *ngIf="transactionId">Transaction id: {{transactionId}}</div>
+      <pre *ngIf="stacktrace">{{stacktrace}}</pre>
     </div>
   </app-modal-body>
 
