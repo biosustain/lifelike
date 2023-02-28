@@ -17,6 +17,8 @@ from sqlalchemy import (
     Table,
 )
 
+from migrations.constants import LIFELIKE_SUPERUSER
+
 # revision identifiers, used by Alembic.
 revision = '3d1cdf7b9d1b'
 down_revision = '647dad6e2adf'
@@ -74,7 +76,7 @@ def data_upgrades():
     existing_superuser = conn.execute(select([
         t_appuser.c.id,
     ]).where(
-        t_appuser.c.email == 'superuser@***ARANGO_DB_NAME***.bio'
+        t_appuser.c.email == LIFELIKE_SUPERUSER
     )).scalar()
 
     if existing_superuser is None:
@@ -83,13 +85,13 @@ def data_upgrades():
             t_appuser.insert().values(
                 hash_id=str(uuid.uuid4()),
                 username='***ARANGO_DB_NAME***-bot',
-                email='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio',
+                email=LIFELIKE_SUPERUSER,
                 first_name='***ARANGO_DB_NAME***',
                 last_name='bot',
                 password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
                 failed_login_count=0,
                 forced_password_reset=False,
-                subject='***ARANGO_DB_NAME***.bot@***ARANGO_DB_NAME***.bio'
+                subject=LIFELIKE_SUPERUSER
             )
         ).inserted_primary_key[0]
 
