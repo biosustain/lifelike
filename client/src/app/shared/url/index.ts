@@ -13,7 +13,7 @@ type URLLike<T extends AppURL = AppURL> = string | Partial<T|AppURL>;
  * For more documentation check: https://url.spec.whatwg.org/#url-class and https://datatracker.ietf.org/doc/html/rfc1738
  */
 export class AppURL {
-  static readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
+  readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+)?:?(?<schemepart>.*)$/i;
   scheme: string;
   schemepart: string;
 
@@ -24,9 +24,9 @@ export class AppURL {
    * Passing multiple values allows creating URLs with overwrites.
    * Commonly new AppURL(appURLInstance, { overwrites }) creates URL copy with applied overwrites.
    */
-  static construct(...urlLikes: Array<URLLike>) {
+  static construct(this: AppURL, ...urlLikes: Array<URLLike>) {
     assign(this, ...urlLikes.map(urlLike =>
-      isString(urlLike) ? AppURL.matcher.exec(urlLike)?.groups ?? {} : urlLike,
+      isString(urlLike) ? this.matcher.exec(urlLike)?.groups ?? {} : urlLike,
     ));
   }
 
@@ -182,7 +182,7 @@ export class HttpURL implements AppURL, URL {
     AppURL.construct.call(this, ...urlLikes);
   }
 
-  static readonly matcher: RegExp = new RegExp(URL_REGEX.href);
+  readonly matcher: RegExp = new RegExp(URL_REGEX.href);
   scheme: string;
 
   fragment: string|URLSearchParams;
@@ -229,7 +229,7 @@ export class HttpURL implements AppURL, URL {
 }
 
 class FtpURL implements AppURL {
-  static readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
+  readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
   scheme: string;
   schemepart: string;
 
@@ -255,15 +255,16 @@ class FtpURL implements AppURL {
 }
 
 class MailtoURL implements AppURL {
-  static readonly matcher: RegExp = /^(?<email>.*)$/i;
+  readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+)?:?(?<email>.*)$/i;
   scheme: string;
   email: string;
-  set schemepart(schemepart: string) {
-    assign(this, MailtoURL.matcher.exec(schemepart).groups);
+
+  set schemepart(value: string) {
+    this.email = value;
   }
 
   get schemepart() {
-    return `${this.email}`;
+    return this.email;
   }
 
   constructor(...urlLikes: Array<URLLike<MailtoURL>>) {

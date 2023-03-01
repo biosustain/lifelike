@@ -1,7 +1,5 @@
 import { ReferenceType } from 'app/shared/references';
 import { WithOptional, WithRequired } from 'app/shared/utils/types';
-import { AppURL } from 'app/shared/utils/url';
-import { AppURL } from 'app/shared/url/url';
 import { AppURL } from 'app/shared/url';
 
 export interface UniversalGraphRelationship {

@@ -16,9 +16,7 @@ import {
   iif,
 } from 'rxjs';
 import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
-import { uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, defer, Observable, iif, of, Subject, Subscription } from 'rxjs';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -43,10 +41,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { mapIterable, findEntriesValue, findEntriesKey } from 'app/shared/utils';
-import { AppURL, HttpURL } from 'app/shared/utils/url';
-import { AppURL, HttpURL } from 'app/shared/utils/url/url';
 import { AppURL, HttpURL } from 'app/shared/url';
-import { HttpURL } from 'app/shared/url';
 
 import {
   AddedAnnotationExclusion,

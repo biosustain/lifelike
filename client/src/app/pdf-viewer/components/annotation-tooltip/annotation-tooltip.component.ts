@@ -1,11 +1,19 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { assign, escapeRegExp as _escapeRegExp, first, merge as _merge, unary } from 'lodash-es';
+import {
+  assign as _assign,
+  first as _first,
+  unary as _unary,
+  entries as _entries,
+  escapeRegExp as _escapeRegExp,
+  merge as _merge
+} from 'lodash-es';
 
-import { SEARCH_LINKS } from 'app/shared/links';
 import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { LINKS } from 'app/shared/links';
+import { HttpURL } from 'app/shared/url';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { Annotation } from '../../annotation-type';
@@ -28,7 +36,7 @@ export class AnnotationTooltipComponent implements OnChanges {
   idType: string;
   type: string;
   isCustom: boolean;
-  idLink: DatabaseLink;
+  idLink: HttpURL;
   isExcluded: boolean;
   annoId: string;
   exclusionReason: string;
@@ -72,28 +80,29 @@ export class AnnotationTooltipComponent implements OnChanges {
   }
 
   parseAnnotationId(id: string): string {
-    return first(id.match(/[^(?:NULL)]+(?!:)/));
+    return _first(id.match(/[^(?:NULL)]+(?!:)/));
   }
 
   ngOnChanges({ annotation }: SimpleChanges): void {
     if (annotation) {
       // Make meta values parsing
-      const { id, type, idType, idHyperlinks, links, allText, isCustom, isExcluded } =
-        annotation.currentValue.meta;
-      assign(this, { id, type, idType, isCustom, isExcluded });
+      const {
+        id, type, idType, idHyperlinks, links, allText, isCustom, isExcluded,
+      } = annotation.currentValue.meta;
+      _assign(this, {id, type, idType, isCustom, isExcluded});
       this.annoId = this.parseAnnotationId(id);
 
       if (ENTITY_TYPE_MAP.hasOwnProperty(type)) {
         const source = ENTITY_TYPE_MAP[type] as EntityType;
-        this.idLink = source.links.find((link) => link.name === idType);
+        this.idLink = source.links.find(link => link.name === idType)?.url(this.annoId);
       } else {
         this.idLink = undefined;
       }
 
-      this.idHyperlinks = idHyperlinks?.map(unary(JSON.parse));
-      this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
-        url: links[domain.toLowerCase()] || url.replace('%s', allText),
-        label: domain.replace('_', ' '),
+      this.idHyperlinks = idHyperlinks?.map(_unary(JSON.parse));
+      this.searchLinks = _entries(LINKS).map(([domain, {label, search}]) => ({
+        url: links[domain] || search(allText),
+        label
       }));
       this.internalSearchLinks = [
         {

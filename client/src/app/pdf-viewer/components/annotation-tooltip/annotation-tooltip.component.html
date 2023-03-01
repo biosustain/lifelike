@@ -3,8 +3,8 @@ Type: {{ type }}
 Id:
 <!--null/undefined because a data source did not match-->
 <!--e.g we use "Custom" for phenotype-->
-<ng-container *ngIf="annoId; else noneAnnoId">
-  <a *ngIf="idLink; else noneIdLink" [href]="idLink.url + annoId" target="_blank">
+<ng-container *ngIf="annoId else noneAnnoId">
+  <a *ngIf="idLink else noneIdLink" [href]="idLink" target="_blank">
     {{ annoId }}
   </a>
   <ng-template #noneIdLink>{{ annoId }}</ng-template>
@@ -64,11 +64,8 @@ Data Source: {{ idType ? idType : 'None' }}
     #searchInternalLinksCollapse="ngbCollapse"
     ngbCollapse="true"
   >
-    <a
-      *ngFor="let link of internalSearchLinks"
-      [appLink]="link.arguments[0]"
-      [handleClick]="false"
-      (click)="openInternalLink(link.arguments); $event.preventDefault()"
+    <a *ngFor="let link of internalSearchLinks"
+       [appLink]="link.url"
       [style.display]="'block'"
     >
       {{ link.label }}

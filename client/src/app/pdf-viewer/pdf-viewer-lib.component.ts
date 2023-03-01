@@ -22,7 +22,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { defer, forEach, isEqual, uniqueId, kebabCase, first as _first, isEmpty } from 'lodash-es';
+import { defer, forEach, isEqual, uniqueId, kebabCase, first as _first, isEmpty, escape, isNil } from 'lodash-es';
 import {
   BehaviorSubject,
   Observable,
@@ -42,11 +42,8 @@ import {
   filter,
   takeUntil,
 } from 'rxjs/operators';
-import { defer, escape, forEach, isNil, uniqueId } from 'lodash-es';
-import { Observable, Subject, Subscription } from 'rxjs';
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { ENTITY_TYPES, EntityType, DatabaseLink, ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { DatabaseLink, ENTITY_TYPE_MAP, EntityType, ENTITY_TYPES } from 'app/shared/annotation-types';
 import { LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
@@ -54,9 +51,7 @@ import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { composeInternalLink } from 'app/shared/workspace-manager';
-import { AppURL } from 'app/shared/utils/url';
 import { isNotEmpty } from 'app/shared/utils';
-import { AppURL } from 'app/shared/url/url';
 import { AppURL } from 'app/shared/url';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
