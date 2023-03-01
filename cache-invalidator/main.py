@@ -260,7 +260,7 @@ def _get_organism_genes_go_terms_query() -> str:
                     RETURN {
                         'goId': go_doc.eid,
                         'goTerm': go_doc.name,
-                        'goLabels': go_doc.labels,
+                        'goLabel': go_doc.labels,
                         'geneNames': DOCUMENT(groups[*].go_link.link._from)[*].name
                     }
             )
