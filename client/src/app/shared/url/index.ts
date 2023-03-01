@@ -4,7 +4,6 @@ import { NotImplemented } from 'app/sankey/utils/error';
 
 import { isNotEmpty } from '../utils';
 
-type URLLike<T extends AppURL = AppURL> = string | Partial<T|AppURL>;
 
 /**
  * Working with JS URL class is nice however it's requirement for url to be absolute is sometimes hard to go around.
@@ -13,72 +12,48 @@ type URLLike<T extends AppURL = AppURL> = string | Partial<T|AppURL>;
  * For more documentation check: https://url.spec.whatwg.org/#url-class and https://datatracker.ietf.org/doc/html/rfc1738
  */
 export class AppURL {
-  readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+)?:?(?<schemepart>.*)$/i;
-  scheme: string;
-  schemepart: string;
-
-  /**
-   * Shared among URL classes construct starting point.
-   *
-   * It is designed to handle every url-like entity from string to AppURL.
-   * Passing multiple values allows creating URLs with overwrites.
-   * Commonly new AppURL(appURLInstance, { overwrites }) creates URL copy with applied overwrites.
-   */
-  static construct(this: AppURL, ...urlLikes: Array<URLLike>) {
-    assign(this, ...urlLikes.map(urlLike =>
-      isString(urlLike) ? this.matcher.exec(urlLike)?.groups ?? {} : urlLike,
-    ));
-  }
+  readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+)?:/i;
 
   /**
    * Returns class instance which implements AppUrl interface.
    * Based of schema the actual class will differ, so it can constain schema specific accessors.
    */
-  constructor(...urlLikes: Array<URLLike>) {
-    AppURL.construct.call(this, ...urlLikes);
-    const scheme = this.scheme ?? window.location.protocol;
+  constructor(private url?: string) {
+    const scheme = this.matcher.exec(url)?.groups?.scheme;
     switch (scheme) {
       case 'mailto':
-        return new MailtoURL(this);
+        return new MailtoURL(url);
       case 'ftp':
-        return new FtpURL(this);
+        return new FtpURL(url);
       case 'http':
       case 'https':
-        return new HttpURL(this);
+      case undefined: // if no schema it is relative http url
+        return new HttpURL(url);
       default:
         throw new NotImplemented(`Urls with scheme "${scheme}" are not supported within application.`);
     }
   }
+}
 
-  /**
-   * Ensures that result is URL object
-   * if passed AppURL then just return
-   * otherwise create new AppURL instance.
-   *
-   * Especially usefull if we have type string | AppUrl
-   * and we want to access AppUrl methods.
-   *
-   * @param url - any url-like object/string
-   */
-  static from(url: URLLike): AppURL {
-    return url instanceof this ? url : new AppURL(url);
-  }
+interface AppURLBase {
+  toJSON(): string;
+  toString(): string;
+  freeze(): Readonly<this>;
+}
 
-  toString() {
-    return this.scheme ? `${this.scheme}:${this.schemepart}` : this.schemepart;
-  }
+type URLLike<T extends AppURLBase> = string | Partial<T>;
 
-  toJSON(): string {
-    return this.toString();
-  }
-
-  /**
-   * Prevents once defined URL to be modified in place
-   * return - readonly version of URL
-   */
-  freeze() {
-    return Object.freeze(this);
-  }
+/**
+ * Shared among URL classes construct starting point.
+ *
+ * It is designed to handle every url-like entity from string to AppURL.
+ * Passing multiple values allows creating URLs with overwrites.
+ * Commonly new AppURL(appURLInstance, { overwrites }) creates URL copy with applied overwrites.
+ */
+function construct<T extends AppURLBase>(this: AppURL, ...urlLikes: Array<URLLike<T>>) {
+  assign(this, ...urlLikes.map(urlLike =>
+    isString(urlLike) ? this.matcher.exec(urlLike)?.groups ?? {} : urlLike,
+  ));
 }
 
 // tslint:disable-next-line:class-name
@@ -97,13 +72,22 @@ class URL_REGEX {
   static href = `^(?:${URL_REGEX.origin})?${URL_REGEX.pathname}${URL_REGEX.search}?${URL_REGEX.hash}?$`;
 }
 
-export class HttpURL implements AppURL, URL {
+export class HttpURL implements AppURLBase, URL {
   set schemepart(schemepart: string) {
     this.href = schemepart;
   }
 
   get schemepart(): string {
     return this.href;
+  }
+
+  set protocol(protocol) {
+    // protocol is '{schema}:'
+    this.scheme = protocol?.slice(0, -1);
+  }
+
+  get protocol() {
+    return this.scheme ? this.scheme + ':' : undefined;
   }
 
   get searchParamsObject() {
@@ -179,7 +163,7 @@ export class HttpURL implements AppURL, URL {
   }
 
   constructor(...urlLikes: Array<URLLike<HttpURL>>) {
-    AppURL.construct.call(this, ...urlLikes);
+    construct.call(this, ...urlLikes);
   }
 
   readonly matcher: RegExp = new RegExp(URL_REGEX.href);
@@ -188,7 +172,6 @@ export class HttpURL implements AppURL, URL {
   fragment: string|URLSearchParams;
   hostname: string;
   port: string;
-  protocol: string;
   username: string;
   password: string;
   searchParams: URLSearchParams;
@@ -228,13 +211,13 @@ export class HttpURL implements AppURL, URL {
   }
 }
 
-class FtpURL implements AppURL {
+export class FtpURL implements AppURLBase {
   readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+):?(?<schemepart>.*)$/i;
   scheme: string;
   schemepart: string;
 
   constructor(...urlLikes: Array<URLLike<FtpURL>>) {
-    AppURL.construct.call(this, ...urlLikes);
+    construct.call(this, ...urlLikes);
   }
 
   static from(url: URLLike<FtpURL>): FtpURL {
@@ -254,7 +237,7 @@ class FtpURL implements AppURL {
   }
 }
 
-class MailtoURL implements AppURL {
+export class MailtoURL implements AppURLBase {
   readonly matcher: RegExp = /^(?<scheme>[a-z0-9+-\.]+)?:?(?<email>.*)$/i;
   scheme: string;
   email: string;
@@ -268,7 +251,11 @@ class MailtoURL implements AppURL {
   }
 
   constructor(...urlLikes: Array<URLLike<MailtoURL>>) {
-    AppURL.construct.call(this, ...urlLikes);
+    construct.call(this, ...urlLikes);
+  }
+
+  static from(url: URLLike<MailtoURL>): MailtoURL {
+    return url instanceof this ? url : new MailtoURL(url);
   }
 
   toString() {

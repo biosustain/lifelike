@@ -14,7 +14,7 @@ import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
 import { isInternalUri } from 'app/shared/url/internal';
-import { AppURL } from 'app/shared/url';
+import { AppURL, HttpURL } from 'app/shared/url';
 import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
 
 import { MapImageProviderService } from './map-image-provider.service';
@@ -88,7 +88,7 @@ export class GraphActionsService {
 
   mapInternalLinks<E extends { data?: UniversalEntityData }>(entity: E): E {
     const mapInternalToRelativeLink = ({ url, ...rest }) => {
-      const appUrl = AppURL.from(url);
+        const appUrl = HttpURL.from(url);
       return {
         ...rest,
           url: isInternalUri(appUrl) ? appUrl.relativehref : url

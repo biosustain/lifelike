@@ -231,5 +231,5 @@ const DOMAIN_MAP = new Map([
 const domainMapper = findURLMapping(DOMAIN_MAP);
 
 // Match the url address with the domain
-export const parseURLToDomainName = (url: string|AppURL, defaultReturn?: string): string =>
-  domainMapper(AppURL.from(url)) ?? defaultReturn ?? 'Link';
+export const parseURLToDomainName = (url: string|HttpURL, defaultReturn?: string): string =>
+  domainMapper(HttpURL.from(url)) ?? defaultReturn ?? 'Link';
