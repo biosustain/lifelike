@@ -61,6 +61,23 @@ export class InternalSearchService {
     return this.workspaceManager.navigate(...this.getVisualizerArguments(query, params));
   }
 
+  composeSearchInternalLinks(text, organism?) {
+    return [
+      {
+        navigate: this.getVisualizerArguments(text, {organism}),
+        label: 'Knowledge Graph',
+      },
+      {
+        navigate: this.getFileContentsArguments(text),
+        label: 'File Content',
+      },
+      {
+        navigate: this.getFileContentsArguments(text, {types: ['map']}),
+        label: 'Map Content',
+      },
+    ];
+  }
+
   // region Tmp fix for search
   private tmp_visualiser_search_params_fix({
     entities: [entity] = [],

@@ -23,20 +23,9 @@ export class HighlightTextService {
 
   composeSearchInternalLinks(text) {
     const organism = this.object?.fallbackOrganism?.tax_id;
-    return [
-      {
-        navigate: this.internalSearch.getVisualizerArguments(text, { organism }),
-        label: 'Knowledge Graph',
-      },
-      {
-        navigate: this.internalSearch.getFileContentsArguments(text),
-        label: 'File Content',
-      },
-      {
-        navigate: this.internalSearch.getFileContentsArguments(text, { types: ['map'] }),
-        label: 'Map Content',
-      },
-    ];
+    return this.internalSearch.composeSearchInternalLinks(
+      text, organism
+    );
   }
 
   getSources(meta) {

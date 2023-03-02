@@ -41,9 +41,12 @@ export class AnnotationTooltipComponent implements OnChanges {
   annoId: string;
   exclusionReason: string;
   exclusionComment: string;
-  idHyperlinks: { label: string; url: string }[];
-  searchLinks: { label: string; url: string }[];
-  internalSearchLinks: { label: string; arguments: Parameters<WorkspaceManager['navigate']> }[];
+  idHyperlinks: { label: string, url: string }[];
+  searchLinks: { label: string, url: string }[];
+  internalSearchLinks: {
+    label: string,
+    navigate: Parameters<WorkspaceManager['navigate']>
+  }[];
 
   removeCustom() {
     return this.annotationService.annotationRemoved(this.annotation.uuid);
@@ -104,20 +107,7 @@ export class AnnotationTooltipComponent implements OnChanges {
         url: links[domain] || search(allText),
         label
       }));
-      this.internalSearchLinks = [
-        {
-          arguments: this.internalSearch.getVisualizerArguments(allText),
-          label: 'Knowledge Graph',
-        },
-        {
-          arguments: this.internalSearch.getFileContentsArguments(allText),
-          label: 'File Content',
-        },
-        {
-          arguments: this.internalSearch.getFileContentsArguments(allText, { types: ['map'] }),
-          label: 'Map Content',
-        },
-      ];
+      this.internalSearchLinks = this.internalSearch.composeSearchInternalLinks(allText);
     }
   }
 
@@ -136,5 +126,10 @@ export class AnnotationTooltipComponent implements OnChanges {
   removeCustomAnnotation() {
     this.tooltipClose.emit();
     return this.annotationService.annotationRemoved(this.annotation.uuid);
+  }
+
+  navigate(event: Event, navigate: Parameters<WorkspaceManager['navigate']>) {
+    this.workspaceManager.navigate(...navigate);
+    event.preventDefault();
   }
 }

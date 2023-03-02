@@ -65,7 +65,7 @@ Data Source: {{ idType ? idType : 'None' }}
     ngbCollapse="true"
   >
     <a *ngFor="let link of internalSearchLinks"
-       [appLink]="'' + link.url"
+       href (click)="navigate($event, link.navigate)"
       [style.display]="'block'"
     >
       {{ link.label }}
