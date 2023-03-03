@@ -27,7 +27,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Mapper
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import BinaryIO, Optional, List, Dict
 
@@ -104,8 +104,7 @@ class FileContent(RDBMSBase):
 
     @property
     def raw_file_base64(self):
-        byt = self.raw_file
-        base64.b64encode(self.raw_file)
+        byt = base64.b64encode(self.raw_file)
         return byt.decode('utf-8')
 
     @raw_file_base64.setter
