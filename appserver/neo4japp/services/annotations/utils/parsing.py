@@ -1,7 +1,7 @@
 import requests
 
 from string import punctuation
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ..constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
@@ -76,21 +76,28 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
     else:
         data = {'text': kwargs['text']}
 
+    request_args: Dict[str, Any] = {'url': url, 'data': data, 'timeout': REQUEST_TIMEOUT}
     try:
-        req = requests.post(url, data=data, timeout=REQUEST_TIMEOUT)
+        req = requests.post(**request_args)
         resp = req.json()
         req.close()
     except requests.exceptions.ConnectTimeout:
         raise ServerException(
             'Parsing Error',
-            'The request timed out while trying to connect to the parsing service.')
+            'The request timed out while trying to connect to the parsing service.',
+            fields=request_args
+        )
     except requests.exceptions.Timeout:
         raise ServerException(
             'Parsing Error',
-            'The request to the parsing service timed out.')
+            'The request to the parsing service timed out.',
+            fields=request_args
+        )
     except (requests.exceptions.RequestException, Exception):
         raise ServerException(
             'Parsing Error',
-            'An unexpected error occurred with the parsing service.')
+            'An unexpected error occurred with the parsing service.',
+            fields=request_args
+        )
 
     return process_parsed_content(resp)
