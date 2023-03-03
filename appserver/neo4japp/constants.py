@@ -19,7 +19,7 @@ BASE_REDIS_URL = 'redis://{username}:{password}@{host}:{port}'.format(
     password=os.getenv('REDIS_PASSWORD', ''),
 )
 CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB', '0')
-RQ_REDIS_DB = os.getenv('RQ_REDIS_DB', '1')
+REDIS_DB = os.getenv('REDIS_DB', '1')
 
 ELASTICSEARCH_HOSTS = os.getenv('ELASTICSEARCH_HOSTS', 'localhost:9200').split(',')
 
