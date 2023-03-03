@@ -75,15 +75,15 @@ def go_term_query():
             FOR gene IN INBOUND organism has_taxonomy
                 RETURN gene
     )
-
     FOR original_gene IN original_master_genes
         LET results = UNION(
             (
                 FOR go_term IN OUTBOUND original_gene go_link
                     LET linked_gene_names = (
                         FOR gene IN organism_genes
-                            FOR go IN OUTBOUND gene go_link
-                                FILTER go._key == go_term._key
+                            FOR link IN go_link
+                                FILTER link._from == gene._id
+                                FILTER link._to == go_term._id
                                 RETURN gene.name
                     )
                     RETURN DISTINCT {
@@ -100,14 +100,19 @@ def go_term_query():
                             FOR go_term IN OUTBOUND protein go_link
                                 RETURN DISTINCT go_term
                 )
+                LET gene_names_and_linked_protein_ids = (
+                    FOR gene IN organism_genes
+                        FOR biocyc_gene IN INBOUND gene is
+                            FOR protein IN OUTBOUND biocyc_gene encodes
+                                RETURN {"geneName": gene.name, "protein_id": protein._id}
+                )
                 FOR go_term IN biocyc_go_terms
                     LET linked_gene_names = (
-                        FOR gene IN organism_genes
-                            FOR biocyc_gene IN INBOUND gene is
-                                FOR protein IN OUTBOUND biocyc_gene encodes
-                                    FOR go IN OUTBOUND protein go_link
-                                        FILTER go._key == go_term._key
-                                        RETURN gene.name
+                        FOR pair IN gene_names_and_linked_protein_ids
+                            FOR link IN go_link
+                                FILTER link._from == pair.protein_id
+                                FILTER link._to == go_term._id
+                                RETURN pair.geneName
                     )
                     RETURN DISTINCT {
                         "goId": go_term.eid,
