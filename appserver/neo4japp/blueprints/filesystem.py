@@ -22,7 +22,6 @@ from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_ea
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
 from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union, cast
-from typing import Set, cast
 from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
