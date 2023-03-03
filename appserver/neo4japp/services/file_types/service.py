@@ -1,10 +1,8 @@
-from io import BufferedIOBase, BytesIO
-from typing import Dict, List, Optional, Tuple
-
+import magic
 import typing
 
-import magic
-from werkzeug.datastructures import FileStorage
+from io import BufferedIOBase, BytesIO
+from typing import Dict, List, Optional, Tuple
 
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport

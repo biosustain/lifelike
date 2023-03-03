@@ -47,7 +47,12 @@ class ServerException(Exception):
         self._transaction_id = transaction_id
 
     def __str__(self):
-        return f'<Exception> {self.title}:{self.message}'
+        lines = [f'<Exception> {self.title}: {self.message}']
+        try:
+            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+        except Exception:
+            pass
+        return '\n'.join(lines)
 
     def to_dict(self):
         retval = {}
