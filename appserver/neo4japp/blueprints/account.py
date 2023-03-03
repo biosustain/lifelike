@@ -449,7 +449,6 @@ def reset_password(email: str):
                                                     password=new_password))
     SEND_GRID_API_CLIENT.send(message)
 
-
     target.set_password(new_password)
     target.forced_password_reset = True
     try:

@@ -642,7 +642,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
                     "filename")
-            with  db.session.begin_nested():
+            with db.session.begin_nested():
                 db.session.add(file)
                 break
 
