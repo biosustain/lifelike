@@ -41,18 +41,9 @@ def mocked_lmdb_open(monkeypatch):
     monkeypatch.setattr('lmdb.open', lmdb_open)
 
 
-def test_admin_can_create_user(client, fix_admin_user, mocked_responses, mocked_lmdb_open):
+def test_admin_can_create_user(client, fix_admin_user):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
-
-    # Mocked responses from pdfparser
-    mocked_responses.add(
-        responses.POST,
-        re.compile('.+/token/rect/.+'),
-        status=201,
-        content_type='application/json',
-        json={'pages': []},
-    )
 
     response = client.post(
         '/accounts/',
@@ -104,8 +95,8 @@ def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
 
     assert response.status_code == 200
     result = response.get_json()
-    # Add 1 to include the current user
-    assert int(result['total']) == len(mock_users) + 1
+    # Add 2 to include the current user AND the assumed to be present lifelike superuser
+    assert int(result['total']) == len(mock_users) + 2
 
 
 def test_admin_can_get_any_user(client, mock_users, fix_admin_user):
