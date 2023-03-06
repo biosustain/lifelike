@@ -47,6 +47,7 @@ from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
+from neo4japp.utils import FileContentBuffer
 from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
 from neo4japp.warnings import ServerWarning
@@ -575,17 +576,14 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     file.upload_url = None
 
     # Create operation
-    buffer = io.BytesIO(file_bstr)
+    buffer = FileContentBuffer(file_bstr)
 
     # Detect the mime type of the file
     mime_type = file_type_service.detect_mime_type(buffer)
-    buffer.seek(0)  # Must rewind
     file.mime_type = mime_type
 
     # Figure out file size
-    buffer.seek(0, io.SEEK_END)
-    size = buffer.tell()
-    buffer.seek(0)
+    size = buffer.size
 
     # Check max file size
     if size > 1024 * 1024 * 300:
@@ -602,7 +600,6 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     # Validate the content
     try:
         provider.validate_content(buffer)
-        buffer.seek(0)  # Must rewind
     except ServerWarning as w:
         warn(w)
     except ValueError as e:
@@ -611,14 +608,12 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
         try:
             # Get the DOI only if content could be validated
             file.doi = provider.extract_doi(buffer)
-            buffer.seek(0)  # Must rewind
         except ServerWarning as w:
             warn(w)
 
     # Save the file content if there's any
     if size:
         file.content_id = FileContent.get_or_create(buffer)
-        buffer.seek(0)  # Must rewind
 
     # ========================================
     # Commit and filename conflict resolution
@@ -1020,7 +1015,7 @@ def find_broken_map_links():
                     hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
 
     for files_id, raw_file in all_maps:
-        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(raw_file))
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
@@ -1111,7 +1106,7 @@ def fix_broken_map_links():
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
         print(f'Replacing links in file #{fcid}')
-        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(raw_file))
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
@@ -1149,7 +1144,7 @@ def fix_broken_map_links():
         validate_map(json.loads(byte_graph))
 
         # Zip the file back up before saving to the DB
-        zip_bytes2 = io.BytesIO()
+        zip_bytes2 = FileContentBuffer()
         with zipfile.ZipFile(zip_bytes2, 'x', zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr('graph.json', byte_graph)
         new_bytes = zip_bytes2.getvalue()

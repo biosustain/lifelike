@@ -29,7 +29,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
-from typing import BinaryIO, Optional, List, Dict
+from typing import Optional, List, Dict
 
 from neo4japp.constants import (
     LogEventType,
@@ -46,7 +46,7 @@ from neo4japp.models.common import (
     FullTimestampMixin,
     HashIdMixin
 )
-from neo4japp.utils import EventLog
+from neo4japp.utils import EventLog, FileContentBuffer
 from neo4japp.utils.sqlalchemy import get_model_changes
 
 file_collaborator_role = db.Table(
@@ -127,7 +127,7 @@ class FileContent(RDBMSBase):
         return int.from_bytes(h, byteorder='big', signed=True)
 
     @classmethod
-    def get_or_create(cls, file: BinaryIO, checksum_sha256: bytes = None) -> int:
+    def get_or_create(cls, file: FileContentBuffer, checksum_sha256: bytes = None) -> int:
         """Get the existing FileContent row for the given file or create a new row
         if needed.
 
@@ -142,13 +142,10 @@ class FileContent(RDBMSBase):
         :param checksum_sha256: the checksum of the file (computed if not provided)
         :return: the ID of the file
         """
-
-        content: Optional[bytes]
-
         if checksum_sha256 is None:
-            content = file.read()
-            file.seek(0)
-            checksum_sha256 = hashlib.sha256(content).digest()
+            with file as bufferView:
+                content = bufferView.read()
+                checksum_sha256 = hashlib.sha256(content).digest()
         else:
             content = None
 

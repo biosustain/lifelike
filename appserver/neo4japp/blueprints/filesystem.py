@@ -1,5 +1,4 @@
 import hashlib
-import io
 import itertools
 import json
 import os
@@ -88,9 +87,10 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
+
+from neo4japp.utils import FileContentBuffer
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.util import warn
-from neo4japp.utils.SizeLimitedBuffer import SizeLimitedBuffer
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
@@ -520,9 +520,7 @@ class FilesystemBaseView(MethodView):
                     buffer = params['content_value']
 
                     # Get file size
-                    buffer.seek(0, io.SEEK_END)
-                    size = buffer.tell()
-                    buffer.seek(0)
+                    size = buffer.size
 
                     if size > self.file_max_size:
                         raise ValidationError(
@@ -533,17 +531,18 @@ class FilesystemBaseView(MethodView):
                     provider = file_type_service.get(file)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
-                        provider.validate_content(buffer)
-                        buffer.seek(0)  # Must rewind
+                        with buffer as bufferView:
+                            provider.validate_content(bufferView)
                     except ValueError:
-                        raise ValidationError(f"The provided file may be corrupt for files of type "
-                                              f"'{file.mime_type}' (which '{file.hash_id}' is of).",
-                                              "contentValue")
+                        raise ValidationError(
+                            f"The provided file may be corrupt for files of type "
+                            f"'{file.mime_type}' (which '{file.hash_id}' is of).",
+                            "contentValue"
+                        )
                     except HandledException:
                         pass
 
                     new_content_id = FileContent.get_or_create(buffer)
-                    buffer.seek(0)  # Must rewind
 
                     # Only make a file version if the content actually changed
                     if file.content_id != new_content_id:
@@ -821,9 +820,7 @@ class FileListView(FilesystemBaseView):
             buffer, url = self._get_content_from_params(params)
 
             # Figure out file size
-            buffer.seek(0, io.SEEK_END)
-            size = buffer.tell()
-            buffer.seek(0)
+            size = buffer.size
 
             # Check max file size
             if size > self.file_max_size:
@@ -840,7 +837,6 @@ class FileListView(FilesystemBaseView):
                 file.mime_type = mime_type
             else:
                 mime_type = file_type_service.detect_mime_type(buffer)
-                buffer.seek(0)  # Must rewind
                 file.mime_type = mime_type
 
             # Get the provider based on what we know now
@@ -870,7 +866,6 @@ class FileListView(FilesystemBaseView):
             # Validate the content
             try:
                 provider.validate_content(buffer)
-                buffer.seek(0)  # Must rewind
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
             except HandledException:
@@ -879,14 +874,12 @@ class FileListView(FilesystemBaseView):
                 try:
                     # Get the DOI only if content could be validated
                     file.doi = provider.extract_doi(buffer)
-                    buffer.seek(0)  # Must rewind
                 except Warning as w:
                     warn(w)
 
             # Save the file content if there's any
             if size:
                 file.content_id = FileContent.get_or_create(buffer)
-                buffer.seek(0)  # Must rewind
                 try:
                     buffer.close()
                 except Exception:
@@ -1083,18 +1076,19 @@ class FileListView(FilesystemBaseView):
             missing=[],
         )))
 
-    def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
+    def _get_content_from_params(self, params: dict) -> Tuple[FileContentBuffer, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
         # Fetch from URL
         if url is not None:
             try:
+                response_buffer = FileContentBuffer(max_size=self.file_max_size)
                 # Note that in the future, we may wish to upload files of many different types
                 # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
                 # now it is the expectation.
                 if urllib.parse.urlparse(url).netloc == 'drive.google.com':
-                    buffer = gdown.download(url, SizeLimitedBuffer(self.file_max_size), fuzzy=True)
+                    buffer = gdown.download(url, response_buffer, fuzzy=True)
                     if buffer is None:
                         # currently gdown fails silently - wrote path for it
                         # https://github.com/wkentaro/gdown/pull/244
@@ -1103,7 +1097,6 @@ class FileListView(FilesystemBaseView):
                     file_type_service = get_file_type_service()
                     if file_type_service.detect_mime_type(buffer) != FILE_MIME_TYPE_PDF:
                         raise UnsupportedMediaTypeError()
-                    buffer.seek(0)  # Must rewind
                 else:
                     buffer = read_url(
                         url=url,
@@ -1111,6 +1104,7 @@ class FileListView(FilesystemBaseView):
                             'User-Agent': self.url_fetch_user_agent,
                             'Accept': FILE_MIME_TYPE_PDF,
                         },
+                        buffer=response_buffer,
                         max_length=self.file_max_size,
                         prefer_direct_downloads=True,
                         timeout=self.url_fetch_timeout
@@ -1157,9 +1151,9 @@ class FileListView(FilesystemBaseView):
 
         # Fetch from upload
         elif buffer is not None:
-            return buffer, None
+            return FileContentBuffer(stream=buffer), None
         else:
-            return cast(io.BufferedIOBase, io.BytesIO()), None
+            return FileContentBuffer(), None
 
 
 class FileSearchView(FilesystemBaseView):
@@ -1319,7 +1313,7 @@ class MapContentView(FilesystemBaseView):
                                   f'{file.mime_type}')
 
         try:
-            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+            zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
             json_graph = zip_file.read('graph.json')
         except (KeyError, zipfile.BadZipFile):
             raise ValidationError(
@@ -1379,7 +1373,7 @@ class FileExportView(FilesystemBaseView):
         link_to_page_map: Dict[str, int]
     ) -> List[Files]:
         current_user = g.current_user
-        zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError:
@@ -1453,7 +1447,7 @@ class FileBackupView(FilesystemBaseView):
         # or should I get the instance here?
         # Alternatively, we can zip those on the client side - but the JZip was working really slow
         if params['content_value'].content_type == FILE_MIME_TYPE_MAP:
-            new_content = io.BytesIO()
+            new_content = FileContentBuffer()
             zip_content = zipfile.ZipFile(
                 new_content,
                 'w',
@@ -1468,9 +1462,8 @@ class FileBackupView(FilesystemBaseView):
             for image in new_images:
                 zip_content.writestr('images/' + image.filename + '.png', image.read())
             zip_content.close()
-            # Always seek before the read
-            new_content.seek(0)
-            backup.raw_value = new_content.read()
+            with new_content as bufferView:
+                backup.raw_value = bufferView.read()
         else:
             backup.raw_value = params['content_value'].read()
         backup.user = current_user
