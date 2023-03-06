@@ -88,12 +88,12 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.util import warn
 from neo4japp.utils.SizeLimitedBuffer import SizeLimitedBuffer
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.network import ContentTooLongError, read_url, check_acceptable_size
+from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
 

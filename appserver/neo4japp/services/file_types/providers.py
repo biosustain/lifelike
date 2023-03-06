@@ -87,7 +87,7 @@ from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text
-from neo4japp.warnings import ServerWarning
+from neo4japp.warnings import ServerWarning, ContentValidationWarning
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -1493,8 +1493,14 @@ class GraphTypeProvider(BaseFileTypeProvider):
     def validate_content(self, buffer: BufferedIOBase):
         data = json.loads(buffer.read())
         validate_graph_format(data)
-        if 'version' in data:
-            validate_graph_content(data)
+        raise_content_errors = 'version' in data
+        for content_error in validate_graph_content(data):
+            if raise_content_errors:
+                raise content_error
+            else:
+                g.warnings.append(
+                    ContentValidationWarning(**content_error.to_dict())
+                )
 
     def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)

@@ -25,6 +25,7 @@
                  class="mt-1"
       >
         <strong *ngIf="warning.title">{{warning.title}}<br></strong>{{warning.message}}
+        <p *ngFor="let additionalMsg of (warning.additionalMsgs || [])">{{additionalMsg}}</p>
       </ngb-alert>
 
       <ngb-alert *ngFor="let error of progress.errors || []"
