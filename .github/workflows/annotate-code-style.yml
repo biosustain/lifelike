@@ -1,7 +1,8 @@
 name: Annotate code style
 
 on:
-  pull_request:
+  pull_request_target:
+    types: [labeled, synchronize]
 
 jobs:
   appserver:
@@ -16,9 +17,15 @@ jobs:
         with:
           neutral_check_on_warning: true
           continue_on_error: true
-          black: true
+          black: {{
+            github.event.label.name == 'backend' ||
+            contains(github.event.pull_request.labels.*.name, 'backend')
+          }}
           black_command_prefix: |-
             docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
-          prettier: true
+          prettier: {{
+            github.event.label.name == 'frontend' ||
+            contains(github.event.pull_request.labels.*.name, 'frontend')
+          }}
           prettier_command_prefix: |-
             docker run --rm -v $(pwd):/work tmknom/prettier
