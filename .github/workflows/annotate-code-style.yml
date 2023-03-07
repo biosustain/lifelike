@@ -7,17 +7,17 @@ on:
       autoFix:
         description: "Auto Fix"
         required: false
-        default: false
+        default: "false"
         type: boolean
       blackAutoFix:
         description: "Black Auto Fix"
         required: false
-        default: true
+        default: "true"
         type: boolean
       prettierAutoFix:
         description: "Prettier Auto Fix"
         required: false
-        default: true
+        default: "true"
         type: boolean
   issue_comment:
     types: [created]
