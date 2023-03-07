@@ -30,10 +30,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - run: echo "${{ toJSON(github.event.comment) }}-${{ toJSON(github.event.sender) }}-${{ toJSON(github.event.pull_request.user) }}"
+
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment == 'autofix' && github.event.sender == github.event.pull_request.user ) }}
+          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment.body == 'autofix' && github.event.sender == github.event.pull_request.user ) }}
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
