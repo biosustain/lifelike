@@ -1,10 +1,9 @@
+import gdown
 import hashlib
 import itertools
 import json
 import os
 import urllib
-from typing import Set, cast
-from urllib.error import HTTPError
 import zipfile
 
 from collections import defaultdict
@@ -12,6 +11,7 @@ from datetime import datetime, timedelta
 from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
+from itertools import chain
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
@@ -20,10 +20,9 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union, cast
+from urllib.error import HTTPError
 from webargs.flaskparser import use_args
-from itertools import chain
-import gdown
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,

@@ -1,28 +1,27 @@
 import base64
 import click
-from collections import namedtuple
 import copy
-
-import sentry_sdk
-from flask import current_app, request, g
 import hashlib
 import importlib
 import io
 import json
 import logging
-from marshmallow.exceptions import ValidationError
 import math
 import os
 import re
 import requests
-from sqlalchemy import inspect, Table
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql.expression import and_, text
+import sentry_sdk
 import sys
 import timeflake
-from typing import List
 import uuid
 import zipfile
+
+from collections import namedtuple
+from flask import current_app, request, g
+from marshmallow.exceptions import ValidationError
+from sqlalchemy import inspect, Table
+from sqlalchemy.sql.expression import and_, text
+from typing import List
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
@@ -625,27 +624,22 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
     # Trial 4: Give up
     # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-    for trial in range(4):
-        if 1 <= trial <= 2:  # Try adding (N+1)
-            try:
-                file.filename = file.generate_non_conflicting_filename()
-            except ValueError:
+    with db.session.begin():
+        for trial in range(4):
+            if 1 <= trial <= 2:  # Try adding (N+1)
+                try:
+                    file.filename = file.generate_non_conflicting_filename()
+                except ValueError:
+                    raise ValidationError(
+                        'Filename conflicts with an existing file in the same folder.',
+                        "filename")
+            elif trial == 3:  # Give up
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
                     "filename")
-        elif trial == 3:  # Give up
-            raise ValidationError(
-                'Filename conflicts with an existing file in the same folder.',
-                "filename")
-
-        try:
-            db.session.begin_nested()
-            db.session.add(file)
-            db.session.commit()
-            break
-        except IntegrityError as e:
-            # Warning: this could catch some other integrity error
-            db.session.rollback()
+            with db.session.begin_nested():
+                db.session.add(file)
+                break
 
     db.session.commit()
     # rollback in case of error?
