@@ -1,7 +1,6 @@
 import magic
 
 from typing import Dict, List, Optional, Tuple
-from typing import Dict, List, Optional, Tuple
 
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
