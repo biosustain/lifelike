@@ -35,7 +35,7 @@ jobs:
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment.body == 'autofix' && github.event.sender == github.event.pull_request.user ) }}
+          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment.body == 'autofix' && github.event.sender.id == github.event.pull_request.user.id ) }}
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
