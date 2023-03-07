@@ -36,7 +36,10 @@ jobs:
         with:
           auto_fix: ${{
             github.event.inputs.autoFix ||
-            (github.event.comment == 'autofix' && github.event.sender == github.event.pull_request.user)
+            (
+              github.event.comment == 'autofix' &&
+              github.event.sender == github.event.pull_request.user
+            )
           }}
           neutral_check_on_warning: true
           continue_on_error: true
