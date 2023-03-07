@@ -3,7 +3,6 @@ import base64
 from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk, streaming_bulk
 from flask import current_app
-from io import BytesIO
 import json
 
 from pyparsing import (
@@ -45,6 +44,7 @@ from neo4japp.services.elastic.query_parser_helpers import (
 )
 from neo4japp.utils import EventLog
 from app import app
+from neo4japp.utils import FileContentBuffer
 
 ParserElement.enablePackrat()
 
@@ -213,7 +213,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 else:
                     yield row[0:-1]
 
-    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
+    def _transform_data_for_indexing(self, file: Files) -> FileContentBuffer:
         """
         Get the file's contents in a format that can be indexed by Elastic, or is
         better indexed by Elatic.
@@ -223,9 +223,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         if file.content:
             content = file.content.raw_file
             file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(BytesIO(content))
+            return file_type_service.get(file).to_indexable_content(FileContentBuffer(content))
         else:
-            return BytesIO()
+            return FileContentBuffer()
 
     def _lazy_create_index_docs_for_parallel_bulk(self, batch):
         """
@@ -291,13 +291,11 @@ class ElasticService(ElasticConnection, GraphConnection):
         """
         try:
             indexable_content = self._transform_data_for_indexing(file).getvalue()
-            data_ok = True
         except Exception as e:
+            data = ''
             # We should still index the file even if we can't transform it for
             # indexing because the file won't ever appear otherwise and it will be
             # harder to track down the bug
-            indexable_content = b''
-            data_ok = False
 
             # TODO: Threading caused us to lose context, but we should rethink
             # how we do logging. Do we actually need to use the app_context?
@@ -307,6 +305,8 @@ class ElasticService(ElasticConnection, GraphConnection):
                 exc_info=e,
                 extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
             )
+        else:
+            data = base64.b64encode(indexable_content).decode('utf-8')
 
         # NOTE: Remember to update any relevant ORM event listeners if these properties are
         # updated! For example, the `after_update` listener of `Files`.
@@ -319,7 +319,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 'path': file.path,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
-                'data': base64.b64encode(indexable_content).decode('utf-8'),
+                'data': data,
                 'user_id': file.user_id,
                 'username': file.user.username,
                 'project_id': project.id,
@@ -330,7 +330,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 'id': file.id,
                 'hash_id': file.hash_id,
                 'mime_type': file.mime_type,
-                'data_ok': data_ok,
+                'data_ok': bool(data)
             }
         }
 

@@ -2,9 +2,9 @@ import codecs
 import os
 import re
 import string
+
 from datetime import timezone
 from enum import Enum
-
 from sendgrid import SendGridAPIClient
 
 from neo4japp.util import Enumd
@@ -37,6 +37,8 @@ DB_NCBI = 'NCBI'
 DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
+
+MASTER_INITIAL_PROJECT_NAME = 'master-initial-project'
 
 FILE_MIME_TYPE_DIRECTORY = 'vnd.***ARANGO_DB_NAME***.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
