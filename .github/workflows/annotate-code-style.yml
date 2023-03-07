@@ -3,24 +3,25 @@ name: Annotate code style
 on:
   pull_request:
   workflow_dispatch:
-    inputs:
-      autoFix:
-        description: "Auto Fix"
-        required: false
-        default: false
-        type: boolean
-      blackAutoFix:
-        description: "Black Auto Fix"
-        required: false
-        default: true
-        type: boolean
-      prettierAutoFix:
-        description: "Prettier Auto Fix"
-        required: false
-        default: true
-        type: boolean
   issue_comment:
     types: [created]
+
+inputs:
+  autoFix:
+    description: "Auto Fix"
+    required: false
+    default: false
+    type: boolean
+  blackAutoFix:
+    description: "Black Auto Fix"
+    required: false
+    default: true
+    type: boolean
+  prettierAutoFix:
+    description: "Prettier Auto Fix"
+    required: false
+    default: true
+    type: boolean
 
 jobs:
   appserver:
