@@ -15,4 +15,4 @@ class CustomJSONEncoder(JSONEncoder):
                 return str(obj)
         except TypeError:
             pass
-        return JSONEncoder.default(self, obj)
+        return JSONEncoder.default( self, obj )
