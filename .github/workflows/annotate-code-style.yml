@@ -2,6 +2,23 @@ name: Annotate code style
 
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      autoFix:
+        description: "Auto Fix"
+        required: false
+        default: false
+        type: boolean
+      blackAutoFix:
+        description: "Black Auto Fix"
+        required: false
+        default: true
+        type: boolean
+      prettierAutoFix:
+        description: "Prettier Auto Fix"
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   appserver:
@@ -14,11 +31,14 @@ jobs:
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
+          auto_fix: ${{ inputs.autoFix }}
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
+          black_auto_fix: ${{ inputs.blackAutoFix }}
           black_command_prefix: |-
             docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
           prettier: true
+          prettier_auto_fix: ${{ inputs.prettierAutoFix }}
           prettier_command_prefix: |-
             docker run --rm -v $(pwd):/work tmknom/prettier
