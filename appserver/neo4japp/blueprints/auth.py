@@ -1,23 +1,20 @@
+
 import jwt
 import sentry_sdk
 
 from datetime import datetime, timedelta, timezone
-from flask import current_app, request, Blueprint, g, jsonify
+from flask import Blueprint, current_app, g, jsonify, request
 from flask_httpauth import HTTPTokenAuth
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import db, jwt_client
-from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
-from neo4japp.exceptions import (
-    AuthenticationError,
-    JWTTokenException,
-    ServerException,
-)
-from neo4japp.schemas.auth import LifelikeJWTTokenResponse
+from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES, LogEventType
+from neo4japp.database import db, get_projects_service, jwt_client
+from neo4japp.exceptions import AuthenticationError, JWTTokenException, ServerException
 from neo4japp.models.auth import AppRole, AppUser
+from neo4japp.schemas.auth import LifelikeJWTTokenResponse
 from neo4japp.utils.logger import UserEventLog
 
 
@@ -175,11 +172,22 @@ def verify_token(token):
 
         # Finally, add the new user to the DB
         try:
+            projects_service = get_projects_service()
+            projects_service.create_initial_project(user)
             db.session.add(user)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            raise
+            raise ServerException(
+                title='Unexpected Database Transaction Error',
+                message='Something unexpected occurred while adding the user to the database.',
+                fields={
+                    'user_id': user.id if user.id is not None else 'N/A',
+                    'username': user.username,
+                    'user_email': user.email
+                },
+                stacktrace=str(e)
+            )
 
     g.current_user = user
     with sentry_sdk.configure_scope() as scope:

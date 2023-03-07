@@ -18,7 +18,7 @@ from neo4japp.models import (
     DomainURLsMap,
 )
 from neo4japp.services import AccountService
-from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
+from neo4japp.services.annotations import ManualAnnotationService
 from neo4japp.services.annotations.constants import EntityType, ManualAnnotationType
 from neo4japp.services.elastic import ElasticService
 

@@ -81,5 +81,5 @@ gdown = "==4.6.0"
 python_version = "3.9"
 
 [scripts]
-lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle .'"
+lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle . && docker exec appserver flake8 .'"
 test = "bash -c 'docker exec appserver pytest tests'"

@@ -33,6 +33,11 @@ class ServerWarning(Warning):
 
 
 @dataclass
+class ContentValidationWarning(ServerWarning):
+    pass
+
+
+@dataclass
 class ServerWarningGroup(ServerWarning):
     warnings: Optional[List[ServerWarning]] = None
     title: str = "Server returned group of warnings"

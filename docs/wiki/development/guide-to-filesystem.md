@@ -156,31 +156,32 @@ class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
-        try:
-            self.validate_content(buffer)
-            return 0
-        except ValueError:
-            return None
-        finally:
-            buffer.seek(0)
+    def detect_content_confidence(self, buffer: FileContentBuffer) -> Optional[float]:
+        with buffer as bufferView:
+            try:
+                self.validate_content(bufferView)
+                return 0
+            except ValueError:
+                return None
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        graph = json.loads(buffer.getvalue())
-        validate_map(graph)
+    def validate_content(self, buffer: FileContentBuffer):
+        with buffer as bufferView:
+            graph = json.loads(bufferView.getvalue())
+            validate_map(graph)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        content_json = json.load(buffer)
-        # ...transform data to be indexable by Elastic...
-        return BytesIO(json.dumps(map_data).encode('utf-8'))
+    def to_indexable_content(self, buffer: FileContentBuffer):
+        with buffer as bufferView:
+            content_json = json.load(bufferView)
+            # ...transform data to be indexable by Elastic...
+            return FileContentBuffer(json.dumps(map_data).encode('utf-8'))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         # ...generate export
         return FileExport(
-            content=BytesIO(graph.pipe()),
+            content=FileContentBuffer(graph.pipe()),
             mime_type=extension_mime_types[ext],
             filename=f"{file.filename}{ext}"
         )

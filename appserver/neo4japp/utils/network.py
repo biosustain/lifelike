@@ -2,7 +2,7 @@ import re
 import socket
 from http.client import HTTPSConnection, HTTPConnection
 from http.cookiejar import CookieJar
-from io import BytesIO, StringIO
+from io import StringIO, BytesIO
 from typing import List, Tuple
 from urllib.error import URLError
 from urllib.parse import urlsplit, urlunsplit, quote
