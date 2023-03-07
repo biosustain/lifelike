@@ -1,0 +1,24 @@
+name: Annotate code style
+
+on:
+  pull_request:
+
+jobs:
+  appserver:
+    name: Annotate code style
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Annotate code style
+        uses: wearerequired/lint-action@v2
+        with:
+          neutral_check_on_warning: true
+          continue_on_error: true
+          prettier: true
+          prettier_command_prefix: |-
+            docker run --rm -v $(pwd):/work tmknom/prettier --check --ignore-unknown --entrypoint
+          black: true
+          black_command_prefix: |-
+            docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release

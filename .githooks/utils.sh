@@ -17,8 +17,8 @@ HEADER () {
 # Example:
 #   getStaged appserver '\.(py)$'
 getStaged () {
-  relative_dir=${1:='.'}
-  matching_pattern=${2:=''}
+  relative_dir=${1:-'.'}
+  matching_pattern=${2:-''}
   cd "${relative_dir}"\
    && git diff --diff-filter=d --cached --name-only --relative\
     | grep -E "${matching_pattern}"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Runs linting on only files that are staged
+staged_files=$(getStaged client '')
+
+# shellcheck disable=SC2236
+if [[ -n $staged_files ]];
+then
+  (
+    echo "> Running prettier..."
+    echo ${staged_files} | xargs docker run --rm -v $(pwd):/work \
+      tmknom/prettier --debug-check --no-error-on-unmatched-pattern --loglevel=debug
+  )
+fi
