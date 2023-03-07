@@ -5,7 +5,6 @@ import string
 
 from flask import Blueprint, current_app, g, jsonify
 from flask.views import MethodView
-from pathlib import Path
 from sendgrid.helpers.mail import Mail
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by

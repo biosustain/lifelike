@@ -1,24 +1,20 @@
+import bioc
+import graphviz
 import io
 import json
 import os
+import numpy as np
 import re
+import requests
+import svg_stack
 import tempfile
 import textwrap
 import typing
 import zipfile
-from base64 import b64encode
-from dataclasses import dataclass
-from typing import Optional, List
 
-import bioc
-import graphviz
-import numpy as np
-import requests
-import svg_stack
-from PIL import Image, ImageColor
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PyPDF4.generic import DictionaryObject
+from base64 import b64encode
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
+from dataclasses import dataclass
 from flask import current_app, g
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
@@ -27,6 +23,10 @@ from marshmallow import ValidationError
 from math import ceil, floor
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from PyPDF4.generic import DictionaryObject
+from typing import Optional, List
 
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
@@ -113,6 +113,10 @@ def is_valid_doi(doi):
                             }
                             ).status_code not in [400, 404]
     except Exception as e:
+        current_app.logger.error(
+            f'An unexpected error occurred while requesting DOI: {doi}',
+            exc_info=e,
+        )
         return False
 
 
@@ -227,7 +231,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # yield 0 matches on test case
                 # # is it a DOI in common format?
                 # doi = (url + folderRegistrant + likelyDOIName)
-                # if self._is_valid_doi(doi):
+                # if is_valid_doi(doi):
                 #     print('match by common format xxx')
                 #     return doi
                 # in very rare cases there is \n in text containing doi
@@ -329,21 +333,6 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 )
             else:
                 return _search_doi_in(bytes(text, encoding='utf8'))
-
-    def _is_valid_doi(self, doi):
-        try:
-            # not [bad request, not found] but yes to 403 - no access
-            return requests.get(doi,
-                                headers={
-                                    # sometimes request is filtered if there is no user-agent header
-                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
-                                                  "AppleWebKit/537.36 "
-                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                                  "Safari/537.36"
-                                }
-                                ).status_code not in [400, 404]
-        except Exception as e:
-            return False
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
