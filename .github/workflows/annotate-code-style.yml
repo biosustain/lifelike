@@ -19,6 +19,8 @@ on:
         required: false
         default: true
         type: boolean
+  issue_comment:
+    types: [created]
 
 jobs:
   appserver:
@@ -35,7 +37,10 @@ jobs:
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
-          black_auto_fix: ${{ inputs.blackAutoFix }}
+          black_auto_fix: ${{
+            inputs.blackAutoFix ||
+            (github.event.comment == 'autofix' && github.event.sender == github.event.pull_request.user)
+          }}
           black_command_prefix: |-
             docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
           prettier: true
