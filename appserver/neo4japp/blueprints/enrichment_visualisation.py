@@ -34,7 +34,11 @@ def forward_request():
         raise StatisticalEnrichmentError(
             'Statistical Enrichment Error',
             'An unexpected error occurred while connecting to statistical enrichment service.',
-            fields=request_args
+            fields={
+                arg: request_args[arg]
+                for arg in request_args
+                if arg not in ['headers', 'cookies']
+            }
         )
 
     # 500 should contain message from service so we try to include it
