@@ -3,25 +3,25 @@ name: Annotate code style
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      autoFix:
+        description: "Auto Fix"
+        required: false
+        default: false
+        type: boolean
+      blackAutoFix:
+        description: "Black Auto Fix"
+        required: false
+        default: true
+        type: boolean
+      prettierAutoFix:
+        description: "Prettier Auto Fix"
+        required: false
+        default: true
+        type: boolean
   issue_comment:
     types: [created]
 
-inputs:
-  autoFix:
-    description: "Auto Fix"
-    required: false
-    default: false
-    type: boolean
-  blackAutoFix:
-    description: "Black Auto Fix"
-    required: false
-    default: true
-    type: boolean
-  prettierAutoFix:
-    description: "Prettier Auto Fix"
-    required: false
-    default: true
-    type: boolean
 
 jobs:
   appserver:
@@ -34,12 +34,17 @@ jobs:
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          auto_fix: ${{ inputs.autoFix }}
+          auto_fix: ${{
+            github.event.inputs.autoFix ||
+            (github.event.comment == 'autofix' && github.event.sender == github.event.pull_request.user)
+          }}
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
-          black_auto_fix: ${{ inputs.blackAutoFix || (github.event.comment == 'autofix' && github.event.sender == github.event.pull_request.user) }}
-          black_command_prefix: docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
+          black_auto_fix: ${{ github.event.inputs.blackAutoFix || true }}
+          black_command_prefix: |-
+            docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
           prettier: true
-          prettier_auto_fix: ${{ inputs.prettierAutoFix || false }}
-          prettier_command_prefix: docker run --rm -v $(pwd):/work tmknom/prettier
+          prettier_auto_fix: ${{ github.event.inputs.prettierAutoFix || true }}
+          prettier_command_prefix: |-
+            docker run --rm -v $(pwd):/work tmknom/prettier
