@@ -1,31 +1,24 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { HttpClientModule } from "@angular/common/http";
+import { RouterTestingModule } from "@angular/router/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { CopyrightInfringementFormComponent } from './copyright-infringement-form.component';
-import { ReportsService } from '../services/reports.service';
+import { CopyrightInfringementFormComponent } from "./copyright-infringement-form.component";
+import { ReportsService } from "../services/reports.service";
 
-describe('CopyrightInfringementFormComponent', () => {
+describe("CopyrightInfringementFormComponent", () => {
   let component: CopyrightInfringementFormComponent;
   let fixture: ComponentFixture<CopyrightInfringementFormComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientModule,
-        RootStoreModule,
-        RouterTestingModule,
-        SharedModule,
-      ],
-      declarations: [ CopyrightInfringementFormComponent ],
-      providers: [
-        ReportsService
-      ]
+      imports: [HttpClientModule, RootStoreModule, RouterTestingModule, SharedModule],
+      declarations: [CopyrightInfringementFormComponent],
+      providers: [ReportsService],
     });
   });
 
@@ -35,7 +28,7 @@ describe('CopyrightInfringementFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

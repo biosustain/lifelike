@@ -1,6 +1,8 @@
 from flask import g
-from ..graphdb import get_neo4j_db
+
 from .enrichment_visualisation import EnrichmentVisualisationService
+from ..graphdb import get_neo4j_db
+
 
 def get_enrichment_visualisation_service():
     if 'enrichment_visualisation_service' not in g:

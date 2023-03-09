@@ -9,22 +9,29 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '3a751148aa3b'
-down_revision = 'e89de4f6cd7f'
+revision = "3a751148aa3b"
+down_revision = "e89de4f6cd7f"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.create_table('views',
-                    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-                    sa.Column('params', sa.JSON(), nullable=False),
-                    sa.Column('checksum_sha256', sa.Binary(32), nullable=False, index=True,
-                              unique=True),
-                    sa.Column('modification_date', sa.DateTime, nullable=False,
-                              default=sa.func.now(), onupdate=sa.func.current_timestamp())
-                    )
+    op.create_table(
+        "views",
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column("params", sa.JSON(), nullable=False),
+        sa.Column(
+            "checksum_sha256", sa.Binary(32), nullable=False, index=True, unique=True
+        ),
+        sa.Column(
+            "modification_date",
+            sa.DateTime,
+            nullable=False,
+            default=sa.func.now(),
+            onupdate=sa.func.current_timestamp(),
+        ),
+    )
 
 
 def downgrade():
-    op.drop_table('views')
+    op.drop_table("views")

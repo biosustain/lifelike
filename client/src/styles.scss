@@ -1,7 +1,7 @@
 @import "***ARANGO_DB_NAME***-theme.scss";
 
-$blue: #3797DB;
-$dark-blue: #3177B8;
+$blue: #3797db;
+$dark-blue: #3177b8;
 
 @mixin no-select {
   -webkit-user-select: none; /* Chrome all / Safari all */
@@ -29,13 +29,14 @@ $dark-blue: #3177B8;
 }
 
 // Default rules from Angular Material. Do not modify.
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
-  margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin: 0;
 }
 
 // Content placed dynamically by the Angular Router (i.e. sibling of
@@ -53,13 +54,14 @@ router-outlet + * {
 }
 
 .tooltip-collapse-control:after {
-  font-family: Fontawesome;
-  content: '\f077';
+  content: "\f077";
   float: right;
+  font-family: Fontawesome;
 }
 
-.tooltip-collapse-control.collapsed:after, .tooltip-collapse-control[aria-expanded='false']:after {
-  content: '\f078';
+.tooltip-collapse-control.collapsed:after,
+.tooltip-collapse-control[aria-expanded="false"]:after {
+  content: "\f078";
 }
 
 .adaptive-modal {
@@ -69,7 +71,7 @@ router-outlet + * {
 }
 
 /* Importing Bootstrap SCSS file. */
-@import '~bootstrap/scss/bootstrap';
+@import "~bootstrap/scss/bootstrap";
 
 // Workaround for https://github.com/FortAwesome/Font-Awesome/issues/17469
 .fa.fa-spinner.fa-spin {
@@ -80,27 +82,26 @@ router-outlet + * {
   transform-origin: 50% 43.75%;
 }
 
-
 .qtip-bootstrap-unify {
   opacity: 1 !important;
 
   .tooltip-inner {
-    text-align: left !important;
+    background-clip: padding-box;
 
     /** Taken from Bootstrap body */
-    font-size: 14px;
-    line-height: 20px;
-    color: #333333;
-
-    /** Taken from Bootstrap .popover */
-    padding: 1px;
     background-color: #ffffff;
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, 0.2);
+
+    /** Taken from Bootstrap .popover */
     border-radius: 6px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    background-clip: padding-box;
+    color: #333333;
+    font-size: 14px;
+    line-height: 20px;
+    padding: 1px;
     padding: 9px 14px;
+    text-align: left !important;
   }
 
   //.bs-tooltip-end .arrow::before {
@@ -120,19 +121,19 @@ router-outlet + * {
   //}
 
   .arrow::after {
-    position: absolute;
-    content: "";
     border-color: transparent;
     border-style: solid;
+    content: "";
+    position: absolute;
   }
 
   &.bs-tooltip-top {
     .arrow {
       &::after {
-        top: 0;
-        border-width: $tooltip-arrow-height ($tooltip-arrow-width * .5) 0;
         border-top-color: white;
-        transform: translateY(-.7px);
+        border-width: $tooltip-arrow-height ($tooltip-arrow-width * 0.5) 0;
+        top: 0;
+        transform: translateY(-0.7px);
       }
     }
   }
@@ -140,10 +141,11 @@ router-outlet + * {
   &.bs-tooltip-right {
     .arrow {
       &::after {
-        right: 0;
-        border-width: ($tooltip-arrow-width * .5) $tooltip-arrow-height ($tooltip-arrow-width * .5) 0;
         border-right-color: white;
-        transform: translateX(-.7px);
+        border-width: ($tooltip-arrow-width * 0.5) $tooltip-arrow-height
+          ($tooltip-arrow-width * 0.5) 0;
+        right: 0;
+        transform: translateX(-0.7px);
       }
     }
   }
@@ -151,10 +153,10 @@ router-outlet + * {
   &.bs-tooltip-bottom {
     .arrow {
       &::after {
-        bottom: 0;
-        border-width: 0 ($tooltip-arrow-width * .5) $tooltip-arrow-height;
         border-bottom-color: white;
-        transform: translateY(.7px);
+        border-width: 0 ($tooltip-arrow-width * 0.5) $tooltip-arrow-height;
+        bottom: 0;
+        transform: translateY(0.7px);
       }
     }
   }
@@ -162,10 +164,11 @@ router-outlet + * {
   &.bs-tooltip-left {
     .arrow {
       &::after {
-        left: 0;
-        border-width: ($tooltip-arrow-width * .5) 0 ($tooltip-arrow-width * .5) $tooltip-arrow-height;
         border-left-color: white;
-        transform: translateX(.7px);
+        border-width: ($tooltip-arrow-width * 0.5) 0 ($tooltip-arrow-width * 0.5)
+          $tooltip-arrow-height;
+        left: 0;
+        transform: translateX(0.7px);
       }
     }
   }

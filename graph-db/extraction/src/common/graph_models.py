@@ -1,6 +1,7 @@
-from common.graph_models import *
-from common.constants import *
 import json
+
+from common.constants import *
+from common.graph_models import *
 
 EDGE_DIRECTION_TO = 'to'
 EDGE_DIRECTION_FROM = 'from'
@@ -10,7 +11,15 @@ class RelationshipType(object):
     """
     define relationship type for creating edge
     """
-    def __init__(self, edge_label, direction: str, match_node: str, match_attr: str=None, match_attr_data_type='str'):
+
+    def __init__(
+            self,
+            edge_label,
+            direction: str,
+            match_node: str,
+            match_attr: str = None,
+            match_attr_data_type='str'
+            ):
         self.label = edge_label
         self.direction = direction
         self.node_label = match_node
@@ -104,7 +113,7 @@ class NodeData(Item):
         self.index_label = ''  # label name for id index, e.g. db_BioCyc for biocyc_id, db_RegulonDB for regulondb_id
         self.edges = []
 
-    def add_label(self, new_labels:[]):
+    def add_label(self, new_labels: []):
         self.label = self.get_label_list() + new_labels
 
     def get_label_list(self):
@@ -120,7 +129,11 @@ class NodeData(Item):
         if not match_attr:
             match_attr = self.id_attr
         related_node = NodeData(relationship_type.node_label, match_attr)
-        related_node.update_attribute(match_attr, related_attr_val, relationship_type.match_attr_data_type)
+        related_node.update_attribute(
+            match_attr,
+            related_attr_val,
+            relationship_type.match_attr_data_type
+            )
         if relationship_type.direction == EDGE_DIRECTION_FROM:
             self.add_edge(related_node, self, relationship_type.label)
         else:
@@ -173,11 +186,13 @@ class NodeData(Item):
         output rows for relationships, in format [start_id, end_id, rel_type], tab delimited
         :return: list of string
         """
-        rows = [f"{edge.source.get_attribute(PROP_ID)}\t{edge.dest.get_attribute(PROP_ID)}\t{edge.label}\n" for
-                edge in self.edges]
+        rows = [
+            f"{edge.source.get_attribute(PROP_ID)}\t{edge.dest.get_attribute(PROP_ID)}\t{edge.label}\n"
+            for
+            edge in self.edges]
         return rows
 
-    def get_attr_values(self, attr_names:[]):
+    def get_attr_values(self, attr_names: []):
         return [self.get_attribute(attr) for attr in attr_names]
 
     @classmethod
@@ -198,7 +213,13 @@ class NodeData(Item):
         return rows
 
     @classmethod
-    def get_entity_header_row(cls, node_attributes: [], id_prop: str, index_name, show_label_col=False):
+    def get_entity_header_row(
+            cls,
+            node_attributes: [],
+            id_prop: str,
+            index_name,
+            show_label_col=False
+            ):
         """
         Get header for neo4j-admin import
         :param node_attributes:
@@ -224,7 +245,7 @@ class EdgeData(Item):
         self.source: NodeData = source
         self.dest: NodeData = dest
 
-    def get_create_edge_query(self, node_id_attr: str = None)->str:
+    def get_create_edge_query(self, node_id_attr: str = None) -> str:
         source_id_attr = node_id_attr
         dest_id_attr = node_id_attr
         if not node_id_attr:
@@ -244,6 +265,3 @@ class EdgeData(Item):
             """ % (source_id_attr, self.source.get_attribute(source_id_attr),
                    dest_id_attr, self.dest.get_attribute(dest_id_attr), self.label)
         return query
-
-
-

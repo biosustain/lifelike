@@ -1,5 +1,5 @@
-import { ReferenceType } from 'app/shared/references';
-import { WithOptional, WithRequired } from 'app/shared/utils/types';
+import { ReferenceType } from "app/shared/references";
+import { WithOptional, WithRequired } from "app/shared/utils/types";
 
 export interface UniversalGraphRelationship {
   node1: UniversalGraphNode;
@@ -35,18 +35,18 @@ export interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
-    width?: number,
-    height?: number,
+    width?: number;
+    height?: number;
   } & UniversalEntityData;
   display_name: string;
   hash: string;
   shape?: string;
   icon?: {
-    code: string,
-    color: string,
-    face: string,
-    size: number,
-    weight: string,
+    code: string;
+    color: string;
+    face: string;
+    size: number;
+    weight: string;
   };
   image_id?: string;
   label: string;
@@ -55,17 +55,16 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, 'data' | 'style' | 'hash'> &
-  {
-    data?: Partial<UniversalGraphNode['data']>,
-    style?: Partial<UniversalGraphNode['style']>,
-    hash?: Partial<UniversalGraphNode['hash']>
-  };
+export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, "data" | "style" | "hash"> & {
+  data?: Partial<UniversalGraphNode["data"]>;
+  style?: Partial<UniversalGraphNode["style"]>;
+  hash?: Partial<UniversalGraphNode["hash"]>;
+};
 
-export type UniversalGraphImageNodeTemplate = WithRequired<UniversalGraphNodeTemplate, 'image_id'>;
+export type UniversalGraphImageNodeTemplate = WithRequired<UniversalGraphNodeTemplate, "image_id">;
 
 export type UniversalGraphGroupTemplate = UniversalGraphNodeTemplate &
-  WithOptional<UniversalGraphGroup, 'margin'>;
+  WithOptional<UniversalGraphGroup, "margin">;
 
 export interface UniversalEdgeStyle {
   fontSizeScale?: number;
@@ -84,21 +83,23 @@ export interface UniversalGraphEdge {
   style?: UniversalEdgeStyle;
 }
 
-
 export interface KnowledgeMapGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
   groups: UniversalGraphGroup[];
 }
 
-export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge | UniversalGraphGroup;
+export declare type UniversalGraphEntity =
+  | UniversalGraphNode
+  | UniversalGraphEdge
+  | UniversalGraphGroup;
 
 export declare type UniversalGraphNodelike = UniversalGraphNode | UniversalGraphGroup;
 
 export enum GraphEntityType {
-  Node = 'node',
-  Edge = 'edge',
-  Group = 'group'
+  Node = "node",
+  Edge = "edge",
+  Group = "group",
 }
 
 export interface GraphEntity {
@@ -129,15 +130,15 @@ export interface LaunchApp {
   app: string;
   arg?: {
     // For pdf-viewer, coordinate of the nnoation of pd
-    coords?: number[],
+    coords?: number[];
     // hash of pdf to locate by
-    fileId?: string,
+    fileId?: string;
     // page of the pdf that the annotation is located on
-    pageNumber?: number
+    pageNumber?: number;
   };
 }
 
-export const DETAIL_NODE_LABELS = new Set(['note', 'link', 'image']);
+export const DETAIL_NODE_LABELS = new Set(["note", "link", "image"]);
 
 export function isCommonNodeDisplayName(label: string, displayName: string) {
   return displayName.toLowerCase() === label.toLowerCase();

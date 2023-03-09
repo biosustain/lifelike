@@ -1,6 +1,5 @@
-from common.database import *
 from common.constants import *
-from datetime import datetime
+from common.database import *
 from common.utils import write_compressed_tsv_file_from_dataframe, get_data_dir
 
 
@@ -10,6 +9,7 @@ def _write_entity_list_for_LMDB(entity_node_label: str, database: Database, outp
     filename = f"{entity_node_label}_list_for_LMDB.tsv"
     print("write", filename)
     write_compressed_tsv_file_from_dataframe(df, filename, output_dir, zip_file=False)
+
 
 def write_mesh_annotation_files(database, output_dir):
     _write_entity_list_for_LMDB(NODE_DISEASE, database, f'{output_dir}/processed/disease')

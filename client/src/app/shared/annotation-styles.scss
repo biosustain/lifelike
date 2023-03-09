@@ -26,55 +26,67 @@ $effect: #d7d9f8;
 $observation: #d7d9f8;
 $association: #d7d9f8;
 
-
 // Color property definitions
 .gene {
   color: $gene;
 }
+
 .disease {
   color: $disease;
 }
+
 .chemical {
   color: $chemical;
 }
+
 .compound {
   color: #4caf50;
 }
+
 .mutation {
   color: $mutation;
 }
+
 .species {
   color: $species;
 }
+
 .company {
   color: $company;
 }
+
 .study {
   color: $study;
 }
+
 .protein {
   color: $protein;
 }
+
 .pathway {
   color: $pathway;
 }
+
 .phenotype {
   color: $phenotype;
 }
 
-
 .correlation {
   color: $correlation;
 }
+
 .cause {
   color: $cause;
 }
+
 .effect {
   color: $effect;
 }
+
 .observation {
   color: $observation;
 }
+
 .association {
   color: $association;
 }
@@ -82,14 +94,15 @@ $association: #d7d9f8;
 .note {
   color: $note;
 }
+
 .map {
   color: $map;
 }
 
-
 .entity {
   color: $entity;
-};
+}
+
 .link {
   color: $link;
-};
+}

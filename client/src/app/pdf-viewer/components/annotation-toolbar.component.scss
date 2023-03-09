@@ -1,18 +1,18 @@
 app-annotation-toolbar {
+  display: block;
+  left: 0;
+  pointer-events: none;
+  // for proper height measurement
   position: absolute;
   top: 0;
-  left: 0;
-  // for proper height measurement
-  display: block;
-  pointer-events: none;
 
   &.active {
     pointer-events: all;
   }
 
   .popover {
-    transform: translateY(-100%);
     margin-bottom: 5px;
+    transform: translateY(-100%);
     width: max-content;
     z-index: 1050 !important;
   }

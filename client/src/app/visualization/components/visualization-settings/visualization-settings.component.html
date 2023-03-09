@@ -1,11 +1,16 @@
-<div *ngIf="legendLabels" class="floating-toolbar settings-container" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
+<div
+  *ngIf="legendLabels"
+  [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'"
+  class="floating-toolbar settings-container"
+>
   <div
-    class="pointer-on-hover canvas-settings-button"
     (click)="navbarCollapsed = !navbarCollapsed"
     [attr.aria-expanded]="!navbarCollapsed"
     aria-controls="navbarContent"
     aria-expanded="false"
-    aria-label="Toggle settings">
+    aria-label="Toggle settings"
+    class="pointer-on-hover canvas-settings-button"
+  >
     <i class="fa fa-fw fa-cog"></i>
   </div>
   <div [ngClass]="navbarCollapsed ? 'settings-content unexpanded' : 'settings-content expanded'">
@@ -14,53 +19,81 @@
         <legend>Canvas Settings</legend>
         <!-- Animation toggle -->
         <div class="custom-control custom-switch">
-          <input type="checkbox" formControlName="animation" class="custom-control-input pointer-on-hover" [id]="animationToggleInputId">
-          <label class="custom-control-label pointer-on-hover" [for]="animationToggleInputId">Animation</label>
+          <input
+            [id]="animationToggleInputId"
+            class="custom-control-input pointer-on-hover"
+            formControlName="animation"
+            type="checkbox"
+          />
+          <label [for]="animationToggleInputId" class="custom-control-label pointer-on-hover"
+            >Animation</label
+          >
         </div>
 
         <!-- Max cluster rows input -->
-        <label class="mt-2" [for]="maxClusterRowsInputId">Max rows shown in clusters:</label>
+        <label [for]="maxClusterRowsInputId" class="mt-2">Max rows shown in clusters:</label>
         <input
           [id]="maxClusterRowsInputId"
           [ngClass]="maxClusterRowsInputClass"
-          type="number"
+          formControlName="maxClusterShownRows"
           min="1"
           step="1"
-          formControlName="maxClusterShownRows"
+          type="number"
         />
-        <div class="mt-1 text-warning small-font" *ngIf="settingsForm.get('maxClusterShownRows').value > 50">
+        <div
+          *ngIf="settingsForm.get('maxClusterShownRows').value > 50"
+          class="mt-1 text-warning small-font"
+        >
           Large clusters may render slowly.
         </div>
-        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
+        <div
+          *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')"
+          class="mt-1 text-danger small-font"
+        >
           Max rows cannot be empty!
         </div>
-        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
+        <div
+          *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')"
+          class="mt-1 text-danger small-font"
+        >
           Max rows cannot be less than 1!
         </div>
-        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
+        <div
+          *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')"
+          class="mt-1 text-danger small-font"
+        >
           Max rows must be a whole number!
         </div>
 
         <!-- Labels to include in expand result checkboxes -->
         <label class="mt-2 mb-0">When Node is Expanded Include:</label>
         <div
-          class="custom-control custom-checkbox mt-1"
           *ngFor="let label of legendLabels; index as i"
+          class="custom-control custom-checkbox mt-1"
         >
-          <input type="checkbox" [formControlName]="label" class="custom-control-input pointer-on-hover" [id]="expandEntityInputIdPrefix + i">
-          <label class="custom-control-label pointer-on-hover" [for]="expandEntityInputIdPrefix + i">{{ label }}</label>
+          <input
+            [formControlName]="label"
+            [id]="expandEntityInputIdPrefix + i"
+            class="custom-control-input pointer-on-hover"
+            type="checkbox"
+          />
+          <label
+            [for]="expandEntityInputIdPrefix + i"
+            class="custom-control-label pointer-on-hover"
+            >{{ label }}</label
+          >
         </div>
 
         <button
-        type="button"
-        class="btn btn-secondary settings-button"
-        container="body"
-        ngbTooltip="Fit all nodes on screen"
-        placement="top"
-        (click)="fitToScreen()"
-      >
-        Fit to Screen
-      </button>
+          class="btn btn-secondary settings-button"
+          container="body"
+          type="button"
+          ngbTooltip="Fit all nodes on screen"
+          placement="top"
+          (click)="fitToScreen()"
+        >
+          Fit to Screen
+        </button>
       </fieldset>
     </form>
   </div>

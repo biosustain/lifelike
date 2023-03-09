@@ -1,13 +1,15 @@
+from os import environ
+
+import jwt
 from flask import current_app
 from flask_httpauth import HTTPTokenAuth
-import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-from os import environ
 
 from .exceptions import JWTTokenException
 
 auth = HTTPTokenAuth('Bearer')
 jwt_client = jwt.PyJWKClient(environ.get('JWKS_URL', ''))
+
 
 def login_exempt(f):
     """
@@ -47,11 +49,13 @@ class TokenService:
         except InvalidTokenError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session is invalid, please try logging back in.')  # noqa
+                message='The current authentication session is invalid, please try logging back in.'
+            )  # noqa
         except ExpiredSignatureError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session has expired, please try logging back in.')  # noqa
+                message='The current authentication session has expired, please try logging back in.'
+            )  # noqa
 
 
 @auth.verify_token

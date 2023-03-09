@@ -2,16 +2,20 @@
 Generate changelogs file to the $basedir, then users can move the file to the specific liquibase changelogs folder,
 and rename the file.  This is mainly used for generating loading file after data parsed to tsv files
 """
-from mako.template import Template
-from config.config import Config
-from common.query_builder import *
-from common.constants import *
-import os, logging
+import logging
+import os
 from datetime import datetime
-import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
+import pandas as pd
+from common.constants import *
+from common.query_builder import *
+from config.config import Config
+from mako.template import Template
+
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(message)s',
+    handlers=[logging.StreamHandler()]
+    )
 
 sql_template = 'sql_change_set.template'
 custom_template = 'custom_change_set.template'
@@ -26,13 +30,23 @@ CUSTOM_PARAMS = """
 
 QUERY_HANDLER = 'edu.ucsd.sbrg.ZipFileQueryHandler'
 
+
 class ChangeLogFileGenerator(object):
     """
     The generator would expect a zip file containing tsv files for nodes, synonyms, relationships and others (e.g. dblinks).
     Expected File names in zip file as EntityName.tsv, EntityName-synonyms.tsv, EntityName-rels.tsv
 
     """
-    def __init__(self, author, zipfile:str, db_source:str, entity_label:str, initial_load=True, basedir=None):
+
+    def __init__(
+            self,
+            author,
+            zipfile: str,
+            db_source: str,
+            entity_label: str,
+            initial_load=True,
+            basedir=None
+            ):
         """
         author: user name for changelog comment
         zipfile: zipfile name for the data files in tsv format. It should be located in processed_data_dir
@@ -100,8 +114,17 @@ class ChangeLogFileGenerator(object):
     def add_relationship_changesets(self):
         pass
 
-    def get_node_changeset(self, df: pd.DataFrame, filename:str,  entity_label: str,
-                            db_label=None, other_labels=[], row_filter_col=None, row_filter_val=None, index_db_label=True):
+    def get_node_changeset(
+            self,
+            df: pd.DataFrame,
+            filename: str,
+            entity_label: str,
+            db_label=None,
+            other_labels=[],
+            row_filter_col=None,
+            row_filter_val=None,
+            index_db_label=True
+            ):
         """
         Generate cypher query for creating nodes. By default, db_label contraint is used for insertion. If use
         entity, need to override the paramter index_db_label=False.
@@ -113,17 +136,21 @@ class ChangeLogFileGenerator(object):
         if not db_label:
             db_label = 'db_' + self.db_source
         index_label = db_label if index_db_label else entity_label
-        additional_labels = [entity_label] + other_labels if index_label else [db_label] + other_labels
-        query = get_create_update_nodes_query(index_label, PROP_ID, attrs,
-                                              additional_labels=additional_labels,
-                                              datasource=self.db_source,
-                                              row_filter_property=row_filter_col,
-                                              row_filter_value=row_filter_val
-                                              )
-        changeset = CustomChangeSet(id, self.author, comment, query,
-                                    handler=QUERY_HANDLER,
-                                    filename=filename,
-                                    zipfile=self.zipfile)
+        additional_labels = [entity_label] + other_labels if index_label else [
+                                                                                  db_label] + other_labels
+        query = get_create_update_nodes_query(
+            index_label, PROP_ID, attrs,
+            additional_labels=additional_labels,
+            datasource=self.db_source,
+            row_filter_property=row_filter_col,
+            row_filter_value=row_filter_val
+            )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query,
+            handler=QUERY_HANDLER,
+            filename=filename,
+            zipfile=self.zipfile
+            )
         return changeset
 
     def get_synonym_changeset(self, filename, entity_label, rel_props=[]):
@@ -132,15 +159,26 @@ class ChangeLogFileGenerator(object):
         """
         id = f'load {entity_label} synonyms from {self.zipfile}, date {self.date_tag}'
         comment = f'Load {self.db_source} {filename} from {self.zipfile}'
-        query = get_create_synonym_relationships_query(entity_label, PROP_ID, PROP_ID, PROP_NAME,
-                                                       rel_properties=rel_props)
-        changeset = CustomChangeSet(id, self.author, comment, query,
-                                    handler=QUERY_HANDLER,
-                                    filename=filename,
-                                    zipfile=self.zipfile)
+        query = get_create_synonym_relationships_query(
+            entity_label, PROP_ID, PROP_ID, PROP_NAME,
+            rel_properties=rel_props
+            )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query,
+            handler=QUERY_HANDLER,
+            filename=filename,
+            zipfile=self.zipfile
+            )
         return changeset
 
-    def get_relationships_changesets(self, df:pd.DataFrame, filename:str, from_node_label, to_node_label, rel_props=[]):
+    def get_relationships_changesets(
+            self,
+            df: pd.DataFrame,
+            filename: str,
+            from_node_label,
+            to_node_label,
+            rel_props=[]
+            ):
         """
         Generate cypher query for creating node-relationships.
         """
@@ -149,22 +187,28 @@ class ChangeLogFileGenerator(object):
         for rel in rels:
             id = f'load {rel} relationship in {filename} from {self.zipfile}, date {self.date_tag}'
             comment = f'Load {self.db_source} {rel} relationships, {filename} from {self.zipfile}'
-            query = get_create_relationships_query(from_node_label, PROP_ID, PROP_FROM_ID,
-                                                   to_node_label, PROP_ID, PROP_TO_ID, rel,
-                                                   rel_properties=rel_props,
-                                                   row_filter_property=REL_RELATIONSHIP,
-                                                   row_filter_value=rel)
-            changeset = CustomChangeSet(id, self.author, comment, query,
-                                        handler=QUERY_HANDLER,
-                                        filename=filename,
-                                        zipfile=self.zipfile)
+            query = get_create_relationships_query(
+                from_node_label, PROP_ID, PROP_FROM_ID,
+                to_node_label, PROP_ID, PROP_TO_ID, rel,
+                rel_properties=rel_props,
+                row_filter_property=REL_RELATIONSHIP,
+                row_filter_value=rel
+                )
+            changeset = CustomChangeSet(
+                id, self.author, comment, query,
+                handler=QUERY_HANDLER,
+                filename=filename,
+                zipfile=self.zipfile
+                )
             changesets.append(changeset)
 
         return changesets
 
     @classmethod
     def get_template(cls, templatefilename):
-        return Template(filename=os.path.join(Config().get_changelog_template_dir(), templatefilename))
+        return Template(
+            filename=os.path.join(Config().get_changelog_template_dir(), templatefilename)
+            )
 
     def generate_sql_changelog_file(self, id, comment, cypher, outfile_name):
         change_set = ChangeSet(id, self.author, comment, cypher)
@@ -184,15 +228,22 @@ class ChangeSet:
         template = ChangeLogFileGenerator.get_template(sql_template)
         # liquibase doesn't like the `<` character
         self.cypher = self.cypher.replace('<', '&lt;')
-        return template.render(change_id=self.id, author=self.author, change_comment=self.comment, cypher_query=self.cypher)
+        return template.render(
+            change_id=self.id,
+            author=self.author,
+            change_comment=self.comment,
+            cypher_query=self.cypher
+            )
 
 
 class CustomChangeSet(ChangeSet):
-    def __init__(self, id, author, comment, cypher,
-                 filename:str,
-                 zipfile: str,
-                 handler=QUERY_HANDLER,
-                 startrow=1):
+    def __init__(
+            self, id, author, comment, cypher,
+            filename: str,
+            zipfile: str,
+            handler=QUERY_HANDLER,
+            startrow=1
+            ):
         ChangeSet.__init__(self, id, author, comment, cypher)
         self.handler = handler
         self.filename = filename
@@ -201,9 +252,8 @@ class CustomChangeSet(ChangeSet):
 
     def create_changelog_str(self):
         template = ChangeLogFileGenerator.get_template(custom_template)
-        return template.render(change_id=self.id, change_comment=self.comment, author=self.author,
-                               handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
-                               zip_file=self.zipFile, start_at=self.start_at, params=CUSTOM_PARAMS)
-
-
-
+        return template.render(
+            change_id=self.id, change_comment=self.comment, author=self.author,
+            handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
+            zip_file=self.zipFile, start_at=self.start_at, params=CUSTOM_PARAMS
+            )

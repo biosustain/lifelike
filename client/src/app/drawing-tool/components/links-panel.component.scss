@@ -1,20 +1,20 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 .link-item {
 }
 
 .link-item-text-readonly {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
   max-height: none;
 }
 
 .link-item-text {
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   max-height: 100px;
+  overflow: hidden;
 }
 
 .link-item.active {
@@ -24,7 +24,7 @@
 
   .link-item-text {
     display: block;
-    overflow: visible;
     max-height: none;
+    overflow: visible;
   }
 }

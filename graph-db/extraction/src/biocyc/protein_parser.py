@@ -1,7 +1,7 @@
+import pandas as pd
 from biocyc.data_file_parser import DataFileParser
 from common.constants import *
 from common.graph_models import *
-import pandas as pd
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
@@ -27,10 +27,21 @@ POLYPEPTIDES = 'Polypeptides'
 MODIFIED_PROTEINS = 'Modified-Proteins'
 COMPLEXES = 'Complexes'
 
+
 class ProteinParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_URL, PROP_MOL_WEIGHT_KD, PROP_PI]
+        DataFileParser.__init__(
+            self,
+            db_name,
+            tarfile,
+            'proteins.dat',
+            NODE_PROTEIN,
+            ATTR_NAMES,
+            REL_NAMES,
+            DB_LINK_SOURCES
+            )
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_URL, PROP_MOL_WEIGHT_KD,
+                      PROP_PI]
 
     def parse_data_file(self):
         """
@@ -54,9 +65,9 @@ class ProteinParser(DataFileParser):
             edges = set(node.edges)
             for edge in edges:
                 if edge.label == REL_TYPE:
-                    if edge.dest.get_attribute(PROP_BIOCYC_ID)== POLYPEPTIDES:
+                    if edge.dest.get_attribute(PROP_BIOCYC_ID) == POLYPEPTIDES:
                         node.edges.remove(edge)
-                    elif edge.dest.get_attribute(PROP_BIOCYC_ID)==MODIFIED_PROTEINS:
+                    elif edge.dest.get_attribute(PROP_BIOCYC_ID) == MODIFIED_PROTEINS:
                         node.edges.remove(edge)
                         for e in edges:
                             if e.label == REL_ENCODE:
@@ -67,7 +78,7 @@ class ProteinParser(DataFileParser):
                         node.edges.remove(edge)
         return nodes
 
-    def extrace_synonyms(self, df:pd.DataFrame):
+    def extrace_synonyms(self, df: pd.DataFrame):
         """
         extract synonyms from 'synonyms' column, combine with name, return dataframe for id-synonym (columns[ID, NAME])
         """
@@ -75,7 +86,8 @@ class ProteinParser(DataFileParser):
             df_syn = df[[PROP_ID, PROP_SYNONYMS]].dropna()
             df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-            df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:, [PROP_ID, PROP_NAME]]
+            df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:,
+                     [PROP_ID, PROP_NAME]]
             df_name = df[[PROP_ID, PROP_NAME]]
             df_symbol = df[[PROP_ID, PROP_ABBREV_NAME]].dropna()
             df_symbol.columns = [PROP_ID, PROP_NAME]
@@ -83,4 +95,3 @@ class ProteinParser(DataFileParser):
             df_syn = df_syn[df_syn[PROP_NAME].str.len() > 1]
             return df_syn
         return DataFileParser.extrace_synonyms(self, df)
-

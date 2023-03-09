@@ -13,6 +13,7 @@ class ServerWarning(Warning):
     :param code: the warning code
     :param fields:
     """
+
     title: str = "Server returned warning"
     message: Optional[str] = "Code executed with following warnings"
     additional_msgs: Tuple[str, ...] = tuple()
@@ -26,7 +27,7 @@ class ServerWarning(Warning):
         return type(self).__name__
 
     def __str__(self):
-        return f'<Warning> {self.title}:{self.message}'
+        return f"<Warning> {self.title}:{self.message}"
 
     def to_dict(self):
         return asdict(self)
@@ -47,7 +48,7 @@ class ServerWarningGroup(ServerWarning):
             self.additional_msgs = tuple((warning.title for warning in self.warnings))
 
     def __str__(self):
-        compose = f'<WarningGroup> {self.title}:{self.message}'
+        compose = f"<WarningGroup> {self.title}:{self.message}"
         for warning in self.warnings:
-            compose += f'\n\t{warning}'
+            compose += f"\n\t{warning}"
         return compose

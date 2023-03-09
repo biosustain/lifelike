@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { BehaviorSubject, Observable, of, Subject, ReplaySubject } from 'rxjs';
-import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, ReplaySubject, Subject } from "rxjs";
+import { debounceTime, delay, switchMap, tap } from "rxjs/operators";
 
-import { SortDirectionType, SortDirection } from '../directives/table-sortable-header.directive';
+import { SortDirection, SortDirectionType } from "../directives/table-sortable-header.directive";
 
 interface SearchResult {
   data: any[];
@@ -18,10 +18,10 @@ interface State {
   sortDirection: SortDirectionType;
 }
 
-const compare = (v1: string | number, v2: string | number) => v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+const compare = (v1: string | number, v2: string | number) => (v1 < v2 ? -1 : v1 > v2 ? 1 : 0);
 
 function sort(data: any[], column: string, direction: SortDirectionType): any[] {
-  if (direction === '' || column === '') {
+  if (direction === "" || column === "") {
     return data;
   } else {
     return [...data].sort((a, b) => {
@@ -33,52 +33,43 @@ function sort(data: any[], column: string, direction: SortDirectionType): any[] 
 
 function matches(data: any, term: string) {
   const lowerCaseTerm = term.toLowerCase();
-  return Object.values(data).some(d => String(d).toLowerCase().includes(lowerCaseTerm));
+  return Object.values(data).some((d) => String(d).toLowerCase().includes(lowerCaseTerm));
 }
 
 @Injectable()
 export class DataService {
-  private _loading$ = new BehaviorSubject<boolean>(true);
   private _search$ = new Subject<void>();
-  private _data$ = new ReplaySubject<any[]>(1);
-  private _total$ = new ReplaySubject<number>(1);
-
   private _state: State = {
     page: 1,
     pageSize: 4,
-    searchTerm: '',
-    sortColumn: '',
-    sortDirection: ''
+    searchTerm: "",
+    sortColumn: "",
+    sortDirection: "",
   };
 
-  _inputData;
+  private _loading$ = new BehaviorSubject<boolean>(true);
 
-  constructor() {
-    this._search$.pipe(
-      tap(d => {
-        this._loading$.next(true);
-        return d;
-      }),
-      debounceTime(200),
-      switchMap(d => this._search(d)),
-      delay(200),
-      tap(() => this._loading$.next(false))
-    ).subscribe(result => {
-      this._data$.next(result.data);
-      this._total$.next(result.total);
-    });
+  get loading$() {
+    return this._loading$.asObservable();
   }
+
+  private _data$ = new ReplaySubject<any[]>(1);
 
   get data$() {
     return this._data$.asObservable();
   }
 
+  private _total$ = new ReplaySubject<number>(1);
+
   get total$() {
     return this._total$.asObservable();
   }
 
-  get loading$() {
-    return this._loading$.asObservable();
+  _inputData;
+
+  set inputData(data) {
+    this._inputData = data || [];
+    this._search$.next(data || []);
   }
 
   get page() {
@@ -86,7 +77,7 @@ export class DataService {
   }
 
   set page(page: number) {
-    this.patch({page});
+    this.patch({ page });
   }
 
   get pageSize() {
@@ -94,7 +85,7 @@ export class DataService {
   }
 
   set pageSize(pageSize: number) {
-    this.patch({pageSize});
+    this.patch({ pageSize });
   }
 
   get searchTerm() {
@@ -102,15 +93,33 @@ export class DataService {
   }
 
   set searchTerm(searchTerm: string) {
-    this.patch({searchTerm});
+    this.patch({ searchTerm });
   }
 
   set sortColumn(sortColumn: string) {
-    this.patch({sortColumn});
+    this.patch({ sortColumn });
   }
 
   set sortDirection(sortDirection: SortDirectionType) {
-    this.patch({sortDirection});
+    this.patch({ sortDirection });
+  }
+
+  constructor() {
+    this._search$
+      .pipe(
+        tap((d) => {
+          this._loading$.next(true);
+          return d;
+        }),
+        debounceTime(200),
+        switchMap((d) => this._search(d)),
+        delay(200),
+        tap(() => this._loading$.next(false))
+      )
+      .subscribe((result) => {
+        this._data$.next(result.data);
+        this._total$.next(result.total);
+      });
   }
 
   patch(patch: Partial<State>) {
@@ -118,23 +127,18 @@ export class DataService {
     this._search$.next(this._inputData);
   }
 
-  set inputData(data) {
-    this._inputData = data || [];
-    this._search$.next(data || []);
-  }
-
   private _search(inputData): Observable<SearchResult> {
-    const {sortColumn, sortDirection, pageSize, page, searchTerm} = this._state;
+    const { sortColumn, sortDirection, pageSize, page, searchTerm } = this._state;
 
     // 1. sort
     let data = sort(inputData, sortColumn, sortDirection);
 
     // 2. filter
-    data = data.filter(d => matches(d, searchTerm));
+    data = data.filter((d) => matches(d, searchTerm));
     const total = data.length;
 
     // 3. paginate
     data = data.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
-    return of({data, total});
+    return of({ data, total });
   }
 }

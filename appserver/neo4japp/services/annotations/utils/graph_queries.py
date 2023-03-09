@@ -1,40 +1,39 @@
 from ..constants import EntityType
 
-
 source_labels = {
-    EntityType.ANATOMY.value: 'db_MESH',
-    EntityType.DISEASE.value: 'db_MESH',
-    EntityType.FOOD.value: 'db_MESH',
-    EntityType.PHENOMENA.value: 'db_MESH',
-    EntityType.PHENOTYPE.value: 'db_MESH',
-    EntityType.CHEMICAL.value: 'db_CHEBI',
-    EntityType.COMPOUND.value: 'db_BioCyc',
-    EntityType.GENE.value: 'db_NCBI',
-    EntityType.SPECIES.value: 'db_NCBI',
-    EntityType.PROTEIN.value: 'db_UniProt'
+    EntityType.ANATOMY.value: "db_MESH",
+    EntityType.DISEASE.value: "db_MESH",
+    EntityType.FOOD.value: "db_MESH",
+    EntityType.PHENOMENA.value: "db_MESH",
+    EntityType.PHENOTYPE.value: "db_MESH",
+    EntityType.CHEMICAL.value: "db_CHEBI",
+    EntityType.COMPOUND.value: "db_BioCyc",
+    EntityType.GENE.value: "db_NCBI",
+    EntityType.SPECIES.value: "db_NCBI",
+    EntityType.PROTEIN.value: "db_UniProt",
 }
 
 node_labels = {
-    EntityType.ANATOMY.value: 'Anatomy',
-    EntityType.DISEASE.value: 'Disease',
-    EntityType.FOOD.value: 'Food',
-    EntityType.PHENOMENA.value: 'Phenomena',
-    EntityType.CHEMICAL.value: 'Chemical',
-    EntityType.COMPOUND.value: 'Compound',
-    EntityType.GENE.value: 'Gene',
-    EntityType.SPECIES.value: 'Taxonomy',
-    EntityType.PATHWAY.value: 'Pathway',
-    EntityType.PROTEIN.value: 'Protein',
-    EntityType.PHENOTYPE.value: 'Phenotype',
-    EntityType.ENTITY.value: 'Entity',
-    EntityType.COMPANY.value: 'Company',
-    EntityType.LAB_SAMPLE.value: 'LabSample',
-    EntityType.LAB_STRAIN.value: 'LabStrain'
+    EntityType.ANATOMY.value: "Anatomy",
+    EntityType.DISEASE.value: "Disease",
+    EntityType.FOOD.value: "Food",
+    EntityType.PHENOMENA.value: "Phenomena",
+    EntityType.CHEMICAL.value: "Chemical",
+    EntityType.COMPOUND.value: "Compound",
+    EntityType.GENE.value: "Gene",
+    EntityType.SPECIES.value: "Taxonomy",
+    EntityType.PATHWAY.value: "Pathway",
+    EntityType.PROTEIN.value: "Protein",
+    EntityType.PHENOTYPE.value: "Phenotype",
+    EntityType.ENTITY.value: "Entity",
+    EntityType.COMPANY.value: "Company",
+    EntityType.LAB_SAMPLE.value: "LabSample",
+    EntityType.LAB_STRAIN.value: "LabStrain",
 }
 
 
 def query_builder(parts):
-    return '\n'.join(parts)
+    return "\n".join(parts)
 
 
 def get_organisms_from_gene_ids_query():
@@ -121,11 +120,11 @@ def get_global_inclusions_paginated_query():
 
 def get_nodes_by_ids(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     if entity_type in source_labels:
-        query_label = f'{source_labels[entity_type]}:{query_label}'
+        query_label = f"{source_labels[entity_type]}:{query_label}"
 
     return f"""
     MATCH (n:{query_label}) WHERE n.eid IN $ids
@@ -180,12 +179,12 @@ def get_delete_global_inclusion_query():
 
 def get_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
 
     if entity_type in source_labels:
-        query_label = f'{source_labels[entity_type]}:{query_label}'
+        query_label = f"{source_labels[entity_type]}:{query_label}"
 
     return f"""
     MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:{query_label})
@@ -202,11 +201,11 @@ def get_global_inclusions_by_type_query(entity_type):
 
 def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     if entity_type == EntityType.SPECIES.value:
-        query_label = 'Organism'
+        query_label = "Organism"
 
     return f"""
     MATCH (s:GlobalInclusion:Synonym)-[r:HAS_SYNONYM]-(n:db_Lifelike:{query_label})
@@ -222,7 +221,7 @@ def get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type):
 
 def get_mesh_global_inclusion_exist_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     return f"""
@@ -290,7 +289,7 @@ def get_species_global_inclusion_exist_query():
 
 def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     return f"""
@@ -306,7 +305,7 @@ def get_***ARANGO_DB_NAME***_global_inclusion_exist_query(entity_type):
 
 def get_create_mesh_global_inclusion_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     return """
@@ -322,7 +321,9 @@ def get_create_mesh_global_inclusion_query(entity_type):
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    """.replace(
+        "replace_with_param", query_label
+    )
 
 
 def get_create_chemical_global_inclusion_query():
@@ -407,11 +408,11 @@ def get_create_protein_global_inclusion_query():
 
 def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
     if entity_type not in node_labels:
-        return ''
+        return ""
 
     query_label = node_labels[entity_type]
     if entity_type == EntityType.SPECIES.value:
-        query_label = 'Organism'
+        query_label = "Organism"
 
     # NOTE: a new gene should not be created, because
     # we have no option to specify an organism relationship
@@ -436,4 +437,6 @@ def get_create_***ARANGO_DB_NAME***_global_inclusion_query(entity_type):
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    """.replace(
+        "replace_with_param", query_label
+    )

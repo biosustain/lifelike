@@ -1,12 +1,12 @@
-@use 'variables';
+@use "variables";
 // our version of boostrap is not prep yet to use "use"
-@import 'variables';
-@import '~bootstrap/scss/mixins/deprecate';
-@import '~bootstrap/scss/mixins/nav-divider';
+@import "variables";
+@import "~bootstrap/scss/mixins/deprecate";
+@import "~bootstrap/scss/mixins/nav-divider";
 
 $search-accent-color: variables.$red;
 $selection-accent-color: #ff0;
-$node-label-shadow: rgba(187, 187, 187, .9);
+$node-label-shadow: rgba(187, 187, 187, 0.9);
 $input-spacing: map-get(variables.$spacers, 2);
 $active-stroke-width: 3px;
 $trasition: 100ms;
@@ -14,7 +14,7 @@ $trasition: 100ms;
 @mixin panel-divider {
   width: 100%;
   clear: both;
-  content: '';
+  content: "";
   display: block;
   @include nav-divider(variables.$dropdown-divider-bg, variables.$dropdown-divider-margin-y, true);
 }
@@ -26,7 +26,6 @@ $trasition: 100ms;
 }
 
 @mixin advanced-panel {
-
   form {
     text-align: left;
 
@@ -34,7 +33,7 @@ $trasition: 100ms;
       margin-bottom: 0;
     }
 
-    [type=checkbox] {
+    [type="checkbox"] {
       align-self: center;
       margin-right: $input-spacing;
     }
@@ -43,7 +42,8 @@ $trasition: 100ms;
       flex-grow: 1;
     }
 
-    > *, .form-group {
+    > *,
+    .form-group {
       width: 100%;
       display: flex;
       flex-wrap: wrap;
@@ -86,7 +86,7 @@ $trasition: 100ms;
 
 @mixin legend {
   $box-width: 1.75rem;
-  $box-height: .75rem;
+  $box-height: 0.75rem;
   //pointer-events: none;
   width: 100%;
   @include panel-align-presets;
@@ -110,8 +110,8 @@ $trasition: 100ms;
     grid-template-columns: auto;
     grid-auto-columns: 1fr;
     grid-auto-flow: column;
-    column-gap: .5rem;
-    row-gap: .5rem;
+    column-gap: 0.5rem;
+    row-gap: 0.5rem;
 
     > *:not(dt, dd) {
       display: contents;
@@ -148,10 +148,10 @@ $trasition: 100ms;
     line-height: 1.5;
 
     &:before {
-      border-radius: .1rem;
+      border-radius: 0.1rem;
       border-style: solid;
       border-width: 2px;
-      content: '';
+      content: "";
       display: inline-block;
       height: $box-height;
       width: $box-width;
@@ -184,7 +184,6 @@ $trasition: 100ms;
   }
 }
 
-
 @mixin active($active) {
   @if ($active) {
     opacity: var(--active-opacity);
@@ -192,7 +191,6 @@ $trasition: 100ms;
     opacity: var(--inactive-opacity);
   }
 }
-
 
 @mixin focused {
   rect {
@@ -213,13 +211,13 @@ $trasition: 100ms;
 
   svg {
     background-color: variables.$window-background;
-    font-size: .6em;
+    font-size: 0.6em;
     height: 100%;
     width: 100%;
 
     > g {
       .nodes {
-        $label-margin: 2*$active-stroke-width;
+        $label-margin: 2 * $active-stroke-width;
         $node-width: 10px;
 
         shape-rendering: crispEdges;
@@ -248,18 +246,17 @@ $trasition: 100ms;
               // ellipsis itself is about 1.2ch wide
               max-width: calc(var(--ellipsis-after-x-characters) + 1.2ch);
               pointer-events: none;
-              padding: 0 .3em;
+              padding: 0 0.3em;
             }
 
-            &[label-anchor='left'] div {
+            &[label-anchor="left"] div {
               transform: translate(calc(-100% - #{$node-width / 2 + $label-margin}), -50%);
             }
 
-            &[label-anchor='right'] div {
+            &[label-anchor="right"] div {
               transform: translate(#{$node-width / 2 + $label-margin}, -50%);
             }
           }
-
 
           &[highlighted="false"],
           &[transitively-selected="false"],

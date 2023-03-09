@@ -1,20 +1,27 @@
-import os.path
-
-import pandas as pd
-
-from common.graph_models import *
-from common.base_parser import BaseParser
-import logging
 import gzip
+import logging
+import os.path
 import re
 from typing import List
+
+from common.base_parser import BaseParser
+from common.graph_models import *
 
 
 class OboParser(BaseParser):
     """
     Base parser to parse obo format files.
     """
-    def __init__(self, data_source:str, obo_file:str, attributes_map: dict, relationships_map: dict, node_label, node_attrs=[]):
+
+    def __init__(
+            self,
+            data_source: str,
+            obo_file: str,
+            attributes_map: dict,
+            relationships_map: dict,
+            node_label,
+            node_attrs=[]
+            ):
         """
         datasource: node data source, e.g. GO, CHEBI.
         """
@@ -135,14 +142,3 @@ class OboParser(BaseParser):
         if relfile:
             outfiles.append(relfile)
         self.zip_output_files(outfiles, output_zip_file)
-
-
-
-
-
-
-
-
-
-
-

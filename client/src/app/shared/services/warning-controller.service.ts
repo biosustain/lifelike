@@ -1,14 +1,44 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from "@angular/core";
 
-import { BehaviorSubject } from 'rxjs';
-import { transform, isBoolean } from 'lodash-es';
+import { BehaviorSubject } from "rxjs";
+import { isBoolean, transform } from "lodash-es";
 
 @Injectable()
 export class WarningControllerService implements OnDestroy {
   warnings = new BehaviorSubject([]);
   currentWarnings = new BehaviorSubject([]);
-  private wm = new Map();
   showUnique = true;
+  private wm = new Map();
+
+  warn(warning, hide: number | boolean = 5000) {
+    if (this.showUnique && this.wm.has(warning)) {
+      return;
+    }
+    this.closeExistingWarning(warning);
+    const openStatus = isBoolean(hide) ? !hide : setTimeout(() => this.close(warning), hide);
+    this.wm.set(warning, openStatus);
+    this.updateWarningList();
+  }
+
+  assert(assertion, ...args: Parameters<WarningControllerService["warn"]>) {
+    if (!assertion) {
+      return this.warn(...args);
+    }
+  }
+
+  close(warning) {
+    this.closeExistingWarning(warning);
+    this.wm.set(warning, false);
+    this.updateWarningList();
+  }
+
+  ngOnDestroy() {
+    for (const timeoutId of this.wm.values()) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
 
   private updateWarningList() {
     const next = transform(
@@ -28,36 +58,6 @@ export class WarningControllerService implements OnDestroy {
     const existingWarning = this.wm.get(warning);
     if (existingWarning) {
       clearTimeout(existingWarning);
-    }
-  }
-
-  warn(warning, hide: number | boolean = 5000) {
-    if (this.showUnique && this.wm.has(warning)) {
-      return;
-    }
-    this.closeExistingWarning(warning);
-    const openStatus = isBoolean(hide) ? !hide : setTimeout(() => this.close(warning), hide);
-    this.wm.set(warning, openStatus);
-    this.updateWarningList();
-  }
-
-  assert(assertion, ...args: Parameters<WarningControllerService['warn']>) {
-    if (!assertion) {
-      return this.warn(...args);
-    }
-  }
-
-  close(warning) {
-    this.closeExistingWarning(warning);
-    this.wm.set(warning, false);
-    this.updateWarningList();
-  }
-
-  ngOnDestroy() {
-    for (const timeoutId of this.wm.values()) {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     }
   }
 }

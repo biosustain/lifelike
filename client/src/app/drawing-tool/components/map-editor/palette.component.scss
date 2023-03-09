@@ -1,6 +1,6 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import '~bootstrap/scss/mixins';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
 
 .palette-container {
   display: flex;
@@ -10,24 +10,24 @@
 }
 
 .palette-item-container {
+  cursor: grab;
   padding: 0.2rem;
   width: 50%;
-  cursor: grab;
 }
 
 .palette-item {
-  display: flex;
+  align-items: center;
   border-radius: $border-radius;
   @include text-truncate();
-  align-items: center;
+  display: flex;
 }
 
 .palette-item-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-  margin-right: 0.3rem;
   border-radius: $border-radius;
+  flex-shrink: 0;
+  height: 1.5rem;
+  margin-right: 0.3rem;
+  width: 1.5rem;
 }
 
 .palette-item-label {

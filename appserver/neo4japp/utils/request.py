@@ -4,7 +4,7 @@ from sqlalchemy import Column
 
 
 class Pagination:
-    __slots__ = ('page', 'limit')
+    __slots__ = ("page", "limit")
     page: int
     limit: int
 
@@ -13,16 +13,16 @@ class Pagination:
         self.limit = limit
 
     def __getitem__(self, item):
-        if item == 'page':
+        if item == "page":
             return self.page
-        elif item == 'limit':
+        elif item == "limit":
             return self.limit
         else:
             raise KeyError(item)
 
 
 def parse_sort(value: str, choices: Dict[str, Column], default_value: str):
-    tokens = (value if value is not None and len(value) else default_value).split(',')
+    tokens = (value if value is not None and len(value) else default_value).split(",")
     columns = []
 
     if not len(value):
@@ -30,15 +30,15 @@ def parse_sort(value: str, choices: Dict[str, Column], default_value: str):
 
     for token in tokens:
         if not len(token):
-            raise ValueError('bad sort token')
-        if token[0] == '-':
+            raise ValueError("bad sort token")
+        if token[0] == "-":
             if not len(token) >= 2:
-                raise ValueError('bad sort token')
+                raise ValueError("bad sort token")
             desc = True
             column_name = token[1:]
-        elif token[0] == '+':
+        elif token[0] == "+":
             if not len(token) >= 2:
-                raise ValueError('bad sort token')
+                raise ValueError("bad sort token")
             desc = False
             column_name = token[1:]
         else:
@@ -70,11 +70,10 @@ def parse_limit(value: str, upper: int, default_value: int = 10):
         return min(upper, int(value))
 
 
-def paginate_from_args(query, args, columns: Dict[str, Column],
-                       default_sort: str, upper_limit: int):
-    sort = parse_sort(args.get('sort'), columns, default_sort)
-    page = parse_page(args.get('page'))
-    limit = parse_limit(args.get('limit'), upper_limit)
-    return query \
-        .order_by(*sort) \
-        .paginate(page, limit, False)
+def paginate_from_args(
+    query, args, columns: Dict[str, Column], default_sort: str, upper_limit: int
+):
+    sort = parse_sort(args.get("sort"), columns, default_sort)
+    page = parse_page(args.get("page"))
+    limit = parse_limit(args.get("limit"), upper_limit)
+    return query.order_by(*sort).paginate(page, limit, False)

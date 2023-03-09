@@ -1,24 +1,32 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { isNil } from 'lodash-es';
-import { Options } from 'vis-network';
+import { isNil } from "lodash-es";
+import { Options } from "vis-network";
 
-import { GraphData } from 'app/interfaces/vis-js.interface';
+import { GraphData } from "app/interfaces/vis-js.interface";
 
 export enum DisplayType {
-  NETWORK = 'network',
-  SANKEY = 'sankey'
+  NETWORK = "network",
+  SANKEY = "sankey",
 }
 
 @Component({
-  selector: 'app-route-display',
-  templateUrl: './route-display.component.html',
-  styleUrls: ['./route-display.component.scss']
+  selector: "app-route-display",
+  templateUrl: "./route-display.component.html",
+  styleUrls: ["./route-display.component.scss"],
 })
 export class RouteDisplayComponent {
+  currentDisplay: string;
+  networkConfig: Options;
+  networkData: GraphData;
+  sankeyConfig: any;
+  sankeyData: any;
+  legend: Map<string, string[]>;
+
   @Input() set displayType(displayType: DisplayType) {
     this.currentDisplay = DisplayType[displayType];
   }
+
   @Input() set graphData(graphData: GraphData) {
     // Update vis js data
     this.networkData = graphData;
@@ -29,16 +37,6 @@ export class RouteDisplayComponent {
     // Update legend
     this.setupLegend(graphData.nodes);
   }
-
-  currentDisplay: string;
-
-  networkConfig: Options;
-  networkData: GraphData;
-
-  sankeyConfig: any;
-  sankeyData: any;
-
-  legend: Map<string, string[]>;
 
   constructor() {
     this.initVisJsSettings();
@@ -56,7 +54,7 @@ export class RouteDisplayComponent {
       },
       physics: {
         enabled: true,
-        solver: 'barnesHut',
+        solver: "barnesHut",
       },
       edges: {
         font: {
@@ -79,7 +77,7 @@ export class RouteDisplayComponent {
             drawThreshold: 5,
           },
         },
-        shape: 'box',
+        shape: "box",
         widthConstraint: {
           maximum: 180,
         },
@@ -107,7 +105,7 @@ export class RouteDisplayComponent {
     });
 
     const seenEdges = new Map<string, number>();
-    edges.forEach(edge => {
+    edges.forEach((edge) => {
       const sankeyEdge = [nodeIdentityMap.get(edge.from), nodeIdentityMap.get(edge.to)];
       if (seenEdges.has(sankeyEdge.toString())) {
         value[seenEdges.get(sankeyEdge.toString())] += 1;
@@ -120,15 +118,15 @@ export class RouteDisplayComponent {
     });
 
     this.sankeyData = {
-      type: 'sankey',
-      orientation: 'h',
+      type: "sankey",
+      orientation: "h",
       node: {
-        arrangement: 'snap',
+        arrangement: "snap",
         pad: 15,
         thickness: 20,
         line: {
-          color: 'black',
-          width: 0.5
+          color: "black",
+          width: 0.5,
         },
         label,
         color,
@@ -136,23 +134,23 @@ export class RouteDisplayComponent {
       link: {
         source,
         target,
-        value
-      }
+        value,
+      },
     };
   }
 
   initPlotlySankeySettings() {
     // Init plotly sankey settings
     this.sankeyData = {
-      type: 'sankey',
-      orientation: 'h',
+      type: "sankey",
+      orientation: "h",
       node: {
-        arrangement: 'snap',
+        arrangement: "snap",
         pad: 15,
         thickness: 20,
         line: {
-          color: 'black',
-          width: 0.5
+          color: "black",
+          width: 0.5,
         },
         label: [],
         color: [],
@@ -161,14 +159,14 @@ export class RouteDisplayComponent {
       link: {
         source: [],
         target: [],
-        value: []
-      }
+        value: [],
+      },
     };
 
     this.sankeyConfig = {
       font: {
-        size: 10
-      }
+        size: 10,
+      },
     };
   }
 
@@ -186,5 +184,4 @@ export class RouteDisplayComponent {
       }
     });
   }
-
 }

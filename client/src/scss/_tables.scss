@@ -1,9 +1,9 @@
 .table {
   thead th {
-    font-size: $font-size-sm;
-    border-top: 0;
     border-bottom: 0;
+    border-top: 0;
     color: $gray-600;
+    font-size: $font-size-sm;
   }
 }
 
@@ -18,7 +18,8 @@
         box-shadow: $table-row-focus-box-shadow;
       }
 
-      &:focus, &.active:hover {
+      &:focus,
+      &.active:hover {
         box-shadow: $table-row-focus-box-shadow;
       }
     }

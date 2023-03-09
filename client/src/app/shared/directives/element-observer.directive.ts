@@ -1,4 +1,4 @@
-import { ElementRef, Directive } from '@angular/core';
+import { Directive, ElementRef } from '@angular/core';
 
 import { createResizeObservable } from '../rxjs/resize-observable';
 import { createScrollObservable } from '../rxjs/scroll-observable';
@@ -8,15 +8,12 @@ import { createScrollObservable } from '../rxjs/scroll-observable';
  * IMPORTANT!: This does not work on inline elements (display: inline)
  */
 @Directive({
-  selector: '[appElementObserver]',
-  exportAs: 'appElementObserver'
+  selector: "[appElementObserver]",
+  exportAs: "appElementObserver",
 })
 export class ElementObserverDirective {
-  constructor(
-    protected _elementRef: ElementRef<HTMLElement>
-  ) {
-  }
-
-  size$ = createResizeObservable(this._elementRef.nativeElement, {leading: true});
+  size$ = createResizeObservable(this._elementRef.nativeElement, { leading: true });
   scroll$ = createScrollObservable(this._elementRef.nativeElement);
+
+  constructor(protected _elementRef: ElementRef<HTMLElement>) {}
 }

@@ -1,34 +1,32 @@
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, Input, OnInit } from '@angular/core';
-import { FormGroup, FormArray } from '@angular/forms';
+import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
+import { Component, Input, OnInit } from "@angular/core";
+import { FormArray, FormGroup } from "@angular/forms";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from "app/shared/components/dialog/common-form-dialog.component";
+import { MessageDialog } from "app/shared/services/message-dialog.service";
 
 @Component({
-  selector: 'app-enrichment-table-order-dialog',
-  templateUrl: './enrichment-table-order-dialog.component.html',
-  styleUrls: ['./enrichment-table-order-dialog.component.scss'],
+  selector: "app-enrichment-table-order-dialog",
+  templateUrl: "./enrichment-table-order-dialog.component.html",
+  styleUrls: ["./enrichment-table-order-dialog.component.scss"],
 })
-export class EnrichmentTableOrderDialogComponent extends CommonFormDialogComponent<string[]> implements OnInit {
+export class EnrichmentTableOrderDialogComponent
+  extends CommonFormDialogComponent<string[]>
+  implements OnInit
+{
   @Input() domains: string[];
 
   form: FormGroup = new FormGroup({
     domainsList: new FormArray([]),
   });
 
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-  ) {
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  ngOnInit() {
-
-  }
+  ngOnInit() {}
 
   getValue() {
     return this.domains;

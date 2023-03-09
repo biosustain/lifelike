@@ -2,7 +2,8 @@
 
 ## Python Dependencies
 
-We manage dependencies through *pipenv*. Dependencies are stored in `Pipfile` but their specific versions are stored in an automatically-managed `Pipfile.lock`.
+We manage dependencies through _pipenv_. Dependencies are stored in `Pipfile` but their specific
+versions are stored in an automatically-managed `Pipfile.lock`.
 
 ### Making Changes
 
@@ -12,13 +13,16 @@ Use the following command to install dependencies:
 docker-compose exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
 ```
 
-Note: The `--python` argument is only required if there is a mismatch between the Python version in the Docker container and the Python version in the Pipfile, although it doesn't hurt to add it.
+Note: The `--python` argument is only required if there is a mismatch between the Python version in
+the Docker container and the Python version in the Pipfile, although it doesn't hurt to add it.
 
 ### Dealing with Pipfile Merge Conflicts
 
-If two people add dependencies on different branches, you will run into a merge conflict with `Pipfile`. 
+If two people add dependencies on different branches, you will run into a merge conflict
+with `Pipfile`.
 
-To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
+To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions
+of `Pipfile.lock`. Afterwards, run this command:
 
 ```sh
 docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
@@ -26,13 +30,19 @@ docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/pyth
 
 ## PostgreSQL Migrations
 
-Migrations help modify the schema in our production and local databases using a series of clearly defined and VCS-committed update scripts. We use Alembic for migrations, although it is integrated with Flask, so you will run commands through `flask db` instead of directly through `alembic`.
+Migrations help modify the schema in our production and local databases using a series of clearly
+defined and VCS-committed update scripts. We use Alembic for migrations, although it is integrated
+with Flask, so you will run commands through `flask db` instead of directly through `alembic`.
 
-Alembic migrations are of a tree structure, so each migration has a "prior" migration that it is derived from. When the migration tree forks (such as when two people work on two different Git branches), the two forks eventually have to be merged or one of the forks has to be re-created on top of the other.
+Alembic migrations are of a tree structure, so each migration has a "prior" migration that it is
+derived from. When the migration tree forks (such as when two people work on two different Git
+branches), the two forks eventually have to be merged or one of the forks has to be re-created on
+top of the other.
 
 ### Applying Existing Migrations
 
-By default, the database is empty, so you will have to run all the existing migrations to bring your database up to date using the following command:
+By default, the database is empty, so you will have to run all the existing migrations to bring your
+database up to date using the following command:
 
 ```sh
 docker-compose exec appserver flask db upgrade
@@ -44,11 +54,16 @@ or
 docker-compose run appserver flask db upgrade
 ```
 
-to run the migration without starting the flask application. Remember that this will create a single-use container that should be removed with `docker volume prune` or `make docker-stop`.
+to run the migration without starting the flask application. Remember that this will create a
+single-use container that should be removed with `docker volume prune` or `make docker-stop`.
 Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` to be up as well.
+
 ### Importing Seed Data
 
-While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data (from the specified file), run:
+While the migrations create the schema, the database still has no data and it may be difficult to
+develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for
+you to work with. To **clear your current local database** and import the seed data (from the
+specified file), run:
 
 ```sh
 docker-compose exec appserver flask seed fixtures/seed.json
@@ -56,30 +71,39 @@ docker-compose exec appserver flask seed fixtures/seed.json
 
 ### Extending Seed Data
 
-Since seed files contain the content data of the example files, there are pretty cumbersome to modify manually. If you feel that there is a file that is lacking in the example data (e.g. new Lifelike file type), you can:
+Since seed files contain the content data of the example files, there are pretty cumbersome to
+modify manually. If you feel that there is a file that is lacking in the example data (e.g. new
+Lifelike file type), you can:
 
- - Import seed data from a specific file
- - Create/Upload the file(s) you want to include
- - Run `append_seed` CLI command, specifying seed file and list of filenames to append:
+-   Import seed data from a specific file
+-   Create/Upload the file(s) you want to include
+-   Run `append_seed` CLI command, specifying seed file and list of filenames to append:
 
 ```shell
 docker-compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
 ```
 
-If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`. 
+If you are using a different file than the default `seed.json`, you might want to specify another
+directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed
+by `id`.
 
 ### Making Schema Changes
 
-When you make changes to the schema, by perhaps changing one of the models or creating a new model, you will have to create a new migration script so your local database and the production database has the changes.
+When you make changes to the schema, by perhaps changing one of the models or creating a new model,
+you will have to create a new migration script so your local database and the production database
+has the changes.
 
 First, please remember to update your code with the current version of the `master` branch.
-Secondly, make sure that you are up-to-date on migrations by first applying them using the `upgrade` command described above. Otherwise, you will see this error:
+Secondly, make sure that you are up-to-date on migrations by first applying them using the `upgrade`
+command described above. Otherwise, you will see this error:
 
 ```
 ERROR [***ARANGO_USERNAME***] Error: Target database is not up to date.
 ```
 
-Once you are up-to-date, you can have Alembic generate a migration script for you by automatically inspecting the current schema structure as described in the code and comparing it to the one in the database. Run the following command to create a new migration script in `appserver/migrations`:
+Once you are up-to-date, you can have Alembic generate a migration script for you by automatically
+inspecting the current schema structure as described in the code and comparing it to the one in the
+database. Run the following command to create a new migration script in `appserver/migrations`:
 
 ```sh
 docker-compose exec appserver flask db migrate -m "Describe the change here"
@@ -93,9 +117,13 @@ docker-compose exec appserver flask db revision -m "Describe the change here"
 
 #### Don't Forget About Data Migrations
 
-If you are changing existing schema, don't forget that production still has existing data that may have to be updated to the new schema.
+If you are changing existing schema, don't forget that production still has existing data that may
+have to be updated to the new schema.
 
-To perform data migrations, edit the created migration script and add the necessary transformation code to the script, but **do not import models from the app,** because the models will change overtime whereas your migration script will not! Instead, redefine the tables that you need to work on in your migration script, as illustrated below:
+To perform data migrations, edit the created migration script and add the necessary transformation
+code to the script, but **do not import models from the app,** because the models will change
+overtime whereas your migration script will not! Instead, redefine the tables that you need to work
+on in your migration script, as illustrated below:
 
 ```python
 import sqlalchemy as sa
@@ -105,24 +133,28 @@ from migrations.utils import window_chunk
 
 # You only need to declare columns which you will use
 t_app_user = sa.Table(
-    'appuser',
-    sa.Column('id', sa.Integer),
-    sa.Column('username', sa.String),
+        'appuser',
+        sa.Column('id', sa.Integer),
+        sa.Column('username', sa.String),
 )
 
 conn = op.get_bind()
 session = Session(conn)
 
-users = conn.execution_options(stream_results=True).execute(sa.select([
-        t_app_user.c.id,
-        t_app_user.c.username,
-    ]).where( ... ))
+users = conn.execution_options(stream_results = True).execute(
+        sa.select(
+                [
+                    t_app_user.c.id,
+                    t_app_user.c.username,
+                ]
+        ).where(...)
+)
 
 for chunk in window_chunk(users, 25):
     to_update = []
     for uid, username in chunk:
-        if ... :
-            to_update.append({'id': uid, 'username': 'xXx' + username + 'xXx'})
+        if ...:
+            to_update.append({ 'id': uid, 'username': 'xXx' + username + 'xXx' })
     try:
         session.bulk_update_mappings(t_app_user, to_update)
         session.commit()
@@ -130,19 +162,24 @@ for chunk in window_chunk(users, 25):
         session.rollback()
         raise
 ```
+
 #### Misc
 
-Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
+Before pushing, test the migrations by first **downgrading** and then **upgrading** with data
+migration:
 
 ```sh
 docker-compose exec appserver flask db upgrade -x data_migrate=True
 ```
 
-When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the *restore from history* functionality will not work.
+When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion`
+tables, as it contains both current and previous versions. If you migrate only current `Files`, the
+_restore from history_ functionality will not work.
 
 ### Merging Migration Conflicts
 
-As previously described, if two people are working on migrations, you will end up with a migration conflict. When you apply migrations in such a scenario, you will receive the following error:
+As previously described, if two people are working on migrations, you will end up with a migration
+conflict. When you apply migrations in such a scenario, you will receive the following error:
 
 ```
 ERROR [***ARANGO_USERNAME***] Error: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads
@@ -156,7 +193,8 @@ docker-compose exec appserver flask db heads
 
 #### Option 1: Merging Heads
 
-If both heads can be merged together because they don't conflict, you can simply run the following command to automatically create another migration that merges the two forks together:
+If both heads can be merged together because they don't conflict, you can simply run the following
+command to automatically create another migration that merges the two forks together:
 
 ```sh
 docker-compose exec appserver flask db merge -m "Describe the merge here"
@@ -164,7 +202,10 @@ docker-compose exec appserver flask db merge -m "Describe the merge here"
 
 #### Option 2: 'Rebasing' Heads
 
-Sometimes, you do not want to create a merge migration - in such cases, you can also modify one of the conflicting migration files and change its `down_revision` variable (in the file) to the revision ID of the other conflicted migration, therefore moving one of the migrations to the end of the tree.
+Sometimes, you do not want to create a merge migration - in such cases, you can also modify one of
+the conflicting migration files and change its `down_revision` variable (in the file) to the
+revision ID of the other conflicted migration, therefore moving one of the migrations to the end of
+the tree.
 
 ## Debugging
 
@@ -193,7 +234,9 @@ docker-compose down && docker-compose up -d
 docker attach <service_name> # e.g n4j-appserver
 ```
 
-To exit out of attach mode, can do either `Ctrl+C` to exit and kill the container. Or `Ctrl+P, Ctrl+Q` to detach without killing. It's also possible to add new breakpoints without stopping the container like that since our setup allows updates to the containers automatically.
+To exit out of attach mode, can do either `Ctrl+C` to exit and kill the container.
+Or `Ctrl+P, Ctrl+Q` to detach without killing. It's also possible to add new breakpoints without
+stopping the container like that since our setup allows updates to the containers automatically.
 
 ## Unit Tests
 
@@ -207,19 +250,24 @@ docker-compose exec appserver pytest
 
 To run a specific test file you can:
 
- - Provide path to the file
+-   Provide path to the file
+
 ```sh
 docker-compose exec appserver pytest tests/api/filesystem/object_test.py
 ```
- - Use `-k` flag with filename:
+
+-   Use `-k` flag with filename:
+
 ```sh
 docker-compose exec appserver pytest  -k 'object_test.py'
 ```
+
 To run a specific test:
 
 ```sh
 docker-compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
 ```
+
 or
 
 ```sh
@@ -228,11 +276,11 @@ docker-compose exec appserver pytest -k 'test_patch_file'
 
 Some additional flags that may make tests easier to read include:
 
-* `--disable-pytest-warnings` to disable warning summaries
-* `--capture=no` to show stdout/stderr for all and not just failed tests
-* `--verbose` to show test names and not just '.'
-* `--tb=native` to show stack traces the normal Python way
-* `--ignore=tests/some/test.py` to ignore a specific test or folder
+-   `--disable-pytest-warnings` to disable warning summaries
+-   `--capture=no` to show stdout/stderr for all and not just failed tests
+-   `--verbose` to show test names and not just '.'
+-   `--tb=native` to show stack traces the normal Python way
+-   `--ignore=tests/some/test.py` to ignore a specific test or folder
 
 Together:
 

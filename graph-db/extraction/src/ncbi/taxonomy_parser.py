@@ -1,11 +1,11 @@
-from common.base_parser import BaseParser
-from common.constants import *
 import csv
 import io
 import logging
 import os
 import zipfile
 
+from common.base_parser import BaseParser
+from common.constants import *
 
 """
 URL = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/'
@@ -60,6 +60,7 @@ TAXONOMY_FILE = 'taxonomy.tsv'
 TAXONONYM_REL_FILE = 'taxonomy-rels.tsv'
 TAXONOMY_SYNONYM_FILE = 'taxonomy-synonym.tsv'
 
+
 class Taxonomy:
     def __init__(self, tax_id, name):
         self.tax_id = tax_id
@@ -68,7 +69,7 @@ class Taxonomy:
         self.rank = ''
         self.names = dict()
         self.children = set()
-        self.top_category:str = ''
+        self.top_category: str = ''
         self.orig_id = ''
 
     def add_name(self, name, name_class):
@@ -86,7 +87,7 @@ class Taxonomy:
 
 
 class TaxonomyParser(BaseParser):
-    def __init__(self, base_dir:str=None):
+    def __init__(self, base_dir: str = None):
         BaseParser.__init__(self, NODE_TAXONOMY.lower(), base_dir)
         self.zip_file = os.path.join(self.download_dir, 'new_taxdump.zip')
         self.top_class_nodes = []
@@ -154,7 +155,7 @@ class TaxonomyParser(BaseParser):
             self._label_top_class_for_children(top_tax)
         return nodes
 
-    def _label_top_class_for_children(self, tax:Taxonomy):
+    def _label_top_class_for_children(self, tax: Taxonomy):
         if not tax.top_category:
             tax.top_category = tax.name
         for child in tax.children:

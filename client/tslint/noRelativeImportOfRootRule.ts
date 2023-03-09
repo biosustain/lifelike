@@ -1,25 +1,25 @@
-import * as Lint from 'tslint';
-import * as ts from 'typescript';
-import { isExternalModuleNameRelative } from 'typescript';
-import { findImports, ImportKind } from 'tsutils';
+import * as Lint from "tslint";
+import * as ts from "typescript";
+import { isExternalModuleNameRelative } from "typescript";
+import { findImports, ImportKind } from "tsutils";
 
-import * as path from 'path';
+import * as path from "path";
 
 export class Rule extends Lint.Rules.AbstractRule {
   public static metadata: Lint.IRuleMetadata = {
-    description: 'Disallow passing through ***ARANGO_USERNAME*** of module with relative imports',
+    description: "Disallow passing through ***ARANGO_USERNAME*** of module with relative imports",
     options: [],
-    optionsDescription: '',
+    optionsDescription: "",
     rationale: Lint.Utils.dedent`
             It is easier to read \`import foo from 'app/baz';\` than resoning on where
             \`import foo from '../../../baz';\` is pointing to.
         `,
-    ruleName: 'no-relative-import-of-***ARANGO_USERNAME***',
-    type: 'style',
+    ruleName: "no-relative-import-of-***ARANGO_USERNAME***",
+    type: "style",
     typescriptOnly: false,
   };
 
-  public static FAILURE_STRING = 'Root of application cannot be imported with relative path';
+  public static FAILURE_STRING = "Root of application cannot be imported with relative path";
 
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
     return this.applyWithFunction(sourceFile, walk);
@@ -34,8 +34,8 @@ function walk(ctx: Lint.WalkContext) {
       const relativePart = [];
       const remainingPart = [];
       // imports always use '/'
-      for (const part of name.text.split('/')) {
-        if (part !== '.' && part !== '..' || relativeEndFlag) {
+      for (const part of name.text.split("/")) {
+        if ((part !== "." && part !== "..") || relativeEndFlag) {
           relativeEndFlag = true;
           remainingPart.push(part);
         } else {
@@ -44,16 +44,15 @@ function walk(ctx: Lint.WalkContext) {
       }
       const relativeRoot = path.resolve(sourceDir, ...relativePart);
       // '.' workspace
-      const relative = path.relative('.', relativeRoot).split(path.sep);
-      if (relative.length === 2 && relative[1] === 'app') {
+      const relative = path.relative(".", relativeRoot).split(path.sep);
+      if (relative.length === 2 && relative[1] === "app") {
         // create a fixer for this failure
-        const fix = new Lint.Replacement(name.getStart(), name.getWidth(), `'${['app', ...remainingPart].join('/')}'`);
-        ctx.addFailure(
-          name.getStart(ctx.sourceFile) + 1,
-          name.end - 1,
-          Rule.FAILURE_STRING,
-          fix
+        const fix = new Lint.Replacement(
+          name.getStart(),
+          name.getWidth(),
+          `'${["app", ...remainingPart].join("/")}'`
         );
+        ctx.addFailure(name.getStart(ctx.sourceFile) + 1, name.end - 1, Rule.FAILURE_STRING, fix);
       }
     }
   }

@@ -11,19 +11,17 @@ Create Date: 2020-09-01 16:57:14.492628
 """
 from alembic import context
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
-revision = 'ad845c5f4821'
-down_revision = '25ba0ec4eb17'
+revision = "ad845c5f4821"
+down_revision = "25ba0ec4eb17"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.execute('TRUNCATE TABLE annotation_stop_words')
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    op.execute("TRUNCATE TABLE annotation_stop_words")
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 

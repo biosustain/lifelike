@@ -1,8 +1,8 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { flatMap, groupBy, intersection, merge, isNil } from 'lodash-es';
-import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
-import { of, Observable, defer, iif } from 'rxjs';
+import { flatMap, groupBy, intersection, isNil, merge } from 'lodash-es';
+import { map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import { defer, iif, Observable, of } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
 import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
@@ -13,7 +13,7 @@ import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
 import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
-import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
+import { LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
 
 import { inputCount } from '../algorithms/linkValues';
 import { Base } from '../interfaces';
@@ -29,7 +29,119 @@ import { EditService } from '../../../services/edit.service';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class SingleLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit, OnDestroy {
+export class SingleLaneBaseControllerService
+  extends BaseControllerService<Base>
+  implements ServiceOnInit, OnDestroy
+{
+  viewBase = ViewBase.sankeySingleLane;
+  state$ = this.delta$
+    .pipe(
+      switchMap((delta) =>
+        this.common.view$.pipe(
+          switchMap((view) =>
+            iif(
+              () => !isNil(view),
+              defer(() => of(getBaseState((view as View).state))),
+              of({})
+            )
+          ),
+          map((state) => merge({}, state, delta))
+        )
+      ),
+      map((delta) =>
+        merge(
+          {},
+          {
+            highlightCircular: true,
+            colorLinkByType: true,
+            nodeHeight: {
+              min: {
+                enabled: true,
+                value: 4,
+              },
+              max: {
+                enabled: true,
+                ratio: 2,
+              },
+            },
+          },
+          delta
+        )
+      ),
+      switchMap((delta) =>
+        iif(
+          () => isNil(delta.predefinedValueAccessorId),
+          this.common.networkTraceDefaultSizing$,
+          of(delta.predefinedValueAccessorId)
+        ).pipe(
+          switchMap((predefinedValueAccessorId) =>
+            this.common.options$.pipe(
+              map(({ predefinedValueAccessors }) => ({
+                predefinedValueAccessorId,
+                ...this.common.pickPartialAccessors(
+                  predefinedValueAccessors[predefinedValueAccessorId]
+                ),
+              }))
+            )
+          ),
+          map((state) => merge({}, delta, state))
+        )
+      )
+    )
+    .pipe(
+      takeUntil(this.destroy$),
+      debug("SingleLaneBaseControllerService.state$"),
+      shareReplay<Base["state"]>({ bufferSize: 1, refCount: true })
+    );
+  highlightCircular$ = this.stateAccessor("highlightCircular");
+  linkValueAccessors = {
+    ...this.linkValueAccessors,
+    [LINK_VALUE_GENERATOR.input_count]: {
+      preprocessing: inputCount,
+      disabled: () => false,
+    },
+  };
+  options$ = of(
+    Object.freeze({
+      colorLinkTypes: EdgeColorCodes,
+    })
+  );
+  colorLinkByType$ = this.stateAccessor("colorLinkByType");
+  networkTraceData$: Observable<Base["data"]> = this.common.data$.pipe(
+    switchMap(({ links, nodes, getNodeById }) =>
+      this.common.networkTrace$.pipe(
+        switchMap(({ traces, sources, targets }) =>
+          this.common.stateAccessor("shortestPathPlusN").pipe(
+            map((shortestPathPlusN) => ({
+              sources,
+              targets,
+              traces: traces.filter((trace) =>
+                trace.shortestPathPlusN ? trace.shortestPathPlusN <= shortestPathPlusN : true
+              ),
+            }))
+          )
+        ),
+        map(({ sources, targets, traces }) => {
+          const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
+          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
+
+          // move this to run in pararell with positioning
+          this.colorNodes(networkTraceNodes, sources as any, targets as any);
+          return {
+            nodes: networkTraceNodes,
+            links: networkTraceLinks,
+            getNodeById,
+            sources,
+            targets,
+          };
+        }),
+        debug("SingleLaneBaseControllerService.networkTraceData$"),
+        shareReplay<Base["data"]>(1)
+      )
+    )
+  );
+  colorLinkTypes$ = unifiedSingularAccessor(this.options$, "colorLinkTypes");
+
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -40,115 +152,9 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
     this.onInit();
   }
 
-  viewBase = ViewBase.sankeySingleLane;
-
-  state$ = this.delta$.pipe(
-    switchMap(delta =>
-      this.common.view$.pipe(
-        switchMap(view =>
-          iif(
-            () => !isNil(view),
-            defer(() => of(getBaseState((view as View).state))),
-            of({})
-          )
-        ),
-        map(state => merge({}, state, delta))
-      )
-    ),
-    map(delta => merge(
-      {},
-      {
-        highlightCircular: true,
-        colorLinkByType: true,
-        nodeHeight: {
-          min: {
-            enabled: true,
-            value: 4
-          },
-          max: {
-            enabled: true,
-            ratio: 2
-          }
-        },
-      },
-      delta
-    )),
-    switchMap(delta =>
-      iif(
-        () => isNil(delta.predefinedValueAccessorId),
-        this.common.networkTraceDefaultSizing$,
-        of(delta.predefinedValueAccessorId)
-      ).pipe(
-        switchMap(predefinedValueAccessorId =>
-          this.common.options$.pipe(
-            map(({predefinedValueAccessors}) => ({
-              predefinedValueAccessorId,
-              ...this.common.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId]),
-            })),
-          ),
-        ),
-        map(state => merge({}, delta, state))
-      )
-    )
-  ).pipe(
-    takeUntil(this.destroy$),
-    debug('SingleLaneBaseControllerService.state$'),
-    shareReplay<Base['state']>({bufferSize: 1, refCount: true})
-  );
-
-  highlightCircular$ = this.stateAccessor('highlightCircular');
-
-  linkValueAccessors = {
-    ...this.linkValueAccessors,
-    [LINK_VALUE_GENERATOR.input_count]: {
-      preprocessing: inputCount,
-      disabled: () => false
-    }
-  };
-
-  options$ = of(Object.freeze({
-    colorLinkTypes: EdgeColorCodes
-  }));
-
-  colorLinkByType$ = this.stateAccessor('colorLinkByType');
-
-  networkTraceData$: Observable<Base['data']> = this.common.data$.pipe(
-    switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
-        switchMap(({traces, sources, targets}) =>
-          this.common.stateAccessor('shortestPathPlusN').pipe(
-          map(shortestPathPlusN => ({
-            sources,
-            targets,
-            traces: traces.filter((trace) =>
-                trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
-              )
-          }))
-        )
-        ),
-        map(({sources, targets, traces}) => {
-          const networkTraceLinks = this.getNetworkTraceLinks(traces, links);
-          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
-
-          // move this to run in pararell with positioning
-          this.colorNodes(networkTraceNodes, sources as any, targets as any);
-          return {
-            nodes: networkTraceNodes,
-            links: networkTraceLinks,
-            getNodeById, sources, targets
-          };
-        }),
-        debug('SingleLaneBaseControllerService.networkTraceData$'),
-        shareReplay<Base['data']>(1)
-      )
-    )
-  );
-
-  colorLinkTypes$ = unifiedSingularAccessor(this.options$, 'colorLinkTypes');
-
   ngOnDestroy() {
     super.ngOnDestroy();
   }
-
 
   // Trace logic
   /**
@@ -157,12 +163,11 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
    * Also creates duplicates if given link is used in multiple traces.
    * Should return copy of link Objects (do not mutate links!)
    */
-  getNetworkTraceLinks(
-    traces: Base['trace'][],
-    links: Array<Base['link']>
-  ): Array<Base['link']> {
-    const traceLink = flatMap(traces, trace => trace.edges.map(linkIdx => ({trace, linkIdx})));
-    const linkIdxToTraceLink = groupBy(traceLink, 'linkIdx');
+  getNetworkTraceLinks(traces: Base["trace"][], links: Array<Base["link"]>): Array<Base["link"]> {
+    const traceLink = flatMap(traces, (trace) =>
+      trace.edges.map((linkIdx) => ({ trace, linkIdx }))
+    );
+    const linkIdxToTraceLink = groupBy(traceLink, "linkIdx");
     return Object.entries(linkIdxToTraceLink).map(([linkIdx, wrappedTraces]) => {
       const link = links[linkIdx];
       link.traces = traces;
@@ -173,10 +178,10 @@ export class SingleLaneBaseControllerService extends BaseControllerService<Base>
   /**
    * Color nodes if they are in source or target set.
    */
-  colorNodes(nodes, sources: Array<Base['node']>, targets: Array<Base['node']>) {
-    nodes.forEach(node => node.color = undefined);
-    const mapNodePositionToColor = (nodesToColor: Array<Base['node']>, position: NodePosition) =>
-      nodesToColor.forEach(node => {
+  colorNodes(nodes, sources: Array<Base["node"]>, targets: Array<Base["node"]>) {
+    nodes.forEach((node) => (node.color = undefined));
+    const mapNodePositionToColor = (nodesToColor: Array<Base["node"]>, position: NodePosition) =>
+      nodesToColor.forEach((node) => {
         if (node) {
           node.color = nodeColors.get(position);
         }

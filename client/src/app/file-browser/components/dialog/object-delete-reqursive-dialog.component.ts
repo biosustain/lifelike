@@ -1,16 +1,15 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from "app/shared/services/message-dialog.service";
 
 @Component({
-  selector: 'app-dialog-confirm-deletion-reqursive',
-  templateUrl: './object-delete-reqursive-dialog.component.html',
+  selector: "app-dialog-confirm-deletion-reqursive",
+  templateUrl: "./object-delete-reqursive-dialog.component.html",
 })
 export class ObjectDeleteReqursiveDialogComponent {
-  constructor(private modal: NgbActiveModal, messageDialog: MessageDialog) {
-  }
+  constructor(private modal: NgbActiveModal, messageDialog: MessageDialog) {}
 
   cancel() {
     this.modal.dismiss();

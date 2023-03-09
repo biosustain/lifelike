@@ -1,46 +1,66 @@
-<div #dropdown ngbDropdown [placement]="placement">
-  <button type="button" class="d-flex align-items-center form-control w-100 text-truncate"
-          tabindex="0" ngbDropdownToggle [id]="formId">
+<div #dropdown [placement]="placement" ngbDropdown>
+  <button
+    [id]="formId"
+    class="d-flex align-items-center form-control w-100 text-truncate"
+    ngbDropdownToggle
+    tabindex="0"
+    type="button"
+  >
     <span class="d-block text-left w-100 text-truncate mr-2">
-      <ng-container *ngIf="selection.size === 0 else choicesList">
+      <ng-container *ngIf="selection.size === 0; else choicesList">
         <span class="text-muted">
           {{ emptyLabel }}
         </span>
       </ng-container>
       <ng-template #choicesList>
-        <ng-container *ngIf="isAllSelected() else selectedChoicesList">
-        <span class="text-muted">
-          {{ allLabel }}
-        </span>
+        <ng-container *ngIf="isAllSelected(); else selectedChoicesList">
+          <span class="text-muted">
+            {{ allLabel }}
+          </span>
         </ng-container>
       </ng-template>
       <ng-template #selectedChoicesList>
         ({{ selection.size }})
-        <ng-container
-          *ngFor="let choice of selection; index as i">{{ i !== 0 ? ', ' : '' }}{{ choiceLabel(choice) }}</ng-container>
+        <ng-container *ngFor="let choice of selection; index as i"
+          >{{ i !== 0 ? ", " : "" }}{{ choiceLabel(choice) }}</ng-container
+        >
       </ng-template>
     </span>
   </button>
-  <div ngbDropdownMenu class="dropdown-body dropdown-menu">
+  <div class="dropdown-body dropdown-menu" ngbDropdownMenu>
     <div class="mb-2">
-      <button type="button" *ngIf="isAllSelected()" class="btn btn-outline-secondary btn-block"
-              (click)="toggleAll(false)">
+      <button
+        (click)="toggleAll(false)"
+        *ngIf="isAllSelected()"
+        class="btn btn-outline-secondary btn-block"
+        type="button"
+      >
         Select None
       </button>
-      <button type="button" *ngIf="!isAllSelected()" class="btn btn-outline-secondary btn-block"
-              (click)="toggleAll(true)">
+      <button
+        (click)="toggleAll(true)"
+        *ngIf="!isAllSelected()"
+        class="btn btn-outline-secondary btn-block"
+        type="button"
+      >
         Select All
       </button>
     </div>
 
     <div *ngFor="let choice of choices; index as i" class="text-nowrap">
-      <div class="custom-control custom-checkbox"
-           (click)="changeChoiceSelection(choice, !selection.has(choice)); $event.preventDefault()">
-        <input class="custom-control-input" type="checkbox" [id]="componentId + '-choice-' + i"
-               value="1"
-               [checked]="selection.has(choice)"
-               (change)="changeChoiceSelection(choice, $event.target.checked)">
-        <label class="custom-control-label" [for]="componentId + '-choice-' + i">
+      <div
+        (click)="changeChoiceSelection(choice, !selection.has(choice)); $event.preventDefault()"
+        class="custom-control custom-checkbox"
+      >
+        <input
+          (change)="changeChoiceSelection(choice, $event.target.checked)"
+          [checked]="selection.has(choice)"
+          [id]="componentId + '-choice-' + i"
+          class="custom-control-input"
+          type="checkbox"
+          value="1"
+        />
+        <label [for]="componentId + '-choice-' + i" class="custom-control-label">
           {{ choiceLabel(choice) }}
         </label>
       </div>

@@ -2,7 +2,6 @@ from biocyc.data_file_parser import DataFileParser
 from common.constants import *
 from common.graph_models import *
 
-
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
     'COMMON-NAME': (PROP_NAME, 'str'),
@@ -23,7 +22,3 @@ class RnaParser(DataFileParser):
 
     def write_synonyms_file(self, nodes, outfile):
         return None
-
-
-
-

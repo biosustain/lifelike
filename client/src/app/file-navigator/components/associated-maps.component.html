@@ -1,4 +1,4 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
+<ng-container *ngIf="loadTask.status$ | async as status">
   <ng-container *ngIf="status.failedErrorShown; else noError">
     <div class="module-section">
       <div class="module-section-header">
@@ -7,7 +7,7 @@
 
       <div class="module-section-body">
         <app-module-error [error]="status.error">
-          <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+          <button (click)="refresh()" class="btn btn-primary" type="button">Retry</button>
         </app-module-error>
       </div>
     </div>
@@ -17,7 +17,9 @@
     <ng-container *ngIf="status.placeholdersShown">
       <div class="module-section">
         <div class="module-section-header">
-          <h2 class="module-section-header-title"><span class="placeholder-box">Loading loading</span></h2>
+          <h2 class="module-section-header-title">
+            <span class="placeholder-box">Loading loading</span>
+          </h2>
         </div>
 
         <div class="module-section-body">
@@ -26,11 +28,14 @@
           </div>
 
           <div class="tile-deck">
-            <div *ngFor="let p of [0, 1, 2]" class="tile d-flex flex-column justify-content-center align-items-center">
+            <div
+              *ngFor="let p of [0, 1, 2]"
+              class="tile d-flex flex-column justify-content-center align-items-center"
+            >
               <div class="flex-fill d-flex align-items-center">
-            <span class="placeholder-box">
-              <i class="fas fa-layer-group fa-4x"></i>
-            </span>
+                <span class="placeholder-box">
+                  <i class="fas fa-layer-group fa-4x"></i>
+                </span>
               </div>
             </div>
           </div>
@@ -43,22 +48,26 @@
         <div class="module-section-header d-flex align-items-center">
           <h2 class="module-section-header-title mr-2">
             Associated Maps
-            <span ngbTooltip="Maps that have a link to this file will appear here."
-                  container="body">
+            <span
+              container="body"
+              ngbTooltip="Maps that have a link to this file will appear here."
+            >
               <i class="fa fa-question-circle text-muted"></i>
             </span>
           </h2>
 
           <div class="d-flex ml-auto">
-            <button type="button" class="btn btn-secondary" (click)="openMapCreateDialog()">
-              <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
+            <button (click)="openMapCreateDialog()" class="btn btn-secondary" type="button">
+              <i aria-hidden="true" class="fa fa-fw fa-plus-circle"></i> New Map
             </button>
 
-            <button class="btn btn-secondary ml-2"
-                    ngbTooltip="Reload List"
-                    container="body"
-                    placement="bottom top left right"
-                    (click)="refresh()">
+            <button
+              (click)="refresh()"
+              class="btn btn-secondary ml-2"
+              container="body"
+              ngbTooltip="Reload List"
+              placement="bottom top left right"
+            >
               <i class="fa fa-fw fa-sync"></i>
             </button>
           </div>
@@ -66,14 +75,15 @@
 
         <div class="module-section-body">
           <ng-container *ngIf="list.results.length; else noMapResults">
-            <app-object-tile-deck [objects]="list.results" [forEditing]="false"
-                                  [newTabObject]="true"></app-object-tile-deck>
+            <app-object-tile-deck
+              [forEditing]="false"
+              [newTabObject]="true"
+              [objects]="list.results"
+            ></app-object-tile-deck>
           </ng-container>
 
           <ng-template #noMapResults>
-            <div class="my-4">
-              There are no maps associated with this file.
-            </div>
+            <div class="my-4">There are no maps associated with this file.</div>
           </ng-template>
         </div>
       </div>

@@ -1,14 +1,21 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from "@angular/common/http";
 
 export class UserError {
+  title: string;
+  message: string;
+  additionalMsgs: string[];
+  stacktrace: string;
+  cause: string;
+  transactionId: string;
+
   constructor({
-                title,
-                message,
-                additionalMsgs = [],
-                stacktrace = null,
-                cause = null,
-                transactionId = null
-              }) {
+    title,
+    message,
+    additionalMsgs = [],
+    stacktrace = null,
+    cause = null,
+    transactionId = null,
+  }) {
     this.title = title;
     this.message = message;
     this.additionalMsgs = additionalMsgs;
@@ -16,16 +23,9 @@ export class UserError {
     this.cause = cause;
     this.transactionId = transactionId;
   }
-
-  title: string;
-  message: string;
-  additionalMsgs: string[];
-  stacktrace: string;
-  cause: string;
-  transactionId: string;
 }
 
-export class DeleteNonEmpty extends UserError {
-}
+export class DeleteNonEmpty extends UserError {}
 
-export const isOfflineError = (error) => (error as HttpErrorResponse)?.status === 0 && !navigator.onLine;
+export const isOfflineError = (error) =>
+  (error as HttpErrorResponse)?.status === 0 && !navigator.onLine;

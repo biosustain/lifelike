@@ -1,27 +1,27 @@
 <ng-container *ngIf="project.privileges.administrable">
-  <button ngbDropdownItem (click)="openEditDialog(project)">
-    Edit project...
-  </button>
-  <button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
-    Edit collaborators...
-  </button>
-  <button ngbDropdownItem (click)="openDeleteDialog(project)">
-    Delete project...
-  </button>
+  <button (click)="openEditDialog(project)" ngbDropdownItem>Edit project...</button>
+  <button (click)="openCollaboratorsDialog(project)" ngbDropdownItem>Edit collaborators...</button>
+  <button (click)="openDeleteDialog(project)" ngbDropdownItem>Delete project...</button>
 </ng-container>
 <ng-container>
-  <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>
-  <button ngbDropdownItem (click)="openShareDialog(project)">
-    Copy{{ nameEntity ? ' project' : '' }} link...
+  <div *ngIf="project.privileges.administrable" class="dropdown-divider"></div>
+  <button (click)="openShareDialog(project)" ngbDropdownItem>
+    Copy{{ nameEntity ? " project" : "" }} link...
   </button>
-  <button ngbDropdownItem (click)="updateStarred(project, !project.starred)">
-    {{ project.starred ? 'Remove from' : 'Add to' }} starred
+  <button (click)="updateStarred(project, !project.starred)" ngbDropdownItem>
+    {{ project.starred ? "Remove from" : "Add to" }} starred
   </button>
   <ng-container *ngIf="project.***ARANGO_USERNAME***">
     <div class="dropdown-divider"></div>
-    <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.***ARANGO_USERNAME***.hashId]"
-            [parentAddress]="['/projects', project.name]"
-            [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
+    <button
+      [appLink]="['/file-navigator', project.name, project.***ARANGO_USERNAME***.hashId]"
+      [forceWorkbench]="true"
+      [newTab]="true"
+      [openParentFirst]="true"
+      [parentAddress]="['/projects', project.name]"
+      [sideBySide]="true"
+      ngbDropdownItem
+    >
       Open file navigator
     </button>
   </ng-container>

@@ -132,7 +132,8 @@ type AllContent = ContentValue & ContentUrl & ContentObject;
 // contentHashId but not a combination of any of those.
 // We use Record<T, never> to make all the keys of T to 'never', then we use
 // Partial<T> to make the keys optional so the end result is { wantThis: any, dontWant?: never, ... }
-export type ObjectContentSource = (ContentValue & Partial<Record<keyof Omit<AllContent, keyof ContentValue>, never>>)
+export type ObjectContentSource =
+  | (ContentValue & Partial<Record<keyof Omit<AllContent, keyof ContentValue>, never>>)
   | (ContentUrl & Partial<Record<keyof Omit<AllContent, keyof ContentUrl>, never>>)
   | (ContentObject & Partial<Record<keyof Omit<AllContent, keyof ContentObject>, never>>);
 
@@ -142,17 +143,20 @@ export type ObjectContentSource = (ContentValue & Partial<Record<keyof Omit<AllC
 /**
  * Search request.
  */
-export type ObjectSearchRequest = ({
-  type: 'public';
-  mimeTypes?: string[];
-} & PaginatedRequestOptions) | ({
-  type: 'pinned';
-  mimeTypes?: string[];
-} & PaginatedRequestOptions) | {
-  type: 'linked';
-  linkedHashId: string;
-  mimeTypes: ['vnd.***ARANGO_DB_NAME***.document/map'];
-};
+export type ObjectSearchRequest =
+  | ({
+      type: "public";
+      mimeTypes?: string[];
+    } & PaginatedRequestOptions)
+  | ({
+      type: "pinned";
+      mimeTypes?: string[];
+    } & PaginatedRequestOptions)
+  | {
+      type: "linked";
+      linkedHashId: string;
+      mimeTypes: ["vnd.***ARANGO_DB_NAME***.document/map"];
+    };
 
 /**
  * Bulk update request.
@@ -173,20 +177,22 @@ export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
  */
 
 // tslint:disable-next-line:no-empty-interface
-export interface ObjectUpdateRequest extends BulkObjectUpdateRequest {
-}
+export interface ObjectUpdateRequest extends BulkObjectUpdateRequest {}
 
 // We need to require the filename and parentHashId fields
-type RequiredObjectCreateRequestFields = 'filename' | 'parentHashId';
-type BaseObjectCreateRequest = Required<Pick<BulkObjectUpdateRequest, RequiredObjectCreateRequestFields>>
-  & Omit<ObjectUpdateRequest, RequiredObjectCreateRequestFields>;
+type RequiredObjectCreateRequestFields = "filename" | "parentHashId";
+type BaseObjectCreateRequest = Required<
+  Pick<BulkObjectUpdateRequest, RequiredObjectCreateRequestFields>
+> &
+  Omit<ObjectUpdateRequest, RequiredObjectCreateRequestFields>;
 
 /**
  * Create request.
  */
-export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectContentSource> & {
-  mimeType?: string;
-};
+export type ObjectCreateRequest = BaseObjectCreateRequest &
+  Partial<ObjectContentSource> & {
+    mimeType?: string;
+  };
 
 /**
  * Export request.
@@ -276,7 +282,6 @@ export interface TextAnnotationGenerationRequest extends PDFAnnotationGeneration
   //
 }
 
-
 export class AnnotationGenerationResultSchema {
   attempted: boolean;
   success: boolean;
@@ -320,7 +325,7 @@ export interface AnnotationExclusionDeleteRequest {
 // ========================================
 
 export interface AnnotationChangeData {
-  action: 'added' | 'removed';
+  action: "added" | "removed";
 }
 
 export interface AnnotationInclusionChangeData extends AnnotationChangeData {
@@ -334,13 +339,12 @@ export interface AnnotationExclusionChangeData extends AnnotationChangeData {
 export interface FileAnnotationChangeData {
   date: string;
   user: AppUser;
-  cause: 'user' | 'user_reannotation' | 'sys_reannotation';
+  cause: "user" | "user_reannotation" | "sys_reannotation";
   inclusionChanges: AnnotationInclusionChangeData[];
   exclusionChanges: AnnotationExclusionChangeData[];
 }
 
-export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotationChangeData> {
-}
+export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotationChangeData> {}
 
 export interface HttpObservableResponse<T> {
   body$: Observable<T>;

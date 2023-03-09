@@ -1,33 +1,30 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from "@angular/core";
 
-import { Subscription } from 'rxjs';
+import { Subscription } from "rxjs";
 
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { BackgroundTask } from "app/shared/rxjs/background-task";
 
-import { FilesystemObjectList } from '../../models/filesystem-object-list';
-import { FilesystemService } from '../../services/filesystem.service';
+import { FilesystemObjectList } from "../../models/filesystem-object-list";
+import { FilesystemService } from "../../services/filesystem.service";
 
 @Component({
-  selector: 'app-browser-community-list',
-  templateUrl: './browser-community-list.component.html',
+  selector: "app-browser-community-list",
+  templateUrl: "./browser-community-list.component.html",
 })
 export class BrowserCommunityListComponent implements OnInit, OnDestroy {
-
-  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
-    () => this.filesystemService.search({
-      type: 'public',
-      sort: '-creationDate',
-    }),
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(() =>
+    this.filesystemService.search({
+      type: "public",
+      sort: "-creationDate",
+    })
   );
+  list: FilesystemObjectList = new FilesystemObjectList();
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
-
-  constructor(protected readonly filesystemService: FilesystemService) {
-  }
+  constructor(protected readonly filesystemService: FilesystemService) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 

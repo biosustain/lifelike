@@ -12,7 +12,8 @@ The server has three test types:
 
 ### How Do I Run pytest
 
-First, remove the existing graph database. The pytests expect a clean graph, otherwise you may get unexpected results. You can remove the graph data quickly with this command:
+First, remove the existing graph database. The pytests expect a clean graph, otherwise you may get
+unexpected results. You can remove the graph data quickly with this command:
 
 ```bash
 # cd into the ***ARANGO_USERNAME*** project directory

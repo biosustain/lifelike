@@ -1,31 +1,31 @@
-import attr
 import functools
 import hashlib
 import itertools
-
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json, jsonify, request, g, current_app
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, Optional, Type, Iterator, Dict
+
+import attr
+from flask import json, jsonify, request, g, current_app
 
 from neo4japp.warnings import ServerWarning
 
 
 def normalize_str(s) -> str:
     normalized = s.lower()
-    normalized = normalized.translate(str.maketrans('', '', punctuation))
-    return normalized.translate(str.maketrans('', '', whitespace))
+    normalized = normalized.translate(str.maketrans("", "", punctuation))
+    return normalized.translate(str.maketrans("", "", whitespace))
 
 
 def standardize_str(s) -> str:
-    standardized = s.translate(str.maketrans('', '', punctuation))
+    standardized = s.translate(str.maketrans("", "", punctuation))
     return " ".join(standardized.split())
 
 
 def encode_to_str(obj):
-    """Converts different types into a string representation. """
+    """Converts different types into a string representation."""
     if isinstance(obj, str):
         return obj
     elif isinstance(obj, Enum):
@@ -33,13 +33,11 @@ def encode_to_str(obj):
     elif isinstance(obj, int) or isinstance(obj, Decimal):
         return str(obj)
     else:
-        raise TypeError(f'No conversion definition for {obj}')
+        raise TypeError(f"No conversion definition for {obj}")
 
 
 def _snake_to_camel_update(k, v):
-    return {
-        snake_to_camel(encode_to_str(k)): v
-    }
+    return {snake_to_camel(encode_to_str(k)): v}
 
 
 def snake_to_camel_dict(d, new_dict: dict) -> dict:
@@ -49,10 +47,12 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
     if type(d) is not dict:
         return d
     for k, v in d.items():
-        if callable(getattr(v, 'to_dict', None)):
+        if callable(getattr(v, "to_dict", None)):
             new_dict.update(_snake_to_camel_update(k, v.to_dict()))
         elif type(v) is list:
-            new_dict.update(_snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v]))
+            new_dict.update(
+                _snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v])
+            )
         elif type(v) is dict:
             new_dict.update(_snake_to_camel_update(k, snake_to_camel_dict(v, {})))
         else:
@@ -63,15 +63,15 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
 def snake_to_camel(v):
     if v is None:
         return None
-    if callable(getattr(v, 'to_dict', None)):
+    if callable(getattr(v, "to_dict", None)):
         return v.to_dict()
     elif type(v) is list:
         return [snake_to_camel(item) for item in v]
     elif type(v) is dict:
         return {snake_to_camel(k): snake_to_camel(v) for k, v in v.items()}
     elif type(v) is str:
-        parts = v.split('_')
-        return parts[0] + ''.join(x.capitalize() or '_' for x in parts[1:])
+        parts = v.split("_")
+        return parts[0] + "".join(x.capitalize() or "_" for x in parts[1:])
     else:
         return v
 
@@ -94,7 +94,7 @@ def camel_to_snake(s):
     """
     if not s:
         return s
-    if (len(s) == 1):
+    if len(s) == 1:
         return s.lower()
 
     buf = [s[0].lower()]
@@ -104,18 +104,18 @@ def camel_to_snake(s):
     normal, lookahead = itertools.tee(s[1:])
     next(lookahead)
 
-    for (c, ahead) in itertools.zip_longest(normal, lookahead):
+    for c, ahead in itertools.zip_longest(normal, lookahead):
         # only add an underscore in front of an uppercase if it is not
         # preceded by an uppercase and is followed by a lowercase
         if c.isupper():
             if not prev_is_uppercase or (ahead and ahead.islower()):
-                buf.append('_')
+                buf.append("_")
             prev_is_uppercase = True
         else:
             prev_is_uppercase = False
         buf.append(c.lower())
 
-    return ''.join(buf)
+    return "".join(buf)
 
 
 def camel_to_snake_dict(d, new_dict: dict) -> dict:
@@ -126,7 +126,9 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
         return d
     for k, v in d.items():
         if type(v) is list:
-            new_dict.update({camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]})
+            new_dict.update(
+                {camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]}
+            )
         elif type(v) is dict:
             new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})
         elif type(v) is str:
@@ -188,7 +190,7 @@ class DictMixin:
         for a in cls_attrs:
             if a.name in json_dict:
                 # this is to check if a mypy typing
-                if hasattr(a.type, '__args__') and a.type.__args__:
+                if hasattr(a.type, "__args__") and a.type.__args__:
                     # check for Unions[<typing>, None], etc
                     # and get the first type
                     attr_type = a.type.__args__[0]
@@ -200,8 +202,7 @@ class DictMixin:
                 # if the value of key is also an attrs class
                 # create an instance of it
                 value = json_dict.get(a.name)
-                if (value and
-                        issubclass(attr_type, CamelDictMixin)):
+                if value and issubclass(attr_type, CamelDictMixin):
                     # assumption is if attr_type is a subclass
                     # then value must be type dict
                     if isinstance(value, list):
@@ -211,7 +212,7 @@ class DictMixin:
                         attributes[a.name] = cls_list
                     else:
                         attributes[a.name] = attr_type.build_from_dict(value)
-                elif (value and isinstance(attr_type, EnumMeta)):
+                elif value and isinstance(attr_type, EnumMeta):
                     try:
                         attributes[a.name] = attr_type[str.upper(value)]
                     except TypeError:
@@ -222,7 +223,7 @@ class DictMixin:
         try:
             return cls(**attributes)
         except TypeError as err:
-            error = err.args[0].replace('__init__()', 'Server request')
+            error = err.args[0].replace("__init__()", "Server request")
             raise Exception(error)
 
     def to_dict_formatter(self, d: dict):
@@ -304,14 +305,14 @@ class SuccessResponse(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class FileTransfer():
+class FileTransfer:
     model_file: Any = attr.ib()  # actually Response type
     status_code: int = attr.ib(validator=attr.validators.instance_of(int))
 
 
 def jsonify_with_class(
-        request_class: Optional[Type[CamelDictMixin]] = None,
-        has_file: bool = False,
+    request_class: Optional[Type[CamelDictMixin]] = None,
+    has_file: bool = False,
 ):
     """Returns a conversion decorator.
 
@@ -340,7 +341,7 @@ def jsonify_with_class(
                     # uses `request.form`
                     if has_file:
                         request_data = request.form.to_dict()
-                        request_data['file_input'] = request.files.get('fileInput')
+                        request_data["file_input"] = request.files.get("fileInput")
                     else:
                         # set to silent to return as None if empty
                         request_data = request.get_json(silent=True)
@@ -354,7 +355,7 @@ def jsonify_with_class(
                     else:
                         request_object = request_class()
                 except TypeError as err:
-                    error = err.args[0].replace('__init__()', 'Server request')
+                    error = err.args[0].replace("__init__()", "Server request")
                     raise Exception(error)
                 success_object = f(request_object, *args, **kwargs)
             else:
@@ -366,13 +367,13 @@ def jsonify_with_class(
                 result = success_object.result
                 if isinstance(result, CamelDictMixin):
                     result = result.to_dict()
-                elif (isinstance(result, list)):
+                elif isinstance(result, list):
                     for index, _ in enumerate(result):
                         if isinstance(result[index], CamelDictMixin):
                             result[index] = result[index].to_dict()
 
                 return (
-                    jsonify({'result': result}),
+                    jsonify({"result": result}),
                     success_object.status_code,
                 )
             elif isinstance(success_object, dict):
@@ -387,19 +388,19 @@ def jsonify_with_class(
 
 def compute_hash(data: dict, **kwargs) -> str:
     """Returns the hash value of args"""
-    h = hashlib.new(kwargs.get('alg') or 'sha256')
+    h = hashlib.new(kwargs.get("alg") or "sha256")
     to_json = json.dumps(data, sort_keys=True)
-    h.update(bytearray(to_json, 'utf-8'))
+    h.update(bytearray(to_json, "utf-8"))
     hexdigest = h.hexdigest()
 
-    if 'limit' in kwargs:
-        return hexdigest[:kwargs['limit']]
+    if "limit" in kwargs:
+        return hexdigest[: kwargs["limit"]]
     return hexdigest
 
 
 class AttrDict(dict):
-    """ Wrap a python dictionary into an object
-    """
+    """Wrap a python dictionary into an object"""
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
@@ -408,7 +409,9 @@ class AttrDict(dict):
         new_dict = {}
 
         if len(exclude):
-            new_dict = {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
+            new_dict = {
+                key: self.__dict__[key] for key in self.__dict__ if key not in exclude
+            }
         else:
             new_dict = self.__dict__
 
@@ -429,7 +432,7 @@ def compact(d):
 
 
 def equal_number_of_words(term_a: str, term_b: str) -> bool:
-    return len(term_a.split(' ')) == len(term_b.split(' '))
+    return len(term_a.split(" ")) == len(term_b.split(" "))
 
 
 class Enumd(Enum):
@@ -443,18 +446,18 @@ class Enumd(Enum):
 
 
 def warn(w: ServerWarning):
-    if hasattr(g, 'warnings'):
+    if hasattr(g, "warnings"):
         g.warnings.append(w)
     else:
         current_app.logging.warn(w)
 
 
 def get_warnings():
-    if hasattr(g, 'warnings'):
+    if hasattr(g, "warnings"):
         return tuple(g.warnings)
     else:
         return tuple()
 
 
 def get_transaction_id():
-    return getattr(g, 'transaction_id', 'call_from_outside_of_request_scope')
+    return getattr(g, "transaction_id", "call_from_outside_of_request_scope")

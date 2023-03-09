@@ -1,11 +1,11 @@
-import { Subscription } from 'rxjs';
-import { ZoomTransform } from 'd3-zoom';
+import { Subscription } from "rxjs";
+import { ZoomTransform } from "d3-zoom";
 
-import { ResourceManager, ResourceOwner } from '../../resource/resource-manager';
-import { BaseRectangleNode, BaseRectangleNodeOptions } from './base-rectangle-node';
-import { Line } from '../lines/lines';
-import { TextElement } from '../text-element';
-import { NO_TEXT_THRESHOLD } from '../shared';
+import { ResourceManager, ResourceOwner } from "../../resource/resource-manager";
+import { BaseRectangleNode, BaseRectangleNodeOptions } from "./base-rectangle-node";
+import { Line } from "../lines/lines";
+import { TextElement } from "../text-element";
+import { NO_TEXT_THRESHOLD } from "../shared";
 
 export interface ImageNodeOptions extends BaseRectangleNodeOptions {
   imageManager: ResourceManager<string, CanvasImageSource>;
@@ -18,21 +18,18 @@ export interface ImageNodeOptions extends BaseRectangleNodeOptions {
  * Draws an image.
  */
 export class ImageNode extends BaseRectangleNode implements ResourceOwner {
-
   readonly textbox: TextElement;
-  resourceOwnerClass = 'image-node';
+  resourceOwnerClass = "image-node";
   readonly resizable = true;
   readonly uniformlyResizable = true;
   readonly imageManager: ResourceManager<string, CanvasImageSource>;
   readonly imageId: string;
-  protected readonly subscriptions = new Subscription();
   readonly stroke: Line | undefined;
-
   // Images are larger - it might be good to experiment with a larger stroke by default
   readonly IMAGE_STROKE_FACTOR = 2;
-
-  private image: CanvasImageSource;
   readonly LABEL_OFFSET = 20;
+  protected readonly subscriptions = new Subscription();
+  private image: CanvasImageSource;
 
   constructor(ctx: CanvasRenderingContext2D, options: ImageNodeOptions) {
     super(ctx, options);
@@ -40,10 +37,12 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
 
   objectDidBind() {
     super.objectDidBind();
-    this.subscriptions.add(this.imageManager.acquire(this, this.imageId).subscribe(image => {
-      this.image = image;
-      this.forceRender();
-    }));
+    this.subscriptions.add(
+      this.imageManager.acquire(this, this.imageId).subscribe((image) => {
+        this.image = image;
+        this.forceRender();
+      })
+    );
   }
 
   objectWillUnbind() {
@@ -61,10 +60,16 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     }
 
     // We want to draw images behind current pixels, as they tend to cover the rest of entities
-    this.ctx.globalCompositeOperation = 'destination-over';
+    this.ctx.globalCompositeOperation = "destination-over";
     let lineWidth = 0;
     if (this.image) {
-      this.ctx.drawImage(this.image, this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
+      this.ctx.drawImage(
+        this.image,
+        this.bbox.minX,
+        this.bbox.minY,
+        this.nodeWidth,
+        this.nodeHeight
+      );
       const ctx = this.ctx;
 
       if (this.stroke) {
@@ -80,25 +85,25 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
         ctx.stroke();
       }
     } else {
-      this.ctx.rect(
-        this.bbox.minX,
-        this.bbox.minY,
-        this.nodeWidth,
-        this.nodeHeight
-      );
+      this.ctx.rect(this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
       this.ctx.lineWidth = zoomResetScale;
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      this.ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+      this.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
       this.ctx.fill();
       this.ctx.stroke();
     }
     if (transform.k > NO_TEXT_THRESHOLD) {
       this.textbox.maxWidth = this.width;
-      this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
-        this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
+      this.textbox.drawCenteredAt(
+        this.x,
+        this.y +
+          this.nodeHeight / 2 +
+          this.LABEL_OFFSET +
+          this.textbox.actualHeightWithInsets / 2.0 +
+          lineWidth
+      );
     }
 
     this.ctx.restore();
   }
-
 }

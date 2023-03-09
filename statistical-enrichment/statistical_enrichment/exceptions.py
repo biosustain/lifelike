@@ -1,5 +1,13 @@
 class ServerException(Exception):
-    def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
+    def __init__(
+            self,
+            title=None,
+            message=None,
+            additional_msgs=None,
+            fields=None,
+            code=500,
+            *args
+            ):  # noqa
         """
         Create a new exception.
         :param title: the title of the error, which sometimes used on the client
@@ -64,7 +72,8 @@ class JWTTokenException(ServerException):
             title=title,
             message=message,
             additional_msgs=additional_msgs,
-            code=code)
+            code=code
+        )
 
 
 class JWTAuthTokenException(JWTTokenException):
@@ -75,4 +84,5 @@ class JWTAuthTokenException(JWTTokenException):
             title=title,
             message=message,
             additional_msgs=additional_msgs,
-            code=code)
+            code=code
+        )

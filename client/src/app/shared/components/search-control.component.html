@@ -1,16 +1,23 @@
 <app-base-control
-        [disabled]="disabled"
-        [resultCount]="resultCount"
-        [resultIndex]="resultIndex"
-        [searching]="searching"
-        (previous)="previous.emit(this.resultIndex - 1)"
-        (next)="next.emit(this.resultIndex + 1)"
-        (clear)="clear()"
+  (clear)="clear()"
+  (next)="next.emit(this.resultIndex + 1)"
+  (previous)="previous.emit(this.resultIndex - 1)"
+  [disabled]="disabled"
+  [resultCount]="resultCount"
+  [resultIndex]="resultIndex"
+  [searching]="searching"
 >
-    <input [value]="value" (blur)="this.blurred()"
-           type="text" class="form-control input-border"
-           [ngStyle]="{minWidth:searchInputWidth,flexGrow:9999}"
-           placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
-           [disabled]="disabled" (keyup)="inputKeyUp($event)"
-           #searchInput>
+  <input
+    #searchInput
+    (blur)="this.blurred()"
+    (keyup)="inputKeyUp($event)"
+    [disabled]="disabled"
+    [ngStyle]="{ minWidth: searchInputWidth, flexGrow: 9999 }"
+    [value]="value"
+    aria-describedby="graph-search"
+    aria-label="Graph search"
+    class="form-control input-border"
+    placeholder="Search"
+    type="text"
+  />
 </app-base-control>

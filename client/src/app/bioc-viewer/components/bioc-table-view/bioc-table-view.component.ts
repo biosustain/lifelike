@@ -1,19 +1,19 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from "@angular/core";
 
 @Component({
-  selector: 'app-bioc-table-view',
-  templateUrl: './bioc-table-view.component.html',
-  styleUrls: ['./bioc-table-view.component.scss']
+  selector: "app-bioc-table-view",
+  templateUrl: "./bioc-table-view.component.html",
+  styleUrls: ["./bioc-table-view.component.scss"],
 })
 export class BiocTableViewComponent implements OnInit {
   @Input() passage;
-  constructor() { }
 
-  ngOnInit() {
-  }
+  constructor() {}
+
+  ngOnInit() {}
 
   tableCaption(passage) {
-    const TYPES = ['table_caption'];
+    const TYPES = ["table_caption"];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -24,7 +24,7 @@ export class BiocTableViewComponent implements OnInit {
   }
 
   isTable(passage) {
-    const TYPES = ['table'];
+    const TYPES = ["table"];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -32,7 +32,7 @@ export class BiocTableViewComponent implements OnInit {
   }
 
   isTableFootnote(passage) {
-    const TYPES = ['table_footnote'];
+    const TYPES = ["table_footnote"];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -43,12 +43,11 @@ export class BiocTableViewComponent implements OnInit {
     const infons = passage.infons || {};
     const xml = infons.xml && infons.xml.toLowerCase();
     if (xml) {
-      const idx = xml.indexOf('<table');
+      const idx = xml.indexOf("<table");
       if (idx >= 0) {
         return xml.substring(idx);
       }
     }
     return false;
   }
-
 }

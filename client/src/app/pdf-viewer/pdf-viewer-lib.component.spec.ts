@@ -1,17 +1,17 @@
-import { async, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { async, TestBed } from "@angular/core/testing";
+import { FormsModule } from "@angular/forms";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
-import { SharedModule } from 'app/shared/shared.module';
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { SharedModule } from "app/shared/shared.module";
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
 
-import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
-import { PdfViewerLibModule } from './pdf-viewer-lib.module';
-import { PDFAnnotationService } from './services/pdf-annotation.service';
-import { PDFSearchService } from './services/pdf-search.service';
+import { PdfViewerLibComponent } from "./pdf-viewer-lib.component";
+import { PdfViewerLibModule } from "./pdf-viewer-lib.module";
+import { PDFAnnotationService } from "./services/pdf-annotation.service";
+import { PDFSearchService } from "./services/pdf-search.service";
 
-describe('PdfViewerLibComponent', () => {
+describe("PdfViewerLibComponent", () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -22,13 +22,10 @@ describe('PdfViewerLibComponent', () => {
         MatSnackBarModule,
         RootStoreModule,
       ],
-      providers: [
-        PDFAnnotationService,
-        PDFSearchService
-      ]
+      providers: [PDFAnnotationService, PDFSearchService],
     }).compileComponents();
   }));
-  it('should create the app', async(() => {
+  it("should create the app", async(() => {
     const fixture = TestBed.createComponent(PdfViewerLibComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();

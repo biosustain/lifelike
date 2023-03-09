@@ -1,20 +1,18 @@
-import { inject, TestBed } from '@angular/core/testing';
-import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
+import { inject, TestBed } from "@angular/core/testing";
+import { BrowserModule, DomSanitizer } from "@angular/platform-browser";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { ScrubHtmlPipe } from './scrub-html.pipe';
+import { ScrubHtmlPipe } from "./scrub-html.pipe";
 
-describe('ScrubHtmlPipe', () => {
+describe("ScrubHtmlPipe", () => {
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        BrowserModule
-      ]
+      imports: [BrowserModule],
     });
   });
 
-  it('create an instance', inject([DomSanitizer], (domSanitizer: DomSanitizer) => {
+  it("create an instance", inject([DomSanitizer], (domSanitizer: DomSanitizer) => {
     const pipe = new ScrubHtmlPipe(domSanitizer);
     expect(pipe).toBeTruthy();
   }));

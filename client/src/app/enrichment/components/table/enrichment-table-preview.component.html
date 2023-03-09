@@ -1,15 +1,13 @@
-<div class="p-4 w-100 h-100 overflow-auto" *ngIf="document">
-  <div>
-    <strong>Organism:</strong> {{ document.organism }}
-  </div>
+<div *ngIf="document" class="p-4 w-100 h-100 overflow-auto">
+  <div><strong>Organism:</strong> {{ document.organism }}</div>
   <div>
     <strong>Genes:</strong>
     <table class="table">
-        <th *ngFor="let header of GENE_TABLE_HEADERS">{{ header }}</th>
-        <tr *ngFor="let gene of document.importGenes">
-            <td>{{ gene }}</td>
-            <td>{{ document.values.get(gene) }}</td>
-        </tr>
+      <th *ngFor="let header of GENE_TABLE_HEADERS">{{ header }}</th>
+      <tr *ngFor="let gene of document.importGenes">
+        <td>{{ gene }}</td>
+        <td>{{ document.values.get(gene) }}</td>
+      </tr>
     </table>
   </div>
   <div>

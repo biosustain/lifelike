@@ -6,6 +6,7 @@ from neo4japp.schemas.common import ResultListSchema
 from neo4japp.schemas.fields import SearchQuery
 from neo4japp.schemas.filesystem import RankedFileSchema
 
+
 # ========================================
 # Content Search
 # ========================================
@@ -18,14 +19,15 @@ class ContentSearchSchema(CamelCaseSchema):
     q = SearchQuery(
         required=True,
     )
-    types = ma.String(default='', required=False)
-    folders = ma.String(default='', required=False)
+    types = ma.String(default="", required=False)
+    folders = ma.String(default="", required=False)
 
 
 class SynonymSearchSchema(CamelCaseSchema):
     term = fields.String()
-    organisms = fields.String(default='', required=False)
-    types = fields.String(default='', required=False)
+    organisms = fields.String(default="", required=False)
+    types = fields.String(default="", required=False)
+
 
 # Response
 # ----------------------------------------
@@ -54,13 +56,16 @@ class SynonymSearchResponseSchema(CamelCaseSchema):
 
 
 class AnnotateRequestSchema(ma.Schema):
-    texts = fields.List(fields.String(validate=validate.Length(min=1, max=1500)),
-                        validate=validate.Length(min=1, max=40))
+    texts = fields.List(
+        fields.String(validate=validate.Length(min=1, max=1500)),
+        validate=validate.Length(min=1, max=40),
+    )
 
 
 # ========================================
 # Organisms
 # ========================================
+
 
 class OrganismSearchSchema(ma.Schema):
     query = ma.String(required=True)
@@ -70,6 +75,7 @@ class OrganismSearchSchema(ma.Schema):
 # ========================================
 # Visualizer
 # ========================================
+
 
 class VizSearchSchema(ma.Schema):
     query = ma.String(required=True)

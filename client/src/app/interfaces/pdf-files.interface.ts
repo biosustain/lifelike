@@ -1,4 +1,4 @@
-import { OrganismAutocomplete } from './neo4j.interface';
+import { OrganismAutocomplete } from "./neo4j.interface";
 
 export interface PdfFiles {
   files: PdfFile[];
@@ -34,8 +34,8 @@ export interface PdfFileUpload {
 }
 
 export enum UploadType {
-  Files = 'files',
-  Url = 'url',
+  Files = "files",
+  Url = "url",
 }
 
 export interface UploadPayload {

@@ -24,9 +24,15 @@ import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-ico
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
-import { BLACK_COLOR, FA_CUSTOM_ICONS, Unicodes, WHITE_COLOR, InternalURIType } from 'app/shared/constants';
+import {
+  BLACK_COLOR,
+  FA_CUSTOM_ICONS,
+  InternalURIType,
+  Unicodes,
+  WHITE_COLOR,
+} from 'app/shared/constants';
 import { getSupportedFileCodes } from 'app/shared/utils';
-import { AppURL, getInternalURIType, isInternalUri } from 'app/shared/utils/url';
+import { AppURL, getInternalURIType } from 'app/shared/utils/url';
 
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
@@ -44,7 +50,6 @@ import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
 import { GroupNode } from '../utils/canvas/graph-groups/group-node';
 import { BORDER_BLUE_COLOR, DEFAULT_LABEL_FONT_SIZE, LineTypes } from '../utils/canvas/shared';
 
-
 /**
  * Implements the style used on the Knowledge Graph.
  */
@@ -54,36 +59,41 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
   private readonly FONT = 'Roboto, "Helvetica Neue", sans-serif';
   private readonly DEFAULT_ICON_SIZE = 50;
   private readonly defaultSourceLineEndDescriptor: string = null;
-  private readonly defaultTargetLineEndDescriptor = 'arrow';
+  private readonly defaultTargetLineEndDescriptor = "arrow";
   private readonly lineEndBaseSize = 16;
   private readonly maxWidthIfUnsized = 400;
   private readonly maxIconNodeWidthIfUnsized = 200;
   private readonly maxHeightIfUnsized = 400;
   private readonly detailTypeBackgrounds = new Map([
-    ['note', '#FFF6D5'],
-    ['link', '#DCF1F1'],
+    ["note", "#FFF6D5"],
+    ["link", "#DCF1F1"],
   ]);
 
-  constructor(protected readonly imageManager: ResourceManager<string, CanvasImageSource>) {
-  }
+  constructor(protected readonly imageManager: ResourceManager<string, CanvasImageSource>) {}
 
-  placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
+  placeNode(
+    d: UniversalGraphNode,
+    ctx: CanvasRenderingContext2D,
+    placementOptions: PlacementOptions
+  ): PlacedNode {
     const styleData: UniversalNodeStyle = d.style ?? {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
-    const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
+    const labelFont = DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale + "px " + this.FONT;
     const forceVisibleText = placementOptions.selected || placementOptions.highlighted;
 
     // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
 
-
     let iconCode: Unicodes = annotationStyle?.iconCode;
 
     // First, check user inputs. Second, check for default settings for this entity type. Lastly, use default values.
     // Relation nodes have their font color stored elsewhere, so we need to check that first
-    const textColor = styleData.fillColor ?? (annotationStyle?.style?.color || (annotationStyle?.color || BLACK_COLOR));
+    const textColor =
+      styleData.fillColor ??
+      (annotationStyle?.style?.color || annotationStyle?.color || BLACK_COLOR);
     const bgColor = styleData.bgColor ?? (annotationStyle?.style?.background || WHITE_COLOR);
-    const strokeColor = styleData.strokeColor ?? (annotationStyle?.style?.border || BORDER_BLUE_COLOR);
+    const strokeColor =
+      styleData.strokeColor ?? (annotationStyle?.style?.border || BORDER_BLUE_COLOR);
 
     if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
@@ -95,7 +105,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         height: d.data.height,
         maxWidth: !d.data.width ? this.maxWidthIfUnsized : null,
         maxHeight: !d.data.height ? this.maxHeightIfUnsized : null,
-        text: d.data.detail ?? '',
+        text: d.data.detail ?? "",
         font: labelFont,
         fillStyle: styleData.fillColor ?? BLACK_COLOR,
         horizontalAlign: TextAlignment.Start,
@@ -114,14 +124,12 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         textbox,
         stroke: this.createLine(
           styleData.lineType ?? this.STANDARD_BORDER,
-          styleData.lineWidthScale ?? 1 *
-          (forceVisibleText ? 1.3 : 1),
-          styleData.strokeColor ?? this.detailTypeBackgrounds.get(d.label),
+          styleData.lineWidthScale ?? 1 * (forceVisibleText ? 1.3 : 1),
+          styleData.strokeColor ?? this.detailTypeBackgrounds.get(d.label)
         ),
         shapeFillColor: styleData.bgColor ?? this.detailTypeBackgrounds.get(d.label),
         forceVisibleText,
       });
-
     } else if (iconCode) {
       // ---------------------------------
       // Generic icon node + Note
@@ -129,7 +137,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       let specialIconColor;
 
       // Override icon for link types
-      if (d.label === 'link') {
+      if (d.label === "link") {
         const links: (Source | Hyperlink)[] = [
           ...(d.data && d.data.sources ? d.data.sources : []),
           ...(d.data && d.data.hyperlinks ? d.data.hyperlinks : []),
@@ -146,13 +154,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       const iconLabelColor = specialIconColor ?? iconTextColor;
       const iconSize = d.icon?.size ?? this.DEFAULT_ICON_SIZE;
       // Change font family to custom kit if icon is customly added
-      const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+      const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode)
+        ? '"Font Awesome Kit"'
+        : '"Font Awesome 5 Pro';
       const iconFontFace = d.icon?.face ?? fontAwesomeFont;
       const iconFont = `${iconSize}px ${iconFontFace}`;
 
       // Textbox to draw the icon
       const iconTextbox = new TextElement(ctx, {
-        text: iconCode ?? '?',
+        text: iconCode ?? "?",
         font: iconFont,
         fillStyle: iconLabelColor,
       });
@@ -173,35 +183,33 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         labelTextbox,
         forceVisibleText,
       });
-
     } else if (d.image_id) {
       // ---------------------------------
       // Image nodes
       // ---------------------------------
-        const labelTextbox = new TextElement(ctx, {
+      const labelTextbox = new TextElement(ctx, {
         // Max width of label is equal to the width of the image
         maxWidth: d.data.width,
         text: d.display_name,
         font: labelFont,
         fillStyle: d.style?.fillColor ?? textColor,
         horizontalAlign: TextAlignment.Center,
-        });
+      });
 
-        return new ImageNode(ctx, {
-          x: d.data.x,
-          y: d.data.y,
-          width: d.data.width,
-          height: d.data.height ,
-          imageManager: this.imageManager,
-          imageId: d.image_id,
-          stroke: this.createLine(
-            styleData.lineType ?? this.NO_BORDER,
-            styleData.lineWidthScale ?? 1,
-            styleData.strokeColor ?? WHITE_COLOR,
-          ),
-          textbox: labelTextbox
-        });
-
+      return new ImageNode(ctx, {
+        x: d.data.x,
+        y: d.data.y,
+        width: d.data.width,
+        height: d.data.height,
+        imageManager: this.imageManager,
+        imageId: d.image_id,
+        stroke: this.createLine(
+          styleData.lineType ?? this.NO_BORDER,
+          styleData.lineWidthScale ?? 1,
+          styleData.strokeColor ?? WHITE_COLOR
+        ),
+        textbox: labelTextbox,
+      });
     } else {
       // ---------------------------------
       // All other nodes
@@ -227,7 +235,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
         stroke: this.createLine(
           styleData.lineType ?? this.STANDARD_BORDER,
           styleData.lineWidthScale ?? 1,
-          strokeColor,
+          strokeColor
         ),
         shapeFillColor: bgColor,
         forceVisibleText,
@@ -235,13 +243,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     }
   }
 
-  placeEdge(d: UniversalGraphEdge,
-            from: UniversalGraphNode,
-            to: UniversalGraphNodelike,
-            placedFrom: PlacedNode,
-            placedTo: PlacedNode,
-            ctx: CanvasRenderingContext2D,
-            placementOptions: PlacementOptions): PlacedEdge {
+  placeEdge(
+    d: UniversalGraphEdge,
+    from: UniversalGraphNode,
+    to: UniversalGraphNodelike,
+    placedFrom: PlacedNode,
+    placedTo: PlacedNode,
+    ctx: CanvasRenderingContext2D,
+    placementOptions: PlacementOptions
+  ): PlacedEdge {
     const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS.has(to.label);
     const styleData: UniversalEdgeStyle = d.style ?? {};
     const fontSizeScale = styleData.fontSizeScale ?? 1;
@@ -254,15 +264,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
 
     // Find where the line intersects with the source and target nodes
     // TODO: Consider using the 'closest point to bbox' instead of intersection point
-    const target = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
-    const source = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
+    const target = placedTo.lineIntersectionPoint({ x: from.data.x, y: from.data.y });
+    const source = placedFrom.lineIntersectionPoint({ x: to.data.x, y: to.data.y });
 
     // Arrow/whatever at the beginning of the line
     const sourceLineEnd = this.createHead(
       sourceHeadType,
       lineWidth,
       strokeColor,
-      this.defaultSourceLineEndDescriptor,
+      this.defaultSourceLineEndDescriptor
     );
 
     // Arrow/whatever at the end of the line
@@ -270,17 +280,23 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       targetHeadType,
       lineWidth,
       strokeColor,
-      connectedToNotes ? null : this.defaultTargetLineEndDescriptor,
+      connectedToNotes ? null : this.defaultTargetLineEndDescriptor
     );
 
     // Label textbox, if any
-    const textbox = d.label ? new TextElement(ctx, {
-      text: d.label,
-      font: (placementOptions.highlighted ? 'bold ' : '') + (DEFAULT_LABEL_FONT_SIZE * fontSizeScale) + 'px ' + this.FONT,
-      fillStyle: '#444',
-      strokeStyle: WHITE_COLOR,
-      strokeWidth: 3,
-    }) : null;
+    const textbox = d.label
+      ? new TextElement(ctx, {
+          text: d.label,
+          font:
+            (placementOptions.highlighted ? "bold " : "") +
+            DEFAULT_LABEL_FONT_SIZE * fontSizeScale +
+            "px " +
+            this.FONT,
+          fillStyle: "#444",
+          strokeStyle: WHITE_COLOR,
+          strokeWidth: 3,
+        })
+      : null;
 
     return new LineEdge(ctx, {
       source,
@@ -289,23 +305,19 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       sourceLineEnd,
       targetLineEnd,
       lineWidth,
-      stroke: this.createLine(
-        lineType,
-        lineWidth,
-        strokeColor,
-      ),
+      stroke: this.createLine(lineType, lineWidth, strokeColor),
       forceVisibleText: placementOptions.selected || placementOptions.highlighted,
     });
   }
 
-  placeGroup(d: UniversalGraphGroup,
-             ctx: CanvasRenderingContext2D,
-             options: PlacementOptions): PlacedGroup {
-
-
+  placeGroup(
+    d: UniversalGraphGroup,
+    ctx: CanvasRenderingContext2D,
+    options: PlacementOptions
+  ): PlacedGroup {
     const styleData: UniversalNodeStyle = d.style ?? {};
     const labelFontSizeScale = styleData.fontSizeScale ?? 1;
-    const labelFont = (DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale) + 'px ' + this.FONT;
+    const labelFont = DEFAULT_LABEL_FONT_SIZE * labelFontSizeScale + "px " + this.FONT;
 
     const labelTextbox = new TextElement(ctx, {
       text: d.display_name,
@@ -322,7 +334,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       stroke: this.createLine(
         styleData.lineType ?? this.NO_BORDER,
         styleData.lineWidthScale ?? 0,
-        styleData.strokeColor ?? WHITE_COLOR,
+        styleData.strokeColor ?? WHITE_COLOR
       ),
       textbox: labelTextbox,
       // TODO: This might get change, maybe some default background for groups?
@@ -337,9 +349,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
    * @param width the width of the line
    * @param style the color style
    */
-  private createLine(type: string | undefined,
-                     width: number,
-                     style: string): Line | undefined {
+  private createLine(type: string | undefined, width: number, style: string): Line | undefined {
     if (type == null) {
       return null;
     }
@@ -366,10 +376,12 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
    * @param strokeColor the stroke color
    * @param defaultType the default fallback type
    */
-  private createHead(type: string | undefined,
-                     lineWidth: number,
-                     strokeColor: string,
-                     defaultType: string | undefined = null): LineHead | undefined {
+  private createHead(
+    type: string | undefined,
+    lineWidth: number,
+    strokeColor: string,
+    defaultType: string | undefined = null
+  ): LineHead | undefined {
     const effectiveType = type || defaultType;
 
     if (effectiveType == null) {
@@ -389,65 +401,70 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
     }
 
     return new CompoundLineHead(
-      descriptor.split(',').map(token => {
-        switch (token) {
-          case 'spacer':
-            return [
-              new EmptyLineHead(this.lineEndBaseSize * 0.3),
-            ];
-          case 'cross-axis':
-            return [
-              new EmptyLineHead(this.lineEndBaseSize * 0.3),
-              new CrossAxisLineHead(this.lineEndBaseSize, {
-                fillStyle: strokeColor,
-                strokeStyle: strokeColor,
-              }),
-            ];
-          case 'circle':
-            return [
-              new CircleHead(
-                this.lineEndBaseSize + lineWidth, {
+      descriptor
+        .split(",")
+        .map((token) => {
+          switch (token) {
+            case "spacer":
+              return [new EmptyLineHead(this.lineEndBaseSize * 0.3)];
+            case "cross-axis":
+              return [
+                new EmptyLineHead(this.lineEndBaseSize * 0.3),
+                new CrossAxisLineHead(this.lineEndBaseSize, {
+                  fillStyle: strokeColor,
+                  strokeStyle: strokeColor,
+                }),
+              ];
+            case "circle":
+              return [
+                new CircleHead(this.lineEndBaseSize + lineWidth, {
                   fillStyle: strokeColor,
                   strokeStyle: null,
                 }),
-            ];
-          case 'diamond':
-            return [
-              new DiamondHead(
-                this.lineEndBaseSize + lineWidth,
-                this.lineEndBaseSize + lineWidth, {
+              ];
+            case "diamond":
+              return [
+                new DiamondHead(
+                  this.lineEndBaseSize + lineWidth,
+                  this.lineEndBaseSize + lineWidth,
+                  {
+                    fillStyle: strokeColor,
+                    strokeStyle: null,
+                  }
+                ),
+              ];
+            case "square":
+              return [
+                new RectangleHead(
+                  this.lineEndBaseSize + lineWidth,
+                  this.lineEndBaseSize + lineWidth,
+                  {
+                    fillStyle: strokeColor,
+                    strokeStyle: null,
+                  }
+                ),
+              ];
+            default:
+              return [
+                new Arrowhead(this.lineEndBaseSize + lineWidth, {
                   fillStyle: strokeColor,
                   strokeStyle: null,
+                  length: this.lineEndBaseSize,
+                  lineWidth,
                 }),
-            ];
-          case 'square':
-            return [
-              new RectangleHead(
-                this.lineEndBaseSize + lineWidth,
-                this.lineEndBaseSize + lineWidth, {
-                  fillStyle: strokeColor,
-                  strokeStyle: null,
-                }),
-            ];
-          default:
-            return [new Arrowhead(
-              this.lineEndBaseSize + lineWidth, {
-                fillStyle: strokeColor,
-                strokeStyle: null,
-                length: this.lineEndBaseSize,
-                lineWidth,
-              })];
-        }
-      }).reduce((compound, lineEnds) => {
-        for (const lineEnd of lineEnds) {
-          compound.push(lineEnd);
-        }
-        return compound;
-      }, []),
+              ];
+          }
+        })
+        .reduce((compound, lineEnds) => {
+          for (const lineEnd of lineEnds) {
+            compound.push(lineEnd);
+          }
+          return compound;
+        }, [])
     );
   }
 
-  private getIconCode(iconCode: string, links): {iconCode: Unicodes, specialIconColor: string } {
+  private getIconCode(iconCode: string, links): { iconCode: Unicodes; specialIconColor: string } {
     let specialIconColor;
     search: for (const link of links) {
       const appUrl = new AppURL(link.url);
@@ -516,11 +533,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
               }
             }
           } catch (e) {
-            return {iconCode, specialIconColor} as { iconCode: Unicodes, specialIconColor: string };
+            return { iconCode, specialIconColor } as {
+              iconCode: Unicodes;
+              specialIconColor: string;
+            };
           }
       }
     }
-    return {iconCode, specialIconColor} as {iconCode: Unicodes, specialIconColor: string };
+    return { iconCode, specialIconColor } as { iconCode: Unicodes; specialIconColor: string };
   }
-
 }

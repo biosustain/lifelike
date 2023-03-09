@@ -1,16 +1,18 @@
-import { OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { OnDestroy, OnInit } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 
-import { Observable, Subscription } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { Observable, Subscription } from "rxjs";
+import { mergeMap } from "rxjs/operators";
 
-import { BackgroundTask } from '../../rxjs/background-task';
-import { CollectionModel } from '../../utils/collection-model';
-import { WorkspaceManager } from '../../workspace-manager';
-import { ResultList, ResultQuery } from '../../schemas/common';
+import { BackgroundTask } from "../../rxjs/background-task";
+import { CollectionModel } from "../../utils/collection-model";
+import { WorkspaceManager } from "../../workspace-manager";
+import { ResultList, ResultQuery } from "../../schemas/common";
 
-export abstract class ResultListComponent<O, R, RL extends ResultList<R> = ResultList<R>> implements OnInit, OnDestroy {
-  public loadTask: BackgroundTask<O, RL> = new BackgroundTask(params => this.getResults(params));
+export abstract class ResultListComponent<O, R, RL extends ResultList<R> = ResultList<R>>
+  implements OnInit, OnDestroy
+{
+  public loadTask: BackgroundTask<O, RL> = new BackgroundTask((params) => this.getResults(params));
 
   public params: O = this.getDefaultParams();
 
@@ -22,29 +24,40 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
 
   protected subscriptions = new Subscription();
 
-  constructor(protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager) {
+  get valid(): boolean {
+    return true;
   }
 
+  constructor(
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager
+  ) {}
+
   ngOnInit() {
-    this.subscriptions.add(this.loadTask.values$.subscribe(value => {
-      this.valueChanged(value);
-    }));
+    this.subscriptions.add(
+      this.loadTask.values$.subscribe((value) => {
+        this.valueChanged(value);
+      })
+    );
 
-    this.subscriptions.add(this.loadTask.results$.subscribe(({result: result}) => {
-      this.collectionSize = result.total;
-      this.resultQuery = result.query;
-      this.results.replace(result.results);
-    }));
+    this.subscriptions.add(
+      this.loadTask.results$.subscribe(({ result: result }) => {
+        this.collectionSize = result.total;
+        this.resultQuery = result.query;
+        this.results.replace(result.results);
+      })
+    );
 
-    this.subscriptions.add(this.route.queryParams.pipe(
-      mergeMap(params => this.deserializeParams(params))
-    ).subscribe(params => {
-      this.params = params;
-      if (this.valid) {
-        this.loadTask.update(this.params);
-      }
-    }));
+    this.subscriptions.add(
+      this.route.queryParams
+        .pipe(mergeMap((params) => this.deserializeParams(params)))
+        .subscribe((params) => {
+          this.params = params;
+          if (this.valid) {
+            this.loadTask.update(this.params);
+          }
+        })
+    );
   }
 
   ngOnDestroy() {
@@ -56,23 +69,24 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   }
 
   search(params: Partial<O>) {
-    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
-      queryParams: {
-        ...this.serializeParams({
-          ...this.getDefaultParams(),
-          ...params,
-        }, true),
-        t: new Date().getTime(),
-      },
-    });
+    this.workspaceManager.navigate(
+      this.route.snapshot.url.map((item) => item.path),
+      {
+        queryParams: {
+          ...this.serializeParams(
+            {
+              ...this.getDefaultParams(),
+              ...params,
+            },
+            true
+          ),
+          t: new Date().getTime(),
+        },
+      }
+    );
   }
 
-  get valid(): boolean {
-    return true;
-  }
-
-  valueChanged(value: O) {
-  }
+  valueChanged(value: O) {}
 
   abstract getResults(params: O): Observable<RL>;
 

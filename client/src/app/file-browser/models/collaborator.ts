@@ -1,6 +1,6 @@
-import { AppUser } from 'app/interfaces';
+import { AppUser } from "app/interfaces";
 
-import { CollaboratorData } from '../schema';
+import { CollaboratorData } from "../schema";
 
 export class Collaborator {
   user: AppUser;
@@ -8,12 +8,12 @@ export class Collaborator {
 
   get roleDescription(): string {
     switch (this.roleName) {
-      case 'project-admin':
-        return 'Can edit and invite';
-      case 'project-write':
-        return 'Can edit';
-      case 'project-read':
-        return 'Can view';
+      case "project-admin":
+        return "Can edit and invite";
+      case "project-write":
+        return "Can edit";
+      case "project-read":
+        return "Can view";
       default:
         return this.roleName;
     }

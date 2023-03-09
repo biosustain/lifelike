@@ -1,14 +1,14 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges } from "@angular/core";
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from "lodash-es";
 
-import { Hyperlink } from 'app/drawing-tool/services/interfaces';
+import { Hyperlink } from "app/drawing-tool/services/interfaces";
 
-import { SEARCH_LINKS } from '../links';
+import { SEARCH_LINKS } from "../links";
 
 @Component({
-  selector: 'app-quick-search',
-  templateUrl: './quick-search.component.html',
+  selector: "app-quick-search",
+  templateUrl: "./quick-search.component.html",
 })
 export class QuickSearchComponent implements OnChanges {
   @Input() query: string | undefined;
@@ -22,8 +22,10 @@ export class QuickSearchComponent implements OnChanges {
   ngOnChanges() {
     if (this.links != null && this.links.length) {
       // links should be sorted in the order that they appear in SEARCH_LINKS
-      const sortOrder = SEARCH_LINKS.map(link => link.domain.toLowerCase());
-      this.shownLinks = this.links.sort((linkA, linkB) => sortOrder.indexOf(linkA.domain) - sortOrder.indexOf(linkB.domain));
+      const sortOrder = SEARCH_LINKS.map((link) => link.domain.toLowerCase());
+      this.shownLinks = this.links.sort(
+        (linkA, linkB) => sortOrder.indexOf(linkA.domain) - sortOrder.indexOf(linkB.domain)
+      );
       this.generated = false;
       if (this.normalizeDomains) {
         const normalizedMapping = new Map<string, string>();
@@ -38,9 +40,9 @@ export class QuickSearchComponent implements OnChanges {
         }
       }
     } else if (this.query != null) {
-      this.shownLinks = this.linkTemplates.map(link => ({
+      this.shownLinks = this.linkTemplates.map((link) => ({
         domain: link.domain,
-        url: link.url.replace('%s', encodeURIComponent(this.query))
+        url: link.url.replace("%s", encodeURIComponent(this.query)),
       }));
       this.generated = true;
     } else {

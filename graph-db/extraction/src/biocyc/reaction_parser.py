@@ -1,7 +1,6 @@
 from biocyc.data_file_parser import *
 from common.graph_models import *
 
-
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
     'COMMON-NAME': (PROP_NAME, 'str'),
@@ -32,9 +31,12 @@ SMALL_MOL_REACTIONS = 'Small-Molecule-Reactions'
 
 class ReactionParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'reactions.dat',
-                                    NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_URL, PROP_DIRECTION, PROP_LOCATION]
+        DataFileParser.__init__(
+            self, db_name, tarfile, 'reactions.dat',
+            NODE_REACTION, ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES
+            )
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER, PROP_URL, PROP_DIRECTION,
+                      PROP_LOCATION]
 
     def parse_data_file(self):
         """
@@ -47,7 +49,8 @@ class ReactionParser(DataFileParser):
             edges = set(node.edges)
             for edge in edges:
                 if edge.label == REL_TYPE:
-                    if edge.dest.get_attribute(PROP_BIOCYC_ID) in [CHEM_REACTIONS, SMALL_MOL_REACTIONS]:
+                    if edge.dest.get_attribute(PROP_BIOCYC_ID) in [CHEM_REACTIONS,
+                                                                   SMALL_MOL_REACTIONS]:
                         node.edges.remove(edge)
             ec_number_str = node.get_attribute(PROP_EC_NUMBER)
             if ec_number_str:
@@ -55,6 +58,3 @@ class ReactionParser(DataFileParser):
                 for ec in ec_numbers:
                     self.add_dblink(node, DB_ENZYME, ec)
         return nodes
-
-
-

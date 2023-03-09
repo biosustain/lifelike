@@ -1,179 +1,213 @@
-<div class="module" #modalContainer>
-    <ng-container *ngIf="(loadTask.status$ | async) as status">
-        <app-module-progress *ngIf="status.running">
-            Loading map... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
-        </app-module-progress>
-        <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
-            <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-        </app-module-error>
-    </ng-container>
-    <app-module-header *ngIf="map" [object]="map"
-                       [dragTitleData$]="dragTitleData$">
-        <app-module-menu [object]="map" [forEditing]="true"
-                         [showOpen]="false" [showDelete]="false"
-                         [showRestore]="true" (objectRestore)="restore($event)"
-                         (objectUpdate)="emitModuleProperties()">
-        </app-module-menu>
-        <div *ngIf="unsavedChanges$.value">
-            <span class="badge badge-danger badge-pill ml-1"
-                  ngbTooltip="Has unsaved changes" container="body">
-              <i class="fa fa-pencil-alt"></i>
-            </span>
-        </div>
-        <div class="btn-group ml-1">
-            <button type="button" class="btn btn-secondary"
-                    ngbTooltip="Save" placement="bottom" container="body" (click)="save()">
-                <i class="fa fa-fw fa-save" *ngIf="!isSaving; else spinner"></i>
-                <ng-template #spinner>
-                    <span class="spinner-border spinner-border-sm" role="status">
-                        <span class="sr-only">Saving...</span>
-                    </span>
-               </ng-template>
-            </button>
-        </div>
-
-        <div class="btn-group px-1 mx-auto">
-            <button type="button" class="btn btn-secondary"
-                    ngbTooltip="Undo" placement="bottom" container="body"
-                    (click)="undo()"
-                    [disabled]="!graphCanvas || !graphCanvas.canUndo()">
-                <i class="fa fa-fw fa-undo"></i>
-            </button>
-            <button type="button" class="btn btn-secondary"
-                    ngbTooltip="Redo" placement="bottom" container="body"
-                    (click)="redo()"
-                    [disabled]="!graphCanvas || !graphCanvas.canRedo()">
-                <i class="fa fa-fw fa-redo"></i>
-            </button>
-        </div>
-
-        <div class="btn-group pr-1 mx-auto">
-            <button type="button" class="btn btn-secondary" container="body"
-                    ngbTooltip="Fit Map to Window" placement="bottom"
-                    (click)="zoomToFit()">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-        </div>
-
-        <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
-                            [resultIndex]="entitySearchListIdx"
-                            [resultCount]="entitySearchList.length"
-                            (previous)="previous()" (next)="next()">
-        </app-search-control>
-    </app-module-header>
-    <div class="position-relative overflow-hidden flex-fill">
-        <ng-container *ngIf="map && (lockService.lockAcquired === false || !lockService.lockCheckingActive)">
-            <div *ngIf="lockService.locks.length && lockService.lockCheckingActive; else locksReleased"
-                 class="lock-panel alert alert-danger"
-            >
-                <div>
-                    <strong>Warning:</strong> This file is being edited by another user and saving will
-                    erase the other user's changes.
-                </div>
-
-                <ul class="m-0">
-                    <li *ngFor="let lock of lockService.locks">
-                        {{ lock.user.firstName }} {{ lock.user.lastName }}
-                    </li>
-                </ul>
-            </div>
-            <ng-template #locksReleased>
-                <div *ngIf="!reloadPopupDismissed" class="lock-panel alert alert-warning">
-                    <div>
-                        Please reload to get the latest changes.
-                    </div>
-
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-primary" (click)="reload()">
-                            Reload
-                        </button>
-                        <button type="button" class="btn btn-secondary ml-2" (click)="dismissReloadPopup()">
-                            Dismiss
-                        </button>
-                    </div>
-                </div>
-            </ng-template>
-        </ng-container>
-        <as-split unit="pixel"
-                  direction="horizontal"
-                  [gutterSize]="2">
-            <as-split-area [order]="0" class="overflow-hidden">
-                <div class="graph-container">
-                    <canvas appGraphView></canvas>
-                </div>
-            </as-split-area>
-            <as-split-area size="256"
-                           [order]="1" #infoPanelSidebar>
-                <ng-container
-                        *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else graphInfo">
-                    <div class="info-panel" *ngIf="selected[0].length === 1; else graphInfo">
-                        <app-info-panel [infoPanel]="infoPanel" [selected]="selected[0][0]"
-                                        (actionCreated)="graphCanvas.execute($event)">
-                        </app-info-panel>
-                    </div>
-                    <button *ngIf="canCreateGroupFromSelection()"
-                            class="btn btn-light center mt-2 ml-2"
-                            (click)="createGroup()">
-                        Create Group
-                    </button>
-                    <button *ngIf="canExtendsGroupFromSelection()"
-                            class="btn btn-light center mt-2 ml-2"
-                            (click)="addToGroup()">
-                        Add To Group
-                    </button>
-                </ng-container>
-
-                <ng-template #graphInfo>
-                    <ng-container *ngIf="graphCanvas">
-                        <div class="d-flex flex-column h-80">
-                            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
-                                class="nav-tabs nav-sidebar-tabs">
-                                <li ngbNavItem="graph">
-                                    <a ngbNavLink>Graph</a>
-                                    <ng-template ngbNavContent>
-                                        <div class="module-body">
-                                            <div class="row align-items-center mb-0">
-                                                <div class="col-sm-6">Node Count:</div>
-                                                <div class="col-sm-6 text-right">
-                                                    {{ graphCanvas.nodes.length | number }}
-                                                </div>
-                                            </div>
-
-                                            <div class="row align-items-center">
-                                                <div class="col-sm-6">Edge Count:</div>
-                                                <div class="col-sm-6 text-right">
-                                                    {{ graphCanvas.edges.length | number }}
-                                                </div>
-                                            </div>
-
-                                            <div class="row align-items-center">
-                                                <div class="col-sm-6">Group Count:</div>
-                                                <div class="col-sm-6 text-right">
-                                                    {{ graphCanvas.groups.length | number }}
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </ng-template>
-                                </li>
-                            </ul>
-
-                            <div [ngbNavOutlet]="nav" class="flex-fill overflow-auto"></div>
-                        </div>
-                    </ng-container>
-                </ng-template>
-            </as-split-area>
-        </as-split>
-        <div>
-            <div>
-                <div class="palette-panel">
-                    <app-collapsible-window title="Palette" [reversed]="true" class="flex-fill">
-                        <div class="window-body">
-                            <app-palette></app-palette>
-                        </div>
-                    </app-collapsible-window>
-                </div>
-            </div>
-        </div>
+<div #modalContainer class="module">
+  <ng-container *ngIf="loadTask.status$ | async as status">
+    <app-module-progress *ngIf="status.running">
+      Loading map... {{ status.retryInProgressShown ? "Retrying..." : "" }}
+    </app-module-progress>
+    <app-module-error *ngIf="status.failedErrorShown" [error]="status.error">
+      <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+  </ng-container>
+  <app-module-header *ngIf="map" [dragTitleData$]="dragTitleData$" [object]="map">
+    <app-module-menu
+      (objectRestore)="restore($event)"
+      (objectUpdate)="emitModuleProperties()"
+      [forEditing]="true"
+      [object]="map"
+      [showDelete]="false"
+      [showOpen]="false"
+      [showRestore]="true"
+    >
+    </app-module-menu>
+    <div *ngIf="unsavedChanges$.value">
+      <span
+        class="badge badge-danger badge-pill ml-1"
+        container="body"
+        ngbTooltip="Has unsaved changes"
+      >
+        <i class="fa fa-pencil-alt"></i>
+      </span>
     </div>
+    <div class="btn-group ml-1">
+      <button
+        (click)="save()"
+        class="btn btn-secondary"
+        container="body"
+        ngbTooltip="Save"
+        placement="bottom"
+        type="button"
+      >
+        <i *ngIf="!isSaving; else spinner" class="fa fa-fw fa-save"></i>
+        <ng-template #spinner>
+          <span class="spinner-border spinner-border-sm" role="status">
+            <span class="sr-only">Saving...</span>
+          </span>
+        </ng-template>
+      </button>
+    </div>
+
+    <div class="btn-group px-1 mx-auto">
+      <button
+        (click)="undo()"
+        [disabled]="!graphCanvas || !graphCanvas.canUndo()"
+        class="btn btn-secondary"
+        container="body"
+        ngbTooltip="Undo"
+        placement="bottom"
+        type="button"
+      >
+        <i class="fa fa-fw fa-undo"></i>
+      </button>
+      <button
+        (click)="redo()"
+        [disabled]="!graphCanvas || !graphCanvas.canRedo()"
+        class="btn btn-secondary"
+        container="body"
+        ngbTooltip="Redo"
+        placement="bottom"
+        type="button"
+      >
+        <i class="fa fa-fw fa-redo"></i>
+      </button>
+    </div>
+
+    <div class="btn-group pr-1 mx-auto">
+      <button
+        (click)="zoomToFit()"
+        class="btn btn-secondary"
+        container="body"
+        ngbTooltip="Fit Map to Window"
+        placement="bottom"
+        type="button"
+      >
+        <i class="fas fa-expand-arrows-alt"></i>
+      </button>
+    </div>
+
+    <app-search-control
+      (next)="next()"
+      (ngModelChange)="search()"
+      (previous)="previous()"
+      [(ngModel)]="entitySearchTerm"
+      [resultCount]="entitySearchList.length"
+      [resultIndex]="entitySearchListIdx"
+    >
+    </app-search-control>
+  </app-module-header>
+  <div class="position-relative overflow-hidden flex-fill">
+    <ng-container
+      *ngIf="map && (lockService.lockAcquired === false || !lockService.lockCheckingActive)"
+    >
+      <div
+        *ngIf="lockService.locks.length && lockService.lockCheckingActive; else locksReleased"
+        class="lock-panel alert alert-danger"
+      >
+        <div>
+          <strong>Warning:</strong> This file is being edited by another user and saving will erase
+          the other user's changes.
+        </div>
+
+        <ul class="m-0">
+          <li *ngFor="let lock of lockService.locks">
+            {{ lock.user.firstName }} {{ lock.user.lastName }}
+          </li>
+        </ul>
+      </div>
+      <ng-template #locksReleased>
+        <div *ngIf="!reloadPopupDismissed" class="lock-panel alert alert-warning">
+          <div>Please reload to get the latest changes.</div>
+
+          <div class="mt-2">
+            <button (click)="reload()" class="btn btn-primary" type="button">Reload</button>
+            <button (click)="dismissReloadPopup()" class="btn btn-secondary ml-2" type="button">
+              Dismiss
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </ng-container>
+    <as-split [gutterSize]="2" direction="horizontal" unit="pixel">
+      <as-split-area [order]="0" class="overflow-hidden">
+        <div class="graph-container">
+          <canvas appGraphView></canvas>
+        </div>
+      </as-split-area>
+      <as-split-area #infoPanelSidebar [order]="1" size="256">
+        <ng-container
+          *ngIf="graphCanvas?.selection.changeObservable | async as selected; else graphInfo"
+        >
+          <div *ngIf="selected[0].length === 1; else graphInfo" class="info-panel">
+            <app-info-panel
+              (actionCreated)="graphCanvas.execute($event)"
+              [infoPanel]="infoPanel"
+              [selected]="selected[0][0]"
+            >
+            </app-info-panel>
+          </div>
+          <button
+            (click)="createGroup()"
+            *ngIf="canCreateGroupFromSelection()"
+            class="btn btn-light center mt-2 ml-2"
+          >
+            Create Group
+          </button>
+          <button
+            (click)="addToGroup()"
+            *ngIf="canExtendsGroupFromSelection()"
+            class="btn btn-light center mt-2 ml-2"
+          >
+            Add To Group
+          </button>
+        </ng-container>
+
+        <ng-template #graphInfo>
+          <ng-container *ngIf="graphCanvas">
+            <div class="d-flex flex-column h-80">
+              <ul #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs nav-sidebar-tabs" ngbNav>
+                <li ngbNavItem="graph">
+                  <a ngbNavLink>Graph</a>
+                  <ng-template ngbNavContent>
+                    <div class="module-body">
+                      <div class="row align-items-center mb-0">
+                        <div class="col-sm-6">Node Count:</div>
+                        <div class="col-sm-6 text-right">
+                          {{ graphCanvas.nodes.length | number }}
+                        </div>
+                      </div>
+
+                      <div class="row align-items-center">
+                        <div class="col-sm-6">Edge Count:</div>
+                        <div class="col-sm-6 text-right">
+                          {{ graphCanvas.edges.length | number }}
+                        </div>
+                      </div>
+
+                      <div class="row align-items-center">
+                        <div class="col-sm-6">Group Count:</div>
+                        <div class="col-sm-6 text-right">
+                          {{ graphCanvas.groups.length | number }}
+                        </div>
+                      </div>
+                    </div>
+                  </ng-template>
+                </li>
+              </ul>
+
+              <div [ngbNavOutlet]="nav" class="flex-fill overflow-auto"></div>
+            </div>
+          </ng-container>
+        </ng-template>
+      </as-split-area>
+    </as-split>
+    <div>
+      <div>
+        <div class="palette-panel">
+          <app-collapsible-window [reversed]="true" class="flex-fill" title="Palette">
+            <div class="window-body">
+              <app-palette></app-palette>
+            </div>
+          </app-collapsible-window>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

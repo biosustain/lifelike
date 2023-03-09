@@ -1,7 +1,5 @@
 from typing import Dict, List, Optional, Tuple
 
-import typing
-
 import magic
 
 from neo4japp.models.files import Files
@@ -17,12 +15,12 @@ class BaseFileTypeProvider:
 
     # This string should be used anytime we need a user-readable representation of the
     # corresponding file type. E.g. as an option in search params.
-    SHORTHAND = 'base'
+    SHORTHAND = "base"
 
     # The first entry in the mime_types tuple is the "canonical" mime type that will
     # typically be used when storing the file in the database. Make sure all entries
     # in this list are lowercase
-    mime_types = ('application/octet-stream',)
+    mime_types = ("application/octet-stream",)
 
     def handles(self, file: Files) -> bool:
         """
@@ -34,7 +32,9 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
+    def detect_provider(
+        self, file: Files
+    ) -> List[Tuple[float, "BaseFileTypeProvider"]]:
         """
         Given the file, return a list of possible providers with confidence levels.
         Larger numbers indicate a higher confidence and negative
@@ -93,7 +93,7 @@ class BaseFileTypeProvider:
         """
         # Be sure to implement JSON validation (if applicable)!
         # See the map and enrichment table formats for examples
-        raise ValueError('format cannot be validated')
+        raise ValueError("format cannot be validated")
 
     def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
         """
@@ -166,11 +166,14 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
     """
     A generic file type provider that handles all miscellaneous types of files.
     """
-    def __init__(self, mime_type='application/octet-stream'):
+
+    def __init__(self, mime_type="application/octet-stream"):
         self.mime_type = mime_type
         self.mime_types = (mime_type,)
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
+    def detect_provider(
+        self, file: Files
+    ) -> List[Tuple[float, "BaseFileTypeProvider"]]:
         return [(-100, GenericFileTypeProvider(file.mime_type))]
 
     def detect_mime_type(self, buffer: FileContentBuffer) -> List[Tuple[float, str]]:
@@ -185,13 +188,13 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         return True
 
     def to_indexable_content(self, buffer: FileContentBuffer):
-        if self.mime_type.startswith('text/'):
+        if self.mime_type.startswith("text/"):
             return buffer  # Have Elasticsearch index these files
         else:
             return FileContentBuffer()
 
     def should_highlight_content_text_matches(self) -> bool:
-        if self.mime_type.startswith('text/'):
+        if self.mime_type.startswith("text/"):
             return True
         else:
             return False
@@ -205,7 +208,8 @@ class DefaultFileTypeProvider(BaseFileTypeProvider):
     A fallback file type provider that is returned when we don't know what
     type of file it is or we don't support it.
     """
-    mime_types = ('application/octet-stream',)
+
+    mime_types = ("application/octet-stream",)
 
 
 class FileTypeService:
@@ -213,6 +217,7 @@ class FileTypeService:
     The file type service returns file type providers for given files. It supports detection
     of file formats based on content as well.
     """
+
     providers: List[BaseFileTypeProvider]
     default_provider = DefaultFileTypeProvider()
 
@@ -257,7 +262,7 @@ class FileTypeService:
             results.sort(key=lambda item: item[0])
             return results[-1][1]
         else:
-            return 'application/octet-stream'
+            return "application/octet-stream"
 
     def get_shorthand_to_mime_type_map(self) -> Dict[str, str]:
         d = {}

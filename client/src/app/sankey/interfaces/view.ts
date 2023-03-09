@@ -1,6 +1,6 @@
-import { RecursivePartial } from 'app/shared/schemas/common';
+import { RecursivePartial } from "app/shared/schemas/common";
 
-import { SankeyState } from './index';
+import { SankeyState } from "./index";
 
 export type SankeyLinksOverwrites = Record<string, SavedLinkProperties>;
 

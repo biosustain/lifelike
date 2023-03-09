@@ -1,44 +1,42 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { sortBy } from 'lodash-es';
+import { sortBy } from "lodash-es";
 
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
-} from 'app/shared/services/data-transfer-data.service';
+} from "app/shared/services/data-transfer-data.service";
 import {
   GenericDataProvider,
   LABEL_TOKEN,
   LIFELIKE_URI_TOKEN,
   URI_TOKEN,
   URIData,
-} from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import { createNode } from 'app/graph-viewer/utils/objects';
+} from "app/shared/providers/data-transfer-data/generic-data.provider";
+import { createNode } from "app/graph-viewer/utils/objects";
 
 import {
   GraphEntity,
   GraphEntityType,
   UniversalGraphNode,
   UniversalGraphRelationship,
-} from '../services/interfaces';
-import { FILESYSTEM_IMAGE_TRANSFER_TYPE } from './image-entity-data.provider';
+} from "../services/interfaces";
+import { FILESYSTEM_IMAGE_TRANSFER_TYPE } from "./image-entity-data.provider";
 
-export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>('universalGraphEntity');
-export const GRAPH_NODE_TYPE = 'application/***ARANGO_DB_NAME***-node';
-export const GRAPH_RELATIONSHIP_TYPE = 'application/***ARANGO_DB_NAME***-relationship';
-export const GRAPH_ENTITY_TYPES = [
-  GRAPH_NODE_TYPE,
-  GRAPH_RELATIONSHIP_TYPE
-];
+export const GRAPH_ENTITY_TOKEN = new DataTransferToken<GraphEntity[]>("universalGraphEntity");
+export const GRAPH_NODE_TYPE = "application/***ARANGO_DB_NAME***-node";
+export const GRAPH_RELATIONSHIP_TYPE = "application/***ARANGO_DB_NAME***-relationship";
+export const GRAPH_ENTITY_TYPES = [GRAPH_NODE_TYPE, GRAPH_RELATIONSHIP_TYPE];
 
 @Injectable()
-export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphEntity|URIData)[]> {
-  constructor(protected readonly genericDataProvider: GenericDataProvider) {
-  }
+export class GraphEntityDataProvider
+  implements DataTransferDataProvider<(GraphEntity | URIData)[]>
+{
+  constructor(protected readonly genericDataProvider: GenericDataProvider) {}
 
-  extract(dataTransfer: DataTransfer): DataTransferData<(GraphEntity|URIData)[]>[] {
-    const results: DataTransferData<(GraphEntity|URIData)[]>[] = [];
+  extract(dataTransfer: DataTransfer): DataTransferData<(GraphEntity | URIData)[]>[] {
+    const results: DataTransferData<(GraphEntity | URIData)[]>[] = [];
 
     const nodeData = dataTransfer.getData(GRAPH_NODE_TYPE);
 
@@ -51,19 +49,19 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
       const node = JSON.parse(nodeData) as UniversalGraphNode;
       results.push({
         token: GRAPH_ENTITY_TOKEN,
-        data: [{
-          type: GraphEntityType.Node,
-          entity: node,
-        }],
+        data: [
+          {
+            type: GraphEntityType.Node,
+            entity: node,
+          },
+        ],
         confidence: 100,
       });
     }
 
-
-
     // Then check if it has a relationship embedded in it
     if (relationshipData) {
-      const {node1, node2, edge} = JSON.parse(relationshipData) as UniversalGraphRelationship;
+      const { node1, node2, edge } = JSON.parse(relationshipData) as UniversalGraphRelationship;
       results.push({
         token: GRAPH_ENTITY_TOKEN,
         data: [
@@ -78,7 +76,7 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
           {
             type: GraphEntityType.Edge,
             entity: edge,
-          }
+          },
         ],
         confidence: 100,
       });
@@ -86,12 +84,17 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
 
     // Otherwise, try to create a note or link node from available data
     // Unless this is an image transfer/upload
-    if (!nodeData && !relationshipData && !imageData && !dataTransfer.items[0]?.type.startsWith('image/')) {
+    if (
+      !nodeData &&
+      !relationshipData &&
+      !imageData &&
+      !dataTransfer.items[0]?.type.startsWith("image/")
+    ) {
       const items = this.genericDataProvider.extract(dataTransfer);
       let text: string | undefined = null;
       const uriData: URIData[] = [];
 
-      for (const item of sortBy(items, 'confidence')) {
+      for (const item of sortBy(items, "confidence")) {
         if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
           uriData.unshift(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
@@ -104,23 +107,25 @@ export class GraphEntityDataProvider implements DataTransferDataProvider<(GraphE
 
         results.push({
           token: GRAPH_ENTITY_TOKEN,
-          data: [{
-            type: GraphEntityType.Node,
-            entity: createNode({
-              display_name: isLink ? 'Link' : 'Note',
-              label: isLink ? 'link' : 'note',
-              data: {
-                detail: text,
-                sources: uriData.map(item => ({
-                  domain: item.title,
-                  url: String(item.uri),
-                })),
-              },
-              style: {
-                showDetail: !isLink,
-              },
-            }),
-          }],
+          data: [
+            {
+              type: GraphEntityType.Node,
+              entity: createNode({
+                display_name: isLink ? "Link" : "Note",
+                label: isLink ? "link" : "note",
+                data: {
+                  detail: text,
+                  sources: uriData.map((item) => ({
+                    domain: item.title,
+                    url: String(item.uri),
+                  })),
+                },
+                style: {
+                  showDetail: !isLink,
+                },
+              }),
+            },
+          ],
           confidence: 0,
         });
       }

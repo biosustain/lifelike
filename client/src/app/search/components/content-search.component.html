@@ -1,27 +1,27 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
-  <div class="module" appContainerBreakpoints>
+<ng-container *ngIf="loadTask.status$ | async as status">
+  <div appContainerBreakpoints class="module">
     <div class="module-header">
       <div class="module-toolbar mt-2">
         <ng-container *ngIf="searchTypes">
-          <app-content-search-form class="w-100"
-                                   [(queryString)]="queryString"
-                                   (formResult)="search($event)">
+          <app-content-search-form
+            (formResult)="search($event)"
+            [(queryString)]="queryString"
+            class="w-100"
+          >
           </app-content-search-form>
         </ng-container>
       </div>
       <div class="d-flex w-100 justify-content-start">
-        <div class="btn btn-link p-0 mr-3" (click)="openAdvancedSearch()">Advanced Search</div>
-        <div class="btn btn-link p-0" (click)="openSynonymSearch()">Find Synonyms</div>
+        <div (click)="openAdvancedSearch()" class="btn btn-link p-0 mr-3">Advanced Search</div>
+        <div (click)="openSynonymSearch()" class="btn btn-link p-0">Find Synonyms</div>
       </div>
     </div>
 
     <div class="module-body-split module-body-preview-split overflow-auto">
-      <div class="module-body-split-main overflow-auto" #body>
+      <div #body class="module-body-split-main overflow-auto">
         <ng-container *ngIf="!valid; else searchEntered">
           <div class="module-body">
-            <div class="text-center my-4 px-4">
-              Please enter a query in the search box above.
-            </div>
+            <div class="text-center my-4 px-4">Please enter a query in the search box above.</div>
           </div>
         </ng-container>
 
@@ -69,62 +69,87 @@
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
-                      [page]="params.page"
-                      [pageSize]="params.limit"
-                      [collectionSize]="collectionSize"></app-results-summary>
+                    [collectionSize]="collectionSize"
+                    [pageSize]="params.limit"
+                    [page]="params.page"
+                  ></app-results-summary>
                 </div>
 
                 <div class="search-results search-results-selectable">
-                  <div *ngFor="let result of results.view$ | async" class="search-results-item"
-                       (appTabSelectable)="results.select(result)"
-                       [class.active]="results.isSelected(result)"
-                       draggable="true" (dragstart)="itemDragStart($event, result.item)">
-                    <div class="text-truncate mb-1" [title]="getBreadCrumbsTitle(result.item.parent)">
-                      <app-object-path [object]="result.item.parent" [newTab]="true"></app-object-path>
+                  <div
+                    (appTabSelectable)="results.select(result)"
+                    (dragstart)="itemDragStart($event, result.item)"
+                    *ngFor="let result of results.view$ | async"
+                    [class.active]="results.isSelected(result)"
+                    class="search-results-item"
+                    draggable="true"
+                  >
+                    <div
+                      [title]="getBreadCrumbsTitle(result.item.parent)"
+                      class="text-truncate mb-1"
+                    >
+                      <app-object-path
+                        [newTab]="true"
+                        [object]="result.item.parent"
+                      ></app-object-path>
                     </div>
                     <div class="search-results-item-header text-truncate">
-                      <h5 class="text-truncate" [style.padding]="'1px 0'">
-                        <app-file-type-label [object]="result.item" [showLabel]="false" class="mr-1"></app-file-type-label>
-                        <a [appLink]="result.item.getCommands(false)"
-                           [newTab]="true"
-                           [sideBySide]="true"
-                           (dragstart)="itemDragStart($event, result.item, true)">
+                      <h5 [style.padding]="'1px 0'" class="text-truncate">
+                        <app-file-type-label
+                          [object]="result.item"
+                          [showLabel]="false"
+                          class="mr-1"
+                        ></app-file-type-label>
+                        <a
+                          (dragstart)="itemDragStart($event, result.item, true)"
+                          [appLink]="result.item.getCommands(false)"
+                          [newTab]="true"
+                          [sideBySide]="true"
+                        >
                           <app-term-highlight
-                            [text]="result.item.name"
-                            [highlightTerms]="highlightTerms"
                             [highlightOptions]="highlightOptions"
+                            [highlightTerms]="highlightTerms"
+                            [text]="result.item.name"
                           ></app-term-highlight>
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate"><i>Created by <app-user [user]="result.item.user"></app-user> on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
+                    <div class="mt-2 text-truncate">
+                      <i
+                        >Created by
+                        <app-user [user]="result.item.user"></app-user>
+                        on {{ result.item.creationDate | date : "fullDate" }}</i
+                      >
+                    </div>
                     <div class="mt-2 paragraph-truncate-3">
                       <app-term-highlight
-                        [text]="result.item.description"
-                        [highlightTerms]="highlightTerms"
                         [highlightOptions]="highlightOptions"
+                        [highlightTerms]="highlightTerms"
+                        [text]="result.item.description"
                       ></app-term-highlight>
                     </div>
                     <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
                       <div class="mt-2 paragraph-truncate-3">
-                        <app-highlight-text [appInnerXML]="result.item.highlight[0]"></app-highlight-text>
+                        <app-highlight-text
+                          [appInnerXML]="result.item.highlight[0]"
+                        ></app-highlight-text>
                       </div>
                       <div class="d-flex align-items-center justify-content-end">
-                        <a
-                        *ngIf="result.item.doi"
-                        [href]="result.item.doi"
-                        target="_blank">DOI Link</a>
+                        <a *ngIf="result.item.doi" [href]="result.item.doi" target="_blank"
+                          >DOI Link</a
+                        >
                       </div>
                     </ng-container>
                   </div>
                 </div>
                 <div class="mt-4">
                   <ngb-pagination
-                      [page]="params.page"
-                      [pageSize]="params.limit"
-                      [collectionSize]="collectionSize"
-                      (pageChange)="goToPage($event)"></ngb-pagination>
+                    (pageChange)="goToPage($event)"
+                    [collectionSize]="collectionSize"
+                    [pageSize]="params.limit"
+                    [page]="params.page"
+                  ></ngb-pagination>
                 </div>
               </div>
             </ng-container>
@@ -135,9 +160,7 @@
                 </div>
               </div>
               <div *ngIf="!emptyParams" class="module-body">
-                <div class="text-center my-4 px-4">
-                  No records match your current filters.
-                </div>
+                <div class="text-center my-4 px-4">No records match your current filters.</div>
               </div>
             </ng-template>
           </ng-container>
@@ -146,13 +169,16 @@
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selectionLength$ | async">
           <app-object-info
-                  *ngIf="(results.firstSelection$ | async) as firstSelection"
-                  [forEditing]="false"
-                           (highlightClick)="highlightClicked(firstSelection.item, $event)"
-                           (highlightDisplayLimitChange)="highlightDisplayLimitChanged(firstSelection.item, $event)"
-                           [object]="firstSelection.item"
-                           (objectOpen)="openObject($event)"
-                           [highlightTerms]="highlightTerms"></app-object-info>
+            (highlightClick)="highlightClicked(firstSelection.item, $event)"
+            (highlightDisplayLimitChange)="
+              highlightDisplayLimitChanged(firstSelection.item, $event)
+            "
+            *ngIf="results.firstSelection$ | async as firstSelection"
+            [forEditing]="false"
+            [object]="firstSelection.item"
+            (objectOpen)="openObject($event)"
+            [highlightTerms]="highlightTerms"
+          ></app-object-info>
         </ng-container>
       </div>
     </div>

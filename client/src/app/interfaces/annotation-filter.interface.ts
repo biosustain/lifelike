@@ -11,7 +11,7 @@ export interface AnnotationFilterEntity {
 export interface AnnotationVisibility {
   identifier: string;
   visible: boolean;
-  entity: AnnotationFilterEntity|WordCloudAnnotationFilterEntity;
+  entity: AnnotationFilterEntity | WordCloudAnnotationFilterEntity;
 }
 
 export interface WordCloudAnnotationFilterEntity extends AnnotationFilterEntity {
@@ -20,8 +20,8 @@ export interface WordCloudAnnotationFilterEntity extends AnnotationFilterEntity 
 }
 
 export enum DefaultGroupByOptions {
-  NONE = 'None',
-  ENTITY_TYPE = 'Entity Type',
+  NONE = "None",
+  ENTITY_TYPE = "Entity Type",
   // Disabling this for now, maybe bring it back in the future
   // FILTERED = 'Filtered',
   // TODO: Might want to have this later, right now the API response for the combined annotations doesn't tell us what kind each row is
@@ -29,10 +29,10 @@ export enum DefaultGroupByOptions {
 }
 
 export enum DefaultOrderByOptions {
-  FREQUENCY = 'Frequency',
+  FREQUENCY = "Frequency",
 }
 
 export enum OrderDirection {
-  ASCENDING = 'Ascending',
-  DESCENDING = 'Descending'
+  ASCENDING = "Ascending",
+  DESCENDING = "Descending",
 }

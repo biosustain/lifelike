@@ -1,10 +1,10 @@
 from sqlalchemy.orm.session import Session
 
-from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.models.common import RDBMSBase
 from neo4japp.models.auth import (
     AppUser,
 )
+from neo4japp.models.common import RDBMSBase
+from neo4japp.services.common import RDBMSBaseDao
 
 
 class AuthService(RDBMSBaseDao):

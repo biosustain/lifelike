@@ -1,12 +1,12 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 .select-input-container {
   cursor: text;
 
   &:focus-within {
-    color: $input-focus-color;
     background-color: $input-focus-bg;
     border-color: $input-focus-border-color;
+    color: $input-focus-color;
     outline: 0;
     @if $enable-shadows {
       @include box-shadow($input-box-shadow, $input-focus-box-shadow);
@@ -18,20 +18,20 @@
 }
 
 .select-input-inner-container {
-  margin-bottom: -($spacer * .25);
+  margin-bottom: -($spacer * 0.25);
 }
 
 .select-input-input {
   position: relative;
 
   &.placeholder-show:after {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    content: var(--placeholder-text, 'Start typing...');
     color: $input-placeholder-color;
+    content: var(--placeholder-text, "Start typing...");
+    display: block;
+    left: 0;
     pointer-events: none;
+    position: absolute;
+    top: 0;
   }
 
   &:focus {
@@ -40,9 +40,9 @@
 }
 
 .select-input-choice-remove {
-  padding: 5px;
-  margin: -5px;
   color: inherit;
+  margin: -5px;
+  padding: 5px;
   z-index: 1;
 
   &:hover {
@@ -51,10 +51,10 @@
 }
 
 .select-input-progress {
-  height: 5px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   bottom: 0;
+  height: 5px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }

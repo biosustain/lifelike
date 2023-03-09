@@ -1,6 +1,13 @@
-import { combineLatest, BehaviorSubject, Observable, merge } from 'rxjs';
-import { map, shareReplay, distinctUntilChanged, startWith, pairwise, switchMap } from 'rxjs/operators';
-import { has, last, uniq, isEqual, first } from 'lodash-es';
+import { BehaviorSubject, combineLatest, merge, Observable } from "rxjs";
+import {
+  distinctUntilChanged,
+  map,
+  pairwise,
+  shareReplay,
+  startWith,
+  switchMap,
+} from "rxjs/operators";
+import { first, has, isEqual, last, uniq } from "lodash-es";
 
 type Filter<T> = (item: T) => boolean;
 type Sort<T> = (a: T, b: T) => number;
@@ -9,86 +16,43 @@ export interface ObservableObject<UpdateLoad = any> {
   changed$: Observable<UpdateLoad>;
 }
 
-export class CollectionModel<T extends ObservableObject|any> {
-  constructor(items: T[] = [], options: CollectionModalOptions<T> = {}) {
-    if (has(options, 'multipleSelection')) {
-      this.multipleSelection = options.multipleSelection;
-    }
-    if (has(options, 'sort')) {
-      this.setSort(options.sort);
-    }
-    if (has(options, 'filter')) {
-      this.setFilter(options.filter);
-    }
-    this.replace(items);
-  }
-
-  get length(): number {
-    return this._items$.value.length;
-  }
-
+export class CollectionModel<T extends ObservableObject | any> {
   multipleSelection = false;
-  private _updateView$ = new BehaviorSubject<boolean>(false);
   filter$ = new BehaviorSubject<Filter<T>>(null);
   sort$ = new BehaviorSubject<Sort<T>>(null);
-  private _items$ = new BehaviorSubject<Array<T>>([]);
-  items$: Observable<readonly T[]> = this._items$.pipe(
-    switchMap(items =>
-      merge(
-        ...items.filter(i => has(i, 'changed$')).map(i => i.changed$)
-      ).pipe(
-        startWith({}),
-        map(() => Object.freeze(items))
-      )
-    ),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
-  private _selection$ = new BehaviorSubject<Array<T>>([]);
-  selection$: Observable<readonly T[]> = combineLatest([
-    this.items$,
-    this._selection$,
-  ]).pipe(
-    map(([items, selection]) => selection.filter(item => items.includes(item))),
-    map(items => Object.freeze(items)),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
-
   selectionLength$ = this.selection$.pipe(
-    map(items => items.length),
-    shareReplay({bufferSize: 1, refCount: true})
+    map((items) => items.length),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   lastSelection$ = this.selection$.pipe(
     // todo cosider populating selection in reverse order
-    map(selection => last(selection)),
+    map((selection) => last(selection)),
     distinctUntilChanged(),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   firstSelection$ = this.selection$.pipe(
-    map(selection => first(selection)),
+    map((selection) => first(selection)),
     distinctUntilChanged(),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   readonly selectionChanges$: Observable<CollectionChange<T>> = this.selection$.pipe(
     startWith([]),
     pairwise(),
     map(([prev, curr]) => ({
       source: this,
-      added: [...curr].filter(item => !prev.includes(item)),
-      removed: [...prev].filter(item => !curr.includes(item))
+      added: [...curr].filter((item) => !prev.includes(item)),
+      removed: [...prev].filter((item) => !curr.includes(item)),
     })),
     distinctUntilChanged(isEqual),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
-  view$ = combineLatest([
-    this.items$,
-    this.filter$,
-    this.sort$,
-    this._updateView$,
-  ]).pipe(
+  viewLength$ = this.view$.pipe(
+    map(({ length }) => length),
+    distinctUntilChanged(),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  private _updateView$ = new BehaviorSubject<boolean>(false);
+  view$ = combineLatest([this.items$, this.filter$, this.sort$, this._updateView$]).pipe(
     map(([items, filter, sort]) => {
       let filteredItems: T[] = [...items];
       if (filter != null) {
@@ -100,14 +64,41 @@ export class CollectionModel<T extends ObservableObject|any> {
       return filteredItems;
     }),
     // share results but not keep in memory if not used
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  private _items$ = new BehaviorSubject<Array<T>>([]);
+  items$: Observable<readonly T[]> = this._items$.pipe(
+    switchMap((items) =>
+      merge(...items.filter((i) => has(i, "changed$")).map((i) => i.changed$)).pipe(
+        startWith({}),
+        map(() => Object.freeze(items))
+      )
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  private _selection$ = new BehaviorSubject<Array<T>>([]);
+  selection$: Observable<readonly T[]> = combineLatest([this.items$, this._selection$]).pipe(
+    map(([items, selection]) => selection.filter((item) => items.includes(item))),
+    map((items) => Object.freeze(items)),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  viewLength$ = this.view$.pipe(
-    map(({length}) => length),
-    distinctUntilChanged(),
-    shareReplay({bufferSize: 1, refCount: true})
-  );
+  get length(): number {
+    return this._items$.value.length;
+  }
+
+  constructor(items: T[] = [], options: CollectionModalOptions<T> = {}) {
+    if (has(options, "multipleSelection")) {
+      this.multipleSelection = options.multipleSelection;
+    }
+    if (has(options, "sort")) {
+      this.setSort(options.sort);
+    }
+    if (has(options, "filter")) {
+      this.setFilter(options.filter);
+    }
+    this.replace(items);
+  }
 
   setFilter(filter: Filter<T>) {
     this.filter$.next(filter);
@@ -174,9 +165,7 @@ export class CollectionModel<T extends ObservableObject|any> {
   }
 
   deselect(...items: T[]): void {
-    this._selection$.next(
-      this._selection$.value.filter(item => !items.includes(item))
-    );
+    this._selection$.next(this._selection$.value.filter((item) => !items.includes(item)));
   }
 
   selectOnly(item: T): void {

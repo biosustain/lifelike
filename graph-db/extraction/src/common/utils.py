@@ -1,5 +1,6 @@
 import os
 import zipfile
+
 import git
 from config.config import Config
 
@@ -45,6 +46,7 @@ def write_compressed_tsv_file_from_dataframe(dataframe, tsv_filename, outdir, zi
     path = os.path.join(outdir, tsv_filename.replace('.tsv', '.zip') if zip_file else tsv_filename)
     compression_opts = dict(method='zip', archive_name=tsv_filename) if zip_file else None
     dataframe.to_csv(path, sep='\t', index=False, compression=compression_opts)
+
 
 def get_data_dir():
     return Config().data_dir

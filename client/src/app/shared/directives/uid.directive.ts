@@ -1,11 +1,11 @@
-import { Directive, HostBinding } from '@angular/core';
+import { Directive, HostBinding } from "@angular/core";
 
-import { makeid } from '../utils/identifiers';
+import { makeid } from "../utils/identifiers";
 
 @Directive({
-  selector: '[appUid]',
-  exportAs: 'uid'
+  selector: "[appUid]",
+  exportAs: "uid",
 })
 export class UidDirective {
-  @HostBinding('id') uid = `uid-${makeid()}`;
+  @HostBinding("id") uid = `uid-${makeid()}`;
 }

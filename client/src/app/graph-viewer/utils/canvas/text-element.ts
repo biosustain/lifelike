@@ -1,7 +1,5 @@
-import { first } from 'lodash-es';
-
-import { REGEX } from 'app/shared/regex';
-import { wrapText } from 'app/shared/utils/canvas';
+import { first } from "lodash-es";
+import { wrapText } from "app/shared/utils/canvas";
 
 interface TextboxOptions {
   width?: number;
@@ -38,7 +36,7 @@ export class TextElement {
   readonly font: string;
   readonly lineHeight: number = 1.2;
   readonly actualLineHeight: number;
-  readonly fillStyle: string | undefined = '#000';
+  readonly fillStyle: string | undefined = "#000";
   readonly strokeWidth: number = 1;
   readonly strokeStyle: string | undefined = null;
   readonly verticalAlign: TextAlignment = TextAlignment.Center;
@@ -56,7 +54,7 @@ export class TextElement {
   readonly bottomInset = 0;
   readonly leftInset = 0;
   readonly rightInset = 0;
-  readonly hyphenWidth = this.ctx.measureText('-').width;
+  readonly hyphenWidth = this.ctx.measureText("-").width;
 
   /**
    * Create a new instance.
@@ -66,17 +64,19 @@ export class TextElement {
   constructor(private ctx: CanvasRenderingContext2D, options: TextboxOptions) {
     Object.assign(this, options);
     if (this.text == null) {
-      this.text = '';
+      this.text = "";
     }
 
     ctx.font = this.font;
 
     // Calculate height of line
-    this.lineMetrics = ctx.measureText('Mjpunkrockisntdead!');
-    this.actualLineHeight = (this.lineMetrics.actualBoundingBoxAscent + this.lineMetrics.actualBoundingBoxDescent) * this.lineHeight;
+    this.lineMetrics = ctx.measureText("Mjpunkrockisntdead!");
+    this.actualLineHeight =
+      (this.lineMetrics.actualBoundingBoxAscent + this.lineMetrics.actualBoundingBoxDescent) *
+      this.lineHeight;
 
     // Break the text into lines
-    const {lines, horizontalOverflow, verticalOverflow, actualWidth} = this.computeLines();
+    const { lines, horizontalOverflow, verticalOverflow, actualWidth } = this.computeLines();
     this.lines = lines;
     this.horizontalOverflow = horizontalOverflow;
     this.verticalOverflow = verticalOverflow;
@@ -84,9 +84,99 @@ export class TextElement {
     this.actualWidthWithInsets = this.actualWidth + this.leftInset + this.rightInset;
 
     // Calculate vertical alignment
-    this.actualHeight = this.lines.length * this.actualLineHeight - this.lineMetrics.actualBoundingBoxDescent;
+    this.actualHeight =
+      this.lines.length * this.actualLineHeight - this.lineMetrics.actualBoundingBoxDescent;
     this.actualHeightWithInsets = this.actualHeight + this.topInset + this.bottomInset;
     this.yOffset = this.calculateElementTopOffset(this.actualHeight);
+  }
+
+  /**
+   * Draw the text centered at the given coordinates.
+   * @param x centered X
+   * @param y center Y
+   */
+  drawCenteredAt(x: number, y: number) {
+    const width = this.width ?? this.actualWidthWithInsets;
+    const height = this.height ?? this.actualHeightWithInsets;
+    this.draw(x - width / 2, y - height / 2);
+  }
+
+  /**
+   * Recalculate line metrics for new font and draw centered at the given position.
+   */
+  drawWithDifferentFont(x: number, y: number, font: string) {
+    this.ctx.font = font;
+
+    // Calculate height of line
+    const metrics: TextMetrics = this.ctx.measureText(this.text);
+    const actualHeightWithInsets =
+      (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) * this.lineHeight +
+      this.topInset +
+      this.bottomInset;
+    this.draw(x - metrics.width / 2, y - actualHeightWithInsets / 2, font);
+
+    // Reset to old font
+    this.ctx.font = this.font;
+  }
+
+  /**
+   * Draw the text using the top left X and Y coordinates.
+   * @param minX top left X
+   * @param minY top left Y
+   * @param differentFont optional param allowing to use different font to render
+   */
+  draw(minX: number, minY: number, differentFont = "") {
+    minX += this.leftInset;
+    minY += this.topInset;
+
+    const effectiveWidth = this.getEffectiveWidth();
+    this.ctx.font = differentFont || this.font;
+
+    for (let i = 0; i < this.lines.length; i++) {
+      const line = this.lines[i];
+      if (!line.horizontalOverflow) {
+        if (this.strokeStyle) {
+          this.ctx.lineWidth = this.strokeWidth;
+          this.ctx.strokeStyle = this.strokeStyle;
+          this.ctx.strokeText(
+            line.text,
+            minX + line.xOffset,
+            minY +
+              this.yOffset +
+              i * this.actualLineHeight +
+              this.lineMetrics.actualBoundingBoxAscent
+          );
+        }
+        if (this.fillStyle) {
+          this.ctx.fillStyle = this.fillStyle;
+          this.ctx.fillText(
+            line.text,
+            minX + line.xOffset,
+            minY +
+              this.yOffset +
+              i * this.actualLineHeight +
+              this.lineMetrics.actualBoundingBoxAscent
+          );
+        }
+      } else {
+        if (this.fillStyle) {
+          // Width can be <= 0 if the textbox has a negative width, which
+          // users shouldn't be doing but will do anyway
+          if (effectiveWidth > 0) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.fillStyle;
+            this.ctx.globalAlpha = 0.2;
+            this.ctx.fillRect(
+              minX,
+              minY + this.yOffset + i * this.actualLineHeight,
+              this.width != null ? effectiveWidth : this.actualWidth,
+              this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
+            );
+            this.ctx.restore();
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -117,7 +207,10 @@ export class TextElement {
    * @param metrics metrics of the line
    * @param actualWidth actual width of the whole text element
    */
-  private calculateComputedLineLeftOffset(metrics: TextMetrics, actualWidth: number | undefined): number {
+  private calculateComputedLineLeftOffset(
+    metrics: TextMetrics,
+    actualWidth: number | undefined
+  ): number {
     // TODO: This might not actually work properly for all alignments
     const width = metrics.width;
     if (this.horizontalAlign === TextAlignment.End) {
@@ -173,10 +266,10 @@ export class TextElement {
    * Split up the text into lines based on width and height.
    */
   private computeLines(): {
-    lines: ComputedLine[],
-    verticalOverflow: boolean,
-    horizontalOverflow: boolean,
-    actualWidth: number,
+    lines: ComputedLine[];
+    verticalOverflow: boolean;
+    horizontalOverflow: boolean;
+    actualWidth: number;
   } {
     const effectiveWidth = this.getEffectiveWidth();
     const effectiveHeight = this.getEffectiveHeight();
@@ -190,9 +283,8 @@ export class TextElement {
         lines: [],
         verticalOverflow: true,
         horizontalOverflow: true,
-        actualWidth: (this.width ?? this.maxWidth) ?? metrics.width,
+        actualWidth: this.width ?? this.maxWidth ?? metrics.width,
       };
-
     } else if (effectiveWidth != null) {
       // If we have a width to confirm to
       let boxHorizontalOverflow = false;
@@ -200,11 +292,17 @@ export class TextElement {
       let actualWidth = 0;
       const lines = [];
 
-      for (const computedLine of wrapText(this.text, effectiveWidth, measureText, this.hyphenWidth)) {
+      for (const computedLine of wrapText(
+        this.text,
+        effectiveWidth,
+        measureText,
+        this.hyphenWidth
+      )) {
         // We've overflow the height if we add another line
         if (
-          (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
-          || (this.maxLines != null && lines.length >= this.maxLines)
+          (effectiveHeight != null &&
+            (lines.length + 1) * this.actualLineHeight > effectiveHeight) ||
+          (this.maxLines != null && lines.length >= this.maxLines)
         ) {
           boxVerticalOverflow = true;
           break;
@@ -238,12 +336,14 @@ export class TextElement {
       const metrics = measureText(this.text);
 
       return {
-        lines: [{
-          text: this.text,
-          metrics,
-          xOffset: this.calculateComputedLineLeftOffset(metrics, metrics.width),
-          horizontalOverflow: false,
-        }],
+        lines: [
+          {
+            text: this.text,
+            metrics,
+            xOffset: this.calculateComputedLineLeftOffset(metrics, metrics.width),
+            horizontalOverflow: false,
+          },
+        ],
         verticalOverflow: false,
         horizontalOverflow: false,
         actualWidth: metrics.width,
@@ -257,21 +357,23 @@ export class TextElement {
    * @param tokens the words
    * @param maxWidth the width to not exceed
    */
-  private* getWidthFittedLines(tokens: string[], maxWidth: number):
-    IterableIterator<{ line: string, metrics: TextMetrics, remainingTokens: boolean }> {
+  private *getWidthFittedLines(
+    tokens: string[],
+    maxWidth: number
+  ): IterableIterator<{ line: string; metrics: TextMetrics; remainingTokens: boolean }> {
     if (!tokens.length) {
       return;
     }
 
-    const lineStart = first(tokens).trimStart();  // line does not start with space
+    const lineStart = first(tokens).trimStart(); // line does not start with space
     let lineTokens = [lineStart];
     let line = lineStart;
-    let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(''));
+    let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(""));
 
     for (let i = 1; i < tokens.length; i++) {
       const token = tokens[i];
       lineTokens.push(token);
-      const lineTokensWithToken = lineTokens.join('');
+      const lineTokensWithToken = lineTokens.join("");
       lineTokens.pop();
       const metricsWithToken = this.ctx.measureText(lineTokensWithToken);
 
@@ -282,7 +384,7 @@ export class TextElement {
           remainingTokens: true,
         };
 
-        const lineStartToken = token.trimStart();  // line does not start with space
+        const lineStartToken = token.trimStart(); // line does not start with space
         lineTokens = [lineStartToken];
         line = lineStartToken;
         metrics = this.ctx.measureText(line);
@@ -302,91 +404,15 @@ export class TextElement {
       };
     }
   }
-
-  /**
-   * Draw the text centered at the given coordinates.
-   * @param x centered X
-   * @param y center Y
-   */
-  drawCenteredAt(x: number, y: number) {
-    const width = this.width ?? this.actualWidthWithInsets;
-    const height = this.height ?? this.actualHeightWithInsets;
-    this.draw(x - width / 2, y - height / 2);
-  }
-
-  /**
-   * Recalculate line metrics for new font and draw centered at the given position.
-   */
-  drawWithDifferentFont(x: number, y: number, font: string) {
-    this.ctx.font = font;
-
-    // Calculate height of line
-    const metrics: TextMetrics = this.ctx.measureText(this.text);
-    const actualHeightWithInsets = (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) * this.lineHeight
-      + this.topInset + this.bottomInset;
-    this.draw(x - metrics.width / 2, y - actualHeightWithInsets / 2, font);
-
-    // Reset to old font
-    this.ctx.font = this.font;
-
-  }
-
-  /**
-   * Draw the text using the top left X and Y coordinates.
-   * @param minX top left X
-   * @param minY top left Y
-   * @param differentFont optional param allowing to use different font to render
-   */
-  draw(minX: number, minY: number, differentFont = '') {
-    minX += this.leftInset;
-    minY += this.topInset;
-
-    const effectiveWidth = this.getEffectiveWidth();
-    this.ctx.font = differentFont || this.font;
-
-    for (let i = 0; i < this.lines.length; i++) {
-      const line = this.lines[i];
-      if (!line.horizontalOverflow) {
-        if (this.strokeStyle) {
-          this.ctx.lineWidth = this.strokeWidth;
-          this.ctx.strokeStyle = this.strokeStyle;
-          this.ctx.strokeText(line.text, minX + line.xOffset,
-            minY + this.yOffset + (i * this.actualLineHeight) + this.lineMetrics.actualBoundingBoxAscent);
-        }
-        if (this.fillStyle) {
-          this.ctx.fillStyle = this.fillStyle;
-          this.ctx.fillText(line.text, minX + line.xOffset,
-            minY + this.yOffset + (i * this.actualLineHeight) + this.lineMetrics.actualBoundingBoxAscent);
-        }
-      } else {
-        if (this.fillStyle) {
-          // Width can be <= 0 if the textbox has a negative width, which
-          // users shouldn't be doing but will do anyway
-          if (effectiveWidth > 0) {
-            this.ctx.save();
-            this.ctx.fillStyle = this.fillStyle;
-            this.ctx.globalAlpha = 0.2;
-            this.ctx.fillRect(
-              minX,
-              minY + this.yOffset + (i * this.actualLineHeight),
-              this.width != null ? effectiveWidth : this.actualWidth,
-              this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
-            );
-            this.ctx.restore();
-          }
-        }
-      }
-    }
-  }
 }
 
 /**
  * Orientation of text.
  */
 export enum TextAlignment {
-  Start = 'start',
-  Center = 'center',
-  End = 'end',
+  Start = "start",
+  Center = "center",
+  End = "end",
 }
 
 /**

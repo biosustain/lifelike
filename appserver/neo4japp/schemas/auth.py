@@ -1,6 +1,7 @@
 from marshmallow import fields
-from neo4japp.schemas.base import CamelCaseSchema
+
 from neo4japp.schemas.account import UserProfileSchema
+from neo4japp.schemas.base import CamelCaseSchema
 
 
 class LifelikeJWTTokenSchema(CamelCaseSchema):

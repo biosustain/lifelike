@@ -1,9 +1,6 @@
-<button
-        class="btn btn-link btn-presets"
-        [disabled]="disabled"
->
-    <b>{{title}}</b>
-    <span class="selectable-text">
+<button [disabled]="disabled" class="btn btn-link btn-presets">
+  <b>{{ title }}</b>
+  <span class="selectable-text">
     <ng-content></ng-content>
-    </span>
+  </span>
 </button>

@@ -6,47 +6,135 @@ import {
   OnDestroy,
   Output,
   ViewChild,
-} from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+} from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ActivatedRoute } from "@angular/router";
 
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { first, uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
-import jQueryType from 'jquery';
+import { NgbDropdown, NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { first, uniqueId } from "lodash-es";
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from "rxjs";
+import { map } from "rxjs/operators";
+import jQueryType from "jquery";
 
-import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { BiocFile } from 'app/interfaces/bioc-files.interface';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
-import { SearchControlComponent } from 'app/shared/components/search-control.component';
-import { BiocAnnotationLocation, Location } from 'app/pdf-viewer/annotation-type';
-import { SEARCH_LINKS } from 'app/shared/links';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
-import { ModuleContext } from 'app/shared/services/module-context.service';
-import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { ENTITY_TYPES, EntityType } from "app/shared/annotation-types";
+import { ProgressDialog } from "app/shared/services/progress-dialog.service";
+import { BiocFile } from "app/interfaces/bioc-files.interface";
+import { ModuleAwareComponent, ModuleProperties } from "app/shared/modules";
+import { BackgroundTask } from "app/shared/rxjs/background-task";
+import { ErrorHandler } from "app/shared/services/error-handler.service";
+import { WorkspaceManager } from "app/shared/workspace-manager";
+import { mapBlobToBuffer, mapBufferToJsons } from "app/shared/utils/files";
+import { SearchControlComponent } from "app/shared/components/search-control.component";
+import { BiocAnnotationLocation, Location } from "app/pdf-viewer/annotation-type";
+import { SEARCH_LINKS } from "app/shared/links";
+import { UniversalGraphNode } from "app/drawing-tool/services/interfaces";
+import { FilesystemService } from "app/file-browser/services/filesystem.service";
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
+import { FilesystemObjectActions } from "app/file-browser/services/filesystem-object-actions";
+import { ModuleContext } from "app/shared/services/module-context.service";
+import { GenericDataProvider } from "app/shared/providers/data-transfer-data/generic-data.provider";
 
-import { Document, Infon, Passage } from './bioc.format';
+import { Document, Infon, Passage } from "./bioc.format";
 
 declare var jQuery: typeof jQueryType;
 
 @Component({
-  selector: 'app-bioc-viewer',
-  templateUrl: './bioc-view.component.html',
-  styleUrls: ['./bioc-view.component.scss'],
-  providers: [
-    ModuleContext
-  ]
+  selector: "app-bioc-viewer",
+  templateUrl: "./bioc-view.component.html",
+  styleUrls: ["./bioc-view.component.scss"],
+  providers: [ModuleContext],
 })
 export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
+  @ViewChild("dropdown", { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
+  @ViewChild("searchControl", {
+    static: false,
+    read: SearchControlComponent,
+  })
+  searchControlComponent: SearchControlComponent;
+  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  @Output() fileOpen: EventEmitter<BiocFile> = new EventEmitter();
+  id = uniqueId("FileViewComponent-");
+  paramsSubscription: Subscription;
+  returnUrl: string;
+  entityTypeVisibilityMap: Map<string, boolean> = new Map();
+  @Output() filterChangeSubject = new Subject<void>();
+  searchChanged: Subject<{ keyword: string; findPrevious: boolean }> = new Subject<{
+    keyword: string;
+    findPrevious: boolean;
+  }>();
+  searchQuery = "";
+  goToPosition: Subject<Location> = new Subject<Location>();
+  highlightAnnotations = new BehaviorSubject<{
+    id: string;
+    text: string;
+  }>(null);
+  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
+    map((value) => (value ? value.id : null))
+  );
+  loadTask: BackgroundTask<[string], [FilesystemObject, Document[]]>;
+  pendingScroll: Location;
+  pendingAnnotationHighlightId: string;
+  openbiocSub: Subscription;
+  openStatusSub: Subscription;
+  ready = false;
+  object?: FilesystemObject;
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/biocjs-dist/index.d.ts
+  biocData: Array<Document>;
+  // Type information coming from interface biocSource at:
+  currentFileId: string;
+  addAnnotationSub: Subscription;
+  removedAnnotationIds: string[];
+  removeAnnotationSub: Subscription;
+  biocFileLoaded = false;
+  entityTypeVisibilityChanged = false;
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  addAnnotationExclusionSub: Subscription;
+  showExcludedAnnotations = false;
+  removeAnnotationExclusionSub: Subscription;
+  matchesCount = {
+    current: 0,
+    total: 0,
+  };
+  searching = false;
+  selectedText = "";
+  createdNode;
+  dragTitleData$ = defer(() =>
+    of({
+      "text/plain": this.object.filename,
+      "application/***ARANGO_DB_NAME***-node": JSON.stringify({
+        display_name: this.object.filename,
+        label: "link",
+        sub_labels: [],
+        data: {
+          references: [
+            {
+              type: "PROJECT_OBJECT",
+              id: this.object.hashId + "",
+            },
+          ],
+          sources: [
+            {
+              domain: this.object.filename,
+              url: [
+                "/projects",
+                encodeURIComponent(this.object.project.name),
+                "bioc",
+                "files",
+                encodeURIComponent(this.object.hashId),
+              ].join("/"),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>),
+      ...GenericDataProvider.getURIs([
+        {
+          uri: this.object.getURL(false).toAbsolute(),
+          title: this.object.filename,
+        },
+      ]),
+    })
+  );
+  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -63,53 +151,51 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     moduleContext.register(this);
 
     this.loadTask = new BackgroundTask(([hashId]) =>
-        combineLatest(
-          this.filesystemService.open(hashId),
-          this.filesystemService.getContent(hashId).pipe(
-            mapBlobToBuffer(),
-            mapBufferToJsons<Document>(),
-          ),
-        )
+      combineLatest(
+        this.filesystemService.open(hashId),
+        this.filesystemService
+          .getContent(hashId)
+          .pipe(mapBlobToBuffer(), mapBufferToJsons<Document>())
+      )
     );
 
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+    this.paramsSubscription = this.route.queryParams.subscribe((params) => {
       this.returnUrl = params.return;
     });
 
     // Listener for file open
-    this.openbiocSub = this.loadTask.results$.subscribe(({
-                                                           result: [object, content],
-                                                           value: [file],
-                                                         }) => {
-      this.biocData = content.splice(0, 1);
-      const firstDoc = first(this.biocData);
-      const ref = firstDoc.passages.findIndex(p => p.infons.section_type === 'REF');
-      if (ref > -1) {
-        // then insert here the References Title
-        const referencesTitleObj: Passage = {
-          infons: {
-            section_type: 'INTRO',
-            type: 'title_1'
-          },
-          offset: 0,
-          annotations: [],
-          text: 'References',
-          sentences: [],
-          relations: []
-        };
-        firstDoc.passages.splice(ref, 0, referencesTitleObj);
-      }
-      this.object = object;
-      this.emitModuleProperties();
+    this.openbiocSub = this.loadTask.results$.subscribe(
+      ({ result: [object, content], value: [file] }) => {
+        this.biocData = content.splice(0, 1);
+        const firstDoc = first(this.biocData);
+        const ref = firstDoc.passages.findIndex((p) => p.infons.section_type === "REF");
+        if (ref > -1) {
+          // then insert here the References Title
+          const referencesTitleObj: Passage = {
+            infons: {
+              section_type: "INTRO",
+              type: "title_1",
+            },
+            offset: 0,
+            annotations: [],
+            text: "References",
+            sentences: [],
+            relations: [],
+          };
+          firstDoc.passages.splice(ref, 0, referencesTitleObj);
+        }
+        this.object = object;
+        this.emitModuleProperties();
 
-      this.currentFileId = object.hashId;
-      this.ready = true;
-    });
+        this.currentFileId = object.hashId;
+        this.ready = true;
+      }
+    );
 
     this.openStatusSub = this.loadTask.status$.subscribe((data) => {
       if (data.resultsShown) {
-        const fragment = (this.route.snapshot.fragment || '');
-        if (fragment.indexOf('offset') >= 0) {
+        const fragment = this.route.snapshot.fragment || "";
+        if (fragment.indexOf("offset") >= 0) {
           setTimeout(() => {
             this.scrollInOffset(this.parseLocationFromUrl(fragment));
           }, 1000);
@@ -119,90 +205,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadFromUrl();
   }
-  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
-  @ViewChild('searchControl', {
-    static: false,
-    read: SearchControlComponent,
-  }) searchControlComponent: SearchControlComponent;
-  @Output() requestClose: EventEmitter<any> = new EventEmitter();
-  @Output() fileOpen: EventEmitter<BiocFile> = new EventEmitter();
-
-  id = uniqueId('FileViewComponent-');
-
-  paramsSubscription: Subscription;
-  returnUrl: string;
-
-  entityTypeVisibilityMap: Map<string, boolean> = new Map();
-  @Output() filterChangeSubject = new Subject<void>();
-
-  searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
-  searchQuery = '';
-  goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations = new BehaviorSubject<{
-    id: string;
-    text: string;
-  }>(null);
-  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
-    map((value) => value ? value.id : null),
-  );
-  loadTask: BackgroundTask<[string], [FilesystemObject, Document[]]>;
-  pendingScroll: Location;
-  pendingAnnotationHighlightId: string;
-  openbiocSub: Subscription;
-  openStatusSub: Subscription;
-  ready = false;
-  object?: FilesystemObject;
-  // Type information coming from interface biocSource at:
-  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/biocjs-dist/index.d.ts
-  biocData: Array<Document>;
-  currentFileId: string;
-  addAnnotationSub: Subscription;
-  removedAnnotationIds: string[];
-  removeAnnotationSub: Subscription;
-  biocFileLoaded = false;
-  entityTypeVisibilityChanged = false;
-  modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addAnnotationExclusionSub: Subscription;
-  showExcludedAnnotations = false;
-  removeAnnotationExclusionSub: Subscription;
-
-  matchesCount = {
-    current: 0,
-    total: 0,
-  };
-  searching = false;
-
-  selectedText = '';
-  createdNode;
-
-  dragTitleData$ = defer(() => of({
-    'text/plain': this.object.filename,
-    'application/***ARANGO_DB_NAME***-node': JSON.stringify({
-      display_name: this.object.filename,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId + '',
-        }],
-        sources: [{
-          domain: this.object.filename,
-          url: ['/projects', encodeURIComponent(this.object.project.name), 'bioc',
-            'files', encodeURIComponent(this.object.hashId)].join('/'),
-        }],
-      },
-    } as Partial<UniversalGraphNode>),
-    ...GenericDataProvider.getURIs([{
-      uri: this.object.getURL(false).toAbsolute(),
-      title: this.object.filename,
-    }]),
-  }));
-
-  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   getFigureCaption(passage) {
-    return passage.infons.id || 'Fig';
+    return passage.infons.id || "Fig";
   }
 
   isGeneric(passage) {
@@ -210,7 +215,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isTableView(passage) {
-    const TYPES = ['table', 'table_caption', 'table_footnote'];
+    const TYPES = ["table", "table_caption", "table_footnote"];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -218,7 +223,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isFigure(passage) {
-    const TYPES = ['fig_caption', 'fig_caption_title'];
+    const TYPES = ["fig_caption", "fig_caption_title"];
     const infons = passage.infons || {};
     const type = infons.type && infons.type.toLowerCase();
     const res = TYPES.includes(type);
@@ -226,23 +231,25 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   buildFigureLink(doc, passage) {
-    const pmcid = doc.passages.find(p => p.infons['article-id_pmc']);
+    const pmcid = doc.passages.find((p) => p.infons["article-id_pmc"]);
     const infons = passage.infons || {};
     const file = infons.file;
-    return `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${pmcid.infons['article-id_pmc']}/bin/${file}`;
+    return `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${pmcid.infons["article-id_pmc"]}/bin/${file}`;
   }
 
   pmid(doc) {
-    const pmid = doc.passages.find(p => p.infons['article-id_pmid']);
+    const pmid = doc.passages.find((p) => p.infons["article-id_pmid"]);
     if (pmid) {
-      const PMID_LINK = 'https://www.ncbi.nlm.nih.gov/pubmed/' + String(pmid.infons['article-id_pmid']);
-      const text = 'PMID' + String(pmid.infons['article-id_pmid']);
+      const PMID_LINK =
+        "https://www.ncbi.nlm.nih.gov/pubmed/" + String(pmid.infons["article-id_pmid"]);
+      const text = "PMID" + String(pmid.infons["article-id_pmid"]);
       return [text, PMID_LINK];
     }
-    const pmc = doc.passages.find(p => p.infons['article-id_pmc']);
+    const pmc = doc.passages.find((p) => p.infons["article-id_pmc"]);
     if (pmc) {
-      const PMCID_LINK = 'http://www.ncbi.nlm.nih.gov/pmc/articles/pmc' + String(pmc.infons['article-id_pmc']);
-      const text = 'PMC' + String(pmc.infons['article-id_pmc']);
+      const PMCID_LINK =
+        "http://www.ncbi.nlm.nih.gov/pmc/articles/pmc" + String(pmc.infons["article-id_pmc"]);
+      const text = "PMC" + String(pmc.infons["article-id_pmc"]);
       return [text, PMCID_LINK];
     }
 
@@ -250,21 +257,21 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   journal(doc) {
-    const journal = doc.passages.find(p => p.infons[`journal`]);
+    const journal = doc.passages.find((p) => p.infons[`journal`]);
     if (journal) {
       return journal.infons[`journal`];
     }
   }
 
   authors(doc) {
-    const authors = doc.passages.find(p => p.infons[`authors`]);
+    const authors = doc.passages.find((p) => p.infons[`authors`]);
     if (authors) {
       return authors.infons[`authors`];
     }
   }
 
   year(doc) {
-    const year = doc.passages.find(p => p.infons[`year`]);
+    const year = doc.passages.find((p) => p.infons[`year`]);
     if (year) {
       return year.infons[`year`];
     }
@@ -272,7 +279,10 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
   title(doc) {
     try {
-      return doc.passages.find(p => p.infons.type.toLowerCase() === 'title' || p.infons.section_type.toLowerCase() === 'title').text;
+      return doc.passages.find(
+        (p) =>
+          p.infons.type.toLowerCase() === "title" || p.infons.section_type.toLowerCase() === "title"
+      ).text;
     } catch (e) {
       return doc.pmid;
     }
@@ -286,14 +296,14 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       this.currentFileId = null;
 
       const linkedFileId = this.route.snapshot.params.file_id;
-      const fragment = this.route.snapshot.fragment || '';
+      const fragment = this.route.snapshot.fragment || "";
       // TODO: Do proper query string parsing
       this.openbioc(linkedFileId);
     }
   }
 
   requestRefresh() {
-    if (confirm('There have been some changes. Would you like to refresh this open document?')) {
+    if (confirm("There have been some changes. Would you like to refresh this open document?")) {
       this.loadFromUrl();
     }
   }
@@ -312,14 +322,17 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const query = `span[offset='${params.offset}']`;
       const annotationElem = this._elemenetRef.nativeElement.querySelector(query);
       if (annotationElem) {
-        annotationElem.scrollIntoView({ block: 'center' });
-        jQuery(annotationElem).css('border', '2px solid #D62728');
-        jQuery(annotationElem).animate({
-          borderLeftColor: 'white',
-          borderTopColor: 'white',
-          borderRightColor: 'white',
-          borderBottomColor: 'white',
-        }, 1000);
+        annotationElem.scrollIntoView({ block: "center" });
+        jQuery(annotationElem).css("border", "2px solid #D62728");
+        jQuery(annotationElem).animate(
+          {
+            borderLeftColor: "white",
+            borderTopColor: "white",
+            borderRightColor: "white",
+            borderBottomColor: "white",
+          },
+          1000
+        );
       }
     }
     // if start and end exists then
@@ -330,19 +343,22 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const range = document.createRange();
       range.setStart(annotationElem.firstChild, Number(params.start));
       range.setEnd(annotationElem.firstChild, Number(params.start) + Number(params.len));
-      const newNode = document.createElement('span');
-      newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
-      jQuery(newNode).css('border', '2px solid #D62728');
+      const newNode = document.createElement("span");
+      newNode.style["background-color"] = "rgba(255, 255, 51, 0.3)";
+      jQuery(newNode).css("border", "2px solid #D62728");
       range.surroundContents(newNode);
       this.createdNode = newNode;
       if (newNode) {
-        newNode.scrollIntoView({ block: 'center' });
-        jQuery(newNode).animate({
-          borderLeftColor: 'white',
-          borderTopColor: 'white',
-          borderRightColor: 'white',
-          borderBottomColor: 'white',
-        }, 1000);
+        newNode.scrollIntoView({ block: "center" });
+        jQuery(newNode).animate(
+          {
+            borderLeftColor: "white",
+            borderTopColor: "white",
+            borderRightColor: "white",
+            borderBottomColor: "white",
+          },
+          1000
+        );
         setTimeout(() => {
           this.removeFrictionlessNode();
         }, 800);
@@ -421,7 +437,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   scrollInbioc(loc: Location) {
     this.pendingScroll = loc;
     if (!this.biocFileLoaded) {
-      console.log('File in the bioc viewer is not loaded yet. So, I cant scroll');
+      console.log("File in the bioc viewer is not loaded yet. So, I cant scroll");
       return;
     }
     this.goToPosition.next(loc);
@@ -451,28 +467,29 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
-      fontAwesomeIcon: 'file',
+      fontAwesomeIcon: "file",
     });
   }
 
   parseHighlightFromUrl(fragment: string): string | undefined {
     if (window.URLSearchParams) {
       const params = new URLSearchParams(fragment);
-      return params.get('annotation');
+      return params.get("annotation");
     }
     return null;
   }
 
-
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
-    this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
+    this.workSpaceManager.navigateByUrl({ url, extras: { sideBySide: true, newTab: true } });
   }
 
-  @HostListener('dragend', ['$event'])
-  dragEnd(event: (DragEvent & { path: Element[] } )) {
+  @HostListener("dragend", ["$event"])
+  dragEnd(event: DragEvent & { path: Element[] }) {
     const paths = event.path;
-    const biocViewer = paths.filter((el) => el.tagName && el.tagName.toLowerCase() === 'app-bioc-viewer');
+    const biocViewer = paths.filter(
+      (el) => el.tagName && el.tagName.toLowerCase() === "app-bioc-viewer"
+    );
     if (biocViewer.length > 0) {
       const firstPath = paths[0];
       if (!firstPath.tagName) {
@@ -487,15 +504,18 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.createdNode && this.createdNode.parentNode) {
       const wholeText = this.createdNode.parentNode.textContent;
       const parent = this.createdNode.parentNode;
-      this.createdNode.parentNode.replaceChild(document.createTextNode(this.selectedText), this.createdNode);
+      this.createdNode.parentNode.replaceChild(
+        document.createTextNode(this.selectedText),
+        this.createdNode
+      );
       this.createdNode = null;
       jQuery(parent).text(wholeText);
     }
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  selectionChange(event: (MouseEvent & { target: Element })) {
-    const isItComingFromBiocViewer = (event.target).closest('app-bioc-viewer');
+  @HostListener("document:mouseup", ["$event"])
+  selectionChange(event: MouseEvent & { target: Element }) {
+    const isItComingFromBiocViewer = event.target.closest("app-bioc-viewer");
     if (!isItComingFromBiocViewer) {
       return;
     }
@@ -506,9 +526,9 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const range = window.getSelection().getRangeAt(0);
       this.selectedText = selection.toString();
       // create a new DOM node and set it's style property to something yellowish.
-      const newNode = document.createElement('span');
-      newNode.style['background-color'] = 'rgba(255, 255, 51, 0.3)';
-      newNode.setAttribute('draggable', 'true');
+      const newNode = document.createElement("span");
+      newNode.style["background-color"] = "rgba(255, 255, 51, 0.3)";
+      newNode.setAttribute("draggable", "true");
       this.createdNode = newNode;
 
       try {
@@ -519,22 +539,22 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       }
 
       const ann = jQuery(this.createdNode).parent();
-      const offset = jQuery(ann).attr('position');
+      const offset = jQuery(ann).attr("position");
       const parentText: string = ann.text();
       const createdText = jQuery(this.createdNode).text();
       const innerIndex = parentText.indexOf(createdText);
-      jQuery(this.createdNode).attr('start', innerIndex);
-      jQuery(this.createdNode).attr('len', createdText.length);
+      jQuery(this.createdNode).attr("start", innerIndex);
+      jQuery(this.createdNode).attr("len", createdText.length);
       return false;
     }
   }
 
   reBindType(type: string) {
     const typeMap = {
-      SNP: 'Mutation',
-      DNAMutation: 'Mutation',
-      ProteinMutation: 'Mutation',
-      CellLine: 'Species'
+      SNP: "Mutation",
+      DNAMutation: "Mutation",
+      ProteinMutation: "Mutation",
+      CellLine: "Species",
     };
     return typeMap[type] ? typeMap[type] : type;
   }
@@ -542,108 +562,134 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   parseLocationFromUrl(fragment: string): BiocAnnotationLocation {
     const params = new URLSearchParams(fragment);
     return {
-      offset: params.get('offset'),
-      start: params.get('start'),
-      len: params.get('len')
+      offset: params.get("offset"),
+      start: params.get("start"),
+      len: params.get("len"),
     };
   }
 
-  @HostListener('dragstart', ['$event'])
+  @HostListener("dragstart", ["$event"])
   dragStart(event: DragEvent) {
     // I will replace this code
     const meta: any = {};
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as Element).innerHTML;
     const clazz = (event.target as Element).classList;
-    const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
+    const type = this.reBindType(clazz && clazz.length > 1 ? clazz[1] : "link");
     const pmcidFomDoc = this.pmid(this.biocData[0]);
-    const pmcid = ({
+    const pmcid = {
       domain: pmcidFomDoc[0],
-      url: pmcidFomDoc[1]
-    });
-    if (!clazz || clazz.value === '') {
+      url: pmcidFomDoc[1],
+    };
+    if (!clazz || clazz.value === "") {
       const node = jQuery((event as any).path[1]);
-      const position = jQuery(node).parent().attr('position');
-      const startIndex = jQuery(node).attr('start');
-      const len = jQuery(node).attr('len');
-      let source = ['/projects', encodeURIComponent(this.object.project.name),
-        'bioc', encodeURIComponent(this.object.hashId)].join('/');
+      const position = jQuery(node).parent().attr("position");
+      const startIndex = jQuery(node).attr("start");
+      const len = jQuery(node).attr("len");
+      let source = [
+        "/projects",
+        encodeURIComponent(this.object.project.name),
+        "bioc",
+        encodeURIComponent(this.object.hashId),
+      ].join("/");
       if (position) {
-        source += '#';
+        source += "#";
         source += new URLSearchParams({
           offset: position,
           start: startIndex,
-          len
+          len,
         });
       }
-      const link = meta.idHyperlink || '';
-      dataTransfer.setData('text/plain', this.selectedText);
-      dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-        display_name: 'Link',
-        label: 'link',
-        data: {
-          sources: [{
-            domain: this.object.filename,
-            url: source
-          }, pmcid],
-          detail: this.selectedText,
-          references: [{
-            type: 'PROJECT_OBJECT',
-            id: this.object.hashId,
-          }, {
-            type: 'DATABASE',
-            url: link,
-          }]
-        },
-        style: {
-          showDetail: true,
-        },
-      } as Partial<UniversalGraphNode>));
+      const link = meta.idHyperlink || "";
+      dataTransfer.setData("text/plain", this.selectedText);
+      dataTransfer.setData(
+        "application/***ARANGO_DB_NAME***-node",
+        JSON.stringify({
+          display_name: "Link",
+          label: "link",
+          data: {
+            sources: [
+              {
+                domain: this.object.filename,
+                url: source,
+              },
+              pmcid,
+            ],
+            detail: this.selectedText,
+            references: [
+              {
+                type: "PROJECT_OBJECT",
+                id: this.object.hashId,
+              },
+              {
+                type: "DATABASE",
+                url: link,
+              },
+            ],
+          },
+          style: {
+            showDetail: true,
+          },
+        } as Partial<UniversalGraphNode>)
+      );
       return;
     }
     const id = ((event.target as Element).attributes[`identifier`] || {}).nodeValue;
     const annType = ((event.target as Element).attributes[`annType`] || {}).nodeValue;
     const src = this.getSource({
       identifier: id,
-      type: annType
+      type: annType,
     });
     const offset = ((event.target as Element).attributes[`offset`] || {}).nodeValue;
     const search = [];
     const hyperlinks = [];
     const url = src;
-    const domain = new URL(src).hostname.replace(/^www\./i, '');
+    const domain = new URL(src).hostname.replace(/^www\./i, "");
     hyperlinks.push({ url, domain });
-    const hyperlink = meta.idHyperlink || '';
-    let sourceUrl = ['/projects', encodeURIComponent(this.object.project.name),
-      'bioc', encodeURIComponent(this.object.hashId)].join('/');
+    const hyperlink = meta.idHyperlink || "";
+    let sourceUrl = [
+      "/projects",
+      encodeURIComponent(this.object.project.name),
+      "bioc",
+      encodeURIComponent(this.object.hashId),
+    ].join("/");
     if (offset) {
-      sourceUrl += '#offset=' + offset;
+      sourceUrl += "#offset=" + offset;
     }
-    dataTransfer.setData('text/plain', txt);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: txt,
-      label: String(type).toLowerCase() === 'text-truncate' ? 'link' : String(type).toLowerCase(),
-      sub_labels: [],
-      data: {
-        sources: [{
-          domain: this.object.filename,
-          url: sourceUrl
-        }, pmcid],
-        search,
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId,
-        }, {
-          type: 'DATABASE',
-          url: hyperlink,
-        }],
-        hyperlinks,
-        detail: meta.type === 'link' ? meta.allText : '',
-      },
-      style: {
-        showDetail: meta.type === 'link',
-      },
-    } as Partial<UniversalGraphNode>));
+    dataTransfer.setData("text/plain", txt);
+    dataTransfer.setData(
+      "application/***ARANGO_DB_NAME***-node",
+      JSON.stringify({
+        display_name: txt,
+        label: String(type).toLowerCase() === "text-truncate" ? "link" : String(type).toLowerCase(),
+        sub_labels: [],
+        data: {
+          sources: [
+            {
+              domain: this.object.filename,
+              url: sourceUrl,
+            },
+            pmcid,
+          ],
+          search,
+          references: [
+            {
+              type: "PROJECT_OBJECT",
+              id: this.object.hashId,
+            },
+            {
+              type: "DATABASE",
+              url: hyperlink,
+            },
+          ],
+          hyperlinks,
+          detail: meta.type === "link" ? meta.allText : "",
+        },
+        style: {
+          showDetail: meta.type === "link",
+        },
+      } as Partial<UniversalGraphNode>)
+    );
     event.stopPropagation();
   }
 
@@ -653,25 +699,24 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const type = payload.type;
 
     // MESH Handling
-    if (identifier && identifier.toLowerCase().startsWith('mesh')) {
-      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'mesh');
+    if (identifier && identifier.toLowerCase().startsWith("mesh")) {
+      const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === "mesh");
       const url = mesh.url;
-      const idPart = identifier.split(':');
+      const idPart = identifier.split(":");
       return url.replace(/%s/, encodeURIComponent(idPart[1]));
     }
 
     // NCBI
     if (identifier && !isNaN(Number(identifier))) {
-      let domain = 'ncbi';
-      if (type === 'Species') {
-        domain = 'ncbi_taxonomy';
+      let domain = "ncbi";
+      if (type === "Species") {
+        domain = "ncbi_taxonomy";
       }
       const mesh = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === domain);
       const url = mesh.url;
       return url.replace(/%s/, encodeURIComponent(identifier));
     }
-    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === 'google');
+    const fallback = SEARCH_LINKS.find((a) => a.domain.toLowerCase() === "google");
     return fallback.url.replace(/%s/, encodeURIComponent(identifier));
   }
-
 }

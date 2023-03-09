@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { FormsModule } from "@angular/forms";
 
-import { configureTestSuite } from 'ng-bullet';
-import { MockComponents } from 'ng-mocks';
+import { configureTestSuite } from "ng-bullet";
+import { MockComponents } from "ng-mocks";
 
-import { CollapsibleWindowComponent } from '../collapsible-window.component';
-import { LegendComponent } from '../legend.component';
-import { SearchControlComponent } from '../search-control.component';
-import { VisJsNetworkComponent } from './vis-js-network.component';
+import { CollapsibleWindowComponent } from "../collapsible-window.component";
+import { LegendComponent } from "../legend.component";
+import { SearchControlComponent } from "../search-control.component";
+import { VisJsNetworkComponent } from "./vis-js-network.component";
 
-describe('VisJsNetworkComponent', () => {
+describe("VisJsNetworkComponent", () => {
   let component: VisJsNetworkComponent;
   let fixture: ComponentFixture<VisJsNetworkComponent>;
 
@@ -17,16 +17,12 @@ describe('VisJsNetworkComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         // This import is for the ngModel input of the app-search-control-component
-        FormsModule
+        FormsModule,
       ],
       declarations: [
         VisJsNetworkComponent,
-        MockComponents(
-          LegendComponent,
-          SearchControlComponent,
-          CollapsibleWindowComponent,
-        ),
-      ]
+        MockComponents(LegendComponent, SearchControlComponent, CollapsibleWindowComponent),
+      ],
     });
   });
 
@@ -36,7 +32,7 @@ describe('VisJsNetworkComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

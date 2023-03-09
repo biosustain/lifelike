@@ -1,9 +1,9 @@
-from flask.json import JSONEncoder
-
-from sqlalchemy.sql.sqltypes import TIMESTAMP
-from neo4japp.models import GraphNode, GraphRelationship
-
 from numbers import Number
+
+from flask.json import JSONEncoder
+from sqlalchemy.sql.sqltypes import TIMESTAMP
+
+from neo4japp.models import GraphNode, GraphRelationship
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -15,4 +15,4 @@ class CustomJSONEncoder(JSONEncoder):
                 return str(obj)
         except TypeError:
             pass
-        return JSONEncoder.default( self, obj )
+        return JSONEncoder.default(self, obj)

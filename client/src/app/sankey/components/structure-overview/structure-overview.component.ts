@@ -1,19 +1,28 @@
-import { Component, ViewEncapsulation, isDevMode, } from '@angular/core';
-import { NestedTreeControl } from '@angular/cdk/tree';
+import { Component, isDevMode, ViewEncapsulation } from "@angular/core";
+import { NestedTreeControl } from "@angular/cdk/tree";
 
-import { map, shareReplay } from 'rxjs/operators';
-import { isObject, isBoolean, isArray, has, isNil, isString, isNumber, isUndefined, first } from 'lodash-es';
+import { map, shareReplay } from "rxjs/operators";
+import {
+  first,
+  has,
+  isArray,
+  isBoolean,
+  isNil,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+} from "lodash-es";
 
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from "app/shared/providers/graph-type/interfaces";
 
-import { ControllerService } from '../../services/controller.service';
-import { NotImplemented } from '../../utils/error';
-
+import { ControllerService } from "../../services/controller.service";
+import { NotImplemented } from "../../utils/error";
 
 enum OverviewEntityType {
   nodeId,
   linkId,
-  nodeSetId
+  nodeSetId,
 }
 
 interface TreeNode {
@@ -26,79 +35,76 @@ interface TreeNode {
 
 const property = (label, accessor) => ({
   label,
-  accessor
+  accessor,
 });
 
-const indexLabel = i => `[ ${i} ]`;
+const indexLabel = (i) => `[ ${i} ]`;
 
-const parseArray = (arr, accessor) => arr?.map((v, i) =>
-  property(indexLabel(i), () => accessor(v))
-);
+const parseArray = (arr, accessor) =>
+  arr?.map((v, i) => property(indexLabel(i), () => accessor(v)));
 
-const mapPrimitiveValue = value => {
+const mapPrimitiveValue = (value) => {
   if (isBoolean(value)) {
-    return value ? 'true' : 'false';
+    return value ? "true" : "false";
   }
   if (isString(value) || isNumber(value)) {
     return value;
   }
   if (value !== value) {
-    return 'NaN';
+    return "NaN";
   }
   if (isUndefined(value)) {
-    return 'undefined';
+    return "undefined";
   }
 };
 
 const mapSomething = (label, something) => {
   const value = mapPrimitiveValue(something);
   if (!isNil(value)) {
-    return {label, value};
+    return { label, value };
   }
   if (isArray(something)) {
     return {
       label,
-      accessor: () => something.map((v, i) => mapSomething(indexLabel(i), v))
+      accessor: () => something.map((v, i) => mapSomething(indexLabel(i), v)),
     };
   }
   if (isObject(something)) {
     return {
       label,
-      accessor: () => mapObj(something)
+      accessor: () => mapObj(something),
     };
   }
   return {
     label,
-    value: String(something)
+    value: String(something),
   };
 };
 
-const mapObj = obj =>
+const mapObj = (obj) =>
   Object.entries(obj)
-    .filter(isDevMode() ? () => true : ([label]) => first(label) !== '_')
-    .map(([label, value]) =>
-      mapSomething(label, value)
-    );
+    .filter(isDevMode() ? () => true : ([label]) => first(label) !== "_")
+    .map(([label, value]) => mapSomething(label, value));
 
-const parseNodeId = nodeId => ({
+const parseNodeId = (nodeId) => ({
   label: nodeId,
   ref: nodeId,
   type: OverviewEntityType.nodeId,
 });
 
-const parseNodeIds = nodeIds => nodeIds.map(parseNodeId);
+const parseNodeIds = (nodeIds) => nodeIds.map(parseNodeId);
 
-const parseLinkId = linkId => ({
+const parseLinkId = (linkId) => ({
   label: linkId,
   ref: linkId,
   type: OverviewEntityType.linkId,
 });
 
-const parseLinkIds = nodeIds => nodeIds.map(parseLinkId);
+const parseLinkIds = (nodeIds) => nodeIds.map(parseLinkId);
 
-const parseNodePaths = nodePaths => parseArray(nodePaths, parseNodeIds);
+const parseNodePaths = (nodePaths) => parseArray(nodePaths, parseNodeIds);
 
-const parseDetailEdges = detailEdges => parseArray(detailEdges, parseLinkIds);
+const parseDetailEdges = (detailEdges) => parseArray(detailEdges, parseLinkIds);
 
 const parseNodeSetId = (label, nodeSetId) => ({
   label,
@@ -107,97 +113,83 @@ const parseNodeSetId = (label, nodeSetId) => ({
   type: OverviewEntityType.nodeSetId,
 });
 
-const parseTrace = ({node_paths, edges, source, target, detail_edges, ...rest}: Graph.Trace) => ([
-  property('node_paths', () => parseNodePaths(node_paths)),
-  property('edges', () => parseLinkIds(edges)),
-  {...parseNodeId(source), label: 'source'},
-  {...parseNodeId(target), label: 'target'},
-  property('detail_edges', () => parseDetailEdges(detail_edges)),
-  ...mapObj(rest)
-]);
+const parseTrace = ({ node_paths, edges, source, target, detail_edges, ...rest }: Graph.Trace) => [
+  property("node_paths", () => parseNodePaths(node_paths)),
+  property("edges", () => parseLinkIds(edges)),
+  { ...parseNodeId(source), label: "source" },
+  { ...parseNodeId(target), label: "target" },
+  property("detail_edges", () => parseDetailEdges(detail_edges)),
+  ...mapObj(rest),
+];
 
-const parseTraceNetwork = ({
-                             sources, targets, traces, ...rest
-                           }: Graph.TraceNetwork) => ([
-  property('traces', () => parseArray(traces, parseTrace)),
-  parseNodeSetId('sources', sources),
-  parseNodeSetId('targets', targets),
-  ...mapObj(rest)
-]);
+const parseTraceNetwork = ({ sources, targets, traces, ...rest }: Graph.TraceNetwork) => [
+  property("traces", () => parseArray(traces, parseTrace)),
+  parseNodeSetId("sources", sources),
+  parseNodeSetId("targets", targets),
+  ...mapObj(rest),
+];
 
-const parseNodeSets = (nodeSets: Graph.NodeSets) => Object.entries(nodeSets).map(([label, value]) =>
-  property(label, () => parseNodeIds(value))
-);
+const parseNodeSets = (nodeSets: Graph.NodeSets) =>
+  Object.entries(nodeSets).map(([label, value]) => property(label, () => parseNodeIds(value)));
 
 const parseNode = mapObj;
 
-const parseLink = ({
-                     source, target, ...rest
-                   }: Graph.Link) => ([
-  {...parseNodeId(source), label: 'source'},
-  {...parseNodeId(target), label: 'target'},
-  ...mapObj(rest)
-]);
+const parseLink = ({ source, target, ...rest }: Graph.Link) => [
+  { ...parseNodeId(source), label: "source" },
+  { ...parseNodeId(target), label: "target" },
+  ...mapObj(rest),
+];
 
-const parseGraph = ({node_sets, trace_networks, ...rest}: Graph.Graph) => ([
-  property('trace_networks', () => parseArray(trace_networks, parseTraceNetwork)),
-  property('node_sets', () => parseNodeSets(node_sets)),
-  ...mapObj(rest)
-]);
+const parseGraph = ({ node_sets, trace_networks, ...rest }: Graph.Graph) => [
+  property("trace_networks", () => parseArray(trace_networks, parseTraceNetwork)),
+  property("node_sets", () => parseNodeSets(node_sets)),
+  ...mapObj(rest),
+];
 
-const parseGraphFile = ({graph, nodes, links, ...rest}: Graph.File) => ([
-  property('graph', () => parseGraph(graph)),
-  property('nodes', () => parseArray(nodes, parseNode)),
-  property('links', () => parseArray(links, parseLink)),
-  ...mapObj(rest)
-]);
+const parseGraphFile = ({ graph, nodes, links, ...rest }: Graph.File) => [
+  property("graph", () => parseGraph(graph)),
+  property("nodes", () => parseArray(nodes, parseNode)),
+  property("links", () => parseArray(links, parseLink)),
+  ...mapObj(rest),
+];
 
 @Component({
-  selector: 'app-sankey-structure-overview',
-  templateUrl: './structure-overview.component.html',
-  styleUrls: ['./structure-overview.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  selector: "app-sankey-structure-overview",
+  templateUrl: "./structure-overview.component.html",
+  styleUrls: ["./structure-overview.component.scss"],
+  encapsulation: ViewEncapsulation.None,
 })
 export class StructureOverviewComponent {
-  constructor(private common: ControllerService) {
-  }
-
   dataSource$ = this.common._data$.pipe(
     map(parseGraphFile),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   getNodeById$ = this.common._data$.pipe(
-    map(({nodes}) => new Map<number, Graph.Node>(nodes.map(node => [node.id, node]))),
-    shareReplay({bufferSize: 1, refCount: true})
+    map(({ nodes }) => new Map<number, Graph.Node>(nodes.map((node) => [node.id, node]))),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   links$ = this.common._data$.pipe(
-    map(({links}) => links),
-    shareReplay({bufferSize: 1, refCount: true})
+    map(({ links }) => links),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   nodeSets$ = this.common._data$.pipe(
-    map(({graph: {node_sets}}) => node_sets),
-    shareReplay({bufferSize: 1, refCount: true})
+    map(({ graph: { node_sets } }) => node_sets),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
-
   treeControl = new NestedTreeControl<TreeNode>(this.getChildren.bind(this));
+
+  constructor(private common: ControllerService) {}
 
   getChildren(treeNode: TreeNode) {
     switch (treeNode?.type) {
       case OverviewEntityType.nodeId:
         return this.getNodeById$.pipe(
-          map(nodeById => parseNode(nodeById.get(treeNode.ref as number)))
+          map((nodeById) => parseNode(nodeById.get(treeNode.ref as number)))
         );
       case OverviewEntityType.linkId:
-        return this.links$.pipe(
-          map(links => parseLink(links[treeNode.ref]))
-        );
+        return this.links$.pipe(map((links) => parseLink(links[treeNode.ref])));
       case OverviewEntityType.nodeSetId:
-        return this.nodeSets$.pipe(
-          map(nodeSets => parseNodeIds(nodeSets[treeNode.ref]))
-        );
+        return this.nodeSets$.pipe(map((nodeSets) => parseNodeIds(nodeSets[treeNode.ref])));
       default:
         return treeNode?.accessor?.();
     }
@@ -205,18 +197,23 @@ export class StructureOverviewComponent {
   }
 
   hasChildren(index: number, node: TreeNode): boolean {
-    return has(node, 'accessor') || has(node, 'type');
+    return has(node, "accessor") || has(node, "type");
   }
 
-  getNodeLabel({label, value}: TreeNode): string {
+  getNodeLabel({ label, value }: TreeNode): string {
     return isNil(value) ? label : `${label} : ${value}`;
   }
 
   getNodeIcon(treeNode: TreeNode): string {
-    return 'fas fa-' + (
-      has(treeNode, 'ref') ?
-        (this.treeControl.isExpanded(treeNode) ? 'unlink' : 'link') :
-        (this.treeControl.isExpanded(treeNode) ? 'angle-down' : 'angle-right')
+    return (
+      "fas fa-" +
+      (has(treeNode, "ref")
+        ? this.treeControl.isExpanded(treeNode)
+          ? "unlink"
+          : "link"
+        : this.treeControl.isExpanded(treeNode)
+        ? "angle-down"
+        : "angle-right")
     );
   }
 }

@@ -52,18 +52,14 @@
 // SOFTWARE.
 // endregion
 
-import findCircuits from 'elementary-circuits-directed-graph';
-import { ReplaySubject, Subject, Observable } from 'rxjs';
-import { map, tap, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { isEqual } from 'lodash-es';
+import findCircuits from "elementary-circuits-directed-graph";
+import { tap } from "rxjs/operators";
 
-import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyId, TypeContext } from 'app/sankey/interfaces';
-import { debug } from 'app/shared/rxjs/debug';
+import { TruncatePipe } from "app/shared/pipes";
+import { SankeyId, TypeContext } from "app/sankey/interfaces";
 
-import { AttributeAccessors } from '../utils/attribute-accessors';
-import { ErrorMessages } from '../constants/error';
-import { SankeyLink, SankeyNode } from '../model/sankey-document';
+import { AttributeAccessors } from "../utils/attribute-accessors";
+import { SankeyLink, SankeyNode } from "../model/sankey-document";
 
 export interface Horizontal {
   width: number;
@@ -95,28 +91,11 @@ export interface LayoutData {
 }
 
 export abstract class SankeyAbstractLayoutService<Base extends TypeContext> extends AttributeAccessors<Base> {
-  constructor(
-    protected readonly truncatePipe: TruncatePipe
-  ) {
-    super(truncatePipe);
-  }
-
-  get sourceValue(): (link: SankeyLink) => number {
-    return ({value, multipleValues}) => multipleValues?.[0] ?? value;
-  }
-
-  get targetValue(): (link: SankeyLink) => number {
-    return ({value, multipleValues}) => multipleValues?.[1] ?? value;
-  }
-
-
   dy = 8;
   dx = 10; // nodeWidth
   py = 10; // nodePadding
-
   nodeSort: <N extends Base['node']>(a: N, b: N) => number;
   linkSort: <L extends Base['link']>(a: L, b: L) => number;
-
   /**
    * Each node maintains list of its source/target links
    * this function resets these lists and repopulates them
@@ -130,7 +109,6 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     }
     this.registerLinks({links});
   });
-
   /**
    * Find circular links using Johnson's circuit finding algorithm.
    * This function simply preformats data cals `elementary-circuits-directed-graph`
@@ -186,22 +164,19 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
     });
   });
 
-  /**
-   * Calculate the nodes' depth based on the incoming and outgoing links
-   * Sets the nodes':
-   * - depth:  the depth in the graph
-   */
-  computeNodeDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'target', 'sourceLinks')) {
-      node.depth = x;
-    }
-  });
+  get sourceValue(): (link: SankeyLink) => number {
+    return ({value, multipleValues}) => multipleValues?.[0] ?? value;
+  }
 
-  computeNodeReversedDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'source', 'targetLinks')) {
-      node.reversedDepth = x;
-    }
-  });
+  get targetValue(): (link: SankeyLink) => number {
+    return ({value, multipleValues}) => multipleValues?.[1] ?? value;
+  }
+
+  constructor(
+    protected readonly truncatePipe: TruncatePipe,
+  ) {
+    super(truncatePipe);
+  }
 
   static ascendingSourceBreadth(a, b) {
     return SankeyAbstractLayoutService.ascendingBreadth(a.source, b.source) || a.index - b.index;
@@ -271,7 +246,7 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function* (nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
     const n = nodes.length;
     let current = new Set<Base['node']>(nodes);
     let next = new Set<Base['node']>();
@@ -290,6 +265,22 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       next = new Set();
     }
   };
+
+  /**
+   * Calculate the nodes' depth based on the incoming and outgoing links
+   * Sets the nodes':
+   * - depth:  the depth in the graph
+   */
+  computeNodeDepths = tap(({nodes}: LayoutData) => {
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'target', 'sourceLinks')) {
+      node.depth = x;
+    }
+  });
+  computeNodeReversedDepths = tap(({nodes}: LayoutData) => {
+    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'source', 'targetLinks')) {
+      node.reversedDepth = x;
+    }
+  });
 
   positionNodesHorizontaly(data, {x1, x0, width}: Horizontal, x: number) {
     const {dx} = this;

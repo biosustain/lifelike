@@ -1,32 +1,38 @@
-import { FlatTreeControl } from '@angular/cdk/tree';
-import { Input, OnDestroy } from '@angular/core';
-import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { FlatTreeControl } from "@angular/cdk/tree";
+import { Input, OnDestroy } from "@angular/core";
+import { MatTreeFlatDataSource, MatTreeFlattener } from "@angular/material/tree";
 
-import { isNil } from 'lodash-es';
-import { Subscription } from 'rxjs';
+import { isNil } from "lodash-es";
+import { Subscription } from "rxjs";
 
-import { TreeNode, FlatNode } from 'app/shared/schemas/common';
+import { FlatNode, TreeNode } from "app/shared/schemas/common";
 
 export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
+  treeControl: FlatTreeControl<FlatNode<T>>;
+  treeFlattener: MatTreeFlattener<TreeNode<T>, FlatNode<T>>;
+  dataSource: MatTreeFlatDataSource<TreeNode<T>, FlatNode<T>>;
+  flatNodes: FlatNode<T>[];
+  flatNodesChangedListener: Subscription;
+
   protected _treeData: TreeNode<T>[] = [];
-  @Input() set treeData(treeData: TreeNode<T>[]) {
-    this._treeData = treeData;
-    this.dataSource.data = this._treeData;
-  }
+
   get treeData() {
     return this._treeData;
   }
 
-  treeControl: FlatTreeControl<FlatNode<T>>;
-  treeFlattener: MatTreeFlattener<TreeNode<T>, FlatNode<T>>;
-  dataSource: MatTreeFlatDataSource<TreeNode<T>, FlatNode<T>>;
-
-  flatNodes: FlatNode<T>[];
-  flatNodesChangedListener: Subscription;
+  @Input() set treeData(treeData: TreeNode<T>[]) {
+    this._treeData = treeData;
+    this.dataSource.data = this._treeData;
+  }
 
   constructor() {
     this.treeControl = new FlatTreeControl<FlatNode<T>>(this.getLevel, this.isExpandable);
-    this.treeFlattener = new MatTreeFlattener(this._transformer, this.getLevel, this.isExpandable, this.getChildren);
+    this.treeFlattener = new MatTreeFlattener(
+      this._transformer,
+      this.getLevel,
+      this.isExpandable,
+      this.getChildren
+    );
     this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
     this._initDataSource();
 
@@ -37,18 +43,6 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
 
   ngOnDestroy() {
     this.flatNodesChangedListener.unsubscribe();
-  }
-
-  protected _initDataSource() {
-    this.dataSource.data = this._treeData;
-  }
-
-  protected _transformer = (node: TreeNode<T>, level: number) => {
-    return {
-      expandable: !!node.children && node.children.length > 0,
-      data: node.data,
-      level,
-    };
   }
 
   getChildren = (node: TreeNode<T>): TreeNode<T>[] => node.children;
@@ -72,4 +66,16 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   reset() {
     this.collapseAll();
   }
+
+  protected _initDataSource() {
+    this.dataSource.data = this._treeData;
+  }
+
+  protected _transformer = (node: TreeNode<T>, level: number) => {
+    return {
+      expandable: !!node.children && node.children.length > 0,
+      data: node.data,
+      level,
+    };
+  };
 }

@@ -1,18 +1,20 @@
 <div class="sorting-algorithm-container">
   <button
-    class="dropdown-item d-flex justify-content-between"
-    [ngClass]="{'active': selected == algorithm}"
     (click)="changeSorting.emit(algorithm)"
     *ngFor="let algorithm of algorithms"
+    [ngClass]="{ active: selected == algorithm }"
+    class="dropdown-item d-flex justify-content-between"
   >
     {{ algorithm.name }}
     <ng-template #description><span [innerHTML]="algorithm.description"></span></ng-template>
-    <i class="fa fa-info-circle ml-3"
-       placement="top"
-       *ngIf="algorithm.description"
-       triggers="mouseenter:mouseleave"
-       [openDelay]="300"
-       [ngbPopover]="description"
-       [popoverTitle]="algorithm.title"></i>
+    <i
+      *ngIf="algorithm.description"
+      [ngbPopover]="description"
+      [openDelay]="300"
+      [popoverTitle]="algorithm.title"
+      class="fa fa-info-circle ml-3"
+      placement="top"
+      triggers="mouseenter:mouseleave"
+    ></i>
   </button>
 </div>

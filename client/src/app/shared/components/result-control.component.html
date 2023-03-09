@@ -1,23 +1,31 @@
 <app-base-control
-        [disabled]="disabled"
-        [resultCount]="resultCount"
-        [resultIndex]="resultIndex"
-        (previous)="previous.emit(this.resultIndex - 1)"
-        (next)="next.emit(this.resultIndex + 1)"
-        (clear)="clear()"
+  (clear)="clear()"
+  (next)="next.emit(this.resultIndex + 1)"
+  (previous)="previous.emit(this.resultIndex - 1)"
+  [disabled]="disabled"
+  [resultCount]="resultCount"
+  [resultIndex]="resultIndex"
 >
-    <div class="form-control input-border text-truncate" tabindex="0"
-         [style.width]="value ? '150px' : '100px'"
-         (keyup.enter)="enterPress.next()" (keyup.backspace)="clear()" #searchInput>
-        <ng-container *ngIf="annotationColor != null; else noAnnotationColor">
-      <span [style.background]="getAnnotationBackgroundColor(annotationColor)" style="font-weight: bold">
+  <div
+    #searchInput
+    (keyup.backspace)="clear()"
+    (keyup.enter)="enterPress.next()"
+    [style.width]="value ? '150px' : '100px'"
+    class="form-control input-border text-truncate"
+    tabindex="0"
+  >
+    <ng-container *ngIf="annotationColor != null; else noAnnotationColor">
+      <span
+        [style.background]="getAnnotationBackgroundColor(annotationColor)"
+        style="font-weight: bold"
+      >
         {{ value }}
       </span>
-        </ng-container>
-        <ng-template #noAnnotationColor>
+    </ng-container>
+    <ng-template #noAnnotationColor>
       <span class="badge badge-pill badge-secondary" style="font-size: inherit">
         {{ value }}
       </span>
-        </ng-template>
-    </div>
+    </ng-template>
+  </div>
 </app-base-control>

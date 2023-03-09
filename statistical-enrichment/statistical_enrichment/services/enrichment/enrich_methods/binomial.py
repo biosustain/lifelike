@@ -30,10 +30,10 @@ def fisher(geneNames, GOterms):
     N = len(query)
 
     df = df.groupby("goId").agg(
-            p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
-            geneNames=('geneName', lambda gn: list(gn[np.in1d(gn, query)])),
-            goTerm=('goTerm', 'first'),
-            goLabel=('goLabel', 'first')
+        p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
+        geneNames=('geneName', lambda gn: list(gn[np.in1d(gn, query)])),
+        goTerm=('goTerm', 'first'),
+        goLabel=('goLabel', 'first')
     )
 
     df = df[df['p_value'] < 1].sort_values(by='p_value')

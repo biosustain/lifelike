@@ -2,21 +2,23 @@
   background-color: $primary;
 
   a {
-    display: flex;
-    width: 55px;
-    height: 55px;
     align-items: center;
-    justify-content: center;
     cursor: pointer;
+    display: flex;
+    height: 55px;
+    justify-content: center;
+    width: 55px;
 
-    &, &:link, &:visited {
+    &,
+    &:link,
+    &:visited {
       color: $white;
       text-decoration: none;
     }
 
     &:hover {
-      color: $white;
       background: rgba(0, 0, 0, 0.16);
+      color: $white;
     }
   }
 }

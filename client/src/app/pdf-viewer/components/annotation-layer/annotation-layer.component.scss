@@ -1,15 +1,15 @@
 :host {
-  z-index: 1000;
   position: absolute;
+  z-index: 1000;
 
   .excluded {
     display: var(--show-excluded);
   }
 
   .system-annotation {
-    position: absolute;
     cursor: move;
     opacity: 0.3;
+    position: absolute;
 
     .isCustom {
       transform: translateY(2px);

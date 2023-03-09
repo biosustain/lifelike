@@ -6,46 +6,46 @@ Revises: 101b9a60aa29
 Create Date: 2020-07-07 15:13:38.895016
 """
 
+import sqlalchemy as sa
 from alembic import context
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy_utils.types import TSVectorType
 
 # revision identifiers, used by Alembic.
-revision = 'cc345dcad75c'
-down_revision = '101b9a60aa29'
+revision = "cc345dcad75c"
+down_revision = "101b9a60aa29"
 branch_labels = None
 depends_on = None
 
 t_app_user = sa.Table(
-    'appuser',
+    "appuser",
     sa.MetaData(),
-    sa.Column('id', sa.Integer(), primary_key=True),
-    sa.Column('username', sa.String(64), index=True, unique=True),
-    sa.Column('email', sa.String(120), index=True, unique=True),
-    sa.Column('first_name', sa.String(120), nullable=False),
-    sa.Column('last_name', sa.String(120), nullable=False),
+    sa.Column("id", sa.Integer(), primary_key=True),
+    sa.Column("username", sa.String(64), index=True, unique=True),
+    sa.Column("email", sa.String(120), index=True, unique=True),
+    sa.Column("first_name", sa.String(120), nullable=False),
+    sa.Column("last_name", sa.String(120), nullable=False),
 )
 
 t_project = sa.Table(
-    'project',
+    "project",
     sa.MetaData(),
-    sa.Column('id', sa.Integer(), primary_key=True),
-    sa.Column('label', sa.String(250), nullable=False),
-    sa.Column('description', sa.Text),
-    sa.Column('date_modified', sa.DateTime),
-    sa.Column('graph', sa.JSON),
-  	sa.Column('author', sa.String(240), nullable=False),
-  	sa.Column('public', sa.Boolean(), default=False),
-    sa.Column('user_id', sa.Integer, sa.ForeignKey(t_app_user.c.id)),
-    sa.Column('hash_id', sa.String(50), unique=True),
-  	sa.Column('search_vector', TSVectorType('label'))
+    sa.Column("id", sa.Integer(), primary_key=True),
+    sa.Column("label", sa.String(250), nullable=False),
+    sa.Column("description", sa.Text),
+    sa.Column("date_modified", sa.DateTime),
+    sa.Column("graph", sa.JSON),
+    sa.Column("author", sa.String(240), nullable=False),
+    sa.Column("public", sa.Boolean(), default=False),
+    sa.Column("user_id", sa.Integer, sa.ForeignKey(t_app_user.c.id)),
+    sa.Column("hash_id", sa.String(50), unique=True),
+    sa.Column("search_vector", TSVectorType("label")),
 )
 
 
 def upgrade():
     pass
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 
@@ -63,14 +63,10 @@ def data_upgrades():
     conn = op.get_bind()
 
     # Pull in the entire collection of maps
-    projs = conn.execute(sa.select([
-        t_project.c.id,
-        t_project.c.graph
-    ])).fetchall()
+    projs = conn.execute(sa.select([t_project.c.id, t_project.c.graph])).fetchall()
 
     # Iterate through each project
-    for (proj_id, graph) in projs:
-
+    for proj_id, graph in projs:
         print(type(graph))
 
         # Iterate through each node
@@ -84,26 +80,17 @@ def data_upgrades():
                 node_data["hyperlinks"] = []
 
             if len(single_hyperlink):
-                node_data["hyperlinks"].append({
-                    "url": single_hyperlink,
-                    "domain": ""
-                })
+                node_data["hyperlinks"].append({"url": single_hyperlink, "domain": ""})
 
             node["data"] = node_data
 
             return node
 
-        graph["nodes"] = list(
-            map(
-                process_node,
-                graph.get("nodes", [])
-            )
-        )
+        graph["nodes"] = list(map(process_node, graph.get("nodes", [])))
 
-        conn.execute(t_project
-                    .update()
-                    .where(t_project.c.id == proj_id)
-                    .values(graph=graph))
+        conn.execute(
+            t_project.update().where(t_project.c.id == proj_id).values(graph=graph)
+        )
 
 
 def data_downgrades():

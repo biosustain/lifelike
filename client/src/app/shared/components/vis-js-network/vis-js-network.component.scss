@@ -1,4 +1,4 @@
-@use 'variables';
+@use "variables";
 
 .overlay-container {
   display: flex;
@@ -7,22 +7,22 @@
   margin: variables.$spacer;
   pointer-events: none;
   position: absolute;
-  width: calc(100% - #{2*variables.$spacer});
+  width: calc(100% - #{2 * variables.$spacer});
   z-index: 1;
 
   > * {
-    pointer-events: all;
     flex: 0 1 auto;
+    pointer-events: all;
   }
 
   &.top {
-    top: 0;
     align-items: flex-start;
+    top: 0;
   }
 
   &.bottom {
-    bottom: 0;
     align-items: flex-end;
+    bottom: 0;
   }
 
   .selection {

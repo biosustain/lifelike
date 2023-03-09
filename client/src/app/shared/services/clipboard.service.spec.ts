@@ -1,17 +1,17 @@
-import { TestBed } from '@angular/core/testing';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { TestBed } from "@angular/core/testing";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { ClipboardService } from './clipboard.service';
+import { ClipboardService } from "./clipboard.service";
 
-describe('ClipboardService', () => {
+describe("ClipboardService", () => {
   let service: ClipboardService;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
       imports: [MatSnackBarModule],
-      providers: [ClipboardService]
+      providers: [ClipboardService],
     });
   });
 
@@ -19,7 +19,7 @@ describe('ClipboardService', () => {
     service = TestBed.get(ClipboardService);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 

@@ -35,7 +35,7 @@ export interface PrivateAppUser {
   roles: string[];
 }
 
-export type User = Pick<AppUser, 'id' | 'username'>;
+export type User = Pick<AppUser, "id" | "username">;
 
 export interface ChangePasswordRequest {
   hashId: string;
@@ -49,17 +49,17 @@ export interface Credential {
 }
 
 export interface JWTToken {
-    sub: string;
-    iat: string;
-    exp: string;
-    tokenType: string;
-    token: string;
+  sub: string;
+  iat: string;
+  exp: string;
+  tokenType: string;
+  token: string;
 }
 
 export interface LifelikeJWTTokenResponse {
-    accessToken: JWTToken;
-    refreshToken: JWTToken;
-    user: PrivateAppUser;
+  accessToken: JWTToken;
+  refreshToken: JWTToken;
+  user: PrivateAppUser;
 }
 
 export interface OAuthLoginData {

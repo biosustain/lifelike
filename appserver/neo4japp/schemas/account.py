@@ -9,6 +9,7 @@ from neo4japp.schemas.common import ResultListSchema
 # Users
 # ========================================
 
+
 class UserCreateSchema(CamelCaseSchema):
     first_name = fields.String()
     last_name = fields.String()
@@ -25,7 +26,8 @@ class UserChangePasswordSchema(CamelCaseSchema):
 
 
 class UserUpdateSchema(CamelCaseSchema):
-    """ Only these attributes can be modified for AppUsers """
+    """Only these attributes can be modified for AppUsers"""
+
     username = fields.String()
     first_name = fields.String()
     last_name = fields.String()
@@ -34,6 +36,7 @@ class UserUpdateSchema(CamelCaseSchema):
 
 class UserSchema(CamelCaseSchema):
     """Generic schema for returning public information about a user."""
+
     hash_id = fields.String()
     username = fields.String()
     first_name = fields.String()
@@ -52,17 +55,23 @@ class UserProfileSchema(UserSchema):
 # Requests
 # ----------------------------------------
 
+
 class UserSearchSchema(CamelCaseSchema):
     """Used to search for users (i.e. user auto-complete)."""
-    query = fields.String(required=True, validate=[
-        marshmallow.validate.Length(min=1, max=100),
-        marshmallow.validate.Regexp('[^\\s]+')
-    ])
+
+    query = fields.String(
+        required=True,
+        validate=[
+            marshmallow.validate.Length(min=1, max=100),
+            marshmallow.validate.Regexp("[^\\s]+"),
+        ],
+    )
     exclude_self = fields.Boolean(missing=lambda: False)
 
 
 # Responses
 # ----------------------------------------
+
 
 class UserProfileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(UserProfileSchema))
@@ -70,4 +79,5 @@ class UserProfileListSchema(ResultListSchema):
 
 class UserListSchema(ResultListSchema):
     """A list of users."""
+
     results = fields.List(fields.Nested(UserSchema))

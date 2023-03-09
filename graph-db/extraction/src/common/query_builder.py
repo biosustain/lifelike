@@ -46,7 +46,7 @@ def get_create_index_query(label: str, property_name: str, index_name=''):
     return query
 
 
-def get_drop_index_query(index_name:str):
+def get_drop_index_query(index_name: str):
     return f'DROP INDEX {index_name}'
 
 
@@ -59,14 +59,14 @@ def get_create_fulltext_index_query():
 
 
 def get_create_update_nodes_query(
-    node_label:str,
-    id_name: str,
-    update_properties: list,
-    additional_labels=[],
-    datasource=None,
-    original_entity_types=[],
-    row_filter_property:str=None,
-    row_filter_value:str=None
+        node_label: str,
+        id_name: str,
+        update_properties: list,
+        additional_labels=[],
+        datasource=None,
+        original_entity_types=[],
+        row_filter_property: str = None,
+        row_filter_value: str = None
 ):
     """
     Build query to create or update nodes. Make sure for each row, the keys match with properties.
@@ -117,16 +117,16 @@ def get_delete_nodes_query(node_label: str, id_name: str):
 
 
 def get_create_relationships_query(
-    node1_label:str,
-    node1_id:str,
-    node1_col:str,
-    node2_label: str,
-    node2_id: str,
-    node2_col: str,
-    relationship:str,
-    rel_properties=[],
-    row_filter_property:str = None,
-    row_filter_value = None
+        node1_label: str,
+        node1_id: str,
+        node1_col: str,
+        node2_label: str,
+        node2_id: str,
+        node2_col: str,
+        relationship: str,
+        rel_properties=[],
+        row_filter_property: str = None,
+        row_filter_value=None
 ):
     """
     Build the query to create relationships.
@@ -144,8 +144,10 @@ def get_create_relationships_query(
     rows.append("UNWIND $rows AS row")
     if row_filter_property and row_filter_value:
         rows.append(f"with row where row.{row_filter_property}='{row_filter_value}'")
-    rows.append("MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
-        node1_label, node1_id, node1_col, node2_label, node2_id, node2_col))
+    rows.append(
+        "MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
+            node1_label, node1_id, node1_col, node2_label, node2_id, node2_col)
+        )
     rows.append(f"MERGE (a)-[r:{relationship}]->(b)")
     prop_sets = []
     if rel_properties:
@@ -159,12 +161,12 @@ def get_create_relationships_query(
 
 
 def get_create_synonym_relationships_query(
-    node_label:str,
-    node_id:str,
-    node_id_col:str,
-    synonym_col: str,
-    rel_properties=[],
-    return_node_count: bool=False
+        node_label: str,
+        node_id: str,
+        node_id_col: str,
+        synonym_col: str,
+        rel_properties=[],
+        return_node_count: bool = False
 ):
     """
     Build the query to create node, then create relationship with another existing node using dataframe data.
@@ -179,7 +181,10 @@ def get_create_synonym_relationships_query(
     """
     query_rows = list()
     query_rows.append("UNWIND $rows AS row")
-    query_rows.append("MERGE (a:Synonym {name: row.%s}) SET a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
+    query_rows.append(
+        "MERGE (a:Synonym {name: row.%s}) SET a.lowercase_name=toLower(row.%s)" % (
+        synonym_col, synonym_col)
+        )
     query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col))
     query_rows.append("MERGE (b)-[r:HAS_SYNONYM]->(a)")
     prop_sets = []

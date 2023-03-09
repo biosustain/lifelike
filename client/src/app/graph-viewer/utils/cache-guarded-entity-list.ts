@@ -11,18 +11,17 @@ import { Behavior } from '../renderers/behaviors';
  * items is updated.
  */
 export class CacheGuardedEntityList {
-  private items: GraphEntity[] = [];
   /**
    * Stream of changes.
    */
   readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
+  private items: GraphEntity[] = [];
 
-  constructor(private readonly graphView: GraphView<Behavior>) {
-  }
+  constructor(private readonly graphView: GraphView<Behavior>) {}
 
   replace(items: GraphEntity[]) {
     if (items == null) {
-      throw new Error('API use incorrect: pass empty array for no selection');
+      throw new Error("API use incorrect: pass empty array for no selection");
     }
 
     const invalidationMap: Map<UniversalGraphEntity, GraphEntity> = new Map();
@@ -43,7 +42,12 @@ export class CacheGuardedEntityList {
     }
 
     // Emit event if it changed
-    if (!this.arraysEqual(this.items.map(item => item.entity), items.map(item => item.entity))) {
+    if (
+      !this.arraysEqual(
+        this.items.map((item) => item.entity),
+        items.map((item) => item.entity)
+      )
+    ) {
       this.changeObservable.next([[...items], this.items]);
     }
 

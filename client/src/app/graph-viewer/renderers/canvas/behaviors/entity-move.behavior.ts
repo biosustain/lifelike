@@ -1,15 +1,20 @@
-import { cloneDeep } from 'lodash-es';
-import { ZoomTransform } from 'd3-zoom';
-import { mouse } from 'd3';
+import { cloneDeep } from "lodash-es";
+import { ZoomTransform } from "d3-zoom";
+import { mouse } from "d3";
 
-import { GraphEntityType, UniversalGraphGroup, UniversalGraphNode, UniversalGraphNodelike } from 'app/drawing-tool/services/interfaces';
-import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
-import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
-import { GROUP_LABEL } from 'app/shared/constants';
+import {
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+  UniversalGraphNodelike,
+} from "app/drawing-tool/services/interfaces";
+import { GraphEntityUpdate } from "app/graph-viewer/actions/graph";
+import { CompoundAction, GraphAction } from "app/graph-viewer/actions/actions";
+import { isCtrlOrMetaPressed, isShiftPressed } from "app/shared/DOMutils";
+import { GROUP_LABEL } from "app/shared/constants";
 
-import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { CanvasGraphView } from "../canvas-graph-view";
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from "../../behaviors";
 
 export class MovableEntity extends AbstractCanvasBehavior {
   /**
@@ -89,10 +94,12 @@ export class MovableEntity extends AbstractCanvasBehavior {
         selectedNodes.add(this.target);
 
         // Update the selection
-        this.graphView.selection.replace([...selectedNodes].map(node => ({
-          type: GraphEntityType.Node,
-          entity: node,
-        })));
+        this.graphView.selection.replace(
+          [...selectedNodes].map((node) => ({
+            type: GraphEntityType.Node,
+            entity: node,
+          }))
+        );
       }
 
       for (const node of selectedNodes) {
@@ -119,26 +126,34 @@ export class MovableEntity extends AbstractCanvasBehavior {
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
     if (this.target) {
-      if (this.target.data.x !== this.originalTarget.data.x ||
-          this.target.data.y !== this.originalTarget.data.y) {
+      if (
+        this.target.data.x !== this.originalTarget.data.x ||
+        this.target.data.y !== this.originalTarget.data.y
+      ) {
         const actions: GraphAction[] = [];
 
-        for (const [nodelike, [originalX, originalY]] of
-            this.originalNodelikePositions.entries()) {
-          actions.push(new GraphEntityUpdate('Move nodelike', {
-            type: nodelike.label === GROUP_LABEL ? GraphEntityType.Group : GraphEntityType.Node,
-            entity: nodelike,
-          }, {
-            data: {
-              x: nodelike.data.x,
-              y: nodelike.data.y,
-            },
-          } as Partial<UniversalGraphNodelike>, {
-            data: {
-              x: originalX,
-              y: originalY,
-            },
-          } as Partial<UniversalGraphNodelike>));
+        for (const [nodelike, [originalX, originalY]] of this.originalNodelikePositions.entries()) {
+          actions.push(
+            new GraphEntityUpdate(
+              "Move nodelike",
+              {
+                type: nodelike.label === GROUP_LABEL ? GraphEntityType.Group : GraphEntityType.Node,
+                entity: nodelike,
+              },
+              {
+                data: {
+                  x: nodelike.data.x,
+                  y: nodelike.data.y,
+                },
+              } as Partial<UniversalGraphNodelike>,
+              {
+                data: {
+                  x: originalX,
+                  y: originalY,
+                },
+              } as Partial<UniversalGraphNodelike>
+            )
+          );
         }
 
         // if (this.target.label === GROUP_LABEL) {
@@ -158,8 +173,7 @@ export class MovableEntity extends AbstractCanvasBehavior {
         //   } as Partial<UniversalGraphGroup>));
         // }
 
-
-        this.graphView.execute(new CompoundAction('Node move', actions));
+        this.graphView.execute(new CompoundAction("Node move", actions));
 
         this.target = null;
         this.originalNodelikePositions.clear();
@@ -178,6 +192,5 @@ export class MovableEntity extends AbstractCanvasBehavior {
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
-  }
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {}
 }

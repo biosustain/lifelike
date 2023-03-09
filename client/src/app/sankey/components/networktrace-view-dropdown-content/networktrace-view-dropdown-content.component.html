@@ -1,29 +1,31 @@
 <app-searchable-tree
-        [tree]="networkTracesViewsTree$ | async"
-        [searchClass]="'search'"
-        class="d-flex flex-column"
-        [appConstrainToViewport]="viewport.size$"
+  [appConstrainToViewport]="viewport.size$"
+  [searchClass]="'search'"
+  [tree]="networkTracesViewsTree$ | async"
+  class="d-flex flex-column"
 >
-    <ng-template #treeNode #treeNestedNode let-node let-level="level">
-        <ng-template #traceNetwork>
-            <button (click)="selectUID(node.id)"
-                    @collapseAnimation
-                    ngbDropdownItem>
-                {{ node.name }}
-            </button>
-        </ng-template>
-        <ng-container *ngIf="level; else traceNetwork">
-            <button (click)="selectUID(node.id)"
-                    @collapseAnimation
-                    ngbDropdownItem
-                    class="dropdown-item-with-icon">
-                + {{ node.name }}
-                <i [ngClass]="{
-                                                            'fa fa-trash': true,
-                                                            'disabled': isEditable
-                                                            }"
-                   (click)="deleteViewUID(node.id); $event.stopPropagation()"></i>
-            </button>
-        </ng-container>
+  <ng-template #treeNestedNode #treeNode let-level="level" let-node>
+    <ng-template #traceNetwork>
+      <button (click)="selectUID(node.id)" @collapseAnimation ngbDropdownItem>
+        {{ node.name }}
+      </button>
     </ng-template>
+    <ng-container *ngIf="level; else traceNetwork">
+      <button
+        (click)="selectUID(node.id)"
+        @collapseAnimation
+        class="dropdown-item-with-icon"
+        ngbDropdownItem
+      >
+        + {{ node.name }}
+        <i
+          (click)="deleteViewUID(node.id); $event.stopPropagation()"
+          [ngClass]="{
+            'fa fa-trash': true,
+            disabled: isEditable
+          }"
+        ></i>
+      </button>
+    </ng-container>
+  </ng-template>
 </app-searchable-tree>

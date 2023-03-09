@@ -6,19 +6,18 @@ from neo4japp.models.common import RDBMSBase, TimestampMixin
 
 
 class GlobalList(RDBMSBase, TimestampMixin):
-    __tablename__ = 'global_list'
+    __tablename__ = "global_list"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     annotation = db.Column(postgresql.JSON, nullable=False)
     type = db.Column(db.String(12), nullable=False)
     file_content_id = db.Column(
-        db.Integer,
-        db.ForeignKey('files_content.id'),
-        nullable=False,
-        index=True
+        db.Integer, db.ForeignKey("files_content.id"), nullable=False, index=True
     )
     # nullable to work with existing data because due to previous bad migration,
     # we're not going to migrate values into this new column
-    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=True, index=True)
+    file_id = db.Column(
+        db.Integer, db.ForeignKey("files.id"), nullable=True, index=True
+    )
     reviewed = db.Column(db.Boolean, default=False)
     approved = db.Column(db.Boolean, default=False)
 
@@ -29,10 +28,12 @@ class AnnotationStopWords(RDBMSBase):
 
 
 class LMDB(RDBMSBase):
-    __tablename__ = 'lmdb'
+    __tablename__ = "lmdb"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(64), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(
+        TIMESTAMP(timezone=True), default=db.func.now(), nullable=False
+    )
     # Azure file storage uses md5. Also, note that this column expects md5 values, and it is
     # theoretically possible for different files to produce the same vaue! This is extrememly
     # unlikely, since we only expect to have a dozen or so rows in this table at a time, but still

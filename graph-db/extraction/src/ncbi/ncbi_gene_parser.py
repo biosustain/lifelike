@@ -1,10 +1,10 @@
-from common.base_parser import BaseParser
-from common.constants import *
-from common.query_builder import *
-import pandas as pd
 import logging
 import os
 
+import pandas as pd
+from common.base_parser import BaseParser
+from common.constants import *
+from common.query_builder import *
 
 """
 Download ncbi genes from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/.  Parse gene_info file, and gene2go.
@@ -26,6 +26,7 @@ NCBI_GENE_FILE = 'gene.tsv'
 NCBI_GENE_GO_FILE = 'gene2go.tsv'
 NCBI_GENE_SYNONYM_FILE = 'gene_synonym.tsv'
 
+
 class GeneParser(BaseParser):
     def __init__(self, prefix: str, base_dir=None):
         BaseParser.__init__(self, prefix, 'gene', base_dir)
@@ -46,7 +47,12 @@ class GeneParser(BaseParser):
         :param update: if False, it is initial loading; if True, update the database (no node and relationship deletion)
         """
         gene_info_cols = [k for k in GENE_INFO_ATTR_MAP.keys()]
-        geneinfo_chunks = pd.read_csv(self.gene_info_file, sep='\t', chunksize=10000, usecols=gene_info_cols)
+        geneinfo_chunks = pd.read_csv(
+            self.gene_info_file,
+            sep='\t',
+            chunksize=10000,
+            usecols=gene_info_cols
+            )
 
         outfile = os.path.join(self.output_dir, self.file_prefix + NCBI_GENE_FILE)
         syn_outfile = os.path.join(self.output_dir, self.file_prefix + NCBI_GENE_SYNONYM_FILE)
@@ -65,21 +71,28 @@ class GeneParser(BaseParser):
 
             df_syn = df[[PROP_ID, PROP_SYNONYMS]]
             df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-            df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:, [PROP_ID, 'synonym']]
+            df_syn = df_syn.reset_index().rename(columns={0: 'synonym'}).loc[:,
+                     [PROP_ID, 'synonym']]
             # ignore single letter synonym, and synonyms without letters
-            df_syn = df_syn[df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
+            df_syn = df_syn[
+                df_syn['synonym'].str.len() > 1 & df_syn['synonym'].str.contains('[a-zA-Z]')]
 
-            df.to_csv(outfile, header=(i==0), mode='a', sep='\t', index=False)
-            df_syn.to_csv(syn_outfile, header=(i==0), mode='a', sep='\t', index=False)
+            df.to_csv(outfile, header=(i == 0), mode='a', sep='\t', index=False)
+            df_syn.to_csv(syn_outfile, header=(i == 0), mode='a', sep='\t', index=False)
 
     def _load_gene2go_to_neo4j(self):
-        chunks = pd.read_csv(self.gene2go_file, sep='\t', chunksize=10000, usecols=['GeneID', 'GO_ID'])
+        chunks = pd.read_csv(
+            self.gene2go_file,
+            sep='\t',
+            chunksize=10000,
+            usecols=['GeneID', 'GO_ID']
+            )
         outfile = os.path.join(self.output_dir, self.file_prefix + NCBI_GENE_GO_FILE)
         f = open(outfile, 'w')
         f.close()
         for i, chunk in enumerate(chunks):
             df = chunk.astype('str')
-            df.to_csv(outfile, header=(i==0), mode='a', sep='\t', index=False)
+            df.to_csv(outfile, header=(i == 0), mode='a', sep='\t', index=False)
 
 
 def main(args):

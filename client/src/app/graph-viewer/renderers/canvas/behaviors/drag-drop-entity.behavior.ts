@@ -1,19 +1,18 @@
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { createNode } from 'app/graph-viewer/utils/objects';
+import { UniversalGraphNode } from "app/drawing-tool/services/interfaces";
+import { NodeCreation } from "app/graph-viewer/actions/nodes";
+import { createNode } from "app/graph-viewer/utils/objects";
 
-import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
-import { CanvasGraphView } from '../canvas-graph-view';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from "../../behaviors";
+import { CanvasGraphView } from "../canvas-graph-view";
 
 export class DragDropEntityBehavior extends AbstractCanvasBehavior {
-
   constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 
   dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
     const dragEvent = event.event;
-    if (dragEvent?.dataTransfer.types.includes('application/***ARANGO_DB_NAME***-node')) {
+    if (dragEvent?.dataTransfer.types.includes("application/***ARANGO_DB_NAME***-node")) {
       dragEvent.preventDefault();
     }
     return BehaviorResult.Continue;
@@ -21,7 +20,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
 
   drop(event: BehaviorEvent<DragEvent>): BehaviorResult {
     const dragEvent = event.event;
-    const data = dragEvent.dataTransfer.getData('application/***ARANGO_DB_NAME***-node');
+    const data = dragEvent.dataTransfer.getData("application/***ARANGO_DB_NAME***-node");
     let node;
     try {
       node = JSON.parse(data) as UniversalGraphNode;
@@ -44,12 +43,12 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
             },
           }),
           true,
-          true,
-      ));
+          true
+        )
+      );
     }
 
     dragEvent.preventDefault();
     return BehaviorResult.Stop;
   }
-
 }

@@ -1,7 +1,7 @@
 export type Many<T> = T | Array<T>;
 
 export type RecursivePartial<T> = {
-    [P in keyof T]?: RecursivePartial<T[P]>;
+  [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
 export interface TreeNode<T> {

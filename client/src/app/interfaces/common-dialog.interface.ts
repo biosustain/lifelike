@@ -1,15 +1,10 @@
-import { Warnings } from '@angular/cli/lib/config/schema';
-
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-import { ErrorResponse, WarningResponse } from 'app/shared/schemas/common';
+import { ErrorResponse, WarningResponse } from "app/shared/schemas/common";
 
 export enum ProgressMode {
-  Determinate = 'DETERMINATE',
-  Indeterminate = 'INDETERMINATE',
-  Buffer = 'BUFFER',
-  Query = 'QUERY',
+  Determinate = "DETERMINATE",
+  Indeterminate = "INDETERMINATE",
+  Buffer = "BUFFER",
+  Query = "QUERY",
 }
 
 export interface ProgressArguments {
@@ -33,11 +28,13 @@ export class Progress {
   public readonly warnings?: Readonly<WarningResponse[]>;
   public readonly errors?: Readonly<ErrorResponse[]>;
 
-  constructor(args: ProgressArguments = {
-    mode: ProgressMode.Indeterminate,
-    value: 0,
-    status: 'Working...',
-  }) {
+  constructor(
+    args: ProgressArguments = {
+      mode: ProgressMode.Indeterminate,
+      value: 0,
+      status: "Working...",
+    }
+  ) {
     this.mode = args.mode;
     this.value = args.value;
     this.status = args.status;

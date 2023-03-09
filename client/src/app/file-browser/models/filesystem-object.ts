@@ -2,12 +2,11 @@ import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import {
-  KnowledgeMapGraph,
   Source,
   UniversalEntityData,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
+import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
@@ -54,7 +53,7 @@ export class ProjectImpl implements ObservableObject {
 
   set starred(value) {
     if (this.***ARANGO_USERNAME***) {
-      this.***ARANGO_USERNAME***.update({starred: value});
+      this.***ARANGO_USERNAME***.update({ starred: value });
     }
   }
 
@@ -64,7 +63,7 @@ export class ProjectImpl implements ObservableObject {
 
   set public(value) {
     if (this.***ARANGO_USERNAME***) {
-      this.***ARANGO_USERNAME***.update({public: value});
+      this.***ARANGO_USERNAME***.update({ public: value });
     }
   }
 
@@ -80,17 +79,33 @@ export class ProjectImpl implements ObservableObject {
     return this.***ARANGO_USERNAME*** ? this.***ARANGO_USERNAME***.directory : null;
   }
 
+  get colorHue(): number {
+    let hash = 3242;
+    for (let i = 0; i < this.hashId.length; i++) {
+      // tslint:disable-next-line:no-bitwise
+      hash = (hash << 3) + hash + this.hashId.codePointAt(i);
+    }
+    return (hash % 100) / 100;
+  }
+
   update(data: RecursivePartial<ProjectData>): ProjectImpl {
     if (data == null) {
       return this;
     }
-    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
-      'privileges', 'starred']) {
+    for (const key of [
+      "hashId",
+      "name",
+      "description",
+      "creationDate",
+      "modifiedDate",
+      "privileges",
+      "starred",
+    ]) {
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
     }
-    if (data.hasOwnProperty('***ARANGO_USERNAME***')) {
+    if (data.hasOwnProperty("***ARANGO_USERNAME***")) {
       if (isNil(data.***ARANGO_USERNAME***)) {
         this.***ARANGO_USERNAME*** = null;
         // TODO: Error?
@@ -106,54 +121,54 @@ export class ProjectImpl implements ObservableObject {
   }
 
   getCommands(forEditing: boolean = false): any[] {
-    return ['/folders', this.***ARANGO_USERNAME***.hashId];
+    return ["/folders", this.***ARANGO_USERNAME***.hashId];
   }
 
   getURL(): AppURL {
     return new AppURL().update({
-      pathSegments: this.getCommands().map(item =>
-          encodeURIComponent(item.replace(/^\//, ''))
-      ),
-      fragment: 'project'
+      pathSegments: this.getCommands().map((item) => encodeURIComponent(item.replace(/^\//, ""))),
+      fragment: "project",
     });
-  }
-
-  get colorHue(): number {
-    let hash = 3242;
-    for (let i = 0; i < this.hashId.length; i++) {
-      // tslint:disable-next-line:no-bitwise
-      hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
-    }
-    return hash % 100 / 100;
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
     createProjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.name,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.id + '',
-        }],
-        sources: [{
-          domain: 'File Source',
-          url: this.getURL().toAbsolute().toString(),
-        }],
-      },
-    };
+    const node: Partial<Omit<UniversalGraphNode, "data">> & { data: Partial<UniversalEntityData> } =
+      {
+        display_name: this.name,
+        label: "link",
+        sub_labels: [],
+        data: {
+          references: [
+            {
+              type: "PROJECT_OBJECT",
+              id: this.id + "",
+            },
+          ],
+          sources: [
+            {
+              domain: "File Source",
+              url: this.getURL().toAbsolute().toString(),
+            },
+          ],
+        },
+      };
 
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.effectiveName);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+    dataTransfer.effectAllowed = "all";
+    dataTransfer.setData("text/plain", this.effectiveName);
+    dataTransfer.setData("application/***ARANGO_DB_NAME***-node", JSON.stringify(node));
 
-    GenericDataProvider.setURIs(dataTransfer, [{
-      title: this.effectiveName,
-      uri: this.getURL().toAbsolute(),
-    }], {action: 'append'});
+    GenericDataProvider.setURIs(
+      dataTransfer,
+      [
+        {
+          title: this.effectiveName,
+          uri: this.getURL().toAbsolute(),
+        },
+      ],
+      { action: "append" }
+    );
   }
 }
 
@@ -175,7 +190,6 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   annotationsDate: string;
   readonly creationDate: string;
   readonly modifiedDate: string;
-  protected updatedTimestamp: number;
   recyclingDate: string;
   project: ProjectImpl;
   parent: FilesystemObject;
@@ -188,16 +202,16 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   recycled: boolean;
   effectivelyRecycled: boolean;
   annotationConfigs?: AnnotationConfigurations;
-  // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
   // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
+  // TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
   path: string;
-
   highlight?: string[];
   highlightAnnotated?: boolean[];
   annotationsTooltipContent: string;
   starred?: boolean;
   changed$ = new Subject();
+  protected updatedTimestamp: number;
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;
@@ -221,7 +235,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
       case MimeTypes.EnrichmentTable:
       case MimeTypes.Graph:
       case MimeTypes.BioC:
-      case 'application/pdf':
+      case "application/pdf":
         return true;
       default:
         return false;
@@ -235,8 +249,10 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf' ||
-      this.mimeType === 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
+    return (
+      this.mimeType === "application/pdf" ||
+      this.mimeType === "vnd.***ARANGO_DB_NAME***.document/enrichment-table"
+    );
   }
 
   get promptOrganism() {
@@ -270,14 +286,18 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   get hasWordCloud() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.EnrichmentTable;
+    return (
+      this.isDirectory ||
+      this.mimeType === MimeTypes.Pdf ||
+      this.mimeType === MimeTypes.EnrichmentTable
+    );
   }
 
   /**
    * @deprecated
    */
   get locator(): PathLocator {
-    if (this.type === 'dir') {
+    if (this.type === "dir") {
       return {
         projectName: this.project.name,
         directoryId: this.hashId,
@@ -285,7 +305,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     } else if (this.parent != null) {
       return this.parent.locator;
     } else {
-      throw new Error('no locator available');
+      throw new Error("no locator available");
     }
   }
 
@@ -294,10 +314,10 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
    */
   get directory(): FilesystemObject {
     // noinspection JSDeprecatedSymbols
-    if (this.type === 'dir') {
+    if (this.type === "dir") {
       return this;
     } else {
-      throw new Error('no directory available');
+      throw new Error("no directory available");
     }
   }
 
@@ -316,27 +336,27 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return 'Folder';
+        return "Folder";
       case MimeTypes.Map:
-        return 'Map';
+        return "Map";
       case MimeTypes.BioC:
-        return 'Bioc';
+        return "Bioc";
       case MimeTypes.EnrichmentTable:
-        return 'Enrichment Table';
-      case 'application/pdf':
-        return 'Document';
+        return "Enrichment Table";
+      case "application/pdf":
+        return "Document";
       default:
-        return 'File';
+        return "File";
     }
   }
 
   get fontAwesomeIcon() {
-    if (this.mimeType.startsWith('image/')) {
-      return 'fa fa-file-image';
-    } else if (this.mimeType.startsWith('video/')) {
-      return 'fa fa-file-video';
-    } else if (this.mimeType.startsWith('text/')) {
-      return 'fa fa-file-alt';
+    if (this.mimeType.startsWith("image/")) {
+      return "fa fa-file-image";
+    } else if (this.mimeType.startsWith("video/")) {
+      return "fa fa-file-video";
+    } else if (this.mimeType.startsWith("text/")) {
+      return "fa fa-file-alt";
     }
 
     // TODO: Move this method to ObjectTypeProvider
@@ -392,9 +412,9 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   get mapNodeLabel() {
     switch (this.mimeType) {
       case MimeTypes.Map:
-        return 'map';
+        return "map";
       default:
-        return 'link';
+        return "link";
     }
   }
 
@@ -408,14 +428,14 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   /**
    * @deprecated
    */
-  get type(): 'dir' | 'file' | 'map' {
+  get type(): "dir" | "file" | "map" {
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return 'dir';
+        return "dir";
       case MimeTypes.Map:
-        return 'map';
+        return "map";
       default:
-        return 'file';
+        return "file";
     }
   }
 
@@ -431,46 +451,56 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     return this.creationDate === this.modifiedDate;
   }
 
+  get ***ARANGO_USERNAME***(): FilesystemObject {
+    let ***ARANGO_USERNAME***: FilesystemObject = this;
+    while (***ARANGO_USERNAME***.parent != null) {
+      ***ARANGO_USERNAME*** = ***ARANGO_USERNAME***.parent;
+    }
+    return ***ARANGO_USERNAME***;
+  }
+
   static normalizeFilename(filter: string): string {
-    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+    return filter.trim().toLowerCase().replace(/[ _]+/g, " ");
   }
 
   filterChildren(filter: string) {
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
-      isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
+      isEmpty(normalizedFilter)
+        ? null
+        : (item: FilesystemObject) =>
+            FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
     );
   }
 
   getCommands(forEditing = true): any[] {
     // TODO: Move this method to ObjectTypeProvider
-    const projectName = this.project ? this.project.name : 'default';
+    const projectName = this.project ? this.project.name : "default";
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return ['/projects', projectName, 'folders', this.hashId];
+        return ["/projects", projectName, "folders", this.hashId];
       case MimeTypes.EnrichmentTable:
-        return ['/projects', projectName, 'enrichment-table', this.hashId];
+        return ["/projects", projectName, "enrichment-table", this.hashId];
       case MimeTypes.Pdf:
-        return ['/projects', projectName, 'files', this.hashId];
+        return ["/projects", projectName, "files", this.hashId];
       case MimeTypes.BioC:
-        return ['/projects', projectName, 'bioc', this.hashId];
+        return ["/projects", projectName, "bioc", this.hashId];
       case MimeTypes.Map:
-        return ['/projects', projectName, 'maps', this.hashId];
+        return ["/projects", projectName, "maps", this.hashId];
       case MimeTypes.Graph:
-        return ['/projects', projectName, 'sankey', this.hashId];
+        return ["/projects", projectName, "sankey", this.hashId];
       default:
-        return ['/files', this.hashId];
+        return ["/files", this.hashId];
     }
   }
 
   // TODO: Move this method to ObjectTypeProvider
   getURL(forEditing = true, meta?: Meta): AppURL {
     const url = new AppURL().update({
-      pathSegments: this.getCommands(forEditing).map(item =>
-        encodeURIComponent(item.replace(/^\//, ''))
+      pathSegments: this.getCommands(forEditing).map((item) =>
+        encodeURIComponent(item.replace(/^\//, ""))
       ),
-      fragment: this.isProjectRoot ? 'project' : ''
+      fragment: this.isProjectRoot ? "project" : "",
     });
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
@@ -478,7 +508,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
           url.fragment = new URLSearchParams({
             id: meta.id,
             text: meta.allText,
-            color: annotationTypesMap.get(meta.type.toLowerCase()).color
+            color: annotationTypesMap.get(meta.type.toLowerCase()).color,
           }).toString();
         }
     }
@@ -495,14 +525,14 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
     if (this.doi != null) {
       sources.push({
-        domain: 'DOI',
+        domain: "DOI",
         url: this.doi,
       });
     }
 
     if (this.uploadUrl != null) {
       sources.push({
-        domain: 'External URL',
+        domain: "External URL",
         url: this.uploadUrl,
       });
     }
@@ -518,32 +548,37 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
     const sources: Source[] = this.getGraphEntitySources();
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.effectiveName,
-      label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.hashId + '',
-        }],
-        sources,
-      },
-    };
-    if (this.mimeType.trim().startsWith('image/')) {
+    const node: Partial<Omit<UniversalGraphNode, "data">> & { data: Partial<UniversalEntityData> } =
+      {
+        display_name: this.effectiveName,
+        label: this.mimeType === MimeTypes.Map ? "map" : "link",
+        sub_labels: [],
+        data: {
+          references: [
+            {
+              type: "PROJECT_OBJECT",
+              id: this.hashId + "",
+            },
+          ],
+          sources,
+        },
+      };
+    if (this.mimeType.trim().startsWith("image/")) {
       return {
         [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
-        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node)
+        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node),
       };
     }
     return {
-      'text/plain': this.effectiveName,
+      "text/plain": this.effectiveName,
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
-      ['application/***ARANGO_DB_NAME***-node']: JSON.stringify(node),
-      ...GenericDataProvider.getURIs([{
-        uri: this.getURL(false).toAbsolute(),
-        title: this.filename,
-      }]),
+      ["application/***ARANGO_DB_NAME***-node"]: JSON.stringify(node),
+      ...GenericDataProvider.getURIs([
+        {
+          uri: this.getURL(false).toAbsolute(),
+          title: this.filename,
+        },
+      ]),
     };
   }
 
@@ -552,24 +587,17 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
     const dragData = this.getTransferData();
-    toPairs(dragData).forEach(args => dataTransfer.setData(...args));
+    toPairs(dragData).forEach((args) => dataTransfer.setData(...args));
 
-    GenericDataProvider.setURIs(dataTransfer, [{
-      title: this.effectiveName,
-      uri: this.getURL(false).toAbsolute(),
-    }], {action: 'append'});
-  }
-
-  private defaultSort(a: FilesystemObject, b: FilesystemObject) {
-    return (
-      // Sort pinned files first
-      Number(b.pinned) - Number(a.pinned) ||
-      // Sort directories first
-      Number(b.mimeType === MimeTypes.Directory) - Number(a.mimeType === MimeTypes.Directory) ||
-      // Sort files by timestamp
-      b.updatedTimestamp - a.updatedTimestamp ||
-      // Sort files by name
-      a.filename.localeCompare(b.filename)
+    GenericDataProvider.setURIs(
+      dataTransfer,
+      [
+        {
+          title: this.effectiveName,
+          uri: this.getURL(false).toAbsolute(),
+        },
+      ],
+      { action: "append" }
     );
   }
 
@@ -578,24 +606,44 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
       return this;
     }
 
-    assign(this, pick(
-      data,
-      [
-        'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
-        'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
-        'fallbackOrganism', 'annotationConfigs', 'path', 'trueFilename', 'starred'
-      ]
-    ));
+    assign(
+      this,
+      pick(data, [
+        "hashId",
+        "filename",
+        "user",
+        "description",
+        "mimeType",
+        "doi",
+        "public",
+        "pinned",
+        "annotationsDate",
+        "uploadUrl",
+        "highlight",
+        "fallbackOrganism",
+        "creationDate",
+        "modifiedDate",
+        "recyclingDate",
+        "privileges",
+        "recycled",
+        "effectivelyRecycled",
+        "fallbackOrganism",
+        "annotationConfigs",
+        "path",
+        "trueFilename",
+        "starred",
+      ])
+    );
 
-    if (has(data, 'modifiedDate')) {
+    if (has(data, "modifiedDate")) {
       this.updatedTimestamp = Date.parse(data.modifiedDate);
-    } else if (has(data, 'creationDate')) {
+    } else if (has(data, "creationDate")) {
       this.updatedTimestamp = Date.parse(data.creationDate);
     }
-    if ('parent' in data) {
+    if ("parent" in data) {
       this.parent = data.parent ? this.parent ?? new FilesystemObject() : null;
     }
-    if ('project' in data) {
+    if ("project" in data) {
       this.project = data.project ? this.project ?? new ProjectImpl() : null;
     }
     if (this.parent) {
@@ -610,17 +658,18 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     if (data.project) {
       this.project.update(data.project);
     }
-    if ('children' in data) {
+    if ("children" in data) {
       if (data.children != null) {
-        this.children.replace(data.children.map(
-          itemData => {
+        this.children.replace(
+          data.children.map((itemData) => {
             const child = new FilesystemObject();
             child.parent = this;
             if (this.project != null) {
               child.project = this.project;
             }
             return child.update(itemData);
-          }));
+          })
+        );
       } else {
         this.children.replace([]);
       }
@@ -629,12 +678,17 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     return this;
   }
 
-  get ***ARANGO_USERNAME***(): FilesystemObject {
-    let ***ARANGO_USERNAME***: FilesystemObject = this;
-    while (***ARANGO_USERNAME***.parent != null) {
-      ***ARANGO_USERNAME*** = ***ARANGO_USERNAME***.parent;
-    }
-    return ***ARANGO_USERNAME***;
+  private defaultSort(a: FilesystemObject, b: FilesystemObject) {
+    return (
+      // Sort pinned files first
+      Number(b.pinned) - Number(a.pinned) ||
+      // Sort directories first
+      Number(b.mimeType === MimeTypes.Directory) - Number(a.mimeType === MimeTypes.Directory) ||
+      // Sort files by timestamp
+      b.updatedTimestamp - a.updatedTimestamp ||
+      // Sort files by name
+      a.filename.localeCompare(b.filename)
+    );
   }
 }
 
@@ -644,7 +698,7 @@ export interface PathLocator {
 }
 
 export function createProjectDragImage(project: ProjectImpl): DragImage {
-  return createDragImage(project.name, '\uf5fd');
+  return createDragImage(project.name, "\uf5fd");
 }
 
 export function createObjectDragImage(object: FilesystemObject): DragImage {

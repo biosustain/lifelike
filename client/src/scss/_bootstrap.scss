@@ -1,29 +1,29 @@
-@import './variables';
-@import '~bootstrap/scss/bootstrap';
-@import './mixins';
-@import './type';
-@import './buttons';
-@import './placeholders';
-@import './modules';
-@import './vertical-menu';
-@import './toolbars';
-@import './graph';
-@import './tabs';
-@import './tile';
-@import './search';
-@import './modal';
-@import './tables';
-@import './breadcrumb';
-@import './as_splitter';
-@import './forms';
-@import './dropdown';
-@import './popovers';
-@import './window';
-@import './text';
-@import './progress';
-@import './highlights';
-@import './container_breakpoints';
-@import './utilities';
+@import "./variables";
+@import "~bootstrap/scss/bootstrap";
+@import "./mixins";
+@import "./type";
+@import "./buttons";
+@import "./placeholders";
+@import "./modules";
+@import "./vertical-menu";
+@import "./toolbars";
+@import "./graph";
+@import "./tabs";
+@import "./tile";
+@import "./search";
+@import "./modal";
+@import "./tables";
+@import "./breadcrumb";
+@import "./as_splitter";
+@import "./forms";
+@import "./dropdown";
+@import "./popovers";
+@import "./window";
+@import "./text";
+@import "./progress";
+@import "./highlights";
+@import "./container_breakpoints";
+@import "./utilities";
 
 body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -31,9 +31,10 @@ body {
   overflow: hidden;
 }
 
-:focus, button:focus {
-  outline: none;
+:focus,
+button:focus {
   box-shadow: $table-row-focus-box-shadow;
+  outline: none;
 }
 
 canvas:focus {
@@ -41,8 +42,8 @@ canvas:focus {
 }
 
 a:focus {
-  outline: 1px solid $primary;
   box-shadow: none;
+  outline: 1px solid $primary;
 }
 
 .text-icon {

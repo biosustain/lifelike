@@ -1,7 +1,5 @@
 // tslint:disable-next-line:no-empty-interface
-export interface DrawnLine {
-
-}
+export interface DrawnLine {}
 
 export interface Line {
   /**
@@ -20,11 +18,13 @@ export interface Line {
    * @param endY the end Y position
    * @return metrics about the drawn line
    */
-  draw(ctx: CanvasRenderingContext2D,
-       startX: number,
-       startY: number,
-       endX: number,
-       endY: number): DrawnLine;
+  draw(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): DrawnLine;
 }
 
 export interface LineOptions {

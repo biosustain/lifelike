@@ -6,7 +6,11 @@ import { map } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
-import { AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper, Exporter } from './base-object.type-provider';
+import {
+  AbstractObjectTypeProvider,
+  AbstractObjectTypeProviderHelper,
+  Exporter,
+} from './base-object.type-provider';
 
 /**
  * A generic file type provider that is returned when we don't know what type of object
@@ -14,8 +18,10 @@ import { AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper, Exporter 
  */
 @Injectable()
 export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
-  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-              protected readonly filesystemService: FilesystemService) {
+  constructor(
+    abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+    protected readonly filesystemService: FilesystemService
+  ) {
     super(abstractObjectTypeProviderHelper);
   }
 
@@ -24,15 +30,17 @@ export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([{
-      name: 'Download',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          map(blob => {
-            return new File([blob], object.filename);
-          }),
-        );
+    return of([
+      {
+        name: "Download",
+        export: () => {
+          return this.filesystemService.getContent(object.hashId).pipe(
+            map((blob) => {
+              return new File([blob], object.filename);
+            })
+          );
+        },
       },
-    }]);
+    ]);
   }
 }

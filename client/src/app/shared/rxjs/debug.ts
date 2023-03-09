@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { isDevMode } from '@angular/core';
+import { isDevMode } from "@angular/core";
 
-import { tap, finalize } from 'rxjs/operators';
-import { isInteger, isString } from 'lodash-es';
+import { finalize, tap } from "rxjs/operators";
+import { isInteger, isString } from "lodash-es";
 
-import { skipStep } from './skipStep';
+import { skipStep } from "./skipStep";
 
 interface FormatedValue {
   format: string;
@@ -16,8 +16,8 @@ const composeLabelFormatMapping = (label, bgColor, color) => ({
   value: [
     `background-color: ${bgColor}; color: ${color}; padding: 2px 4px;`,
     label.toUpperCase(),
-    `background-color: initial;`
-  ]
+    `background-color: initial;`,
+  ],
 });
 
 
@@ -39,44 +39,44 @@ const composeTitleFormatMapping = params => ({
   value: [
     `font-weight: bold;`,
     ...params,
-    `font-weight: initial;`
-  ]
+    `font-weight: initial;`,
+  ],
 });
 
 const combineFormatedValues = (...formatedValues: FormatedValue[]) => formatedValues.reduce(
   (r, formatedValue) => ({
     format: r.format + formatedValue.format,
-    value: r.value.concat(formatedValue.value)
+    value: r.value.concat(formatedValue.value),
   }),
-  {format: '', value: []} as FormatedValue
+  {format: '', value: []} as FormatedValue,
 );
 
 const composeFormatMapping = ({args, label, params = [''], bgColor, color}) => {
   const formatedValue = combineFormatedValues(
     composeLabelFormatMapping(label, bgColor, color),
-    composeTitleFormatMapping(params)
+    composeTitleFormatMapping(params),
   );
   return [formatedValue.format, ...formatedValue.value, ...args];
 };
 
 const statusMessage = ({level, ...rest}) => (...args) => console[level](
-  ...composeFormatMapping({args, ...rest})
+  ...composeFormatMapping({args, ...rest}),
 );
 
 const init = params => statusMessage({
-  label: 'init', level: 'debug', bgColor: 'deeppink', color: 'white', ...params
+  label: 'init', level: 'debug', bgColor: 'deeppink', color: 'white', ...params,
 });
 const updated = params => statusMessage({
-  label: 'updated', level: 'log', bgColor: 'green', color: 'white', ...params
+  label: 'updated', level: 'log', bgColor: 'green', color: 'white', ...params,
 });
 const error = params => statusMessage({
-  label: 'error', level: 'error', bgColor: 'red', color: 'white', ...params
+  label: 'error', level: 'error', bgColor: 'red', color: 'white', ...params,
 });
 const completed = params => statusMessage({
-  label: 'completed', level: 'info', bgColor: 'blue', color: 'white', ...params
+  label: 'completed', level: 'info', bgColor: 'blue', color: 'white', ...params,
 });
 const unsubscribed = params => statusMessage({
-  label: 'unsubscribed', level: 'info', bgColor: 'yellow', color: 'black', ...params
+  label: 'unsubscribed', level: 'info', bgColor: 'yellow', color: 'black', ...params,
 });
 
 /**
@@ -111,6 +111,6 @@ export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOper
         error({params}),
         completed({params}),
       ),
-      finalize(unsubscribed({params}))
+      finalize(unsubscribed({params})),
     );
   } : skipStep as MonoTypeOperatorFunction<T>;

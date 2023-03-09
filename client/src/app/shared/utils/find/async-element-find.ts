@@ -1,6 +1,5 @@
 import { escapeRegExp, isNil } from 'lodash-es';
 
-
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
@@ -14,23 +13,27 @@ import { AsyncFindController } from './find-controller';
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
-
-  private pendingJump = false;
-
   target: Element;
   // @ts-ignore // todo: use createResizeObservable
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
-  query = '';
-  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this), this.findGenerator);
+  query = "";
+  protected readonly textFinder = new AsyncElementTextFinder(
+    this.matchFind.bind(this),
+    this.findGenerator
+  );
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
   protected index = -1;
+  private pendingJump = false;
 
   constructor(
     target: Element = null,
-    private findGenerator: (***ARANGO_USERNAME***: Node, query: string) => IterableIterator<NodeTextRange | undefined> = null,
+    private findGenerator: (
+      ***ARANGO_USERNAME***: Node,
+      query: string
+    ) => IterableIterator<NodeTextRange | undefined> = null
   ) {
     this.target = target;
   }
@@ -131,6 +134,14 @@ export class AsyncElementFind implements AsyncFindController {
     this.highlighter.redraw(this.results);
   }
 
+  getResultIndex(): number {
+    return this.index;
+  }
+
+  getResultCount(): number {
+    return this.results.length;
+  }
+
   /**
    * Callback for when the async finder finds new entries.
    */
@@ -166,26 +177,16 @@ export class AsyncElementFind implements AsyncFindController {
     scrollRectIntoView(this.results[this.index].startNode.parentElement, undefined);
     this.highlighter.focus(this.results[this.index]);
   }
-
-  getResultIndex(): number {
-    return this.index;
-  }
-
-  getResultCount(): number {
-    return this.results.length;
-  }
-
 }
 
 /**
  * Asynchronously finds text in a document.
  */
 class AsyncElementTextFinder {
-
   // TODO: Handle DOM changes mid-find
 
-  private findQueue: IterableIterator<NodeTextRange> | undefined;
   findTimeBudget = 10;
+  private findQueue: IterableIterator<NodeTextRange> | undefined;
 
   constructor(
     protected readonly callback: (matches: NodeTextRange[]) => void,
@@ -235,10 +236,11 @@ class AsyncElementTextFinder {
     }
   }
 
-  private* defaultGenerator(***ARANGO_USERNAME***: Node, query: string): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [
-      ***ARANGO_USERNAME***,
-    ];
+  private *defaultGenerator(
+    ***ARANGO_USERNAME***: Node,
+    query: string
+  ): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [***ARANGO_USERNAME***];
 
     while (queue.length !== 0) {
       const node = queue.shift();
@@ -254,7 +256,7 @@ class AsyncElementTextFinder {
           break;
 
         case Node.TEXT_NODE:
-          const regex = new RegExp(escapeRegExp(query), 'ig');
+          const regex = new RegExp(escapeRegExp(query), "ig");
           while (true) {
             const match = regex.exec(node.nodeValue);
             if (match === null) {

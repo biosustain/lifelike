@@ -5,39 +5,37 @@ Revises: b49193a949a6
 Create Date: 2022-02-04 01:59:44.977808
 
 """
+import sqlalchemy as sa
 from alembic import context
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy import table, column
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import AppUser
 
 # revision identifiers, used by Alembic.
-revision = '7102b4744622'
-down_revision = 'b49193a949a6'
+revision = "7102b4744622"
+down_revision = "b49193a949a6"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('appuser', sa.Column('subject', sa.String(length=256), nullable=True))
+    op.add_column("appuser", sa.Column("subject", sa.String(length=256), nullable=True))
 
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
     op.alter_column(
-        'appuser',
-        'subject',
-        existing_type=sa.String(length=256),
-        nullable=False
+        "appuser", "subject", existing_type=sa.String(length=256), nullable=False
     )
 
 
 def downgrade():
-    op.drop_column('appuser', 'subject')
+    op.drop_column("appuser", "subject")
 
 
 def data_upgrades():
@@ -45,20 +43,16 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    t_appuser = table(
-        'appuser',
-        column('id', sa.Integer),
-        column('email', sa.String))
+    t_appuser = table("appuser", column("id", sa.Integer), column("email", sa.String))
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_appuser.c.id,
-        t_appuser.c.email
-    ]))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_appuser.c.id, t_appuser.c.email])
+    )
 
     for chunk in window_chunk(files, 20):
         files_to_update = []
         for id, email in chunk:
-            files_to_update.append({'id': id, 'subject': email})
+            files_to_update.append({"id": id, "subject": email})
         try:
             session.bulk_update_mappings(AppUser, files_to_update)
             session.commit()

@@ -3,28 +3,28 @@
   cursor: move;
 
   &.Disease {
-    color: #ff9800;
     background-color: #ffe0b2;
+    color: #ff9800;
   }
 
   &.Mutation {
-    color: #5d4037;
     background-color: #d7ccc8;
+    color: #5d4037;
   }
 
   &.Gene {
-    color: #673ab7;
     background-color: #e1bee7;
+    color: #673ab7;
   }
 
   &.Chemical {
-    color: #4caf50;
     background-color: #c8e6c9;
+    color: #4caf50;
   }
 
   &.Species {
-    color: #2196f3;
     background-color: #dcf1fc;
+    color: #2196f3;
   }
 }
 

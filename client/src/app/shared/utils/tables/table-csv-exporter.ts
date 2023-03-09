@@ -6,21 +6,20 @@ import { TableCell, TableHeader } from '../../components/table/generic-table.com
  * Generates a CSV from a generic table.
  */
 export class TableCSVExporter {
-
-  lineSeparator = '\r\n';
+  lineSeparator = "\r\n";
 
   generate(headers: TableHeader[][], cells: TableCell[][]): Observable<Blob> {
-    let output = '';
+    let output = "";
 
     for (const headerRow of headers) {
       for (let j = 0; j < headerRow.length; j++) {
         if (j !== 0) {
-          output += ',';
+          output += ",";
         }
         const header = headerRow[j];
         output += this.escapeCell(header.name);
         for (let k = 0; k < parseInt(header.span, 10) - 1; k++) {
-          output += ',';
+          output += ",";
         }
       }
       output += this.lineSeparator;
@@ -29,7 +28,7 @@ export class TableCSVExporter {
     for (const cellRow of cells) {
       for (let j = 0; j < cellRow.length; j++) {
         if (j !== 0) {
-          output += ',';
+          output += ",";
         }
         const header = cellRow[j];
         output += this.escapeCell(header.text);
@@ -52,5 +51,4 @@ export class TableCSVExporter {
     }
     return value;
   }
-
 }

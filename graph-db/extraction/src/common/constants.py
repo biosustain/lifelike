@@ -137,7 +137,6 @@ REL_PARENT_HYDRIDE = 'HAS_PARENT_HYDRIDE'
 REL_ENANTIOMER_OF = 'IS_ENANTIOMER_OF'
 REL_SUBSTITUENT_GROUP_FROM = 'IS_SUBSTITUENT_GROUP_FROM'
 
-
 PROP_ACCESSION = 'accession'
 PROP_ACCESSION2 = 'accession2'
 PROP_ALT_ID = 'alt_id'
@@ -215,7 +214,6 @@ INDEXED_FIELDS = [PROP_ACCESSION, PROP_ALT_ID, PROP_BIOCYC_ID, PROP_CHEBI_ID, PR
                   PROP_NAME, PROP_EC_NUMBER, PROP_ID, PROP_LOCUS_TAG,
                   PROP_NAME, PROP_SCIENTIFIC_NAME, PROP_SYMBOL, PROP_SYNONYMS]
 
-
 NODE_ID_INDEX_MAP = {
     DB_GO: 'GO-ID',
     DB_CHEBI: 'MESH-ID',  # to ensure chemical in literature matches either chebi or mesh
@@ -245,4 +243,3 @@ def get_db_label(db_name: str):
     if not db_name.startswith('db_'):
         return 'db_' + db_name
     return db_name
-

@@ -8,11 +8,10 @@ directory = os.path.realpath(os.path.dirname(__file__))
 
 # PLEASE READ BEFORE UPDATING: If any properties are added/removed from this index, remember to
 # update any relevant ORM event triggers!
-FILE_INDEX_DEFINITION_PATH = os.path.join(directory, './mappings/document_idx.json')
-ATTACHMENT_PIPELINE_ID = 'attachment'
+FILE_INDEX_DEFINITION_PATH = os.path.join(directory, "./mappings/document_idx.json")
+ATTACHMENT_PIPELINE_ID = "attachment"
 ATTACHMENT_PIPELINE_DEFINITION_PATH = os.path.join(
-    directory,
-    './pipelines/attachments_pipeline.json'
+    directory, "./pipelines/attachments_pipeline.json"
 )
 
 ELASTIC_INDEX_SEED_PAIRS = [

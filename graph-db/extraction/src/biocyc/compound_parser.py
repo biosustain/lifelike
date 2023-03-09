@@ -1,7 +1,6 @@
 from biocyc.data_file_parser import DataFileParser
-from common.graph_models import *
 from biocyc.utils import cleanhtml
-
+from common.graph_models import *
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
@@ -18,12 +17,23 @@ REL_NAMES = {
 }
 
 # True indicate that the dblink id has prefix, eg. CHEBI:1234.  In ***ARANGO_DB_NAME***, we only use the id, no prefix
-DB_LINK_SOURCES = {'CHEBI':False}
+DB_LINK_SOURCES = {'CHEBI': False}
+
 
 class CompoundParser(DataFileParser):
     def __init__(self, biocyc_dbname, tarfile):
-        DataFileParser.__init__(self, biocyc_dbname, tarfile, 'compounds.dat', NODE_COMPOUND,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME,PROP_URL, PROP_INCHI_KEY, PROP_INCHI, PROP_SMILES]
+        DataFileParser.__init__(
+            self,
+            biocyc_dbname,
+            tarfile,
+            'compounds.dat',
+            NODE_COMPOUND,
+            ATTR_NAMES,
+            REL_NAMES,
+            DB_LINK_SOURCES
+            )
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_URL, PROP_INCHI_KEY,
+                      PROP_INCHI, PROP_SMILES]
 
     def parse_data_file(self):
         nodes = DataFileParser.parse_data_file(self)
@@ -43,6 +53,3 @@ class CompoundParser(DataFileParser):
                 node.update_attribute(PROP_INCHI_KEY, inchi_key[len('InChIKey='):])
 
         return nodes
-
-
-

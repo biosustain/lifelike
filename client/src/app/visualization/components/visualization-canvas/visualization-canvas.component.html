@@ -1,4 +1,4 @@
-<as-split unit="pixel" direction="horizontal" [gutterSize]="5">
+<as-split [gutterSize]="5" direction="horizontal" unit="pixel">
   <as-split-area [order]="0">
     <div class="h-100 position-relative">
       <div class="viz-canvas-legend-wrapper">
@@ -6,39 +6,39 @@
       </div>
 
       <app-visualization-settings
-        [legendLabels]="legendLabels"
-        (settingsFormChanges)="updateSettings($event)"
         (fitClickEvent)="fitToScreen($event)"
+        (settingsFormChanges)="updateSettings($event)"
+        [legendLabels]="legendLabels"
       ></app-visualization-settings>
 
       <div [id]="networkContainerId" class="h-100"></div>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->
       <app-context-menu
-        [tooltipOptions]="contextMenuTooltipOptions"
-        [selectedNodeIds]="selectedNodes"
-        [selectedEdgeIds]="selectedEdges"
-        [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
-        [selectedClusterNodeData]="selectedClusterNodeData"
-        (groupNeighborsWithRelationship)="
-          groupNeighborsWithRelationship($event)
-        "
-        (removeNodes)="removeNodes($event)"
-        (removeEdges)="removeEdges($event)"
-        (selectNeighbors)="selectNeighbors($event)"
-        (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
+        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
         (openDataSidebar)="updateSidenavEntity()"
         (openTypeSidebar)="openTypeSidenav($event)"
+        (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
+        (removeEdges)="removeEdges($event)"
+        (removeNodes)="removeNodes($event)"
+        (selectNeighbors)="selectNeighbors($event)"
+        [selectedClusterNodeData]="selectedClusterNodeData"
+        [selectedEdgeIds]="selectedEdges"
+        [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+        [selectedNodeIds]="selectedNodes"
+        [tooltipOptions]="contextMenuTooltipOptions"
       ></app-context-menu>
     </div>
   </as-split-area>
-  <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
+  <as-split-area *ngIf="sidenavOpened" [order]="1" size="640">
     <div id="sidenav-container">
       <div id="sidenav-panel-btns-container">
-        <button id="sidenav-panel-close-btn"
-                type="button"
-                class="btn btn-danger"
-                (click)="closeSidenav()">
+        <button
+          (click)="closeSidenav()"
+          class="btn btn-danger"
+          id="sidenav-panel-close-btn"
+          type="button"
+        >
           <i class="fa fa-close"></i>
         </button>
       </div>
@@ -58,27 +58,27 @@
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EDGE">
           <app-sidenav-edge-view
-            [edgeEntity]="sidenavEntity"
-            [isNewEntity]="isNewEdgeSidenavEntity"
-            [error]="getSnippetsError"
-            [legend]="legend"
             (requestNewPageEmitter)="requestNewEdgeSnippetsPage($event)"
+            [edgeEntity]="sidenavEntity"
+            [error]="getSnippetsError"
+            [isNewEntity]="isNewEdgeSidenavEntity"
+            [legend]="legend"
           ></app-sidenav-edge-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.CLUSTER">
           <app-sidenav-cluster-view
-            [clusterEntity]="sidenavEntity"
-            [isNewEntity]="isNewClusterSidenavEntity"
-            [error]="getSnippetsError"
-            [legend]="legend"
             (requestNewPageEmitter)="requestNewClusterSnippetsPage($event)"
+            [clusterEntity]="sidenavEntity"
+            [error]="getSnippetsError"
+            [isNewEntity]="isNewClusterSidenavEntity"
+            [legend]="legend"
           ></app-sidenav-cluster-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>
           <h4>
-            (Right-click something on the canvas and select "Show Data in
-            Sidenav" to see some data!)
+            (Right-click something on the canvas and select "Show Data in Sidenav" to see some
+            data!)
           </h4>
         </div>
       </div>

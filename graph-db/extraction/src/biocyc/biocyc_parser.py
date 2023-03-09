@@ -1,17 +1,20 @@
-from config.config import Config
+import logging
+import os
+
 from common.base_parser import BaseParser
 from common.constants import *
-import os
-import logging
+from config.config import Config
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s',
-                    handlers=[logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(message)s',
+    handlers=[logging.StreamHandler()]
+    )
 
 from biocyc import (class_parser, compound_parser, dnabindsite_parser,
                     enzymereaction_parser, gene_parser, pathway_parser,
                     promoter_parser, protein_parser, reaction_parser,
                     regulation_parser, rna_parser, species_parser,
-                    terminator_parser,transcripitionunit_parser)
+                    terminator_parser, transcripitionunit_parser)
 
 ENTITIES = [NODE_SPECIES, NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE,
             NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
@@ -87,6 +90,7 @@ class BiocycParser(BaseParser):
 def main(biocyc_dbname):
     parser = BiocycParser(biocyc_dbname)
     parser.parse_and_write_data_files()
+
 
 if __name__ == "__main__":
     # main(DB_ECOCYC)

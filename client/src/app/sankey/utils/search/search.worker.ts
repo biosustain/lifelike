@@ -18,7 +18,7 @@ addEventListener('message', async ({data}) => {
   for (const match of generator) {
     postMessage({
       action: WorkerOutputActions.match,
-      actionLoad: match
+      actionLoad: match,
     });
   }
   // Potentially to be supported in future
@@ -29,7 +29,7 @@ addEventListener('message', async ({data}) => {
   //   });
   // }
   postMessage({
-    action: WorkerOutputActions.done
+    action: WorkerOutputActions.done,
   });
   close();
 });

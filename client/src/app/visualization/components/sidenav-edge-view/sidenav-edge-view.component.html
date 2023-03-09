@@ -8,16 +8,16 @@
 <ng-template #notError>
   <div *ngIf="edgeEntity && legend; else loadingSpinner">
     <app-snippet-display
-      [snippetData]="[edgeEntity.snippetData]"
-      [queryData]="edgeEntity.queryData"
-      [totalResults]="edgeEntity.totalResults"
+      (requestNewPageEmitter)="requestPage($event)"
       [isNewEntity]="isNewEntity"
       [legend]="legend"
-      (requestNewPageEmitter)="requestPage($event)"
+      [queryData]="edgeEntity.queryData"
+      [snippetData]="[edgeEntity.snippetData]"
+      [totalResults]="edgeEntity.totalResults"
     ></app-snippet-display>
   </div>
   <ng-template #loadingSpinner>
-    <div id="loading-spinner-container" class="d-flex justify-content-center align-items-center">
+    <div class="d-flex justify-content-center align-items-center" id="loading-spinner-container">
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
       </div>

@@ -2,10 +2,10 @@ app-sankey-search-panel {
   .simplified-accordion {
     border: none;
 
-    [role='tab'] {
-      padding: 0;
+    [role="tab"] {
       background: none;
       border: none;
+      padding: 0;
 
       button {
         background: none;
@@ -15,7 +15,7 @@ app-sankey-search-panel {
       }
     }
 
-    [role='tabpanel'] {
+    [role="tabpanel"] {
       border: none;
 
       .card-body {

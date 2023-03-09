@@ -1,8 +1,8 @@
-import { TypeContext } from 'app/sankey/interfaces';
+import { TypeContext } from "app/sankey/interfaces";
 
-import { SankeyBaseState, SankeyBaseOptions } from '../interfaces';
-import { SelectionEntity, SelectionType } from '../../interfaces/selection';
-import { SankeyNode, SankeyLink } from '../../model/sankey-document';
+import { SankeyBaseOptions, SankeyBaseState } from "../interfaces";
+import { SelectionEntity, SelectionType } from "../../interfaces/selection";
+import { SankeyLink, SankeyNode } from "../../model/sankey-document";
 
 export interface SankeySingleLaneStateExtend {
   highlightCircular: boolean;
@@ -17,18 +17,22 @@ export interface SankeySingleLaneOptionsExtend {
 
 export type SankeySingleLaneOptions = SankeyBaseOptions & SankeySingleLaneOptionsExtend;
 
+export type SelectionSingleLaneEntity =
+  | SelectionEntity
+  | {
+      [SelectionType.link]: Base["link"];
+    };
 
-export type SelectionSingleLaneEntity = SelectionEntity | {
-  [SelectionType.link]: Base['link'];
-};
-
-export type SankeySingleLaneSelection = {
-  node: Base['node']
-} | {
-  link: Base['link']
-} | {
-  trace: Base['trace']
-};
+export type SankeySingleLaneSelection =
+  | {
+      node: Base["node"];
+    }
+  | {
+      link: Base["link"];
+    }
+  | {
+      trace: Base["trace"];
+    };
 
 export type BaseOptions = SankeySingleLaneOptions;
 export type BaseState = SankeySingleLaneState;
@@ -37,7 +41,7 @@ export interface Base extends TypeContext {
   options: BaseOptions;
   state: BaseState;
   link: SankeyLink;
-  node: SankeyNode<this['link']>;
+  node: SankeyNode<this["link"]>;
 }
 
 export interface Palette {

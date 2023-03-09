@@ -1,6 +1,7 @@
 import pandas as pd
-from .utils.q_value import add_q_value
 from scipy.stats.distributions import hypergeom
+
+from .utils.q_value import add_q_value
 
 
 def fisher_p(k, M, n, N):

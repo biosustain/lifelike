@@ -1,14 +1,17 @@
-from common.constants import *
-from common.base_parser import *
-import pandas as pd
-import logging, re
+import logging
 import os
+import re
 from datetime import datetime
+
+import pandas as pd
+from common.base_parser import *
+from common.constants import *
 
 SEP = '[ ]{2,}'
 PROP_CODE = 'code'
 PROP_ACTIVITIES = 'activities'
 PROP_COFACTORS = 'cofactors'
+
 
 class Enzyme(object):
     def __init__(self, code, name=''):
@@ -23,13 +26,13 @@ class Enzyme(object):
         self.children = []
         self.labels = ['db_Enzyme', 'EC_Number']
 
-    def add_synonym(self, name:str):
+    def add_synonym(self, name: str):
         self.synonyms.append(name)
 
-    def add_activity(self, v:str):
+    def add_activity(self, v: str):
         self.activities.append(v)
 
-    def add_cofactor(self, v:str):
+    def add_cofactor(self, v: str):
         self.cofactors.append(v)
 
     def add_child(self, e):
@@ -59,25 +62,31 @@ class Enzyme(object):
 
     def get_enzyme_synonyms(self):
         syns = list()
-        syns.append({
-            PROP_ID: self.ec_number,
-            PROP_NAME: self.name
-        })
-        for syn in self.synonyms:
-            syns.append({
+        syns.append(
+            {
                 PROP_ID: self.ec_number,
-                PROP_NAME: syn
-            })
+                PROP_NAME: self.name
+            }
+        )
+        for syn in self.synonyms:
+            syns.append(
+                {
+                    PROP_ID: self.ec_number,
+                    PROP_NAME: syn
+                }
+            )
         return syns
 
     def get_parent2child(self):
         children = []
         for c in self.children:
-            children.append({
-                PROP_FROM_ID: c.ec_number,
-                PROP_TO_ID: self.ec_number,
-                REL_RELATIONSHIP: REL_PARENT
-            })
+            children.append(
+                {
+                    PROP_FROM_ID: c.ec_number,
+                    PROP_TO_ID: self.ec_number,
+                    REL_RELATIONSHIP: REL_PARENT
+                }
+            )
         return children
 
 
@@ -88,7 +97,7 @@ class EnzymeParser(BaseParser):
         self.data_file = 'enzyme.dat'
         self.logger = logging.getLogger(__name__)
 
-    def parse_classes(self)->dict:
+    def parse_classes(self) -> dict:
         ec_classes = dict()
         with open(os.path.join(self.download_dir, self.class_file), 'r') as f:
             start = False
@@ -97,14 +106,14 @@ class EnzymeParser(BaseParser):
                     start = True
                 if start:
                     row = re.split(SEP, line)
-                    if len(row)==2:
+                    if len(row) == 2:
                         id = row[0].replace(' ', '')
                         name = row[1].strip().strip('.')
                         ec_classes[id] = Enzyme(id, name)
         self.logger.info(f'enzyme classes: {len(ec_classes)}')
         return ec_classes
 
-    def parse_data_files(self)->list:
+    def parse_data_files(self) -> list:
         """
         Parse both data files and return list of enzyme nodes
         """
@@ -114,7 +123,7 @@ class EnzymeParser(BaseParser):
         self.build_tree(nodes)
         return list(nodes.values())
 
-    def parse_enz_data_file(self)->dict:
+    def parse_enz_data_file(self) -> dict:
         """
         Parse enzyme data file, return dictionary with enzyme code as key, Enzyme object as value. The enzyme data file
         contains only leaf nodes
@@ -140,7 +149,7 @@ class EnzymeParser(BaseParser):
         self.logger.info(f'enzymes: {len(enzymes)}')
         return enzymes
 
-    def parse_classes(self)->dict:
+    def parse_classes(self) -> dict:
         """
         parse enzyme classes file to get the parent node (enzyme classes, subclasses and sub-subclasses)
         :return: dict with enzyme code as key, Enzyme object as value
@@ -153,7 +162,7 @@ class EnzymeParser(BaseParser):
                     start = True
                 if start:
                     row = re.split(SEP, line)
-                    if len(row)==2:
+                    if len(row) == 2:
                         id = row[0].replace(' ', '')
                         name = row[1].strip().strip('.')
                         ec_classes[id] = Enzyme(id, name)
@@ -164,11 +173,11 @@ class EnzymeParser(BaseParser):
         row = re.split(SEP, line)
         return row[1].strip().strip('.')
 
-    def _get_parent_code(self, enzyme:Enzyme):
+    def _get_parent_code(self, enzyme: Enzyme):
         tokens = enzyme.code.split('.')
         for i in range(len(tokens), 1, -1):
-            if tokens[i-1] != '-':
-                tokens[i-1] = '-'
+            if tokens[i - 1] != '-':
+                tokens[i - 1] = '-'
                 return '.'.join(tokens)
         return None
 
@@ -222,5 +231,4 @@ def main():
 
 
 if __name__ == "__main__":
-   main()
-
+    main()

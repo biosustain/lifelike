@@ -1,32 +1,49 @@
 <div class="border-bottom border-secondary pb-3 mb-3">
-  <form [formGroup]="filtersForm"
-        class="d-flex flex-column justify-content-between">
+  <form [formGroup]="filtersForm" class="d-flex flex-column justify-content-between">
     <fieldset class="fieldset-properties">
       <legend class="m-0">Filters</legend>
 
       <!-- Minimum frequency input -->
       <div class="form-group d-flex align-items-start">
-        <label class="mt-2 mr-2 text-nowrap"
-               [for]="minimumValueInputId">Min. {{ sortingAlgorithm.valueDescription }}:</label>
+        <label [for]="minimumValueInputId" class="mt-2 mr-2 text-nowrap"
+          >Min. {{ sortingAlgorithm.valueDescription }}:</label
+        >
         <div>
-          <input [id]="minimumValueInputId"
-                 [ngClass]="filtersForm.get('minimumValue').invalid ? 'form-control invalid-input' : 'form-control'"
-                 type="number"
-                 [min]="sortingAlgorithm.min"
-                 [step]="sortingAlgorithm.step"
-                 [max]="sortingAlgorithm.max"
-                 formControlName="minimumValue"
+          <input
+            [id]="minimumValueInputId"
+            [max]="sortingAlgorithm.max"
+            [min]="sortingAlgorithm.min"
+            [ngClass]="
+              filtersForm.get('minimumValue').invalid
+                ? 'form-control invalid-input'
+                : 'form-control'
+            "
+            [step]="sortingAlgorithm.step"
+            formControlName="minimumValue"
+            type="number"
           />
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('required')">
+          <div
+            *ngIf="filtersForm.get('minimumValue').hasError('required')"
+            class="mt-1 text-danger small-font"
+          >
             Min frequency cannot be empty!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('min')">
-            Min frequency cannot be less than {{sortingAlgorithm.min}}!
+          <div
+            *ngIf="filtersForm.get('minimumValue').hasError('min')"
+            class="mt-1 text-danger small-font"
+          >
+            Min frequency cannot be less than {{ sortingAlgorithm.min }}!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('badMinMax')">
-            Min frequency should not be more than {{sortingAlgorithm.min}}!
+          <div
+            *ngIf="filtersForm.get('minimumValue').hasError('badMinMax')"
+            class="mt-1 text-danger small-font"
+          >
+            Min frequency should not be more than {{ sortingAlgorithm.min }}!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('pattern')">
+          <div
+            *ngIf="filtersForm.get('minimumValue').hasError('pattern')"
+            class="mt-1 text-danger small-font"
+          >
             Min frequency must be a whole number!
           </div>
         </div>
@@ -65,10 +82,14 @@
 
     <div class="form-group d-flex align-items-center">
       <label [for]="id + '-group-by-options'" class="my-0 mr-2 text-nowrap">Group By:</label>
-      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'"
-              (change)="groupAndSortData()">
+      <select
+        (change)="groupAndSortData()"
+        [(ngModel)]="selectedGroupByOption"
+        [id]="id + '-group-by-options'"
+        class="custom-select"
+      >
         <option *ngFor="let option of groupByOptions" [value]="option">
-          {{option}}
+          {{ option }}
         </option>
       </select>
     </div>
@@ -95,52 +116,72 @@
 </div>
 
 <div class="d-flex justify-content-center mb-2 text-nowrap">
-  <button *ngIf="!wordVisibilityChanged"
-          class="btn btn-secondary btn-block"
-          (click)="setAllWordsVisibility(false)">Hide All
+  <button
+    (click)="setAllWordsVisibility(false)"
+    *ngIf="!wordVisibilityChanged"
+    class="btn btn-secondary btn-block"
+  >
+    Hide All
   </button>
-  <button *ngIf="wordVisibilityChanged"
-          class="btn btn-secondary btn-block"
-          (click)="setAllWordsVisibility(true)">Show All
+  <button
+    (click)="setAllWordsVisibility(true)"
+    *ngIf="wordVisibilityChanged"
+    class="btn btn-secondary btn-block"
+  >
+    Show All
   </button>
 </div>
 
 <fieldset class="fieldset-properties mt-2">
-  <legend placement="top left right"
-          container="body"
-          ngbTooltip="Click a checkbox to filter annotations of that type">Legend
+  <legend
+    container="body"
+    ngbTooltip="Click a checkbox to filter annotations of that type"
+    placement="top left right"
+  >
+    Legend
   </legend>
 
   <div *ngFor="let keyvalue of legend | keyvalue">
     <div *ngIf="disabledTypeMap.get(keyvalue.key); else notDisabled">
       <div class="custom-control custom-checkbox">
-        <input [id]="id + '-legend-filter-' + keyvalue.key"
-               class="custom-control-input"
-               type="checkbox"
-               value="1"
-               [checked]="isTypeVisible(keyvalue.key)"
-               (change)="changeTypeVisibility(keyvalue.key, $event)">
-        <label class="custom-control-label text-nowrap"
-               [for]="id + '-legend-filter-' + keyvalue.key"
-               [autoClose]="false"
-               container="body"
-               placement="right bottom top"
-               ngbTooltip="Entities of this type are not visible with the filters above.">
-          <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+        <input
+          (change)="changeTypeVisibility(keyvalue.key, $event)"
+          [checked]="isTypeVisible(keyvalue.key)"
+          [id]="id + '-legend-filter-' + keyvalue.key"
+          class="custom-control-input"
+          type="checkbox"
+          value="1"
+        />
+        <label
+          [autoClose]="false"
+          [for]="id + '-legend-filter-' + keyvalue.key"
+          class="custom-control-label text-nowrap"
+          container="body"
+          ngbTooltip="Entities of this type are not visible with the filters above."
+          placement="right bottom top"
+        >
+          <span [ngStyle]="{ background: keyvalue.value }" class="entity-type-legend"></span>
+          {{ keyvalue.key }}
           <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
         </label>
       </div>
     </div>
     <ng-template #notDisabled>
       <div class="custom-control custom-checkbox">
-        <input [id]="id + '-legend-filter-' + keyvalue.key"
-               class="custom-control-input"
-               type="checkbox"
-               value="1"
-               [checked]="isTypeVisible(keyvalue.key)"
-               (change)="changeTypeVisibility(keyvalue.key, $event)">
-        <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
-          <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+        <input
+          (change)="changeTypeVisibility(keyvalue.key, $event)"
+          [checked]="isTypeVisible(keyvalue.key)"
+          [id]="id + '-legend-filter-' + keyvalue.key"
+          class="custom-control-input"
+          type="checkbox"
+          value="1"
+        />
+        <label
+          [for]="id + '-legend-filter-' + keyvalue.key"
+          class="custom-control-label text-nowrap"
+        >
+          <span [ngStyle]="{ background: keyvalue.value }" class="entity-type-legend"></span>
+          {{ keyvalue.key }}
         </label>
       </div>
     </ng-template>
@@ -150,34 +191,57 @@
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
   <div class="mb-2">
-    <strong>NOTE: Any terms that could not be drawn in the cloud with the available window dimensions will be denoted by
-      a</strong>
+    <strong
+      >NOTE: Any terms that could not be drawn in the cloud with the available window dimensions
+      will be denoted by a</strong
+    >
     <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
-  <cdk-virtual-scroll-viewport itemSize="22" class="virtual-scroll-viewport w-100">
-    <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virtual-scroll-item">
+  <cdk-virtual-scroll-viewport class="virtual-scroll-viewport w-100" itemSize="22">
+    <div
+      *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0"
+      class="virtual-scroll-item"
+    >
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
-          <input [id]="id + 'filter-' + data.identifier"
-                class="custom-control-input"
-                type="checkbox"
-                [checked]="data.visible"
-                (change)="changeWordVisibility(data.identifier, $event)">
-          <label class="custom-control-label text-nowrap" [for]="id + 'filter-' + data.identifier">
+          <input
+            (change)="changeWordVisibility(data.identifier, $event)"
+            [checked]="data.visible"
+            [id]="id + 'filter-' + data.identifier"
+            class="custom-control-input"
+            type="checkbox"
+          />
+          <label [for]="id + 'filter-' + data.identifier" class="custom-control-label text-nowrap">
             <ng-container *ngIf="!clickableWords; else showClickableWords">
               <div class="text-overflow">
-                <span class="entity-type-legend"
-                      [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
-                <span>({{data.entity.frequency | number}})</span>
-                <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+                <span
+                  [ngStyle]="{ background: data.entity.color }"
+                  class="entity-type-legend"
+                ></span>
+                {{ data.entity.text }}
+                <span>({{ data.entity.frequency | number }})</span>
+                <i
+                  *ngIf="!data.entity.shown"
+                  class="fa fa-exclamation-triangle text-danger ml-2"
+                ></i>
               </div>
             </ng-container>
             <ng-template #showClickableWords>
-              <a class="text-overflow" href="#" (click)="wordOpen.emit(data.entity); $event.preventDefault()">
-                <span class="entity-type-legend"
-                      [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
-                <span>({{data.entity.frequency | number}})</span>
-                <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+              <a
+                (click)="wordOpen.emit(data.entity); $event.preventDefault()"
+                class="text-overflow"
+                href="#"
+              >
+                <span
+                  [ngStyle]="{ background: data.entity.color }"
+                  class="entity-type-legend"
+                ></span>
+                {{ data.entity.text }}
+                <span>({{ data.entity.frequency | number }})</span>
+                <i
+                  *ngIf="!data.entity.shown"
+                  class="fa fa-exclamation-triangle text-danger ml-2"
+                ></i>
               </a>
             </ng-template>
           </label>

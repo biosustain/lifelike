@@ -78,8 +78,6 @@ type Key = string;
 // <!ELEMENT infon (#PCDATA)>
 // <!ATTLIST infon key CDATA #REQUIRED >
 export interface Infon {
-  [key: string]: string;
-
   // dynamic
   journal?: string;
   year?: string;
@@ -87,6 +85,8 @@ export interface Infon {
   authors?: string;
   section?: string;
   identifier?: string;
+
+  [key: string]: string;
 }
 
 // document: A document in the collection. A single, complete
@@ -107,14 +107,12 @@ export interface Document {
   authors?: string[];
 }
 
-
 // id: Used to refer to this relation in other relations. This id
 // needs to be unique at whatever level relations appear. (See
 // discussion of annotation ids.)
 //
 // <!ELEMENT id (#PCDATA)>
 type Id = string;
-
 
 type Text = string;
 

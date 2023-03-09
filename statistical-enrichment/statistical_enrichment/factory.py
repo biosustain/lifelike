@@ -1,8 +1,10 @@
-from flask import Flask
-from flask_marshmallow import Marshmallow
 import os
 
+from flask import Flask
+from flask_marshmallow import Marshmallow
+
 from .config import Base
+
 
 def create_app():
     app_name = os.environ.get('FLASK_APP', __name__)
@@ -16,6 +18,7 @@ def create_app():
         apm = ElasticAPM(
             app,
             service_name='***ARANGO_DB_NAME***-statistical-enrichment',
-            environment=os.getenv('FLASK_APP_CONFIG'))
+            environment=os.getenv('FLASK_APP_CONFIG')
+        )
 
     return app

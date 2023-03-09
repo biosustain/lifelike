@@ -1,26 +1,18 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
-import { ChartsModule, ThemeService } from 'ng2-charts';
+import { ChartsModule, ThemeService } from "ng2-charts";
 
-import { SharedModule } from 'app/shared/shared.module';
+import { SharedModule } from "app/shared/shared.module";
 
-import { ChartComponent } from './chart.component';
+import { ChartComponent } from "./chart.component";
 
-const components = [
-  ChartComponent
-];
+const components = [ChartComponent];
 
 @NgModule({
   declarations: components,
-  imports: [
-    CommonModule,
-    SharedModule,
-    ChartsModule
-  ],
+  imports: [CommonModule, SharedModule, ChartsModule],
   exports: components,
-  providers: [ThemeService]
+  providers: [ThemeService],
 })
-export class ChartModule {
-
-}
+export class ChartModule {}

@@ -23,18 +23,18 @@
   }
 
   .title {
-    margin-bottom: 15px;
-    font-size: 25px;
-    line-height: 40px;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: 600;
     display: block;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 25px;
+    font-weight: 600;
+    line-height: 40px;
+    margin-bottom: 15px;
     order: -1;
   }
 
   .meta {
-    order: -1;
     margin-bottom: 10px;
+    order: -1;
 
     & > * {
       &:after {
@@ -69,6 +69,6 @@
 }
 
 .scrollbar-with-value {
-  width: calc(100% - 3ch);
   vertical-align: middle;
+  width: calc(100% - 3ch);
 }

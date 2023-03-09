@@ -1,37 +1,37 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 .current-color {
-  display: block;
-  width: 3rem;
-  height: 1rem;
   border-radius: $border-radius;
+  display: block;
+  height: 1rem;
+  width: 3rem;
 }
 
 .palette {
   display: flex;
   flex-wrap: wrap;
-  position: relative;
   justify-content: space-around;
+  position: relative;
 }
 
 .palette-item {
-  display: block;
-  width: 15%;
-  margin: 0.25rem;
-  flex: 1 0 auto;
-  height:auto;
   border-radius: $border-radius;
   cursor: pointer;
+  display: block;
+  flex: 1 0 auto;
+  height: auto;
+  margin: 0.25rem;
+  width: 15%;
 
   &:before {
-    content:'';
-    float:left;
-    padding-top:100%;
+    content: "";
+    float: left;
+    padding-top: 100%;
   }
 
   &:focus {
-    position: relative;
     outline: 2px solid #000;
+    position: relative;
     z-index: 1;
   }
 }

@@ -1,10 +1,14 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
-  <app-module-error *ngIf="status.failedErrorShown; else noError" class="p-4" [error]="status.error">
-    <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+<ng-container *ngIf="loadTask.status$ | async as status">
+  <app-module-error
+    *ngIf="status.failedErrorShown; else noError"
+    [error]="status.error"
+    class="p-4"
+  >
+    <button (click)="refresh()" class="btn btn-primary" type="button">Retry</button>
   </app-module-error>
 
   <ng-template #noError>
-    <div class="module" appContainerBreakpoints>
+    <div appContainerBreakpoints class="module">
       <!-- Header -->
       <div class="module-header">
         <!-- Title bar -->
@@ -13,25 +17,30 @@
         </div>
 
         <!-- Toolbar -->
-        <div class="module-toolbar mt-2 ">
+        <div class="module-toolbar mt-2">
           <div class="ml-auto d-flex">
             <div class="input-group">
-                <div class="input-group-prepend">
-                    <div class="input-group-text bg-transparent border-right-0">
-                        <i class="fa fa-search"></i>
-                    </div>
+              <div class="input-group-prepend">
+                <div class="input-group-text bg-transparent border-right-0">
+                  <i class="fa fa-search"></i>
                 </div>
-                <input class="form-control py-2 pl-0 border-left-0 border bg-transparent"
-                       (keyup)="applyFilter($event.target.value)"
-                       placeholder="Find" maxlength="40">
+              </div>
+              <input
+                (keyup)="applyFilter($event.target.value)"
+                class="form-control py-2 pl-0 border-left-0 border bg-transparent"
+                maxlength="40"
+                placeholder="Find"
+              />
             </div>
 
-            <button class="btn btn-secondary ml-2"
-                    ngbTooltip="Reload List"
-                    container="body"
-                    placement="bottom top left right"
-                    (click)="refresh()">
-                <i class="fa fa-fw fa-sync"></i>
+            <button
+              (click)="refresh()"
+              class="btn btn-secondary ml-2"
+              container="body"
+              ngbTooltip="Reload List"
+              placement="bottom top left right"
+            >
+              <i class="fa fa-fw fa-sync"></i>
             </button>
           </div>
         </div>
@@ -40,30 +49,32 @@
       <!-- Body -->
       <div class="flex-fill overflow-auto">
         <app-object-tile-deck
-                class="module-header d-block p-4"
-                *ngIf="projectList.results.length"
-                [objects]="projectList.results"
-                [showAuthor]="false"
+          *ngIf="projectList.results.length"
+          [objects]="projectList.results"
+          [showAuthor]="false"
+          class="module-header d-block p-4"
         >
-                        <ng-template let-project #tileToolbar>
-                            <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
-                                <i class="fas fa-star text-warning"></i>
-                            </button>
-                            <div ngbDropdown class="d-inline-block ml-auto" container="body">
-                                <button class="btn btn-sm" ngbDropdownToggle>
-                                    <i class="fas fa-cog fa-fw"></i>
-                                </button>
-                                <div ngbDropdownMenu>
-                                    <app-project-menu [project]="project"></app-project-menu>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </app-object-tile-deck>
-        <app-object-list [objects]="(status.placeholdersShown ? null : fileList.results)"
-                         [appLinks]="{forceWorkbench: true, preferPane: 'left'}"
-                         [forEditing]="false"
-                         [showStars]="true"
-                         (refreshRequest)="refresh()">
+          <ng-template #tileToolbar let-project>
+            <button (click)="toggleStarred(project)" *ngIf="project.starred" class="btn btn-sm">
+              <i class="fas fa-star text-warning"></i>
+            </button>
+            <div class="d-inline-block ml-auto" container="body" ngbDropdown>
+              <button class="btn btn-sm" ngbDropdownToggle>
+                <i class="fas fa-cog fa-fw"></i>
+              </button>
+              <div ngbDropdownMenu>
+                <app-project-menu [project]="project"></app-project-menu>
+              </div>
+            </div>
+          </ng-template>
+        </app-object-tile-deck>
+        <app-object-list
+          (refreshRequest)="refresh()"
+          [appLinks]="{ forceWorkbench: true, preferPane: 'left' }"
+          [forEditing]="false"
+          [objects]="status.placeholdersShown ? null : fileList.results"
+          [showStars]="true"
+        >
         </app-object-list>
       </div>
     </div>

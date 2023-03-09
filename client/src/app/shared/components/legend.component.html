@@ -1,15 +1,19 @@
-<app-collapsible-window title="Legend" [reversed]="true" class="flex-fill">
+<app-collapsible-window [reversed]="true" class="flex-fill" title="Legend">
   <div class="window-body">
     <div class="d-flex flex-column align-items-center">
-      <span *ngFor="let nodeType of legend | keyvalue" class="w-100 d-flex flex-row align-items-center">
-        <div class="rounded mr-2"
-              [ngStyle]="{
-                'background': nodeType.value[0],
-                'height': '10px',
-                'width': '10px'
-              }"
+      <span
+        *ngFor="let nodeType of legend | keyvalue"
+        class="w-100 d-flex flex-row align-items-center"
+      >
+        <div
+          [ngStyle]="{
+            background: nodeType.value[0],
+            height: '10px',
+            width: '10px'
+          }"
+          class="rounded mr-2"
         ></div>
-        <div>{{nodeType.key}}</div>
+        <div>{{ nodeType.key }}</div>
       </span>
     </div>
   </div>

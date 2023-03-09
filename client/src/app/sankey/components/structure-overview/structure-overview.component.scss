@@ -8,8 +8,8 @@ app-sankey-structure-overview {
   }
 
   cdk-nested-tree-node {
-    margin-left: $padding;
     display: block;
+    margin-left: $padding;
 
     [cdktreenodetoggle] {
       cursor: pointer;

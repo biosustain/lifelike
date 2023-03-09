@@ -1,41 +1,30 @@
-import { Component, Input } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, Input } from "@angular/core";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { Hyperlink, Source } from 'app/drawing-tool/services/interfaces';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { potentiallyInternalUrl } from 'app/shared/validators';
-import { toValidLink } from 'app/shared/utils/browser';
+import { CommonFormDialogComponent } from "app/shared/components/dialog/common-form-dialog.component";
+import { Hyperlink, Source } from "app/drawing-tool/services/interfaces";
+import { MessageDialog } from "app/shared/services/message-dialog.service";
+import { potentiallyInternalUrl } from "app/shared/validators";
+import { toValidLink } from "app/shared/utils/browser";
 
 @Component({
-  selector: 'app-link-edit-dialog',
-  templateUrl: './link-edit-dialog.component.html',
+  selector: "app-link-edit-dialog",
+  templateUrl: "./link-edit-dialog.component.html",
 })
 export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | Hyperlink> {
-
-  @Input() title = 'Edit Link';
-
-  private _link: Source | Hyperlink;
+  @Input() title = "Edit Link";
   readonly errors = {
-    url: 'The provided URL is not valid.',
+    url: "The provided URL is not valid.",
   };
-  readonly domainDefault = 'Link';
-
+  readonly domainDefault = "Link";
   readonly form: FormGroup = new FormGroup({
-    domain: new FormControl(''),
-    url: new FormControl('', [
-      Validators.required,
-      potentiallyInternalUrl,
-    ]),
+    domain: new FormControl(""),
+    url: new FormControl("", [Validators.required, potentiallyInternalUrl]),
   });
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal) {
-    super(modal, messageDialog);
-  }
+  private _link: Source | Hyperlink;
 
   get link(): Source | Hyperlink {
     return this._link;
@@ -46,10 +35,17 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
     this.form.patchValue(value);
   }
 
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal
+  ) {
+    super(modal, messageDialog);
+  }
+
   getValue(): Source {
     this.link.domain = this.form.controls.domain.value || this.domainDefault;
     this.link.url = toValidLink(this.form.controls.url.value);
     return this.link;
   }
-
 }

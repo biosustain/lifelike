@@ -1,18 +1,17 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from "@angular/core";
 
-import { Observable } from 'rxjs';
-import { tap, shareReplay, map } from 'rxjs/operators';
+import { Observable } from "rxjs";
+import { map, shareReplay, tap } from "rxjs/operators";
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { BulkObjectUpdateRequest } from 'app/file-browser/schema';
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
+import { FilesystemService } from "app/file-browser/services/filesystem.service";
+import { BulkObjectUpdateRequest } from "app/file-browser/schema";
 
 const openEnrichmentFiles = new Map();
 
 @Injectable()
 export class EnrichmentService implements OnDestroy {
-  constructor(protected readonly filesystemService: FilesystemService) {
-  }
+  constructor(protected readonly filesystemService: FilesystemService) {}
 
   getFileRef(hashId: string) {
     let openFile = openEnrichmentFiles.get(hashId);
@@ -21,8 +20,10 @@ export class EnrichmentService implements OnDestroy {
         // metadata can be mutated (example params edit)
         get: this.filesystemService.open(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1)),
         // data is not mutable
-        getContent: this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1)),
-        ref: new Set()
+        getContent: this.filesystemService
+          .getContent(hashId)
+          .pipe(map(Object.freeze), shareReplay(1)),
+        ref: new Set(),
       };
       openEnrichmentFiles.set(hashId, openFile);
     }
@@ -39,18 +40,22 @@ export class EnrichmentService implements OnDestroy {
   }
 
   ngOnDestroy() {
-    openEnrichmentFiles.forEach((file, hashId, fileMap) =>
-      file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
+    openEnrichmentFiles.forEach(
+      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
     );
   }
 
-  save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
-       updateWithLatest?: { [hashId: string]: FilesystemObject }):
-    Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.filesystemService.save(hashIds, changes, updateWithLatest).pipe(tap(ret =>
+  save(
+    hashIds: string[],
+    changes: Partial<BulkObjectUpdateRequest>,
+    updateWithLatest?: { [hashId: string]: FilesystemObject }
+  ): Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.filesystemService.save(hashIds, changes, updateWithLatest).pipe(
+      tap((ret) =>
         // dump keep track of file upon save so it reloaded
         // todo: implement optimistic update
-        hashIds.forEach(hashId => openEnrichmentFiles.delete(hashId)
-      )));
+        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId))
+      )
+    );
   }
 }

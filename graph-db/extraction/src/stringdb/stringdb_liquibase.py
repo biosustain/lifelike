@@ -19,14 +19,18 @@ class StringChangeLogsGenerator(ChangeLogFileGenerator):
     def add_node_changesets(self):
         id = f'load String Protein from {self.zipfile}, date {self.date_tag}'
         comment = f'load all String Protein from {self.zipfile}'
-        query = get_create_update_nodes_query(NODE_STRING, PROP_ID,
-                                              PROT_INFO_HEADER,
-                                              [NODE_PROTEIN],
-                                              datasource=DB_STRING)
-        changeset = CustomChangeSet(id, self.author, comment, query,
-                                    handler=QUERY_HANDLER,
-                                    filename='string-data.tsv',
-                                    zipfile=self.zipfile)
+        query = get_create_update_nodes_query(
+            NODE_STRING, PROP_ID,
+            PROT_INFO_HEADER,
+            [NODE_PROTEIN],
+            datasource=DB_STRING
+            )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query,
+            handler=QUERY_HANDLER,
+            filename='string-data.tsv',
+            zipfile=self.zipfile
+            )
         self.change_sets.append(changeset)
 
     def add_cypher_changesets(self):
@@ -51,6 +55,3 @@ def generate_string_changelogs(data_zip_file):
 
 if __name__ == '__main__':
     generate_string_changelogs('jira-LL-4222-string-data-v11.5.zip')
-
-
-

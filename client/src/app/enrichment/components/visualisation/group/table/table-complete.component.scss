@@ -6,9 +6,9 @@
 
 .hidden-text {
   display: inline-block;
-  width: 1px;
   height: 1px;
   overflow: hidden;
+  width: 1px;
 }
 
 @mixin clamp($max-lines) {
@@ -28,16 +28,16 @@
 
       &[data-sort]:after {
         display: inline-block;
-        font-family: 'Font Awesome 5 Pro';
+        font-family: "Font Awesome 5 Pro";
         margin-left: 0.3em;
       }
 
-      &[data-sort=asc]:after {
-        content: '\f063';
+      &[data-sort="asc"]:after {
+        content: "\f063";
       }
 
-      &[data-sort=desc]:after {
-        content: '\f062';
+      &[data-sort="desc"]:after {
+        content: "\f062";
       }
     }
   }
@@ -45,23 +45,25 @@
   tbody > tr {
     & > td > * {
       // clamp by height so no ellipsis is shown
+      display: block;
       max-height: calc(1.5em * 15); // ~15 lines
       overflow: auto;
-      display: block;
 
       // auto-scroll within cell to searched term
       overscroll-behavior-y: contain;
       scroll-snap-type: y mandatory;
 
       &::ng-deep > .ngb-highlight {
-        scroll-snap-align: center;
         display: inline-block;
+        scroll-snap-align: center;
         scroll-snap-stop: always;
       }
     }
 
     // allow cell scrolling
-    &:focus > td > *, &:focus-within > td > *, &:hover > td > * {
+    &:focus > td > *,
+    &:focus-within > td > *,
+    &:hover > td > * {
       scroll-snap-type: y proximity;
     }
   }
@@ -73,7 +75,8 @@
     }
 
     // stop clamping while focussed
-    &:focus > td > *, &:focus-within > td > * {
+    &:focus > td > *,
+    &:focus-within > td > * {
       -webkit-line-clamp: unset;
       overflow: auto;
     }

@@ -1,12 +1,20 @@
-import 'canvas-plus';
-import { ZoomTransform } from 'd3-zoom';
+import "canvas-plus";
+import { ZoomTransform } from "d3-zoom";
 
-import { TextElement } from '../text-element';
-import { Line } from '../lines/lines';
-import { BaseRectangleNodeOptions } from '../graph-nodes/base-rectangle-node';
-import { PlacedGroup } from '../../../styles/styles';
-import { BoundingBox, drawStroke, drawStrokeAndFill, getRectWithMargin, isBBoxEnclosing, Point, SELECTION_SHADOW_COLOR } from '../shared';
-import { pointOnRect } from '../../geometry';
+import { TextElement } from "../text-element";
+import { Line } from "../lines/lines";
+import { BaseRectangleNodeOptions } from "../graph-nodes/base-rectangle-node";
+import { PlacedGroup } from "../../../styles/styles";
+import {
+  BoundingBox,
+  drawStroke,
+  drawStrokeAndFill,
+  getRectWithMargin,
+  isBBoxEnclosing,
+  Point,
+  SELECTION_SHADOW_COLOR,
+} from "../shared";
+import { pointOnRect } from "../../geometry";
 
 export interface GroupNodeOptions extends BaseRectangleNodeOptions {
   textbox: TextElement;
@@ -43,7 +51,7 @@ export class GroupNode extends PlacedGroup {
       minX,
       minY,
       maxX: minX + this.width,
-      maxY: minY + this.height
+      maxY: minY + this.height,
     };
   }
 
@@ -55,16 +63,11 @@ export class GroupNode extends PlacedGroup {
     ctx.beginPath();
     const zoomResetScale = 1 / transform.scale(1).k;
 
-      // Node shape
+    // Node shape
     ctx.save();
     // We want to draw group background behind current pixels
-    ctx.globalCompositeOperation = 'destination-over';
-    (ctx as any).rect(
-        this.bbox.minX,
-        this.bbox.minY,
-        this.width,
-        this.height,
-    );
+    ctx.globalCompositeOperation = "destination-over";
+    (ctx as any).rect(this.bbox.minX, this.bbox.minY, this.width, this.height);
 
     drawStrokeAndFill(ctx, this.shapeFillColor);
     drawStroke(ctx, this.stroke, zoomResetScale);
@@ -72,15 +75,21 @@ export class GroupNode extends PlacedGroup {
     ctx.restore();
 
     // Group label - above the group
-    this.textbox.drawCenteredAt(this.x, this.y - (this.height / 2) - this.LABEL_OFFSET -
-      this.textbox.actualHeightWithInsets / 2.0 - zoomResetScale * ctx.lineWidth);
+    this.textbox.drawCenteredAt(
+      this.x,
+      this.y -
+        this.height / 2 -
+        this.LABEL_OFFSET -
+        this.textbox.actualHeightWithInsets / 2.0 -
+        zoomResetScale * ctx.lineWidth
+    );
   }
 
   drawSelection() {
     const ctx = this.ctx;
     ctx.beginPath();
     ctx.save();
-    const {x, y, width, height} = getRectWithMargin(this.bbox, this.selectionMargin);
+    const { x, y, width, height } = getRectWithMargin(this.bbox, this.selectionMargin);
     ctx.rect(x, y, width, height);
     ctx.fillStyle = SELECTION_SHADOW_COLOR;
     ctx.fill();
@@ -95,19 +104,11 @@ export class GroupNode extends PlacedGroup {
     return isBBoxEnclosing(bbox, this.getBoundingBox());
   }
 
-  isPointIntersecting({x, y}: Point): boolean {
-    return x >= this.bbox.minX &&
-           x <= this.bbox.maxX &&
-           y >= this.bbox.minY &&
-           y <= this.bbox.maxY;
+  isPointIntersecting({ x, y }: Point): boolean {
+    return x >= this.bbox.minX && x <= this.bbox.maxX && y >= this.bbox.minY && y <= this.bbox.maxY;
   }
 
   lineIntersectionPoint(lineOrigin: Point): Point {
-    return pointOnRect(
-      lineOrigin,
-      this.bbox,
-      true,
-    );
+    return pointOnRect(lineOrigin, this.bbox, true);
   }
-
 }

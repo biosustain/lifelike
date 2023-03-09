@@ -1,45 +1,30 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from "@angular/core";
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 @Component({
-  selector: 'app-search-control',
-  templateUrl: './search-control.component.html',
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: SearchControlComponent,
-    multi: true,
-  }],
+  selector: "app-search-control",
+  templateUrl: "./search-control.component.html",
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: SearchControlComponent,
+      multi: true,
+    },
+  ],
 })
 export class SearchControlComponent implements ControlValueAccessor {
-
-  value = '';
-  private changeCallback: any;
-  private touchCallback: any;
-
+  value = "";
   @Input() disabled = false;
   @Input() resultIndex = 0;
   @Input() resultCount = 0;
-
   @Input() searching = false;
   @Output() previous = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
   @Output() valueClear = new EventEmitter();
-
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
-
-  changed() {
-    if (this.changeCallback) {
-      this.changeCallback(this.value);
-    }
-  }
-
-  private setValue(value: string) {
-    if (value !== this.value) {
-      this.value = value;
-      this.changed();
-    }
-  }
+  @ViewChild("searchInput", { static: false }) searchElement: ElementRef;
+  private changeCallback: any;
+  private touchCallback: any;
 
   get searchInputWidth() {
     if (this.value) {
@@ -48,9 +33,15 @@ export class SearchControlComponent implements ControlValueAccessor {
       // cannot use calc without bypassing Angular security
       // https://angular.io/api/platform-browser/DomSanitizer
       // using hardcoded font size instead
-      return Math.max(70, Math.min(150, 14 * this.value.length * 0.55 + 20)) + 'px';
+      return Math.max(70, Math.min(150, 14 * this.value.length * 0.55 + 20)) + "px";
     } else {
-      return '70px';
+      return "70px";
+    }
+  }
+
+  changed() {
+    if (this.changeCallback) {
+      this.changeCallback(this.value);
     }
   }
 
@@ -62,7 +53,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   }
 
   clear() {
-    this.setValue('');
+    this.setValue("");
     this.focus();
     this.valueClear.emit();
   }
@@ -89,13 +80,20 @@ export class SearchControlComponent implements ControlValueAccessor {
 
   inputKeyUp(event: KeyboardEvent) {
     const newValue = this.searchElement.nativeElement.value;
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       this.enterPress.next();
       if (newValue === this.value) {
         this.next.next();
       } else {
         this.setValue(newValue);
       }
+    }
+  }
+
+  private setValue(value: string) {
+    if (value !== this.value) {
+      this.value = value;
+      this.changed();
     }
   }
 }

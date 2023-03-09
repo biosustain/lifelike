@@ -1,9 +1,9 @@
+from typing import List
+
 import attr
 
 from neo4japp.models import AppUser
 from neo4japp.util import CamelDictMixin
-
-from typing import List
 
 
 @attr.s(frozen=True)
@@ -20,7 +20,7 @@ class UserRequest(CamelDictMixin):
 
 @attr.s(frozen=True)
 class UserUpdateRequest(UserRequest):
-    new_password: str = attr.ib(default='')
+    new_password: str = attr.ib(default="")
 
 
 @attr.s(frozen=True)

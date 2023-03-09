@@ -17,24 +17,25 @@ export const d3Callback = bind;
  * @param propertyKey Method name
  * @param descriptor Method descriptor
  */
-export function d3EventCallback<T extends object>(target: T, propertyKey: keyof T,
-                                                  {value, writable, get, ...descriptor}: PropertyDescriptor): PropertyDescriptor {
+export function d3EventCallback<T extends object>(
+  target: T,
+  propertyKey: keyof T,
+  { value, writable, get, ...descriptor }: PropertyDescriptor
+): PropertyDescriptor {
   return {
     // we filter out `writable` and `value` since they cannot be defined along `get`
     ...descriptor,
     get() {
       const instance = this as T;
       if (isDevMode()) {
-        console.assert(instance, 'bind: instance is undefined');
+        console.assert(instance, "bind: instance is undefined");
       }
-      return function() {
+      return function () {
         if (isDevMode()) {
-          console.assert(this, 'd3Event does not have target reference');
+          console.assert(this, "d3Event does not have target reference");
         }
-        return (
-          value ?? get.call(instance)
-        ).call(instance, this, ...arguments);
+        return (value ?? get.call(instance)).call(instance, this, ...arguments);
       };
-    }
+    },
   };
 }

@@ -1,23 +1,40 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from "@angular/core";
 
-import { sum } from 'd3-array';
-import { first, last, clone } from 'lodash-es';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { sum } from "d3-array";
+import { clone, first, last } from "lodash-es";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { TruncatePipe } from 'app/shared/pipes';
-import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { LayoutService, groupByTraceGroupWithAccumulation, LayersContext } from 'app/sankey/services/layout.service';
+import { TruncatePipe } from "app/shared/pipes";
+import { WarningControllerService } from "app/shared/services/warning-controller.service";
+import {
+  groupByTraceGroupWithAccumulation,
+  LayersContext,
+  LayoutService,
+} from "app/sankey/services/layout.service";
 
-import { DirectedTraversal } from '../../../utils/directed-traversal';
-import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';
-import { Base } from '../interfaces';
-import { symmetricDifference } from '../../../utils';
-import { EditService } from '../../../services/edit.service';
+import { DirectedTraversal } from "../../../utils/directed-traversal";
+import { MultiLaneBaseControllerService } from "./multi-lane-base-controller.service";
+import { Base } from "../interfaces";
+import { symmetricDifference } from "../../../utils";
+import { EditService } from "../../../services/edit.service";
 
 type MultilaneDataWithContext = LayersContext<Base>;
 
 @Injectable()
 export class MultiLaneLayoutService extends LayoutService<Base> implements OnDestroy {
+  get nodeColor() {
+    return ({ sourceLinks, targetLinks, color }: Base["node"]) => {
+      // check if any trace is finishing or starting here
+      const difference = symmetricDifference(sourceLinks, targetLinks, (link) => link.trace);
+      // if there is only one trace start/end then color node with its color
+      if (difference.size === 1) {
+        return difference.values().next().value.trace.color;
+      } else {
+        return color;
+      }
+    };
+  }
+
   constructor(
     readonly baseView: MultiLaneBaseControllerService,
     protected readonly truncatePipe: TruncatePipe,
@@ -27,19 +44,6 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
   ) {
     super(baseView, truncatePipe, warningController, modalService, update);
     this.onInit();
-  }
-
-  get nodeColor() {
-    return ({sourceLinks, targetLinks, color}: Base['node']) => {
-      // check if any trace is finishing or starting here
-      const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace);
-      // if there is only one trace start/end then color node with its color
-      if (difference.size === 1) {
-        return difference.values().next().value.trace.color;
-      } else {
-        return color;
-      }
-    };
   }
 
   ngOnDestroy() {
@@ -52,7 +56,7 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
    * It calculate nodes position by traversing it from side with less nodes as a tree
    * iteratively figuring order of the nodes.
    */
-  computeNodeBreadths({links}, columns) {
+  computeNodeBreadths({ links }, columns) {
     // decide on direction
     const dt = new DirectedTraversal([first(columns), last(columns)]);
     // order next related nodes in order this group first appeared
@@ -60,13 +64,13 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
     const visited = new Set();
     let order = 0;
     const traceOrder = new Set();
-    const relayoutLinks = linksToTraverse =>
-      linksToTraverse.forEach(l => {
+    const relayoutLinks = (linksToTraverse) =>
+      linksToTraverse.forEach((l) => {
         relayoutNodes([dt.nextNode(l)]);
         traceOrder.add(l.trace);
       });
-    const relayoutNodes = nodesToTraverse =>
-      nodesToTraverse.forEach(node => {
+    const relayoutNodes = (nodesToTraverse) =>
+      nodesToTraverse.forEach((node) => {
         if (visited.has(node)) {
           return;
         }
@@ -79,15 +83,15 @@ export class MultiLaneLayoutService extends LayoutService<Base> implements OnDes
     relayoutNodes(dt.startNodes);
 
     const traces = [...traceOrder];
-    const groups = clone(traces.map(({group}) => group));
+    const groups = clone(traces.map(({ group }) => group));
 
     const tracesLength = traces.length;
-    links.forEach(link => {
+    links.forEach((link) => {
       link.order = sum([
         // save order by group
         groups.indexOf(link.trace.group),
         // top up with fraction to order by trace
-        traces.indexOf(link.trace) / tracesLength
+        traces.indexOf(link.trace) / tracesLength,
       ]);
     });
   }

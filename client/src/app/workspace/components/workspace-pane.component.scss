@@ -1,32 +1,33 @@
 .side-pane-close-text {
-    writing-mode: vertical-lr;
-    text-orientation: mixed;
-    max-width: 50px;
-    overflow: hidden;
-  }
+  max-width: 50px;
+  overflow: hidden;
+  text-orientation: mixed;
+  writing-mode: vertical-lr;
+}
 
 .workspace-active-tab-content {
-    top: 0;
-    left: 0;
+  left: 0;
+  top: 0;
 }
 
 .workspace-hidden-tab-content {
-    position: absolute;
-    left: -10000px;
-    top: -10000px;
+  left: -10000px;
+  position: absolute;
+  top: -10000px;
 
-    .modal, .modal-backdrop {
-      visibility: hidden;
-      pointer-events: none;
-    }
+  .modal,
+  .modal-backdrop {
+    pointer-events: none;
+    visibility: hidden;
   }
+}
 
 .workspace-tab-content-container {
-    position: relative;
+  position: relative;
 }
 
 .workspace-tab-content-inner-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }

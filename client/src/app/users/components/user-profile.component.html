@@ -1,35 +1,40 @@
 <h2>Update User</h2>
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="username" required [appFormInput]="form.get('url')">
+      <input [appFormInput]="form.get('url')" class="form-control" formControlName="username"
+             required>
       <app-form-input-feedback [control]="form.get('username')"></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2" ngbTooltip="You cannot edit your email">
     <div class="col">
-      <input class="form-control" formControlName="email" required [appFormInput]="form.get('email')">
+      <input [appFormInput]="form.get('email')" class="form-control" formControlName="email"
+             required>
       <app-form-input-feedback [control]="form.get('email')"></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="firstName" required [appFormInput]="form.get('firstName')">
+      <input [appFormInput]="form.get('firstName')" class="form-control" formControlName="firstName"
+             required>
       <app-form-input-feedback [control]="form.get('firstName')"></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="lastName" required [appFormInput]="form.get('lastName')">
+      <input [appFormInput]="form.get('lastName')" class="form-control" formControlName="lastName"
+             required>
       <app-form-input-feedback [control]="form.get('lastName')"></app-form-input-feedback>
     </div>
   </div>
 
   <div>
-    <button type="button" class="btn btn-secondary mr-2" routerLink="/dashboard">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="!form.valid" type="submit">Submit</button>
+    <button class="btn btn-secondary mr-2" routerLink="/dashboard" type="button">Cancel</button>
+    <button [disabled]="!form.valid" class="btn btn-primary" type="submit" type="submit">Submit
+    </button>
   </div>
 </form>

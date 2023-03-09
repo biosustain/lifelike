@@ -1,9 +1,9 @@
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { AbstractControl, ValidationErrors } from "@angular/forms";
 
-import { toValidLink } from './utils/browser';
+import { toValidLink } from "./utils/browser";
 
 export function nonEmptyList(control: AbstractControl): { [key: string]: any } | null {
-  return control.value.length === 0 ? {required: {value: control.value}} : null;
+  return control.value.length === 0 ? { required: { value: control.value } } : null;
 }
 
 export function url(control: AbstractControl): { [key: string]: any } | null {
@@ -13,7 +13,7 @@ export function url(control: AbstractControl): { [key: string]: any } | null {
       return null;
     } else {
       return {
-        url: {value},
+        url: { value },
       };
     }
   } else {
@@ -29,7 +29,7 @@ export function potentiallyInternalUrl(control: AbstractControl): { [key: string
       return null;
     } catch (e) {
       return {
-        url: {value},
+        url: { value },
       };
     }
   } else {
@@ -39,14 +39,12 @@ export function potentiallyInternalUrl(control: AbstractControl): { [key: string
 
 export function filenameValidator(control: AbstractControl): ValidationErrors | null {
   const forbidden = control.value.match(validFilenameRegex);
-  return forbidden !== null ? {filenameError: {value: forbidden}} : null;
+  return forbidden !== null ? { filenameError: { value: forbidden } } : null;
 }
-
 
 export function noStartOrEndWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
   const forbidden = /^\s|\s$/.test(control.value);
-  return forbidden ? {whitespaceError: {value: control.value}} : null;
+  return forbidden ? { whitespaceError: { value: control.value } } : null;
 }
-
 
 export const validFilenameRegex = /[^\p{L}\d ()\[\]+{}^%$!.,'\-_@#]/gu;

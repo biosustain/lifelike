@@ -1,6 +1,6 @@
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 
-import { Source } from 'app/drawing-tool/services/interfaces';
+import { Source } from "app/drawing-tool/services/interfaces";
 
 export interface ModuleProperties {
   title: string;
@@ -15,7 +15,9 @@ export interface ShouldConfirmUnload {
    * If we guard against angular route unload, we should also guard against browser unload event.
    */
   // @HostListener('window:beforeunload', ['$event'])
-  handleBeforeUnload: (event: BeforeUnloadEvent) => void | BeforeUnloadEvent | Promise<void | BeforeUnloadEvent>;
+  handleBeforeUnload: (
+    event: BeforeUnloadEvent
+  ) => void | BeforeUnloadEvent | Promise<void | BeforeUnloadEvent>;
 }
 
 export interface ModuleAwareComponent {

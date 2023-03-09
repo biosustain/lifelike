@@ -37,5 +37,5 @@ const FLOAT = /^-?[0-9]*\.?[0-9]*$/;
 export const REGEX = {
   BETWEEN_TEXT_BREAKS,
   BETWEEN_SYLABES,
-  FLOAT
+  FLOAT,
 };

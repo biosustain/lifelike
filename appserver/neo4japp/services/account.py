@@ -1,8 +1,8 @@
 from sqlalchemy.exc import SQLAlchemyError
 
 from neo4japp.exceptions import ServerException
-from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
+from neo4japp.services.common import RDBMSBaseDao
 
 
 class AccountService(RDBMSBaseDao):
@@ -25,16 +25,18 @@ class AccountService(RDBMSBaseDao):
         admin = AppUser.query.filter_by(username=admin_username)
         user = AppUser.query.filter_by(username=username)
         if user and admin:
-            if 'admin' not in [r.name for r in admin.roles]:
+            if "admin" not in [r.name for r in admin.roles]:
                 raise ServerException(
-                    title='Failed to Delete User',
-                    message='You do not have enough privileges to delete a user.',
-                    code=403)
+                    title="Failed to Delete User",
+                    message="You do not have enough privileges to delete a user.",
+                    code=403,
+                )
             elif user.id == admin.id:
                 raise ServerException(
-                    title='Failed to Delete User',
-                    message='You cannot delete your own account.',
-                    code=400)
+                    title="Failed to Delete User",
+                    message="You cannot delete your own account.",
+                    code=400,
+                )
         try:
             self.session.delete(user)
             self.commit_or_flush(commit_now)

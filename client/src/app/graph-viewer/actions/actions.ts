@@ -4,9 +4,9 @@
  */
 
 import {
-  UniversalGraphGroup,
   UniversalGraphEdge,
-  UniversalGraphNode
+  UniversalGraphGroup,
+  UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';

@@ -1,30 +1,31 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { FTSQueryRecord } from 'app/interfaces';
-import { DBHostname } from 'app/shared/constants';
-import { stringToHex } from 'app/shared/utils';
-import { parseURLToDomainName } from 'app/shared/utils/browser';
+import { UniversalGraphNode } from "app/drawing-tool/services/interfaces";
+import { FTSQueryRecord } from "app/interfaces";
+import { DBHostname } from "app/shared/constants";
+import { stringToHex } from "app/shared/utils";
+import { parseURLToDomainName } from "app/shared/utils/browser";
 
-import { GraphSearchParameters } from '../graph-search';
-import { getLink } from '../utils/records';
-import { getGraphQueryParams } from '../utils/search';
+import { GraphSearchParameters } from "../graph-search";
+import { getLink } from "../utils/records";
+import { getGraphQueryParams } from "../utils/search";
 
 @Component({
-  selector: 'app-search-record-node',
-  templateUrl: 'search-record-node.component.html',
-  styleUrls: ['./search-record-node.component.scss'],
+  selector: "app-search-record-node",
+  templateUrl: "search-record-node.component.html",
+  styleUrls: ["./search-record-node.component.scss"],
 })
 export class SearchRecordNodeComponent {
-
-  private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
-  private readonly defaultDomain = 'Knowledge Graph';
-
   @Input() params: GraphSearchParameters;
-
   @Input() legend: Map<string, string>;
+  private currentNode: FTSQueryRecord;
+  private readonly defaultDomain = "Knowledge Graph";
+
+  get node(): FTSQueryRecord {
+    return this.currentNode;
+  }
 
   @Input()
   set node(value: FTSQueryRecord) {
@@ -33,14 +34,10 @@ export class SearchRecordNodeComponent {
     this.nodeURL = stringToHex(value.node.id.toString());
   }
 
-  get node(): FTSQueryRecord {
-    return this.currentNode;
-  }
-
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     let url: URL | string;
-    let domain = '';
+    let domain = "";
 
     try {
       url = new URL(getLink(this.node));
@@ -51,45 +48,52 @@ export class SearchRecordNodeComponent {
       domain = this.defaultDomain;
     }
 
-    dataTransfer.setData('text/plain', this.node.node.displayName);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.node.node.displayName,
-      label: this.node.node.label.toLowerCase(),
-      sub_labels: [],
-      data: {
-        hyperlinks: [{
-          domain,
-          url: url.toString()
-        }],
-        references: [{
-          type: 'DATABASE',
-          id: getLink(this.node),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
+    dataTransfer.setData("text/plain", this.node.node.displayName);
+    dataTransfer.setData(
+      "application/***ARANGO_DB_NAME***-node",
+      JSON.stringify({
+        display_name: this.node.node.displayName,
+        label: this.node.node.label.toLowerCase(),
+        sub_labels: [],
+        data: {
+          hyperlinks: [
+            {
+              domain,
+              url: url.toString(),
+            },
+          ],
+          references: [
+            {
+              type: "DATABASE",
+              id: getLink(this.node),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   getNodeDomain(url: URL): string {
     switch (url.hostname) {
       case DBHostname.UniProt:
-        return 'UniProt';
+        return "UniProt";
       case DBHostname.NCBI:
-        if (url.href.includes('mesh')) {
-          return 'MeSH';
+        if (url.href.includes("mesh")) {
+          return "MeSH";
         }
-        if (url.href.includes('Taxonomy')) {
-          return 'NCBI Taxonomy';
+        if (url.href.includes("Taxonomy")) {
+          return "NCBI Taxonomy";
         }
-        if (url.href.includes('gene')) {
-          return 'NCBI Gene';
+        if (url.href.includes("gene")) {
+          return "NCBI Gene";
         }
-        return 'NCBI';
+        return "NCBI";
       case DBHostname.ChEBI:
-        return 'ChEBI';
+        return "ChEBI";
       case DBHostname.GO:
-        return 'GO';
+        return "GO";
       default:
-        return 'Knowledge Graph';
+        return "Knowledge Graph";
     }
   }
 

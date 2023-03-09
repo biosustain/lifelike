@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { CopyrightInfringementPolicyComponent } from './copyright-infringement-policy.component';
+import { CopyrightInfringementPolicyComponent } from "./copyright-infringement-policy.component";
 
-describe('CopyrightInfringementPolicyComponent', () => {
+describe("CopyrightInfringementPolicyComponent", () => {
   let component: CopyrightInfringementPolicyComponent;
   let fixture: ComponentFixture<CopyrightInfringementPolicyComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CopyrightInfringementPolicyComponent ]
-    })
-    .compileComponents();
+      declarations: [CopyrightInfringementPolicyComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('CopyrightInfringementPolicyComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

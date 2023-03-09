@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { PolicyViewerComponent } from './policy-viewer.component';
+import { PolicyViewerComponent } from "./policy-viewer.component";
 
-describe('PolicyViewerComponent', () => {
+describe("PolicyViewerComponent", () => {
   let component: PolicyViewerComponent;
   let fixture: ComponentFixture<PolicyViewerComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ PolicyViewerComponent ],
+      declarations: [PolicyViewerComponent],
     });
   });
 
@@ -20,7 +20,7 @@ describe('PolicyViewerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

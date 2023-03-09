@@ -1,6 +1,5 @@
 import json
 import string
-
 from typing import List
 
 from bioc import (
@@ -18,7 +17,7 @@ class BiocDocumentService:
         pass
 
     def printable(self, sentence, escape_character=None):
-        out = ''
+        out = ""
         for character in sentence:
             if character in string.printable:
                 out += character
@@ -68,6 +67,7 @@ class BiocDocumentService:
     ) -> dict:
         bioc_dump = biocjson.dumps(bioc, indent=2)
         bioc = json.loads(bioc_dump)
-        bioc['documents'][0]['passages'][0]['annotations'] = [
-            anno.to_dict() for anno in annotations]
+        bioc["documents"][0]["passages"][0]["annotations"] = [
+            anno.to_dict() for anno in annotations
+        ]
         return bioc

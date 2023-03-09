@@ -1,5 +1,12 @@
-import { Component, Input, TemplateRef, OnChanges, SimpleChanges, ViewEncapsulation, } from '@angular/core';
-import { NestedTreeControl } from '@angular/cdk/tree';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  TemplateRef,
+  ViewEncapsulation,
+} from "@angular/core";
+import { NestedTreeControl } from "@angular/cdk/tree";
 
 interface TreeNode {
   label?: string;
@@ -8,10 +15,10 @@ interface TreeNode {
 }
 
 @Component({
-  selector: 'app-tree-view',
-  templateUrl: './tree-view.component.html',
-  styleUrls: ['./tree-view.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  selector: "app-tree-view",
+  templateUrl: "./tree-view.component.html",
+  styleUrls: ["./tree-view.component.scss"],
+  encapsulation: ViewEncapsulation.None,
 })
 export class TreeViewComponent implements OnChanges {
   /**
@@ -47,7 +54,7 @@ export class TreeViewComponent implements OnChanges {
   @Input() hasChild: (index: number, node: any) => boolean;
   treeControl;
 
-  ngOnChanges({getChildren, hasChild}: SimpleChanges) {
+  ngOnChanges({ getChildren, hasChild }: SimpleChanges) {
     if (getChildren) {
       this.treeControl = new NestedTreeControl<TreeNode>(getChildren.currentValue);
     }

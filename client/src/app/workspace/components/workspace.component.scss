@@ -3,28 +3,28 @@
 @import "src/scss/variables";
 
 .workspace-split-pane-placeholder {
-  display: flex;
-  position: relative;
+  align-items: center;
   background: $gray-200;
-  color: $text-muted;
   border-left: 4px solid $gray-300;
+  color: $text-muted;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
   vertical-align: top;
   width: 20px;
-  padding: 1rem;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
 
   &:hover {
     background: $link-color;
-    color: $white;
     border-color: $link-color;
+    color: $white;
   }
 }
 
 .side-pane-open-text {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
   max-width: 50px;
   overflow: hidden;
+  text-orientation: mixed;
+  writing-mode: vertical-rl;
 }

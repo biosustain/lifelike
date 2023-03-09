@@ -1,20 +1,14 @@
-import { NgModule } from '@angular/core';
+import { NgModule } from "@angular/core";
 
-import { WordCloudModule } from 'app/shared/components/word-cloud/word-cloud.module';
+import { WordCloudModule } from "app/shared/components/word-cloud/word-cloud.module";
 
-import { CloudViewerComponent } from './cloud-viewer.component';
+import { CloudViewerComponent } from "./cloud-viewer.component";
 
-const components = [
-  CloudViewerComponent
-];
+const components = [CloudViewerComponent];
 
 @NgModule({
   declarations: components,
-  imports: [
-    WordCloudModule
-  ],
+  imports: [WordCloudModule],
   exports: components,
 })
-export class CloudViewerModule {
-
-}
+export class CloudViewerModule {}

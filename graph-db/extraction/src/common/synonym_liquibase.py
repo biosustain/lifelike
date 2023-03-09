@@ -1,7 +1,8 @@
-from liquibase_changelog_generator import *
 from common.constants import NODE_SYNONYM, PROP_NAME, PROP_LOWERCASE_NAME
 from common.query_builder import get_create_index_query, get_create_constraint_query
 from config.config import Config
+
+from liquibase_changelog_generator import *
 
 
 class SynonymIndexChangelogsGenerator(ChangeLogFileGenerator):
@@ -34,4 +35,4 @@ def main():
 
 
 if __name__ == '__main__':
-   main()
+    main()

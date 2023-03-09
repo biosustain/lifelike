@@ -1,8 +1,9 @@
-from biocyc.data_file_parser import DataFileParser
-from common.graph_models import *
-from common.constants import *
+import logging
+
 import pandas as pd
-import logging, os
+from biocyc.data_file_parser import DataFileParser
+from common.constants import *
+from common.graph_models import *
 
 ATTR_NAMES = {
     'UNIQUE-ID': (PROP_BIOCYC_ID, 'str'),
@@ -11,17 +12,19 @@ ATTR_NAMES = {
     'ACCESSION-2': (PROP_ACCESSION2, 'str'),
     'LEFT-END-POSITION': (PROP_POS_LEFT, 'str'),
     'RIGHT-END-POSITION': (PROP_POS_RIGHT, 'str'),
-    'TRANSCRIPTION-DIRECTION':(PROP_STRAND, 'str'),
+    'TRANSCRIPTION-DIRECTION': (PROP_STRAND, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str')
 }
 
+
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, dict())
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_URL, PROP_ACCESSION2, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
+        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE, ATTR_NAMES, dict())
+        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_URL, PROP_ACCESSION2,
+                      PROP_POS_LEFT, PROP_POS_RIGHT, PROP_STRAND]
         self.logger = logging.getLogger(__name__)
 
-    def extrace_synonyms(self, df:pd.DataFrame):
+    def extrace_synonyms(self, df: pd.DataFrame):
         """
         extract synonyms from 'synonyms' column, combine with name, return dataframe for id-synonym (columns[ID, NAME])
         """

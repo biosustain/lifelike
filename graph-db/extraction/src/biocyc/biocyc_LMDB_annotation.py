@@ -1,7 +1,7 @@
-import pandas as pd
-from common.database import *
 from common.constants import *
+from common.database import *
 from common.utils import get_data_dir, write_compressed_tsv_file_from_dataframe
+
 
 def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     """
@@ -39,6 +39,7 @@ def main():
     generate_pseudomonas_genelist_for_LMDB(database, output_dir)
     generate_compound_list_for_LMDB(database, output_dir)
     database.close()
+
 
 if __name__ == '__main__':
     main()

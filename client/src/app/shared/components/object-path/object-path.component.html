@@ -1,44 +1,44 @@
-<ol class="breadcrumb" [style.flex-wrap]="wrap ? 'wrap' : 'nowrap'">
+<ol [style.flex-wrap]="wrap ? 'wrap' : 'nowrap'" class="breadcrumb">
+  <li class="breadcrumb-item">
+    <a [appLink]="['/projects']" [newTab]="newTab"> File Browser </a>
+  </li>
+  <ng-template #placeholders>
     <li class="breadcrumb-item">
-        <a [appLink]="['/projects']" [newTab]="newTab">
-            File Browser
-        </a>
+      <span class="placeholder-box">Loading loading</span>
     </li>
-    <ng-template #placeholders>
-        <li class="breadcrumb-item">
-            <span class="placeholder-box">Loading loading</span>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="placeholder-box">Loading</span>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="placeholder-box">Loading load</span>
-        </li>
-    </ng-template>
-    <ng-container *ngIf="path; else placeholders">
-        <li class="breadcrumb-item" *ngFor="let item of path" appContextMenu>
-            <a [appLink]="item.getCommands(forEditing)"
-               [newTab]="newTab"
-               [appFSObjectTarget]="item.isDirectory ? item : null"
-               (refreshRequest)="refreshRequest.emit()">
-              <app-project-icon *ngIf="!item.parent"
-                                class="mr-1"
-                                size="16"
-                                [project]="item.project">
-              </app-project-icon>
-              {{ item.isProjectRoot && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
-            </a>
-            <div appContextMenuBody>
-                <ng-container *ngIf="item.parent; else noParentMenu">
-                    <app-object-menu [object]="item" [forEditing]="false" [showDelete]="false"
-                                     (objectOpen)="openObject($event)">
-                    </app-object-menu>
-                </ng-container>
-                <ng-template #noParentMenu>
-                    <app-project-menu [project]="item.project"
-                                      [nameEntity]="true"></app-project-menu>
-                </ng-template>
-            </div>
-        </li>
-    </ng-container>
+    <li class="breadcrumb-item">
+      <span class="placeholder-box">Loading</span>
+    </li>
+    <li class="breadcrumb-item">
+      <span class="placeholder-box">Loading load</span>
+    </li>
+  </ng-template>
+  <ng-container *ngIf="path; else placeholders">
+    <li *ngFor="let item of path" appContextMenu class="breadcrumb-item">
+      <a
+        (refreshRequest)="refreshRequest.emit()"
+        [appFSObjectTarget]="item.isDirectory ? item : null"
+        [appLink]="item.getCommands(forEditing)"
+        [newTab]="newTab"
+      >
+        <app-project-icon *ngIf="!item.parent" [project]="item.project" class="mr-1" size="16">
+        </app-project-icon>
+        {{ item.isProjectRoot && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
+      </a>
+      <div appContextMenuBody>
+        <ng-container *ngIf="item.parent; else noParentMenu">
+          <app-object-menu
+            (objectOpen)="openObject($event)"
+            [forEditing]="false"
+            [object]="item"
+            [showDelete]="false"
+          >
+          </app-object-menu>
+        </ng-container>
+        <ng-template #noParentMenu>
+          <app-project-menu [nameEntity]="true" [project]="item.project"></app-project-menu>
+        </ng-template>
+      </div>
+    </li>
+  </ng-container>
 </ol>

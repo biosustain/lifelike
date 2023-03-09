@@ -1,25 +1,26 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <app-modal-header (cancel)="cancel()">
     <ng-container *ngIf="promptRestore; else viewOnlyHeader">
       Restore Version of '{{ object.effectiveName }}'
     </ng-container>
-    <ng-template #viewOnlyHeader>
-      Version History for '{{ object.effectiveName }}'
-    </ng-template>
+    <ng-template #viewOnlyHeader> Version History for '{{ object.effectiveName }}' </ng-template>
   </app-modal-header>
 
   <app-modal-body>
-    <app-object-version-history [object]="object" formControlName="version"
-                                [showCheckboxes]="promptRestore"></app-object-version-history>
+    <app-object-version-history
+      [object]="object"
+      [showCheckboxes]="promptRestore"
+      formControlName="version"
+    ></app-object-version-history>
   </app-modal-body>
 
   <app-modal-footer class="text-truncate">
     <ng-container *ngIf="promptRestore; else viewOnlyFooter">
-      <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Close</button>
-      <button type="submit" class="btn btn-primary">Restore</button>
+      <button (click)="cancel()" class="btn btn-secondary mr-2" type="button">Close</button>
+      <button class="btn btn-primary" type="submit">Restore</button>
     </ng-container>
     <ng-template #viewOnlyFooter>
-      <button type="button" class="btn btn-primary" (click)="cancel()">Close</button>
+      <button (click)="cancel()" class="btn btn-primary" type="button">Close</button>
     </ng-template>
   </app-modal-footer>
 </form>

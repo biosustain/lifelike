@@ -1,31 +1,31 @@
 .module {
+  align-items: stretch;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   height: 100%;
 }
 
 .module-header {
-  padding: $module-header-padding-y $module-header-padding-x;
+  background-color: white;
   border-bottom: $module-header-border-width solid $module-header-border-color;
   box-shadow: $module-header-box-shadow;
+  padding: $module-header-padding-y $module-header-padding-x;
   z-index: 2;
-  background-color: white;
 }
 
 .module-title-bar {
-  display: flex;
   align-items: center;
+  column-gap: $spacer * 0.25;
+  display: flex;
   flex-wrap: wrap;
-  row-gap: $spacer * .25;
-  column-gap: $spacer * .25;
+  row-gap: $spacer * 0.25;
 }
 
 .module-title-bar-back {
-  padding: $module-back-button-padding;
-  border: 0;
   background: transparent;
+  border: 0;
   color: $link-color;
+  padding: $module-back-button-padding;
 
   &:hover {
     color: $link-hover-color;
@@ -33,11 +33,11 @@
 }
 
 .module-title {
-  margin: 0;
-  padding: 0;
   font-size: $module-title-font-size;
   font-weight: $module-title-font-weight;
   line-height: $module-title-line-height;
+  margin: 0;
+  padding: 0;
   @include text-truncate();
 }
 
@@ -55,7 +55,8 @@
 }
 
 .module-body-table {
-  th, td {
+  th,
+  td {
     &:first-child {
       padding-left: $module-body-padding-x;
     }
@@ -75,9 +76,9 @@
 }
 
 .module-section-header-title {
+  color: $module-section-title-color;
   font-size: $module-section-title-font-size;
   font-weight: $module-section-title-font-weight;
-  color: $module-section-title-color;
 }
 
 // Used to constrain the width of the body to a standard size
@@ -109,8 +110,8 @@
   }
 
   .module-body-split-sidebar {
-    border-left: 1px solid $border-color;
     background: $light;
+    border-left: 1px solid $border-color;
     min-width: 400px;
   }
 }
@@ -121,8 +122,8 @@
 
     @include module-breakpoint-up(md) {
       flex-basis: 500px;
-      min-width: 500px;
       flex-grow: 0;
+      min-width: 500px;
     }
   }
 

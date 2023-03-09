@@ -1,81 +1,84 @@
 <div class="module-section">
-    <div class="module-section-header">
-        <h2 class="module-section-header-title">Your Projects</h2>
+  <div class="module-section-header">
+    <h2 class="module-section-header-title">Your Projects</h2>
+  </div>
+
+  <div #bodyObserver="appElementObserver" appElementObserver class="module-section-body">
+    <div class="mb-3 d-flex align-items-center">
+      <div class="mr-2">
+        <button (click)="openCreateDialog()" class="btn btn-primary">
+          <i class="fa fa-fw fa-plus-circle"></i>
+          New Project
+        </button>
+      </div>
     </div>
 
-    <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
-        <div class="mb-3 d-flex align-items-center">
-            <div class="mr-2">
-                <button class="btn btn-primary" (click)="openCreateDialog()">
-                    <i class="fa fa-fw fa-plus-circle"></i>
-                    New Project
-                </button>
+    <ng-container *ngIf="projectList$ | async as projectList">
+      <ng-container *ngIf="projectList.error">
+        <app-module-error [error]="projectList.error"> </app-module-error>
+      </ng-container>
+
+      <ng-container *ngIf="projectList.loading">
+        <div class="tile-deck">
+          <div
+            *ngFor="let p of [0, 1, 2]"
+            class="tile d-flex flex-column justify-content-center align-items-center"
+          >
+            <div class="flex-fill d-flex align-items-center">
+              <span class="placeholder-box">
+                <i class="fas fa-layer-group fa-4x"></i>
+              </span>
             </div>
+          </div>
         </div>
 
-        <ng-container *ngIf="(projectList$ | async) as projectList">
-            <ng-container *ngIf="projectList.error">
-                <app-module-error [error]="projectList.error">
-                </app-module-error>
-            </ng-container>
+        <div class="mt-4">
+          <app-pagination></app-pagination>
+        </div>
+      </ng-container>
 
-            <ng-container *ngIf="projectList.loading">
-                <div class="tile-deck">
-                    <div *ngFor="let p of [0, 1, 2]"
-                         class="tile d-flex flex-column justify-content-center align-items-center">
-                        <div class="flex-fill d-flex align-items-center">
-            <span class="placeholder-box">
-              <i class="fas fa-layer-group fa-4x"></i>
-            </span>
-                        </div>
-                    </div>
+      <ng-container *ngIf="projectList.value">
+        <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
+          <app-object-tile-deck [objects]="projectList.value.results" [showAuthor]="false">
+            <ng-template #tileToolbar let-project>
+              <button (click)="toggleStarred(project)" *ngIf="project.starred" class="btn btn-sm">
+                <i class="fas fa-star text-warning"></i>
+              </button>
+              <button
+                *ngIf="project.public"
+                class="btn btn-sm"
+                container="body"
+                ngbTooltip="This project is public and can be viewed by any logged-in user."
+              >
+                <i class="fa fa-fw text-icon fa-globe"></i>
+              </button>
+              <div class="d-inline-block ml-auto" container="body" ngbDropdown>
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <i class="fas fa-cog fa-fw"></i>
+                </button>
+                <div ngbDropdownMenu>
+                  <app-project-menu [project]="project"></app-project-menu>
                 </div>
+              </div>
+            </ng-template>
+          </app-object-tile-deck>
 
-                <div class="mt-4">
-                    <app-pagination></app-pagination>
-                </div>
-            </ng-container>
-
-            <ng-container *ngIf="projectList.value">
-                <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
-                    <app-object-tile-deck
-                            [objects]="projectList.value.results"
-                            [showAuthor]="false"
-                    >
-                        <ng-template let-project #tileToolbar>
-                            <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
-                                <i class="fas fa-star text-warning"></i>
-                            </button>
-                            <button *ngIf="project.public"
-                                    class="btn btn-sm"
-                                    ngbTooltip="This project is public and can be viewed by any logged-in user."
-                                    container="body">
-                                <i class="fa fa-fw text-icon fa-globe"></i>
-                            </button>
-                            <div ngbDropdown class="d-inline-block ml-auto" container="body">
-                                <button class="btn btn-sm" ngbDropdownToggle>
-                                    <i class="fas fa-cog fa-fw"></i>
-                                </button>
-                                <div ngbDropdownMenu>
-                                    <app-project-menu [project]="project"></app-project-menu>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </app-object-tile-deck>
-
-                    <div class="mt-4">
-                        <app-pagination [paging]="paging$.value" [collectionSize]="projectList.value.collectionSize"
-                                        (pageChange)="this.paging$.next($event)"></app-pagination>
-                    </div>
-                </ng-container>
-
-                <ng-template #noProjectResults>
-                    <div class="my-4">
-                        You have no projects. Create projects to store collections of
-                        documents and knowledge maps.
-                    </div>
-                </ng-template>
-            </ng-container>
+          <div class="mt-4">
+            <app-pagination
+              (pageChange)="this.paging$.next($event)"
+              [collectionSize]="projectList.value.collectionSize"
+              [paging]="paging$.value"
+            ></app-pagination>
+          </div>
         </ng-container>
-    </div>
+
+        <ng-template #noProjectResults>
+          <div class="my-4">
+            You have no projects. Create projects to store collections of documents and knowledge
+            maps.
+          </div>
+        </ng-template>
+      </ng-container>
+    </ng-container>
+  </div>
 </div>

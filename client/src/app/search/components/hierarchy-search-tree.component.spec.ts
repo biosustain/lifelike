@@ -1,26 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { HierarchySearchTreeComponent } from './hierarchy-search-tree.component';
+import { HierarchySearchTreeComponent } from "./hierarchy-search-tree.component";
 
-describe('HierarchySearchTreeComponent', () => {
+describe("HierarchySearchTreeComponent", () => {
   let component: HierarchySearchTreeComponent;
   let fixture: ComponentFixture<HierarchySearchTreeComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [ HierarchySearchTreeComponent ],
-      providers: []
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [HierarchySearchTreeComponent],
+      providers: [],
     });
   });
 
@@ -30,7 +26,7 @@ describe('HierarchySearchTreeComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

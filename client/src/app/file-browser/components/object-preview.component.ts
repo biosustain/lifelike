@@ -8,67 +8,72 @@ import {
   SimpleChanges,
   ViewChild,
   ViewContainerRef,
-} from '@angular/core';
+} from "@angular/core";
 
-import { BehaviorSubject, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { BehaviorSubject, of } from "rxjs";
+import { mergeMap } from "rxjs/operators";
 
-import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ObjectTypeService } from "app/file-types/services/object-type.service";
+import { ErrorHandler } from "app/shared/services/error-handler.service";
 
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilesystemService } from '../services/filesystem.service';
+import { FilesystemObject } from "../models/filesystem-object";
+import { FilesystemService } from "../services/filesystem.service";
 
 @Component({
-  selector: 'app-object-preview',
-  templateUrl: './object-preview.component.html',
+  selector: "app-object-preview",
+  templateUrl: "./object-preview.component.html",
 })
 export class ObjectPreviewComponent implements OnChanges {
-
   @Input() object: FilesystemObject;
   @Input() contentValue: Blob;
   @Input() highlightTerms: string[] | undefined;
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild("child", { static: false, read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
   readonly previewComponent$ = this.object$.pipe(
-    mergeMap(object => {
+    mergeMap((object) => {
       if (object) {
-        const contentValue$ = this.contentValue ? of(this.contentValue) : this.filesystemService.getContent(object.hashId);
-        return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
-          return typeProvider.createPreviewComponent(object, contentValue$, {
-            highlightTerms: this.highlightTerms,
-          });
-        }));
+        const contentValue$ = this.contentValue
+          ? of(this.contentValue)
+          : this.filesystemService.getContent(object.hashId);
+        return this.objectTypeService.get(object).pipe(
+          mergeMap((typeProvider) => {
+            return typeProvider.createPreviewComponent(object, contentValue$, {
+              highlightTerms: this.highlightTerms,
+            });
+          })
+        );
       } else {
         return of(null);
       }
-    }),
+    })
   );
 
-  constructor(protected readonly filesystemService: FilesystemService,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly objectTypeService: ObjectTypeService,
-              protected readonly ngZone: NgZone) {
-  }
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly ngZone: NgZone
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if ('object' in changes || 'contentValue' in changes) {
+    if ("object" in changes || "contentValue" in changes) {
       this.object$.next(this.object);
     }
   }
 }
 
 @Component({
-  selector: 'app-object-preview-outlet',
-  template: `
-    <ng-container #child></ng-container>
-  `,
+  selector: "app-object-preview-outlet",
+  template: ` <ng-container #child></ng-container> `,
 })
 export class ObjectPreviewOutletComponent implements AfterViewInit {
-
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild("child", { static: false, read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
   private _componentRef: ComponentRef<any>;
+
+  get componentRef(): ComponentRef<any> {
+    return this._componentRef;
+  }
 
   @Input()
   set componentRef(componentRef: ComponentRef<any>) {
@@ -76,10 +81,6 @@ export class ObjectPreviewOutletComponent implements AfterViewInit {
     if (this.viewComponentRef) {
       this.attach();
     }
-  }
-
-  get componentRef(): ComponentRef<any> {
-    return this._componentRef;
   }
 
   ngAfterViewInit(): void {
@@ -96,5 +97,4 @@ export class ObjectPreviewOutletComponent implements AfterViewInit {
       }
     });
   }
-
 }

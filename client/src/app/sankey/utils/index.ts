@@ -10,7 +10,7 @@ export function isIterable(obj) {
   if (obj == null) {
     return false;
   }
-  return typeof obj[Symbol.iterator] === 'function';
+  return typeof obj[Symbol.iterator] === "function";
 }
 
 export const uniqueBy = (arr, accessor) =>
@@ -26,27 +26,27 @@ export const uniqueBy = (arr, accessor) =>
 // endregion
 
 // region Numbers
-export const isNumber = (v: any) => !isNaN(v) && typeof v !== 'boolean';
+export const isNumber = (v: any) => !isNaN(v) && typeof v !== "boolean";
 
 export const isPositiveNumber = (v: any) => isNumber(v) || v > 0;
 
-export const clamp = (min, max) => value => Math.min(Math.max(min, Number(value)), max);
+export const clamp = (min, max) => (value) => Math.min(Math.max(min, Number(value)), max);
 
 export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
 // endregion
 
 export const parseForRendering = (v, propertyName: string | boolean = true) => {
   if (!isNaN(v)) {
-    return formatNumber(v, 'en-US', '1.0-6');
+    return formatNumber(v, "en-US", "1.0-6");
   }
-  if (typeof v === 'string' || v instanceof String) {
+  if (typeof v === "string" || v instanceof String) {
     return v;
   }
-  if (typeof v === 'object' && propertyName) {
+  if (typeof v === "object" && propertyName) {
     if (isIterable(v)) {
       // propertyName === true -- if was not called by JSON parser
       if (propertyName === true) {
-        return v.map(n => parseForRendering(n)).join(', ');
+        return v.map((n) => parseForRendering(n)).join(", ");
       }
       const vAsArray = clone(v);
       if (vAsArray.length > 3) {
@@ -64,12 +64,13 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
   }
   return v;
 };
-export const normalizeGenerator = values => {
+export const normalizeGenerator = (values) => {
   const min = Math.min(...values);
   const max = values.reduce((o, n) => o + n, 0);
   return {
-    min, max,
-    normalize: (max - min) ? d => Math.max(0, d / max) : d => d / max
+    min,
+    max,
+    normalize: max - min ? (d) => Math.max(0, d / max) : (d) => d / max,
   };
 };
 export const RELAYOUT_DURATION = 250;
@@ -104,8 +105,8 @@ export const indexByProperty = <D extends object>(data: Array<D>, property: keyo
 export function extractDescriptionFromSankey(text: string): string {
   try {
     const content = JSON.parse(text);
-    return content.graph.description || '';
+    return content.graph.description || "";
   } catch (e) {
-    return '';
+    return "";
   }
 }

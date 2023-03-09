@@ -1,7 +1,6 @@
-
 .tree-view-node {
-  display: block;
   counter-increment: listCounter;
+  display: block;
 
   & > div {
     counter-reset: listCounter;
@@ -13,7 +12,7 @@
 
     [data-counter] {
       &::after {
-        content: ' [' counter(listCounter) '] ';
+        content: " [" counter(listCounter) "] ";
       }
     }
   }

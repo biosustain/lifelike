@@ -1,11 +1,11 @@
-import { Observable, ReplaySubject, Subject, of, iif } from 'rxjs';
-import { merge, omitBy, isNil, partial, transform } from 'lodash-es';
-import { switchMap, map, shareReplay, first, tap } from 'rxjs/operators';
+import { iif, Observable, of, ReplaySubject, Subject } from "rxjs";
+import { isNil, merge, omitBy, partial, transform } from "lodash-es";
+import { first, map, shareReplay, switchMap, tap } from "rxjs/operators";
 
-import { Many } from 'app/shared/schemas/common';
-import { debug } from 'app/shared/rxjs/debug';
+import { Many } from "app/shared/schemas/common";
+import { debug } from "app/shared/rxjs/debug";
 
-import { unifiedAccessor } from '../utils/rxjs';
+import { unifiedAccessor } from "../utils/rxjs";
 
 export abstract class StateControlAbstractService<Options extends object, State extends object> {
   delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
@@ -17,7 +17,7 @@ export abstract class StateControlAbstractService<Options extends object, State 
    */
   stateAccessor<StateProperty extends keyof State>(property: StateProperty) {
     return unifiedAccessor(this.state$, property).pipe(
-      map(state => state[property]),
+      map((state) => state[property]),
       debug(`stateAccessor(${property})`),
       shareReplay(1)
     ) as Observable<State[StateProperty]>;
@@ -32,16 +32,15 @@ export abstract class StateControlAbstractService<Options extends object, State 
     stateProperty: keyof State,
     mapping?: (option: Options[keyof Options], state: State[keyof State]) => MappingResult
   ) {
-    mapping = mapping ?? (
-      (option, statePropertyValue) =>
-        option[statePropertyValue as any] as MappingResult
-    );
+    mapping =
+      mapping ??
+      ((option, statePropertyValue) => option[statePropertyValue as any] as MappingResult);
     return this.optionStateMultiAccessor(
       optionProperty,
       stateProperty,
-      mapping ?
-        (options, state) => mapping(options[optionProperty], state[stateProperty]) :
-        (options, state) => options[optionProperty][state[stateProperty] as any]
+      mapping
+        ? (options, state) => mapping(options[optionProperty], state[stateProperty])
+        : (options, state) => options[optionProperty][state[stateProperty] as any]
     ) as Observable<MappingResult>;
   }
 
@@ -56,13 +55,15 @@ export abstract class StateControlAbstractService<Options extends object, State 
     stateProperties: Many<keyof State>,
     mapping?: (options: Partial<Options>, state: Partial<State>) => MappingResult
   ) {
-    mapping = mapping ?? ((options, state) => ({options, state} as any as MappingResult));
+    mapping = mapping ?? ((options, state) => ({ options, state } as any as MappingResult));
     return unifiedAccessor(this.options$, optionProperties).pipe(
-      switchMap(options => unifiedAccessor(this.state$, stateProperties).pipe(
-        map(state => mapping(options, state)),
-        debug(`optionStateMultiAccessor(${optionProperties}, ${stateProperties})`),
-        shareReplay(1)
-      ))
+      switchMap((options) =>
+        unifiedAccessor(this.state$, stateProperties).pipe(
+          map((state) => mapping(options, state)),
+          debug(`optionStateMultiAccessor(${optionProperties}, ${stateProperties})`),
+          shareReplay(1)
+        )
+      )
     ) as Observable<MappingResult>;
   }
 
@@ -72,25 +73,25 @@ export abstract class StateControlAbstractService<Options extends object, State 
    */
   patchState(
     statePatch: Partial<State>,
-    reducer: (stateDelta: Partial<State>, patch: Partial<State>) => Partial<State> = partial(merge, {})
+    reducer: (stateDelta: Partial<State>, patch: Partial<State>) => Partial<State> = partial(
+      merge,
+      {}
+    )
   ): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
       // map(currentStateDelta => reducer(currentStateDelta, statePatch)),
-      switchMap(currentStateDelta => {
+      switchMap((currentStateDelta) => {
         const newStateDelta = reducer(currentStateDelta, statePatch);
         return iif(
           () => !isNil(newStateDelta),
           of(
             // ommit empty values so they can be reset to defaultState
-            omitBy(
-              newStateDelta,
-              isNil
-            ) as Partial<State>
-          ),
+            omitBy(newStateDelta, isNil) as Partial<State>
+          )
         );
       }),
-      tap(stateDelta => this.delta$.next(stateDelta))
+      tap((stateDelta) => this.delta$.next(stateDelta))
     );
   }
 
@@ -100,25 +101,25 @@ export abstract class StateControlAbstractService<Options extends object, State 
    *
    * This method is complementary to patchState. Helping to set only desired properties.
    */
-  setState(
-    statePatch: Partial<State>
-  ): Observable<Partial<State>> {
+  setState(statePatch: Partial<State>): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
-      map(delta => transform(
-        statePatch,
-        (accumulator, value, key, object) => {
-          if (isNil(value)) {
-            if (delta.hasOwnProperty(key)) {
-              accumulator[key] = delta[key];
+      map((delta) =>
+        transform(
+          statePatch,
+          (accumulator, value, key, object) => {
+            if (isNil(value)) {
+              if (delta.hasOwnProperty(key)) {
+                accumulator[key] = delta[key];
+              }
+            } else {
+              accumulator[key] = value;
             }
-          } else {
-            accumulator[key] = value;
-          }
-        },
-        {} as Partial<State>
-      )),
-      tap(stateDelta => this.delta$.next(stateDelta))
+          },
+          {} as Partial<State>
+        )
+      ),
+      tap((stateDelta) => this.delta$.next(stateDelta))
     );
   }
 
@@ -126,12 +127,12 @@ export abstract class StateControlAbstractService<Options extends object, State 
    * Set the state as direvative of current state.
    */
   reduceState(
-    reducer: (state: Partial<State>) => Partial<State> = state => state
+    reducer: (state: Partial<State>) => Partial<State> = (state) => state
   ): Observable<Partial<State>> {
     return this.delta$.pipe(
       first(),
       map(reducer),
-      tap(stateDelta => this.delta$.next(stateDelta))
+      tap((stateDelta) => this.delta$.next(stateDelta))
     );
   }
 }

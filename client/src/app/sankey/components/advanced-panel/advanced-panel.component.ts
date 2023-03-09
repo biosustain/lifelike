@@ -1,32 +1,26 @@
-import { Component, OnDestroy, OnInit, } from '@angular/core';
-import { FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { AbstractControl, FormBuilder, Validators } from "@angular/forms";
 
-import { isInteger } from 'lodash-es';
+import { isInteger } from "lodash-es";
 
-import { ControllerService } from 'app/sankey/services/controller.service';
+import { ControllerService } from "app/sankey/services/controller.service";
 
-import { SankeyAbstractAdvancedPanelComponent } from '../../abstract/advanced-panel.component';
-import { SankeyState, SankeyOptions } from '../../interfaces';
+import { SankeyAbstractAdvancedPanelComponent } from "../../abstract/advanced-panel.component";
+import { SankeyOptions, SankeyState } from "../../interfaces";
 
 @Component({
-  selector: 'app-advanced-panel',
-  templateUrl: './advanced-panel.component.html',
-  styleUrls: ['./advanced-panel.component.scss'],
+  selector: "app-advanced-panel",
+  templateUrl: "./advanced-panel.component.html",
+  styleUrls: ["./advanced-panel.component.scss"],
 })
 export class SankeyAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState>
-  implements OnInit, OnDestroy {
-  constructor(
-    protected common: ControllerService,
-    protected formBuilder: FormBuilder
-  ) {
-    super(common, formBuilder);
-  }
-
+  implements OnInit, OnDestroy
+{
   form = this.formBuilder.group({
     shortestPathPlusN: [1, []],
     alignId: [undefined, []],
-    normalizeLinks: ['', []],
+    normalizeLinks: ["", []],
     fontSizeScale: [1, []],
     labelEllipsis: this.formBuilder.group({
       enabled: [false, []],
@@ -34,24 +28,27 @@ export class SankeyAdvancedPanelComponent
     }),
     prescalerId: [undefined, []],
   });
-
   prescalers$ = this.common.prescalers$;
   maximumLabelLength$ = this.common.maximumLabelLength$;
   maximumShortestPathPlusN$ = this.common.maximumShortestPathPlusN$;
   aligns$ = this.common.aligns$;
 
+  constructor(protected common: ControllerService, protected formBuilder: FormBuilder) {
+    super(common, formBuilder);
+  }
+
   ngOnInit() {
     super.ngOnInit();
 
-    this.maximumShortestPathPlusN$.subscribe(maximumShortestPathPlusN => {
-      this.form.get('shortestPathPlusN').setValidators([
-        ({value}: AbstractControl) => {
+    this.maximumShortestPathPlusN$.subscribe((maximumShortestPathPlusN) => {
+      this.form.get("shortestPathPlusN").setValidators([
+        ({ value }: AbstractControl) => {
           if (!isInteger(value)) {
             return {
               step: {
                 value,
-                fraction: value % 1
-              }
+                fraction: value % 1,
+              },
             };
           }
         },

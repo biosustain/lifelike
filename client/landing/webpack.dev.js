@@ -1,10 +1,10 @@
-const path = require('path');
-const {merge} = require('webpack-merge');
-const common = require('./webpack.common.js');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require("path");
+const { merge } = require("webpack-merge");
+const common = require("./webpack.common.js");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = merge(common, {
-  mode: 'development',
+  mode: "development",
   devServer: {
     compress: false,
     port: 9000,
@@ -12,8 +12,8 @@ module.exports = merge(common, {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src', 'index.html'),
+      template: path.resolve(__dirname, "src", "index.html"),
       hash: false,
     }),
-  ]
+  ],
 });

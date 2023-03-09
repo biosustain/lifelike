@@ -1,12 +1,15 @@
-import { DrawnLine, Line } from './lines';
+import { DrawnLine, Line } from "./lines";
 
 export class DashedLine implements Line {
-  constructor(readonly width: number,
-              readonly style: string,
-              readonly dash: number[]) {
-  }
+  constructor(readonly width: number, readonly style: string, readonly dash: number[]) {}
 
-  draw(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number): DrawnLine {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): DrawnLine {
     ctx.save();
     this.setContext(ctx);
     ctx.stroke();

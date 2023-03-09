@@ -1,10 +1,9 @@
-import os.path
 import logging
+import os.path
+
 import pandas as pd
-
-from common.constants import *
 from common.base_parser import BaseParser
-
+from common.constants import *
 
 PATHWAY_FILE = 'pathway.tsv'
 KO_FILE = 'ko.tsv'
@@ -77,17 +76,31 @@ class KeggParser(BaseParser):
     def parse_and_write_data_files(self):
         df_pathway = self.parse_pathway_file()
         logging.info('kegg pathways: ' + str(len(df_pathway)))
-        df_pathway.to_csv(os.path.join(self.output_dir, self.file_prefix + PATHWAY_FILE), sep='\t', index=False)
+        df_pathway.to_csv(
+            os.path.join(self.output_dir, self.file_prefix + PATHWAY_FILE),
+            sep='\t',
+            index=False
+            )
 
         df_ko = self.parse_ko_file()
         logging.info('kegg ko: ' + str(len(df_ko)))
-        df_ko.to_csv(os.path.join(self.output_dir, self.file_prefix + KO_FILE), sep='\t', index=False)
+        df_ko.to_csv(
+            os.path.join(self.output_dir, self.file_prefix + KO_FILE),
+            sep='\t',
+            index=False
+            )
 
         # Write gene data file
         outfile = os.path.join(self.output_dir, self.file_prefix + GENE_FILE)
         infile = os.path.join(self.download_dir, 'genes', 'genes_ncbi-geneid.list')
         header = True
-        chunks = pd.read_csv(infile, sep='\t', chunksize=3000, header=None, names=[PROP_ID, 'gene_id'])
+        chunks = pd.read_csv(
+            infile,
+            sep='\t',
+            chunksize=3000,
+            header=None,
+            names=[PROP_ID, 'gene_id']
+            )
         total = 0
         # create a new outfile
         f = open(outfile, 'w')
@@ -109,7 +122,11 @@ class KeggParser(BaseParser):
         genome2pathways, df_genome = self.parse_pathway2genome_file()
         logging.info('total genome2pathways: ' + str(len(genome2pathways)))
         genome2pathways.to_csv(filepath, sep='\t', index=False, columns=['genome', 'pathway'])
-        df_genome.to_csv(os.path.join(self.output_dir, self.file_prefix + GENOME_FILE), sep='\t', index=False)
+        df_genome.to_csv(
+            os.path.join(self.output_dir, self.file_prefix + GENOME_FILE),
+            sep='\t',
+            index=False
+            )
 
         outfile = os.path.join(self.output_dir, self.file_prefix + GENE2KO_FILE)
         infile = os.path.join(self.download_dir, 'genes', 'ko', 'ko_genes.list')
@@ -122,7 +139,14 @@ class KeggParser(BaseParser):
         for chunk in chunks:
             total = total + len(chunk)
             chunk['ko'] = chunk['ko'].str.replace('ko:', '')
-            chunk.to_csv(outfile, header=header, columns=['gene', 'ko'], mode='a', sep='\t', index=False)
+            chunk.to_csv(
+                outfile,
+                header=header,
+                columns=['gene', 'ko'],
+                mode='a',
+                sep='\t',
+                index=False
+                )
             header = False
         logging.info('total gene2ko: ' + str(total))
 
@@ -131,7 +155,8 @@ def main(args):
     parser = KeggParser(args.prefix)
     parser.parse_and_write_data_files()
 
-    for filename in [PATHWAY_FILE, KO_FILE, GENE_FILE, GENOME_FILE, KO2PATHWAY_FILE, GENOME2PATHWAY_FILE, GENE2KO_FILE]:
+    for filename in [PATHWAY_FILE, KO_FILE, GENE_FILE, GENOME_FILE, KO2PATHWAY_FILE,
+                     GENOME2PATHWAY_FILE, GENE2KO_FILE]:
         parser.upload_azure_file(filename, args.prefix)
 
 

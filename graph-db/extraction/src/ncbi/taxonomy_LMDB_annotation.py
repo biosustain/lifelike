@@ -1,12 +1,14 @@
-from ncbi.ncbi_taxonomy_parser import TaxonomyParser
-from common.database import *
-from common.utils import get_data_dir
-from common.constants import *
 import os
 
+from common.constants import *
+from common.database import *
+from common.utils import get_data_dir
+from ncbi.ncbi_taxonomy_parser import TaxonomyParser
+
 # default strain for their species for organism searching
-LMDB_SPECIES_MAPPING_STRAIN = ['367830','511145', '272563', '208964', '559292']
+LMDB_SPECIES_MAPPING_STRAIN = ['367830', '511145', '272563', '208964', '559292']
 DATA_SOURCE = 'NCBI Taxonomy'
+
 
 def write_LMDB_annotation_file(database, base_dir, excluded_names=['environmental sample']):
     '''
@@ -57,7 +59,9 @@ def _write_node_names(tax, file, exclude_node_names=[], replace_id_map={}):
 
     lines = ''
     for name, name_class in tax.names.items():
-        lines = lines + '\t'.join([tax.tax_id, tax.rank, tax.top_category, name, name_class, tax.orig_id, DATA_SOURCE]) + '\n'
+        lines = lines + '\t'.join(
+            [tax.tax_id, tax.rank, tax.top_category, name, name_class, tax.orig_id, DATA_SOURCE]
+            ) + '\n'
     file.write(lines)
     for child in tax.children:
         _write_node_names(child, file, exclude_node_names, replace_id_map)

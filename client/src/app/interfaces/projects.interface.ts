@@ -1,7 +1,5 @@
-import { FilesystemObject, ProjectImpl } from 'app/file-browser/models/filesystem-object';
-
-import { PdfFile } from './pdf-files.interface';
-import { User } from './auth.interface';
+import { FilesystemObject, ProjectImpl } from "app/file-browser/models/filesystem-object";
+import { User } from "./auth.interface";
 
 export interface DirectoryContent {
   dir: FilesystemObject;
@@ -10,7 +8,7 @@ export interface DirectoryContent {
 }
 
 export interface DirectoryObject {
-  type: 'dir' | 'file' | 'map';
+  type: "dir" | "file" | "map";
   hashId?: any;
   filename: string;
   description?: string;
@@ -21,5 +19,5 @@ export interface DirectoryObject {
   highlight?: string[];
   highlightAnnotated?: boolean[];
   user?: User;
-  project: Pick<ProjectImpl, 'projectName'>;
+  project: Pick<ProjectImpl, "projectName">;
 }

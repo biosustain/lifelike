@@ -14,16 +14,18 @@ interface EnvironmentVars {
 
 // Read environment variables (set by env.js) from browser window
 const browserWindow = window || {};
-const envAccessor = '__env';
-const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}) as EnvironmentVars;
+const envAccessor = "__env";
+const browserWindowEnv = (
+  browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}
+) as EnvironmentVars;
 
 export const environment = {
   production: browserWindowEnv.production || false,
   keggEnabled: browserWindowEnv.keggEnabled || false,
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
-  oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
-  oauthClientId: browserWindowEnv.oauthClientId || 'client',
-  ***ARANGO_DB_NAME***Version: '__VERSION__', // This is replaced during the docker build stage
+  oauthIssuer: browserWindowEnv.oauthIssuer || "https://example/auth/master",
+  oauthClientId: browserWindowEnv.oauthClientId || "client",
+  ***ARANGO_DB_NAME***Version: "__VERSION__", // This is replaced during the docker build stage
 };
 
 /*

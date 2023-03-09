@@ -1,8 +1,9 @@
-from common.liquibase_changelog_generator import *
+from zipfile import ZipFile
+
 from common.constants import *
+from common.liquibase_changelog_generator import *
 from common.query_builder import *
 from go.go_parser import *
-from zipfile import ZipFile
 
 
 class GoChangeLogsGenerator(ChangeLogFileGenerator):
@@ -26,9 +27,11 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
                 namespaces = df[PROP_NAMESPACE].drop_duplicates()
                 for namespace in namespaces:
                     entity_label = namespace.title().replace('_', '')
-                    node_changeset = self.get_node_changeset(df, filename, entity_label, NODE_GO,
-                                                             row_filter_col=PROP_NAMESPACE,
-                                                             row_filter_val=namespace)
+                    node_changeset = self.get_node_changeset(
+                        df, filename, entity_label, NODE_GO,
+                        row_filter_col=PROP_NAMESPACE,
+                        row_filter_val=namespace
+                        )
                     self.change_sets.append(node_changeset)
 
     def add_synonym_changesets(self):
@@ -59,4 +62,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

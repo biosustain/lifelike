@@ -7,8 +7,8 @@
 .input-group-append button {
   // carefully overwrite default border color to come along with input styling
   &:not(:hover) {
-    border-top: $input-border-width solid $input-group-addon-border-color;
     border-bottom: $input-border-width solid $input-group-addon-border-color;
+    border-top: $input-border-width solid $input-group-addon-border-color;
 
     &:first-child {
       border-left: $input-border-width solid $input-group-addon-border-color;

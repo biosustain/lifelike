@@ -1,10 +1,10 @@
-import attr
+from typing import List, Tuple
 
-from typing import Dict, List, Tuple
+import attr
 
 
 @attr.s(frozen=True)
-class EnrichmentCellTextMapping():
+class EnrichmentCellTextMapping:
     text: str = attr.ib()
     text_index_map: List[Tuple[int, dict]] = attr.ib()
     cell_texts: List[dict] = attr.ib()

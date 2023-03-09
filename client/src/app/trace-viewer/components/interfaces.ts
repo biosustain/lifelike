@@ -7,9 +7,10 @@ import Graph from 'app/shared/providers/graph-type/interfaces';
  * + properties used to calculate initial layout
  * + optional data from GraphNode
  */
-export interface TraceNode extends visNetwork.Node,
-  // GraphNode id collides with visNetwork.Node id
-  Partial<Omit<Graph.Node, 'id'>> {
+export interface TraceNode
+  extends visNetwork.Node,
+    // GraphNode id collides with visNetwork.Node id
+    Partial<Omit<Graph.Node, "id">> {
   _visited?: boolean;
   _fromEdges?: Array<TraceEdge>;
   _toEdges?: Array<TraceEdge>;
@@ -28,7 +29,6 @@ export interface TraceEdge extends visNetwork.Edge, Partial<Graph.Link> {
   _fromObj?: TraceNode;
   _toObj?: TraceNode;
 }
-
 
 export interface TraceData {
   nodes: TraceNode[];

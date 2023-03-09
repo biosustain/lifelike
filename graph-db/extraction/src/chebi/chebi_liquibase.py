@@ -1,12 +1,20 @@
-from common.liquibase_changelog_generator import *
-from common.constants import *
-from common.query_builder import *
 from zipfile import ZipFile
+
+from common.constants import *
+from common.liquibase_changelog_generator import *
+from common.query_builder import *
 
 
 class ChebiChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author, zip_data_file: str, initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_CHEBI, NODE_CHEMICAL, initial_load)
+        ChangeLogFileGenerator.__init__(
+            self,
+            author,
+            zip_data_file,
+            DB_CHEBI,
+            NODE_CHEMICAL,
+            initial_load
+            )
         self.index_quieries = []
         self.logger = logging.getLogger(__name__)
 
@@ -52,4 +60,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

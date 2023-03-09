@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { forEachRight } from 'lodash-es';
+import { forEachRight } from "lodash-es";
 
-import { Pane } from '../workspace-manager';
+import { Pane } from "../workspace-manager";
 
-const LOCAL_STORAGE_KEY = '***ARANGO_DB_NAME***_workspace_session';
+const LOCAL_STORAGE_KEY = "***ARANGO_DB_NAME***_workspace_session";
 
 export interface TabData {
   url: string;
@@ -29,26 +29,30 @@ interface PaneCreateOptions {
 
 export interface WorkspaceSessionLoader {
   createPane(id: string, options: PaneCreateOptions): void;
+
   loadTab(id: string, data: TabData): void;
+
   setPaneActiveTabHistory(id: string, activeTabHistory: number[]): void;
 }
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***',
+  providedIn: "***ARANGO_USERNAME***",
 })
 export class WorkspaceSessionService {
   save(panes: Pane[]) {
     const data: SessionData = {
-      panes: panes.map(pane => {
+      panes: panes.map((pane) => {
         return {
           id: pane.id,
           size: pane.size,
-          tabs: pane.tabs.map(tab => ({
+          tabs: pane.tabs.map((tab) => ({
             url: tab.url,
             title: tab.title,
             fontAwesomeIcon: tab.fontAwesomeIcon,
           })),
-          activeTabHistory: [...pane.activeTabHistory.values()].map((tab) => pane.tabs.indexOf(tab)),
+          activeTabHistory: [...pane.activeTabHistory.values()].map((tab) =>
+            pane.tabs.indexOf(tab)
+          ),
         };
       }),
     };

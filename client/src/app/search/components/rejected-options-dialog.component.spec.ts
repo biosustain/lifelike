@@ -1,31 +1,24 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { configureTestSuite } from 'ng-bullet';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
+import { configureTestSuite } from "ng-bullet";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
-import { ContentSearchService } from '../services/content-search.service';
+import { RejectedOptionsDialogComponent } from "./rejected-options-dialog.component";
+import { ContentSearchService } from "../services/content-search.service";
 
-describe('RejectedOptionsDialogComponent', () => {
+describe("RejectedOptionsDialogComponent", () => {
   let component: RejectedOptionsDialogComponent;
   let fixture: ComponentFixture<RejectedOptionsDialogComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [ RejectedOptionsDialogComponent ],
-      providers: [
-        ContentSearchService,
-        NgbActiveModal,
-      ]
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [RejectedOptionsDialogComponent],
+      providers: [ContentSearchService, NgbActiveModal],
     });
   });
 
@@ -35,7 +28,7 @@ describe('RejectedOptionsDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

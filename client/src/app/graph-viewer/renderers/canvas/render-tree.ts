@@ -1,11 +1,10 @@
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, map } from 'rxjs/operators';
+import { Observable, Subject } from "rxjs";
+import { debounceTime, map } from "rxjs/operators";
 
-import { PlacedObject, PlacedObjectRenderer } from '../../styles/styles';
-import { RenderTree } from '../render-tree';
+import { PlacedObject, PlacedObjectRenderer } from "../../styles/styles";
+import { RenderTree } from "../render-tree";
 
 export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTree<T> {
-
   private readonly children: Map<T, PlacedObject> = new Map();
   private renderQueue: Map<PlacedObject, boolean> = new Map();
   private readonly renderStart$ = new Subject<void>();
@@ -15,7 +14,7 @@ export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTr
       const result: [PlacedObject, boolean][] = Array.from(this.renderQueue.entries());
       this.renderQueue.clear();
       return result;
-    }),
+    })
   );
 
   get(key: T): PlacedObject | undefined {
@@ -28,7 +27,7 @@ export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTr
       value.bind(this);
       value.objectDidBind();
     } catch (e) {
-      console.error('failed to bind', value, e);
+      console.error("failed to bind", value, e);
     }
     this.renderQueue.set(value, true);
     this.renderStart$.next();
@@ -70,8 +69,7 @@ export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTr
       value.objectWillUnbind();
       value.bind(null);
     } catch (e) {
-      console.error('failed to unbind', value, e);
+      console.error("failed to unbind", value, e);
     }
   }
-
 }

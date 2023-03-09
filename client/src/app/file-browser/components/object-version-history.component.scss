@@ -1,4 +1,4 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 .split-view {
   height: calc(100vh - 250px);
@@ -6,11 +6,11 @@
 }
 
 .split-view-left {
-  width: 300px;
   overflow: auto;
+  width: 300px;
 }
 
 .split-view-right {
-  border: 1px solid $border-color;
   background: $light;
+  border: 1px solid $border-color;
 }

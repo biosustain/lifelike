@@ -17,13 +17,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let entry of typeEntries" class="hoverable-row" (click)="getSnippetsForNewEntity(entry)">
-            <td class="text-wrap" [ngStyle]="{'color': color}">{{entry.name}}</td>
+          <tr
+            (click)="getSnippetsForNewEntity(entry)"
+            *ngFor="let entry of typeEntries"
+            class="hoverable-row"
+          >
+            <td [ngStyle]="{ color: color }" class="text-wrap">{{ entry.name }}</td>
             <td class="text-primary text-center">{{ entry.count }}</td>
             <td>
-              <div class="bg-primary" [ngStyle]="{
-                      'height': '15px',
-                      'width': entry.percentage + '%'}"
+              <div
+                [ngStyle]="{
+                  height: '15px',
+                  width: entry.percentage + '%'
+                }"
+                class="bg-primary"
               ></div>
             </td>
           </tr>
@@ -32,22 +39,22 @@
       <ng-template #noResults>No Associated {{ type }}s were found.</ng-template>
     </div>
     <div *ngIf="!showingEntityTable">
-      <button class="btn btn-secondary" (click)="returnToEntityList()">
+      <button (click)="returnToEntityList()" class="btn btn-secondary">
         <i class="fa fa-fw fa-arrow-left"></i> Return to Entity List
       </button>
       <app-snippet-display
-        [snippetData]="selectedRowSnippetData"
-        [queryData]="queryData"
-        [totalResults]="selectedRowSnippetTotal"
+        (requestNewPageEmitter)="getNewPageOfSnippets($event)"
         [isNewEntity]="newSnippetDisplayEntity"
         [legend]="legend"
-        (requestNewPageEmitter)="getNewPageOfSnippets($event)"
+        [queryData]="queryData"
+        [snippetData]="selectedRowSnippetData"
+        [totalResults]="selectedRowSnippetTotal"
       ></app-snippet-display>
     </div>
   </ng-template>
 </div>
 <ng-template #loadingSpinner>
-  <div id="loading-spinner-container" class="d-flex justify-content-center align-items-center">
+  <div class="d-flex justify-content-center align-items-center" id="loading-spinner-container">
     <div class="spinner-border text-primary" role="status">
       <span class="sr-only">Loading...</span>
     </div>

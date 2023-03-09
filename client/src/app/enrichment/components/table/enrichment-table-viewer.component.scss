@@ -1,4 +1,4 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 #modalContainer {
   overflow: auto;
@@ -14,20 +14,20 @@
 }
 
 .right-justified {
-  margin-left:auto;
-  margin-right:0;
   margin-bottom: 1rem;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .top-button {
-  position: absolute;
   bottom: $window-spacer;
+  position: absolute;
   right: $window-spacer;
   z-index: 100;
 }
 
 .table-container {
   display: inline-block;
-  min-width: calc(100% - 2 * #{module-body-padding-x});
   margin: $module-body-padding-x;
+  min-width: calc(100% - 2 * #{module-body-padding-x});
 }

@@ -1,4 +1,4 @@
-import { Renderer2 } from '@angular/core';
+import { Renderer2 } from "@angular/core";
 
 export class DropdownController {
   fixedAnchorPoint = false;
@@ -6,27 +6,14 @@ export class DropdownController {
   focusAfterOpen = false;
   parentNode: Node | undefined;
 
-  constructor(protected readonly renderer: Renderer2,
-              protected readonly containerElement: HTMLElement,
-              protected readonly dropdownElement: HTMLElement,
-              options: DropdownOptions = {}) {
+  constructor(
+    protected readonly renderer: Renderer2,
+    protected readonly containerElement: HTMLElement,
+    protected readonly dropdownElement: HTMLElement,
+    options: DropdownOptions = {}
+  ) {
     Object.assign(this, options);
     this.parentNode = dropdownElement.parentNode;
-  }
-
-  /**
-   * Move the menu back to the original container.
-   */
-  private removeFromBody() {
-    this.renderer.appendChild(this.parentNode, this.dropdownElement);
-  }
-
-  /**
-   * Move the menu to <body> so it doesn't get ruined by elements with overflow.
-   */
-  private placeInBody() {
-    this.removeFromBody();
-    this.renderer.appendChild(document.body, this.dropdownElement);
   }
 
   openRelative(element: HTMLElement, options: RelativeOpenOptions = {}) {
@@ -42,18 +29,18 @@ export class DropdownController {
     const dropdownElement = this.dropdownElement;
 
     // Need to show the element to measure it
-    dropdownElement.classList.add('show');
+    dropdownElement.classList.add("show");
 
-    dropdownElement.style.left = x + 'px';
-    dropdownElement.style.top = y + 'px';
+    dropdownElement.style.left = x + "px";
+    dropdownElement.style.top = y + "px";
 
     this.fit(options);
 
     if (this.focusAfterOpen) {
       // Deal with the fact that we move the menu to <body>, which screws up tabbing
-      dropdownElement.setAttribute('tabindex', '-1');
+      dropdownElement.setAttribute("tabindex", "-1");
       dropdownElement.focus();
-      dropdownElement.setAttribute('tabindex', '');
+      dropdownElement.setAttribute("tabindex", "");
     }
   }
 
@@ -63,7 +50,7 @@ export class DropdownController {
     const viewportWidth = document.documentElement.clientWidth - this.viewportSpacing;
     const viewportHeight = document.documentElement.clientHeight - this.viewportSpacing;
 
-    let {left, top} = dropdownElement.getBoundingClientRect();
+    let { left, top } = dropdownElement.getBoundingClientRect();
     let width = dropdownElement.offsetWidth;
     let height = dropdownElement.offsetHeight;
 
@@ -86,11 +73,11 @@ export class DropdownController {
       }
 
       if (left + width > viewportWidth) {
-        left += (viewportWidth - (left + width));
+        left += viewportWidth - (left + width);
       }
 
       if (top + height > viewportHeight) {
-        top += (viewportHeight - (top + height));
+        top += viewportHeight - (top + height);
       }
     } else {
       let maxWidth = viewportWidth - left;
@@ -110,11 +97,11 @@ export class DropdownController {
     }
 
     if (forceWidth != null) {
-      dropdownElement.style.width = forceWidth + 'px';
+      dropdownElement.style.width = forceWidth + "px";
     }
 
     if (forceHeight != null) {
-      dropdownElement.style.height = forceHeight + 'px';
+      dropdownElement.style.height = forceHeight + "px";
     }
   }
 
@@ -123,11 +110,26 @@ export class DropdownController {
    */
   close() {
     const dropdownElement = this.dropdownElement;
-    dropdownElement.style.width = '';
-    dropdownElement.style.height = '';
-    dropdownElement.classList.remove('show');
+    dropdownElement.style.width = "";
+    dropdownElement.style.height = "";
+    dropdownElement.classList.remove("show");
 
     this.removeFromBody();
+  }
+
+  /**
+   * Move the menu back to the original container.
+   */
+  private removeFromBody() {
+    this.renderer.appendChild(this.parentNode, this.dropdownElement);
+  }
+
+  /**
+   * Move the menu to <body> so it doesn't get ruined by elements with overflow.
+   */
+  private placeInBody() {
+    this.removeFromBody();
+    this.renderer.appendChild(document.body, this.dropdownElement);
   }
 }
 
@@ -137,7 +139,7 @@ export interface DropdownOptions {
   fixedAnchorPoint?: boolean;
 }
 
-export type Placement = 'bottom-left';
+export type Placement = "bottom-left";
 
 export interface FitOptions {
   maxWidth?: number;

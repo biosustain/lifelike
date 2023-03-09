@@ -19,9 +19,10 @@ HEADER () {
 getStaged () {
   relative_dir=${1:-'.'}
   matching_pattern=${2:-''}
-  cd "${relative_dir}"\
-   && git diff --diff-filter=d --cached --name-only --relative\
-    | grep -E "${matching_pattern}"
+  cd "${relative_dir}" \
+   && git diff --diff-filter=d --cached --name-only --relative \
+    | grep -E "${matching_pattern}" \
+    | sed 's/.*/"&"/'
 }
 
 # Printout system information

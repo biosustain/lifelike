@@ -1,37 +1,55 @@
 <div class="module-body-split module-body-browser-split">
-  <div class="module-body-split-main" [appFSObjectTarget]="parent" (refreshRequest)="refreshRequest.emit()">
-    <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
+  <div
+    (refreshRequest)="refreshRequest.emit()"
+    [appFSObjectTarget]="parent"
+    class="module-body-split-main"
+  >
+    <ng-container
+      *ngIf="showDescription && parent && parent.description && parent.description.trim().length"
+    >
       <div class="border-bottom p-4 text-muted d-flex align-items-start">
         <div class="flex-fill">
           <span style="white-space: pre-line">{{ parent.description }}</span>
-          <a href="#"
-             ngbTooltip="Edit Folder Description"
-             container="body"
-             (click)="openParentEditDialog(); $event.preventDefault()">(edit)</a>
+          <a
+            (click)="openParentEditDialog(); $event.preventDefault()"
+            container="body"
+            href="#"
+            ngbTooltip="Edit Folder Description"
+            >(edit)</a
+          >
         </div>
       </div>
     </ng-container>
 
     <table class="table module-body-table table-selectable" style="table-layout: fixed">
       <colgroup>
-        <col style="width: 50px"> <!-- Checkbox -->
-        <col *ngIf="showStars" style="width: 30px"> <!-- "Starred" -->
-        <col> <!-- Name -->
-        <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column"><!-- Annotated -->
-        <col style="width: 90px" class="d-none d-cbp-md-table-column"> <!-- Created -->
-        <col class="w-20" [ngStyle.gt-xs]="'width:120px'"> <!-- Author -->
-        <col style="width: 80px"> <!-- Dropdown -->
+        <col style="width: 50px" />
+        <!-- Checkbox -->
+        <col *ngIf="showStars" style="width: 30px" />
+        <!-- "Starred" -->
+        <col />
+        <!-- Name -->
+        <col class="d-none d-cbp-sm-table-column" style="width: 15%; max-width: 140px" />
+        <!-- Annotated -->
+        <col class="d-none d-cbp-md-table-column" style="width: 90px" />
+        <!-- Created -->
+        <col [ngStyle.gt-xs]="'width:120px'" class="w-20" />
+        <!-- Author -->
+        <col style="width: 80px" />
+        <!-- Dropdown -->
       </colgroup>
       <thead>
         <tr>
           <th class="text-truncate">
             <ng-container *ngIf="objects != null && objects.multipleSelection">
               <div class="custom-control custom-checkbox">
-                <input type="checkbox"
-                       id="{{ id }}-select-all"
-                       class="custom-control-input"
-                       [checked]="objects.isAllSelected()"
-                       (change)="objects.toggleAll()">
+                <input
+                  (change)="objects.toggleAll()"
+                  [checked]="objects.isAllSelected()"
+                  class="custom-control-input"
+                  id="{{ id }}-select-all"
+                  type="checkbox"
+                />
                 <label class="custom-control-label" for="{{ id }}-select-all"></label>
               </div>
             </ng-container>
@@ -47,7 +65,7 @@
 
       <!-- Results -->
       <tbody>
-      <!-- Placeholders -->
+        <!-- Placeholders -->
         <ng-template #placeholders>
           <tr>
             <td class="align-middle text-nowrap overflow-hidden">
@@ -56,7 +74,9 @@
             <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
               <span class="placeholder-box">Loading loading</span>
             </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
+            <td
+              class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate"
+            >
               <span class="placeholder-box">Loading loading</span>
             </td>
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
@@ -64,7 +84,7 @@
             </td>
             <td>
               <div class="d-flex align-items-end">
-                <div ngbDropdown class="d-inline-block ml-auto">
+                <div class="d-inline-block ml-auto" ngbDropdown>
                   <button class="btn btn-sm" ngbDropdownToggle>
                     <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
                   </button>
@@ -79,7 +99,9 @@
             <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
               <span class="placeholder-box">Loading loading</span>
             </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
+            <td
+              class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate"
+            >
               <span class="placeholder-box">Loading loading</span>
             </td>
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
@@ -87,7 +109,7 @@
             </td>
             <td>
               <div class="d-flex align-items-end">
-                <div ngbDropdown class="d-inline-block ml-auto">
+                <div class="d-inline-block ml-auto" ngbDropdown>
                   <button class="btn btn-sm" ngbDropdownToggle>
                     <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
                   </button>
@@ -97,60 +119,92 @@
           </tr>
         </ng-template>
         <ng-container *ngIf="objects; else placeholders">
-          <tr *ngFor="let object of objects.view$ | async; index as objectIndex"
-              tabindex="0"
-              [class.active]="objects.isSelected(object)"
-              [appFSObjectTarget]="object?.isDirectory ? object : null"
-              (refreshRequest)="refreshRequest.emit()"
-              draggable="true"
-              (dragstart)="objectDragStart($event, object)">
-            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'" (click)="objects.toggle(object)">
-              <div class="custom-control custom-checkbox overflow-hidden" (click)="$event.preventDefault()">
-                <input type="checkbox"
-                        id="{{ id }}-object-{{ objectIndex }}"
-                        class="custom-control-input"
-                        (change)="objects.toggle(object); $event.preventDefault()"
-                        [checked]="objects.isSelected(object)">
-                <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}"></label>
+          <tr
+            (dragstart)="objectDragStart($event, object)"
+            (refreshRequest)="refreshRequest.emit()"
+            *ngFor="let object of objects.view$ | async; index as objectIndex"
+            [appFSObjectTarget]="object?.isDirectory ? object : null"
+            [class.active]="objects.isSelected(object)"
+            draggable="true"
+            tabindex="0"
+          >
+            <td
+              (click)="objects.toggle(object)"
+              [style.width]="'fit-content'"
+              class="align-middle text-nowrap overflow-hidden"
+            >
+              <div
+                (click)="$event.preventDefault()"
+                class="custom-control custom-checkbox overflow-hidden"
+              >
+                <input
+                  (change)="objects.toggle(object); $event.preventDefault()"
+                  [checked]="objects.isSelected(object)"
+                  class="custom-control-input"
+                  id="{{ id }}-object-{{ objectIndex }}"
+                  type="checkbox"
+                />
+                <label
+                  class="custom-control-label d-block"
+                  for="{{ id }}-object-{{ objectIndex }}"
+                ></label>
               </div>
             </td>
 
             <td *ngIf="showStars" class="align-middle text-nowrap overflow-hidden">
-              <div class="d-flex align-items-center" container="body" (click)="toggleStarred(object)">
+              <div
+                (click)="toggleStarred(object)"
+                class="d-flex align-items-center"
+                container="body"
+              >
                 <div class="d-inline-block mr-1">
-                  <i [class]="'fas fa-star ' + (object.starred ? 'text-warning' : 'text-secondary')"></i>
+                  <i
+                    [class]="'fas fa-star ' + (object.starred ? 'text-warning' : 'text-secondary')"
+                  ></i>
                 </div>
               </div>
             </td>
 
-            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'" (click)="objects.toggle(object)">
-              <div class="d-flex align-items-center"
-                    popoverTitle="Description"
-                    container="body"
-                    triggers="mouseenter:mouseleave"
-                    placement="right"
-                    [popoverClass]="'tooltip-newlines'"
-                    [ngbPopover]="object.description  | truncate: MAX_TOOLTIP_LENGTH"
-                    [disablePopover]="object.description == null || object.description.length === 0">
+            <td
+              (click)="objects.toggle(object)"
+              [style.width]="'fit-content'"
+              class="align-middle text-nowrap overflow-hidden"
+            >
+              <div
+                [disablePopover]="object.description == null || object.description.length === 0"
+                [ngbPopover]="object.description | truncate : MAX_TOOLTIP_LENGTH"
+                [popoverClass]="'tooltip-newlines'"
+                class="d-flex align-items-center"
+                container="body"
+                placement="right"
+                popoverTitle="Description"
+                triggers="mouseenter:mouseleave"
+              >
                 <div class="d-inline-block mr-1">
                   <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
                 </div>
 
                 <div class="d-inline-block text-truncate">
-                  <a [appLink]="object.getCommands(forEditing)"
-                     [handleClick]="false"
-                     (click)="openObject(object); $event.preventDefault()">
-                    <ng-container *ngIf="!object.isDirectory; else dirLabel">{{ object.effectiveName }}</ng-container>
+                  <a
+                    (click)="openObject(object); $event.preventDefault()"
+                    [appLink]="object.getCommands(forEditing)"
+                    [handleClick]="false"
+                  >
+                    <ng-container *ngIf="!object.isDirectory; else dirLabel">{{
+                      object.effectiveName
+                    }}</ng-container>
                     <ng-template #dirLabel>
                       <strong>{{ object.effectiveName }}</strong>
                     </ng-template>
                   </a>
                 </div>
 
-                <div *ngIf="object.public"
-                      class="d-inline-block ml-1"
-                      ngbTooltip="This item is public and can be viewed by any logged-in user."
-                      container="body">
+                <div
+                  *ngIf="object.public"
+                  class="d-inline-block ml-1"
+                  container="body"
+                  ngbTooltip="This item is public and can be viewed by any logged-in user."
+                >
                   <i class="fa fa-fw text-icon fa-globe"></i>
                 </div>
 
@@ -158,59 +212,80 @@
                   <i class="fa fa-fw text-icon fa-thumbtack"></i>
                 </div>
 
-                <div *ngIf="!object.privileges.writable && !object.privileges.commentable"
-                      class="d-inline-block ml-1"
-                      ngbTooltip="You do not have permission to edit this item."
-                      container="body">
+                <div
+                  *ngIf="!object.privileges.writable && !object.privileges.commentable"
+                  class="d-inline-block ml-1"
+                  container="body"
+                  ngbTooltip="You do not have permission to edit this item."
+                >
                   <i class="fa fa-fw text-icon fa-lock"></i>
                 </div>
 
-                <div *ngIf="!object.privileges.writable && object.privileges.commentable"
-                      class="d-inline-block ml-1"
-                      ngbTooltip="You can make comments on this item, but you cannot edit it."
-                      container="body">
+                <div
+                  *ngIf="!object.privileges.writable && object.privileges.commentable"
+                  class="d-inline-block ml-1"
+                  container="body"
+                  ngbTooltip="You can make comments on this item, but you cannot edit it."
+                >
                   <i class="fa fa-fw text-icon fa-comment"></i>
                 </div>
               </div>
             </td>
 
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell" (click)="objects.toggle(object)">
-              <div *ngIf="object.isAnnotatable"
-                    class="text-truncate"
-                    container="body"
-                    triggers="mouseenter:mouseleave"
-                    placement="right"
-                    popoverTitle="Annotation Status"
-                    [ngbPopover]="object.annotationsTooltipContent"
-                    [disablePopover]="!object.annotationsTooltipContent">
-                <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
+            <td
+              (click)="objects.toggle(object)"
+              class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell"
+            >
+              <div
+                *ngIf="object.isAnnotatable"
+                [disablePopover]="!object.annotationsTooltipContent"
+                [ngbPopover]="object.annotationsTooltipContent"
+                class="text-truncate"
+                container="body"
+                placement="right"
+                popoverTitle="Annotation Status"
+                triggers="mouseenter:mouseleave"
+              >
+                <ng-container
+                  *ngIf="
+                    object.annotationsTooltipContent && object.annotationsTooltipContent.length
+                  "
+                >
                   <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
                 </ng-container>
-                {{ (object.annotationsDate | date: 'short') || 'No annotations'}}
+                {{ (object.annotationsDate | date : "short") || "No annotations" }}
               </div>
             </td>
 
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate" (click)="objects.toggle(object)">
-              {{ object.updatedTimestamp | date:'shortDate'}}
+            <td
+              (click)="objects.toggle(object)"
+              class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate"
+            >
+              {{ object.updatedTimestamp | date : "shortDate" }}
             </td>
 
-            <td class="align-middle text-nowrap overflow-hidden text-truncate" (click)="objects.toggle(object)">
+            <td
+              (click)="objects.toggle(object)"
+              class="align-middle text-nowrap overflow-hidden text-truncate"
+            >
               <app-user [user]="object.user"></app-user>
             </td>
 
             <td>
-              <div class="d-flex align-items-end" *ngIf="objectControls">
-                <button class="btn btn-sm" [matMenuTriggerFor]="fileObjectMenu">
+              <div *ngIf="objectControls" class="d-flex align-items-end">
+                <button [matMenuTriggerFor]="fileObjectMenu" class="btn btn-sm">
                   <i class="fas fa-cog fa-fw"></i>
                   <i class="fas fa-caret-down fa-fw"></i>
                 </button>
                 <mat-menu #fileObjectMenu="matMenu" xPosition="after" yPosition="below">
-                  <app-object-menu [object]="object"
-                                   [forEditing]="forEditing"
-                                   [showDelete]="true"
-                                   (objectOpen)="openObject($event)"
-                                   (objectUpdate)="updateView()"
-                                   (refreshRequest)="refreshRequest.emit($event)">
+                  <app-object-menu
+                    [forEditing]="forEditing"
+                    [object]="object"
+                    [showDelete]="true"
+                    (objectOpen)="openObject($event)"
+                    (objectUpdate)="updateView()"
+                    (refreshRequest)="refreshRequest.emit($event)"
+                  >
                   </app-object-menu>
                 </mat-menu>
               </div>
@@ -228,12 +303,14 @@
   </div>
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-      <app-object-info *ngIf="objects != null && objects.selectionLength$ | async"
-                        [object]="objects.lastSelection$ | async"
-                        [forEditing]="forEditing"
-                        [showDelete]="true"
-                        (objectOpen)="openObject($event)"
-                        (refreshRequest)="refreshRequest.emit($event)">
-      </app-object-info>
+    <app-object-info
+      *ngIf="objects != null && objects.selectionLength$ | async"
+      [object]="objects.lastSelection$ | async"
+      [forEditing]="forEditing"
+      [showDelete]="true"
+      (objectOpen)="openObject($event)"
+      (refreshRequest)="refreshRequest.emit($event)"
+    >
+    </app-object-info>
   </div>
 </div>

@@ -1,13 +1,13 @@
 export class MemoryStorage implements Storage {
   storage: { [key: string]: any };
 
+  get length(): number {
+    return Object.keys(this.storage).length;
+  }
+
   constructor(init: { [key: string]: any } = {}) {
     this.storage = {};
     Object.entries(init).forEach(([key, value]) => this.setItem(key, value));
-  }
-
-  get length(): number {
-    return Object.keys(this.storage).length;
   }
 
   key(index: number): string | null {
@@ -41,7 +41,7 @@ export function mockStorage(storage: Storage, initialValue: { [key: string]: str
   storage.clear();
   const storageMock = new MemoryStorage(initialValue);
   const spyLocalStorage = spyOnAllFunctions(storage, false);
-  Object.keys(spyLocalStorage).forEach(key => {
+  Object.keys(spyLocalStorage).forEach((key) => {
     spyLocalStorage[key].and.callFake(storageMock[key].bind(storageMock));
   });
   return storageMock;

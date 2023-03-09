@@ -17,8 +17,8 @@ export abstract class CommonFormDialogComponent<T, V = T> extends CommonDialogCo
     } else {
       this.form.markAsDirty();
       this.messageDialog.display({
-        title: 'Invalid Input',
-        message: 'There are some errors with your input.',
+        title: "Invalid Input",
+        message: "There are some errors with your input.",
         type: MessageType.Error,
       } as MessageArguments);
     }

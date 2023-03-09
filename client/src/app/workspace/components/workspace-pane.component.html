@@ -1,37 +1,48 @@
-<div class="h-100 d-flex flex-column" (click)="setFocus()">
-  <div class="nav-workspace-tabs flex-shrink-0 align-items-start" appElementObserver
-       #tabBar="appElementObserver">
-    <div class="nav flex-fill"
-         cdkDropList
-         cdkDropListOrientation="horizontal"
-         (cdkDropListDropped)="tabDropped($event)"
-         [cdkDropListData]="pane">
+<div (click)="setFocus()" class="h-100 d-flex flex-column">
+  <div
+    #tabBar="appElementObserver"
+    appElementObserver
+    class="nav-workspace-tabs flex-shrink-0 align-items-start"
+  >
+    <div
+      (cdkDropListDropped)="tabDropped($event)"
+      [cdkDropListData]="pane"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      class="nav flex-fill"
+    >
       <app-workspace-tab
-          *ngFor="let tab of pane.tabs"
-          style="max-width: 250px; width: 30%; min-width: 15%"
-          [active]="pane.activeTab === tab"
-          [tab]="tab"
-          [hasSiblings]="pane.tabs.length > 1"
-          [scroll$]="tabBar.scroll$"
-          (clearWorkbench)="clearWorkbench()"
-          (closeAllTabs)="closeAllTabs()"
-          (closeOtherTabs)="closeOtherTabs(tab)"
-          (duplicate)="addTab(tab)"
-          (tabClick)="setActiveTab(tab)"
-          (tabClose)="closeTab(tab)"
+        (clearWorkbench)="clearWorkbench()"
+        (closeAllTabs)="closeAllTabs()"
+        (closeOtherTabs)="closeOtherTabs(tab)"
+        (duplicate)="addTab(tab)"
+        (tabClick)="setActiveTab(tab)"
+        (tabClose)="closeTab(tab)"
+        *ngFor="let tab of pane.tabs"
+        [active]="pane.activeTab === tab"
+        [hasSiblings]="pane.tabs.length > 1"
+        [scroll$]="tabBar.scroll$"
+        [tab]="tab"
+        style="max-width: 250px; width: 30%; min-width: 15%"
       ></app-workspace-tab>
       <div class="ml-2 mt-1 d-flex align-items-start">
-        <div ngbDropdown container="body">
-          <button type="button" class="btn btn-secondary btn-sm dropdown-no-arrow"
-                  ngbDropdownToggle ngbTooltip="New Tab"
-                  container="body">
+        <div container="body" ngbDropdown>
+          <button
+            class="btn btn-secondary btn-sm dropdown-no-arrow"
+            container="body"
+            ngbDropdownToggle
+            ngbTooltip="New Tab"
+            type="button"
+          >
             <i class="fa fa-fw fa-plus"></i>
           </button>
-          <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">
-            <button *ngFor="let option of NEW_TAB_OPTIONS"
-                    class="dropdown-item"
-                    (click)="addTab(option)">
-                    {{ option.title }}
+          <div class="dropdown-menu dropdown-menu-right" ngbDropdownMenu>
+            <button
+              (click)="addTab(option)"
+              *ngFor="let option of NEW_TAB_OPTIONS"
+              class="dropdown-item"
+            >
+              {{ option.title }}
             </button>
           </div>
         </div>
@@ -40,21 +51,26 @@
   </div>
 
   <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
-    <div *ngFor="let tab of pane.tabs"
-         class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
-         [class.workspace-active-tab-content]="pane.activeTab === tab"
-         [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
-         appDataTransferData [uriData]="[{title: tab.title, uri: tab.absoluteUrl}]">
-      <app-workspace-outlet [name]="pane.id"
-                            [container]="tab.container"
-                            (outletFocus)="setFocus()"
-                            [active]="pane.activeTab === tab">
+    <div
+      *ngFor="let tab of pane.tabs"
+      [class.workspace-active-tab-content]="pane.activeTab === tab"
+      [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
+      [uriData]="[{ title: tab.title, uri: tab.absoluteUrl }]"
+      appDataTransferData
+      class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
+    >
+      <app-workspace-outlet
+        (outletFocus)="setFocus()"
+        [active]="pane.activeTab === tab"
+        [container]="tab.container"
+        [name]="pane.id"
+      >
       </app-workspace-outlet>
     </div>
     <ng-container *ngIf="!pane.tabs.length">
       <div class="w-100 h-100 d-flex align-items-center">
         <div class="d-flex align-items-center justify-content-center m-auto">
-          <div class="m-4 text-center text-muted" [style.max-width]="'400px'">
+          <div [style.max-width]="'400px'" class="m-4 text-center text-muted">
             <ng-container *ngIf="hasSiblings; else singleEmptyPane">
               <div>
                 Use the <i class="fa fa-plus"></i>
@@ -69,15 +85,13 @@
             </ng-template>
           </div>
         </div>
-        <div class="mx-2" *ngIf="pane.id === rightPaneId">
-          <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
+        <div *ngIf="pane.id === rightPaneId" class="mx-2">
+          <button (click)="closeRightPane()" class="btn btn-secondary" type="button">
             <div class="d-flex flex-column align-items-center">
               <div>
                 <i class="fa fa-caret-right"></i>
               </div>
-              <div class="side-pane-close-text">
-                Hide Side Pane
-              </div>
+              <div class="side-pane-close-text">Hide Side Pane</div>
               <div>
                 <i class="fa fa-caret-right"></i>
               </div>

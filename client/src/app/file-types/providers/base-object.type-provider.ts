@@ -1,31 +1,30 @@
-import { ComponentRef, Injectable, InjectionToken, NgZone } from '@angular/core';
+import { ComponentRef, Injectable, InjectionToken, NgZone } from "@angular/core";
 
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { finalize, map } from 'rxjs/operators';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { BehaviorSubject, Observable, of } from "rxjs";
+import { finalize, map } from "rxjs/operators";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
+import { CreateDialogOptions } from "app/file-browser/services/object-creation.service";
 import {
-  CreateDialogOptions,
-  CreateResultMapping,
-} from 'app/file-browser/services/object-creation.service';
-import { ObjectEditDialogComponent, ObjectEditDialogValue, } from 'app/file-browser/components/dialog/object-edit-dialog.component';
-import { getObjectLabel } from 'app/file-browser/utils/objects';
-import { AnnotationsService } from 'app/file-browser/services/annotations.service';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { RankedItem } from 'app/shared/schemas/common';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { openModal } from 'app/shared/utils/modals';
-import { SearchType } from 'app/search/shared';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from "app/file-browser/components/dialog/object-edit-dialog.component";
+import { getObjectLabel } from "app/file-browser/utils/objects";
+import { AnnotationsService } from "app/file-browser/services/annotations.service";
+import { FilesystemService } from "app/file-browser/services/filesystem.service";
+import { RankedItem } from "app/shared/schemas/common";
+import { ErrorHandler } from "app/shared/services/error-handler.service";
+import { ProgressDialog } from "app/shared/services/progress-dialog.service";
+import { openModal } from "app/shared/utils/modals";
+import { SearchType } from "app/search/shared";
+import { Progress } from "app/interfaces/common-dialog.interface";
 
-
-export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
+export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>("objectTypeProvider");
 
 export interface CreateActionOptions {
   parent?: FilesystemObject;
-  createDialog?: Omit<CreateDialogOptions, 'request'>;
+  createDialog?: Omit<CreateDialogOptions, "request">;
 }
 
 export interface CreateDialogAction {
@@ -56,7 +55,6 @@ export interface Exporter {
  * are used by the application to discover operations on objects stored within Lifelike.
  */
 export interface ObjectTypeProvider {
-
   /**
    * Test whether this provider is for the given type of object.
    * @param object the object
@@ -70,8 +68,11 @@ export interface ObjectTypeProvider {
    * @param contentValue$ the content to use
    * @param options extra options for the preview
    */
-  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
-                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined>;
+  createPreviewComponent(
+    object: FilesystemObject,
+    contentValue$: Observable<Blob>,
+    options?: PreviewOptions
+  ): Observable<ComponentRef<any> | undefined>;
 
   /**
    * Get a list of options for creating this type of file.
@@ -103,7 +104,6 @@ export interface ObjectTypeProvider {
    * Unzip content (currently only maps).
    */
   unzipContent(zipped: Blob): Observable<string>;
-
 }
 
 /**
@@ -113,35 +113,41 @@ export interface ObjectTypeProvider {
  */
 @Injectable()
 export class AbstractObjectTypeProviderHelper {
-  constructor(protected readonly modalService: NgbModal,
-              protected readonly annotationsService: AnnotationsService,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly ngZone: NgZone) {
-  }
+  constructor(
+    protected readonly modalService: NgbModal,
+    protected readonly annotationsService: AnnotationsService,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly ngZone: NgZone
+  ) {}
 
   openEditDialog(target: FilesystemObject, options: {} = {}): Promise<ObjectEditDialogValue> {
     const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
+    dialogRef.componentInstance.accept = (value: ObjectEditDialogValue) => {
       const progressDialogRef = this.progressDialog.display({
-        title: 'Working...',
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
-        status: `Saving changes to ${getObjectLabel(target)}...`,
-      }))],
+        title: "Working...",
+        progressObservables: [
+          new BehaviorSubject<Progress>(
+            new Progress({
+              status: `Saving changes to ${getObjectLabel(target)}...`,
+            })
+          ),
+        ],
       });
-      return this.filesystemService.save([target.hashId], value.request, {
-        [target.hashId]: target,
-      })
+      return this.filesystemService
+        .save([target.hashId], value.request, {
+          [target.hashId]: target,
+        })
         .pipe(
           map(() => value),
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Edit object'}),
+          this.errorHandler.create({ label: "Edit object" })
         )
         .toPromise();
-    });
+    };
     return dialogRef.result;
   }
 }
@@ -150,13 +156,15 @@ export class AbstractObjectTypeProviderHelper {
  * A base class for object type providers.
  */
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
+  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {}
+
   abstract handles(object: FilesystemObject): boolean;
 
-  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {
-  }
-
-  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
-                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined> {
+  createPreviewComponent(
+    object: FilesystemObject,
+    contentValue$: Observable<Blob>,
+    options?: PreviewOptions
+  ): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }
 
@@ -177,6 +185,6 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   unzipContent(zipped: Blob): Observable<string> {
-    return of('');
+    return of("");
   }
 }

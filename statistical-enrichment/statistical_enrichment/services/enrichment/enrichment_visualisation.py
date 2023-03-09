@@ -1,9 +1,10 @@
 import json
-from flask import current_app
 from functools import partial
 from typing import List
 
 import pandas as pd
+from flask import current_app
+
 from .enrich_methods import fisher
 from ..rcache import redis_cached, redis_server
 
@@ -32,7 +33,7 @@ class EnrichmentVisualisationService():
                 tx.run(
                     """
                     UNWIND $gene_names AS geneName
-                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) 
+                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
                     WHERE g.name=geneName
                     CALL {
                         // Make simple run by relations we has from GO db
@@ -46,18 +47,18 @@ class EnrichmentVisualisationService():
                         // Fetch GO relations defined in BioCyc
                         WITH g
                         MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
-                        WITH DISTINCT go 
+                        WITH DISTINCT go
                         // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
                         MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
                         RETURN go, go_gene
                     }
-                    WITH 
-                        DISTINCT go, 
+                    WITH
+                        DISTINCT go,
                         collect(DISTINCT go_gene) AS go_genes
                     RETURN
                         go.eid AS goId,
                         go.name AS goTerm,
-                        // Return all but 'db_GO' labels 
+                        // Return all but 'db_GO' labels
                         [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
                         [g IN go_genes |g.name] AS geneNames
                     """,
@@ -67,16 +68,18 @@ class EnrichmentVisualisationService():
             )
         )
         if not r:
-            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(
+                f'Could not find related GO terms for organism id: {organism_id}'
+                )
         return r
 
     def get_go_terms(self, organism, gene_names):
         cache_id = f"get_go_terms_{organism}_{','.join(gene_names)}"
         return redis_cached(
-                cache_id,
-                partial(self.query_go_term, organism.id, gene_names),
-                load=json.loads,
-                dump=json.dumps
+            cache_id,
+            partial(self.query_go_term, organism.id, gene_names),
+            load=json.loads,
+            dump=json.dumps
         )
 
     def query_go_term_count(self, organism_id):
@@ -101,14 +104,16 @@ class EnrichmentVisualisationService():
             )
         )
         if not r:
-            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(
+                f'Could not find related GO terms for organism id: {organism_id}'
+                )
         return r[0]['go_count']
 
     def get_go_term_count(self, organism):
         cache_id = f"go_term_count_{organism}"
         return redis_cached(
-                cache_id,
-                partial(self.query_go_term_count, organism.id),
-                load=json.loads,
-                dump=json.dumps
+            cache_id,
+            partial(self.query_go_term_count, organism.id),
+            load=json.loads,
+            dump=json.dumps
         )

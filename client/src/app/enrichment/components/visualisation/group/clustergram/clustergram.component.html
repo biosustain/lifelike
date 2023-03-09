@@ -1,42 +1,43 @@
-<div class="clustergram-wrapper" [style.height.em]="genes.size*2.5 + 8.5">
+<div [style.height.em]="genes.size * 2.5 + 8.5" class="clustergram-wrapper">
   <table class="table table-striped column-hover">
-      <thead>
+    <thead>
       <tr>
-          <th></th>
-          <th scope="col" *ngFor="let goTerm of goTerms">
-              <div>
-                  <ng-template #tooltip>
-                      {{goTerm.goTerm}} ({{goTerm.goId}})
-                  </ng-template>
-                  <span [ngbTooltip]="tooltip"
-                        container="body"
-                        tooltipClass="rotatedTooltip"
-                        placement="bottom-left bottom-right">
-                      {{goTerm.goTerm}}</span>
-              </div>
-          </th>
-          <th scope="col" *ngIf="others" class="others">
-              <div>
-                  <span>others</span>
-              </div>
-          </th>
+        <th></th>
+        <th *ngFor="let goTerm of goTerms" scope="col">
+          <div>
+            <ng-template #tooltip> {{ goTerm.goTerm }} ({{ goTerm.goId }}) </ng-template>
+            <span
+              [ngbTooltip]="tooltip"
+              container="body"
+              placement="bottom-left bottom-right"
+              tooltipClass="rotatedTooltip"
+            >
+              {{ goTerm.goTerm }}</span
+            >
+          </div>
+        </th>
+        <th *ngIf="others" class="others" scope="col">
+          <div>
+            <span>others</span>
+          </div>
+        </th>
       </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let entry of genes | keyvalue: rowOrder">
-          <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>
-          <td *ngFor="let value of entry.value.values"
-              [ngClass]="{match:value}"
-              [style.backgroundColor]="value && geneColor"
-          ></td>
-          <td *ngIf="others"
-              class="match others">{{entry.value.others || ''}}</td>
+    </thead>
+    <tbody>
+      <tr *ngFor="let entry of genes | keyvalue : rowOrder">
+        <th [appSELink]="entry.key" scope="row">{{ entry.key }}</th>
+        <td
+          *ngFor="let value of entry.value.values"
+          [ngClass]="{ match: value }"
+          [style.backgroundColor]="value && geneColor"
+        ></td>
+        <td *ngIf="others" class="match others">{{ entry.value.others || "" }}</td>
       </tr>
       <tr *ngIf="others">
-          <th scope="row">others</th>
-          <td *ngFor="let value of others.values"></td>
-          <td class="match others">{{others.others}}</td>
+        <th scope="row">others</th>
+        <td *ngFor="let value of others.values"></td>
+        <td class="match others">{{ others.others }}</td>
       </tr>
-      </tbody>
+    </tbody>
   </table>
 </div>

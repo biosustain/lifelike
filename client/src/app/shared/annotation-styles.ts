@@ -8,7 +8,7 @@
 // - con
 // - inv
 
-import { Unicodes } from './constants';
+import { Unicodes } from "./constants";
 
 interface AnnotationStyle {
   // Mandatory fields
@@ -89,7 +89,7 @@ const annotationTypes: AnnotationStyle[] = [
       'MOB',
       'AMP',
       'CON',
-      'INV'
+      'INV',
     ],
   },
   {
@@ -139,7 +139,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'link',
     color: LINK,
-    iconCode: Unicodes.Link
+    iconCode: Unicodes.Link,
   },
   {
     label: 'entity',
@@ -148,12 +148,12 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'map',
     color: MAP,
-    iconCode: Unicodes.Map
+    iconCode: Unicodes.Map,
   },
   {
     label: 'note',
     color: NOTE,
-    iconCode: Unicodes.Note
+    iconCode: Unicodes.Note,
   },
   // Non-Entity types
   {
@@ -162,7 +162,7 @@ const annotationTypes: AnnotationStyle[] = [
     style: {
       border: CORRELATION,
       background: CORRELATION,
-      color: '#000'
+      color: '#000',
     },
   },
   {
@@ -171,7 +171,7 @@ const annotationTypes: AnnotationStyle[] = [
     style: {
       border: CAUSE,
       background: CAUSE,
-      color: '#000'
+      color: '#000',
     },
   },
   {
@@ -180,7 +180,7 @@ const annotationTypes: AnnotationStyle[] = [
     style: {
       border: EFFECT,
       background: EFFECT,
-      color: '#000'
+      color: '#000',
     },
   },
   {
@@ -189,7 +189,7 @@ const annotationTypes: AnnotationStyle[] = [
     style: {
       border: OBSERVATION,
       background: OBSERVATION,
-      color: '#000'
+      color: '#000',
     },
   },
   {
@@ -198,7 +198,7 @@ const annotationTypes: AnnotationStyle[] = [
     style: {
       border: ASSOCIATION,
       background: ASSOCIATION,
-      color: '#000'
+      color: '#000',
     },
   },
   /**
@@ -232,11 +232,11 @@ function groupStyle(ann: AnnotationStyle) {
     borderWidth: 1,
     color: {
       background: ann.style && ann.style.background ? ann.style.background : '#fff',
-      border: ann.style && ann.style.border ? ann.style.border : '#2B7CE9'
+      border: ann.style && ann.style.border ? ann.style.border : '#2B7CE9',
     },
     font: {
-      color: ann.style && ann.style.color ? ann.style.color : ann.color
-    }
+      color: ann.style && ann.style.color ? ann.style.color : ann.color,
+    },
   };
 
   if (ann.iconCode) {
@@ -245,7 +245,7 @@ function groupStyle(ann: AnnotationStyle) {
       weight: 'bold',
       code: ann.iconCode,
       size: 50,
-      color: ann.color
+      color: ann.color,
     };
     gStyle.shape = 'icon';
   }
@@ -263,7 +263,7 @@ function visJsGroupStyleFactory() {
   annotationTypes.map(
     ann => {
       groupStyleDict[ann.label] = groupStyle(ann);
-    }
+    },
   );
 
   return groupStyleDict;
@@ -273,5 +273,5 @@ export {
   AnnotationStyle,
   annotationTypes,
   annotationTypesMap,
-  visJsGroupStyleFactory
+  visJsGroupStyleFactory,
 };

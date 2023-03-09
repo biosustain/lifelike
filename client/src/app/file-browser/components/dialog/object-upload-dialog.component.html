@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <app-modal-header (cancel)="cancel()">
     {{ title }}
   </app-modal-header>
@@ -7,61 +7,91 @@
     <app-form-input-feedback [control]="form" [formLevel]="true"></app-form-input-feedback>
 
     <ng-container *ngIf="promptUpload">
-      <ul ngbNav #nav="ngbNav" class="nav-tabs" [activeId]="form.get('contentSource').value"
-          (navChange)="activeTabChanged($event)">
+      <ul
+        #nav="ngbNav"
+        (navChange)="activeTabChanged($event)"
+        [activeId]="form.get('contentSource').value"
+        class="nav-tabs"
+        ngbNav
+      >
         <li ngbNavItem="contentValue">
           <a ngbNavLink>From Device</a>
           <ng-template ngbNavContent>
-            <app-form-row for="content-value" label="Add files" [control]="form.get('contentValue')">
+            <app-form-row
+              [control]="form.get('contentValue')"
+              for="content-value"
+              label="Add files"
+            >
               <div class="d-flex align-items-center text-truncate">
-                <button type="button" class="btn btn-secondary mr-2" (click)="showFileDialog()">
+                <button (click)="showFileDialog()" class="btn btn-secondary mr-2" type="button">
                   Browse...
                 </button>
               </div>
-              <input type="file" id="content-value" (change)="fileChanged($event)"
-                     class="d-none" multiple #fileInput>
+              <input
+                #fileInput
+                (change)="fileChanged($event)"
+                class="d-none"
+                id="content-value"
+                multiple
+                type="file"
+              />
             </app-form-row>
-              <table class="table" style="table-layout: fixed" *ngIf="fileList.length">
-                <caption class="pa2-l" *ngIf="fileList.length > 1">
-                  Click on the row to inspect and edit properties.
-                </caption>
-                <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
-                   You can only upload {{maxFileCount}} files at once.
-                </caption>
-                <colgroup>
-                  <col style="width: 50%">
-                </colgroup>
-                <thead>
-                <tr>
+            <table *ngIf="fileList.length" class="table" style="table-layout: fixed">
+              <caption *ngIf="fileList.length > 1" class="pa2-l">
+                Click on the row to inspect and edit properties.
+              </caption>
+              <caption *ngIf="fileList.length >= maxFileCount" class="alert-danger pa2-l">
+                You can only upload
+                {{
+                  maxFileCount
+                }}
+                files at once.
+              </caption>
+              <colgroup>
+                <col style="width: 50%" />
+              </colgroup>
+              <thead>
+                <tr></tr>
                 <tr>
                   <th class="d-none d-lg-table-cell">Filename</th>
                 </tr>
-                </thead>
-                <tbody>
-                <tr *ngFor="let file of fileList; let index=index"
-                        (appTabSelectable)="changeSelectedFile(index)"
-                        [class.bg-highlight]="index === selectedFileIndex">
+              </thead>
+              <tbody>
+                <tr
+                  (appTabSelectable)="changeSelectedFile(index)"
+                  *ngFor="let file of fileList; let index = index"
+                  [class.bg-highlight]="index === selectedFileIndex"
+                >
                   <td class="align-middle text-truncate mw-100">
-                     {{ file.filename }}
+                    {{ file.filename }}
                   </td>
                   <td>
-                    <i class="fa fa-lg fa-exclamation-circle alert-danger"
-                    ngbTooltip="Invalid input(s)!" *ngIf="file.hasErrors"></i>
+                    <i
+                      *ngIf="file.hasErrors"
+                      class="fa fa-lg fa-exclamation-circle alert-danger"
+                      ngbTooltip="Invalid input(s)!"
+                    ></i>
                   </td>
                   <td class="text-right">
-                      <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
+                    <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
                   </td>
                 </tr>
-                </tbody>
-              </table>
+              </tbody>
+            </table>
           </ng-template>
         </li>
         <li ngbNavItem="contentUrl">
           <a ngbNavLink>From URL</a>
           <ng-template ngbNavContent>
-            <app-form-row for="content-url" label="URL" [control]="form.get('contentUrl')">
-              <input type="text" formControlName="contentUrl" id="content-url" [appFormInput]="form.get('contentUrl')"
-                     placeholder="https://www.example.com/file.pdf" (change)="urlChanged($event)">
+            <app-form-row [control]="form.get('contentUrl')" for="content-url" label="URL">
+              <input
+                (change)="urlChanged($event)"
+                [appFormInput]="form.get('contentUrl')"
+                formControlName="contentUrl"
+                id="content-url"
+                placeholder="https://www.example.com/file.pdf"
+                type="text"
+              />
             </app-form-row>
           </ng-template>
         </li>
@@ -70,33 +100,47 @@
       <div [ngbNavOutlet]="nav" class="mt-4"></div>
     </ng-container>
 
-    <app-form-row for="parent" [label]="parentLabel" [control]="form.get('parent')" *ngIf="promptParent">
+    <app-form-row
+      *ngIf="promptParent"
+      [control]="form.get('parent')"
+      [label]="parentLabel"
+      for="parent"
+    >
       <div class="d-flex align-items-center text-truncate">
-        <button type="button" class="btn btn-secondary mr-2" (click)="showParentDialog()">
+        <button (click)="showParentDialog()" class="btn btn-secondary mr-2" type="button">
           Browse...
         </button>
-        <div class="text-truncate" *ngIf="form.get('parent').value != null; else noParentChosen">
+        <div *ngIf="form.get('parent').value != null; else noParentChosen" class="text-truncate">
           <i class="fa fa-fw fa-folder text-icon"></i>
-          {{ form.get('parent').value.effectiveName }}
+          {{ form.get("parent").value.effectiveName }}
         </div>
-        <ng-template #noParentChosen>
-        </ng-template>
+        <ng-template #noParentChosen> </ng-template>
       </div>
     </app-form-row>
 
-    <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
-      <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')"
-             appAutoFocus [autoSelect]="true">
+    <app-form-row [control]="form.get('filename')" for="filename" label="Filename">
+      <input
+        [appFormInput]="form.get('filename')"
+        [autoSelect]="true"
+        appAutoFocus
+        formControlName="filename"
+        id="filename"
+        type="text"
+      />
     </app-form-row>
 
-    <app-form-row for="description" label="Description" [control]="form.get('description')">
-      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
-                rows="10"></textarea>
+    <app-form-row [control]="form.get('description')" for="description" label="Description">
+      <textarea
+        [appFormInput]="form.get('description')"
+        formControlName="description"
+        id="description"
+        rows="10"
+      ></textarea>
     </app-form-row>
 
-    <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
+    <app-form-row *ngIf="!object.isDirectory" [control]="form.get('public')">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <input class="custom-control-input" formControlName="public" id="public" type="checkbox" />
         <label class="custom-control-label" for="public">Publicly share with the community</label>
       </div>
     </app-form-row>
@@ -110,9 +154,9 @@
           ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
         >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
             (organismPicked)="organismChanged($event)"
+            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="organism"
           ></app-organism-autocomplete>
         </app-form-row>
 
@@ -121,10 +165,11 @@
             <ngb-panel title="Annotation Configurations">
               <ng-template ngbPanelContent>
                 <app-annotation-config-table
+                  [fileType]="object.mimeType"
+                  [form]="form.get('annotationConfigs')"
                   [headers]="annotationMethods"
                   [models]="annotationModels"
-                  [form]="form.get('annotationConfigs')"
-                  [fileType]="object.mimeType"></app-annotation-config-table>
+                ></app-annotation-config-table>
               </ng-template>
             </ngb-panel>
           </ngb-accordion>
@@ -135,7 +180,8 @@
 
   <app-modal-footer>
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || invalidInputs" >Save</button>
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || invalidInputs">
+      Save
+    </button>
   </app-modal-footer>
 </form>
-

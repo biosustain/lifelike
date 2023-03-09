@@ -1,15 +1,13 @@
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
-import { freezeDeep } from 'app/shared/utils';
 
 // Use factory so it might contain muttable parameters
 export const NODE_DEFAULTS_FACTORY = () => ({
-  display_name: '',
+  display_name: "",
   sub_labels: [],
   data: {
     x: 0,
-    y: 0
-  }
+    y: 0,
+  },
 });
 
 // Use factory so it might contain muttable parameters

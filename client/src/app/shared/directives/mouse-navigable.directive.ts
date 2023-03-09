@@ -17,20 +17,21 @@ import {
  * Directive that marks a mouse-navigable item.
  */
 @Directive({
-  selector: '[appMouseNavigableItem]',
+  selector: "[appMouseNavigableItem]",
 })
 export class MouseNavigableItemDirective {
-  constructor(@Inject(forwardRef(() => MouseNavigableDirective))
-              protected readonly container: MouseNavigableDirective,
-              protected readonly element: ElementRef) {
-  }
+  constructor(
+    @Inject(forwardRef(() => MouseNavigableDirective))
+    protected readonly container: MouseNavigableDirective,
+    protected readonly element: ElementRef
+  ) {}
 
-  @HostListener('keydown', ['$event'])
+  @HostListener("keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
-    if (event.key === 'ArrowDown') {
+    if (event.key === "ArrowDown") {
       event.preventDefault();
       this.container.focusNext(this.element.nativeElement);
-    } else if (event.key === 'ArrowUp') {
+    } else if (event.key === "ArrowUp") {
       event.preventDefault();
       this.container.focusPrevious(this.element.nativeElement);
     }
@@ -41,22 +42,19 @@ export class MouseNavigableItemDirective {
  * The container.
  */
 @Directive({
-  selector: '[appMouseNavigable]',
+  selector: "[appMouseNavigable]",
 })
 export class MouseNavigableDirective implements AfterViewInit, OnDestroy {
   @Input() navigationWrap = true;
   @Output() navigationEndReached = new EventEmitter<void>();
-  @ContentChildren(MouseNavigableItemDirective, {read: ElementRef})
+  @ContentChildren(MouseNavigableItemDirective, { read: ElementRef })
   protected childrenDirectives: QueryList<ElementRef>;
 
-  constructor(protected readonly element: ElementRef) {
-  }
+  constructor(protected readonly element: ElementRef) {}
 
-  ngAfterViewInit() {
-  }
+  ngAfterViewInit() {}
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 
   getFirst(): HTMLElement | null {
     const first = this.childrenDirectives.first;
@@ -110,15 +108,6 @@ export class MouseNavigableDirective implements AfterViewInit, OnDestroy {
     }
   }
 
-  private indexOfElement(children: ElementRef[], item: Element): number | undefined {
-    for (let i = 0; i < children.length; i++) {
-      if (children[i].nativeElement === item) {
-        return i;
-      }
-    }
-    return null;
-  }
-
   focusPrevious(currentElement: HTMLElement) {
     const nextElement = this.getPrevious(currentElement, this.navigationWrap);
     if (nextElement != null) {
@@ -137,5 +126,14 @@ export class MouseNavigableDirective implements AfterViewInit, OnDestroy {
     } else {
       this.navigationEndReached.next();
     }
+  }
+
+  private indexOfElement(children: ElementRef[], item: Element): number | undefined {
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].nativeElement === item) {
+        return i;
+      }
+    }
+    return null;
   }
 }

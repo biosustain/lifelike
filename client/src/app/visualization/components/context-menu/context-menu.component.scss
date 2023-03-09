@@ -1,80 +1,82 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import 'src/scss/variables';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "src/scss/variables";
 
 .context-menu {
-    background: $primary;
-    border-radius: 0.25rem;
-    border: thin solid $floating-toolbar-border-color;
-    border-bottom: none;
-    opacity: .95;
+  background: $primary;
+  border: thin solid $floating-toolbar-border-color;
+  border-bottom: none;
+  border-radius: 0.25rem;
+  opacity: 0.95;
 }
 
 .context-menu-group {
-    border-bottom: thin solid $floating-toolbar-border-color;
-    color: #FFFFFF;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 5px 0;
-    width: 100%;
+  border-bottom: thin solid $floating-toolbar-border-color;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 0;
+  width: 100%;
 }
 
 .context-menu-item {
-    height: 22px;
-    padding: 2px 8px 2px 20px;
+  height: 22px;
+  padding: 2px 8px 2px 20px;
 }
+
 .context-menu-item:hover {
-    background: #6c757d;
+  background: #6c757d;
 }
 
 .fade-out {
-    animation: fadeOut ease .2s forwards;
-    -webkit-animation: fadeOut ease .2s forwards;
-    -moz-animation: fadeOut ease .2s forwards;
-    -o-animation: fadeOut ease .2s forwards;
-    -ms-animation: fadeOut ease .2s forwards;
-  }
-  @keyframes fadeOut {
-    0% {
-      opacity:1;
-    }
-    100% {
-      opacity:0;
-    }
-  }
+  -moz-animation: fadeOut ease 0.2s forwards;
+  -ms-animation: fadeOut ease 0.2s forwards;
+  -o-animation: fadeOut ease 0.2s forwards;
+  -webkit-animation: fadeOut ease 0.2s forwards;
+  animation: fadeOut ease 0.2s forwards;
+}
 
-  @-moz-keyframes fadeOut {
-    0% {
-      opacity:1;
-    }
-    100% {
-      opacity:0;
-    }
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
   }
-
-  @-webkit-keyframes fadeOut {
-    0% {
-      opacity:1;
-    }
-    100% {
-      opacity:0;
-    }
+  100% {
+    opacity: 0;
   }
+}
 
-  @-o-keyframes fadeOut {
-    0% {
-      opacity:1;
-    }
-    100% {
-      opacity:0;
-    }
+@-moz-keyframes fadeOut {
+  0% {
+    opacity: 1;
   }
+  100% {
+    opacity: 0;
+  }
+}
 
-  @-ms-keyframes fadeOut {
-    0% {
-      opacity:1;
-    }
-    100% {
-      opacity:0;
+@-webkit-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@-o-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@-ms-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

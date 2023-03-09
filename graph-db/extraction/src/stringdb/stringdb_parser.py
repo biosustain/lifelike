@@ -1,10 +1,11 @@
-from common.base_parser import BaseParser
-from common.constants import *
-from config.config import Config
-import pandas as pd
 import os
 
+import pandas as pd
+from common.base_parser import BaseParser
+from common.constants import *
+
 PROT_INFO_HEADER = [PROP_ID, PROP_NAME, PROP_PROTEIN_SIZE, PROP_ANNOTATION]
+
 
 class StringParser(BaseParser):
     def __init__(self, prot_info_file: str = None):
@@ -30,12 +31,14 @@ class StringParser(BaseParser):
         """
         read inputfile, and write into outputfile.  If append = False, write header. Otherwise append data without header
         """
-        chunks = pd.read_csv(os.path.join(self.download_dir, inputfile), sep='\t', skiprows=1,
-                         names=PROT_INFO_HEADER, compression='gzip', chunksize=20000)
+        chunks = pd.read_csv(
+            os.path.join(self.download_dir, inputfile), sep='\t', skiprows=1,
+            names=PROT_INFO_HEADER, compression='gzip', chunksize=20000
+            )
         datafile = 'string-data.tsv'
         outfile = os.path.join(self.output_dir, datafile)
         for i, chunk in enumerate(chunks):
-            if not append and i==0:
+            if not append and i == 0:
                 mode = 'w'
                 header = True
             else:

@@ -1,25 +1,26 @@
-<form [formGroup]="form" (ngSubmit)="changePassword()">
-  <app-password-input [formRef]="form"
-                      controlId="old-password"
-                      controlName="oldPassword"
-                      controlLabel="Old Password"
+<form (ngSubmit)="changePassword()" [formGroup]="form">
+  <app-password-input
+    [formRef]="form"
+    controlId="old-password"
+    controlLabel="Old Password"
+    controlName="oldPassword"
   ></app-password-input>
 
-  <app-password-input [formRef]="form"
-                      controlId="password"
-                      controlName="password"
-                      controlLabel="Password"
+  <app-password-input
+    [formRef]="form"
+    controlId="password"
+    controlLabel="Password"
+    controlName="password"
   ></app-password-input>
 
-  <app-password-input [formRef]="form"
-                      controlId="confirm-password"
-                      controlName="passwordConfirm"
-                      controlLabel="Confirm Password"
+  <app-password-input
+    [formRef]="form"
+    controlId="confirm-password"
+    controlLabel="Confirm Password"
+    controlName="passwordConfirm"
   ></app-password-input>
 
   <div class="mt-4">
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
-      Change Password
-    </button>
+    <button [disabled]="form.invalid" class="btn btn-primary" type="submit">Change Password</button>
   </div>
 </form>

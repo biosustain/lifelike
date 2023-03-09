@@ -1,22 +1,22 @@
-import { isDevMode } from '@angular/core';
+import { isDevMode } from "@angular/core";
 
-import * as d3 from 'd3';
-import { Transition, Selection } from 'd3';
-import { debounceTime, throttleTime } from 'rxjs/operators';
-import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { BaseType } from 'd3-selection';
+import * as d3 from "d3";
+import { Selection, Transition } from "d3";
+import { debounceTime, throttleTime } from "rxjs/operators";
+import { asyncScheduler, fromEvent, Subject, Subscription } from "rxjs";
+import { BaseType } from "d3-selection";
 
 import {
   GraphEntity,
   GraphEntityType,
-  UniversalGraphGroup,
-  UniversalEdgeStyle,
   KnowledgeMapGraph,
+  UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphEntity,
+  UniversalGraphGroup,
   UniversalGraphNode,
   UniversalGraphNodelike,
-} from 'app/drawing-tool/services/interfaces';
+} from "app/drawing-tool/services/interfaces";
 import {
   EdgeRenderStyle,
   GroupRenderStyle,
@@ -25,22 +25,22 @@ import {
   PlacedGroup,
   PlacedNode,
   PlacedObject,
-} from 'app/graph-viewer/styles/styles';
-import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
-import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
-import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
-import { compileFind, FindOptions } from 'app/shared/utils/find';
-import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { closePopups } from 'app/shared/DOMutils';
+} from "app/graph-viewer/styles/styles";
+import { LineEdge } from "app/graph-viewer/utils/canvas/graph-edges/line-edge";
+import { SolidLine } from "app/graph-viewer/utils/canvas/lines/solid";
+import { GROUP_LABEL, IMAGE_LABEL } from "app/shared/constants";
+import { compileFind, FindOptions } from "app/shared/utils/find";
+import { createResizeObservable } from "app/shared/rxjs/resize-observable";
+import { closePopups } from "app/shared/DOMutils";
 
-import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
-import { PlacedObjectRenderTree } from './render-tree';
-import { GraphView } from '../graph-view';
-import { Point, SELECTION_SHADOW_COLOR } from '../../utils/canvas/shared';
+import { CanvasBehavior, DragBehaviorEvent, isStopResult } from "../behaviors";
+import { PlacedObjectRenderTree } from "./render-tree";
+import { GraphView } from "../graph-view";
+import { Point, SELECTION_SHADOW_COLOR } from "../../utils/canvas/shared";
 
 type SelectionOrTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum> =
-  Selection<GElement, Datum, PElement, PDatum> |
-  Transition<GElement, Datum, PElement, PDatum>;
+  | Selection<GElement, Datum, PElement, PDatum>
+  | Transition<GElement, Datum, PElement, PDatum>;
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
@@ -93,99 +93,102 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * Keeps a handle on created renderers to improve performance.
    */
   readonly renderTree = new PlacedObjectRenderTree<UniversalGraphEntity>();
-
+  /**
+   * Keeps track of where the drag started so we can ignore drags that are too short.
+   */
+  dragStartPosition: { x: number; y: number } | undefined;
+  /**
+   * The distance the user must move the mouse before a drag is actually started.
+   */
+  dragDistanceSqThreshold = Math.pow(3, 2);
+  /**
+   * Set to true once the drag distance threshold has been reached.
+   */
+  dragStarted = false;
+  /**
+   * The current position of the mouse (graph coordinates) if the user is
+   * hovering over the canvas.
+   */
+  hoverPosition: { x: number; y: number } | undefined;
+  /**
+   * Keeps track of currently where the mouse (or finger) is held down at
+   * so we can display an indicator at that position.
+   */
+  touchPosition:
+    | {
+        position: { x: number; y: number };
+        entity: GraphEntity | undefined;
+      }
+    | undefined;
+  /**
+   * An observable triggered when resizes are detected.
+   */
+  canvasResizePendingSubject = new Subject<[number, number]>();
   /**
    * The next time to check to see if assets have been loaded.
    */
   protected nextAssetsLoadCheckTime: number | undefined = 0;
-
   /**
    * The transform represents the current zoom of the graph, which must be
    * taken into consideration whenever mapping between graph coordinates and
    * viewport coordinates.
    */
   protected d3Transform = d3.zoomIdentity;
-
-  /**
-   * Keeps track of where the drag started so we can ignore drags that are too short.
-   */
-  dragStartPosition: { x: number, y: number } | undefined;
-
-  /**
-   * The distance the user must move the mouse before a drag is actually started.
-   */
-  dragDistanceSqThreshold = Math.pow(3, 2);
-
-  /**
-   * Set to true once the drag distance threshold has been reached.
-   */
-  dragStarted = false;
-
-  /**
-   * The current position of the mouse (graph coordinates) if the user is
-   * hovering over the canvas.
-   */
-  hoverPosition: { x: number, y: number } | undefined;
-
-  /**
-   * Keeps track of currently where the mouse (or finger) is held down at
-   * so we can display an indicator at that position.
-   */
-  touchPosition: {
-    position: { x: number, y: number },
-    entity: GraphEntity | undefined,
-  } | undefined;
-
   /**
    * Store the last time {@link zoomToFit} was called in case the canvas is
    * resized partly through a zoom, making the zoom operation almost useless.
    * This seems to happen a lot with Angular.
    */
   protected previousZoomToFitTime = 0;
-
   /**
    * Used in {@link setSize} when re-applying zoom-to-fit.
    */
   protected previousZoomToFitPadding = 0;
-
   /**
    * Keeps track of the time since last render to keep the number of
    * render cycles down.
    */
   protected previousRenderQueueCreationTime = 0;
 
-  /**
-   * Holds a queue of things to render to allow spreading rendering over several ticks.
-   * Cleared when {@link requestRender} is called and re-created in {@link render}.
-   */
-  private renderQueue: IterableIterator<string|object|any>;
-
   // Events
   // ---------------------------------
-
   /**
    * Holds the ResizeObserver to detect resizes. Only set if
    * {@link startParentFillResizeListener} is called, but it may be
    * unset if {@link stopParentFillResizeListener} is called.
    */
   protected canvasResize$ = createResizeObservable(this.canvas.parentElement);
-
   /**
-   * An observable triggered when resizes are detected.
+   * The subscription that handles the resizes.
    */
-  canvasResizePendingSubject = new Subject<[number, number]>();
-
+  protected canvasResizePendingSubscription: Subscription | undefined;
+  /**
+   * Holds a queue of things to render to allow spreading rendering over several ticks.
+   * Cleared when {@link requestRender} is called and re-created in {@link render}.
+   */
+  private renderQueue: IterableIterator<string | object | any>;
   /**
    * Holds subscriptions to remove when this component is removed.
    */
   private trackedSubscriptions: Subscription[] = [];
 
-  /**
-   * The subscription that handles the resizes.
-   */
-  protected canvasResizePendingSubscription: Subscription | undefined;
-
   // ========================================
+
+  get width() {
+    return this.canvas.width;
+  }
+
+  get height() {
+    return this.canvas.height;
+  }
+
+  get transform() {
+    return this.d3Transform;
+  }
+
+  get currentHoverPosition(): { x: number; y: number } | undefined {
+    return this.hoverPosition;
+  }
 
   /**
    * Create an instance of this view.
@@ -202,64 +205,71 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.canvas.width = Math.max(1, this.canvas.clientWidth);
     this.canvas.height = Math.max(1, this.canvas.clientHeight);
 
-    this.zoom = d3.zoom()
-      .on('zoom', this.canvasZoomed.bind(this))
-      .on('end', this.canvasZoomEnded.bind(this));
+    this.zoom = d3
+      .zoom()
+      .on("zoom", this.canvasZoomed.bind(this))
+      .on("end", this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
     const canvasMouseMoveSubject = new Subject<void>();
 
     d3.select(this.canvas)
-      .on('click', this.canvasClicked.bind(this))
-      .on('dblclick', this.canvasDoubleClicked.bind(this))
-      .on('mousedown', this.canvasMouseDown.bind(this))
-      .on('mousemove', () => {
+      .on("click", this.canvasClicked.bind(this))
+      .on("dblclick", this.canvasDoubleClicked.bind(this))
+      .on("mousedown", this.canvasMouseDown.bind(this))
+      .on("mousemove", () => {
         canvasMouseMoveSubject.next();
       })
-      .on('dragover', () => {
+      .on("dragover", () => {
         canvasMouseMoveSubject.next();
       })
-      .on('focus', this.canvasFocused.bind(this))
-      .on('blur', this.canvasBlurred.bind(this))
-      .on('mouseleave', this.canvasMouseLeave.bind(this))
-      .on('mouseup', this.canvasMouseUp.bind(this))
-      .call(d3.drag()
-        .container(this.canvas)
-        .filter(() => !d3.event.button)
-        .subject((): CanvasSubject => {
-          if (this.behaviors.call('shouldDrag', {
-            event: d3.event.sourceEvent,
-          })) {
-            return {
-              entity: null,
-            };
-          }
-          const entity = this.getEntityAtMouse();
-          if (entity) {
-            return {
-              entity,
-            };
-          }
-          return null;
-        })
-        .on('start', this.canvasDragStarted.bind(this))
-        .on('drag', this.canvasDragged.bind(this))
-        .on('end', this.canvasDragEnded.bind(this)))
+      .on("focus", this.canvasFocused.bind(this))
+      .on("blur", this.canvasBlurred.bind(this))
+      .on("mouseleave", this.canvasMouseLeave.bind(this))
+      .on("mouseup", this.canvasMouseUp.bind(this))
+      .call(
+        d3
+          .drag()
+          .container(this.canvas)
+          .filter(() => !d3.event.button)
+          .subject((): CanvasSubject => {
+            if (
+              this.behaviors.call("shouldDrag", {
+                event: d3.event.sourceEvent,
+              })
+            ) {
+              return {
+                entity: null,
+              };
+            }
+            const entity = this.getEntityAtMouse();
+            if (entity) {
+              return {
+                entity,
+              };
+            }
+            return null;
+          })
+          .on("start", this.canvasDragStarted.bind(this))
+          .on("drag", this.canvasDragged.bind(this))
+          .on("end", this.canvasDragEnded.bind(this))
+      )
       .call(this.zoom)
-      .on('dblclick.zoom', null);
+      .on("dblclick.zoom", null);
 
     this.trackedSubscriptions.push(
       canvasMouseMoveSubject
-        .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
-          leading: true,
-          trailing: false,
-        }))
-        .subscribe(this.canvasMouseMoved.bind(this)),
+        .pipe(
+          throttleTime(this.renderMinimumInterval, asyncScheduler, {
+            leading: true,
+            trailing: false,
+          })
+        )
+        .subscribe(this.canvasMouseMoved.bind(this))
     );
 
     this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'keydown')
-        .subscribe(this.canvasKeyDown.bind(this)),
+      fromEvent(this.canvas, "keydown").subscribe(this.canvasKeyDown.bind(this))
     );
 
     // We already have callbacks for these events in the map-editor component, so these produce potentially redundant behavior. It's likely
@@ -275,12 +285,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     // );
 
     this.trackedSubscriptions.push(
-      fromEvent(document, 'paste')
-        .subscribe(this.documentPaste.bind(this)),
+      fromEvent(document, "paste").subscribe(this.documentPaste.bind(this))
     );
 
     this.trackedSubscriptions.push(
-      this.renderTree.renderRequest$.subscribe(objects => {
+      this.renderTree.renderRequest$.subscribe((objects) => {
         this.requestRender();
       })
     );
@@ -320,14 +329,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         this.setSize(width, height);
       });
     const pushResize = () => {
-      this.canvasResizePendingSubject.next([
-        this.canvas.clientWidth,
-        this.canvas.clientHeight,
-      ]);
+      this.canvasResizePendingSubject.next([this.canvas.clientWidth, this.canvas.clientHeight]);
     };
-    this.trackedSubscriptions.push(
-      this.canvasResize$.subscribe(pushResize)
-    );
+    this.trackedSubscriptions.push(this.canvasResize$.subscribe(pushResize));
   }
 
   /**
@@ -364,14 +368,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return found;
   }
 
-  get width() {
-    return this.canvas.width;
-  }
-
-  get height() {
-    return this.canvas.height;
-  }
-
   setSize(width: number, height: number) {
     if (this.canvas.width !== width || this.canvas.height !== height) {
       const centerX = this.transform.invertX(this.canvas.width / 2);
@@ -392,18 +388,10 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         d3.select(this.canvas).call(
           this.zoom.translateBy,
           newCenterX - centerX,
-          newCenterY - centerY,
+          newCenterY - centerY
         );
       }
     }
-  }
-
-  get transform() {
-    return this.d3Transform;
-  }
-
-  get currentHoverPosition(): { x: number, y: number } | undefined {
-    return this.hoverPosition;
   }
 
   placeUniversalNode(d: UniversalGraphNode): PlacedObject {
@@ -419,7 +407,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     if (placedNode) {
       return placedNode;
     } else {
-      const ctx = this.canvas.getContext('2d');
+      const ctx = this.canvas.getContext("2d");
 
       placedNode = this.nodeRenderStyle.placeNode(d, ctx, {
         selected: this.isAnySelected(d),
@@ -436,7 +424,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     if (placedEdge) {
       return placedEdge;
     } else {
-      const ctx = this.canvas.getContext('2d');
+      const ctx = this.canvas.getContext("2d");
       const from = this.expectNodelikeByHash(d.from);
       const to = this.expectNodelikeByHash(d.to);
       const placedFrom: PlacedObject = this.placeUniversalNode(from);
@@ -458,7 +446,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     if (placedGroup) {
       return placedGroup;
     } else {
-      const ctx = this.canvas.getContext('2d');
+      const ctx = this.canvas.getContext("2d");
 
       const newGroup = this.groupRenderStyle.placeGroup(d, ctx, {
         selected: this.isAnySelected(d),
@@ -480,7 +468,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    * @param d the node
    */
   invalidateNode(d: UniversalGraphNode): void {
-
     this.renderTree.delete(d);
     for (const edge of this.edges) {
       if (edge.from === d.hash || edge.to === d.hash) {
@@ -554,7 +541,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
-    return {x, y};
+    return { x, y };
   }
 
   getEntityAtMouse(): GraphEntity | undefined {
@@ -598,7 +585,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     if (group) {
       return {
         type: GraphEntityType.Group,
-        entity: group
+        entity: group,
       };
     }
     return undefined;
@@ -623,104 +610,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     }
   }
 
-  private applyPanToEdge(
-    edge: UniversalGraphEdge,
-    duration: number = 1500,
-    padding = 50,
-  ) {
-    this.previousZoomToFitPadding = padding;
-
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-
-    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
-
-    // Calling transition() causes a delay even if duration = 0
-    if (duration > 0) {
-      select = select.transition().duration(duration);
-    }
-
-    const from: UniversalGraphNode = this.nodelikeHashMap.get(edge.from);
-    const to: UniversalGraphNode = this.nodelikeHashMap.get(edge.to);
-
-    const {minX, minY, maxX, maxY} = this.getEdgeBoundingBox([edge], padding);
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    select.call(
-      this.zoom.transform,
-      d3.zoomIdentity
-        // move to center of canvas
-        .translate(canvasWidth / 2, canvasHeight / 2)
-        .scale(Math.max(1, Math.min(canvasWidth / width, canvasHeight / height)))
-        // move to the midpoint of the edge
-        .translate(
-          -((from.data.x + to.data.x) / 2),
-          -((from.data.y + to.data.y) / 2),
-        ),
-    );
-
-    this.invalidateAll();
-  }
-
-  private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
-    this.previousZoomToFitPadding = padding;
-
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-
-    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
-
-    // Calling transition() causes a delay even if duration = 0
-    if (duration > 0) {
-      select = select.transition().duration(duration);
-    }
-
-    select.call(
-      this.zoom.transform,
-      d3.zoomIdentity
-        // move to center of canvas
-        .translate(canvasWidth / 2, canvasHeight / 2)
-        .scale(2)
-        .translate(-node.data.x, -node.data.y),
-    );
-
-    this.invalidateAll();
-  }
-
-
-  /**
-   * The real zoom-to-fit.
-   */
-  private applyZoomToFit(duration: number = 1500, padding = 50) {
-    this.previousZoomToFitPadding = padding;
-
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-
-    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox(this.nodes, padding);
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
-
-    // Calling transition() causes a delay even if duration = 0
-    if (duration > 0) {
-      select = select.transition().duration(duration);
-    }
-
-    select.call(
-      this.zoom.transform,
-      d3.zoomIdentity
-        .translate(canvasWidth / 2, canvasHeight / 2)
-        .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-        .translate(-minX - width / 2, -minY - height / 2),
-    );
-
-    this.invalidateAll();
-  }
-
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms
@@ -732,7 +621,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     for (const node of this.nodes) {
       const data: { detail?: string } = node.data != null ? node.data : {};
-      const text = ((node.display_name ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+      const text = ((node.display_name ?? "") + " " + (data.detail ?? "")).toLowerCase();
 
       if (matcher(text)) {
         matches.push({
@@ -744,7 +633,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
     for (const edge of this.edges) {
       const data: { detail?: string } = edge.data != null ? edge.data : {};
-      const text = ((edge.label ?? '') + ' ' + (data.detail ?? '')).toLowerCase();
+      const text = ((edge.label ?? "") + " " + (data.detail ?? "")).toLowerCase();
       if (matcher(text)) {
         matches.push({
           type: GraphEntityType.Edge,
@@ -756,31 +645,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     return matches;
   }
 
-  // ========================================
-  // Rendering
-  // ========================================
-
   focus() {
     this.canvas.focus();
   }
 
   focusEditorPanel() {
     this.editorPanelFocus$.next();
-  }
-
-  protected testAssetsLoaded() {
-    const dummyText = '\uf279\uf1c1';
-    const ctx = this.canvas.getContext('2d');
-    ctx.font = `18px \'Dummy Lifelike Font ${Math.random()}\'`;
-    const defaultMetrics = ctx.measureText(dummyText);
-    ctx.font = '18px \'Font Awesome 5 Pro\'';
-    const faMetrics = ctx.measureText(dummyText);
-    for (const key of ['width', 'fontBoundingBoxAscent', 'hangingBaseline']) {
-      if (defaultMetrics[key] !== faMetrics[key]) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -841,7 +711,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
         if (devMode) {
           // tslint:disable-next-line:no-console
-          console.debug('Map render queue:', result.value);
+          console.debug("Map render queue:", result.value);
         }
 
         if (result.done) {
@@ -864,6 +734,10 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     // Need to call this every time so we keep running
     requestAnimationFrame(this.animationFrameFired.bind(this));
   }
+
+  // ========================================
+  // Rendering
+  // ========================================
 
   render() {
     // Since we're rendering in one shot, clear any queue that we may have started
@@ -888,266 +762,43 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   /**
-   * Clears the canvas for a brand new render.
-   */
-  private emptyCanvas() {
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-
-    if (this.backgroundFill) {
-      ctx.fillStyle = this.backgroundFill;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  }
-
-  /**
-   * Save the context and set the canvas transform. Call this before performing
-   * any draw actions during a render batch. Note that a render consists of one or
-   * more batches, so call this method for EVERY batch.
-   */
-  private startCurrentRenderBatch() {
-    const ctx = this.canvas.getContext('2d');
-
-    ctx.save();
-    ctx.translate(this.transform.x, this.transform.y);
-    ctx.scale(this.transform.k, this.transform.k);
-  }
-
-  /**
-   * Restore the context. Call this after performing any draw actions
-   * during a render. Note that a render consists of one or more batches, so call
-   * this method for EVERY batch.
-   */
-  private endCurrentRenderBatch() {
-    const ctx = this.canvas.getContext('2d');
-
-    ctx.restore();
-
-    this.updateMouseCursor();
-  }
-
-  /**
    * Builds an iterable that will draw the graph. Before
    * actually iterating through, first call {@link startCurrentRenderBatch} at the
    * start of every rendering batch and then at the end of any batch,
    * call {@link endCurrentRenderBatch}.
    */
   *generateRenderQueue() {
-    const ctx = this.canvas.getContext('2d');
+    const ctx = this.canvas.getContext("2d");
 
-    yield 'Initialize';
-    yield*this.drawTouchPosition(ctx);
-    yield 'Draw touch position';
-    yield*this.drawEdges();
-    yield 'Draw edges';
-    yield*this.drawNodes();
-    yield 'Draw nodes';
-    yield*this.drawGroups();
-    yield 'Draw groups';
-    yield*this.drawHighlightBackground(ctx);
-    yield 'Draw highlight background';
-    yield*this.drawSearchHighlightBox(ctx);
-    yield 'Draw search highlight box';
-    yield*this.drawSearchFocusBackground(ctx);
-    yield 'Draw search focus background';
-    yield*this.drawActiveBehaviors(ctx);
-    yield 'Draw active behaviors';
-  }
-
-  private*drawTouchPosition(ctx: CanvasRenderingContext2D) {
-    if (this.touchPosition) {
-      const noZoomScale = 1 / this.transform.scale(1).k;
-      const touchPositionEntity = this.touchPosition.entity;
-
-      // Either we highlight the 'touched entity' if we have one (because the user just
-      // touched one), otherwise we draw something at the mouse coordinates
-      if (touchPositionEntity != null) {
-        this.drawEntityBackground(ctx, touchPositionEntity, SELECTION_SHADOW_COLOR);
-      } else {
-        ctx.beginPath();
-        ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
-        ctx.fillStyle = SELECTION_SHADOW_COLOR;
-        ctx.fill();
-      }
-    }
-  }
-
-  private*drawHighlightBackground(ctx: CanvasRenderingContext2D) {
-    ctx.save();
-    const highlighted = this.highlighting.get();
-    for (const highlightedEntity of highlighted) {
-      this.drawEntityHighlightBox(ctx, highlightedEntity, false);
-    }
-    ctx.restore();
-  }
-
-  private* drawSearchHighlightBox(ctx: CanvasRenderingContext2D) {
-    if (!this.touchPosition) {
-      const highlighted = this.searchHighlighting.get();
-      for (const highlightedEntity of highlighted) {
-        this.drawEntityHighlightBox(ctx, highlightedEntity, false);
-      }
-    }
-  }
-
-  private*drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
-    if (!this.touchPosition) {
-      const focus = this.searchFocus.get();
-      for (const focusEntity of focus) {
-        this.drawEntityHighlightBox(ctx, focusEntity, true);
-      }
-    }
-  }
-
-  private* drawGroups() {
-    const selection = this.selection.getEntitySet();
-
-    for (const group of this.groups) {
-      this.placeGroup(group).draw(this.transform, selection.has(group));
-    }
-  }
-
-  private* drawEdges() {
-    const transform = this.transform;
-    const placeEdge = this.placeEdge.bind(this);
-
-    const selected = this.selection.getEntitySet();
-
-    // We need to turn edges into PlacedEdge objects before we can render them,
-    // but the process involves calculating various metrics, which we don't
-    // want to do more than once if we need to render in multiple Z-layers (line + text)
-    const edgeRenderObjects = [];
-
-    for (const d of this.edges) {
-      yield d;
-      edgeRenderObjects.push({
-        d,
-        placedEdge: placeEdge(d),
-      });
-    }
-
-    for (const {d, placedEdge} of edgeRenderObjects) {
-      yield {d, placedEdge};
-      placedEdge.draw(transform, selected.has(d));
-    }
-
-    for (const {d, placedEdge} of edgeRenderObjects) {
-      yield {d, placedEdge};
-      placedEdge.drawLayer2(transform);
-    }
-  }
-
-  private* drawNodes() {
-    const selection = this.selection.getEntitySet();
-    for (const d of this.nodes) {
-      yield d;
-      this.placeNode(d).draw(this.transform, selection.has(d));
-    }
-  }
-
-  private*drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
-    for (const behavior of this.behaviors.getBehaviors()) {
-      yield behavior;
-      behavior.draw(ctx, this.transform);
-    }
+    yield "Initialize";
+    yield* this.drawTouchPosition(ctx);
+    yield "Draw touch position";
+    yield* this.drawEdges();
+    yield "Draw edges";
+    yield* this.drawNodes();
+    yield "Draw nodes";
+    yield* this.drawGroups();
+    yield "Draw groups";
+    yield* this.drawHighlightBackground(ctx);
+    yield "Draw highlight background";
+    yield* this.drawSearchHighlightBox(ctx);
+    yield "Draw search highlight box";
+    yield* this.drawSearchFocusBackground(ctx);
+    yield "Draw search focus background";
+    yield* this.drawActiveBehaviors(ctx);
+    yield "Draw active behaviors";
   }
 
   /**
    * Update the current mouse cursor.
    */
-  updateMouseCursor() {
-  }
-
-  /**
-   * Draw a red box around the entity.
-   */
-  private drawEntityHighlightBox(ctx: CanvasRenderingContext2D, entity: GraphEntity, strong: boolean) {
-    if (entity.type === GraphEntityType.Edge) {
-      const d = entity.entity as UniversalGraphEdge;
-      const from = this.expectNodelikeByHash(d.from);
-      const to = this.expectNodelikeByHash(d.to);
-      const placedFrom: PlacedObject = this.placeUniversalNode(from);
-      const placedTo: PlacedObject = this.placeUniversalNode(to);
-
-      const source = placedTo.lineIntersectionPoint(from.data as Point);
-      const target = placedFrom.lineIntersectionPoint(to.data as Point);
-
-      const styleData: UniversalEdgeStyle = d.style ?? {};
-      const lineWidthScale = styleData.lineWidthScale ?? 1;
-      const lineWidth = lineWidthScale + 20;
-
-      (new LineEdge(ctx, {
-        source,
-        target,
-        stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
-          lineCap: 'square',
-        }),
-        forceVisibleText: true,
-      })).draw(this.transform);
-    } else {
-      const lineWidth = strong ? 5 : 3;
-
-      ctx.beginPath();
-      const bbox = this.getEntityBoundingBox([entity], 10);
-      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-      ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'butt';
-      if (!strong) {
-        ctx.globalAlpha = 0.4;
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  /**
-   * Draw a selection around the entity.
-   */
-  private drawEntityBackground(ctx: CanvasRenderingContext2D, entity: GraphEntity,
-                               fillColor: string) {
-    if (entity.type === GraphEntityType.Edge) {
-      const d = entity.entity as UniversalGraphEdge;
-      const from = this.expectNodelikeByHash(d.from);
-      const to = this.expectNodelikeByHash(d.to);
-      const placedFrom: PlacedObject = this.placeUniversalNode(from);
-      const placedTo: PlacedObject = this.placeUniversalNode(to);
-
-      const source = placedTo.lineIntersectionPoint({x: from.data.x, y: from.data.y});
-      const target = placedFrom.lineIntersectionPoint({x: to.data.x, y: to.data.y});
-
-      const styleData: UniversalEdgeStyle = d.style ?? {};
-      const lineWidthScale = styleData.lineWidthScale ?? 1;
-      const lineWidth = lineWidthScale + 20;
-
-      (new LineEdge(ctx, {
-        source,
-        target,
-        stroke: new SolidLine(lineWidth, fillColor, {
-          lineCap: 'square',
-        }),
-        forceVisibleText: true,
-      })).draw(this.transform);
-    } else {
-      ctx.beginPath();
-      const bbox = this.getEntityBoundingBox([entity], 10);
-      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-      ctx.fillStyle = fillColor;
-      ctx.fill();
-    }
-  }
-
-  // ========================================
-  // Event handlers
-  // ========================================
+  updateMouseCursor() {}
 
   canvasKeyDown(event) {
     const behaviorEvent = {
       event,
     };
-    if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(behaviorEvent)))) {
+    if (isStopResult(this.behaviors.apply((behavior) => behavior.keyDown(behaviorEvent)))) {
       event.stopPropagation();
       event.preventDefault();
     }
@@ -1157,14 +808,14 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const behaviorEvent = {
       event: d3.event,
     };
-    this.behaviors.apply(behavior => behavior.click(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.click(behaviorEvent));
   }
 
   canvasDoubleClicked() {
     const behaviorEvent = {
       event: d3.event,
     };
-    this.behaviors.apply(behavior => behavior.doubleClick(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.doubleClick(behaviorEvent));
   }
 
   canvasMouseDown() {
@@ -1177,12 +828,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
 
-    this.hoverPosition = {x: graphX, y: graphY};
+    this.hoverPosition = { x: graphX, y: graphY };
 
     const behaviorEvent = {
       event: d3.event,
     };
-    this.behaviors.apply(behavior => behavior.mouseMove(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.mouseMove(behaviorEvent));
 
     if (this.mouseDown) {
       this.touchPosition = {
@@ -1217,34 +868,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.requestRender();
   }
 
-  // See the comment in the constructor above regarding these callbacks. Disabling for now to avoid undefined behavior.
-  // canvasDragOver(event): void {
-  //   const behaviorEvent = {
-  //     // event,
-  //     event: d3.event,
-  //   };
-  //   this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
-  // }
-
-  // canvasDrop(event): void {
-  //   console.log('canvasDrop');
-  //   const behaviorEvent = {
-  //     // event,
-  //     event: d3.event,
-  //   };
-  //   this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
-  // }
-
   documentPaste(event): void {
     const behaviorEvent = {
       event,
     };
-    this.behaviors.apply(behavior => behavior.paste(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.paste(behaviorEvent));
   }
 
   canvasDragStarted(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
-    this.dragStartPosition = {x: mouseX, y: mouseY};
+    this.dragStartPosition = { x: mouseX, y: mouseY };
     this.dragStarted = false;
 
     const subject: CanvasSubject = d3.event.subject;
@@ -1253,7 +886,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       entity: subject.entity,
     };
 
-    this.behaviors.apply(behavior => behavior.dragStart(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.dragStart(behaviorEvent));
 
     this.touchPosition = {
       position: {
@@ -1271,8 +904,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     let dragStarted = this.dragStarted;
 
     if (!dragStarted) {
-      const distanceSq = Math.pow(mouseX - this.dragStartPosition.x, 2)
-        + Math.pow(mouseY - this.dragStartPosition.y, 2);
+      const distanceSq =
+        Math.pow(mouseX - this.dragStartPosition.x, 2) +
+        Math.pow(mouseY - this.dragStartPosition.y, 2);
       dragStarted = distanceSq >= this.dragDistanceSqThreshold;
     }
 
@@ -1284,7 +918,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
           entity: subject.entity,
         };
 
-        this.behaviors.apply(behavior => behavior.drag(behaviorEvent));
+        this.behaviors.apply((behavior) => behavior.drag(behaviorEvent));
 
         this.touchPosition = {
           position: {
@@ -1308,7 +942,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       entity: subject.entity,
     };
 
-    this.behaviors.apply(behavior => behavior.dragEnd(behaviorEvent));
+    this.behaviors.apply((behavior) => behavior.dragEnd(behaviorEvent));
     this.mouseDown = false;
     this.touchPosition = null;
     this.requestRender();
@@ -1333,6 +967,365 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.touchPosition = null;
     this.mouseDown = false;
     this.requestRender();
+  }
+
+  protected testAssetsLoaded() {
+    const dummyText = "\uf279\uf1c1";
+    const ctx = this.canvas.getContext("2d");
+    ctx.font = `18px \'Dummy Lifelike Font ${Math.random()}\'`;
+    const defaultMetrics = ctx.measureText(dummyText);
+    ctx.font = "18px 'Font Awesome 5 Pro'";
+    const faMetrics = ctx.measureText(dummyText);
+    for (const key of ["width", "fontBoundingBoxAscent", "hangingBaseline"]) {
+      if (defaultMetrics[key] !== faMetrics[key]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private applyPanToEdge(edge: UniversalGraphEdge, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    const from: UniversalGraphNode = this.nodelikeHashMap.get(edge.from);
+    const to: UniversalGraphNode = this.nodelikeHashMap.get(edge.to);
+
+    const { minX, minY, maxX, maxY } = this.getEdgeBoundingBox([edge], padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(Math.max(1, Math.min(canvasWidth / width, canvasHeight / height)))
+        // move to the midpoint of the edge
+        .translate(-((from.data.x + to.data.x) / 2), -((from.data.y + to.data.y) / 2))
+    );
+
+    this.invalidateAll();
+  }
+
+  // ========================================
+  // Event handlers
+  // ========================================
+
+  private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(2)
+        .translate(-node.data.x, -node.data.y)
+    );
+
+    this.invalidateAll();
+  }
+
+  /**
+   * The real zoom-to-fit.
+   */
+  private applyZoomToFit(duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    const { minX, minY, maxX, maxY } = this.getNodeBoundingBox(this.nodes, padding);
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    let select: SelectionOrTransition<HTMLCanvasElement, any, any, any> = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
+        .translate(-minX - width / 2, -minY - height / 2)
+    );
+
+    this.invalidateAll();
+  }
+
+  /**
+   * Clears the canvas for a brand new render.
+   */
+  private emptyCanvas() {
+    const canvas = this.canvas;
+    const ctx = canvas.getContext("2d");
+
+    if (this.backgroundFill) {
+      ctx.fillStyle = this.backgroundFill;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  /**
+   * Save the context and set the canvas transform. Call this before performing
+   * any draw actions during a render batch. Note that a render consists of one or
+   * more batches, so call this method for EVERY batch.
+   */
+  private startCurrentRenderBatch() {
+    const ctx = this.canvas.getContext("2d");
+
+    ctx.save();
+    ctx.translate(this.transform.x, this.transform.y);
+    ctx.scale(this.transform.k, this.transform.k);
+  }
+
+  /**
+   * Restore the context. Call this after performing any draw actions
+   * during a render. Note that a render consists of one or more batches, so call
+   * this method for EVERY batch.
+   */
+  private endCurrentRenderBatch() {
+    const ctx = this.canvas.getContext("2d");
+
+    ctx.restore();
+
+    this.updateMouseCursor();
+  }
+
+  private *drawTouchPosition(ctx: CanvasRenderingContext2D) {
+    if (this.touchPosition) {
+      const noZoomScale = 1 / this.transform.scale(1).k;
+      const touchPositionEntity = this.touchPosition.entity;
+
+      // Either we highlight the 'touched entity' if we have one (because the user just
+      // touched one), otherwise we draw something at the mouse coordinates
+      if (touchPositionEntity != null) {
+        this.drawEntityBackground(ctx, touchPositionEntity, SELECTION_SHADOW_COLOR);
+      } else {
+        ctx.beginPath();
+        ctx.arc(
+          this.touchPosition.position.x,
+          this.touchPosition.position.y,
+          20 * noZoomScale,
+          0,
+          2 * Math.PI,
+          false
+        );
+        ctx.fillStyle = SELECTION_SHADOW_COLOR;
+        ctx.fill();
+      }
+    }
+  }
+
+  private *drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    const highlighted = this.highlighting.get();
+    for (const highlightedEntity of highlighted) {
+      this.drawEntityHighlightBox(ctx, highlightedEntity, false);
+    }
+    ctx.restore();
+  }
+
+  private *drawSearchHighlightBox(ctx: CanvasRenderingContext2D) {
+    if (!this.touchPosition) {
+      const highlighted = this.searchHighlighting.get();
+      for (const highlightedEntity of highlighted) {
+        this.drawEntityHighlightBox(ctx, highlightedEntity, false);
+      }
+    }
+  }
+
+  private *drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
+    if (!this.touchPosition) {
+      const focus = this.searchFocus.get();
+      for (const focusEntity of focus) {
+        this.drawEntityHighlightBox(ctx, focusEntity, true);
+      }
+    }
+  }
+
+  // See the comment in the constructor above regarding these callbacks. Disabling for now to avoid undefined behavior.
+  // canvasDragOver(event): void {
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
+  // }
+
+  // canvasDrop(event): void {
+  //   console.log('canvasDrop');
+  //   const behaviorEvent = {
+  //     // event,
+  //     event: d3.event,
+  //   };
+  //   this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
+  // }
+
+  private *drawGroups() {
+    const selection = this.selection.getEntitySet();
+
+    for (const group of this.groups) {
+      this.placeGroup(group).draw(this.transform, selection.has(group));
+    }
+  }
+
+  private *drawEdges() {
+    const transform = this.transform;
+    const placeEdge = this.placeEdge.bind(this);
+
+    const selected = this.selection.getEntitySet();
+
+    // We need to turn edges into PlacedEdge objects before we can render them,
+    // but the process involves calculating various metrics, which we don't
+    // want to do more than once if we need to render in multiple Z-layers (line + text)
+    const edgeRenderObjects = [];
+
+    for (const d of this.edges) {
+      yield d;
+      edgeRenderObjects.push({
+        d,
+        placedEdge: placeEdge(d),
+      });
+    }
+
+    for (const { d, placedEdge } of edgeRenderObjects) {
+      yield { d, placedEdge };
+      placedEdge.draw(transform, selected.has(d));
+    }
+
+    for (const { d, placedEdge } of edgeRenderObjects) {
+      yield { d, placedEdge };
+      placedEdge.drawLayer2(transform);
+    }
+  }
+
+  private *drawNodes() {
+    const selection = this.selection.getEntitySet();
+    for (const d of this.nodes) {
+      yield d;
+      this.placeNode(d).draw(this.transform, selection.has(d));
+    }
+  }
+
+  private *drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
+    for (const behavior of this.behaviors.getBehaviors()) {
+      yield behavior;
+      behavior.draw(ctx, this.transform);
+    }
+  }
+
+  /**
+   * Draw a red box around the entity.
+   */
+  private drawEntityHighlightBox(
+    ctx: CanvasRenderingContext2D,
+    entity: GraphEntity,
+    strong: boolean
+  ) {
+    if (entity.type === GraphEntityType.Edge) {
+      const d = entity.entity as UniversalGraphEdge;
+      const from = this.expectNodelikeByHash(d.from);
+      const to = this.expectNodelikeByHash(d.to);
+      const placedFrom: PlacedObject = this.placeUniversalNode(from);
+      const placedTo: PlacedObject = this.placeUniversalNode(to);
+
+      const source = placedTo.lineIntersectionPoint(from.data as Point);
+      const target = placedFrom.lineIntersectionPoint(to.data as Point);
+
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
+
+      new LineEdge(ctx, {
+        source,
+        target,
+        stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
+          lineCap: "square",
+        }),
+        forceVisibleText: true,
+      }).draw(this.transform);
+    } else {
+      const lineWidth = strong ? 5 : 3;
+
+      ctx.beginPath();
+      const bbox = this.getEntityBoundingBox([entity], 10);
+      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+      ctx.strokeStyle = "rgba(255, 0, 0, 255)";
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "butt";
+      if (!strong) {
+        ctx.globalAlpha = 0.4;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /**
+   * Draw a selection around the entity.
+   */
+  private drawEntityBackground(
+    ctx: CanvasRenderingContext2D,
+    entity: GraphEntity,
+    fillColor: string
+  ) {
+    if (entity.type === GraphEntityType.Edge) {
+      const d = entity.entity as UniversalGraphEdge;
+      const from = this.expectNodelikeByHash(d.from);
+      const to = this.expectNodelikeByHash(d.to);
+      const placedFrom: PlacedObject = this.placeUniversalNode(from);
+      const placedTo: PlacedObject = this.placeUniversalNode(to);
+
+      const source = placedTo.lineIntersectionPoint({ x: from.data.x, y: from.data.y });
+      const target = placedFrom.lineIntersectionPoint({ x: to.data.x, y: to.data.y });
+
+      const styleData: UniversalEdgeStyle = d.style ?? {};
+      const lineWidthScale = styleData.lineWidthScale ?? 1;
+      const lineWidth = lineWidthScale + 20;
+
+      new LineEdge(ctx, {
+        source,
+        target,
+        stroke: new SolidLine(lineWidth, fillColor, {
+          lineCap: "square",
+        }),
+        forceVisibleText: true,
+      }).draw(this.transform);
+    } else {
+      ctx.beginPath();
+      const bbox = this.getEntityBoundingBox([entity], 10);
+      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+    }
   }
 }
 

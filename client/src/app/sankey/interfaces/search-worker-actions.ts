@@ -9,7 +9,7 @@
 export enum WorkerOutputActions {
   match,
   update,
-  done
+  done,
 }
 
 export interface SearchWorkerMessage {

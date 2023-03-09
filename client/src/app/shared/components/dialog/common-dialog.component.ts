@@ -9,6 +9,12 @@ import { MessageDialog } from '../../services/message-dialog.service';
  */
 export abstract class CommonDialogComponent<T, V = T> {
   form: AbstractControl;
+
+  constructor(
+    public readonly modal: NgbActiveModal,
+    public readonly messageDialog: MessageDialog
+  ) {}
+
   /**
    * If you perform an action after the dialog returns a value via NgbModal.result,
    * but that action fails, the dialog will have been closed and the user will have
@@ -17,32 +23,25 @@ export abstract class CommonDialogComponent<T, V = T> {
    * your action fails, the dialog will stay open.
    * @param value a function to execute your action
    */
-  accept: (T) => Promise<V> = value => Promise.resolve(value);
-
-  constructor(public readonly modal: NgbActiveModal,
-              public readonly messageDialog: MessageDialog) {
-  }
+  accept: (T) => Promise<V> = (value) => Promise.resolve(value);
 
   /**
    * Get the return value for submission.
    */
-  abstract getValue(): Promise<T>|T;
+  abstract getValue(): Promise<T> | T;
 
-  applyValue(value: V) {
-  }
+  applyValue(value: V) {}
 
   cancel() {
     this.modal.dismiss();
   }
 
-  submit(): Promise<void>|void {
+  submit(): Promise<void> | void {
     return Promise.resolve(this.getValue())
-      .then(value => this.accept(value))
-      .then(
-        result => {
-          this.applyValue(result);
-          this.modal.close(result);
-        }
-      );
+      .then((value) => this.accept(value))
+      .then((result) => {
+        this.applyValue(result);
+        this.modal.close(result);
+      });
   }
 }

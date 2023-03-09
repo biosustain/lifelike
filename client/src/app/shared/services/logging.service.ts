@@ -1,19 +1,15 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 
-import { ErrorLog } from '../schemas/common';
+import { ErrorLog } from "../schemas/common";
 
-@Injectable({providedIn: '***ARANGO_USERNAME***'})
+@Injectable({ providedIn: "***ARANGO_USERNAME***" })
 export class LoggingService {
+  readonly baseUrl = "/api/logging";
 
-    readonly baseUrl = '/api/logging';
+  constructor(private readonly http: HttpClient) {}
 
-    constructor(private readonly http: HttpClient) {}
-
-    sendLogs(error: ErrorLog) {
-        return this.http.post(
-            `${this.baseUrl}/`,
-            error,
-        );
-    }
+  sendLogs(error: ErrorLog) {
+    return this.http.post(`${this.baseUrl}/`, error);
+  }
 }

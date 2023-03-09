@@ -1,10 +1,20 @@
-import { Directive, Input, ElementRef, HostBinding, OnDestroy, AfterViewInit, NgZone, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  HostBinding,
+  Input,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+} from "@angular/core";
 
-import { tap, startWith, map, distinctUntilChanged, switchMap, first } from 'rxjs/operators';
-import { iif, of, BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { isEqual } from 'lodash-es';
+import { distinctUntilChanged, first, map, switchMap, tap } from "rxjs/operators";
+import { BehaviorSubject, iif, Observable, of, Subscription } from "rxjs";
+import { isEqual } from "lodash-es";
 
-import { windowResizeObservable, createResizeObservable } from '../rxjs/resize-observable';
+import { createResizeObservable, windowResizeObservable } from "../rxjs/resize-observable";
 
 interface Viewport {
   width: number;
@@ -14,29 +24,33 @@ interface Viewport {
 }
 
 @Directive({
-  selector: '[appConstrainToViewport]'
+  selector: "[appConstrainToViewport]",
 })
 export class ConstrainToViewportDirective implements AfterViewInit, OnDestroy, OnChanges {
-  constructor(
-    private element: ElementRef,
-    private ngZone: NgZone
-  ) {
-  }
-
-  private _margin$ = new BehaviorSubject<number>(30);
-  private _viewport$$ = new BehaviorSubject<Observable<Viewport>>(windowResizeObservable.pipe(map(size => ({x: 0, y: 0, ...size}))));
-  private _viewport$ = this._viewport$$.pipe(switchMap(viewport$ => viewport$));
-  private _resize$$ = new BehaviorSubject(createResizeObservable(this.element.nativeElement, {leading: true}));
-  private _resize$ = this._resize$$.pipe(switchMap(resize$ => resize$));
   @Input() resize$;
   @Input() margin;
-  @Input('appConstrainToViewport') viewport$;
-  @HostBinding('style.maxWidth.px') maxWidth;
-  @HostBinding('style.maxHeight.px') maxHeight;
-
+  @Input("appConstrainToViewport") viewport$;
+  @HostBinding("style.maxWidth.px") maxWidth;
+  @HostBinding("style.maxHeight.px") maxHeight;
+  updateSubscription: Subscription;
+  private _margin$ = new BehaviorSubject<number>(30);
+  private _viewport$$ = new BehaviorSubject<Observable<Viewport>>(
+    windowResizeObservable.pipe(
+      map((size) => ({
+        x: 0,
+        y: 0,
+        ...size,
+      }))
+    )
+  );
+  private _viewport$ = this._viewport$$.pipe(switchMap((viewport$) => viewport$));
+  private _resize$$ = new BehaviorSubject(
+    createResizeObservable(this.element.nativeElement, { leading: true })
+  );
+  private _resize$ = this._resize$$.pipe(switchMap((resize$) => resize$));
   updateSize$ = this._viewport$.pipe(
-    switchMap(viewport => {
-      const {offsetWidth, offsetHeight} = this.element.nativeElement;
+    switchMap((viewport) => {
+      const { offsetWidth, offsetHeight } = this.element.nativeElement;
       return iif(
         // if was displayed
         () => offsetWidth + offsetHeight > 0,
@@ -46,28 +60,30 @@ export class ConstrainToViewportDirective implements AfterViewInit, OnDestroy, O
         this._resize$.pipe(first())
       ).pipe(
         map(() => {
-          const {x, y} = this.element.nativeElement.getBoundingClientRect();
+          const { x, y } = this.element.nativeElement.getBoundingClientRect();
           return {
             maxWidth: viewport.width - (x - viewport.x),
-            maxHeight: viewport.height - (y - viewport.y)
+            maxHeight: viewport.height - (y - viewport.y),
           };
         })
       );
     }),
     distinctUntilChanged(isEqual),
-    switchMap(({maxWidth, maxHeight}) => this._margin$.pipe(
-      tap(margin => {
-        this.ngZone.run(() => {
-          this.maxWidth = maxWidth - margin;
-          this.maxHeight = maxHeight - margin;
-        });
-      })
-    ))
+    switchMap(({ maxWidth, maxHeight }) =>
+      this._margin$.pipe(
+        tap((margin) => {
+          this.ngZone.run(() => {
+            this.maxWidth = maxWidth - margin;
+            this.maxHeight = maxHeight - margin;
+          });
+        })
+      )
+    )
   );
 
-  updateSubscription: Subscription;
+  constructor(private element: ElementRef, private ngZone: NgZone) {}
 
-  ngOnChanges({margin, viewport$, resize$}: SimpleChanges) {
+  ngOnChanges({ margin, viewport$, resize$ }: SimpleChanges) {
     if (margin) {
       this._margin$.next(margin.currentValue);
     }
@@ -80,8 +96,7 @@ export class ConstrainToViewportDirective implements AfterViewInit, OnDestroy, O
   }
 
   ngAfterViewInit() {
-    this.updateSubscription = this.updateSize$.subscribe(() => {
-    });
+    this.updateSubscription = this.updateSize$.subscribe(() => {});
   }
 
   ngOnDestroy() {

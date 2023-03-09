@@ -1,29 +1,39 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <app-modal-header (cancel)="cancel()">
     {{ title }}
   </app-modal-header>
 
   <app-modal-body>
-    <app-form-row for="name" label="Name" [control]="form.get('name')">
-      <input type="text" formControlName="name" id="name" [appFormInput]="form.get('name')"
-             appAutoFocus [autoSelect]="true">
+    <app-form-row [control]="form.get('name')" for="name" label="Name">
+      <input
+        [appFormInput]="form.get('name')"
+        [autoSelect]="true"
+        appAutoFocus
+        formControlName="name"
+        id="name"
+        type="text"
+      />
     </app-form-row>
 
-    <app-form-row for="description" label="Description" [control]="form.get('description')">
-      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
-                rows="10"></textarea>
+    <app-form-row [control]="form.get('description')" for="description" label="Description">
+      <textarea
+        [appFormInput]="form.get('description')"
+        formControlName="description"
+        id="description"
+        rows="10"
+      ></textarea>
     </app-form-row>
 
     <app-form-row [control]="form.get('public')">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <input class="custom-control-input" formControlName="public" id="public" type="checkbox" />
         <label class="custom-control-label" for="public">Publicly share with the community</label>
       </div>
     </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Save</button>
+    <button (click)="cancel()" class="btn btn-secondary mr-2" type="button">Cancel</button>
+    <button [disabled]="form.invalid" class="btn btn-primary" type="submit">Save</button>
   </app-modal-footer>
 </form>

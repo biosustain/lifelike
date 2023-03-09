@@ -23,14 +23,14 @@
       <fieldset class="fieldset-properties mt-4">
         <legend>Links</legend>
         <app-links-panel
+          [editable]="false"
           [ngModel]="selected.entity.data.sources"
           [showHeader]="false"
-          [editable]="false"
         ></app-links-panel>
         <app-links-panel
+          [editable]="false"
           [ngModel]="selected.entity.data.hyperlinks"
           [showHeader]="false"
-          [editable]="false"
         ></app-links-panel>
       </fieldset>
     </ng-container>
@@ -41,17 +41,17 @@
 
         <ul class="list-unstyled m-0">
           <li class="text-truncate">
-            <div class="btn btn-link p-0" (click)="searchMapNodeInVisualizer(selected.entity)">
+            <div (click)="searchMapNodeInVisualizer(selected.entity)" class="btn btn-link p-0">
               Knowledge Graph
             </div>
           </li>
           <li class="text-truncate">
-            <div class="btn btn-link p-0" (click)="searchMapNodeInContent(selected.entity, '')">
+            <div (click)="searchMapNodeInContent(selected.entity, '')" class="btn btn-link p-0">
               File Content
             </div>
           </li>
           <li class="text-truncate">
-            <div class="btn btn-link p-0" (click)="searchMapNodeInContent(selected.entity, 'map')">
+            <div (click)="searchMapNodeInContent(selected.entity, 'map')" class="btn btn-link p-0">
               Map Content
             </div>
           </li>
@@ -60,7 +60,7 @@
 
       <fieldset class="fieldset-properties mt-4">
         <legend>Search External <i class="fas fa-external-link-alt ml-1"></i></legend>
-        <app-quick-search [query]="name" [links]="selected.entity.data?.search"></app-quick-search>
+        <app-quick-search [links]="selected.entity.data?.search" [query]="name"></app-quick-search>
       </fieldset>
     </div>
   </div>

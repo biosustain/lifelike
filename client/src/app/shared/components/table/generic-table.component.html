@@ -1,12 +1,12 @@
 <table class="table table-hover">
   <thead *ngIf="HEADER">
     <ng-container>
-      <tr class="table-secondary" *ngFor="let row of HEADER">
+      <tr *ngFor="let row of HEADER" class="table-secondary">
         <th
           *ngFor="let col of row"
+          [attr.colspan]="col.span"
           class="text-center text-truncate"
           style="z-index: 1"
-          [attr.colspan]="col.span"
         >
           {{ col.name }}
         </th>
@@ -18,7 +18,12 @@
   <tbody *ngIf="entries" [style.position]="'relative'">
     <ng-container>
       <tr *ngFor="let row of entries">
-        <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
+        <td
+          *ngFor="let entry of row"
+          [ngClass]="{ error: entry.highlight }"
+          class="overflow-auto resizeable"
+          style="white-space: pre-wrap; word-wrap: break-word"
+        >
           <div>
             <span *ngIf="entry.text && entry.text.indexOf('snippet') > -1; else noHighlight">
               <app-highlight-text [appInnerXML]="entry.text" [object]="object"></app-highlight-text>
@@ -27,11 +32,15 @@
           </div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
-              <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>
+              <li>
+                <a href="{{ link.link }}" rel="noopener noreferrer" target="_blank">{{
+                  link.linkText
+                }}</a>
+              </li>
             </ul>
           </ng-container>
           <ng-container *ngIf="entry.singleLink">
-            <a target="_blank" rel="noopener noreferrer" href="{{ entry.singleLink.link }}">{{
+            <a href="{{ entry.singleLink.link }}" rel="noopener noreferrer" target="_blank">{{
               entry.singleLink.linkText
             }}</a>
           </ng-container>

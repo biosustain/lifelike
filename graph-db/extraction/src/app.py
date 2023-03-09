@@ -5,18 +5,18 @@ import sys
 from pathlib import Path
 
 import coloredlogs
+import ncbi.ncbi_taxonomy_parser as ncbi_taxonomy_parser
 
 import biocyc.biocyc_parser as biocyc_parser
 import chebi.chebi_parser as chebi_parser
 import enzyme.enzyme_parser as enzyme_parser
 import go.go_parser as go_parser
 import kegg.kegg_parser as kegg_parser
-import mesh.mesh_parser as mesh_parser
+import literature.literature_data_parser as literature_data_parser
 import mesh.add_disease_synonyms_by_pruning_disease as add_disease_synonyms_by_pruning_disease
 import mesh.mesh_annotations as mesh_annotations
+import mesh.mesh_parser as mesh_parser
 import ncbi.ncbi_gene_parser as ncbi_gene_parser
-import ncbi.ncbi_taxonomy_parser as ncbi_taxonomy_parser
-import literature.literature_data_parser as literature_data_parser
 import regulondb.regulondb_parser as regulondb_parser
 import stringdb.stringdb_parser as stringdb_parser
 import uniprot.uniprot_parser as uniprot_parser

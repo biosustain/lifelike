@@ -1,5 +1,6 @@
-import yaml
 import os
+
+import yaml
 
 
 class Config:
@@ -21,7 +22,9 @@ class Config:
             try:
                 content = yaml.safe_load(stream)
             except yaml.YAMLError as err:
-                raise yaml.YAMLError("The yaml file {} could not be parsed. {}".format(yaml_file, err))
+                raise yaml.YAMLError(
+                    "The yaml file {} could not be parsed. {}".format(yaml_file, err)
+                    )
         return content
 
     def _get_data_dir(self):
@@ -66,13 +69,3 @@ class Config:
 
     def get_synonym_cyphers(self):
         return self.read_yaml(os.path.join(self.get_cypher_dir(), 'synonym-cypher.yml'))
-
-
-
-
-
-
-
-
-
-

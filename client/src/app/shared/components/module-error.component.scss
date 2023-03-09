@@ -1,8 +1,8 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 :host {
-  z-index: 100;
   overflow: auto;
+  z-index: 100;
 }
 
 .detail {
@@ -10,16 +10,16 @@
   border-radius: 8px;
 
   .detail-title {
-    margin: 0;
-    padding: 5px 15px;
+    background: $gray-200;
     font-size: inherit;
     font-weight: bold;
-    background: $gray-200;
+    margin: 0;
+    padding: 5px 15px;
   }
 
   pre {
     margin: 0;
-    padding: 10px 15px;
     overflow: auto;
+    padding: 10px 15px;
   }
 }

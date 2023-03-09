@@ -16,7 +16,7 @@ from urllib.request import (
     HTTPErrorProcessor,
     HTTPCookieProcessor,
     BaseHandler,
-    Request
+    Request,
 )
 
 from IPy import IP
@@ -30,11 +30,14 @@ class ControlledConnectionMixin:
     A mixin that overrides the connect() method with one that blacklists
     certain IP classes and port ranges.
     """
+
     blocked_ports = {
         # This is a non-exhaustive list and not meant to provide any real security
         21,  # FTP
         22,  # SSH
-        25, 465, 587,  # Mail
+        25,
+        465,
+        587,  # Mail
     }
 
     def is_ip_allowed(self, ip):
@@ -65,7 +68,9 @@ class ControlledConnectionMixin:
         if not self.is_port_allowed(port):
             raise socket.error("connection to non-allowed port blocked")
 
-        self.sock = self._create_connection((ip, port), self.timeout, self.source_address)
+        self.sock = self._create_connection(
+            (ip, port), self.timeout, self.source_address
+        )
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
         if self._tunnel_host:
@@ -88,8 +93,9 @@ class ControlledHTTPSConnection(ControlledConnectionMixin, HTTPSConnection):
         else:
             server_hostname = self.host
 
-        self.sock = self._context.wrap_socket(self.sock,
-                                              server_hostname=server_hostname)
+        self.sock = self._context.wrap_socket(
+            self.sock, server_hostname=server_hostname
+        )
 
 
 class DirectDownloadDetectorHandler(BaseHandler):
@@ -97,8 +103,10 @@ class DirectDownloadDetectorHandler(BaseHandler):
 
     rewrite_map: List[Tuple[re.Pattern, str]] = [
         # LL-3036 - Force wiley.com links to go to the direct PDF
-        (re.compile('^https?://onlinelibrary.wiley.com/doi/epdf/([^?]+)$', re.I),
-         'https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true'),
+        (
+            re.compile("^https?://onlinelibrary.wiley.com/doi/epdf/([^?]+)$", re.I),
+            "https://onlinelibrary.wiley.com/doi/pdfdirect/\\1?download=true",
+        ),
     ]
 
     @classmethod
@@ -127,23 +135,23 @@ class URLFixerHandler(BaseHandler):
         hostname = parsed.hostname
         port = parsed.port
 
-        path = quote(path, '/%')
-        query = quote(query, '&%=')
-        fragment = quote(fragment, '%')
+        path = quote(path, "/%")
+        query = quote(query, "&%=")
+        fragment = quote(fragment, "%")
 
         # Encode the netloc
         new_netloc = StringIO()
         if username is not None:
-            new_netloc.write(quote(username, '%'))
+            new_netloc.write(quote(username, "%"))
             if password is not None:
-                new_netloc.write(':')
-                new_netloc.write(quote(password, '%'))
-            new_netloc.write('@')
+                new_netloc.write(":")
+                new_netloc.write(quote(password, "%"))
+            new_netloc.write("@")
         if hostname is not None:
             # Apply punycode
-            new_netloc.write(hostname.encode('idna').decode('ascii'))
+            new_netloc.write(hostname.encode("idna").decode("ascii"))
         if port is not None:
-            new_netloc.write(':')
+            new_netloc.write(":")
             new_netloc.write(str(port))
         netloc = new_netloc.getvalue()
 
@@ -167,8 +175,12 @@ class ControlledHTTPSHandler(HTTPSHandler):
     """A version of HTTPSHandler that blacklists certain hosts and ports."""
 
     def https_open(self, req):
-        return self.do_open(ControlledHTTPSConnection, req,
-                            context=self._context, check_hostname=self._check_hostname)
+        return self.do_open(
+            ControlledHTTPSConnection,
+            req,
+            context=self._context,
+            check_hostname=self._check_hostname,
+        )
 
 
 class ContentTooLongError(URLError):
@@ -182,24 +194,23 @@ def _check_acceptable_response(accept_header, content_type_header):
         # See this list of common types for examples:
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
         acceptable_types = map(
-            lambda type: type.split(';')[0].strip(),
-            accept_header.split(',')
+            lambda type: type.split(";")[0].strip(), accept_header.split(",")
         )
-        content_type = content_type_header.split(';')[0].strip()
+        content_type = content_type_header.split(";")[0].strip()
 
         def mime_char_repl(matchobj):
-            return f'\\{matchobj.group(0)}' if matchobj.group(0) in ['.', '+'] else '.*'
+            return f"\\{matchobj.group(0)}" if matchobj.group(0) in [".", "+"] else ".*"
 
         for type in acceptable_types:
             # Substitute regex special characters:
             # . -> \.
             # + -> \+
             # * -> .*
-            if re.fullmatch(re.sub('[\\.\\+\\*]', mime_char_repl, type), content_type):
+            if re.fullmatch(re.sub("[\\.\\+\\*]", mime_char_repl, type), content_type):
                 return content_type
     raise UnsupportedMediaTypeError(
-        f'Response Content-Type does not match the requested type: ' +
-        f'{content_type_header} vs. {accept_header}'
+        f"Response Content-Type does not match the requested type: "
+        + f"{content_type_header} vs. {accept_header}"
     )
 
 
@@ -218,7 +229,7 @@ def read_url(
     buffer=None,
     debug_level=0,
     prefer_direct_downloads=False,
-    **kwargs
+    **kwargs,
 ):
     """
     Get the contents at a URL, while controlling access to some degree.
@@ -242,7 +253,9 @@ def read_url(
         opener.add_handler(DirectDownloadDetectorHandler())
     opener.add_handler(HTTPDefaultErrorHandler())
     opener.add_handler(HTTPRedirectHandler())
-    opener.add_handler(HTTPCookieProcessor(cookiejar=cookie_jar))  # LL-1045 - add cookie support
+    opener.add_handler(
+        HTTPCookieProcessor(cookiejar=cookie_jar)
+    )  # LL-1045 - add cookie support
     opener.add_handler(HTTPErrorProcessor())
     opener.add_handler(URLFixerHandler())  # LL-2990 - fix 'invalid' URLs
     opener.add_handler(ControlledHTTPHandler(debuglevel=debug_level))
@@ -255,15 +268,15 @@ def read_url(
     conn = opener.open(req, **kwargs)
 
     # First, check the content type returned by the server
-    accept_header = req.headers.get('Accept', None)
+    accept_header = req.headers.get("Accept", None)
 
     # If there is no accept header, no need to check the response type matches
     if accept_header is not None:
-        content_type_header = conn.headers.get('Content-Type', None)
+        content_type_header = conn.headers.get("Content-Type", None)
         _check_acceptable_response(accept_header, content_type_header)
 
     # Then, check the content length returned by the server, if any
-    server_length = conn.headers.get('Content-Length')
+    server_length = conn.headers.get("Content-Length")
     if server_length is not None:
         try:
             check_acceptable_size(int(server_length), max_length)

@@ -1,1 +1,1 @@
-export type ReferenceType = 'DATABASE' | 'PROJECT_OBJECT';
+export type ReferenceType = "DATABASE" | "PROJECT_OBJECT";

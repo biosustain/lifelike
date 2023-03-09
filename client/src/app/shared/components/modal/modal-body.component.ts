@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-modal-body',
-  templateUrl: './modal-body.component.html',
+  selector: "app-modal-body",
+  templateUrl: "./modal-body.component.html",
 })
-export class ModalBodyComponent {
-}
+export class ModalBodyComponent {}

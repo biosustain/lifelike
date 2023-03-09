@@ -2,14 +2,14 @@
   position: relative;
 
   &::after {
-    position: absolute;
-    display: block;
-    content: "\f1ce";
-    left: 5px;
-    top: 5px;
-    font-family: 'Font Awesome 5 Pro';
     animation: fa-spin 2s linear infinite;
-    text-align: center;
+    content: "\f1ce";
+    display: block;
+    font-family: "Font Awesome 5 Pro";
     font-size: 10px;
+    left: 5px;
+    position: absolute;
+    text-align: center;
+    top: 5px;
   }
 }

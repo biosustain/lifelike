@@ -1,14 +1,14 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
-import { MockComponents } from 'ng-mocks';
+import { configureTestSuite } from "ng-bullet";
+import { MockComponents } from "ng-mocks";
 
-import { PlotlySankeyDiagramComponent } from 'app/shared/components/plotly-sankey-diagram/plotly-sankey-diagram.component';
-import { VisJsNetworkComponent } from 'app/shared/components/vis-js-network/vis-js-network.component';
+import { PlotlySankeyDiagramComponent } from "app/shared/components/plotly-sankey-diagram/plotly-sankey-diagram.component";
+import { VisJsNetworkComponent } from "app/shared/components/vis-js-network/vis-js-network.component";
 
-import { RouteDisplayComponent } from './route-display.component';
+import { RouteDisplayComponent } from "./route-display.component";
 
-describe('RouteDisplayComponent', () => {
+describe("RouteDisplayComponent", () => {
   let component: RouteDisplayComponent;
   let fixture: ComponentFixture<RouteDisplayComponent>;
 
@@ -16,11 +16,8 @@ describe('RouteDisplayComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         RouteDisplayComponent,
-        MockComponents(
-          PlotlySankeyDiagramComponent,
-          VisJsNetworkComponent
-        )
-      ]
+        MockComponents(PlotlySankeyDiagramComponent, VisJsNetworkComponent),
+      ],
     });
   });
 
@@ -30,7 +27,7 @@ describe('RouteDisplayComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

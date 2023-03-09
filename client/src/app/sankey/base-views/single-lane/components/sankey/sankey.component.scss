@@ -1,10 +1,10 @@
-@use '../../' as this;
-@use 'variables';
-@use 'sankey';
+@use "../../" as this;
+@use "variables";
+@use "sankey";
 
 app-sankey-single-lane {
-  --active-opacity: #{ this.$active-opacity };
-  --inactive-opacity: #{ this.$inactive-opacity };
+  --active-opacity: #{this.$active-opacity};
+  --inactive-opacity: #{this.$inactive-opacity};
 
   @include sankey.sankey;
 
@@ -16,7 +16,7 @@ app-sankey-single-lane {
       }
 
       @each $position, $color in this.$node-colors {
-        &[graphRelativePosition=#{$position}] {
+        &[graphRelativePosition="#{$position}"] {
           > rect {
             fill: $color;
           }
@@ -32,13 +32,13 @@ app-sankey-single-lane {
       @include link-color(this.$link-color);
 
       @each $type, $color in this.$edge-color-map {
-        &[type=#{$type}] {
+        &[type="#{$type}"] {
           @include link-color($color);
         }
       }
 
       @each $position, $color in this.$link-colors {
-        &[transitively-selected=#{$position}] {
+        &[transitively-selected="#{$position}"] {
           @include link-color($color);
         }
       }
