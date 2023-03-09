@@ -17,11 +17,13 @@ HEADER () {
 # Example:
 #   getStaged appserver '\.(py)$'
 getStaged () {
-  relative_dir=${1:='.'}
-  matching_pattern=${2:=''}
-  cd "${relative_dir}"\
-   && git diff --diff-filter=d --cached --name-only --relative\
-    | grep -E "${matching_pattern}"
+  relative_dir=${1:-'.'}
+  matching_pattern=${2:-''}
+  # for all `&& git ls-files --cached --modified --other --exclude-standard \`
+  cd "${relative_dir}" \
+   && git diff --diff-filter=d --cached --name-only --relative \
+    | grep -E "${matching_pattern}" \
+    | sed 's/.*/"&"/'
 }
 
 # Printout system information
@@ -38,6 +40,22 @@ environmentInfo () {
 debug () {
   environmentInfo
   set -xv && echo $-
+}
+
+run_prettier () {
+  dir=$1
+  staged_files=$(getStaged $dir '\.(css|html|js|json|jsx|md|sass|scss|ts|tsx|vue|yaml|yml)$')
+  # shellcheck disable=SC2236
+  if [[ -n $staged_files ]];
+  then
+      (
+          echo "> Running prettier..."
+          echo ${staged_files} | xargs docker run --rm -v $(pwd)/$dir:/work \
+            tmknom/prettier --write --ignore-unknown --cache
+      )
+  else
+    echo "> Skipping prettier run for $dir..."
+  fi
 }
 
 # Recurse hooks
@@ -58,6 +76,7 @@ recurseHook () {
   #region Make utils available
   export -f HEADER
   export -f getStaged
+  export -f run_prettier
   export -f debug
   #endregion
 

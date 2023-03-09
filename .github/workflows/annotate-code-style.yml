@@ -1,0 +1,49 @@
+name: Annotate code style
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      autoFix:
+        description: "Auto Fix"
+        required: false
+        default: "false"
+        type: boolean
+      blackAutoFix:
+        description: "Black Auto Fix"
+        required: false
+        default: "true"
+        type: boolean
+      prettierAutoFix:
+        description: "Prettier Auto Fix"
+        required: false
+        default: "true"
+        type: boolean
+  issue_comment:
+    types: [created]
+
+jobs:
+  appserver:
+    name: Annotate code style
+    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && github.event.sender.id == github.event.issue.user.id)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: echo "${{ toJSON(github.event.comment) }}-${{ toJSON(github.event.sender) }}-${{ toJSON(github.event.pull_request.user) }}"
+
+      - name: Annotate code style
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment.body == 'autofix' && github.event.sender.id == github.event.pull_request.user.id ) }}
+          neutral_check_on_warning: true
+          continue_on_error: true
+          black: true
+          black_auto_fix: ${{ github.event.inputs.blackAutoFix || true }}
+          black_command_prefix: |-
+            docker run --rm -v $(pwd):/work --workdir /work pyfound/black:latest_release
+          prettier: true
+          prettier_auto_fix: ${{ github.event.inputs.prettierAutoFix || true }}
+          prettier_command_prefix: |-
+            docker run --rm -v $(pwd):/work tmknom/prettier
