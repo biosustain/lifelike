@@ -34,7 +34,7 @@ jobs:
 
   appserver:
     name: Annotate code style
-    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && github.event.sender.id == github.event.issue.user.id && github.event.comment.body == 'autofix')
+    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && ( github.event.sender.id == github.event.issue.user.id ) && github.event.comment.body == 'autofix')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
