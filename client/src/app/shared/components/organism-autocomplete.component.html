@@ -1,40 +1,66 @@
 <ng-template #organismResult let-organism="organism" let-term="term">
-  <button class="dropdown-item" type="button" placement="right" (click)="selectOrganism(organism)">
-    <ngb-highlight [result]="organism.organism_name" [term]="term"></ngb-highlight>
+  <button
+    class="dropdown-item"
+    type="button"
+    placement="right"
+    (click)="selectOrganism(organism)"
+  >
+    <ngb-highlight
+      [result]="organism.organism_name"
+      [term]="term"
+    ></ngb-highlight>
   </button>
 </ng-template>
 
-<div ngbDropdown class="input-group input-border rounded" placement="bottom-left" container="body">
-  <input #organismDropdown="uid" appUid
-         autocomplete="off"
-         class="form-control border-0"
-         type="text"
-         container="body"
-         ngbDropdownToggle
-         [(ngModel)]="inputText"
-         (ngModelChange)="inputText$.next($event)"/>
+<div
+  ngbDropdown
+  class="input-group input-border rounded"
+  placement="bottom-left"
+  container="body"
+>
+  <input
+    #organismDropdown="uid"
+    appUid
+    autocomplete="off"
+    class="form-control border-0"
+    type="text"
+    container="body"
+    ngbDropdownToggle
+    [(ngModel)]="inputText"
+    (ngModelChange)="inputText$.next($event)"
+  />
 
   <div *ngIf="isOrganismSelected" class="input-group-append">
-    <button type="button"
-            class="form-control border-0"
-            (click)="clear()">
+    <button type="button" class="form-control border-0" (click)="clear()">
       <i class="fa fa-times"></i>
     </button>
   </div>
   <div *ngIf="isFetching" class="input-group-append">
     <span class="input-group-text">Searching...</span>
   </div>
-  <div class="invalid-feedback" *ngIf="fetchFailed">Sorry, suggestions could not be loaded.</div>
+  <div class="invalid-feedback" *ngIf="fetchFailed">
+    Sorry, suggestions could not be loaded.
+  </div>
 
   <div ngbDropdownMenu [attr.aria-labelledby]="organismDropdown">
     <ng-container *ngFor="let curatedOrganism of organismShortlist">
-      <ng-container *ngTemplateOutlet="organismResult; context: {organism: curatedOrganism, term: inputText}"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="
+          organismResult;
+          context: { organism: curatedOrganism, term: inputText }
+        "
+      ></ng-container>
     </ng-container>
     <ng-container *ngIf="searcher$ | async as searchResults">
       <ng-container *ngIf="searchResults.length">
         <div class="dropdown-divider"></div>
         <ng-container *ngFor="let result of searchResults">
-          <ng-container *ngTemplateOutlet="organismResult; context: {organism: result, term: inputText}"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              organismResult;
+              context: { organism: result, term: inputText }
+            "
+          ></ng-container>
         </ng-container>
       </ng-container>
     </ng-container>

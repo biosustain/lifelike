@@ -1,32 +1,41 @@
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { filter, merge } from 'lodash-es';
+import { filter, merge } from "lodash-es";
 
-import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
-import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { IMAGE_DEFAULT_SIZE, SizeUnits, IMAGE_LABEL } from 'app/shared/constants';
-import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
+import { MapImageProviderService } from "app/drawing-tool/services/map-image-provider.service";
+import { NodeCreation } from "app/graph-viewer/actions/nodes";
+import {
+  IMAGE_DEFAULT_SIZE,
+  SizeUnits,
+  IMAGE_LABEL,
+} from "app/shared/constants";
+import { createImageNode, createNode } from "app/graph-viewer/utils/objects";
 
-import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
-import { CanvasGraphView } from '../canvas-graph-view';
+import {
+  AbstractCanvasBehavior,
+  BehaviorEvent,
+  BehaviorResult,
+} from "../../behaviors";
+import { CanvasGraphView } from "../canvas-graph-view";
 
 export class ImageUploadBehavior extends AbstractCanvasBehavior {
-
   protected readonly mimeTypePattern = /^image\/(jpeg|png|gif|bmp)$/i;
   protected readonly maxFileSize = 20;
 
-  constructor(protected readonly graphView: CanvasGraphView,
-              protected readonly mapImageProvider: MapImageProviderService,
-              protected readonly snackBar: MatSnackBar) {
+  constructor(
+    protected readonly graphView: CanvasGraphView,
+    protected readonly mapImageProvider: MapImageProviderService,
+    protected readonly snackBar: MatSnackBar
+  ) {
     super();
   }
 
   private containsFiles(dataTransfer: DataTransfer) {
-    return dataTransfer.types?.includes('Files');
+    return dataTransfer.types?.includes("Files");
   }
 
   private getFiles(dataTransfer: DataTransfer): File[] {
-    return filter(dataTransfer.files, file => this.isSupportedFile(file));
+    return filter(dataTransfer.files, (file) => this.isSupportedFile(file));
   }
 
   private isSupportedFile(file: File) {
@@ -34,9 +43,13 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
       if (file.size <= this.maxFileSize * SizeUnits.MiB) {
         return true;
       }
-      this.snackBar.open(`Image size too big (>${this.maxFileSize} MiB)`, null, {
+      this.snackBar.open(
+        `Image size too big (>${this.maxFileSize} MiB)`,
+        null,
+        {
           duration: 4000,
-      });
+        }
+      );
     }
     return false;
   }
@@ -90,30 +103,29 @@ export class ImageUploadBehavior extends AbstractCanvasBehavior {
     const position = this.graphView.currentHoverPosition;
     if (position) {
       const imageNode = createImageNode({});
-      const {image_id} = imageNode;
-      this.mapImageProvider.doInitialProcessing(image_id, file).subscribe(dimensions => {
-        // Scale smaller side up to 300 px
-        const ratio = IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
-        this.graphView.execute(
-          new NodeCreation(
-            `Insert image`,
-            merge(
-              imageNode,
-              {
+      const { image_id } = imageNode;
+      this.mapImageProvider
+        .doInitialProcessing(image_id, file)
+        .subscribe((dimensions) => {
+          // Scale smaller side up to 300 px
+          const ratio =
+            IMAGE_DEFAULT_SIZE / Math.min(dimensions.width, dimensions.height);
+          this.graphView.execute(
+            new NodeCreation(
+              `Insert image`,
+              merge(imageNode, {
                 data: {
                   x: position.x + xOffset,
                   y: position.y + yOffset,
                   width: dimensions.width * ratio,
                   height: dimensions.height * ratio,
                 },
-              },
-            ),
-            true,
-          ),
-        );
-      });
+              }),
+              true
+            )
+          );
+        });
       return BehaviorResult.Stop;
     }
   }
-
 }

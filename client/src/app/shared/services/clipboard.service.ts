@@ -1,13 +1,13 @@
-import { Injectable, Inject } from '@angular/core';
-import { Clipboard } from '@angular/cdk/clipboard';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { DOCUMENT } from '@angular/common';
-import { Platform } from '@angular/cdk/platform';
+import { Injectable, Inject } from "@angular/core";
+import { Clipboard } from "@angular/cdk/clipboard";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { DOCUMENT } from "@angular/common";
+import { Platform } from "@angular/cdk/platform";
 
-import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageType } from "app/interfaces/message-dialog.interface";
 
-import { MessageArguments, MessageDialog } from './message-dialog.service';
-import { isPromise } from '../utils';
+import { MessageArguments, MessageDialog } from "./message-dialog.service";
+import { isPromise } from "../utils";
 
 interface StatusMessages {
   success?: string;
@@ -20,7 +20,7 @@ interface StatusMessages {
  * when copy content is generated.
  */
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: "***ARANGO_USERNAME***",
 })
 export class ClipboardService extends Clipboard {
   constructor(
@@ -41,14 +41,18 @@ export class ClipboardService extends Clipboard {
     // TS generates an error saying 'clipboard-write` does not exist as an option for the 'name'
     // property, but in the context of Edge and Chromium browers, it does. So, we ignore the error.
     // @ts-ignore
-    return navigator.permissions.query({name: 'clipboard-write'}).then(({state}) => {
-      this.permissionState = state;
-      return this.hasPermission() || new Error('Permission denied');
-    });
+    return navigator.permissions
+      .query({ name: "clipboard-write" })
+      .then(({ state }) => {
+        this.permissionState = state;
+        return this.hasPermission() || new Error("Permission denied");
+      });
   }
 
   hasPermission(): boolean {
-    return this.permissionState === 'granted' || this.permissionState === 'prompt';
+    return (
+      this.permissionState === "granted" || this.permissionState === "prompt"
+    );
   }
 
   // ansync on the first attempt, but synchronous on consecutive ones
@@ -74,15 +78,15 @@ export class ClipboardService extends Clipboard {
    * @param text the string to write to the user's clipboard
    */
   writeToClipboard(text: string): boolean | Promise<boolean> {
-    const {platform} = this;
+    const { platform } = this;
 
     if (platform.BLINK || platform.EDGE) {
       return this.writeWithPermission(text);
     } else if (platform.FIREFOX) {
       this.error(
-        'We would like to write some information to your clipboard, however at this time ' +
-        'Firefox does not allow us to do so. For the best experience using our app, we highly ' +
-        'recommend using Chrome or Microsoft Edge.'
+        "We would like to write some information to your clipboard, however at this time " +
+          "Firefox does not allow us to do so. For the best experience using our app, we highly " +
+          "recommend using Chrome or Microsoft Edge."
       );
     } else if (platform.SAFARI) {
       try {
@@ -97,8 +101,8 @@ export class ClipboardService extends Clipboard {
       }
     } else {
       this.error(
-        'Unknown browser detected! Some features of the app may be disabled. For the best experience, ' +
-        'we recommend using Chrome or Microsoft Edge'
+        "Unknown browser detected! Some features of the app may be disabled. For the best experience, " +
+          "we recommend using Chrome or Microsoft Edge"
       );
     }
   }
@@ -108,13 +112,13 @@ export class ClipboardService extends Clipboard {
   private error(message?: string) {
     return this.messageDialog.display({
       type: MessageType.Error,
-      title: 'Error',
-      message: message ?? 'Copy failed. Please copy with your keyboard.'
+      title: "Error",
+      message: message ?? "Copy failed. Please copy with your keyboard.",
     } as MessageArguments);
   }
 
   private success(message?: string) {
-    return this.snackBar.open(message ?? 'Copied to clipboard.', null, {
+    return this.snackBar.open(message ?? "Copied to clipboard.", null, {
       duration: 3000,
     });
   }
@@ -133,16 +137,24 @@ export class ClipboardService extends Clipboard {
    * @param text - promise of text to copy
    * @param intermediateMessage - message while waiting
    */
-  delayedCopy(text: Promise<string>, {success, intermediate}: StatusMessages): Promise<boolean> {
-    const intermediateMessageRef = this.snackBar.open(intermediate ?? 'Copying...');
-    return text.then(txt => {
+  delayedCopy(
+    text: Promise<string>,
+    { success, intermediate }: StatusMessages
+  ): Promise<boolean> {
+    const intermediateMessageRef = this.snackBar.open(
+      intermediate ?? "Copying..."
+    );
+    return text.then((txt) => {
       intermediateMessageRef.dismiss();
       return this.immediateCopy(txt, success);
     });
   }
 
   // @ts-ignore
-  copy(text: string | Promise<string>, statusMessages?: StatusMessages): boolean | Promise<boolean> {
+  copy(
+    text: string | Promise<string>,
+    statusMessages?: StatusMessages
+  ): boolean | Promise<boolean> {
     if (isPromise(text)) {
       return this.delayedCopy(text as Promise<string>, statusMessages);
     } else {

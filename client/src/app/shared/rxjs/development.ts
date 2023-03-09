@@ -1,10 +1,10 @@
-import { isDevMode } from '@angular/core';
+import { isDevMode } from "@angular/core";
 
-import { map } from 'rxjs/operators';
-import { cloneDeepWith, partialRight } from 'lodash-es';
-import { MonoTypeOperatorFunction } from 'rxjs';
+import { map } from "rxjs/operators";
+import { cloneDeepWith, partialRight } from "lodash-es";
+import { MonoTypeOperatorFunction } from "rxjs";
 
-import { skipStep } from './skipStep';
+import { skipStep } from "./skipStep";
 
 /**
  * Operator to deeply freeze observable value in development.
@@ -23,4 +23,6 @@ import { skipStep } from './skipStep';
  *
  * PS isDevMode cannot be called on load of this file, as of Angular limitation.
  */
-export const $freezeInDev: MonoTypeOperatorFunction<any> = map(d => isDevMode() ? cloneDeepWith(d, Object.freeze) : d);
+export const $freezeInDev: MonoTypeOperatorFunction<any> = map((d) =>
+  isDevMode() ? cloneDeepWith(d, Object.freeze) : d
+);

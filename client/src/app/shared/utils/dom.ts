@@ -6,7 +6,12 @@
  * @param width width of the rect
  * @param height the height of the rect
  */
-function createDOMRect(x: number, y: number, width: number, height: number): DOMRect {
+function createDOMRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): DOMRect {
   return {
     x,
     y,
@@ -28,7 +33,10 @@ function createDOMRect(x: number, y: number, width: number, height: number): DOM
  * @param element the element
  * @param rect a rect to use (otherwise the element's rect is used)
  */
-export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | undefined = null): DOMRect | ClientRect {
+export function getAbsoluteBoundingClientRect(
+  element: Element,
+  rect: DOMRect | undefined = null
+): DOMRect | ClientRect {
   if (rect == null) {
     rect = element.getBoundingClientRect() as DOMRect;
   }
@@ -57,13 +65,16 @@ export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | 
  * @param rect the rect to make relative
  * @param container the container (may be scrollable)
  */
-export function getBoundingClientRectRelativeToContainer(rect: (DOMRect | ClientRect), container: Element): DOMRect {
+export function getBoundingClientRectRelativeToContainer(
+  rect: DOMRect | ClientRect,
+  container: Element
+): DOMRect {
   const containerRect = getAbsoluteBoundingClientRect(container);
   return createDOMRect(
     rect.left - containerRect.left + container.scrollLeft,
     rect.top - containerRect.top + container.scrollTop,
     rect.width,
-    rect.height,
+    rect.height
   );
 }
 
@@ -76,9 +87,11 @@ export function getBoundingClientRectRelativeToContainer(rect: (DOMRect | Client
  * @param predicate the test element
  * @param continueAfterFail true to continue walking the whole hierarchy even after predicate failure
  */
-export function* walkParentElements(start: Element,
-                                    predicate: (element: Element) => boolean,
-                                    continueAfterFail = true): Iterable<Element | undefined> {
+export function* walkParentElements(
+  start: Element,
+  predicate: (element: Element) => boolean,
+  continueAfterFail = true
+): Iterable<Element | undefined> {
   let current: Element = start;
   while (current) {
     if (predicate(current)) {
@@ -92,12 +105,14 @@ export function* walkParentElements(start: Element,
   }
 }
 
-export function* walkOverflowElementPairs(start: Element): Iterable<{ target: Element, viewport: Element } | undefined> {
+export function* walkOverflowElementPairs(
+  start: Element
+): Iterable<{ target: Element; viewport: Element } | undefined> {
   let current: Element = start.parentElement;
   let target: Element = start;
   while (current) {
     if (nonStaticPositionPredicate(current)) {
-      yield {target, viewport: current};
+      yield { target, viewport: current };
       target = current;
     }
     current = current.parentElement;
@@ -111,17 +126,24 @@ export function* walkOverflowElementPairs(start: Element): Iterable<{ target: El
  * @param element the given element
  */
 export const nonStaticPositionPredicate = (element: Element): boolean => {
-  const position = window.getComputedStyle(element).getPropertyValue('position');
-  return position === 'absolute' || position === 'fixed' || position === 'relative';
+  const position = window
+    .getComputedStyle(element)
+    .getPropertyValue("position");
+  return (
+    position === "absolute" || position === "fixed" || position === "relative"
+  );
 };
 
-export function* walkElementVisibility(owner: Element, ownerRect: DOMRect | undefined): Iterable<ElementVisibility> {
+export function* walkElementVisibility(
+  owner: Element,
+  ownerRect: DOMRect | undefined
+): Iterable<ElementVisibility> {
   ownerRect = (ownerRect || owner.getBoundingClientRect()) as DOMRect;
 
   // TODO: NOT QUITE RIGHT - not sure it gets the right parent container that the scrollbar is from
 
   let index = 0;
-  for (const {target, viewport} of walkOverflowElementPairs(owner)) {
+  for (const { target, viewport } of walkOverflowElementPairs(owner)) {
     const viewportRect = viewport.getBoundingClientRect() as DOMRect;
     const viewportLeft = viewport.scrollLeft;
     const viewportRight = viewport.scrollLeft + viewportRect.width;
@@ -129,15 +151,23 @@ export function* walkElementVisibility(owner: Element, ownerRect: DOMRect | unde
     const viewportBottom = viewport.scrollTop + viewportRect.height;
 
     const relativeRect = getBoundingClientRectRelativeToContainer(
-      index === 0 ? ownerRect : target.getBoundingClientRect() as DOMRect, viewport,
+      index === 0 ? ownerRect : (target.getBoundingClientRect() as DOMRect),
+      viewport
     );
 
     // Check if the element is viewable so we can decide if we need to scroll
-    const fullyVisibleX = relativeRect.left >= viewportLeft && relativeRect.right <= viewportRight;
-    const fullyVisibleXIfNoHorizontalScroll = relativeRect.right <= viewportRect.width;
-    const fullyVisibleY = relativeRect.top >= viewportTop && relativeRect.bottom <= viewportBottom;
-    const partiallyVisibleX = !(relativeRect.right < viewportLeft || relativeRect.left > viewportRight);
-    const partiallyVisibleY = !(relativeRect.bottom < viewportTop || relativeRect.top > viewportBottom);
+    const fullyVisibleX =
+      relativeRect.left >= viewportLeft && relativeRect.right <= viewportRight;
+    const fullyVisibleXIfNoHorizontalScroll =
+      relativeRect.right <= viewportRect.width;
+    const fullyVisibleY =
+      relativeRect.top >= viewportTop && relativeRect.bottom <= viewportBottom;
+    const partiallyVisibleX = !(
+      relativeRect.right < viewportLeft || relativeRect.left > viewportRight
+    );
+    const partiallyVisibleY = !(
+      relativeRect.bottom < viewportTop || relativeRect.top > viewportBottom
+    );
 
     yield {
       target,
@@ -174,21 +204,39 @@ export interface ElementVisibility {
  * @param ownerRect the DOMRect (if not specified, the boundaries of the owner element are used)
  * @param options options for the scroll
  */
-export function scrollRectIntoView(owner: Element, ownerRect: DOMRect | undefined,
-                                   options: ScrollRectIntoViewOptions = {}) {
-  options = {...defaultScrollRectIntoViewOptions, ...options};
+export function scrollRectIntoView(
+  owner: Element,
+  ownerRect: DOMRect | undefined,
+  options: ScrollRectIntoViewOptions = {}
+) {
+  options = { ...defaultScrollRectIntoViewOptions, ...options };
 
   let index = 0;
-  for (const {targetRelativeRect, viewport, viewportRect, fullyVisibleX, fullyVisibleXIfNoHorizontalScroll, fullyVisibleY} of
-    walkElementVisibility(owner, ownerRect)) {
-
+  for (const {
+    targetRelativeRect,
+    viewport,
+    viewportRect,
+    fullyVisibleX,
+    fullyVisibleXIfNoHorizontalScroll,
+    fullyVisibleY,
+  } of walkElementVisibility(owner, ownerRect)) {
     // Handle the viewport being too small for the provided inset
-    const insetX = options.inset <= viewportRect.width ? options.inset : viewportRect.width / 4;
-    const insetY = options.inset <= viewportRect.height ? options.inset : viewportRect.height / 4;
+    const insetX =
+      options.inset <= viewportRect.width
+        ? options.inset
+        : viewportRect.width / 4;
+    const insetY =
+      options.inset <= viewportRect.height
+        ? options.inset
+        : viewportRect.height / 4;
 
     if (!fullyVisibleX) {
       // Bias to having no horizontal scroll offset
-      if (index === 0 && options.preferNoHorizontalScroll && fullyVisibleXIfNoHorizontalScroll) {
+      if (
+        index === 0 &&
+        options.preferNoHorizontalScroll &&
+        fullyVisibleXIfNoHorizontalScroll
+      ) {
         viewport.scrollLeft = 0;
       } else {
         viewport.scrollLeft = Math.max(0, targetRelativeRect.left - insetX);
@@ -199,7 +247,11 @@ export function scrollRectIntoView(owner: Element, ownerRect: DOMRect | undefine
       viewport.scrollTop = Math.max(0, targetRelativeRect.top - insetY);
 
       // Bias to having no horizontal scroll offset
-      if (index === 0 && options.preferNoHorizontalScroll && fullyVisibleXIfNoHorizontalScroll) {
+      if (
+        index === 0 &&
+        options.preferNoHorizontalScroll &&
+        fullyVisibleXIfNoHorizontalScroll
+      ) {
         viewport.scrollLeft = 0;
       }
     }

@@ -1,6 +1,7 @@
 # Standardize casing for Entity Data Source and Id (LL-3275)
 
 ### Suggested data sources:
+
 - ChEBI
 - MeSH
 - BioCyc
@@ -11,6 +12,7 @@
 - Lifelike
 
 ### Update data sources
+
 ```
 call apoc.periodic.iterate(
 	"match(n:db_BioCyc) return n",

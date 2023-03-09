@@ -1,6 +1,11 @@
-import { GraphEntityType, UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+} from "app/drawing-tool/services/interfaces";
 
-import { GraphAction, GraphActionReceiver } from './actions';
+import { GraphAction, GraphActionReceiver } from "./actions";
 
 /**
  * Represents a new node addition to the graph.
@@ -10,17 +15,18 @@ export class NodeCreation implements GraphAction {
     public readonly description: string,
     public readonly node: UniversalGraphNode,
     public readonly select = false,
-    public readonly focus = false,
-  ) {
-  }
+    public readonly focus = false
+  ) {}
 
   apply(component: GraphActionReceiver) {
     component.addNode(this.node);
     if (this.select) {
-      component.selection.add([{
-        type: GraphEntityType.Node,
-        entity: this.node,
-      }]);
+      component.selection.add([
+        {
+          type: GraphEntityType.Node,
+          entity: this.node,
+        },
+      ]);
     }
     if (this.focus) {
       component.focusEditorPanel();
@@ -38,21 +44,19 @@ export class NodeCreation implements GraphAction {
 export class NodeDeletion implements GraphAction {
   private removedEdges: UniversalGraphEdge[];
 
-  constructor(public description: string,
-              public node: UniversalGraphNode) {
-  }
+  constructor(public description: string, public node: UniversalGraphNode) {}
 
   apply(component: GraphActionReceiver) {
     if (this.removedEdges != null) {
-      throw new Error('cannot double apply NodeDeletion()');
+      throw new Error("cannot double apply NodeDeletion()");
     }
-    const {removedEdges} = component.removeNode(this.node);
+    const { removedEdges } = component.removeNode(this.node);
     this.removedEdges = removedEdges;
   }
 
   rollback(component: GraphActionReceiver) {
     if (this.removedEdges == null) {
-      throw new Error('cannot rollback NodeDeletion() if not applied');
+      throw new Error("cannot rollback NodeDeletion() if not applied");
     }
     component.addNode(this.node);
     for (const edge of this.removedEdges) {
@@ -69,10 +73,12 @@ export class NodeMove implements GraphAction {
   previousX: number;
   previousY: number;
 
-  constructor(public description: string,
-              public node: UniversalGraphNode,
-              public nextX: number,
-              public nextY: number) {
+  constructor(
+    public description: string,
+    public node: UniversalGraphNode,
+    public nextX: number,
+    public nextY: number
+  ) {
     this.previousX = node.data.x;
     this.previousY = node.data.y;
   }
@@ -92,11 +98,11 @@ export class NodeMove implements GraphAction {
  * Used to handle adding of the node(s) into the group
  */
 export class NodesGroupAdd implements GraphAction {
-
-  constructor(public description: string,
-              public nodes: UniversalGraphNode[],
-              public group: UniversalGraphGroup) {
-  }
+  constructor(
+    public description: string,
+    public nodes: UniversalGraphNode[],
+    public group: UniversalGraphGroup
+  ) {}
 
   apply(component: GraphActionReceiver): void {
     component.addToGroup(this.nodes, this.group);
@@ -111,11 +117,11 @@ export class NodesGroupAdd implements GraphAction {
  * Used to handle removal of the node(s) from the group
  */
 export class NodesGroupRemoval implements GraphAction {
-
-  constructor(public description: string,
-              public nodes: UniversalGraphNode[],
-              public group: UniversalGraphGroup) {
-  }
+  constructor(
+    public description: string,
+    public nodes: UniversalGraphNode[],
+    public group: UniversalGraphGroup
+  ) {}
 
   apply(component: GraphActionReceiver): void {
     component.removeFromGroup(this.nodes, this.group);

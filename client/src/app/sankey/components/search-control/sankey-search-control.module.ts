@@ -1,19 +1,12 @@
-import { NgModule } from '@angular/core';
+import { NgModule } from "@angular/core";
 
-import { SharedModule } from 'app/shared/shared.module';
+import { SharedModule } from "app/shared/shared.module";
 
-import { SankeySearchControlComponent } from './search-control.component';
+import { SankeySearchControlComponent } from "./search-control.component";
 
 @NgModule({
-  declarations: [
-    SankeySearchControlComponent,
-  ],
-  imports: [
-    SharedModule
-  ],
-  exports: [
-    SankeySearchControlComponent
-  ],
+  declarations: [SankeySearchControlComponent],
+  imports: [SharedModule],
+  exports: [SankeySearchControlComponent],
 })
-export class SankeySearchControlModule {
-}
+export class SankeySearchControlModule {}

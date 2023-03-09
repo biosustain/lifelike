@@ -8,17 +8,17 @@
      "window is undefined"
      "alert is undefined"
 */
-import { WorkerOutputActions } from '../../interfaces/search-worker-actions';
-import { SankeySearch } from './search-match';
+import { WorkerOutputActions } from "../../interfaces/search-worker-actions";
+import { SankeySearch } from "./search-match";
 
-addEventListener('message', async ({data}) => {
+addEventListener("message", async ({ data }) => {
   const search = new SankeySearch(data);
   const [generator, multiMatchesGenerator] = search.traverseAll();
 
   for (const match of generator) {
     postMessage({
       action: WorkerOutputActions.match,
-      actionLoad: match
+      actionLoad: match,
     });
   }
   // Potentially to be supported in future
@@ -29,7 +29,7 @@ addEventListener('message', async ({data}) => {
   //   });
   // }
   postMessage({
-    action: WorkerOutputActions.done
+    action: WorkerOutputActions.done,
   });
   close();
 });

@@ -7,8 +7,8 @@
         <ng-template ngbPanelContent>
           <ul *ngFor="let file of failed">
             <li>
-              Filename: {{file.filename}}<br>
-              Error: {{file.error}}
+              Filename: {{ file.filename }}<br />
+              Error: {{ file.error }}
             </li>
           </ul>
         </ng-template>
@@ -17,6 +17,8 @@
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="submit" class="btn btn-primary" (click)="cancel()">Close</button>
+    <button type="submit" class="btn btn-primary" (click)="cancel()">
+      Close
+    </button>
   </app-modal-footer>
 </form>

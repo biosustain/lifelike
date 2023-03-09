@@ -3,13 +3,15 @@
   <div
     id="sidenav-node-label"
     [ngStyle]="{
-      'border': 'thin solid',
+      border: 'thin solid',
       'border-radius': '10px',
       'border-color': legend.get(nodeEntity.data.primaryLabel)[0],
-      'color': legend.get(nodeEntity.data.primaryLabel)[0],
+      color: legend.get(nodeEntity.data.primaryLabel)[0],
       'margin-left': '10px',
-      'padding': '5px'
+      padding: '5px'
     }"
-  >{{ nodeEntity.data.primaryLabel }} </div>
+  >
+    {{ nodeEntity.data.primaryLabel }}
+  </div>
 </div>
 <span>{{ nodeEntity.data.data.eid }}</span>

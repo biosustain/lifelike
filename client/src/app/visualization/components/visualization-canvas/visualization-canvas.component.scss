@@ -1,16 +1,16 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import 'src/scss/variables';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "src/scss/variables";
 
 #network-viz {
-    background-color: #F5F5F5;
+  background-color: #f5f5f5;
 }
 
 #sidenav-container {
-    height: 80vh;
-    min-width: 400px;
-    padding: 10px 15px;
-    white-space: nowrap;
+  height: 80vh;
+  min-width: 400px;
+  padding: 10px 15px;
+  white-space: nowrap;
 }
 
 #sidenav-panel-btns-container {
@@ -27,7 +27,7 @@
   outline: none;
 }
 #sidenav-panel-close-btn:hover {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: #dc3545;
   cursor: pointer;
 }
@@ -36,9 +36,9 @@
 }
 
 .viz-canvas-legend-wrapper {
-    margin-left: $spacer;
-    margin-top: $spacer;
-    min-width: 6rem;
-    position: absolute;
-    z-index: 1;
+  margin-left: $spacer;
+  margin-top: $spacer;
+  min-width: 6rem;
+  position: absolute;
+  z-index: 1;
 }

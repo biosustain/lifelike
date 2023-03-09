@@ -1,21 +1,21 @@
-import { GraphTraceNetwork } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork } from "app/shared/providers/graph-type/interfaces";
 
-import { PRESCALERS } from './prescalers';
-import { ALIGN_ID, ALIGNS } from './align';
+import { PRESCALERS } from "./prescalers";
+import { ALIGN_ID, ALIGNS } from "./align";
 import {
   NODE_VALUE_GENERATORS,
   LINK_VALUE_GENERATORS,
   PREDEFINED_VALUE_ACCESSORS,
   LinkValueAccessor,
-  NodeValueAccessor
-} from './valueAccessors';
-import { SankeyViews } from './view';
-import { TraceNetwork, Trace } from '../model/sankey-document';
-import { SankeyLinkInterface, SankeyNodeInterface } from './pure';
-import { SankeyBaseState, SankeyBaseOptions } from '../base-views/interfaces';
+  NodeValueAccessor,
+} from "./valueAccessors";
+import { SankeyViews } from "./view";
+import { TraceNetwork, Trace } from "../model/sankey-document";
+import { SankeyLinkInterface, SankeyNodeInterface } from "./pure";
+import { SankeyBaseState, SankeyBaseOptions } from "../base-views/interfaces";
 
 // Re-export the interfaces which are defined separately for DOMless ussage
-export * from './pure';
+export * from "./pure";
 
 export interface IntermediateProcessedData {
   _sets: object;
@@ -44,10 +44,12 @@ export interface SankeyState {
   networkTraceIdx?: number;
   prescalerId?: string;
   normalizeLinks?: boolean;
-  labelEllipsis?: {
-    enabled: boolean,
-    value: number
-  } | undefined;
+  labelEllipsis?:
+    | {
+        enabled: boolean;
+        value: number;
+      }
+    | undefined;
   fontSizeScale?: number;
   viewName?: string;
   baseViewName?: ViewBase;
@@ -62,8 +64,8 @@ export interface SankeyTraceNetwork extends GraphTraceNetwork {
 
 // Do not change these strings! They are tightly coupled with urls.
 export enum ViewBase {
-  sankeyMultiLane = 'sankey',
-  sankeySingleLane = 'sankey-many-to-many'
+  sankeyMultiLane = "sankey",
+  sankeySingleLane = "sankey-many-to-many",
 }
 
 export interface TypeContext {
@@ -76,9 +78,9 @@ export interface TypeContext {
 }
 
 export interface NetworkTraceData<Base extends TypeContext> {
-  links: Array<Base['link']>;
-  nodes: Array<Base['node']>;
-  getNodeById: (id: string) => Base['node'];
-  sources: Array<Base['node']>;
-  targets: Array<Base['node']>;
+  links: Array<Base["link"]>;
+  nodes: Array<Base["node"]>;
+  getNodeById: (id: string) => Base["node"];
+  sources: Array<Base["node"]>;
+  targets: Array<Base["node"]>;
 }

@@ -1,15 +1,15 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { FormControl, FormGroup } from "@angular/forms";
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { FormComponent } from 'app/shared/components/base/form.component';
-import { SearchableRequestOptions } from 'app/shared/schemas/common';
+import { MessageDialog } from "app/shared/services/message-dialog.service";
+import { FormComponent } from "app/shared/components/base/form.component";
+import { SearchableRequestOptions } from "app/shared/schemas/common";
 
-import { ContentSearchOptions } from '../content-search';
+import { ContentSearchOptions } from "../content-search";
 
 @Component({
-  selector: 'app-content-search-form',
-  templateUrl: './content-search-form.component.html',
+  selector: "app-content-search-form",
+  templateUrl: "./content-search-form.component.html",
 })
 export class ContentSearchFormComponent extends FormComponent<ContentSearchOptions> {
   @Input() queryString: string;
@@ -17,7 +17,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   @Output() formResult = new EventEmitter<SearchableRequestOptions>();
 
   form = new FormGroup({
-    q: new FormControl(''),
+    q: new FormControl(""),
   });
 
   constructor(messageDialog: MessageDialog) {
@@ -29,7 +29,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   }
 
   submit() {
-    this.form.patchValue({q: this.queryString});
+    this.form.patchValue({ q: this.queryString });
     super.submit();
   }
 }

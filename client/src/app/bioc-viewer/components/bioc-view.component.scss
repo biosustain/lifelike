@@ -13,7 +13,7 @@ mat-sidenav {
 .document {
   display: flex;
   flex-direction: column;
-  font-family: Georgia,Cambria,"Times New Roman",Times,serif;
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
   font-size: 18px;
   position: relative;
 
@@ -34,7 +34,7 @@ mat-sidenav {
     margin-bottom: 15px;
     font-size: 25px;
     line-height: 40px;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 600;
     display: block;
     color: #237aaa;
@@ -47,18 +47,21 @@ mat-sidenav {
     font-weight: 600;
     margin: 40px 10px 10px 0;
     color: #237aaa;
-    letter-spacing: -.022em;
-    font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Geneva,Arial,sans-serif;
+    letter-spacing: -0.022em;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva,
+      Arial, sans-serif;
     text-transform: capitalize;
   }
 
-  .abstract_title_1, .title_2, .title_caption {
+  .abstract_title_1,
+  .title_2,
+  .title_caption {
     font-size: 18px;
     margin: 10px 0 10px 0;
     color: #237aaa;
   }
 
-  .paragraph { 
+  .paragraph {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     font-size: 18.5px;
@@ -69,7 +72,7 @@ mat-sidenav {
     color: #237aaa;
     font-size: 20px;
     font-weight: bold;
-    font-family: Georgia,Cambria,"Times New Roman",Times,serif;
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -97,7 +100,7 @@ mat-sidenav {
     }
 
     .authors {
-      font-family: Calibri,serif;
+      font-family: Calibri, serif;
       display: block;
       font-variant: petite-caps;
       color: #37474f;
@@ -115,12 +118,11 @@ mat-sidenav {
   }
 }
 
-
 .title {
-    color: #333;
-    font-size: 25px;
-    line-height: 40px;
-    font-weight: 600;
+  color: #333;
+  font-size: 25px;
+  line-height: 40px;
+  font-weight: 600;
 }
 
 .title2 {

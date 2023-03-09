@@ -1,30 +1,36 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { isEmpty } from 'lodash-es';
-import { first, map, switchMap } from 'rxjs/operators';
-import { iif, of, defer } from 'rxjs';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
+import { isEmpty } from "lodash-es";
+import { first, map, switchMap } from "rxjs/operators";
+import { iif, of, defer } from "rxjs";
 
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
+import {
+  MessageArguments,
+  MessageDialog,
+} from "app/shared/services/message-dialog.service";
+import { MessageType } from "app/interfaces/message-dialog.interface";
+import { CommonDialogComponent } from "app/shared/components/dialog/common-dialog.component";
 
-import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
-import { ObjectSelectService } from '../../services/object-select.service';
+import { FilesystemObject, ProjectImpl } from "../../models/filesystem-object";
+import { ObjectSelectService } from "../../services/object-select.service";
 
 @Component({
-  selector: 'app-object-selection-dialog',
-  templateUrl: './object-selection-dialog.component.html',
+  selector: "app-object-selection-dialog",
+  templateUrl: "./object-selection-dialog.component.html",
   providers: [ObjectSelectService],
 })
-export class ObjectSelectionDialogComponent
-  extends CommonDialogComponent<readonly FilesystemObject[]> {
-  @Input() title = 'Select File';
-  @Input() emptyDirectoryMessage = 'There are no items in this folder.';
+export class ObjectSelectionDialogComponent extends CommonDialogComponent<
+  readonly FilesystemObject[]
+> {
+  @Input() title = "Select File";
+  @Input() emptyDirectoryMessage = "There are no items in this folder.";
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              readonly objectSelect: ObjectSelectService) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    readonly objectSelect: ObjectSelectService
+  ) {
     super(modal, messageDialog);
   }
 
@@ -48,27 +54,32 @@ export class ObjectSelectionDialogComponent
   }
 
   getValue(): Promise<readonly FilesystemObject[]> {
-    return this.objectSelect.object.children.selection$.pipe(
-      map(items => isEmpty(items) ? [this.objectSelect.object] : items)
-    ).pipe(
-      first()
-    ).toPromise();
+    return this.objectSelect.object.children.selection$
+      .pipe(
+        map((items) => (isEmpty(items) ? [this.objectSelect.object] : items))
+      )
+      .pipe(first())
+      .toPromise();
   }
 
   submit() {
-    return of(this.objectSelect.object).pipe(
-      switchMap((object: FilesystemObject) =>
-        iif(
-          () => object?.hashId != null,
-          of(super.submit()),
-          defer(() => this.messageDialog.display({
-            title: 'No Selection',
-            message: 'You need to select a project first.',
-            type: MessageType.Error,
-          } as MessageArguments))
-        )
-      ),
-      first()
-    ).toPromise();
+    return of(this.objectSelect.object)
+      .pipe(
+        switchMap((object: FilesystemObject) =>
+          iif(
+            () => object?.hashId != null,
+            of(super.submit()),
+            defer(() =>
+              this.messageDialog.display({
+                title: "No Selection",
+                message: "You need to select a project first.",
+                type: MessageType.Error,
+              } as MessageArguments)
+            )
+          )
+        ),
+        first()
+      )
+      .toPromise();
   }
 }

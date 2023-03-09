@@ -1,20 +1,24 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector } from "@angular/core";
 
-import { Observable, of } from 'rxjs';
+import { Observable, of } from "rxjs";
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
 
-import { ObjectTypeProvider, TYPE_PROVIDER } from '../providers/base-object.type-provider';
-import { DefaultObjectTypeProvider } from '../providers/default.type-provider';
+import {
+  ObjectTypeProvider,
+  TYPE_PROVIDER,
+} from "../providers/base-object.type-provider";
+import { DefaultObjectTypeProvider } from "../providers/default.type-provider";
 
 /**
  * The object type service returns object type providers for given objects.
  */
 @Injectable()
 export class ObjectTypeService {
-  constructor(protected readonly injector: Injector,
-              private readonly defaultProvider: DefaultObjectTypeProvider) {
-  }
+  constructor(
+    protected readonly injector: Injector,
+    private readonly defaultProvider: DefaultObjectTypeProvider
+  ) {}
 
   /**
    * Get the provider for the given file.

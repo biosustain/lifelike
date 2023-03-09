@@ -2,7 +2,12 @@
   <h4 class="modal-title text-truncate">
     <ng-content></ng-content>
   </h4>
-  <button type="button" class="close" aria-label="Close" (click)="cancel.emit()">
+  <button
+    type="button"
+    class="close"
+    aria-label="Close"
+    (click)="cancel.emit()"
+  >
     <span aria-hidden="true">&times;</span>
   </button>
 </div>

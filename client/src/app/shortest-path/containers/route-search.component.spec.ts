@@ -1,21 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
 
-import { RouteSearchComponent } from './route-search.component';
+import { RouteSearchComponent } from "./route-search.component";
 
-describe('RouteSearchComponent', () => {
+describe("RouteSearchComponent", () => {
   let component: RouteSearchComponent;
   let fixture: ComponentFixture<RouteSearchComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule
-      ],
-      declarations: [ RouteSearchComponent ]
+      imports: [RootStoreModule],
+      declarations: [RouteSearchComponent],
     });
   });
 
@@ -25,7 +23,7 @@ describe('RouteSearchComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,25 +1,25 @@
-import { escapeRegExp } from 'lodash-es';
+import { escapeRegExp } from "lodash-es";
 
 /**
  * Split a term into separate words.
  * @param s the term
  * @param options extra tokenization options
  */
-export function tokenizeQuery(s: string,
-                              options: TokenizationOptions = {}): string[] {
+export function tokenizeQuery(
+  s: string,
+  options: TokenizationOptions = {}
+): string[] {
   if (options.singleTerm) {
-    return [
-      s.trim()
-    ];
+    return [s.trim()];
   } else {
     const terms = [];
-    let term = '';
+    let term = "";
     let quoted = false;
 
     for (const char of s) {
       if (char === '"') {
         quoted = !quoted;
-      } else if (!quoted && char === ' ') {
+      } else if (!quoted && char === " ") {
       } else {
         term += char;
         continue;
@@ -29,7 +29,7 @@ export function tokenizeQuery(s: string,
       if (trimmedTerm.length) {
         terms.push(trimmedTerm);
       }
-      term = '';
+      term = "";
     }
 
     {
@@ -55,31 +55,34 @@ export interface Matcher {
  * @param terms the terms to match
  * @param options extra options
  */
-export function compileFind(terms: string[], options: FindOptions = {}): Matcher {
-  const wrapper = options.wholeWord ? '\\b' : '';
+export function compileFind(
+  terms: string[],
+  options: FindOptions = {}
+): Matcher {
+  const wrapper = options.wholeWord ? "\\b" : "";
   let termPatterns;
 
   if (options.keepSearchSpecialChars) {
-    termPatterns = terms.map(term => {
+    termPatterns = terms.map((term) => {
       const pat = escapeRegExp(term)
-        .replace(' ', ' +')
-        .replace(/(\\\*)/g, '\\w*')
-        .replace(/(\\\?)/g, '\\w?');
+        .replace(" ", " +")
+        .replace(/(\\\*)/g, "\\w*")
+        .replace(/(\\\?)/g, "\\w?");
       return wrapper + pat + wrapper;
     });
   } else {
     termPatterns = terms.map(
-      term => wrapper + escapeRegExp(term).replace(' ', ' +') + wrapper
+      (term) => wrapper + escapeRegExp(term).replace(" ", " +") + wrapper
     );
   }
 
-  const pattern = new RegExp(termPatterns.join('|'), 'i');
+  const pattern = new RegExp(termPatterns.join("|"), "i");
   // We need to bind the pattern, or it will be destroyed after the function returns.
   // See: https://stackoverflow.com/questions/20579033/why-do-i-need-to-write-functionvalue-return-my-functionvalue-as-a-callb
   const matcher = RegExp.prototype.test.bind(pattern);
   Object.assign(matcher, {
     pattern,
-    termPatterns
+    termPatterns,
   });
   return matcher as Matcher;
 }

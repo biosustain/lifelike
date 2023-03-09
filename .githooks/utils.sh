@@ -21,7 +21,7 @@ getStaged () {
   matching_pattern=${2:-''}
   # for all `&& git ls-files --cached --modified --other --exclude-standard \`
   cd "${relative_dir}" \
-   && git ls-files --cached --modified --other --exclude-standard \
+   && git diff --diff-filter=d --cached --name-only --relative \
     | grep -E "${matching_pattern}" \
     | sed 's/.*/"&"/'
 }
@@ -51,7 +51,8 @@ run_prettier () {
       (
           echo "> Running prettier..."
           echo ${staged_files} | xargs docker run --rm -v $(pwd)/$dir:/work \
-            tmknom/prettier --write --ignore-unknown --cache
+            tmknom/prettier --write --ignore-unknown --loglevel warn \
+            --cache --cache-strategy metadata --cache-location=.cache/.prettier-cache
       )
   else
     echo "> Skipping prettier run for $dir..."

@@ -1,11 +1,14 @@
-import { escapeRegExp } from 'lodash-es';
+import { escapeRegExp } from "lodash-es";
 
-import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
-import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
-import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
+import { EnrichmentTableViewerComponent } from "app/enrichment/components/table/enrichment-table-viewer.component";
+import { PdfViewComponent } from "app/pdf-viewer/components/pdf-view.component";
+import { BiocViewComponent } from "app/bioc-viewer/components/bioc-view.component";
 
-import { FileTypeShorthand } from '../constants';
-import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
+import { FileTypeShorthand } from "../constants";
+import {
+  WorkspaceManager,
+  WorkspaceNavigationExtras,
+} from "../workspace-manager";
 
 /**
  * Create a valid url string suitable for <a> tag href usage.
@@ -17,21 +20,20 @@ export function toValidLink(url: string): string {
   if (url.match(/^(http|ftp)s?:\/\//i)) {
     return url;
   } else if (url.match(/^\/\//i)) {
-    return 'http:' + url;
+    return "http:" + url;
     // Internal URL begins with single /
-  } else if (url.startsWith('/')) {
+  } else if (url.startsWith("/")) {
     return url;
   } else if (url.match(/^mailto:/i)) {
     return url;
   } else {
-    return 'http://' + url;
+    return "http://" + url;
   }
 }
 
 export function removeViewModeIfPresent(url: string): string {
-  return url.replace(/\/edit[\?#$]?/, '');
+  return url.replace(/\/edit[\?#$]?/, "");
 }
-
 
 /**
  * Returns the string as a valid URL object
@@ -45,10 +47,10 @@ export function toValidUrl(url: string): URL {
     // This will fail in case of internal URL
     urlObject = new URL(url);
   } catch (e) {
-    if (url.startsWith('/')) {
+    if (url.startsWith("/")) {
       urlObject = new URL(url, window.location.href);
     } else {
-      urlObject = new URL('https://' + url);
+      urlObject = new URL("https://" + url);
     }
   }
   return urlObject;
@@ -59,7 +61,7 @@ export function toValidUrl(url: string): URL {
  * @param url the URL
  * @param target the window target (default _blank)
  */
-export function openLink(url: string, target = '_blank'): boolean {
+export function openLink(url: string, target = "_blank"): boolean {
   if (url == null) {
     return false;
   }
@@ -76,7 +78,8 @@ export function openInternalLink(
   extras: WorkspaceNavigationExtras = {}
 ) {
   const url = urlObject.toString();
-  const pathSearchHash: string = urlObject.pathname + urlObject.search + urlObject.hash;
+  const pathSearchHash: string =
+    urlObject.pathname + urlObject.search + urlObject.hash;
 
   let m;
 
@@ -89,8 +92,8 @@ export function openInternalLink(
       url: pathSearchHash,
       extras: {
         matchExistingTab: `^/+folders/${escapeRegExp(m[1])}.*`,
-        ...extras
-      }
+        ...extras,
+      },
     });
 
     return true;
@@ -107,17 +110,23 @@ export function openInternalLink(
           const fileViewComponent = component as PdfViewComponent;
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           if (fragmentMatch) {
-            fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
+            fileViewComponent.scrollInPdf(
+              fileViewComponent.parseLocationFromUrl(fragmentMatch[1])
+            );
           }
         };
         break;
       }
       case FileTypeShorthand.EnrichmentTable: {
         shouldReplaceTab = (component) => {
-          const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
+          const enrichmentTableViewerComponent =
+            component as EnrichmentTableViewerComponent;
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           if (fragmentMatch) {
-            enrichmentTableViewerComponent.annotation = enrichmentTableViewerComponent.parseAnnotationFromUrl(fragmentMatch[1]);
+            enrichmentTableViewerComponent.annotation =
+              enrichmentTableViewerComponent.parseAnnotationFromUrl(
+                fragmentMatch[1]
+              );
             enrichmentTableViewerComponent.startAnnotationFind(
               enrichmentTableViewerComponent.annotation.id,
               enrichmentTableViewerComponent.annotation.text,
@@ -132,18 +141,20 @@ export function openInternalLink(
           const fragmentMatch = url.match(/^[^#]+#(.+)$/);
           const biocViewComponent = component as BiocViewComponent;
           if (fragmentMatch && fragmentMatch[1]) {
-            (biocViewComponent).scrollInOffset(biocViewComponent.parseLocationFromUrl(fragmentMatch[1]));
+            biocViewComponent.scrollInOffset(
+              biocViewComponent.parseLocationFromUrl(fragmentMatch[1])
+            );
           }
         };
         break;
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
-          const {hash, search, searchParams} = toValidUrl(pathSearchHash);
+          const { hash, search, searchParams } = toValidUrl(pathSearchHash);
           if (search) {
             component.route.queryParams.next({
-              ...Object.fromEntries((new URLSearchParams(search.slice(1)))),
-              ...searchParams
+              ...Object.fromEntries(new URLSearchParams(search.slice(1))),
+              ...searchParams,
             });
           }
           if (hash) {
@@ -163,8 +174,8 @@ export function openInternalLink(
       extras: {
         matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
         shouldReplaceTab,
-        ...extras
-      }
+        ...extras,
+      },
     });
     return true;
   }
@@ -177,8 +188,8 @@ export function openInternalLink(
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
         matchExistingTab: `^/+projects/${escapeRegExp(m[1])}\\?$`,
-        ...extras
-      }
+        ...extras,
+      },
     });
 
     return true;
@@ -192,8 +203,8 @@ export function openInternalLink(
       extras: {
         // Need the regex end character here so we don't accidentally match a child of this directory
         matchExistingTab: `^/+folders/${escapeRegExp(m[1])}\\?$`,
-        ...extras
-      }
+        ...extras,
+      },
     });
 
     return true;
@@ -202,21 +213,16 @@ export function openInternalLink(
   // Match a deprecated pdf link
   m = pathSearchHash.match(/^\/dt\/pdf/);
   if (m) {
-    const [
-      fileId,
-      page,
-      coordA,
-      coordB,
-      coordC,
-      coordD,
-    ] = pathSearchHash.replace(/^\/dt\/pdf\//, '').split('/');
+    const [fileId, page, coordA, coordB, coordC, coordD] = pathSearchHash
+      .replace(/^\/dt\/pdf\//, "")
+      .split("/");
     const newUrl = `/projects/beta-project/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
     workspaceManager.navigateByUrl({
       url: newUrl,
       extras: {
         matchExistingTab: `^/projects/beta-project/files/${fileId}`,
-        ...extras
-      }
+        ...extras,
+      },
     });
 
     return true;
@@ -229,8 +235,8 @@ export function openInternalLink(
       url: `/dt/map/${m[1]}`,
       extras: {
         matchExistingTab: `/maps/${m[1]}`,
-        ...extras
-      }
+        ...extras,
+      },
     });
 
     return true;
@@ -239,7 +245,7 @@ export function openInternalLink(
   // If nothing above matched, just try to open the url normally, with whatever extras were passed in
   workspaceManager.navigateByUrl({
     url: pathSearchHash,
-    extras
+    extras,
   });
   return true;
 }
@@ -250,35 +256,41 @@ export function openPotentialExternalLink(
   extras: WorkspaceNavigationExtras = {}
 ): boolean {
   const urlObject = toValidUrl(url);
-  const openInternally = workspaceManager.isWithinWorkspace()
-      && (window.location.hostname === urlObject.hostname
-      && (window.location.port || '80') === (urlObject.port || '80'));
+  const openInternally =
+    workspaceManager.isWithinWorkspace() &&
+    window.location.hostname === urlObject.hostname &&
+    (window.location.port || "80") === (urlObject.port || "80");
 
   if (openInternally) {
     return openInternalLink(workspaceManager, urlObject, extras);
   }
 
-  return openLink(urlObject.href, '_blank');
+  return openLink(urlObject.href, "_blank");
 }
 
-
 const DOMAIN_MAP = new Map([
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/gene\/.+$/, 'NCBI Gene'],
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/Taxonomy\/.+$/, 'NCBI Taxonomy'],
-  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/mesh\/.+$/, 'MeSH'],
-  [/^((https|http)(:\/\/))?(www.)?ebi.ac.uk\/.+$/, 'ChEBI'],
-  [/^((https|http)(:\/\/))?(www.)?uniprot.org\/.+$/, 'UniProt'],
-  [/^((https|http)(:\/\/))?(www.)?amigo.geneontology.org\/.+$/, 'GO'],
-  [/^((https|http)(:\/\/))?(www.)?pubchem.ncbi.nlm.nih.gov\/.+$/, 'PubChem'],
-  [/^((https|http)(:\/\/))?(www.)?biocyc.org\/.+$/, 'BioCyc'],
+  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/gene\/.+$/, "NCBI Gene"],
+  [
+    /^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/Taxonomy\/.+$/,
+    "NCBI Taxonomy",
+  ],
+  [/^((https|http)(:\/\/))?(www.)?ncbi.nlm.nih.gov\/mesh\/.+$/, "MeSH"],
+  [/^((https|http)(:\/\/))?(www.)?ebi.ac.uk\/.+$/, "ChEBI"],
+  [/^((https|http)(:\/\/))?(www.)?uniprot.org\/.+$/, "UniProt"],
+  [/^((https|http)(:\/\/))?(www.)?amigo.geneontology.org\/.+$/, "GO"],
+  [/^((https|http)(:\/\/))?(www.)?pubchem.ncbi.nlm.nih.gov\/.+$/, "PubChem"],
+  [/^((https|http)(:\/\/))?(www.)?biocyc.org\/.+$/, "BioCyc"],
 ]);
 
 // Match the url address with the domain
-export function parseURLToDomainName(url: string, defaultReturn?: string): string {
+export function parseURLToDomainName(
+  url: string,
+  defaultReturn?: string
+): string {
   for (const [re, val] of DOMAIN_MAP.entries()) {
     if (re.exec(url)) {
       return val;
     }
   }
-  return defaultReturn || 'Link';
+  return defaultReturn || "Link";
 }

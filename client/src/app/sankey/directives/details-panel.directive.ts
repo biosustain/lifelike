@@ -1,7 +1,7 @@
-import { Directive, ViewContainerRef } from '@angular/core';
+import { Directive, ViewContainerRef } from "@angular/core";
 
 @Directive({
-  selector: '[appSankeyDetailsPanel]'
+  selector: "[appSankeyDetailsPanel]",
 })
 export class SankeyDetailsPanelDirective {
   constructor(public viewContainerRef: ViewContainerRef) {}

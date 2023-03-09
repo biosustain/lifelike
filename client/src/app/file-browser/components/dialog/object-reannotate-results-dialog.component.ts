@@ -1,17 +1,17 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
-import { ResultMapping } from 'app/shared/schemas/common';
+import { MessageDialog } from "app/shared/services/message-dialog.service";
+import { ConfirmDialogComponent } from "app/shared/components/dialog/confirm-dialog.component";
+import { ResultMapping } from "app/shared/schemas/common";
 
-import { FilesystemObject } from '../../models/filesystem-object';
-import { AnnotationGenerationResultData } from '../../schema';
+import { FilesystemObject } from "../../models/filesystem-object";
+import { AnnotationGenerationResultData } from "../../schema";
 
 @Component({
-  selector: 'app-object-reannotate-results-dialog',
-  templateUrl: './object-reannotate-results-dialog.component.html',
+  selector: "app-object-reannotate-results-dialog",
+  templateUrl: "./object-reannotate-results-dialog.component.html",
 })
 export class ObjectReannotateResultsDialogComponent extends ConfirmDialogComponent {
   @Input() objects: FilesystemObject[] = [];
@@ -22,13 +22,17 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
   failed: object[] = [];
   // TODO: show missing files?
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog);
   }
 
-  get results() { return this._results; }
+  get results() {
+    return this._results;
+  }
 
   @Input()
   set results(values: ResultMapping<AnnotationGenerationResultData>[]) {
@@ -48,7 +52,7 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
         if (result.success) {
           this.success.push(f.filename);
         } else {
-          this.failed.push({filename: f.filename, error: result.error});
+          this.failed.push({ filename: f.filename, error: result.error });
         }
       }
     }

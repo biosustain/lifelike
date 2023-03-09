@@ -1,24 +1,25 @@
-import { merge } from 'lodash-es';
+import { merge } from "lodash-es";
 
 import {
   GraphEntity,
   GraphEntityType,
   UniversalGraphGroup,
   UniversalGraphEdge,
-  UniversalGraphNode
-} from 'app/drawing-tool/services/interfaces';
+  UniversalGraphNode,
+} from "app/drawing-tool/services/interfaces";
 
-import { GraphAction, GraphActionReceiver } from './actions';
+import { GraphAction, GraphActionReceiver } from "./actions";
 
 /**
  * Represents the movement of a node.
  */
 export class GraphEntityUpdate implements GraphAction {
-  constructor(public description: string,
-              public entity: GraphEntity,
-              public updatedData: object,
-              public originalData: object) {
-  }
+  constructor(
+    public description: string,
+    public entity: GraphEntity,
+    public updatedData: object,
+    public originalData: object
+  ) {}
 
   apply(component: GraphActionReceiver) {
     merge(this.entity.entity, this.updatedData);
@@ -40,5 +41,3 @@ export class GraphEntityUpdate implements GraphAction {
     }
   }
 }
-
-

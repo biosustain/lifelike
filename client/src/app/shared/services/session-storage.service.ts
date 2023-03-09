@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { uuidv4 } from '../utils';
+import { uuidv4 } from "../utils";
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: "***ARANGO_USERNAME***",
 })
 export class SessionStorageService implements Storage {
   private readonly storage;
@@ -25,7 +25,7 @@ export class SessionStorageService implements Storage {
   }
 
   setItem(value, key?) {
-    key = typeof key === 'undefined' ? uuidv4() : key;
+    key = typeof key === "undefined" ? uuidv4() : key;
     this.storage.setItem(key, value);
     return key;
   }

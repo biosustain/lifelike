@@ -6,8 +6,10 @@ export type RecursiveReadonly<T> = {
   readonly [P in keyof T]: RecursiveReadonly<T[P]>;
 };
 
-export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type WithOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+export type WithRequired<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>;
 
 /**
  * Common describtion of getSet behaviour
@@ -31,7 +33,10 @@ interface GetSet<ID, Value> {
   getSetLazily(id: ID, valueAccessor: () => Value): Value;
 }
 
-export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implements GetSet<K, V> {
+export class ExtendedWeakMap<K extends object, V>
+  extends WeakMap<K, V>
+  implements GetSet<K, V>
+{
   getSet(key, value) {
     if (this.has(key)) {
       return super.get(key);
@@ -44,7 +49,8 @@ export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implemen
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
+    const loadedValue =
+      valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -63,7 +69,8 @@ export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
+    const loadedValue =
+      valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -112,7 +119,8 @@ export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {
     if (existingValue !== undefined) {
       return existingValue;
     }
-    return this[index] = valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor;
+    return (this[index] =
+      valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor);
   }
 }
 
@@ -124,7 +132,6 @@ export function assignDefined(target, source) {
       target[key] = source[key];
     }
   });
-
 
   return target;
 }

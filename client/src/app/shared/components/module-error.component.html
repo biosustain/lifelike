@@ -2,7 +2,10 @@
   <div style="max-width: 500px" class="card bg-light">
     <div class="card-body">
       <div [ngSwitch]="type">
-        <i *ngSwitchCase="messageType.Error" class="fa fa-exclamation-circle fa-3x text-danger"></i>
+        <i
+          *ngSwitchCase="messageType.Error"
+          class="fa fa-exclamation-circle fa-3x text-danger"
+        ></i>
       </div>
       <ng-container *ngIf="userError != null">
         <div class="mt-4">
@@ -14,9 +17,8 @@
         </div>
 
         <div *ngFor="let msg of userError.additionalMsgs" class="mt-2">
-          <p>{{msg}}</p>
+          <p>{{ msg }}</p>
         </div>
-
       </ng-container>
       <div class="mt-4">
         <ng-content></ng-content>
@@ -38,8 +40,14 @@
       </div>
       <div class="mt-4">
         <div class="progress">
-          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-               aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+          <div
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            aria-valuenow="100"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            style="width: 100%"
+          ></div>
         </div>
       </div>
     </div>

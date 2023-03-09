@@ -32,5 +32,3 @@ Optionally commit the diagram to the repository (in `docs/dev`).
    ```sh
    docker-compose exec -T pgdatabase psql -U postgres < $dump_file
    ```
-
-   

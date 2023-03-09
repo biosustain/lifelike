@@ -1,18 +1,26 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from "@angular/core";
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 @Component({
-  selector: 'app-search-control',
-  templateUrl: './search-control.component.html',
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: SearchControlComponent,
-    multi: true,
-  }],
+  selector: "app-search-control",
+  templateUrl: "./search-control.component.html",
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: SearchControlComponent,
+      multi: true,
+    },
+  ],
 })
 export class SearchControlComponent implements ControlValueAccessor {
-
-  value = '';
+  value = "";
   private changeCallback: any;
   private touchCallback: any;
 
@@ -26,7 +34,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Output() enterPress = new EventEmitter();
   @Output() valueClear = new EventEmitter();
 
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
+  @ViewChild("searchInput", { static: false }) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {
@@ -48,9 +56,11 @@ export class SearchControlComponent implements ControlValueAccessor {
       // cannot use calc without bypassing Angular security
       // https://angular.io/api/platform-browser/DomSanitizer
       // using hardcoded font size instead
-      return Math.max(70, Math.min(150, 14 * this.value.length * 0.55 + 20)) + 'px';
+      return (
+        Math.max(70, Math.min(150, 14 * this.value.length * 0.55 + 20)) + "px"
+      );
     } else {
-      return '70px';
+      return "70px";
     }
   }
 
@@ -62,7 +72,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   }
 
   clear() {
-    this.setValue('');
+    this.setValue("");
     this.focus();
     this.valueClear.emit();
   }
@@ -89,7 +99,7 @@ export class SearchControlComponent implements ControlValueAccessor {
 
   inputKeyUp(event: KeyboardEvent) {
     const newValue = this.searchElement.nativeElement.value;
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       this.enterPress.next();
       if (newValue === this.value) {
         this.next.next();

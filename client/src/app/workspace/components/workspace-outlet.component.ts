@@ -12,16 +12,17 @@ import {
   Output,
   ViewChild,
   ViewContainerRef,
-} from '@angular/core';
+} from "@angular/core";
 
-import { Container } from 'app/shared/workspace-manager';
+import { Container } from "app/shared/workspace-manager";
 
 @Component({
-  selector: 'app-workspace-outlet',
-  template: `
-    <ng-container #child></ng-container>`,
+  selector: "app-workspace-outlet",
+  template: ` <ng-container #child></ng-container>`,
 })
-export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnInit, OnDestroy {
+export class WorkspaceOutletComponent
+  implements AfterViewInit, OnChanges, OnInit, OnDestroy
+{
   @Input() set container(container) {
     this._container = container;
     if (this.active) {
@@ -47,21 +48,31 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
 
   @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild("child", { static: false, read: ViewContainerRef })
+  viewComponentRef: ViewContainerRef;
 
   private _active = false;
   private _container: Container<any>;
   private previouslyActive = false;
 
-  constructor(private changeDetectorRef: ChangeDetectorRef,
-              private ngZone: NgZone,
-              private hostElement: ElementRef) {
-  }
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private hostElement: ElementRef
+  ) {}
 
   ngOnInit() {
     this.ngZone.runOutsideAngular(() => {
-      this.hostElement.nativeElement.addEventListener('focusin', this.focusedInside.bind(this), true);
-      this.hostElement.nativeElement.addEventListener('click', this.focusedInside.bind(this), true);
+      this.hostElement.nativeElement.addEventListener(
+        "focusin",
+        this.focusedInside.bind(this),
+        true
+      );
+      this.hostElement.nativeElement.addEventListener(
+        "click",
+        this.focusedInside.bind(this),
+        true
+      );
     });
   }
 
@@ -77,7 +88,12 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   ngOnChanges(): void {
-    if (this.active && this.viewComponentRef && this.container && !this.container.attached) {
+    if (
+      this.active &&
+      this.viewComponentRef &&
+      this.container &&
+      !this.container.attached
+    ) {
       this.attachComponent();
     }
   }

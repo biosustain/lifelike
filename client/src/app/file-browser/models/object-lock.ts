@@ -1,7 +1,7 @@
-import { RecursivePartial } from 'app/shared/utils/types';
-import { AppUser } from 'app/interfaces';
+import { RecursivePartial } from "app/shared/utils/types";
+import { AppUser } from "app/interfaces";
 
-import { ObjectLockData } from '../schema';
+import { ObjectLockData } from "../schema";
 
 export class ObjectLock {
   user: AppUser;
@@ -11,7 +11,7 @@ export class ObjectLock {
     if (data == null) {
       return this;
     }
-    for (const key of ['user', 'acquireDate']) {
+    for (const key of ["user", "acquireDate"]) {
       if (key in data) {
         this[key] = data[key];
       }

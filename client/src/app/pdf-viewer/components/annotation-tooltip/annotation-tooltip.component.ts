@@ -1,26 +1,35 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { UrlTree } from '@angular/router';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from "@angular/core";
+import { UrlTree } from "@angular/router";
 
-import { assign, first, unary } from 'lodash-es';
+import { assign, first, unary } from "lodash-es";
 
-import { SEARCH_LINKS } from 'app/shared/links';
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { SEARCH_LINKS } from "app/shared/links";
+import {
+  DatabaseLink,
+  ENTITY_TYPE_MAP,
+  EntityType,
+} from "app/shared/annotation-types";
+import { InternalSearchService } from "app/shared/services/internal-search.service";
 
-import { Annotation } from '../../annotation-type';
-import { PDFAnnotationService } from '../../services/pdf-annotation.service';
+import { Annotation } from "../../annotation-type";
+import { PDFAnnotationService } from "../../services/pdf-annotation.service";
 
 @Component({
-  selector: 'app-annotation-tooltip',
-  templateUrl: './annotation-tooltip.component.html'
+  selector: "app-annotation-tooltip",
+  templateUrl: "./annotation-tooltip.component.html",
 })
 export class AnnotationTooltipComponent implements OnChanges {
-
   constructor(
     protected readonly internalSearch: InternalSearchService,
-    protected readonly annotationService: PDFAnnotationService,
-  ) {
-  }
+    protected readonly annotationService: PDFAnnotationService
+  ) {}
 
   @Input() private annotation!: Annotation;
   @Output() private tooltipClose = new EventEmitter<void>();
@@ -32,9 +41,9 @@ export class AnnotationTooltipComponent implements OnChanges {
   annoId: string;
   exclusionReason: string;
   exclusionComment: string;
-  idHyperlinks: { label: string, url: string }[];
-  searchLinks: { label: string, url: string }[];
-  internalSearchLinks: { label: string, url: UrlTree }[];
+  idHyperlinks: { label: string; url: string }[];
+  searchLinks: { label: string; url: string }[];
+  internalSearchLinks: { label: string; url: UrlTree }[];
 
   removeCustom() {
     return this.annotationService.annotationRemoved(this.annotation.uuid);
@@ -42,9 +51,18 @@ export class AnnotationTooltipComponent implements OnChanges {
 
   openExclusionPanel() {
     this.tooltipClose.emit();
-    const {meta: {id, idHyperlinks, type}, textInDocument, rects, pageNumber} = this.annotation;
+    const {
+      meta: { id, idHyperlinks, type },
+      textInDocument,
+      rects,
+      pageNumber,
+    } = this.annotation;
     return this.annotationService.openExclusionPanel({
-      id, idHyperlinks, type, rects, pageNumber,
+      id,
+      idHyperlinks,
+      type,
+      rects,
+      pageNumber,
       text: textInDocument,
     });
   }
@@ -65,39 +83,48 @@ export class AnnotationTooltipComponent implements OnChanges {
     return first(id.match(/[^(?:NULL)]+(?!:)/));
   }
 
-  ngOnChanges({annotation}: SimpleChanges): void {
+  ngOnChanges({ annotation }: SimpleChanges): void {
     if (annotation) {
       // Make meta values parsing
       const {
-        id, type, idType, idHyperlinks, links, allText, isCustom, isExcluded,
+        id,
+        type,
+        idType,
+        idHyperlinks,
+        links,
+        allText,
+        isCustom,
+        isExcluded,
       } = annotation.currentValue.meta;
-      assign(this, {id, type, idType, isCustom, isExcluded});
+      assign(this, { id, type, idType, isCustom, isExcluded });
       this.annoId = this.parseAnnotationId(id);
 
       if (ENTITY_TYPE_MAP.hasOwnProperty(type)) {
         const source = ENTITY_TYPE_MAP[type] as EntityType;
-        this.idLink = source.links.find(link => link.name === idType);
+        this.idLink = source.links.find((link) => link.name === idType);
       } else {
         this.idLink = undefined;
       }
 
       this.idHyperlinks = idHyperlinks?.map(unary(JSON.parse));
-      this.searchLinks = SEARCH_LINKS.map(({domain, url}) => ({
-        url: links[domain.toLowerCase()] || url.replace('%s', allText),
-        label: domain.replace('_', ' '),
+      this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
+        url: links[domain.toLowerCase()] || url.replace("%s", allText),
+        label: domain.replace("_", " "),
       }));
       this.internalSearchLinks = [
         {
           url: this.internalSearch.getVisualizerLink(allText),
-          label: 'Knowledge Graph',
+          label: "Knowledge Graph",
         },
         {
           url: this.internalSearch.getFileContentLink(allText),
-          label: 'File Content',
+          label: "File Content",
         },
         {
-          url: this.internalSearch.getFileContentLink(allText, {types: ['map']}),
-          label: 'Map Content',
+          url: this.internalSearch.getFileContentLink(allText, {
+            types: ["map"],
+          }),
+          label: "Map Content",
         },
       ];
     }
@@ -105,8 +132,6 @@ export class AnnotationTooltipComponent implements OnChanges {
 
   removeCustomAnnotation() {
     this.tooltipClose.emit();
-    return this.annotationService.annotationRemoved(
-      this.annotation.uuid,
-    );
+    return this.annotationService.annotationRemoved(this.annotation.uuid);
   }
 }

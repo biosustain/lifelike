@@ -1,23 +1,38 @@
-import { AfterViewInit, Component, Input, ContentChild, Output, EventEmitter } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  ContentChild,
+  Output,
+  EventEmitter,
+} from "@angular/core";
 
-import { isNil } from 'lodash-es';
-import { BehaviorSubject } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { DataSet } from 'vis-data/dist/umd';
-import { Color, Edge, Network, Node, Options } from 'vis-network/dist/vis-network';
+import { isNil } from "lodash-es";
+import { BehaviorSubject } from "rxjs";
+import { map, tap } from "rxjs/operators";
+import { DataSet } from "vis-data/dist/umd";
+import {
+  Color,
+  Edge,
+  Network,
+  Node,
+  Options,
+} from "vis-network/dist/vis-network";
 
-import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
-import { toTitleCase, uuidv4 } from 'app/shared/utils';
-import { isNodeMatching } from 'app/sankey/utils/search/node-vis-search';
+import { GraphData, VisNetworkDataSet } from "app/interfaces/vis-js.interface";
+import { toTitleCase, uuidv4 } from "app/shared/utils";
+import { isNodeMatching } from "app/sankey/utils/search/node-vis-search";
 
-import { networkSolvers, networkEdgeSmoothers } from './vis-js-network.constants';
-import { FindOptions, compileFind, tokenizeQuery } from '../../utils/find';
-
+import {
+  networkSolvers,
+  networkEdgeSmoothers,
+} from "./vis-js-network.constants";
+import { FindOptions, compileFind, tokenizeQuery } from "../../utils/find";
 
 @Component({
-  selector: 'app-vis-js-network',
-  templateUrl: './vis-js-network.component.html',
-  styleUrls: ['./vis-js-network.component.scss']
+  selector: "app-vis-js-network",
+  templateUrl: "./vis-js-network.component.html",
+  styleUrls: ["./vis-js-network.component.scss"],
 })
 export class VisJsNetworkComponent implements AfterViewInit {
   @Input() set config(config: Options) {
@@ -27,7 +42,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.currentSolver = config.physics.solver || networkSolvers.BARNES_HUT;
 
       if (!isNil(config.physics[this.currentSolver])) {
-        this.currentCentralGravity = config.physics[this.currentSolver].centralGravity;
+        this.currentCentralGravity =
+          config.physics[this.currentSolver].centralGravity;
       } else {
         this.currentCentralGravity = 0.1;
       }
@@ -40,8 +56,12 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
     // `config.edges.smooth` can be of either type boolean or type object. Here we're just checking that it is an object before trying to
     // access its properties.
-    if (!isNil(config.edges.smooth) && typeof config.edges.smooth === 'object') {
-      this.currentSmooth = config.edges.smooth.type || networkEdgeSmoothers.DYNAMIC;
+    if (
+      !isNil(config.edges.smooth) &&
+      typeof config.edges.smooth === "object"
+    ) {
+      this.currentSmooth =
+        config.edges.smooth.type || networkEdgeSmoothers.DYNAMIC;
     }
 
     if (!isNil(this.networkGraph)) {
@@ -59,7 +79,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   @Input() legend: Map<string, string[]>;
 
-  @ContentChild('selection', {static: true}) selection;
+  @ContentChild("selection", { static: true }) selection;
 
   SCALE_MODIFIER = 0.11;
 
@@ -92,20 +112,20 @@ export class VisJsNetworkComponent implements AfterViewInit {
   @Output() nodeBlur = new EventEmitter();
 
   constructor() {
-    this.selected = new BehaviorSubject({nodes: [], edges: []}).pipe(
-      map(({nodes, edges}) => ({
+    this.selected = new BehaviorSubject({ nodes: [], edges: [] }).pipe(
+      map(({ nodes, edges }) => ({
         nodes: this.networkData.nodes.get(nodes),
-        edges: this.networkData.edges.get(edges)
+        edges: this.networkData.edges.get(edges),
       })),
-      tap(d => this.selectionChange.emit(d))
+      tap((d) => this.selectionChange.emit(d))
     );
 
     this.legend = new Map<string, string[]>();
 
     this.networkConfig = {};
     this.networkData = {
-      nodes: new DataSet<Node, 'id'>(),
-      edges: new DataSet<Edge, 'id'>(),
+      nodes: new DataSet<Node, "id">(),
+      edges: new DataSet<Edge, "id">(),
     };
     this.networkContainerId = uuidv4();
 
@@ -120,9 +140,9 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
     this.currentSearchIndex = 0;
     this.searchResults = [];
-    this.searchQuery = '';
+    this.searchQuery = "";
 
-    this.cursorStyle = 'default';
+    this.cursorStyle = "default";
   }
 
   ngAfterViewInit() {
@@ -143,7 +163,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
     for (const solver in networkSolvers) {
       // This if suppresses the “for ... in ... statements must be filtered with an if statement”
       if (networkSolvers[solver]) {
-        this.solverMap.set(networkSolvers[solver], toTitleCase(solver.split('_').join(' ')));
+        this.solverMap.set(
+          networkSolvers[solver],
+          toTitleCase(solver.split("_").join(" "))
+        );
       }
     }
   }
@@ -157,7 +180,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
     for (const solver in networkEdgeSmoothers) {
       // This if suppresses the “for ... in ... statements must be filtered with an if statement”
       if (networkEdgeSmoothers[solver]) {
-        this.smoothMap.set(networkEdgeSmoothers[solver], toTitleCase(solver.split('_').join(' ')));
+        this.smoothMap.set(
+          networkEdgeSmoothers[solver],
+          toTitleCase(solver.split("_").join(" "))
+        );
       }
     }
   }
@@ -209,7 +235,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       ...this.networkConfig,
       physics: {
         enabled: this.physicsEnabled,
-      }
+      },
     };
 
     this.networkGraph.setOptions({
@@ -229,7 +255,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       physics: {
         enabled: this.physicsEnabled,
         solver: layoutType,
-      }
+      },
     };
     this.createNetwork();
   }
@@ -247,7 +273,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       type: smoothType,
       roundness: 0.5,
     };
-    if (typeof this.networkConfig.edges.smooth === 'object') {
+    if (typeof this.networkConfig.edges.smooth === "object") {
       smooth = {
         ...this.networkConfig.edges.smooth,
         type: smoothType,
@@ -257,8 +283,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.networkConfig = {
       ...this.networkConfig,
       edges: {
-        smooth
-      }
+        smooth,
+      },
     };
 
     this.networkGraph.setOptions({
@@ -279,7 +305,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     if (!isNil(this.networkConfig.physics[this.currentSolver])) {
       this.networkConfig.physics[this.currentSolver] = {
         ...this.networkConfig.physics[this.currentSolver],
-        ...solver
+        ...solver,
       };
     } else {
       this.networkConfig.physics[this.currentSolver] = solver;
@@ -314,19 +340,25 @@ export class VisJsNetworkComponent implements AfterViewInit {
   searchQueryChanged() {
     // Need to revert the previous search results back to their original values
     if (this.searchResults.length > 0) {
-      this.networkData.nodes.update(this.searchResults.map(({id}) => this.unhighlightNode(id)));
+      this.networkData.nodes.update(
+        this.searchResults.map(({ id }) => this.unhighlightNode(id))
+      );
     }
 
-    if (this.searchQuery !== '') {
+    if (this.searchQuery !== "") {
       this.searchResults = this.findMatching(
         tokenizeQuery(this.searchQuery, {
           singleTerm: true,
-        }), {
+        }),
+        {
           wholeWord: false,
-        });
+        }
+      );
 
       this.currentSearchIndex = 0;
-      this.networkData.nodes.update(this.searchResults.map(({id}) => this.highlightNode(id)));
+      this.networkData.nodes.update(
+        this.searchResults.map(({ id }) => this.highlightNode(id))
+      );
       this.focusNode(this.searchResults[this.currentSearchIndex].id);
     } else {
       this.searchResults = [];
@@ -367,21 +399,27 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   highlightNode(nodeId: number | string) {
     // do not update to initial position
-    const {x, y, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
-    const nodeColor = (nodeToHighlight.color as Color);
+    const { x, y, ...nodeToHighlight } = this.networkData.nodes.get(nodeId);
+    const nodeColor = nodeToHighlight.color as Color;
     nodeToHighlight._initialBorderWidth = nodeToHighlight.borderWidth;
     nodeToHighlight._initialColor = nodeColor;
     nodeToHighlight.borderWidth = 2;
     nodeToHighlight.color = {
       ...nodeColor,
-      border: 'red'
+      border: "red",
     } as Color;
     return nodeToHighlight;
   }
 
   unhighlightNode(nodeId: number | string) {
     // do not update to initial position
-    const {x, y, _initialBorderWidth = 1, _initialColor, ...nodeToHighlight} = this.networkData.nodes.get(nodeId);
+    const {
+      x,
+      y,
+      _initialBorderWidth = 1,
+      _initialColor,
+      ...nodeToHighlight
+    } = this.networkData.nodes.get(nodeId);
     nodeToHighlight.borderWidth = _initialBorderWidth;
     nodeToHighlight.color = _initialColor;
     return nodeToHighlight;
@@ -391,33 +429,36 @@ export class VisJsNetworkComponent implements AfterViewInit {
    * Contains all of the event handling features for the network graph.
    */
   setupEventBinds() {
-    const {selected, nodeHover, nodeBlur} = this;
-    this.networkGraph.on('stabilizationIterationsDone', _ => {
+    const { selected, nodeHover, nodeBlur } = this;
+    this.networkGraph.on("stabilizationIterationsDone", (_) => {
       this.stabilized = true;
       this.networkGraph.fit();
     });
-    this.networkGraph.on('dragStart', ({nodes}) => {
-      this.cursorStyle = nodes.length > 0 ? 'grabbing' : 'move';
+    this.networkGraph.on("dragStart", ({ nodes }) => {
+      this.cursorStyle = nodes.length > 0 ? "grabbing" : "move";
     });
-    this.networkGraph.on('dragEnd', () => {
-      this.cursorStyle = 'default';
+    this.networkGraph.on("dragEnd", () => {
+      this.cursorStyle = "default";
     });
 
-    this.networkGraph.on('select', ({nodes, edges}) => selected.next({nodes, edges}));
-    this.networkGraph.on('deselectNode', ({nodes, edges}) => selected.next({nodes, edges}));
-    this.networkGraph.on('deselectEdge', ({nodes, edges}) => selected.next({nodes, edges}));
-    this.networkGraph.on('hoverNode', function({node: nodeId}) {
+    this.networkGraph.on("select", ({ nodes, edges }) =>
+      selected.next({ nodes, edges })
+    );
+    this.networkGraph.on("deselectNode", ({ nodes, edges }) =>
+      selected.next({ nodes, edges })
+    );
+    this.networkGraph.on("deselectEdge", ({ nodes, edges }) =>
+      selected.next({ nodes, edges })
+    );
+    this.networkGraph.on("hoverNode", function ({ node: nodeId }) {
       const node = this.body.nodes[nodeId];
       nodeHover.emit(node.options);
       node.needsRefresh();
     });
-    this.networkGraph.on('blurNode', function({node: nodeId}) {
+    this.networkGraph.on("blurNode", function ({ node: nodeId }) {
       const node = this.body.nodes[nodeId];
       nodeBlur.emit(node.options);
       node.needsRefresh();
     });
   }
 }
-
-
-

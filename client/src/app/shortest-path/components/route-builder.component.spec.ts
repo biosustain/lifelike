@@ -1,23 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { RouteBuilderComponent } from './route-builder.component';
+import { RouteBuilderComponent } from "./route-builder.component";
 
-describe('RouteBuilderComponent', () => {
+describe("RouteBuilderComponent", () => {
   let component: RouteBuilderComponent;
   let fixture: ComponentFixture<RouteBuilderComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule
-      ],
-      declarations: [ RouteBuilderComponent ]
+      imports: [RootStoreModule, SharedModule],
+      declarations: [RouteBuilderComponent],
     });
   });
 
@@ -27,7 +24,7 @@ describe('RouteBuilderComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

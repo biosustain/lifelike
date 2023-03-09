@@ -1,20 +1,24 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { SearchType } from 'app/search/shared';
+import { InternalSearchService } from "app/shared/services/internal-search.service";
+import { SearchType } from "app/search/shared";
 
-import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphGroup, UniversalGraphNode } from '../services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphEdge,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+} from "../services/interfaces";
 
 @Component({
-  selector: 'app-info-view-panel',
-  templateUrl: './info-view-panel.component.html',
+  selector: "app-info-view-panel",
+  templateUrl: "./info-view-panel.component.html",
 })
 export class InfoViewPanelComponent {
-
   @Input() selected: GraphEntity | undefined;
 
-  constructor(protected readonly internalSearch: InternalSearchService) {
-  }
+  constructor(protected readonly internalSearch: InternalSearchService) {}
 
   get isNode() {
     return this.selected.type === GraphEntityType.Node;
@@ -31,7 +35,7 @@ export class InfoViewPanelComponent {
       const group = this.selected.entity as UniversalGraphGroup;
       return group.display_name;
     } else {
-      return '?unknown entity type?';
+      return "?unknown entity type?";
     }
   }
 
@@ -40,21 +44,23 @@ export class InfoViewPanelComponent {
       const node = this.selected.entity as UniversalGraphNode;
       return node.label;
     } else if (this.selected.type === GraphEntityType.Edge) {
-      return 'connection';
+      return "connection";
     } else if (this.selected.type === GraphEntityType.Group) {
-      return 'group';
+      return "group";
     } else {
-      return 'unknown';
+      return "unknown";
     }
   }
 
   searchMapNodeInVisualizer(node) {
     return this.internalSearch.visualizer_tmp_fix(node.display_name, {
-      entities: [node.label]
+      entities: [node.label],
     });
   }
 
   searchMapNodeInContent(node, type: SearchType | string) {
-    return this.internalSearch.fileContents(node.display_name, {types: [type]});
+    return this.internalSearch.fileContents(node.display_name, {
+      types: [type],
+    });
   }
 }

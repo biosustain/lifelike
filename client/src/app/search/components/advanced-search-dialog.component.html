@@ -10,8 +10,10 @@
     <div class="form-group row">
       <label class="col-sm-4 col-form-label">Find:</label>
       <div class="col-sm-8">
-        <input class="form-control border" formControlName="q">
-        <app-form-input-feedback [control]="form.get('q')"></app-form-input-feedback>
+        <input class="form-control border" formControlName="q" />
+        <app-form-input-feedback
+          [control]="form.get('q')"
+        ></app-form-input-feedback>
       </div>
     </div>
 
@@ -19,17 +21,26 @@
     <div class="form-group row">
       <label class="col-sm-4 col-form-label">File Types:</label>
       <div class="col-sm-8">
-        <app-select formId="types" [choices]="typeChoices"
-                [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
-                (touch)="form.get('types').markAsTouched()"
-                [choiceLabel]="typeLabel">
+        <app-select
+          formId="types"
+          [choices]="typeChoices"
+          [values]="form.value.types"
+          (valuesChange)="form.get('types').setValue($event)"
+          (touch)="form.get('types').markAsTouched()"
+          [choiceLabel]="typeLabel"
+        >
         </app-select>
       </div>
     </div>
 
     <div>
-      <label class="m-0 mb-4">Folders to Include (default all if none selected):</label>
-      <div *ngIf="hierarchyLoaded; else hierarchyNotLoaded" style="max-height: 480px; overflow: auto;">
+      <label class="m-0 mb-4"
+        >Folders to Include (default all if none selected):</label
+      >
+      <div
+        *ngIf="hierarchyLoaded; else hierarchyNotLoaded"
+        style="max-height: 480px; overflow: auto"
+      >
         <app-hierarchy-search-tree
           [treeData]="fileHierarchyTree"
           [initiallyCheckedNodesFilterFn]="initiallyCheckedNodesFilterFn"
@@ -38,12 +49,21 @@
         ></app-hierarchy-search-tree>
       </div>
       <ng-template #hierarchyNotLoaded>
-        <div class="d-flex justify-content-between alert alert-danger" *ngIf="hierarchyError; else loadingPlaceholders">
+        <div
+          class="d-flex justify-content-between alert alert-danger"
+          *ngIf="hierarchyError; else loadingPlaceholders"
+        >
           <div class="d-flex align-items-center">
             <i class="fas fa-exclamation-circle mr-2"></i>
             Something went wrong retrieving the file structure!
           </div>
-          <button class="btn btn-secondary" type="button" (click)="getFileHierarchy()">Try Again</button>
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="getFileHierarchy()"
+          >
+            Try Again
+          </button>
         </div>
         <ng-template #loadingPlaceholders>
           <div class="d-flex flex-column">
@@ -71,10 +91,12 @@
       Tips:
       <ul>
         <li class="small-font">
-          Surround one or more words with " to create a phrase term. Ex: "Homo Sapiens"
+          Surround one or more words with " to create a phrase term. Ex: "Homo
+          Sapiens"
         </li>
         <li class="small-font">
-          Use * in a word to match 0 or more characters. ? will match 0 or 1 characters. Ex: CO*ID, CO?ID
+          Use * in a word to match 0 or more characters. ? will match 0 or 1
+          characters. Ex: CO*ID, CO?ID
         </li>
       </ul>
     </div>
@@ -135,11 +157,17 @@
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button"
-            class="btn btn-secondary mr-1"
-            ngbTooltip="Reset Advanced Options"
-            placement="top"
-            (click)="resetForm()"><i class="fa fa-sync"></i></button>
-    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+    <button
+      type="button"
+      class="btn btn-secondary mr-1"
+      ngbTooltip="Reset Advanced Options"
+      placement="top"
+      (click)="resetForm()"
+    >
+      <i class="fa fa-sync"></i>
+    </button>
+    <button type="submit" class="btn btn-primary">
+      <i class="fa fa-search"></i>
+    </button>
   </app-modal-footer>
 </form>

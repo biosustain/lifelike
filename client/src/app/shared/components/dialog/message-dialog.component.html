@@ -5,18 +5,18 @@
 
   <app-modal-body>
     <div>
-      {{message}}
+      {{ message }}
     </div>
-    <br>
+    <br />
 
     <div *ngFor="let msg of additionalMsgs">
-      <p>{{msg}}</p>
+      <p>{{ msg }}</p>
     </div>
 
     <div *ngIf="stacktrace || transactionId" class="detail">
       <div class="detail-title">Technical Details</div>
-      <div *ngIf="transactionId">Transaction id: {{transactionId}}</div>
-      <pre *ngIf="stacktrace">{{stacktrace}}</pre>
+      <div *ngIf="transactionId">Transaction id: {{ transactionId }}</div>
+      <pre *ngIf="stacktrace">{{ stacktrace }}</pre>
     </div>
   </app-modal-body>
 

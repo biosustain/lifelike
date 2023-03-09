@@ -6,7 +6,8 @@
   color: $gray-600;
 
   a {
-    &:link, &:visited {
+    &:link,
+    &:visited {
       color: $gray-600;
     }
   }
@@ -21,7 +22,7 @@
       display: block;
       font-family: FontAwesome, sans-serif;
       font-size: 60%;
-      content: '\f054';
+      content: "\f054";
       line-height: 1;
       position: relative;
       top: -1px;

@@ -1,9 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { AbstractControl } from '@angular/forms';
+import { Component, Input } from "@angular/core";
+import { AbstractControl } from "@angular/forms";
 
 @Component({
-  selector: 'app-form-input-feedback',
-  templateUrl: './form-input-feedback.component.html',
+  selector: "app-form-input-feedback",
+  templateUrl: "./form-input-feedback.component.html",
 })
 export class FormInputFeedbackComponent {
   @Input() control: AbstractControl | undefined;

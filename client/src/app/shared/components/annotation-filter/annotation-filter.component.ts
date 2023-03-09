@@ -1,9 +1,22 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from "@angular/core";
+import {
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from "@angular/forms";
 
-import { isNil, uniqueId } from 'lodash-es';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { isNil, uniqueId } from "lodash-es";
+import { Subject, Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 import {
   AnnotationFilterEntity,
@@ -11,17 +24,19 @@ import {
   DefaultGroupByOptions,
   DefaultOrderByOptions,
   OrderDirection,
-} from 'app/interfaces/annotation-filter.interface';
-import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
-import { REGEX } from 'app/shared/regex';
+} from "app/interfaces/annotation-filter.interface";
+import { SortingAlgorithm } from "app/word-cloud/sorting/sorting-algorithms";
+import { REGEX } from "app/shared/regex";
 
 @Component({
-  selector: 'app-annotation-filter',
-  templateUrl: './annotation-filter.component.html',
-  styleUrls: ['./annotation-filter.component.scss'],
+  selector: "app-annotation-filter",
+  templateUrl: "./annotation-filter.component.html",
+  styleUrls: ["./annotation-filter.component.scss"],
 })
-export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
-  id = uniqueId('AnnotationFilterComponent-');
+export class AnnotationFilterComponent<T extends AnnotationFilterEntity>
+  implements OnInit, OnDestroy
+{
+  id = uniqueId("AnnotationFilterComponent-");
 
   _sortingAlgorithm: SortingAlgorithm;
   _annotationData: T[];
@@ -65,7 +80,12 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
     // visibility.
     this.legend.forEach((_, type) => {
-      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
+      this.typeVisibilityMap.set(
+        type,
+        this.typeVisibilityMap.has(type)
+          ? this.typeVisibilityMap.get(type)
+          : true
+      );
     });
 
     // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
@@ -112,10 +132,8 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   }
 
   ngOnInit() {
-    const validators = [
-      Validators.required
-    ];
-    if (this.sortingAlgorithm.hasOwnProperty('min')) {
+    const validators = [Validators.required];
+    if (this.sortingAlgorithm.hasOwnProperty("min")) {
       validators.push(Validators.min(this.sortingAlgorithm.min));
     }
     if (this.sortingAlgorithm.step === 1) {
@@ -136,8 +154,10 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     );
 
     // The very first time we get the annotationData, set the default values for the frequency filters
-    if (this.sortingAlgorithm.hasOwnProperty('default')) {
-      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    if (this.sortingAlgorithm.hasOwnProperty("default")) {
+      this.filtersForm
+        .get("minimumValue")
+        .setValue(this.sortingAlgorithm.default);
     }
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
@@ -168,9 +188,11 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   }
 
   setDefaultFrequency() {
-    const {filtersForm, sortingAlgorithm} = this;
-    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
-      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    const { filtersForm, sortingAlgorithm } = this;
+    if (filtersForm && sortingAlgorithm.hasOwnProperty("default")) {
+      this.filtersForm
+        .get("minimumValue")
+        .setValue(this.sortingAlgorithm.default);
     }
   }
 
@@ -284,7 +306,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.groupByOptions = [];
     this.selectedGroupByOption = DefaultGroupByOptions.NONE;
     for (const option in DefaultGroupByOptions) {
-      if (typeof option === 'string') {
+      if (typeof option === "string") {
         this.groupByOptions.push(DefaultGroupByOptions[option]);
       }
     }
@@ -295,7 +317,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.orderByOptions = [];
     this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
     for (const option in DefaultOrderByOptions) {
-      if (typeof option === 'string') {
+      if (typeof option === "string") {
         this.orderByOptions.push(DefaultOrderByOptions[option]);
       }
     }
@@ -306,7 +328,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.orderDirections = [];
     this.selectedOrderDirection = OrderDirection.DESCENDING;
     for (const option in OrderDirection) {
-      if (typeof option === 'string') {
+      if (typeof option === "string") {
         this.orderDirections.push(OrderDirection[option]);
       }
     }
@@ -343,21 +365,13 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.updateVisibility();
   }
 
-  private sortByFrequency(
-    a: T,
-    b: T,
-    direction: string
-  ) {
+  private sortByFrequency(a: T, b: T, direction: string) {
     return direction === OrderDirection.DESCENDING
       ? b.frequency - a.frequency
       : a.frequency - b.frequency;
   }
 
-  private sortByType(
-    a: T,
-    b: T,
-    direction: string
-  ) {
+  private sortByType(a: T, b: T, direction: string) {
     if (b.type === a.type) {
       return 0;
     }
@@ -372,7 +386,11 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.annotationData.sort((a, b) => {
       // TODO: Setting the default type sort direction to ascending, may want to change this in the future.
       const sortByTypeResult = this.sortByType(a, b, OrderDirection.ASCENDING);
-      const sortByFrequencyResult = this.sortByFrequency(a, b, this.selectedOrderDirection);
+      const sortByFrequencyResult = this.sortByFrequency(
+        a,
+        b,
+        this.selectedOrderDirection
+      );
       return sortByTypeResult === 0 ? sortByFrequencyResult : sortByTypeResult;
     });
   }
@@ -447,7 +465,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
    * calling function should bre responsible for the redraw.
    */
   private filterByFrequency(annotation: T) {
-    const minimumValue = this.filtersForm.get('minimumValue').value;
+    const minimumValue = this.filtersForm.get("minimumValue").value;
 
     // TODO: Uncomment these if we bring back max frequency
     // const maximumValue = this.filtersForm.get('maximumValue').value;
@@ -479,12 +497,12 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
    */
   private minMaxFreqValidator(): ValidatorFn {
     return (fg: FormGroup): ValidationErrors => {
-      const minFreqControl = fg.get('minimumValue');
-      const maxFreqControl = fg.get('maximumValue');
+      const minFreqControl = fg.get("minimumValue");
+      const maxFreqControl = fg.get("maximumValue");
 
       if (minFreqControl.value > maxFreqControl.value) {
-        minFreqControl.setErrors({...minFreqControl.errors, badMinMax: true});
-        maxFreqControl.setErrors({...maxFreqControl.errors, badMinMax: true});
+        minFreqControl.setErrors({ ...minFreqControl.errors, badMinMax: true });
+        maxFreqControl.setErrors({ ...maxFreqControl.errors, badMinMax: true });
       } else {
         let minFreqControlErrors = minFreqControl.errors;
         let maxFreqControlErrors = maxFreqControl.errors;

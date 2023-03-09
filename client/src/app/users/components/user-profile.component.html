@@ -2,34 +2,75 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="username" required [appFormInput]="form.get('url')">
-      <app-form-input-feedback [control]="form.get('username')"></app-form-input-feedback>
+      <input
+        class="form-control"
+        formControlName="username"
+        required
+        [appFormInput]="form.get('url')"
+      />
+      <app-form-input-feedback
+        [control]="form.get('username')"
+      ></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2" ngbTooltip="You cannot edit your email">
     <div class="col">
-      <input class="form-control" formControlName="email" required [appFormInput]="form.get('email')">
-      <app-form-input-feedback [control]="form.get('email')"></app-form-input-feedback>
+      <input
+        class="form-control"
+        formControlName="email"
+        required
+        [appFormInput]="form.get('email')"
+      />
+      <app-form-input-feedback
+        [control]="form.get('email')"
+      ></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="firstName" required [appFormInput]="form.get('firstName')">
-      <app-form-input-feedback [control]="form.get('firstName')"></app-form-input-feedback>
+      <input
+        class="form-control"
+        formControlName="firstName"
+        required
+        [appFormInput]="form.get('firstName')"
+      />
+      <app-form-input-feedback
+        [control]="form.get('firstName')"
+      ></app-form-input-feedback>
     </div>
   </div>
 
   <div class="form-row mb-2">
     <div class="col">
-      <input class="form-control" formControlName="lastName" required [appFormInput]="form.get('lastName')">
-      <app-form-input-feedback [control]="form.get('lastName')"></app-form-input-feedback>
+      <input
+        class="form-control"
+        formControlName="lastName"
+        required
+        [appFormInput]="form.get('lastName')"
+      />
+      <app-form-input-feedback
+        [control]="form.get('lastName')"
+      ></app-form-input-feedback>
     </div>
   </div>
 
   <div>
-    <button type="button" class="btn btn-secondary mr-2" routerLink="/dashboard">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="!form.valid" type="submit">Submit</button>
+    <button
+      type="button"
+      class="btn btn-secondary mr-2"
+      routerLink="/dashboard"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="!form.valid"
+      type="submit"
+    >
+      Submit
+    </button>
   </div>
 </form>

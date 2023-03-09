@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from "rxjs";
 
 export interface ResourceOwner {
   resourceOwnerClass: string;
@@ -16,8 +16,7 @@ export interface ResourceProvider<K, V> {
 export class DelegateResourceManager<K, V> implements ResourceManager<K, V> {
   private readonly resources: Map<K, Resource<V>> = new Map();
 
-  constructor(protected readonly provider: ResourceProvider<K, V>) {
-  }
+  constructor(protected readonly provider: ResourceProvider<K, V>) {}
 
   acquire(owner: ResourceOwner, id: K): Observable<V> {
     let resource = this.resources.get(id);

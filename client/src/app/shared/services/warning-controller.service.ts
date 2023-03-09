@@ -1,7 +1,7 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from "@angular/core";
 
-import { BehaviorSubject } from 'rxjs';
-import { transform, isBoolean } from 'lodash-es';
+import { BehaviorSubject } from "rxjs";
+import { transform, isBoolean } from "lodash-es";
 
 @Injectable()
 export class WarningControllerService implements OnDestroy {
@@ -36,12 +36,14 @@ export class WarningControllerService implements OnDestroy {
       return;
     }
     this.closeExistingWarning(warning);
-    const openStatus = isBoolean(hide) ? !hide : setTimeout(() => this.close(warning), hide);
+    const openStatus = isBoolean(hide)
+      ? !hide
+      : setTimeout(() => this.close(warning), hide);
     this.wm.set(warning, openStatus);
     this.updateWarningList();
   }
 
-  assert(assertion, ...args: Parameters<WarningControllerService['warn']>) {
+  assert(assertion, ...args: Parameters<WarningControllerService["warn"]>) {
     if (!assertion) {
       return this.warn(...args);
     }

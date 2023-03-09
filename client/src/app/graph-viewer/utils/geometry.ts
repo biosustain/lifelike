@@ -1,52 +1,60 @@
-import intersects from 'intersects';
+import intersects from "intersects";
 
-import { BoundingBox, Point } from './canvas/shared';
+import { BoundingBox, Point } from "./canvas/shared";
 
 // TODO: Refactor this during second round of refactorization
-export function pointOnRect({x, y}: Point, {minX, minY, maxX, maxY}: BoundingBox, validate: boolean): Point {
-  if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
-    return {x, y};
+export function pointOnRect(
+  { x, y }: Point,
+  { minX, minY, maxX, maxY }: BoundingBox,
+  validate: boolean
+): Point {
+  if (validate && minX < x && x < maxX && minY < y && y < maxY) {
+    return { x, y };
   }
   const midX = (minX + maxX) / 2;
   const midY = (minY + maxY) / 2;
   // if (midX - x == 0) -> m == ±Inf -> minYx/maxYx == x (because value / ±Inf = ±0)
   const m = (midY - y) / (midX - x);
 
-  if (x <= midX) { // check "left" side
+  if (x <= midX) {
+    // check "left" side
     const minXy = m * (minX - x) + y;
     if (minY <= minXy && minXy <= maxY) {
-      return {x: minX, y: minXy};
+      return { x: minX, y: minXy };
     }
   }
 
-  if (x >= midX) { // check "right" side
+  if (x >= midX) {
+    // check "right" side
     const maxXy = m * (maxX - x) + y;
     if (minY <= maxXy && maxXy <= maxY) {
-      return {x: maxX, y: maxXy};
+      return { x: maxX, y: maxXy };
     }
   }
 
-  if (y <= midY) { // check "top" side
+  if (y <= midY) {
+    // check "top" side
     const minYx = (minY - y) / m + x;
     if (minX <= minYx && minYx <= maxX) {
-      return {x: minYx, y: minY};
+      return { x: minYx, y: minY };
     }
   }
 
-  if (y >= midY) { // check "bottom" side
+  if (y >= midY) {
+    // check "bottom" side
     const maxYx = (maxY - y) / m + x;
     if (minX <= maxYx && maxYx <= maxX) {
-      return {x: maxYx, y: maxY};
+      return { x: maxYx, y: maxY };
     }
   }
 
   // edge case when finding midpoint intersection: m = 0/0 = NaN
   if (x === midX && y === midY) {
-    return {x, y};
+    return { x, y };
   }
 
   // Should never happen :) If it does, please tell me!
-  return {x, y};
+  return { x, y };
 }
 
 // TODO: Clean up
@@ -80,22 +88,21 @@ export function distanceSq(point1: Point, point2: Point): number {
  * @param x the X to transform
  * @param y the Y to transform
  */
-export function transformControlPoint(startX: number,
-                                      startY: number,
-                                      endX: number,
-                                      endY: number,
-                                      x: number,
-                                      y: number): [number, number] {
+export function transformControlPoint(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  x: number,
+  y: number
+): [number, number] {
   const dx = endX - startX;
   const dy = endY - startY;
   const len = Math.sqrt(dx * dx + dy * dy);
   const sin = dy / len;
   const cos = dx / len;
 
-  return [
-    x * cos - y * sin + endX,
-    x * sin + y * cos + endY
-  ];
+  return [x * cos - y * sin + endX, x * sin + y * cos + endY];
 }
 
 /**
@@ -108,11 +115,13 @@ export function transformControlPoint(startX: number,
  * @param endY the end Y
  * @param points a list of points
  */
-export function* transformControlPoints(startX: number,
-                                        startY: number,
-                                        endX: number,
-                                        endY: number,
-                                        points: number[]) {
+export function* transformControlPoints(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  points: number[]
+) {
   const dx = endX - startX;
   const dy = endY - startY;
   const len = Math.sqrt(dx * dx + dy * dy);
@@ -123,7 +132,9 @@ export function* transformControlPoints(startX: number,
     const x = points[i] * cos - points[i + 1] * sin + endX;
     const y = points[i] * sin + points[i + 1] * cos + endY;
     yield {
-      x, y, i: i / 2
+      x,
+      y,
+      i: i / 2,
     };
   }
 }

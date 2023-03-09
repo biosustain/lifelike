@@ -5,10 +5,11 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
-  Output, SimpleChanges,
-} from '@angular/core';
+  Output,
+  SimpleChanges,
+} from "@angular/core";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 import {
   asyncScheduler,
   BehaviorSubject,
@@ -17,8 +18,10 @@ import {
   combineLatest,
   defer,
   Subject,
-  of, forkJoin, ReplaySubject,
-} from 'rxjs';
+  of,
+  forkJoin,
+  ReplaySubject,
+} from "rxjs";
 import {
   throttleTime,
   map,
@@ -27,25 +30,25 @@ import {
   first,
   takeUntil,
   tap,
-  mergeMap, switchMap,
-} from 'rxjs/operators';
-import { flatMap, reduce, size } from 'lodash-es';
+  mergeMap,
+  switchMap,
+} from "rxjs/operators";
+import { flatMap, reduce, size } from "lodash-es";
 
 import {
   Progress,
   ProgressArguments,
-  ProgressMode
-} from 'app/interfaces/common-dialog.interface';
+  ProgressMode,
+} from "app/interfaces/common-dialog.interface";
 
-import { isNotEmpty } from '../../utils';
-
+import { isNotEmpty } from "../../utils";
 
 /**
  * A dialog to indicate the progress of a process.
  */
 @Component({
-  selector: 'app-progress-dialog',
-  templateUrl: './progress-dialog.component.html',
+  selector: "app-progress-dialog",
+  templateUrl: "./progress-dialog.component.html",
 })
 export class ProgressDialogComponent {
   @Input() title: string;
@@ -63,28 +66,37 @@ export class ProgressDialogComponent {
   }
 
   close() {
-    return combineLatest(this.progressObservables).pipe(
-      map(progresses =>
-        reduce(
-          progresses,
-          (acc, {warnings, errors}) => acc + size(warnings) + size(errors),
-          0,
-        ) > 0,
-      ),
-    ).pipe(
-      first(),
-      tap(persist => {
-        if (persist) {
-          this.persist = true;
-        } else {
-          this.cancel();
-        }
-      })
-    ).toPromise();
+    return combineLatest(this.progressObservables)
+      .pipe(
+        map(
+          (progresses) =>
+            reduce(
+              progresses,
+              (acc, { warnings, errors }) =>
+                acc + size(warnings) + size(errors),
+              0
+            ) > 0
+        )
+      )
+      .pipe(
+        first(),
+        tap((persist) => {
+          if (persist) {
+            this.persist = true;
+          } else {
+            this.cancel();
+          }
+        })
+      )
+      .toPromise();
   }
 }
 
-export function getProgressStatus(event, loadingStatus: string, finishStatus: string): Progress {
+export function getProgressStatus(
+  event,
+  loadingStatus: string,
+  finishStatus: string
+): Progress {
   if (event.loaded >= event.total) {
     return new Progress({
       mode: ProgressMode.Buffer,
@@ -93,8 +105,8 @@ export function getProgressStatus(event, loadingStatus: string, finishStatus: st
     });
   }
   return new Progress({
-      mode: ProgressMode.Determinate,
-      status: finishStatus,
-      value: event.loaded / event.total,
-    });
+    mode: ProgressMode.Determinate,
+    status: finishStatus,
+    value: event.loaded / event.total,
+  });
 }

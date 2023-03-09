@@ -2,39 +2,48 @@ import {
   ApplicationRef,
   Component,
   ComponentFactoryResolver,
-  ElementRef, Injector, NgZone,
-  OnInit, Output, Input, EventEmitter,
-} from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+  ElementRef,
+  Injector,
+  NgZone,
+  OnInit,
+  Output,
+  Input,
+  EventEmitter,
+} from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { escape, isNil, uniqueId, unary, isEqual, kebabCase } from 'lodash-es';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { distinctUntilChanged, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { escape, isNil, uniqueId, unary, isEqual, kebabCase } from "lodash-es";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { distinctUntilChanged, map } from "rxjs/operators";
+import { Observable } from "rxjs";
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { toValidLink } from 'app/shared/utils/browser';
-import { SEARCH_LINKS } from 'app/shared/links';
-import { composeInternalLink } from 'app/shared/workspace-manager';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { ExtendedWeakMap } from 'app/shared/utils/types';
-import { PDFAnnotationService } from 'app/pdf-viewer/services/pdf-annotation.service';
+import {
+  DatabaseLink,
+  ENTITY_TYPE_MAP,
+  EntityType,
+} from "app/shared/annotation-types";
+import { toValidLink } from "app/shared/utils/browser";
+import { SEARCH_LINKS } from "app/shared/links";
+import { composeInternalLink } from "app/shared/workspace-manager";
+import { ErrorHandler } from "app/shared/services/error-handler.service";
+import { InternalSearchService } from "app/shared/services/internal-search.service";
+import { ClipboardService } from "app/shared/services/clipboard.service";
+import { ExtendedWeakMap } from "app/shared/utils/types";
+import { PDFAnnotationService } from "app/pdf-viewer/services/pdf-annotation.service";
 
-import { Annotation, Location } from '../../annotation-type';
-import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
-import { PDFPageView } from '../../pdf-viewer/interfaces';
+import { Annotation, Location } from "../../annotation-type";
+import { PageViewport } from "pdfjs-dist/types/display/display_utils";
+import { PDFPageView } from "../../pdf-viewer/interfaces";
 import {
   AnnotationDragEvent,
   AnnotationHighlightResult,
   PdfViewerLibComponent,
-} from '../../pdf-viewer-lib.component';
+} from "../../pdf-viewer-lib.component";
 
 @Component({
-  selector: 'app-annotation-layer',
-  templateUrl: './annotation-layer.component.html',
-  styleUrls: ['./annotation-layer.component.scss'],
+  selector: "app-annotation-layer",
+  templateUrl: "./annotation-layer.component.html",
+  styleUrls: ["./annotation-layer.component.scss"],
 })
 export class AnnotationLayerComponent {
   constructor(
@@ -48,20 +57,23 @@ export class AnnotationLayerComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly internalSearch: InternalSearchService,
     protected readonly clipboard: ClipboardService,
-    readonly annotationService: PDFAnnotationService,
-  ) {
-  }
+    readonly annotationService: PDFAnnotationService
+  ) {}
 
-  annotations$: Observable<Annotation[]> = this.annotationService.pageGroupedAnnotations$.pipe(
-    map(gropuedAnnotations =>
-      gropuedAnnotations[(this.pdfPageView as any).id]
-    )
-  );
+  annotations$: Observable<Annotation[]> =
+    this.annotationService.pageGroupedAnnotations$.pipe(
+      map(
+        (gropuedAnnotations) => gropuedAnnotations[(this.pdfPageView as any).id]
+      )
+    );
 
   currentHighlightAnnotationId: string;
   @Input() pdfPageView: PDFPageView;
   @Output() dragStart = new EventEmitter<AnnotationDragEvent>();
-  annotationRectsMap = new ExtendedWeakMap<Annotation, { top: number, left: number, width: number, height: number, rect: any }>();
+  annotationRectsMap = new ExtendedWeakMap<
+    Annotation,
+    { top: number; left: number; width: number; height: number; rect: any }
+  >();
 
   displayFilter(meta) {
     if (meta.isExcluded) {
@@ -75,19 +87,22 @@ export class AnnotationLayerComponent {
   }
 
   getAnnotationRects(annotation) {
-    return this.annotationRectsMap.getSetLazily(annotation, this.parseAnnotationRects.bind(this));
+    return this.annotationRectsMap.getSetLazily(
+      annotation,
+      this.parseAnnotationRects.bind(this)
+    );
   }
 
   parseAnnotationRects(annotation) {
     // each annotation should have allText field set.
-    const allText = (annotation.keywords || []).join(' ');
-    if (!annotation.meta.allText || annotation.meta.allText === '') {
+    const allText = (annotation.keywords || []).join(" ");
+    if (!annotation.meta.allText || annotation.meta.allText === "") {
       annotation.meta.allText = allText;
     }
 
     const viewPort: PageViewport = this.pdfPageView.viewport;
 
-    return annotation.rects.map(rect => {
+    return annotation.rects.map((rect) => {
       const bounds = viewPort.convertToViewportRectangle(rect);
       return {
         rect,
@@ -99,7 +114,7 @@ export class AnnotationLayerComponent {
     });
   }
 
-  annotationDragStart(event, {meta, rect}) {
+  annotationDragStart(event, { meta, rect }) {
     this.dragStart.emit({
       event,
       meta,
@@ -111,7 +126,7 @@ export class AnnotationLayerComponent {
     event.stopPropagation();
   }
 
-  removeCustomAnnotation({uuid}: Annotation) {
+  removeCustomAnnotation({ uuid }: Annotation) {
     return this.annotationService.annotationRemoved(uuid);
   }
 
@@ -124,7 +139,6 @@ export class AnnotationLayerComponent {
       rects: annotation.rects,
       pageNumber: annotation.pageNumber,
     });
-
   }
 
   addHighlightItem(highlightRect: number[]) {
@@ -136,9 +150,20 @@ export class AnnotationLayerComponent {
     const height = Math.abs(bounds[1] - bounds[3]);
     // TODO don't use direct DOM manipulations
     const overlayContainer = this.elementRef.nativeElement;
-    const overlayDiv = document.createElement('div');
-    overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
+    const overlayDiv = document.createElement("div");
+    overlayDiv.setAttribute(
+      "style",
+      `border: 2px solid red; position:absolute;` +
+        "left:" +
+        (left - 4) +
+        "px;top:" +
+        (top - 4) +
+        "px;width:" +
+        (width + 8) +
+        "px;height:" +
+        (height + 8) +
+        "px;"
+    );
     overlayContainer.appendChild(overlayDiv);
     setTimeout(() => {
       overlayContainer.removeChild(overlayDiv);

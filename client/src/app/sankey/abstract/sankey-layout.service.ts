@@ -52,18 +52,18 @@
 // SOFTWARE.
 // endregion
 
-import findCircuits from 'elementary-circuits-directed-graph';
-import { ReplaySubject, Subject, Observable } from 'rxjs';
-import { map, tap, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { isEqual } from 'lodash-es';
+import findCircuits from "elementary-circuits-directed-graph";
+import { ReplaySubject, Subject, Observable } from "rxjs";
+import { map, tap, distinctUntilChanged, shareReplay } from "rxjs/operators";
+import { isEqual } from "lodash-es";
 
-import { TruncatePipe } from 'app/shared/pipes';
-import { SankeyId, TypeContext } from 'app/sankey/interfaces';
-import { debug } from 'app/shared/rxjs/debug';
+import { TruncatePipe } from "app/shared/pipes";
+import { SankeyId, TypeContext } from "app/sankey/interfaces";
+import { debug } from "app/shared/rxjs/debug";
 
-import { AttributeAccessors } from '../utils/attribute-accessors';
-import { ErrorMessages } from '../constants/error';
-import { SankeyLink, SankeyNode } from '../model/sankey-document';
+import { AttributeAccessors } from "../utils/attribute-accessors";
+import { ErrorMessages } from "../constants/error";
+import { SankeyLink, SankeyNode } from "../model/sankey-document";
 
 export interface Horizontal {
   width: number;
@@ -94,41 +94,40 @@ export interface LayoutData {
   targets: SankeyId[];
 }
 
-export abstract class SankeyAbstractLayoutService<Base extends TypeContext> extends AttributeAccessors<Base> {
-  constructor(
-    protected readonly truncatePipe: TruncatePipe
-  ) {
+export abstract class SankeyAbstractLayoutService<
+  Base extends TypeContext
+> extends AttributeAccessors<Base> {
+  constructor(protected readonly truncatePipe: TruncatePipe) {
     super(truncatePipe);
   }
 
   get sourceValue(): (link: SankeyLink) => number {
-    return ({value, multipleValues}) => multipleValues?.[0] ?? value;
+    return ({ value, multipleValues }) => multipleValues?.[0] ?? value;
   }
 
   get targetValue(): (link: SankeyLink) => number {
-    return ({value, multipleValues}) => multipleValues?.[1] ?? value;
+    return ({ value, multipleValues }) => multipleValues?.[1] ?? value;
   }
-
 
   dy = 8;
   dx = 10; // nodeWidth
   py = 10; // nodePadding
 
-  nodeSort: <N extends Base['node']>(a: N, b: N) => number;
-  linkSort: <L extends Base['link']>(a: L, b: L) => number;
+  nodeSort: <N extends Base["node"]>(a: N, b: N) => number;
+  linkSort: <L extends Base["link"]>(a: L, b: L) => number;
 
   /**
    * Each node maintains list of its source/target links
    * this function resets these lists and repopulates them
    * based on list of links.
    */
-  computeNodeLinks = tap(({nodes, links}) => {
+  computeNodeLinks = tap(({ nodes, links }) => {
     for (const [i, node] of nodes.entries()) {
       node.index = i;
       node.sourceLinks = [];
       node.targetLinks = [];
     }
-    this.registerLinks({links});
+    this.registerLinks({ links });
   });
 
   /**
@@ -136,12 +135,12 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * This function simply preformats data cals `elementary-circuits-directed-graph`
    * library and add results to our graph object.
    */
-  identifyCircles = tap(({links, nodes}) => {
+  identifyCircles = tap(({ links, nodes }) => {
     let circularLinkID = 0;
 
     // Building adjacency graph
     const adjList = [];
-    links.forEach(link => {
+    links.forEach((link) => {
       const source = (link.source as SankeyNode).index;
       const target = (link.target as SankeyNode).index;
       if (!adjList[source]) {
@@ -172,11 +171,14 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       circularLinks[last[0]][last[1]] = true;
     }
 
-    links.forEach(link => {
+    links.forEach((link) => {
       const target = (link.target as SankeyNode).index;
       const source = (link.source as SankeyNode).index;
       // If self-linking or a back-edge
-      if (target === source || (circularLinks[source] && circularLinks[source][target])) {
+      if (
+        target === source ||
+        (circularLinks[source] && circularLinks[source][target])
+      ) {
         link.circular = true;
         link.circularLinkID = circularLinkID;
         circularLinkID = circularLinkID + 1;
@@ -191,38 +193,52 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * Sets the nodes':
    * - depth:  the depth in the graph
    */
-  computeNodeDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'target', 'sourceLinks')) {
+  computeNodeDepths = tap(({ nodes }: LayoutData) => {
+    for (const [node, x] of this.getPropagatingNodeIterator(
+      nodes,
+      "target",
+      "sourceLinks"
+    )) {
       node.depth = x;
     }
   });
 
-  computeNodeReversedDepths = tap(({nodes}: LayoutData) => {
-    for (const [node, x] of this.getPropagatingNodeIterator(nodes, 'source', 'targetLinks')) {
+  computeNodeReversedDepths = tap(({ nodes }: LayoutData) => {
+    for (const [node, x] of this.getPropagatingNodeIterator(
+      nodes,
+      "source",
+      "targetLinks"
+    )) {
       node.reversedDepth = x;
     }
   });
 
   static ascendingSourceBreadth(a, b) {
-    return SankeyAbstractLayoutService.ascendingBreadth(a.source, b.source) || a.index - b.index;
+    return (
+      SankeyAbstractLayoutService.ascendingBreadth(a.source, b.source) ||
+      a.index - b.index
+    );
   }
 
   static ascendingTargetBreadth(a, b) {
-    return SankeyAbstractLayoutService.ascendingBreadth(a.target, b.target) || a.index - b.index;
+    return (
+      SankeyAbstractLayoutService.ascendingBreadth(a.target, b.target) ||
+      a.index - b.index
+    );
   }
 
   static ascendingBreadth(a, b) {
     return a.initialY0 - b.initialY0;
   }
 
-  static computeLinkBreadths({nodes}: LayoutData) {
+  static computeLinkBreadths({ nodes }: LayoutData) {
     for (const node of nodes) {
       let y0 = node.initialY0;
       let y1 = y0;
       for (const link of node.sourceLinks) {
         link.y0 = y0 + link.width / 2;
         if (!isFinite(link.y0)) {
-          throw new Error('Infinite link.y0');
+          throw new Error("Infinite link.y0");
         }
         // noinspection JSSuspiciousNameCombination
         y0 += link.width;
@@ -230,7 +246,7 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
       for (const link of node.targetLinks) {
         link.y1 = y1 + link.width / 2;
         if (!isFinite(link.y1)) {
-          throw new Error('Infinite link.y1');
+          throw new Error("Infinite link.y1");
         }
         // noinspection JSSuspiciousNameCombination
         y1 += link.width;
@@ -242,10 +258,10 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * Given list of links resolve their source/target node id to actual object
    * and register this link to input/output link list in node.
    */
-  registerLinks({links}) {
+  registerLinks({ links }) {
     for (const [i, link] of links.entries()) {
       link.index = i;
-      const {source, target} = link;
+      const { source, target } = link;
       source.sourceLinks.push(link);
       target.targetLinks.push(link);
     }
@@ -271,28 +287,32 @@ export abstract class SankeyAbstractLayoutService<Base extends TypeContext> exte
    * @param nextNodeProperty - property of link pointing to next node (source, target)
    * @param nextLinksProperty - property of node pointing to next links (sourceLinks, targetLinks)
    */
-  getPropagatingNodeIterator = function*(nodes, nextNodeProperty, nextLinksProperty): Generator<[Base['node'], number]> {
+  getPropagatingNodeIterator = function* (
+    nodes,
+    nextNodeProperty,
+    nextLinksProperty
+  ): Generator<[Base["node"], number]> {
     const n = nodes.length;
-    let current = new Set<Base['node']>(nodes);
-    let next = new Set<Base['node']>();
+    let current = new Set<Base["node"]>(nodes);
+    let next = new Set<Base["node"]>();
     let x = 0;
     while (current.size) {
       for (const node of current) {
         yield [node, x];
         for (const link of node[nextLinksProperty]) {
-          next.add(link[nextNodeProperty] as Base['node']);
+          next.add(link[nextNodeProperty] as Base["node"]);
         }
       }
       if (++x > n) {
-        throw new Error('circular link');
+        throw new Error("circular link");
       }
       current = next;
       next = new Set();
     }
   };
 
-  positionNodesHorizontaly(data, {x1, x0, width}: Horizontal, x: number) {
-    const {dx} = this;
+  positionNodesHorizontaly(data, { x1, x0, width }: Horizontal, x: number) {
+    const { dx } = this;
     const kx = (width - dx) / (x - 1);
     for (const node of data.nodes) {
       node.initialX0 = x0 + node.layer * kx;

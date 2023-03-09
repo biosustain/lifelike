@@ -1,11 +1,14 @@
-import { FlatTreeControl } from '@angular/cdk/tree';
-import { Input, OnDestroy } from '@angular/core';
-import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { FlatTreeControl } from "@angular/cdk/tree";
+import { Input, OnDestroy } from "@angular/core";
+import {
+  MatTreeFlatDataSource,
+  MatTreeFlattener,
+} from "@angular/material/tree";
 
-import { isNil } from 'lodash-es';
-import { Subscription } from 'rxjs';
+import { isNil } from "lodash-es";
+import { Subscription } from "rxjs";
 
-import { TreeNode, FlatNode } from 'app/shared/schemas/common';
+import { TreeNode, FlatNode } from "app/shared/schemas/common";
 
 export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   protected _treeData: TreeNode<T>[] = [];
@@ -25,14 +28,27 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
   flatNodesChangedListener: Subscription;
 
   constructor() {
-    this.treeControl = new FlatTreeControl<FlatNode<T>>(this.getLevel, this.isExpandable);
-    this.treeFlattener = new MatTreeFlattener(this._transformer, this.getLevel, this.isExpandable, this.getChildren);
-    this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+    this.treeControl = new FlatTreeControl<FlatNode<T>>(
+      this.getLevel,
+      this.isExpandable
+    );
+    this.treeFlattener = new MatTreeFlattener(
+      this._transformer,
+      this.getLevel,
+      this.isExpandable,
+      this.getChildren
+    );
+    this.dataSource = new MatTreeFlatDataSource(
+      this.treeControl,
+      this.treeFlattener
+    );
     this._initDataSource();
 
-    this.flatNodesChangedListener = this.dataSource._flattenedData.subscribe((flatNodes) => {
-      this.flatNodes = flatNodes;
-    });
+    this.flatNodesChangedListener = this.dataSource._flattenedData.subscribe(
+      (flatNodes) => {
+        this.flatNodes = flatNodes;
+      }
+    );
   }
 
   ngOnDestroy() {
@@ -49,7 +65,7 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
       data: node.data,
       level,
     };
-  }
+  };
 
   getChildren = (node: TreeNode<T>): TreeNode<T>[] => node.children;
 

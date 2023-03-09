@@ -1,14 +1,13 @@
-import { Component, } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 
-import { SankeyEntityDetailsComponent } from '../../abstract/entity-details/entity-details.component';
-import { BaseControllerService } from '../../services/base-controller.service';
-import { TypeContext } from '../../interfaces';
-
+import { SankeyEntityDetailsComponent } from "../../abstract/entity-details/entity-details.component";
+import { BaseControllerService } from "../../services/base-controller.service";
+import { TypeContext } from "../../interfaces";
 
 @Component({
-  selector: 'app-sankey-node-details',
-  templateUrl: './node-details.component.html'
+  selector: "app-sankey-node-details",
+  templateUrl: "./node-details.component.html",
 })
 export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   constructor(
@@ -22,10 +21,13 @@ export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   nodeValueAccessor$ = this.baseView.nodeValueAccessor$;
 
   biocycLink(biocycId) {
-    return 'https://biocyc.org/ECOLI/NEW-IMAGE?object=' + encodeURIComponent(biocycId);
+    return (
+      "https://biocyc.org/ECOLI/NEW-IMAGE?object=" +
+      encodeURIComponent(biocycId)
+    );
   }
 
   reactomeLink(stId) {
-    return 'https://reactome.org/content/detail/' + encodeURIComponent(stId);
+    return "https://reactome.org/content/detail/" + encodeURIComponent(stId);
   }
 }

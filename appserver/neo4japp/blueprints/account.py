@@ -119,9 +119,16 @@ class AccountView(MethodView):
                 "locked": failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES,
                 "roles": roles.split(",") if roles else "",
             }
-            for id, hash_id, username, email, first_name, last_name, failed_login_count, roles in db.session.execute(
-                query
-            ).fetchall()
+            for (
+                id,
+                hash_id,
+                username,
+                email,
+                first_name,
+                last_name,
+                failed_login_count,
+                roles,
+            ) in db.session.execute(query).fetchall()
             if id
         ]
 

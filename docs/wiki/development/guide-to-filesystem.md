@@ -7,15 +7,15 @@ as "objects" in the API and on the client.
 
 Objects have the following properties:
 
-* 0 or 1 parent
-* A filename
-* A description
-* A mime type
-* A 'public' flag
-* Potentially 0 or more users and their granted roles on the object
-* Potentially a reference to a row in `FileContent`
-* Recycled status
-* Soft delete status
+- 0 or 1 parent
+- A filename
+- A description
+- A mime type
+- A 'public' flag
+- Potentially 0 or more users and their granted roles on the object
+- Potentially a reference to a row in `FileContent`
+- Recycled status
+- Soft delete status
 
 ### Hierarchy and Projects
 
@@ -125,9 +125,9 @@ AppServer and the client.
 You will need to determine a mime type for your file type, and if you are creating a new one
 for Lifelike, be sure to follow the convention of the existing mime types:
 
-* `vnd.***ARANGO_DB_NAME***.document/map`
-* `vnd.***ARANGO_DB_NAME***.document/enrichment-table`
-* `vnd.***ARANGO_DB_NAME***.filesystem/directory`
+- `vnd.***ARANGO_DB_NAME***.document/map`
+- `vnd.***ARANGO_DB_NAME***.document/enrichment-table`
+- `vnd.***ARANGO_DB_NAME***.filesystem/directory`
 
 ### AppServer
 
@@ -225,15 +225,16 @@ A demo of a provider is below:
 ```ts
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
-
-  constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver,
-              protected readonly injector: Injector,
-              protected readonly objectCreationService: ObjectCreationService) {
+  constructor(
+    protected readonly componentFactoryResolver: ComponentFactoryResolver,
+    protected readonly injector: Injector,
+    protected readonly objectCreationService: ObjectCreationService
+  ) {
     super();
   }
 
   handles(object: FilesystemObject): boolean {
-    return object.mimeType === 'vnd.***ARANGO_DB_NAME***.document/map';
+    return object.mimeType === "vnd.***ARANGO_DB_NAME***.document/map";
   }
 
   createPreviewComponent(object: FilesystemObject) {
@@ -246,31 +247,34 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
-    return [{
-      rank: 100,
-      item: {
-        label: 'Map',
-        openSuggested: true,
-        create: (options?: CreateActionOptions) => {
-          const object = new FilesystemObject();
-          object.filename = 'Untitled Map';
-          object.mimeType = MAP_MIMETYPE;
-          object.parent = options.parent;
-          return this.objectCreationService.openCreateDialog(object, {
-            title: 'New Map',
-            request: {
-              contentValue: new Blob([JSON.stringify({
-                edges: [],
-                nodes: [],
-              } as UniversalGraph)]),
-            },
-            ...(options.createDialog || {}),
-          });
+    return [
+      {
+        rank: 100,
+        item: {
+          label: "Map",
+          openSuggested: true,
+          create: (options?: CreateActionOptions) => {
+            const object = new FilesystemObject();
+            object.filename = "Untitled Map";
+            object.mimeType = MAP_MIMETYPE;
+            object.parent = options.parent;
+            return this.objectCreationService.openCreateDialog(object, {
+              title: "New Map",
+              request: {
+                contentValue: new Blob([
+                  JSON.stringify({
+                    edges: [],
+                    nodes: [],
+                  } as UniversalGraph),
+                ]),
+              },
+              ...(options.createDialog || {}),
+            });
+          },
         },
       },
-    }];
+    ];
   }
-
 }
 ```
 
@@ -279,7 +283,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
 You will want to register your provider in in the `FileTypesModule`:
 
 ```ts
-import { TYPE_PROVIDER } from './services/object-type.service';
+import { TYPE_PROVIDER } from "./services/object-type.service";
 
 @NgModule({
   providers: [
@@ -291,8 +295,7 @@ import { TYPE_PROVIDER } from './services/object-type.service';
     // ...
   ],
 })
-export class FileTypesModule {
-}
+export class FileTypesModule {}
 ```
 
 #### FilesystemObject Changes
@@ -306,7 +309,7 @@ Some examples of those methods are as follows:
 class FilesystemObject {
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
+    return this.mimeType === "application/pdf";
   }
 
   get isMovable() {

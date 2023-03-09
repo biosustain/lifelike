@@ -1,11 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, Input } from "@angular/core";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { AnnotationType } from 'app/shared/constants';
+import { CommonFormDialogComponent } from "app/shared/components/dialog/common-form-dialog.component";
+import { MessageDialog } from "app/shared/services/message-dialog.service";
+import { AnnotationType } from "app/shared/constants";
 
 interface Result {
   reason: string;
@@ -15,8 +15,8 @@ interface Result {
 }
 
 @Component({
-  selector: 'app-annotation-exclude-dialog',
-  templateUrl: './annotation-exclude-dialog.component.html',
+  selector: "app-annotation-exclude-dialog",
+  templateUrl: "./annotation-exclude-dialog.component.html",
 })
 export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent<Result> {
   @Input() text: string;
@@ -25,22 +25,22 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent<
     if (type === AnnotationType.Gene || type === AnnotationType.Protein) {
       this.isGeneOrProtein = true;
       this.form.patchValue({
-        isCaseInsensitive: false
+        isCaseInsensitive: false,
       });
     }
   }
 
   readonly reasonChoices = [
-    'Not an entity',
-    'Wrong annotation type',
-    'Exclude from the synonym list',
-    'Incorrect context',
-    'Other',
+    "Not an entity",
+    "Wrong annotation type",
+    "Exclude from the synonym list",
+    "Incorrect context",
+    "Other",
   ];
 
   readonly form: FormGroup = new FormGroup({
     reason: new FormControl(this.reasonChoices[0], Validators.required),
-    comment: new FormControl(''),
+    comment: new FormControl(""),
     isCaseInsensitive: new FormControl(true),
     excludeGlobally: new FormControl(false),
   });
@@ -58,7 +58,7 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent<
 
   chooseReason(reason: string, checked: boolean) {
     if (checked) {
-      this.form.get('reason').setValue(reason);
+      this.form.get("reason").setValue(reason);
     }
   }
 }

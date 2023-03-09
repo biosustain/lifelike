@@ -1,15 +1,18 @@
 /**
  * Keeps track of a set of behaviors and provides methods to call them.
  */
-import { ZoomTransform } from 'd3-zoom';
+import { ZoomTransform } from "d3-zoom";
 
-import { GraphEntity } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity } from "app/drawing-tool/services/interfaces";
 
 export class BehaviorList<T extends Behavior> {
-  private behaviorsMap: Map<string, {
-    priority: number,
-    behavior: T
-  }> = new Map();
+  private behaviorsMap: Map<
+    string,
+    {
+      priority: number;
+      behavior: T;
+    }
+  > = new Map();
   private behaviorsIndexedByMethod: Map<string, Set<T>> = new Map();
 
   /**
@@ -33,9 +36,9 @@ export class BehaviorList<T extends Behavior> {
       throw new Error(`behavior by key '${key}' already added`);
     }
 
-    const behaviors: [string, { priority: number, behavior: T }][] = [
+    const behaviors: [string, { priority: number; behavior: T }][] = [
       ...this.behaviorsMap.entries(),
-      [key, {behavior, priority}],
+      [key, { behavior, priority }],
     ];
 
     // Slow priority queue
@@ -50,7 +53,10 @@ export class BehaviorList<T extends Behavior> {
     });
     this.behaviorsMap = new Map(behaviors);
 
-    for (const [methodName, behaviorIndex] of this.behaviorsIndexedByMethod.entries()) {
+    for (const [
+      methodName,
+      behaviorIndex,
+    ] of this.behaviorsIndexedByMethod.entries()) {
       if (methodName in behavior) {
         behaviorIndex.add(behavior);
       }
@@ -97,7 +103,7 @@ export class BehaviorList<T extends Behavior> {
    * @return the final result
    */
   apply(callable: (behavior: T) => BehaviorResult): BehaviorResult {
-    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+    for (const [key, { behavior, priority }] of this.behaviorsMap.entries()) {
       const result = callable(behavior);
       if (result === BehaviorResult.Stop) {
         return BehaviorResult.Stop;
@@ -134,8 +140,8 @@ export class BehaviorList<T extends Behavior> {
   /**
    * Get a list of behaviors.
    */
-  * getBehaviors(): IterableIterator<T> {
-    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+  *getBehaviors(): IterableIterator<T> {
+    for (const [key, { behavior, priority }] of this.behaviorsMap.entries()) {
       yield behavior;
     }
   }
@@ -148,19 +154,19 @@ export enum BehaviorResult {
   /**
    * Run other behaviors.
    */
-  Continue = 'CONTINUE',
+  Continue = "CONTINUE",
   /**
    * After this behavior returns, don't run any more for this event.
    */
-  Stop = 'STOP',
+  Stop = "STOP",
   /**
    * Remove this behavior but keep executing behaviors for this event.
    */
-  RemoveAndContinue = 'REMOVE_AND_CONTINUE',
+  RemoveAndContinue = "REMOVE_AND_CONTINUE",
   /**
    * Remove this behavior, and don't run any more for this event.
    */
-  RemoveAndStop = 'REMOVE_AND_STOP',
+  RemoveAndStop = "REMOVE_AND_STOP",
 }
 
 /**
@@ -168,7 +174,9 @@ export enum BehaviorResult {
  * @param result the result to check
  */
 export function isStopResult(result: BehaviorResult): boolean {
-  return result === BehaviorResult.Stop || result === BehaviorResult.RemoveAndStop;
+  return (
+    result === BehaviorResult.Stop || result === BehaviorResult.RemoveAndStop
+  );
 }
 
 /**
@@ -202,11 +210,9 @@ export interface CanvasBehavior extends Behavior {
  * An abstract behavior that has all methods already implemented.
  */
 export abstract class AbstractCanvasBehavior implements CanvasBehavior {
-  setup() {
-  }
+  setup() {}
 
-  destroy() {
-  }
+  destroy() {}
 
   shouldDrag(event: BehaviorEvent<MouseEvent>): boolean {
     return undefined;
@@ -252,8 +258,7 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
-  }
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {}
 }
 
 export class BehaviorEvent<T> {

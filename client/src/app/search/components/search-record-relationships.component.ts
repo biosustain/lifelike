@@ -1,23 +1,22 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { isNil } from 'lodash-es';
+import { isNil } from "lodash-es";
 
-import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
-import { PUBMED_URL } from 'app/shared/constants';
-import { stringToHex } from 'app/shared/utils';
-import { getGraphQueryParams } from 'app/search/utils/search';
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { FTSReferenceRecord, GraphNode } from "app/interfaces";
+import { PUBMED_URL } from "app/shared/constants";
+import { stringToHex } from "app/shared/utils";
+import { getGraphQueryParams } from "app/search/utils/search";
+import { UniversalGraphNode } from "app/drawing-tool/services/interfaces";
 
-import { getLink } from '../utils/records';
-import { GraphSearchParameters } from '../graph-search';
+import { getLink } from "../utils/records";
+import { GraphSearchParameters } from "../graph-search";
 
 @Component({
-  selector: 'app-search-record-relationships',
-  templateUrl: './search-record-relationships.component.html',
-  styleUrls: ['./search-record-relationships.component.scss'],
+  selector: "app-search-record-relationships",
+  templateUrl: "./search-record-relationships.component.html",
+  styleUrls: ["./search-record-relationships.component.scss"],
 })
 export class SearchRecordRelationshipsComponent {
-
   PUBMED_URL: string = PUBMED_URL;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
@@ -25,11 +24,11 @@ export class SearchRecordRelationshipsComponent {
   private prvNode: FTSReferenceRecord;
   nodeURL: string;
 
-  chemicalDisplayName = '';
-  chemicalLabel = '';
+  chemicalDisplayName = "";
+  chemicalLabel = "";
 
-  diseaseDisplayName = '';
-  diseaseLabel = '';
+  diseaseDisplayName = "";
+  diseaseLabel = "";
 
   @Input() params: GraphSearchParameters;
 
@@ -39,9 +38,9 @@ export class SearchRecordRelationshipsComponent {
 
     const chemical = n.chemical;
     const disease = n.disease;
-    let nodeQuery = '';
+    let nodeQuery = "";
     if (chemical && disease) {
-      nodeQuery += chemical.id + ',' + disease.id;
+      nodeQuery += chemical.id + "," + disease.id;
 
       this.setChemicalDataStrings(chemical);
       this.setDiseaseDataStrings(disease);
@@ -59,37 +58,47 @@ export class SearchRecordRelationshipsComponent {
     return this.prvNode;
   }
 
-  constructor() {
-  }
+  constructor() {}
 
   setChemicalDataStrings(chemical: GraphNode) {
-    this.chemicalDisplayName = isNil(chemical.displayName) ? '' : chemical.displayName;
-    this.chemicalLabel = isNil(chemical.label) ? '' : chemical.label;
+    this.chemicalDisplayName = isNil(chemical.displayName)
+      ? ""
+      : chemical.displayName;
+    this.chemicalLabel = isNil(chemical.label) ? "" : chemical.label;
   }
 
   setDiseaseDataStrings(disease: GraphNode) {
-    this.diseaseDisplayName = isNil(disease.displayName) ? '' : disease.displayName;
-    this.diseaseLabel = isNil(disease.label) ? '' : disease.label;
+    this.diseaseDisplayName = isNil(disease.displayName)
+      ? ""
+      : disease.displayName;
+    this.diseaseLabel = isNil(disease.label) ? "" : disease.label;
   }
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', this.node.node.displayName);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.node.node.displayName,
-      label: this.node.node.label.toLowerCase(),
-      sub_labels: [],
-      data: {
-        hyperlinks: [{
-          domain: '',
-          url: getLink(this.node),
-        }],
-        references: [{
-          type: 'DATABASE',
-          id: getLink(this.node),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
+    dataTransfer.setData("text/plain", this.node.node.displayName);
+    dataTransfer.setData(
+      "application/***ARANGO_DB_NAME***-node",
+      JSON.stringify({
+        display_name: this.node.node.displayName,
+        label: this.node.node.label.toLowerCase(),
+        sub_labels: [],
+        data: {
+          hyperlinks: [
+            {
+              domain: "",
+              url: getLink(this.node),
+            },
+          ],
+          references: [
+            {
+              type: "DATABASE",
+              id: getLink(this.node),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   getVisualizerQueryParams(params) {

@@ -3,9 +3,10 @@
 This README describes how to set up a develoment environment to run scripts to parse data from various sources; e.g KEGG, BioCyc, etc... and produce `.tsv` files.
 
 ## Table of Contents
-* [Initial setup](#initial-setup)
-* [Parsing data](#parsing-data)
-* [Liquibase changelogs](#liquibase-changelogs)
+
+- [Initial setup](#initial-setup)
+- [Parsing data](#parsing-data)
+- [Liquibase changelogs](#liquibase-changelogs)
 
 ## Initial setup
 
@@ -14,6 +15,7 @@ Development and deployment depends on the `Pipenv` tool to create a virtual envi
 INSTALL: https://pipenv.pypa.io/en/latest/#install-pipenv-today
 
 ### Create virtual environment
+
 Create a virtual environment for the project and install dependencies from Pipfile (incl. dev dependencies):
 
 ```bash
@@ -21,6 +23,7 @@ pipenv install --dev
 ```
 
 ### Activate virtual environment
+
 ```bash
 pipenv shell
 ```
@@ -34,6 +37,7 @@ Data is parsed by executing the `app.py` script with the data domain as argument
 The `.tsv` data files are zipped and uploaded to Azure (or other cloud storage of choice).
 
 ### Arguments
+
 Required:
 
 --prefix: The JIRA card numeric value. This is to link the data files to a JIRA card for reference tracking.
@@ -47,25 +51,30 @@ Optional:
 --log-file: Name of log file. If specified, logs are written to this files.
 
 ### Examples
+
 Load Chebi with default (INFO) log level:
+
 ```bash
 # assumes current directory is graph-db/extraction/src
 python3 src/app.py --prefix LL-1234 chebi
 ```
 
 Load Chebi, overriding log level and specifying log file:
+
 ```bash
 # assumes current directory is graph-db/extraction/src
 python3 src/app.py --prefix LL-1234 --log-file kg_load.log --log-level DEBUG chebi
 ```
 
 Load all BioCyc sources as specified in src/biocyc/data_sources.json:
+
 ```bash
 # assumes current directory is graph-db/extraction/src
 python3 src/app.py --prefix LL-1234 biocyc
 ```
 
 Load specific BioCyc data sources:
+
 ```bash
 # assumes current directory is graph-db/extraction/src
 python3 src/app.py --prefix LL-1234 biocyc --data-sources EcoCyc YeastCyc MetaCyc

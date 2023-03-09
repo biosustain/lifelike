@@ -1,32 +1,26 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
-import { MockComponents } from 'ng-mocks';
+import { configureTestSuite } from "ng-bullet";
+import { MockComponents } from "ng-mocks";
 
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { RouteBuilderComponent } from '../components/route-builder.component';
-import { RouteDisplayComponent } from '../components/route-display.component';
-import { ShortestPathComponent } from './shortest-path.component';
+import { RouteBuilderComponent } from "../components/route-builder.component";
+import { RouteDisplayComponent } from "../components/route-display.component";
+import { ShortestPathComponent } from "./shortest-path.component";
 
-describe('ShortestPathComponent', () => {
+describe("ShortestPathComponent", () => {
   let component: ShortestPathComponent;
   let fixture: ComponentFixture<ShortestPathComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-      ],
+      imports: [RootStoreModule, SharedModule],
       declarations: [
         ShortestPathComponent,
-        MockComponents(
-          RouteBuilderComponent,
-          RouteDisplayComponent,
-      ),
-      ]
+        MockComponents(RouteBuilderComponent, RouteDisplayComponent),
+      ],
     });
   });
 
@@ -36,7 +30,7 @@ describe('ShortestPathComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

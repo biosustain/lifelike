@@ -1,11 +1,8 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
 @Component({
-  selector: 'app-loading-indicator',
-  templateUrl: './loading-indicator.component.html',
-  styleUrls: [
-    './loading-indicator.component.scss',
-  ],
+  selector: "app-loading-indicator",
+  templateUrl: "./loading-indicator.component.html",
+  styleUrls: ["./loading-indicator.component.scss"],
 })
-export class LoadingIndicatorComponent {
-}
+export class LoadingIndicatorComponent {}

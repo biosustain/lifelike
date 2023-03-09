@@ -1,13 +1,18 @@
 <div *ngIf="!loading; else loadingSpinner">
   <div *ngIf="error; else notError">
-    <span>Could not load snippet data for this entity. Possible reasons include:</span>
+    <span
+      >Could not load snippet data for this entity. Possible reasons
+      include:</span
+    >
     <ul>
       <li>An error occurred on the server</li>
     </ul>
   </div>
   <ng-template #notError>
     <div *ngIf="showingEntityTable">
-      <h2 *ngIf="type" class="text-wrap">Associated {{ type }}s for {{ node.data.name }}</h2>
+      <h2 *ngIf="type" class="text-wrap">
+        Associated {{ type }}s for {{ node.data.name }}
+      </h2>
       <table *ngIf="typeEntries && typeEntries.length > 0; else noResults">
         <thead>
           <tr>
@@ -17,19 +22,30 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let entry of typeEntries" class="hoverable-row" (click)="getSnippetsForNewEntity(entry)">
-            <td class="text-wrap" [ngStyle]="{'color': color}">{{entry.name}}</td>
+          <tr
+            *ngFor="let entry of typeEntries"
+            class="hoverable-row"
+            (click)="getSnippetsForNewEntity(entry)"
+          >
+            <td class="text-wrap" [ngStyle]="{ color: color }">
+              {{ entry.name }}
+            </td>
             <td class="text-primary text-center">{{ entry.count }}</td>
             <td>
-              <div class="bg-primary" [ngStyle]="{
-                      'height': '15px',
-                      'width': entry.percentage + '%'}"
+              <div
+                class="bg-primary"
+                [ngStyle]="{
+                  height: '15px',
+                  width: entry.percentage + '%'
+                }"
               ></div>
             </td>
           </tr>
         </tbody>
       </table>
-      <ng-template #noResults>No Associated {{ type }}s were found.</ng-template>
+      <ng-template #noResults
+        >No Associated {{ type }}s were found.</ng-template
+      >
     </div>
     <div *ngIf="!showingEntityTable">
       <button class="btn btn-secondary" (click)="returnToEntityList()">
@@ -47,7 +63,10 @@
   </ng-template>
 </div>
 <ng-template #loadingSpinner>
-  <div id="loading-spinner-container" class="d-flex justify-content-center align-items-center">
+  <div
+    id="loading-spinner-container"
+    class="d-flex justify-content-center align-items-center"
+  >
     <div class="spinner-border text-primary" role="status">
       <span class="sr-only">Loading...</span>
     </div>

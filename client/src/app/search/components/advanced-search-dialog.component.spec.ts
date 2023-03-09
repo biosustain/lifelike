@@ -1,20 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { RouterTestingModule } from "@angular/router/testing";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { configureTestSuite } from 'ng-bullet';
-import { MockComponent } from 'ng-mocks';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
+import { configureTestSuite } from "ng-bullet";
+import { MockComponent } from "ng-mocks";
 
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SharedModule } from 'app/shared/shared.module';
+import { FilesystemService } from "app/file-browser/services/filesystem.service";
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
+import { SharedModule } from "app/shared/shared.module";
 
-import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
-import { HierarchySearchTreeComponent } from './hierarchy-search-tree.component';
-import { ContentSearchService } from '../services/content-search.service';
+import { AdvancedSearchDialogComponent } from "./advanced-search-dialog.component";
+import { HierarchySearchTreeComponent } from "./hierarchy-search-tree.component";
+import { ContentSearchService } from "../services/content-search.service";
 
-describe('AdvancedSearchDialogComponent', () => {
+describe("AdvancedSearchDialogComponent", () => {
   let component: AdvancedSearchDialogComponent;
   let fixture: ComponentFixture<AdvancedSearchDialogComponent>;
 
@@ -24,17 +24,13 @@ describe('AdvancedSearchDialogComponent', () => {
         RootStoreModule,
         SharedModule,
         BrowserAnimationsModule,
-        RouterTestingModule
+        RouterTestingModule,
       ],
       declarations: [
         AdvancedSearchDialogComponent,
-        MockComponent(HierarchySearchTreeComponent)
+        MockComponent(HierarchySearchTreeComponent),
       ],
-      providers: [
-        ContentSearchService,
-        FilesystemService,
-        NgbActiveModal,
-      ]
+      providers: [ContentSearchService, FilesystemService, NgbActiveModal],
     });
   });
 
@@ -44,7 +40,7 @@ describe('AdvancedSearchDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

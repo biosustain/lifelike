@@ -1,16 +1,18 @@
-import { EventEmitter } from '@angular/core';
-import { AbstractControl } from '@angular/forms';
+import { EventEmitter } from "@angular/core";
+import { AbstractControl } from "@angular/forms";
 
-import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageType } from "app/interfaces/message-dialog.interface";
 
-import { MessageArguments, MessageDialog } from '../../services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from "../../services/message-dialog.service";
 
 export abstract class FormComponent<O> {
   abstract form: AbstractControl;
   abstract formResult: EventEmitter<O>;
 
-  constructor(protected readonly messageDialog: MessageDialog) {
-  }
+  constructor(protected readonly messageDialog: MessageDialog) {}
 
   set params(params: O) {
     if (params != null) {
@@ -20,11 +22,11 @@ export abstract class FormComponent<O> {
 
   submit() {
     if (!this.form.invalid) {
-      this.formResult.emit({...this.form.value});
+      this.formResult.emit({ ...this.form.value });
     } else {
       this.messageDialog.display({
-        title: 'Invalid Input',
-        message: 'There are some errors with your input.',
+        title: "Invalid Input",
+        message: "There are some errors with your input.",
         type: MessageType.Error,
       } as MessageArguments);
     }

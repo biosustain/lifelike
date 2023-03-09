@@ -1,11 +1,11 @@
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from "lodash-es";
 
-import { RecursivePartial } from 'app/shared/utils/types';
-import { ModelList } from 'app/shared/models';
-import { AppUser } from 'app/interfaces';
+import { RecursivePartial } from "app/shared/utils/types";
+import { ModelList } from "app/shared/models";
+import { AppUser } from "app/interfaces";
 
-import { ObjectVersionData } from '../schema';
-import { FilesystemObject } from './filesystem-object';
+import { ObjectVersionData } from "../schema";
+import { FilesystemObject } from "./filesystem-object";
 
 export class ObjectVersion {
   hashId: string;
@@ -46,7 +46,7 @@ export class ObjectVersion {
 
   toObject(): FilesystemObject {
     if (!this.originalObject) {
-      throw new Error('need originalObject to generate a fake object');
+      throw new Error("need originalObject to generate a fake object");
     }
     return cloneDeep(this.originalObject);
   }
@@ -55,7 +55,7 @@ export class ObjectVersion {
     if (data == null) {
       return this;
     }
-    for (const key of ['hashId', 'message', 'user', 'creationDate']) {
+    for (const key of ["hashId", "message", "user", "creationDate"]) {
       if (key in data) {
         this[key] = data[key];
       }
@@ -64,5 +64,4 @@ export class ObjectVersion {
   }
 }
 
-export class ObjectVersionHistory extends ModelList<ObjectVersion> {
-}
+export class ObjectVersionHistory extends ModelList<ObjectVersion> {}

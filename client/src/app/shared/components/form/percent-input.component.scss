@@ -1,6 +1,6 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import '~bootstrap/scss/mixins';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
 
 app-percent-input {
   .invalid-feedback {
@@ -12,12 +12,15 @@ app-percent-input {
   }
 
   .invalid-tooltip {
-    background-color: rgba($form-feedback-invalid-color, $form-feedback-tooltip-opacity);
+    background-color: rgba(
+      $form-feedback-invalid-color,
+      $form-feedback-tooltip-opacity
+    );
     color: color-yiq($form-feedback-invalid-color);
     display: none;
     left: 0;
     line-height: $form-feedback-tooltip-line-height;
-    margin-top: .1rem; // Contain to parent when possible
+    margin-top: 0.1rem; // Contain to parent when possible
     max-width: 100%;
     padding: $form-feedback-tooltip-padding-y $form-feedback-tooltip-padding-x;
     @include font-size($form-feedback-tooltip-font-size);
@@ -30,7 +33,7 @@ app-percent-input {
     // Align tooltip to form elements
     .form-row > .col > &,
     .form-row > [class*="col-"] > & {
-      left: $form-grid-gutter-width * .5;
+      left: $form-grid-gutter-width * 0.5;
     }
   }
 
@@ -47,7 +50,8 @@ app-percent-input {
 
       &:focus {
         border-color: $form-feedback-invalid-color;
-        box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+        box-shadow: 0 0 0 $input-focus-width
+          rgba($form-feedback-invalid-color, 0.25);
       }
     }
 
@@ -56,7 +60,8 @@ app-percent-input {
 
       &:focus {
         border-color: $form-feedback-invalid-color;
-        box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+        box-shadow: 0 0 0 $input-focus-width
+          rgba($form-feedback-invalid-color, 0.25);
       }
     }
 
@@ -89,7 +94,8 @@ app-percent-input {
 
       &:focus {
         ~ .custom-control-label::before {
-          box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+          box-shadow: 0 0 0 $input-focus-width
+            rgba($form-feedback-invalid-color, 0.25);
         }
 
         &:not(:checked) ~ .custom-control-label::before {
@@ -107,10 +113,10 @@ app-percent-input {
       &:focus {
         ~ .custom-file-label {
           border-color: $form-feedback-invalid-color;
-          box-shadow: 0 0 0 $input-focus-width rgba($form-feedback-invalid-color, .25);
+          box-shadow: 0 0 0 $input-focus-width
+            rgba($form-feedback-invalid-color, 0.25);
         }
       }
     }
   }
 }
-

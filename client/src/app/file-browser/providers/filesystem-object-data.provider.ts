@@ -1,12 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { DataTransferData, DataTransferDataProvider, DataTransferToken, } from 'app/shared/services/data-transfer-data.service';
+import {
+  DataTransferData,
+  DataTransferDataProvider,
+  DataTransferToken,
+} from "app/shared/services/data-transfer-data.service";
 
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilePrivileges } from '../models/privileges';
+import { FilesystemObject } from "../models/filesystem-object";
+import { FilePrivileges } from "../models/privileges";
 
-export const FILESYSTEM_OBJECT_TRANSFER_TOKEN = new DataTransferToken<FilesystemObject[]>('filesystemObjectTransfer');
-export const FILESYSTEM_OBJECT_TRANSFER_TYPE = 'vnd.***ARANGO_DB_NAME***.transfer/filesystem-object';
+export const FILESYSTEM_OBJECT_TRANSFER_TOKEN = new DataTransferToken<
+  FilesystemObject[]
+>("filesystemObjectTransfer");
+export const FILESYSTEM_OBJECT_TRANSFER_TYPE =
+  "vnd.***ARANGO_DB_NAME***.transfer/filesystem-object";
 
 export class FilesystemObjectTransferData {
   hashId: string;
@@ -14,13 +21,16 @@ export class FilesystemObjectTransferData {
 }
 
 @Injectable()
-export class FilesystemObjectDataProvider implements DataTransferDataProvider<FilesystemObjectTransferData[]> {
-
-  extract(dataTransfer: DataTransfer): DataTransferData<FilesystemObjectTransferData[]>[] {
+export class FilesystemObjectDataProvider
+  implements DataTransferDataProvider<FilesystemObjectTransferData[]>
+{
+  extract(
+    dataTransfer: DataTransfer
+  ): DataTransferData<FilesystemObjectTransferData[]>[] {
     const results: DataTransferData<FilesystemObjectTransferData[]>[] = [];
 
     const data = dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
-    if (data !== '') {
+    if (data !== "") {
       const transferData: FilesystemObjectTransferData = JSON.parse(data);
       results.push({
         token: FILESYSTEM_OBJECT_TRANSFER_TOKEN,
@@ -31,5 +41,4 @@ export class FilesystemObjectDataProvider implements DataTransferDataProvider<Fi
 
     return results;
   }
-
 }

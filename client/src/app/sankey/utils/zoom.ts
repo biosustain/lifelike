@@ -1,23 +1,36 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef } from "@angular/core";
 
-import { zoom as d3_zoom, ZoomedElementBaseType } from 'd3-zoom';
-import { Selection, select as d3_select, event as d3_event } from 'd3-selection';
-import { ValueFn, ZoomTransform, Transition, zoomIdentity, ZoomBehavior } from 'd3';
-import { isBoolean, isArray, forOwn } from 'lodash-es';
-import { combineLatest, Observable } from 'rxjs';
-import { share } from 'rxjs/operators';
+import { zoom as d3_zoom, ZoomedElementBaseType } from "d3-zoom";
+import {
+  Selection,
+  select as d3_select,
+  event as d3_event,
+} from "d3-selection";
+import {
+  ValueFn,
+  ZoomTransform,
+  Transition,
+  zoomIdentity,
+  ZoomBehavior,
+} from "d3";
+import { isBoolean, isArray, forOwn } from "lodash-es";
+import { combineLatest, Observable } from "rxjs";
+import { share } from "rxjs/operators";
 
-import { ExtendedMap } from 'app/shared/utils/types';
+import { ExtendedMap } from "app/shared/utils/types";
 
 type ZoomParams<ZoomRefElement extends ZoomedElementBaseType, Datum> = {
-  [key in keyof Zoom<ZoomRefElement, Datum>]?: Zoom<ZoomRefElement, Datum>[key]
+  [key in keyof Zoom<ZoomRefElement, Datum>]?: Zoom<ZoomRefElement, Datum>[key];
 };
 
 /**
  * Helper wrapper over d3 zoom behavior.
  */
 export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
-  constructor(elementRef: ElementRef<ZoomRefElement>, params: ZoomParams<ZoomRefElement, Datum>) {
+  constructor(
+    elementRef: ElementRef<ZoomRefElement>,
+    params: ZoomParams<ZoomRefElement, Datum>
+  ) {
     this.selection = d3_select(elementRef.nativeElement);
     forOwn(params, (value, key) => {
       if (key in this) {
@@ -60,11 +73,17 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     return this.zoom.duration();
   }
 
-  set extent(extent: ValueFn<ZoomRefElement, Datum, [[number, number], [number, number]]>) {
+  set extent(
+    extent: ValueFn<ZoomRefElement, Datum, [[number, number], [number, number]]>
+  ) {
     this.zoom.extent(extent);
   }
 
-  get extent(): ValueFn<ZoomRefElement, Datum, [[number, number], [number, number]]> {
+  get extent(): ValueFn<
+    ZoomRefElement,
+    Datum,
+    [[number, number], [number, number]]
+  > {
     return this.zoom.extent();
   }
 
@@ -117,7 +136,10 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
   }
 
   private zoom = d3_zoom();
-  private transition: boolean | Transition<ZoomRefElement, any, any, any> | string;
+  private transition:
+    | boolean
+    | Transition<ZoomRefElement, any, any, any>
+    | string;
   private selection: Selection<ZoomRefElement, any, any, any>;
   private listeners = new ExtendedMap<string, Observable<any>>();
   private _initialTransform: ZoomTransform = zoomIdentity;
@@ -127,7 +149,7 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
   }
 
   unbind() {
-    this.selection.on('.zoom', null);
+    this.selection.on(".zoom", null);
   }
 
   reset() {
@@ -136,22 +158,22 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
 
   private onSingular$(typename) {
     return this.listeners.getSetLazily(typename, () =>
-      new Observable<any>(subscriber => (
-        this.zoom.on(typename, () => subscriber.next(d3_event)),
+      new Observable<any>(
+        (subscriber) => (
+          this.zoom.on(typename, () => subscriber.next(d3_event)),
           () => {
             this.zoom.on(typename, null);
             this.listeners.delete(typename);
           }
-      )).pipe(share())
+        )
+      ).pipe(share())
     );
   }
 
   on$(typenames: string | string[]) {
     if (isArray(typenames)) {
       return combineLatest(
-        typenames.map(typename =>
-          this.onSingular$(typename)
-        )
+        typenames.map((typename) => this.onSingular$(typename))
       );
     } else {
       return this.onSingular$(typenames);
@@ -161,16 +183,19 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
   getTrasitionableSelection(localyDeclaredTransition?) {
     const transition = localyDeclaredTransition ?? this.transition;
     if (transition) {
-      return isBoolean(transition) ? this.selection.transition() : this.selection.transition(transition);
+      return isBoolean(transition)
+        ? this.selection.transition()
+        : this.selection.transition(transition);
     } else {
       return this.selection;
     }
   }
 
-  scaleBy(k: number,
-          p?: [number, number],
-          transition?: boolean) {
-    const args: Parameters<ZoomBehavior<any, any>['scaleTo']> = [this.getTrasitionableSelection(transition), k];
+  scaleBy(k: number, p?: [number, number], transition?: boolean) {
+    const args: Parameters<ZoomBehavior<any, any>["scaleTo"]> = [
+      this.getTrasitionableSelection(transition),
+      k,
+    ];
     if (p) {
       args.push(p);
     }
@@ -182,7 +207,10 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     p?: [number, number],
     transition?: boolean
   ): void {
-    const args: Parameters<ZoomBehavior<any, any>['scaleTo']> = [this.getTrasitionableSelection(transition), k];
+    const args: Parameters<ZoomBehavior<any, any>["scaleTo"]> = [
+      this.getTrasitionableSelection(transition),
+      k,
+    ];
     if (p) {
       args.push(p);
     }
@@ -190,22 +218,32 @@ export class Zoom<ZoomRefElement extends ZoomedElementBaseType, Datum> {
     this.zoom.scaleTo(...args);
   }
 
-  transform(transform: ZoomTransform | ValueFn<Element, {}, ZoomTransform>,
-            point?: [number, number] | ValueFn<Element, {}, [number, number]>,
-            transition?: boolean): void {
-    this.zoom.transform(this.getTrasitionableSelection(transition), transform, point);
+  transform(
+    transform: ZoomTransform | ValueFn<Element, {}, ZoomTransform>,
+    point?: [number, number] | ValueFn<Element, {}, [number, number]>,
+    transition?: boolean
+  ): void {
+    this.zoom.transform(
+      this.getTrasitionableSelection(transition),
+      transform,
+      point
+    );
   }
 
-  translateBy(x: number | ValueFn<Element, {}, number>,
-              y: number | ValueFn<Element, {}, number>,
-              transition?: boolean): void {
+  translateBy(
+    x: number | ValueFn<Element, {}, number>,
+    y: number | ValueFn<Element, {}, number>,
+    transition?: boolean
+  ): void {
     this.zoom.translateBy(this.getTrasitionableSelection(transition), x, y);
   }
 
-  translateTo(x: number | ValueFn<Element, {}, number>,
-              y: number | ValueFn<Element, {}, number>,
-              p?: [number, number] | ValueFn<Element, {}, [number, number]>,
-              transition?: boolean): void {
+  translateTo(
+    x: number | ValueFn<Element, {}, number>,
+    y: number | ValueFn<Element, {}, number>,
+    p?: [number, number] | ValueFn<Element, {}, [number, number]>,
+    transition?: boolean
+  ): void {
     this.zoom.translateTo(this.getTrasitionableSelection(transition), x, y, p);
   }
 }

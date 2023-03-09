@@ -1,12 +1,10 @@
 <form (ngSubmit)="submit()">
-  <app-modal-header (cancel)="cancel()">
-    Deletion Result
-  </app-modal-header>
+  <app-modal-header (cancel)="cancel()"> Deletion Result </app-modal-header>
 
   <app-modal-body>
     <ng-template #noneSuccessful>
-      {{ failed.length === 1 ? 'An error was' : 'Some errors were' }} encountered
-      during deletion:
+      {{ failed.length === 1 ? "An error was" : "Some errors were" }}
+      encountered during deletion:
     </ng-template>
 
     <ul class="mt-3">

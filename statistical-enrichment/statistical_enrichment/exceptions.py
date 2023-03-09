@@ -1,5 +1,13 @@
 class ServerException(Exception):
-    def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=None,
+        fields=None,
+        code=500,
+        *args,
+    ):  # noqa
         """
         Create a new exception.
         :param title: the title of the error, which sometimes used on the client
@@ -10,10 +18,10 @@ class ServerException(Exception):
         :param args: extra args
         """
         if not title:
-            title = 'We\'re sorry!'
+            title = "We're sorry!"
 
         if not message:
-            message = 'Looks like something went wrong!'
+            message = "Looks like something went wrong!"
 
         self.title = title
         self.message = message
@@ -47,17 +55,17 @@ class ServerException(Exception):
         self._transaction_id = transaction_id
 
     def __str__(self):
-        lines = [f'<Exception> {self.title}: {self.message}']
+        lines = [f"<Exception> {self.title}: {self.message}"]
         try:
-            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+            lines = lines + [f"\t{key}:\t{value}" for key, value in self.fields.items()]
         except Exception:
             pass
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def to_dict(self):
         retval = {}
-        retval['title'] = self.title
-        retval['message'] = self.message
+        retval["title"] = self.title
+        retval["message"] = self.message
         return retval
 
 
@@ -66,10 +74,8 @@ class JWTTokenException(ServerException):
 
     def __init__(self, title=None, message=None, additional_msgs=[], code=401):
         super().__init__(
-            title=title,
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+            title=title, message=message, additional_msgs=additional_msgs, code=code
+        )
 
 
 class JWTAuthTokenException(JWTTokenException):
@@ -77,7 +83,5 @@ class JWTAuthTokenException(JWTTokenException):
 
     def __init__(self, title=None, message=None, additional_msgs=[], code=401):
         super().__init__(
-            title=title,
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+            title=title, message=message, additional_msgs=additional_msgs, code=code
+        )

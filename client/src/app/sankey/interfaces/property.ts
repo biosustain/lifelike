@@ -7,6 +7,9 @@ export interface FunctionProperty extends Property {
   fn: (...args: any[]) => any;
 }
 
-export type PropertyDictionary<Id extends string | number | symbol, P extends Property> = {
+export type PropertyDictionary<
+  Id extends string | number | symbol,
+  P extends Property
+> = {
   [id in Id]: P;
 };

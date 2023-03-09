@@ -1,8 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
 @Component({
-  selector: 'app-results-summary',
-  templateUrl: './results-summary.component.html',
+  selector: "app-results-summary",
+  templateUrl: "./results-summary.component.html",
 })
 export class ResultsSummaryComponent {
   @Input() page: number; // pages should be 1-indexed
@@ -12,7 +12,7 @@ export class ResultsSummaryComponent {
   @Input() resultLimit?: number;
 
   get startResultCount(): number {
-    return (this.pageSize * (this.page - 1)) + 1;
+    return this.pageSize * (this.page - 1) + 1;
   }
 
   get endResultCount(): number {

@@ -1,32 +1,36 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
-import { TextAnnotationGenerationRequest, AnnotationGenerationResultSchema } from 'app/file-browser/schema';
-import { ResultMapping } from 'app/shared/schemas/common';
+import {
+  TextAnnotationGenerationRequest,
+  AnnotationGenerationResultSchema,
+} from "app/file-browser/schema";
+import { ResultMapping } from "app/shared/schemas/common";
 
-import { EnrichmentParsedData } from '../models/enrichment-document';
+import { EnrichmentParsedData } from "../models/enrichment-document";
 
 @Injectable()
 export class EnrichmentTableService {
-
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
    * @param geneNames list of input gene names to match to
    * @param organism tax id of organism
    */
-  matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
-    return this.http.post<{ result: NCBIWrapper[] }>(
-      '/api/enrichment-table/match-ncbi-nodes',
-      {geneNames, organism},
-    ).pipe(
-      map(resp => resp.result),
-    );
+  matchNCBINodes(
+    geneNames: string[],
+    organism: string
+  ): Observable<NCBIWrapper[]> {
+    return this.http
+      .post<{ result: NCBIWrapper[] }>(
+        "/api/enrichment-table/match-ncbi-nodes",
+        { geneNames, organism }
+      )
+      .pipe(map((resp) => resp.result));
   }
 
   /**
@@ -34,41 +38,47 @@ export class EnrichmentTableService {
    * @param nodeIds list of node ids to match to enrichment domains
    * @param taxID tax id of organism
    */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string, domains: string[]): Observable<EnrichmentWrapper> {
-    return this.http.post<{ result: EnrichmentWrapper }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds, taxID, domains},
-    ).pipe(
-      map(resp => resp.result),
-    );
+  getNCBIEnrichmentDomains(
+    nodeIds,
+    taxID: string,
+    domains: string[]
+  ): Observable<EnrichmentWrapper> {
+    return this.http
+      .post<{ result: EnrichmentWrapper }>(
+        `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
+        { nodeIds, taxID, domains }
+      )
+      .pipe(map((resp) => resp.result));
   }
 
-  annotateEnrichment(hashIds: string[],
-                     request: TextAnnotationGenerationRequest): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
+  annotateEnrichment(
+    hashIds: string[],
+    request: TextAnnotationGenerationRequest
+  ): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
     return this.http.post<ResultMapping<AnnotationGenerationResultSchema>>(
       `/api/filesystem/annotations/generate`,
-      {hashIds, ...request}
+      { hashIds, ...request }
     );
   }
 
-  refreshEnrichmentAnnotations(hashIds: string[]): Observable<'Success'> {
-    return this.http.post<{ 'results': 'Success' }>(
-      `/api/filesystem/annotations/refresh`,
-      {hashIds},
-    ).pipe(
-      map(resp => resp.results)
-    );
+  refreshEnrichmentAnnotations(hashIds: string[]): Observable<"Success"> {
+    return this.http
+      .post<{ results: "Success" }>(`/api/filesystem/annotations/refresh`, {
+        hashIds,
+      })
+      .pipe(map((resp) => resp.results));
   }
 
   getAnnotatedEnrichment(hashId: string): Observable<EnrichmentParsedData> {
-    return this.http.get<{ results: EnrichmentParsedData }>(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
-    ).pipe(
-      map(resp => resp.results),
-    );
+    return this.http
+      .get<{ results: EnrichmentParsedData }>(
+        `/api/filesystem/objects/${encodeURIComponent(
+          hashId
+        )}/enrichment/annotations`
+      )
+      .pipe(map((resp) => resp.results));
   }
 }
-
 
 export interface Worksheet {
   id: number;

@@ -47,9 +47,9 @@ export interface GraphLink {
   outedge?: GraphLinkEdge;
   node?: number;
   pageUpdown?: number;
-  '1/pageUpdown'?: number | string;
+  "1/pageUpdown"?: number | string;
   pageMetab?: number;
-  '1/pageMetab'?: number | string;
+  "1/pageMetab"?: number | string;
   NLG?: string;
 
   // by design all objects can have dynamic properties however this code should not be concerned about them

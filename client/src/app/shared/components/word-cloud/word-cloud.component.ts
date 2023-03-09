@@ -1,10 +1,20 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, EventEmitter, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+  ViewEncapsulation,
+  EventEmitter,
+  Output,
+} from "@angular/core";
 
-import * as d3 from 'd3';
-import * as cloud from 'd3.layout.cloud';
+import * as d3 from "d3";
+import * as cloud from "d3.layout.cloud";
 
-import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
-import { WordCloudAnnotationFilterEntityWithLayout } from 'app/word-cloud/interfaces';
+import { WordCloudFilterEntity } from "app/interfaces/filter.interface";
+import { WordCloudAnnotationFilterEntityWithLayout } from "app/word-cloud/interfaces";
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -63,7 +73,7 @@ const createResizeObserver = (callback, container) => {
   });
 
   // @ts-ignore until https://github.com/microsoft/TypeScript/issues/37861 implemented
-  const observer = new ResizeObserver(entries => {
+  const observer = new ResizeObserver((entries) => {
     const entry = entries[0];
     const width = entry.contentRect.width;
     const height = entry.contentRect.height;
@@ -81,16 +91,17 @@ const createResizeObserver = (callback, container) => {
 };
 
 @Component({
-  selector: 'app-word-cloud',
-  templateUrl: './word-cloud.component.html',
-  styleUrls: ['./word-cloud.component.scss'],
+  selector: "app-word-cloud",
+  templateUrl: "./word-cloud.component.html",
+  styleUrls: ["./word-cloud.component.scss"],
   encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
-  @ViewChild('svg', {static: false}) svg!: ElementRef;
-  @ViewChild('g', {static: false}) g!: ElementRef;
+  @ViewChild("cloudWrapper", { static: false }) cloudWrapper!: ElementRef;
+  @ViewChild("hiddenTextAreaWrapper", { static: false })
+  hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild("svg", { static: false }) svg!: ElementRef;
+  @ViewChild("g", { static: false }) g!: ElementRef;
   @Output() enter = new EventEmitter();
 
   private _data: (string | WordCloudNode)[] = [];
@@ -101,7 +112,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
     top: this.WORD_CLOUD_MARGIN,
     right: this.WORD_CLOUD_MARGIN,
     bottom: this.WORD_CLOUD_MARGIN,
-    left: this.WORD_CLOUD_MARGIN
+    left: this.WORD_CLOUD_MARGIN,
   };
 
   MIN_FONT = 12;
@@ -129,13 +140,21 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
       // ~~ faster substitute for Math.floor() for positive numbers
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
-      .rotate(_ => 0);
+      .rotate((_) => 0);
   }
 
-  @Input('data') set data(data) {
+  @Input("data") set data(data) {
     const count: any = {};
-    if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
-      this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
+    if (
+      Array.isArray(data) &&
+      data.every(
+        (d) => typeof d === "string" && (count[d] = (count[d] || 0) + 1)
+      )
+    ) {
+      this._data = Object.entries(count).map(([text, frequency]) => ({
+        text,
+        frequency,
+      }));
     } else {
       this._data = deepCopy(data);
     }
@@ -148,12 +167,14 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
     return this._data;
   }
 
-
   ngAfterViewInit() {
-    const {width, height} = this.getCloudSvgDimensions();
+    const { width, height } = this.getCloudSvgDimensions();
     this.layout.canvas(this.hiddenTextAreaWrapper.nativeElement);
     this.onResize(width, height).then();
-    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.cloudWrapper.nativeElement);
+    this.resizeObserver = createResizeObserver(
+      this.onResize.bind(this),
+      this.cloudWrapper.nativeElement
+    );
   }
 
   ngOnDestroy() {
@@ -164,12 +185,14 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   onResize(width, height) {
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
-      .attr('width', width)
-      .attr('height', height);
+      .attr("width", width)
+      .attr("height", height);
 
     // Get and update the grouping element
-    d3.select(this.g.nativeElement)
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+    d3.select(this.g.nativeElement).attr(
+      "transform",
+      "translate(" + width / 2 + "," + height / 2 + ")"
+    );
 
     this.layout.size([width, height]);
 
@@ -186,16 +209,18 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    */
   updateLayout(data) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const freqValues = data.map(d => d.frequency as number);
+    const freqValues = data.map((d) => d.frequency as number);
     const maximumCount = Math.max(...freqValues);
     const minimumCount = Math.min(...freqValues);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
       this.layout
         .words(data)
-        .fontSize(d => this.getFontSize((d.frequency - minimumCount) / maximumCount))
-        .on('end', placedWords => {
+        .fontSize((d) =>
+          this.getFontSize((d.frequency - minimumCount) / maximumCount)
+        )
+        .on("end", (placedWords) => {
           const notPlaced = data.length - placedWords.length;
           if (notPlaced) {
             console.warn(`${notPlaced} words did not fit into cloud`);
@@ -204,9 +229,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
         })
         .start();
     });
-
   }
-
 
   /**
    * Generates the width/height for the word cloud svg element. Uses the size of the wrapper element, minus a fixed margin. For example, if
@@ -214,10 +237,10 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    */
   private getCloudSvgDimensions() {
     const cloudWrapper = this.cloudWrapper.nativeElement;
-    const {margin} = this;
+    const { margin } = this;
     return {
       width: cloudWrapper.offsetWidth - margin.left - margin.right,
-      height: cloudWrapper.offsetHeight - margin.top - margin.bottom
+      height: cloudWrapper.offsetHeight - margin.top - margin.bottom,
     };
   }
 
@@ -233,24 +256,26 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    */
   private updateDOM(words: WordCloudAnnotationFilterEntityWithLayout[]) {
     // Add any new words
-    return d3.select(this.g.nativeElement)
-      .selectAll('text')
+    return d3
+      .select(this.g.nativeElement)
+      .selectAll("text")
       .data(words, (d: WordCloudAnnotationFilterEntityWithLayout) => d.text)
       .join(
-        enter => enter
-          .append('text')
-          .attr('text-anchor', 'middle')
-          .text(d => d.text)
-          .call(e => this.enter.emit(e)),
-        update => update,
+        (enter) =>
+          enter
+            .append("text")
+            .attr("text-anchor", "middle")
+            .text((d) => d.text)
+            .call((e) => this.enter.emit(e)),
+        (update) => update,
         // Remove any words that have been removed by either the algorithm or the user
-        exit => exit.remove()
+        (exit) => exit.remove()
       )
-      .style('fill', d => d.color)
-      .style('font-size', d => d.size + 'px')
+      .style("fill", (d) => d.color)
+      .style("font-size", (d) => d.size + "px")
       .transition()
-      .attr('transform', d => {
-        return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
+      .attr("transform", (d) => {
+        return "translate(" + [d.x, d.y] + ") rotate(" + d.rotate + ")";
       })
       .ease(d3.easeSin)
       .duration(1000);

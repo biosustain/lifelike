@@ -1,16 +1,16 @@
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { merge, isObject } from 'lodash-es';
-import { first } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject } from "rxjs";
+import { merge, isObject } from "lodash-es";
+import { first } from "rxjs/operators";
 
-import { isOfflineError } from '../exceptions';
-import { onlineChangeObservable } from './online-observable';
+import { isOfflineError } from "../exceptions";
+import { onlineChangeObservable } from "./online-observable";
 
 export enum TaskState {
-  Idle = 'idle',
-  Delaying = 'delaying',
-  Running = 'running',
-  Retrying = 'retrying',
-  RetryLimitExceeded = 'retry_limit_exceeded',
+  Idle = "idle",
+  Delaying = "delaying",
+  Running = "running",
+  Retrying = "retrying",
+  RetryLimitExceeded = "retry_limit_exceeded",
 }
 
 function isRunningState(state: TaskState) {
@@ -95,20 +95,27 @@ export class BackgroundTask<T, R> {
   private delayedRunningTimer: any;
   private delayedRunningClearTimer: any;
 
-  readonly reducer: (newData: T, existingData: T) => T = ((newData, existingData) => {
+  readonly reducer: (newData: T, existingData: T) => T = (
+    newData,
+    existingData
+  ) => {
     if (existingData == null || newData == null) {
       return newData;
     } else if (isObject(newData) && isObject(existingData)) {
       return merge(existingData, newData);
     } else if (isObject(existingData)) {
-      throw new Error('default reducer function does not know how to combine non-object new data with existing object data');
+      throw new Error(
+        "default reducer function does not know how to combine non-object new data with existing object data"
+      );
     } else {
       return newData;
     }
-  });
+  };
 
-  constructor(private readonly project: (value: T) => Observable<R>,
-              options: BackgroundTaskOptions<T, R> = {}) {
+  constructor(
+    private readonly project: (value: T) => Observable<R>,
+    options: BackgroundTaskOptions<T, R> = {}
+  ) {
     Object.assign(this, options);
   }
 
@@ -141,7 +148,8 @@ export class BackgroundTask<T, R> {
       resultsShown: !running,
       emptyResultsShown: !running,
       failedErrorShown: this.state === TaskState.RetryLimitExceeded,
-      retryInProgressShown: this.error && this.state !== TaskState.RetryLimitExceeded,
+      retryInProgressShown:
+        this.error && this.state !== TaskState.RetryLimitExceeded,
       error: this.latestError,
     });
   }
@@ -175,7 +183,9 @@ export class BackgroundTask<T, R> {
       clearTimeout(this.delayedRunningTimer);
       this.delayedRunningTimer = null;
     } else if (this.delayedRunning) {
-      const timeRemaining = this.delayedRunningMinimumLength - (window.performance.now() - this.delayedRunningStartTime);
+      const timeRemaining =
+        this.delayedRunningMinimumLength -
+        (window.performance.now() - this.delayedRunningStartTime);
       if (timeRemaining <= 0) {
         this.delayedRunning = false;
         this.nextStatus();
@@ -199,7 +209,7 @@ export class BackgroundTask<T, R> {
 
     // We're assuming it's a one-shot observable
     this.project(pendingValue).subscribe(
-      result => {
+      (result) => {
         this.initialRunCompleted = true;
         this.error = false;
         this.retryCount = 0;
@@ -220,11 +230,13 @@ export class BackgroundTask<T, R> {
           value: pendingValue,
         });
       },
-      error => {
+      (error) => {
         const retrying = this.retryCount < this.retryMaxCount;
 
         // Since it failed, merge new data with failed data
-        this.futureValue = this.futureRunQueued ? this.reducer(this.futureValue, pendingValue) : pendingValue;
+        this.futureValue = this.futureRunQueued
+          ? this.reducer(this.futureValue, pendingValue)
+          : pendingValue;
         this.pendingValue = this.futureValue;
 
         this.error = true;
@@ -235,12 +247,18 @@ export class BackgroundTask<T, R> {
           this.nextStatus();
           if (isOfflineError(error)) {
             // if is offline retry when network status changes
-            onlineChangeObservable.pipe(
-              first(), // retry only on first change
-            ).toPromise().then(this.startRun.bind(this));
+            onlineChangeObservable
+              .pipe(
+                first() // retry only on first change
+              )
+              .toPromise()
+              .then(this.startRun.bind(this));
           } else {
-            const delay = Math.min(this.retryMaxDelay, this.retryInitialDelay
-              * Math.pow(this.retryDelayMultiplier, this.retryCount));
+            const delay = Math.min(
+              this.retryMaxDelay,
+              this.retryInitialDelay *
+                Math.pow(this.retryDelayMultiplier, this.retryCount)
+            );
             setTimeout(this.startRun.bind(this), delay);
           }
         } else {
@@ -249,7 +267,7 @@ export class BackgroundTask<T, R> {
           this.latestError = error;
           this.nextStatus();
         }
-      },
+      }
     );
   }
 
@@ -267,7 +285,10 @@ export class BackgroundTask<T, R> {
       case TaskState.Idle:
         this.state = TaskState.Delaying;
         this.pendingValue = this.futureValue;
-        setTimeout(this.startRun.bind(this), !this.started ? this.initialDelay : this.delay);
+        setTimeout(
+          this.startRun.bind(this),
+          !this.started ? this.initialDelay : this.delay
+        );
         this.started = true;
         this.nextStatus();
         break;
@@ -278,7 +299,7 @@ export class BackgroundTask<T, R> {
       case TaskState.Running:
         break;
       default:
-        throw new Error('invalid state');
+        throw new Error("invalid state");
     }
   }
 }

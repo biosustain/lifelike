@@ -1,13 +1,19 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from "@angular/core";
 
-import { hexToRGBA } from '../utils';
+import { hexToRGBA } from "../utils";
 
 @Component({
-  selector: 'app-result-control',
-  templateUrl: './result-control.component.html',
+  selector: "app-result-control",
+  templateUrl: "./result-control.component.html",
 })
 export class ResultControlComponent {
-
   @Input() value;
   @Input() disabled = false;
   @Input() resultIndex = 0;
@@ -18,7 +24,7 @@ export class ResultControlComponent {
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
 
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
+  @ViewChild("searchInput", { static: false }) searchElement: ElementRef;
 
   clear() {
     this.valueClear.emit();
@@ -32,8 +38,7 @@ export class ResultControlComponent {
     this.searchElement.nativeElement.focus();
   }
 
-  select() {
-  }
+  select() {}
 
   getAnnotationBackgroundColor(color: string) {
     return hexToRGBA(color, 0.3);

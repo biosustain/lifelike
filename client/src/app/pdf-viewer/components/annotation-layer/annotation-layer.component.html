@@ -1,44 +1,50 @@
 <ng-template #tooltipContent let-annotation let-tooltip="tooltip">
-  <app-annotation-tooltip [annotation]="annotation"
-                          (tooltipClose)="tooltip.close()"
+  <app-annotation-tooltip
+    [annotation]="annotation"
+    (tooltipClose)="tooltip.close()"
   ></app-annotation-tooltip>
 </ng-template>
 <ng-container *ngFor="let annotation of annotations$ | async">
-  <div *ngFor="let rect of getAnnotationRects(annotation)"
-       (dragstart)="annotationDragStart($event, {
-          meta: annotation.meta,
-          rect: rect.rect
-        })"
-       draggable="true"
-       [ngClass]="[
-          'system-annotation',
-          annotation.meta.isExcluded ? 'excluded' : '',
-          currentHighlightAnnotationId === annotation.meta.id ? ' annotation-highlight' : ''
-        ]"
-       [attr.location]="{
-            pageNumber: annotation.pageNumber,
-            rect: annotation.rect
-        }"
-       [attr.meta]="annotation.meta"
-       [ngStyle]="{
-          display: displayFilter(annotation.meta),
-          backgroundColor: normalizeBackgroundColor(annotation),
-          'top.px': rect.top,
-          'left.px': rect.left,
-          'width.px': rect.width,
-          'height.px': rect.height
-        }"
-       [ngbTooltip]="tooltipContent"
-       #tooltip="ngbTooltip"
-       placement="bottom top"
-       container="body"
-       tooltipClass="qtip-bootstrap-unify"
-       [openDelay]="10"
-       [closeDelay]="150"
-       [autoClose]="'outside'"
-       (click)="tooltip.open({ $implicit: annotation, tooltip: tooltip })"
-       (selectstart)="$event.stopPropagation()"
-       (selectionchange)="$event.stopPropagation()"
-       triggers="manual:blur"
+  <div
+    *ngFor="let rect of getAnnotationRects(annotation)"
+    (dragstart)="
+      annotationDragStart($event, {
+        meta: annotation.meta,
+        rect: rect.rect
+      })
+    "
+    draggable="true"
+    [ngClass]="[
+      'system-annotation',
+      annotation.meta.isExcluded ? 'excluded' : '',
+      currentHighlightAnnotationId === annotation.meta.id
+        ? ' annotation-highlight'
+        : ''
+    ]"
+    [attr.location]="{
+      pageNumber: annotation.pageNumber,
+      rect: annotation.rect
+    }"
+    [attr.meta]="annotation.meta"
+    [ngStyle]="{
+      display: displayFilter(annotation.meta),
+      backgroundColor: normalizeBackgroundColor(annotation),
+      'top.px': rect.top,
+      'left.px': rect.left,
+      'width.px': rect.width,
+      'height.px': rect.height
+    }"
+    [ngbTooltip]="tooltipContent"
+    #tooltip="ngbTooltip"
+    placement="bottom top"
+    container="body"
+    tooltipClass="qtip-bootstrap-unify"
+    [openDelay]="10"
+    [closeDelay]="150"
+    [autoClose]="'outside'"
+    (click)="tooltip.open({ $implicit: annotation, tooltip: tooltip })"
+    (selectstart)="$event.stopPropagation()"
+    (selectionchange)="$event.stopPropagation()"
+    triggers="manual:blur"
   ></div>
 </ng-container>

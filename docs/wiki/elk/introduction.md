@@ -3,7 +3,9 @@
 ## Kibana
 
 ### Annotation
+
 - To seed LMDB data to Kibana:
+
 ```bash
 ./deployment/kibana.sh -a None
 # or

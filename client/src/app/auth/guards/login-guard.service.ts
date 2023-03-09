@@ -1,19 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 import {
-    CanActivate,
-    ActivatedRouteSnapshot,
-    Router,
-    RouterStateSnapshot,
-} from '@angular/router';
+  CanActivate,
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+} from "@angular/router";
 
-import { Store, select } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { Store, select } from "@ngrx/store";
+import { Observable } from "rxjs";
+import { map, take } from "rxjs/operators";
 
-import { State } from '../store/state';
-import { AuthSelectors } from '../store';
-import { LifelikeOAuthService } from '../services/oauth.service';
-import { environment } from '../../../environments/environment';
+import { State } from "../store/state";
+import { AuthSelectors } from "../store";
+import { LifelikeOAuthService } from "../services/oauth.service";
+import { environment } from "../../../environments/environment";
 /**
  * Check if the user is already logged in when they access login page,
  * redirect to home if yes.
@@ -24,18 +24,18 @@ export class LoginGuard implements CanActivate {
   constructor(
     private store: Store<State>,
     private router: Router,
-    private oauthService: LifelikeOAuthService,
+    private oauthService: LifelikeOAuthService
   ) {}
 
   canActivate(
     {}: ActivatedRouteSnapshot,
-    {}: RouterStateSnapshot,
+    {}: RouterStateSnapshot
   ): Observable<boolean> {
     return this.store.pipe(
       select(AuthSelectors.selectAuthLoginState),
-      map(loggedIn => {
+      map((loggedIn) => {
         if (loggedIn) {
-          this.router.navigate(['/']);
+          this.router.navigate(["/"]);
           return false;
         } else {
           if (environment.oauthEnabled) {

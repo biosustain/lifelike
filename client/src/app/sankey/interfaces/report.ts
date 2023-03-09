@@ -3,7 +3,7 @@ export interface SankeyPathReportEntity {
   label: string;
   row: number;
   column: number;
-  type: 'node' | 'link' | 'spacer';
+  type: "node" | "link" | "spacer";
 }
 
 export interface SankeyPathReport {

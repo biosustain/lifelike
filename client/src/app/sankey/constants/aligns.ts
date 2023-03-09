@@ -26,11 +26,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { min } from 'd3-array';
+import { min } from "d3-array";
 
-import { isNotEmpty } from 'app/shared/utils';
+import { isNotEmpty } from "app/shared/utils";
 
-import { ALIGNS, ALIGN_ID } from '../interfaces/align';
+import { ALIGNS, ALIGN_ID } from "../interfaces/align";
 
 function targetDepth(d) {
   return d.target.depth;
@@ -49,20 +49,22 @@ function justify(node, n) {
 }
 
 function center(node) {
-  return isNotEmpty(node.targetLinks) ? node.depth
-    : isNotEmpty(node.sourceLinks) ? (min(node.sourceLinks, targetDepth) as any) - 1
-      : 0;
+  return isNotEmpty(node.targetLinks)
+    ? node.depth
+    : isNotEmpty(node.sourceLinks)
+    ? (min(node.sourceLinks, targetDepth) as any) - 1
+    : 0;
 }
 
 export const aligns: ALIGNS = {
   [ALIGN_ID.left]: {
-    name: 'left',
-    description: 'Align nodes to the left',
+    name: "left",
+    description: "Align nodes to the left",
     fn: left,
   },
   [ALIGN_ID.right]: {
-    name: 'right',
-    description: 'Align nodes to the right',
+    name: "right",
+    description: "Align nodes to the right",
     fn: right,
   },
   // [ALIGN_ID.center]: {
@@ -71,8 +73,8 @@ export const aligns: ALIGNS = {
   //   fn: center,
   // },
   [ALIGN_ID.justify]: {
-    name: 'justify',
-    description: 'Justify nodes',
+    name: "justify",
+    description: "Justify nodes",
     fn: justify,
   },
 };

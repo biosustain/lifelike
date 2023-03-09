@@ -1,21 +1,20 @@
-import { Component, OnDestroy, OnInit, } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder } from "@angular/forms";
 
-import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanced-panel.component';
+import { SankeyAbstractAdvancedPanelComponent } from "app/sankey/abstract/advanced-panel.component";
 
-
-import { SingleLaneBaseControllerService } from '../../services/single-lane-base-controller.service';
-import { BaseState, BaseOptions } from '../../interfaces';
+import { SingleLaneBaseControllerService } from "../../services/single-lane-base-controller.service";
+import { BaseState, BaseOptions } from "../../interfaces";
 
 @Component({
-  selector: 'app-sankey-advanced-panel',
-  templateUrl: './advanced-panel.component.html',
-  styleUrls: ['./advanced-panel.component.scss'],
+  selector: "app-sankey-advanced-panel",
+  templateUrl: "./advanced-panel.component.html",
+  styleUrls: ["./advanced-panel.component.scss"],
 })
 export class SankeySingleLaneAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<BaseOptions, BaseState>
-  implements OnInit, OnDestroy {
-
+  implements OnInit, OnDestroy
+{
   constructor(
     protected baseView: SingleLaneBaseControllerService,
     protected formBuilder: FormBuilder
@@ -24,7 +23,7 @@ export class SankeySingleLaneAdvancedPanelComponent
   }
   form = this.formBuilder.group({
     colorLinkByType: [false, []],
-    highlightCircular: ['', []],
+    highlightCircular: ["", []],
     nodeHeight: this.formBuilder.group({
       min: this.formBuilder.group({
         enabled: [false, []],

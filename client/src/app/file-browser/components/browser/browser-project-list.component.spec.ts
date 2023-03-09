@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { RouterTestingModule } from "@angular/router/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { SharedModule } from 'app/shared/shared.module';
-import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { SharedModule } from "app/shared/shared.module";
+import { FileBrowserModule } from "app/file-browser/file-browser.module";
+import { RootStoreModule } from "app/***ARANGO_USERNAME***-store";
 
-import { BrowserProjectListComponent } from './browser-project-list.component';
+import { BrowserProjectListComponent } from "./browser-project-list.component";
 
-describe('ProjectSpaceComponent', () => {
+describe("ProjectSpaceComponent", () => {
   let component: BrowserProjectListComponent;
   let fixture: ComponentFixture<BrowserProjectListComponent>;
 
@@ -19,10 +19,9 @@ describe('ProjectSpaceComponent', () => {
         SharedModule,
         FileBrowserModule,
         RootStoreModule,
-        RouterTestingModule
-      ]
-    })
-    .compileComponents();
+        RouterTestingModule,
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {
@@ -31,7 +30,7 @@ describe('ProjectSpaceComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

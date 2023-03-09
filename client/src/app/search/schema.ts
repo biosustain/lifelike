@@ -1,8 +1,12 @@
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { FilesystemObjectData } from 'app/file-browser/schema';
-import { RankedItem, ResultList, StandardRequestOptions } from 'app/shared/schemas/common';
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
+import { FilesystemObjectData } from "app/file-browser/schema";
+import {
+  RankedItem,
+  ResultList,
+  StandardRequestOptions,
+} from "app/shared/schemas/common";
 
-import { SynonymData } from './shared';
+import { SynonymData } from "./shared";
 
 // ========================================
 // Content Search
@@ -27,12 +31,14 @@ export interface AnnotationResponse {
   texts: string[];
 }
 
-export interface ContentSearchResponse extends ResultList<RankedItem<FilesystemObject>> {
+export interface ContentSearchResponse
+  extends ResultList<RankedItem<FilesystemObject>> {
   droppedFolders: string[];
 }
 
 // Need an extra interface to accommodate the legacy data
-export interface ContentSearchResponseData extends ResultList<RankedItem<FilesystemObjectData>> {
+export interface ContentSearchResponseData
+  extends ResultList<RankedItem<FilesystemObjectData>> {
   droppedFolders: string[];
 }
 

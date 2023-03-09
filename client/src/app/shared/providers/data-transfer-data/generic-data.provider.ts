@@ -1,17 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { chunk } from 'lodash-es';
+import { chunk } from "lodash-es";
 
 import {
   DataTransferData,
   DataTransferDataProvider,
   DataTransferToken,
-} from '../../services/data-transfer-data.service';
-import { AppURL, isInternalUri } from '../../utils/url';
+} from "../../services/data-transfer-data.service";
+import { AppURL, isInternalUri } from "../../utils/url";
 
-export const LABEL_TOKEN = new DataTransferToken<string>('label');
-export const URI_TOKEN = new DataTransferToken<URIData[]>('uri-list');
-export const LIFELIKE_URI_TOKEN = new DataTransferToken<URIData[]>('***ARANGO_DB_NAME***-uri-list');
+export const LABEL_TOKEN = new DataTransferToken<string>("label");
+export const URI_TOKEN = new DataTransferToken<URIData[]>("uri-list");
+export const LIFELIKE_URI_TOKEN = new DataTransferToken<URIData[]>(
+  "***ARANGO_DB_NAME***-uri-list"
+);
 
 export class URIData {
   title: string | undefined;
@@ -19,48 +21,69 @@ export class URIData {
 }
 
 @Injectable()
-export class GenericDataProvider implements DataTransferDataProvider<URIData[] | string> {
-
+export class GenericDataProvider
+  implements DataTransferDataProvider<URIData[] | string>
+{
   static readonly acceptedUriPattern = /^[A-Za-z0-9-]{1,40}:/;
 
   static getURIs(data: URIData[] = []) {
     return {
-      'text/uri-list': this.marshalUriList(data),
-      'text/x-moz-url': this.marshalMozUrlList(data),
+      "text/uri-list": this.marshalUriList(data),
+      "text/x-moz-url": this.marshalMozUrlList(data),
     };
   }
 
-  static setURIs(dataTransfer: DataTransfer, data: URIData[], options: {
-    action?: 'replace' | 'append'
-  } = {}) {
+  static setURIs(
+    dataTransfer: DataTransfer,
+    data: URIData[],
+    options: {
+      action?: "replace" | "append";
+    } = {}
+  ) {
     if (data.length) {
-      if (options.action === 'replace' || !dataTransfer.getData('text/uri-list')) {
-        dataTransfer.setData('text/uri-list', this.marshalUriList(data));
+      if (
+        options.action === "replace" ||
+        !dataTransfer.getData("text/uri-list")
+      ) {
+        dataTransfer.setData("text/uri-list", this.marshalUriList(data));
       }
 
       // We can't always read the data transfer data
-      if (!dataTransfer.types.includes('text/x-moz-url') || dataTransfer.getData('text/x-moz-url')) {
-        const existing: URIData[] = options.action === 'replace' ? []
-          : GenericDataProvider.unmarshalMozUrlList(
-            dataTransfer.getData('text/x-moz-url'),
-            'Link',
-          );
+      if (
+        !dataTransfer.types.includes("text/x-moz-url") ||
+        dataTransfer.getData("text/x-moz-url")
+      ) {
+        const existing: URIData[] =
+          options.action === "replace"
+            ? []
+            : GenericDataProvider.unmarshalMozUrlList(
+                dataTransfer.getData("text/x-moz-url"),
+                "Link"
+              );
         existing.push(...data);
-        dataTransfer.setData('text/x-moz-url', GenericDataProvider.marshalMozUrlList(existing));
+        dataTransfer.setData(
+          "text/x-moz-url",
+          GenericDataProvider.marshalMozUrlList(existing)
+        );
       }
     }
   }
 
   private static marshalMozUrlList(data: URIData[]): string {
-    return data.map(item => `${item.uri}\r\n${item.title.replace(/[\r\n]/g, '')}`).join('\r\n');
+    return data
+      .map((item) => `${item.uri}\r\n${item.title.replace(/[\r\n]/g, "")}`)
+      .join("\r\n");
   }
 
   private static marshalUriList(data: URIData[]): string {
-    return data.map(item => item.uri).join('\r\n');
+    return data.map((item) => item.uri).join("\r\n");
   }
 
-  private static unmarshalMozUrlList(data: string, fallbackTitle: string): URIData[] {
-    if (data === '') {
+  private static unmarshalMozUrlList(
+    data: string,
+    fallbackTitle: string
+  ): URIData[] {
+    if (data === "") {
       return [];
     }
 
@@ -69,7 +92,7 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
     for (const [uri, title] of chunk(data.split(/\r?\n/g), 2)) {
       if (uri.match(GenericDataProvider.acceptedUriPattern)) {
         uris.push({
-          title: (title ?? fallbackTitle).trim().replace(/ {2,}/g, ' '),
+          title: (title ?? fallbackTitle).trim().replace(/ {2,}/g, " "),
           uri: new AppURL(uri),
         });
       }
@@ -80,8 +103,8 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
 
   extractInternalUris(uris: URIData[]) {
     return uris
-      .filter(({uri}) => isInternalUri(uri))
-      .map(({uri, ...rest}) => ({
+      .filter(({ uri }) => isInternalUri(uri))
+      .map(({ uri, ...rest }) => ({
         ...rest,
         uri: new AppURL(uri.relativehref),
       }));
@@ -89,20 +112,23 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
 
   extract(dataTransfer: DataTransfer): DataTransferData<URIData[] | string>[] {
     const results: DataTransferData<URIData[] | string>[] = [];
-    let text = '';
+    let text = "";
 
-    if (dataTransfer.types.includes('text/plain')) {
-      text = dataTransfer.getData('text/plain');
-    } else if (dataTransfer.types.includes('text/html')) {
+    if (dataTransfer.types.includes("text/plain")) {
+      text = dataTransfer.getData("text/plain");
+    } else if (dataTransfer.types.includes("text/html")) {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(dataTransfer.getData('text/html'), 'text/html');
-      text = (doc.textContent || '').trim();
+      const doc = parser.parseFromString(
+        dataTransfer.getData("text/html"),
+        "text/html"
+      );
+      text = (doc.textContent || "").trim();
     }
 
-    text = text.trim().replace(/ {2,}/g, ' ');
+    text = text.trim().replace(/ {2,}/g, " ");
 
-    if (dataTransfer.types.includes('text/x-moz-url')) {
-      const data = dataTransfer.getData('text/x-moz-url');
+    if (dataTransfer.types.includes("text/x-moz-url")) {
+      const data = dataTransfer.getData("text/x-moz-url");
 
       const uris = GenericDataProvider.unmarshalMozUrlList(data, text);
 
@@ -121,10 +147,17 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
           confidence: 1,
         });
       }
-    } else if (dataTransfer.types.includes('text/uri-list')) {
-      const uris = dataTransfer.getData('text/uri-list').split(/\r?\n/g)
-        .filter(item => item.trim().length && !item.startsWith('#') && item.match(GenericDataProvider.acceptedUriPattern))
-        .map(uri => ({
+    } else if (dataTransfer.types.includes("text/uri-list")) {
+      const uris = dataTransfer
+        .getData("text/uri-list")
+        .split(/\r?\n/g)
+        .filter(
+          (item) =>
+            item.trim().length &&
+            !item.startsWith("#") &&
+            item.match(GenericDataProvider.acceptedUriPattern)
+        )
+        .map((uri) => ({
           title: text,
           uri: new AppURL(uri),
         }));

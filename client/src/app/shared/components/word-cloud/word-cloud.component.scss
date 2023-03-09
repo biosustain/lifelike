@@ -1,6 +1,6 @@
-@import '../../../../../node_modules/bootstrap/scss/functions';
-@import '../../../../../node_modules/bootstrap/scss/variables';
-@import '../../../../scss/variables';
+@import "../../../../../node_modules/bootstrap/scss/functions";
+@import "../../../../../node_modules/bootstrap/scss/variables";
+@import "../../../../scss/variables";
 
 .min-h-100-l {
   min-height: 200px;
@@ -8,7 +8,7 @@
 
 .filter-btns-container {
   height: 1.5rem;
-  margin-bottom: .25rem;
+  margin-bottom: 0.25rem;
 }
 
 .filter-close-btn {
@@ -20,7 +20,7 @@
 }
 
 .filter-close-btn:hover {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: #dc3545;
   cursor: pointer;
 }

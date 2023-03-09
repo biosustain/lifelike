@@ -1,4 +1,4 @@
-import { AbstractControl } from '@angular/forms';
+import { AbstractControl } from "@angular/forms";
 
 export function getTopParent(control: AbstractControl) {
   let parent = control;
@@ -16,10 +16,10 @@ export function objectToFormData(object: object): FormData {
     } else if (value instanceof Blob) {
       // Handle file upload
       formData.append(key, value);
-    } else if (typeof value === 'boolean') {
-      formData.append(key, value ? 'true' : 'false');
-    } else if (typeof value === 'object') {
-      throw new Error('cannot put an object value into a FormData');
+    } else if (typeof value === "boolean") {
+      formData.append(key, value ? "true" : "false");
+    } else if (typeof value === "object") {
+      throw new Error("cannot put an object value into a FormData");
     } else {
       formData.append(key, String(value));
     }
@@ -36,14 +36,14 @@ export function objectToMixedFormData(object: object): FormData {
     } else {
       if (value?.[0]?.blob instanceof Blob) {
         for (const imageBlob of value) {
-          formData.append(key, imageBlob.blob, imageBlob.filename || 'blob');
+          formData.append(key, imageBlob.blob, imageBlob.filename || "blob");
         }
       } else {
         data[key] = value;
       }
     }
   }
-  formData.append('json$', JSON.stringify(data));
+  formData.append("json$", JSON.stringify(data));
   return formData;
 }
 

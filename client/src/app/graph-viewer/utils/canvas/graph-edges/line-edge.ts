@@ -1,11 +1,15 @@
-import { ZoomTransform } from 'd3-zoom';
+import { ZoomTransform } from "d3-zoom";
 
-import { PlacedEdge } from 'app/graph-viewer/styles/styles';
+import { PlacedEdge } from "app/graph-viewer/styles/styles";
 
-import { distanceUnsq, getLinePointIntersectionDistance, pointOnRect } from '../../geometry';
-import { TextElement } from '../text-element';
-import { LineHead } from '../line-heads/line-heads';
-import { Line } from '../lines/lines';
+import {
+  distanceUnsq,
+  getLinePointIntersectionDistance,
+  pointOnRect,
+} from "../../geometry";
+import { TextElement } from "../text-element";
+import { LineHead } from "../line-heads/line-heads";
+import { Line } from "../lines/lines";
 import {
   BoundingBox,
   drawTextNotSmallerThanMin,
@@ -13,9 +17,9 @@ import {
   isBBoxEnclosing,
   NO_TEXT_THRESHOLD,
   Point,
-  SELECTION_SHADOW_COLOR
-} from '../shared';
-import { SolidLine } from '../lines/solid';
+  SELECTION_SHADOW_COLOR,
+} from "../shared";
+import { SolidLine } from "../lines/solid";
 
 export interface StandardEdgeOptions {
   source: Point;
@@ -50,24 +54,22 @@ export class LineEdge extends PlacedEdge {
   readonly labelMaxY: number;
   readonly boundingBox: BoundingBox;
 
-
-  constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
+  constructor(
+    private ctx: CanvasRenderingContext2D,
+    options: StandardEdgeOptions
+  ) {
     super();
     Object.assign(this, options);
 
-    const xBounds = [
-      this.source.x,
-      this.target.x,
-    ];
-    const yBounds = [
-      this.source.y,
-      this.target.y,
-    ];
+    const xBounds = [this.source.x, this.target.x];
+    const yBounds = [this.source.y, this.target.y];
 
     if (this.textbox) {
-      this.labelX = Math.abs(this.source.x - this.target.x) / 2 +
+      this.labelX =
+        Math.abs(this.source.x - this.target.x) / 2 +
         Math.min(this.source.x, this.target.x);
-      this.labelY = Math.abs(this.source.y - this.target.y) / 2 +
+      this.labelY =
+        Math.abs(this.source.y - this.target.y) / 2 +
         Math.min(this.source.y, this.target.y);
 
       // Store these values for faster isPointIntersectingTextbox()
@@ -92,8 +94,8 @@ export class LineEdge extends PlacedEdge {
     return this.boundingBox;
   }
 
-  isPointIntersecting({x, y}: Point): boolean {
-    if (this.isPointIntersectingTextbox({x, y})) {
+  isPointIntersecting({ x, y }: Point): boolean {
+    if (this.isPointIntersectingTextbox({ x, y })) {
       return true;
     }
 
@@ -104,12 +106,17 @@ export class LineEdge extends PlacedEdge {
     return getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) <= 2;
   }
 
-  private isPointIntersectingTextbox({x, y}: Point): boolean {
+  private isPointIntersectingTextbox({ x, y }: Point): boolean {
     if (!this.textbox) {
       return false;
     }
 
-    return x >= this.labelMinX && x <= this.labelMaxX && y >= this.labelMinY && y <= this.labelMaxY;
+    return (
+      x >= this.labelMinX &&
+      x <= this.labelMaxX &&
+      y >= this.labelMinY &&
+      y <= this.labelMaxY
+    );
   }
 
   getPointDistanceUnsq(point: Point): number {
@@ -117,20 +124,23 @@ export class LineEdge extends PlacedEdge {
       return 0;
     }
 
-
     // TODO: WHAT
     const dx = this.target.x - this.source.x;
     const dy = this.target.y - this.source.y;
     const l2 = dx * dx + dy * dy;
 
     if (l2 === 0) {
-      return distanceUnsq(point, {x: this.source.x, y: this.source.y});
+      return distanceUnsq(point, { x: this.source.x, y: this.source.y });
     }
 
-    let t = ((point.x - this.source.x) * dx + (point.y - this.source.y) * dy) / l2;
+    let t =
+      ((point.x - this.source.x) * dx + (point.y - this.source.y) * dy) / l2;
     t = Math.max(0, Math.min(1, t));
 
-    return distanceUnsq(point, {x: this.source.x + t * dx, y: this.source.y + t * dy});
+    return distanceUnsq(point, {
+      x: this.source.x + t * dx,
+      y: this.source.y + t * dy,
+    });
   }
 
   isBBoxEnclosing(bbox: BoundingBox): boolean {
@@ -146,16 +156,20 @@ export class LineEdge extends PlacedEdge {
     if (this.sourceLineEnd) {
       this.sourceLineEnd.draw(
         ctx,
-        this.target.x, this.target.y,
-        this.source.x, this.source.y,
+        this.target.x,
+        this.target.y,
+        this.source.x,
+        this.source.y
       );
     }
 
     if (this.targetLineEnd) {
       this.targetLineEnd.draw(
         ctx,
-        this.source.x, this.source.y,
-        this.target.x, this.target.y,
+        this.source.x,
+        this.source.y,
+        this.target.x,
+        this.target.y
       );
     }
 
@@ -165,14 +179,13 @@ export class LineEdge extends PlacedEdge {
       ctx.beginPath();
       ctx.moveTo(this.source.x, this.source.y);
       ctx.lineTo(this.target.x, this.target.y);
-      ctx.lineJoin = 'miter';
-      ctx.lineCap = 'butt';
+      ctx.lineJoin = "miter";
+      ctx.lineCap = "butt";
       this.stroke.setContext(ctx);
       ctx.stroke();
       ctx.restore();
     }
   }
-
 
   drawSelection() {
     const ctx = this.ctx;
@@ -181,11 +194,15 @@ export class LineEdge extends PlacedEdge {
     ctx.beginPath();
     ctx.moveTo(this.source.x, this.source.y);
     ctx.lineTo(this.target.x, this.target.y);
-    ctx.lineJoin = 'miter';
-    ctx.lineCap = 'butt';
-    const stroke = new SolidLine((this.lineWidth ?? 1) + EDGE_SELECTION_WIDTH, SELECTION_SHADOW_COLOR, {
-          lineCap: 'square',
-        });
+    ctx.lineJoin = "miter";
+    ctx.lineCap = "butt";
+    const stroke = new SolidLine(
+      (this.lineWidth ?? 1) + EDGE_SELECTION_WIDTH,
+      SELECTION_SHADOW_COLOR,
+      {
+        lineCap: "square",
+      }
+    );
     stroke.setContext(ctx);
     ctx.stroke();
     ctx.restore();
@@ -201,16 +218,16 @@ export class LineEdge extends PlacedEdge {
    */
   drawLayer2(transform: ZoomTransform) {
     if (this.textbox && transform.k > NO_TEXT_THRESHOLD) {
-      drawTextNotSmallerThanMin(this.textbox, transform.k, this.labelX, this.labelY);
+      drawTextNotSmallerThanMin(
+        this.textbox,
+        transform.k,
+        this.labelX,
+        this.labelY
+      );
     }
   }
 
   lineIntersectionPoint(lineOrigin: Point): Point {
-    return pointOnRect(
-      lineOrigin,
-      this.boundingBox,
-      true,
-    );
+    return pointOnRect(lineOrigin, this.boundingBox, true);
   }
-
 }

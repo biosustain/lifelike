@@ -1,6 +1,6 @@
-const path = require('path');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const path = require("path");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   resolve: {
@@ -9,16 +9,14 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css"
+      filename: "[name].[contenthash].css",
     }),
   ],
   module: {
     rules: [
       {
         test: /\.(ts|js)x?$/,
-        use: [
-          "babel-loader",
-        ]
+        use: ["babel-loader"],
       },
       {
         test: /\.s[ac]ss$/,
@@ -26,15 +24,15 @@ module.exports = {
           MiniCssExtractPlugin.loader,
           {
             loader: "css-loader",
-            options: {url: false}
+            options: { url: false },
           },
           "sass-loader",
-        ]
+        ],
       },
-    ]
+    ],
   },
   output: {
-    filename: '[name].[contenthash].js',
-    path: path.resolve(__dirname, 'dist', 'landing'),
+    filename: "[name].[contenthash].js",
+    path: path.resolve(__dirname, "dist", "landing"),
   },
 };

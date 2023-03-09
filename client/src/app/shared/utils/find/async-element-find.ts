@@ -1,28 +1,29 @@
-import { escapeRegExp, isNil } from 'lodash-es';
-
+import { escapeRegExp, isNil } from "lodash-es";
 
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
   scrollRectIntoView,
   walkParentElements,
-} from '../dom';
-import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
-import { AsyncFindController } from './find-controller';
+} from "../dom";
+import { AsyncTextHighlighter } from "../dom/async-text-highlighter";
+import { AsyncFindController } from "./find-controller";
 
 /**
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
-
   private pendingJump = false;
 
   target: Element;
   // @ts-ignore // todo: use createResizeObservable
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
-  query = '';
-  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this), this.findGenerator);
+  query = "";
+  protected readonly textFinder = new AsyncElementTextFinder(
+    this.matchFind.bind(this),
+    this.findGenerator
+  );
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
@@ -30,7 +31,10 @@ export class AsyncElementFind implements AsyncFindController {
 
   constructor(
     target: Element = null,
-    private findGenerator: (***ARANGO_USERNAME***: Node, query: string) => IterableIterator<NodeTextRange | undefined> = null,
+    private findGenerator: (
+      ***ARANGO_USERNAME***: Node,
+      query: string
+    ) => IterableIterator<NodeTextRange | undefined> = null
   ) {
     this.target = target;
   }
@@ -54,7 +58,9 @@ export class AsyncElementFind implements AsyncFindController {
     this.resizeObserver.observe(this.target);
 
     // Make sure we put the highlights in the right container
-    this.highlighter.container = this.findHighlightContainerElement(this.target);
+    this.highlighter.container = this.findHighlightContainerElement(
+      this.target
+    );
 
     // Keep track of what the current find is for
     this.activeQuery = this.query;
@@ -146,7 +152,10 @@ export class AsyncElementFind implements AsyncFindController {
 
   private findHighlightContainerElement(start: Element): Element {
     // noinspection LoopStatementThatDoesntLoopJS
-    for (const element of walkParentElements(start, nonStaticPositionPredicate)) {
+    for (const element of walkParentElements(
+      start,
+      nonStaticPositionPredicate
+    )) {
       return element;
     }
     return document.body;
@@ -163,7 +172,10 @@ export class AsyncElementFind implements AsyncFindController {
    * Highlight the current findindex.
    */
   private visitResult() {
-    scrollRectIntoView(this.results[this.index].startNode.parentElement, undefined);
+    scrollRectIntoView(
+      this.results[this.index].startNode.parentElement,
+      undefined
+    );
     this.highlighter.focus(this.results[this.index]);
   }
 
@@ -174,14 +186,12 @@ export class AsyncElementFind implements AsyncFindController {
   getResultCount(): number {
     return this.results.length;
   }
-
 }
 
 /**
  * Asynchronously finds text in a document.
  */
 class AsyncElementTextFinder {
-
   // TODO: Handle DOM changes mid-find
 
   private findQueue: IterableIterator<NodeTextRange> | undefined;
@@ -189,7 +199,10 @@ class AsyncElementTextFinder {
 
   constructor(
     protected readonly callback: (matches: NodeTextRange[]) => void,
-    private generator?: (***ARANGO_USERNAME***: Node, query: string) => IterableIterator<NodeTextRange | undefined>
+    private generator?: (
+      ***ARANGO_USERNAME***: Node,
+      query: string
+    ) => IterableIterator<NodeTextRange | undefined>
   ) {
     if (isNil(this.generator)) {
       this.generator = this.defaultGenerator;
@@ -210,7 +223,8 @@ class AsyncElementTextFinder {
       const results: NodeTextRange[] = [];
 
       while (true) {
-        const result: IteratorResult<NodeTextRange | undefined> = this.findQueue.next();
+        const result: IteratorResult<NodeTextRange | undefined> =
+          this.findQueue.next();
 
         if (result.value != null) {
           results.push(result.value);
@@ -235,10 +249,11 @@ class AsyncElementTextFinder {
     }
   }
 
-  private* defaultGenerator(***ARANGO_USERNAME***: Node, query: string): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [
-      ***ARANGO_USERNAME***,
-    ];
+  private *defaultGenerator(
+    ***ARANGO_USERNAME***: Node,
+    query: string
+  ): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [***ARANGO_USERNAME***];
 
     while (queue.length !== 0) {
       const node = queue.shift();
@@ -254,7 +269,7 @@ class AsyncElementTextFinder {
           break;
 
         case Node.TEXT_NODE:
-          const regex = new RegExp(escapeRegExp(query), 'ig');
+          const regex = new RegExp(escapeRegExp(query), "ig");
           while (true) {
             const match = regex.exec(node.nodeValue);
             if (match === null) {

@@ -1,16 +1,16 @@
-import { HttpClientModule } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
+import { HttpClientModule } from "@angular/common/http";
+import { TestBed } from "@angular/core/testing";
 
-import { configureTestSuite } from 'ng-bullet';
+import { configureTestSuite } from "ng-bullet";
 
-import { ReportsService } from './reports.service';
+import { ReportsService } from "./reports.service";
 
-describe('ReportsService', () => {
+describe("ReportsService", () => {
   let service: ReportsService;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule ]
+      imports: [HttpClientModule],
     });
   });
 
@@ -18,7 +18,7 @@ describe('ReportsService', () => {
     service = TestBed.inject(ReportsService);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });

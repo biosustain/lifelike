@@ -1,12 +1,19 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { getPath } from 'app/shared/utils/files';
+import { FilesystemObject } from "app/file-browser/models/filesystem-object";
+import { WorkspaceManager } from "app/shared/workspace-manager";
+import { getPath } from "app/shared/utils/files";
 
 @Component({
-  selector: 'app-object-path',
-  templateUrl: './object-path.component.html',
+  selector: "app-object-path",
+  templateUrl: "./object-path.component.html",
 })
 export class ObjectPathComponent implements OnChanges {
   @Input() object?: FilesystemObject;
@@ -17,15 +24,13 @@ export class ObjectPathComponent implements OnChanges {
   @Output() refreshRequest = new EventEmitter<any>();
   @Input() wrap: boolean;
 
-  constructor(protected readonly workspaceManager: WorkspaceManager) {
-  }
+  constructor(protected readonly workspaceManager: WorkspaceManager) {}
 
-  ngOnChanges({object}: SimpleChanges) {
+  ngOnChanges({ object }: SimpleChanges) {
     if (object?.currentValue) {
       this.path = getPath(object.currentValue);
     }
   }
-
 
   openObject(target: FilesystemObject) {
     this.workspaceManager.navigate(target.getCommands(false), {

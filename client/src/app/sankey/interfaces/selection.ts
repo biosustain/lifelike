@@ -1,20 +1,23 @@
-import { SankeyLink, SankeyNode, Trace } from '../model/sankey-document';
+import { SankeyLink, SankeyNode, Trace } from "../model/sankey-document";
 
 // region Selection
 export enum SelectionType {
   // assign values to use in template
-  link = 'link',
-  node = 'node',
-  trace = 'trace'
+  link = "link",
+  node = "node",
+  trace = "trace",
 }
 
-export type SelectionEntity = {
-  type: SelectionType.link,
-  entity: SankeyLink;
-} | {
-  type: SelectionType.node,
-  entity: SankeyNode;
-} | {
-  type: SelectionType.trace,
-  entity: Trace;
-};
+export type SelectionEntity =
+  | {
+      type: SelectionType.link;
+      entity: SankeyLink;
+    }
+  | {
+      type: SelectionType.node;
+      entity: SankeyNode;
+    }
+  | {
+      type: SelectionType.trace;
+      entity: Trace;
+    };

@@ -1,8 +1,8 @@
-@use 'variables';
+@use "variables";
 
 .btn-presets {
   align-items: center;
-  column-gap: variables.$spacer * .5;
+  column-gap: variables.$spacer * 0.5;
   display: flex;
   justify-content: space-between;
   overflow-wrap: break-word;
@@ -23,4 +23,3 @@
     text-align: end;
   }
 }
-

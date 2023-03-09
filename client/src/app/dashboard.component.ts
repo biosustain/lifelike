@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 
-import { MetaDataService } from 'app/shared/services/metadata.service';
-import { BuildInfo } from 'app/interfaces';
+import { MetaDataService } from "app/shared/services/metadata.service";
+import { BuildInfo } from "app/interfaces";
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
+  selector: "app-dashboard",
+  templateUrl: "./dashboard.component.html",
 })
 export class DashboardComponent {
   readonly buildInfo$: Observable<BuildInfo>;

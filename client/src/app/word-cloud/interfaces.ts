@@ -1,4 +1,4 @@
-import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
+import { WordCloudAnnotationFilterEntity } from "app/interfaces/annotation-filter.interface";
 
 export interface D3CloudLayoutProperties {
   size: number;
@@ -7,4 +7,5 @@ export interface D3CloudLayoutProperties {
   rotate: number;
 }
 
-export type WordCloudAnnotationFilterEntityWithLayout = WordCloudAnnotationFilterEntity & D3CloudLayoutProperties;
+export type WordCloudAnnotationFilterEntityWithLayout =
+  WordCloudAnnotationFilterEntity & D3CloudLayoutProperties;

@@ -1,19 +1,22 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbTooltip } from "@ng-bootstrap/ng-bootstrap";
 
-import { BiocTableViewComponent } from './bioc-table-view.component';
-import { AnnotatedTextComponent } from '../annotated-text/annotated-text.component';
+import { BiocTableViewComponent } from "./bioc-table-view.component";
+import { AnnotatedTextComponent } from "../annotated-text/annotated-text.component";
 
-describe('BiocTableViewComponent', () => {
+describe("BiocTableViewComponent", () => {
   let component: BiocTableViewComponent;
   let fixture: ComponentFixture<BiocTableViewComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ BiocTableViewComponent, AnnotatedTextComponent, NgbTooltip]
-    })
-    .compileComponents();
+      declarations: [
+        BiocTableViewComponent,
+        AnnotatedTextComponent,
+        NgbTooltip,
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -23,7 +26,7 @@ describe('BiocTableViewComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

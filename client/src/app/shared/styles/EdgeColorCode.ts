@@ -1,5 +1,4 @@
 export default {
-  activates: '#5ea248',
-  inhibits: '#fb7137'
+  activates: "#5ea248",
+  inhibits: "#fb7137",
 };
-

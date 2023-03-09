@@ -1,5 +1,5 @@
-import { DataSet } from 'vis-data';
-import { Color, Edge, Network, Node, Options } from 'vis-network';
+import { DataSet } from "vis-data";
+import { Color, Edge, Network, Node, Options } from "vis-network";
 
 export interface NodeWithCustomParameters extends Node {
   _initialBorderWidth?: number;
@@ -7,8 +7,7 @@ export interface NodeWithCustomParameters extends Node {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface EdgeWithCustomParameters extends Edge {
-}
+export interface EdgeWithCustomParameters extends Edge {}
 
 export interface GraphData {
   nodes: NodeWithCustomParameters[];
@@ -16,6 +15,6 @@ export interface GraphData {
 }
 
 export interface VisNetworkDataSet {
-  nodes: DataSet<NodeWithCustomParameters, 'id'>;
-  edges: DataSet<EdgeWithCustomParameters, 'id'>;
+  nodes: DataSet<NodeWithCustomParameters, "id">;
+  edges: DataSet<EdgeWithCustomParameters, "id">;
 }

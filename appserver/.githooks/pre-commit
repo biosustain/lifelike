@@ -22,15 +22,15 @@ check_python_files() {
           xargs docker run --rm \
           -v $(pwd)/appserver:/apps \
           $image_hash
-#      ) && (
-#        echo "> 🥧 Running mypy..."
-#        echo ${staged_python_files} | xargs docker exec appserver mypy -v
-#      ) && (
-#        echo "> 🐍 Running pycodestyle..."
-#        echo ${staged_python_files} | \
-#          xargs docker run --rm \
-#          -v $(pwd)/appserver:/data \
-#          cytopia/pycodestyle:2
+      ) && (
+        echo "> 🥧 Running mypy..."
+        echo ${staged_python_files} | xargs docker exec appserver mypy -v
+      ) && (
+        echo "> 🐍 Running pycodestyle..."
+        echo ${staged_python_files} | \
+          xargs docker run --rm \
+          -v $(pwd)/appserver:/data \
+          cytopia/pycodestyle:2
       )
     else
       echo "> Skipping python files check for appserver..."

@@ -1,32 +1,29 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: "***ARANGO_USERNAME***",
 })
 export class ShortestPathService {
-  readonly kgAPI = '/api/knowledge-graph';
+  readonly kgAPI = "/api/knowledge-graph";
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getShortestPathQueryResult(queryId: number): Observable<any> {
-    return this.http.get<{result: any}>(
-      `${this.kgAPI}/shortest-path-query/${queryId}`, {
-      }
-    ).pipe(
-      map((resp: any) => resp.result),
-    );
+    return this.http
+      .get<{ result: any }>(`${this.kgAPI}/shortest-path-query/${queryId}`, {})
+      .pipe(map((resp: any) => resp.result));
   }
 
   getShortestPathQueryList(): Observable<any> {
-    return this.http.get<{result: Map<number, string>}>(
-      `${this.kgAPI}/shortest-path-query-list`, {
-      }
-    ).pipe(
-      map((resp: any) => resp.result),
-    );
+    return this.http
+      .get<{ result: Map<number, string> }>(
+        `${this.kgAPI}/shortest-path-query-list`,
+        {}
+      )
+      .pipe(map((resp: any) => resp.result));
   }
 }

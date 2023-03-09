@@ -9,40 +9,40 @@
  *
  */
 import {
-    Directive,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    OnDestroy,
-} from '@angular/core';
+  Directive,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  OnDestroy,
+} from "@angular/core";
 
-import { fromEvent, Subscription } from 'rxjs';
-import { map, debounceTime } from 'rxjs/operators';
+import { fromEvent, Subscription } from "rxjs";
+import { map, debounceTime } from "rxjs/operators";
 
 @Directive({
-    selector: '[appVisDebounce]',
+  selector: "[appVisDebounce]",
 })
 export class DebounceInputDirective implements OnInit, OnDestroy {
-    @Input() delay = 500;
-    @Output() debounceCallback: EventEmitter<string> = new EventEmitter();
+  @Input() delay = 500;
+  @Output() debounceCallback: EventEmitter<string> = new EventEmitter();
 
-    constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef) {}
 
-    inputStreamSub: Subscription;
+  inputStreamSub: Subscription;
 
-    ngOnInit() {
-        const inputStream$ = fromEvent(this.el.nativeElement, 'keyup').pipe(
-            map((e: any) => e.target.value),
-            debounceTime(this.delay),
-        );
-        this.inputStreamSub = inputStream$.subscribe((input: string) => {
-            return this.debounceCallback.emit(input);
-        });
-    }
+  ngOnInit() {
+    const inputStream$ = fromEvent(this.el.nativeElement, "keyup").pipe(
+      map((e: any) => e.target.value),
+      debounceTime(this.delay)
+    );
+    this.inputStreamSub = inputStream$.subscribe((input: string) => {
+      return this.debounceCallback.emit(input);
+    });
+  }
 
-    ngOnDestroy() {
-        this.inputStreamSub.unsubscribe();
-    }
+  ngOnDestroy() {
+    this.inputStreamSub.unsubscribe();
+  }
 }

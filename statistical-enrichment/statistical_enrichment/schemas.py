@@ -15,7 +15,7 @@ class Organism:
 
 
 class OrganismField(fields.Field):
-    validators = [Regexp(r'\d+/.+')]
+    validators = [Regexp(r"\d+/.+")]
     default_error_messages = {
         "required": "Missing data for required field.",
         "null": "Field may not be null.",
@@ -27,9 +27,11 @@ class OrganismField(fields.Field):
 
     def _deserialize(self, value, attr, data, **kwargs):
         try:
-            return Organism(*value.split('/'))
+            return Organism(*value.split("/"))
         except ValueError as error:
-            raise ValidationError("Organism field must be filled as taxID/name") from error
+            raise ValidationError(
+                "Organism field must be filled as taxID/name"
+            ) from error
 
 
 class GeneOrganismSchema(Schema):
@@ -38,4 +40,4 @@ class GeneOrganismSchema(Schema):
 
 
 class EnrichmentSchema(GeneOrganismSchema):
-    analysis = fields.Str(validate=OneOf(['fisher']))
+    analysis = fields.Str(validate=OneOf(["fisher"]))

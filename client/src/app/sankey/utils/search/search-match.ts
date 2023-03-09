@@ -7,15 +7,24 @@
  * Practicalities:
  * + would be nice to have iterator of iterators for results
  */
-import { omit, slice, isObject, uniq, flatMap, pullAt, first } from 'lodash-es';
+import { omit, slice, isObject, uniq, flatMap, pullAt, first } from "lodash-es";
 
-import { ExtendedWeakMap, ExtendedMap } from 'app/shared/utils/types';
-import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
-import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
-import { isNotEmpty } from 'app/shared/utils';
+import { ExtendedWeakMap, ExtendedMap } from "app/shared/utils/types";
+import {
+  prioritisedCompileFind,
+  MatchPriority,
+} from "app/shared/utils/find/prioritised-find";
+import { GraphTrace } from "app/shared/providers/graph-type/interfaces";
+import { isNotEmpty } from "app/shared/utils";
 
-import { indexByProperty } from '..';
-import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../../interfaces/search';
+import { indexByProperty } from "..";
+import {
+  Match,
+  EntityType,
+  SearchNode,
+  SearchLink,
+  MatchGenerator,
+} from "../../interfaces/search";
 
 /* NOTE:
     Be very carefull with those imports as they cannot have any DOM references
@@ -26,20 +35,20 @@ import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../..
      "alert is undefined"
 */
 
-
 export class SankeySearch {
-  constructor({
-                searchTokens,
-                data,
-                options,
-                networkTraceIdx
-              }) {
+  constructor({ searchTokens, data, options, networkTraceIdx }) {
     this.data = data;
     this.matcher = prioritisedCompileFind(searchTokens, options);
     this.matchedTraces = new ExtendedWeakMap<GraphTrace & any, Match[]>();
-    this.matchedLink = new ExtendedMap<SearchLink['id'], [Match[], Generator<Match>]>();
-    this.matchedNodes = new ExtendedMap<SearchNode['id'], [Match[], Generator<Match>]>();
-    this.nodeById = indexByProperty(data.nodes, 'id');
+    this.matchedLink = new ExtendedMap<
+      SearchLink["id"],
+      [Match[], Generator<Match>]
+    >();
+    this.matchedNodes = new ExtendedMap<
+      SearchNode["id"],
+      [Match[], Generator<Match>]
+    >();
+    this.nodeById = indexByProperty(data.nodes, "id");
     this.networkTraceIdx = networkTraceIdx;
   }
 
@@ -47,17 +56,19 @@ export class SankeySearch {
   networkTraceIdx: number;
   matcher: (term: string) => MatchPriority | boolean;
   matchedTraces: ExtendedWeakMap<GraphTrace & any, Match[]>;
-  matchedLink: ExtendedMap<SearchLink['id'], [Match[], Generator<Match>]>;
-  matchedNodes: ExtendedMap<SearchNode['id'], [Match[], Generator<Match>]>;
+  matchedLink: ExtendedMap<SearchLink["id"], [Match[], Generator<Match>]>;
+  matchedNodes: ExtendedMap<SearchNode["id"], [Match[], Generator<Match>]>;
   nodeById: Map<string, SearchNode>;
   potentialEntitiesWithAdditionalMatches: MatchGenerator[] = [];
 
   private readonly ignoredNodeProperties: Array<keyof SearchNode> = [];
   private readonly ignoredLinkProperties: Array<keyof SearchLink> = [
-    'source', 'target'
+    "source",
+    "target",
   ];
   private readonly ignoredTraceProperties: Array<keyof GraphTrace> = [
-    'node_paths', 'edges'
+    "node_paths",
+    "edges",
   ];
 
   *matchKeyObject(obj, key) {
@@ -65,7 +76,7 @@ export class SankeySearch {
       yield {
         path: [key, ...match.path],
         priority: match.priority,
-        term: match.term
+        term: match.term,
       } as Match;
     }
   }
@@ -73,11 +84,11 @@ export class SankeySearch {
   *matchObject(obj): Generator<Match> {
     if (Array.isArray(obj)) {
       for (const nestedObj of obj) {
-        yield*this.matchObject(nestedObj);
+        yield* this.matchObject(nestedObj);
       }
     } else if (isObject(obj)) {
       for (const [key, term] of Object.entries(obj)) {
-        yield*this.matchKeyObject(term, key);
+        yield* this.matchKeyObject(term, key);
       }
     } else {
       const match = this.matcher(obj);
@@ -85,30 +96,24 @@ export class SankeySearch {
         yield {
           term: obj,
           path: [],
-          priority: match
+          priority: match,
         } as Match;
       }
     }
   }
 
   matchNode(node: SearchNode) {
-    return this.matchedNodes.getSetLazily(
-      node.id,
-      () => this.saveGeneratorResults(
-        this.matchObject(
-          omit(node, this.ignoredNodeProperties)
-        )
+    return this.matchedNodes.getSetLazily(node.id, () =>
+      this.saveGeneratorResults(
+        this.matchObject(omit(node, this.ignoredNodeProperties))
       )
     );
   }
 
   matchLink(link: SearchLink): [Match[], Generator<Match, any, unknown>] {
-    return this.matchedLink.getSetLazily(
-      link.id,
-      () => this.saveGeneratorResults(
-        this.matchObject(
-          omit(link, this.ignoredLinkProperties)
-        )
+    return this.matchedLink.getSetLazily(link.id, () =>
+      this.saveGeneratorResults(
+        this.matchObject(omit(link, this.ignoredLinkProperties))
       )
     );
   }
@@ -126,10 +131,8 @@ export class SankeySearch {
   }
 
   *matchTrace(trace: GraphTrace): Generator<Match> {
-    yield*this.matchObject(
-      omit(trace, this.ignoredTraceProperties)
-    );
-    const {node_paths, detail_edges, edges} = trace;
+    yield* this.matchObject(omit(trace, this.ignoredTraceProperties));
+    const { node_paths, detail_edges, edges } = trace;
     // if (node_paths) {
     //   for (const nodeIds of node_paths) {
     //     for (const node of this.nodeIdsToNodes(nodeIds)) {
@@ -151,14 +154,14 @@ export class SankeySearch {
             yield {
               term: match.term,
               priority: match.priority,
-              path: ['detail edges', ...match.path]
+              path: ["detail edges", ...match.path],
             } as Match;
           }
           for (const match of generator) {
             yield {
               term: match.term,
               priority: match.priority,
-              path: ['detail edges', ...match.path]
+              path: ["detail edges", ...match.path],
             } as Match;
           }
         }
@@ -180,7 +183,7 @@ export class SankeySearch {
   saveGeneratorResults<T>(iterator: Iterable<T>): [T[], Generator<T>] {
     const calculatedMatches = [];
 
-    function*matchGenerator() {
+    function* matchGenerator() {
       for (const match of iterator) {
         calculatedMatches.push(match);
         yield match;
@@ -190,29 +193,29 @@ export class SankeySearch {
     return [calculatedMatches, matchGenerator()];
   }
 
-  *traverseData({nodes, links, traces}): Generator<any> {
+  *traverseData({ nodes, links, traces }): Generator<any> {
     // keep track iterators wich returned match
-    const {potentialEntitiesWithAdditionalMatches} = this;
+    const { potentialEntitiesWithAdditionalMatches } = this;
     for (const node of nodes) {
       const [precomputed, matchGenerator] = this.matchNode(node);
       if (isNotEmpty(precomputed)) {
         yield {
           type: EntityType.Node,
           id: node.id,
-          value: first(precomputed)
+          value: first(precomputed),
         };
       } else {
-        const {value, done} = matchGenerator.next();
+        const { value, done } = matchGenerator.next();
         if (!done) {
           potentialEntitiesWithAdditionalMatches.push({
             type: EntityType.Node,
             id: node.id,
-            matchGenerator
+            matchGenerator,
           });
           yield {
             type: EntityType.Node,
             id: node.id,
-            value
+            value,
           };
         }
       }
@@ -223,20 +226,20 @@ export class SankeySearch {
         yield {
           type: EntityType.Link,
           id: link.id,
-          value: first(precomputed)
+          value: first(precomputed),
         };
       } else {
-        const {value, done} = matchGenerator.next();
+        const { value, done } = matchGenerator.next();
         if (!done) {
           potentialEntitiesWithAdditionalMatches.push({
             type: EntityType.Link,
             id: link.id,
-            matchGenerator
+            matchGenerator,
           });
           yield {
             type: EntityType.Link,
             id: link.id,
-            value
+            value,
           };
         }
       }
@@ -259,21 +262,26 @@ export class SankeySearch {
     // }
   }
 
-  getNetworkTraceData({links, nodes}, traces) {
-    const linkIdxs = uniq(flatMap(traces, trace => trace.edges));
-    const _links = linkIdxs.map(idx => links[idx]);
-    const nodeIds = uniq(flatMap(_links, link => [link.source, link.target]));
-    const {nodeById} = this;
-    const _nodes = uniq(flatMap(_links, link => [link.source, link.target])).map(id => nodeById.get(id));
-    return {links: _links, nodes: _nodes, traces};
+  getNetworkTraceData({ links, nodes }, traces) {
+    const linkIdxs = uniq(flatMap(traces, (trace) => trace.edges));
+    const _links = linkIdxs.map((idx) => links[idx]);
+    const nodeIds = uniq(flatMap(_links, (link) => [link.source, link.target]));
+    const { nodeById } = this;
+    const _nodes = uniq(
+      flatMap(_links, (link) => [link.source, link.target])
+    ).map((id) => nodeById.get(id));
+    return { links: _links, nodes: _nodes, traces };
   }
 
-  *getFirstMatchForEachEntity(traceNetworks, networkTraceIdxMap): Generator<Match> {
+  *getFirstMatchForEachEntity(
+    traceNetworks,
+    networkTraceIdxMap
+  ): Generator<Match> {
     for (const traceNetwork of traceNetworks) {
-      const {traces} = traceNetwork;
+      const { traces } = traceNetwork;
       const traceNetworkData = this.getNetworkTraceData(this.data, traces);
       const networkTraceIdx = networkTraceIdxMap.get(traceNetwork);
-      yield*this.addNetworkTraceIdx(
+      yield* this.addNetworkTraceIdx(
         networkTraceIdx,
         this.traverseData(traceNetworkData)
       );
@@ -281,11 +289,12 @@ export class SankeySearch {
   }
 
   *getRemainingMatchesForEachEntity(): Generator<Match> {
-    for (const {matchGenerator, ...rest} of this.potentialEntitiesWithAdditionalMatches) {
+    for (const { matchGenerator, ...rest } of this
+      .potentialEntitiesWithAdditionalMatches) {
       for (const matchUpdate of matchGenerator) {
         yield {
           ...matchUpdate,
-          ...rest
+          ...rest,
         };
       }
     }
@@ -295,22 +304,30 @@ export class SankeySearch {
     for (const match of iterator) {
       yield {
         networkTraceIdx,
-        ...match
+        ...match,
       };
     }
   }
 
   traverseAll() {
-    const {data: {graph: {trace_networks}}, networkTraceIdx: currentNetworkTraceIdx} = this;
+    const {
+      data: {
+        graph: { trace_networks },
+      },
+      networkTraceIdx: currentNetworkTraceIdx,
+    } = this;
     // map netwrok traces to their idxs
     const networkTraceIdxMap = new Map(trace_networks.map((v, i) => [v, i]));
     // make networkTraceIdx first to iterate
-    const [currentNetworkTrace] = pullAt(trace_networks, currentNetworkTraceIdx);
+    const [currentNetworkTrace] = pullAt(
+      trace_networks,
+      currentNetworkTraceIdx
+    );
     trace_networks.unshift(currentNetworkTrace);
 
     return [
       this.getFirstMatchForEachEntity(trace_networks, networkTraceIdxMap),
-      this.getRemainingMatchesForEachEntity()
+      this.getRemainingMatchesForEachEntity(),
     ];
   }
 }

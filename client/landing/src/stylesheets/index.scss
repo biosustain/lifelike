@@ -41,11 +41,13 @@ body {
   color: #fff;
 
   a {
-    &:link, &:visited {
+    &:link,
+    &:visited {
       color: #fff;
     }
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
       color: #ccc;
     }
   }
@@ -98,7 +100,9 @@ body {
 .btn-intro {
   background: #fff;
 
-  &, &:link, &:visited {
+  &,
+  &:link,
+  &:visited {
     color: #222;
   }
 }
@@ -106,12 +110,15 @@ body {
 .btn-intro-primary {
   background: $secondary;
 
-  &, &:link, &:visited {
+  &,
+  &:link,
+  &:visited {
     color: #fff;
   }
 }
 
-.btn-intro, .btn-intro-primary {
+.btn-intro,
+.btn-intro-primary {
   border-radius: ($border-radius * 4);
   padding: $btn-padding-y-lg ($btn-padding-x-lg * 2);
 
@@ -199,7 +206,7 @@ body {
     }
 
     &:not(:last-child):before {
-      content: '\f111';
+      content: "\f111";
       font-family: "Font Awesome 5 Free", sans-serif;
       font-size: 200%;
       position: absolute;
@@ -211,7 +218,7 @@ body {
     }
 
     &:not(:last-child):after {
-      content: '\f0ab';
+      content: "\f0ab";
       font-family: FontAwesome, sans-serif;
       font-size: 200%;
       position: absolute;
@@ -243,7 +250,7 @@ body {
     }
 
     &:not(:last-child):before {
-      content: '\f111';
+      content: "\f111";
       font-family: "Font Awesome 5 Free", sans-serif;
       font-size: 200%;
       position: absolute;
@@ -255,7 +262,7 @@ body {
     }
 
     &:not(:last-child):after {
-      content: '\f138';
+      content: "\f138";
       font-family: FontAwesome, sans-serif;
       font-size: 200%;
       position: absolute;
@@ -272,7 +279,7 @@ body {
 }
 
 .feature-icon {
-  margin: 0 0 ($spacer * .7) 0;
+  margin: 0 0 ($spacer * 0.7) 0;
   color: $primary;
 
   img {
@@ -300,7 +307,7 @@ body {
 // ========================================
 
 .section-catcher {
-  background: #F7FBFC;
+  background: #f7fbfc;
 }
 
 .catcher-subtitle {
@@ -375,8 +382,12 @@ body {
 // ========================================
 
 .site-footer {
-  background: #FEF7F1;
-  background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(254, 215, 181, 1) 100%);
+  background: #fef7f1;
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(254, 215, 181, 1) 100%
+  );
   font-size: $font-size-sm;
   margin-top: $spacer * 2;
   padding: ($spacer * 2) 0 ($spacer * 2) 0;
@@ -407,4 +418,3 @@ body {
     margin-top: $spacer * 0.125;
   }
 }
-

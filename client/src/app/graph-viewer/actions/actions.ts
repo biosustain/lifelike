@@ -6,10 +6,10 @@
 import {
   UniversalGraphGroup,
   UniversalGraphEdge,
-  UniversalGraphNode
-} from 'app/drawing-tool/services/interfaces';
+  UniversalGraphNode,
+} from "app/drawing-tool/services/interfaces";
 
-import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
+import { CacheGuardedEntityList } from "../utils/cache-guarded-entity-list";
 
 /**
  * A graph component manages a graph and may render it.
@@ -28,8 +28,8 @@ export interface GraphActionReceiver {
    * @param node the node
    */
   removeNode(node: UniversalGraphNode): {
-    found: boolean,
-    removedEdges: UniversalGraphEdge[],
+    found: boolean;
+    removedEdges: UniversalGraphEdge[];
   };
 
   /**
@@ -60,22 +60,26 @@ export interface GraphActionReceiver {
   addGroup(group: UniversalGraphGroup): void;
 
   removeGroup(group: UniversalGraphGroup): {
-    found: boolean,
-    removedEdges: UniversalGraphEdge[],
+    found: boolean;
+    removedEdges: UniversalGraphEdge[];
   };
 
   updateGroup(group: UniversalGraphGroup): void;
 
-  addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
+  addToGroup(
+    newMembers: UniversalGraphNode[],
+    group: UniversalGraphGroup
+  ): void;
 
-  removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
-
+  removeFromGroup(
+    newMembers: UniversalGraphNode[],
+    group: UniversalGraphGroup
+  ): void;
 
   /**
    * Focus the selected entity (aka focus on the related sidebar for the selection).
    */
   focusEditorPanel(): void;
-
 }
 
 /**
@@ -110,9 +114,7 @@ export class CompoundAction implements GraphAction {
    * @param description description of this compound action
    * @param actions first action is applied first, rolled back last
    */
-  constructor(readonly description: string,
-              readonly actions: GraphAction[]) {
-  }
+  constructor(readonly description: string, readonly actions: GraphAction[]) {}
 
   apply(component: GraphActionReceiver) {
     for (const action of this.actions) {

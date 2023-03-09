@@ -1,5 +1,5 @@
-@use 'sankey';
-@use 'variables';
+@use "sankey";
+@use "variables";
 
 @mixin clamp($max-lines) {
   // oddly those prefixes are supported among all modern browsers
@@ -10,8 +10,8 @@
 }
 
 dt::after {
-  content: ':';
-  margin-right: .5em;
+  content: ":";
+  margin-right: 0.5em;
 }
 
 dl {
@@ -36,7 +36,7 @@ dl {
   $border-color: variables.$gray-400;
   border: 1px solid $border-color;
   cursor: pointer;
-  padding: 0 .75rem .75rem;
+  padding: 0 0.75rem 0.75rem;
 
   &:hover {
     border-color: darken($border-color, 20%);
@@ -48,7 +48,7 @@ dl {
 
   legend {
     margin-bottom: 0;
-    margin-left: -.5rem;
-    padding: 0 .5rem;
+    margin-left: -0.5rem;
+    padding: 0 0.5rem;
   }
 }

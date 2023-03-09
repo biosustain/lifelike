@@ -1,14 +1,14 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from "@angular/core";
 
-import { isNil, isString } from 'lodash-es';
+import { isNil, isString } from "lodash-es";
 
 @Pipe({
-  name: 'truncate'
+  name: "truncate",
 })
 export class TruncatePipe implements PipeTransform {
-  transform(value: string, limit = 20, ellipsis = '...'): string {
+  transform(value: string, limit = 20, ellipsis = "..."): string {
     if (isNil(value)) {
-      return '';
+      return "";
     } else if (!isString(value)) {
       value = String(value);
     }

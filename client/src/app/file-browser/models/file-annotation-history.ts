@@ -1,8 +1,11 @@
-import { startCase } from 'lodash-es';
+import { startCase } from "lodash-es";
 
-import { ModelList } from 'app/shared/models';
-import { AnnotationChangeExclusionMeta, Meta } from 'app/pdf-viewer/annotation-type';
-import { AppUser } from 'app/interfaces';
+import { ModelList } from "app/shared/models";
+import {
+  AnnotationChangeExclusionMeta,
+  Meta,
+} from "app/pdf-viewer/annotation-type";
+import { AppUser } from "app/interfaces";
 
 import {
   AnnotationChangeData,
@@ -10,10 +13,10 @@ import {
   AnnotationInclusionChangeData,
   FileAnnotationChangeData,
   FileAnnotationHistoryResponse,
-} from '../schema';
+} from "../schema";
 
 class AnnotationChange {
-  action: 'added' | 'removed';
+  action: "added" | "removed";
 
   /**
    * Get a friendly label describing this change.
@@ -60,7 +63,7 @@ export class AnnotationExclusionChange extends AnnotationChange {
 export class FileAnnotationChange {
   date: string;
   user: AppUser;
-  cause: 'user' | 'user_reannotation' | 'sys_reannotation';
+  cause: "user" | "user_reannotation" | "sys_reannotation";
   inclusionChanges: AnnotationInclusionChange[];
   exclusionChanges: AnnotationExclusionChange[];
 
@@ -69,12 +72,12 @@ export class FileAnnotationChange {
    */
   get causeLabel(): string {
     switch (this.cause) {
-      case 'user':
-        return 'User';
-      case 'user_reannotation':
-        return 'Re-annotation';
-      case 'sys_reannotation':
-        return 'Automatic';
+      case "user":
+        return "User";
+      case "user_reannotation":
+        return "Re-annotation";
+      case "sys_reannotation":
+        return "Automatic";
       default:
         return this.cause;
     }
@@ -82,18 +85,20 @@ export class FileAnnotationChange {
 
   get isReannotation() {
     // Use type checker to catch added types
-    const cause: 'user' | 'user_reannotation' | 'sys_reannotation' = this.cause;
-    return cause === 'user_reannotation' || cause === 'sys_reannotation';
+    const cause: "user" | "user_reannotation" | "sys_reannotation" = this.cause;
+    return cause === "user_reannotation" || cause === "sys_reannotation";
   }
 
   update(data: FileAnnotationChangeData): FileAnnotationChange {
     this.date = data.date;
     this.user = data.user;
     this.cause = data.cause;
-    this.inclusionChanges = data.inclusionChanges.map(
-      itemData => new AnnotationInclusionChange().update(itemData));
-    this.exclusionChanges = data.exclusionChanges.map(
-      itemData => new AnnotationExclusionChange().update(itemData));
+    this.inclusionChanges = data.inclusionChanges.map((itemData) =>
+      new AnnotationInclusionChange().update(itemData)
+    );
+    this.exclusionChanges = data.exclusionChanges.map((itemData) =>
+      new AnnotationExclusionChange().update(itemData)
+    );
     return this;
   }
 }
@@ -110,8 +115,11 @@ export class FileAnnotationHistory extends ModelList<FileAnnotationChange> {
 
   update(data: FileAnnotationHistoryResponse): FileAnnotationHistory {
     this.collectionSize = data.total;
-    this.results.replace(data.results.map(
-      itemData => new FileAnnotationChange().update(itemData)));
+    this.results.replace(
+      data.results.map((itemData) =>
+        new FileAnnotationChange().update(itemData)
+      )
+    );
     return this;
   }
 }

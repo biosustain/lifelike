@@ -1,4 +1,4 @@
-import { AbstractPathHead, ShapeTerminatorOptions } from './line-heads';
+import { AbstractPathHead, ShapeTerminatorOptions } from "./line-heads";
 
 /**
  * Custom terminator using provided control points.
@@ -13,9 +13,11 @@ export class CustomHead extends AbstractPathHead {
    * @param startControlPoint the start control point
    * @param options additional options
    */
-  constructor(controlPoints: number[],
-              startControlPoint: [number, number],
-              options: ShapeTerminatorOptions = {}) {
+  constructor(
+    controlPoints: number[],
+    startControlPoint: [number, number],
+    options: ShapeTerminatorOptions = {}
+  ) {
     super(options);
     this.controlPoints = controlPoints;
     this.startControlPoint = startControlPoint;

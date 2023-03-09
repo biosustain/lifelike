@@ -1,6 +1,6 @@
-import { StandardRequestOptions } from 'app/shared/schemas/common';
+import { StandardRequestOptions } from "app/shared/schemas/common";
 
-import { SearchType } from './shared';
+import { SearchType } from "./shared";
 
 /**
  * Represents unserialized content search specific request options.

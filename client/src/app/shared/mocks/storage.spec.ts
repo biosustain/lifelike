@@ -37,11 +37,14 @@ export class MemoryStorage implements Storage {
  * @param storage storage reference which should be mocked
  * @param initialValue value to initialise mocked storage
  */
-export function mockStorage(storage: Storage, initialValue: { [key: string]: string } = {}) {
+export function mockStorage(
+  storage: Storage,
+  initialValue: { [key: string]: string } = {}
+) {
   storage.clear();
   const storageMock = new MemoryStorage(initialValue);
   const spyLocalStorage = spyOnAllFunctions(storage, false);
-  Object.keys(spyLocalStorage).forEach(key => {
+  Object.keys(spyLocalStorage).forEach((key) => {
     spyLocalStorage[key].and.callFake(storageMock[key].bind(storageMock));
   });
   return storageMock;

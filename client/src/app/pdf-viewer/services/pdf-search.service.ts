@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject, ReplaySubject, Subject } from "rxjs";
+import { distinctUntilChanged, map } from "rxjs/operators";
 
 interface ResultSummary {
   searching?: boolean;
   matchesCount?: {
-    current: number,
-    total: number
+    current: number;
+    total: number;
   };
 }
 

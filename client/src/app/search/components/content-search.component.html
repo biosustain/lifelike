@@ -1,17 +1,23 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
+<ng-container *ngIf="loadTask.status$ | async as status">
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-toolbar mt-2">
         <ng-container *ngIf="searchTypes">
-          <app-content-search-form class="w-100"
-                                   [(queryString)]="queryString"
-                                   (formResult)="search($event)">
+          <app-content-search-form
+            class="w-100"
+            [(queryString)]="queryString"
+            (formResult)="search($event)"
+          >
           </app-content-search-form>
         </ng-container>
       </div>
       <div class="d-flex w-100 justify-content-start">
-        <div class="btn btn-link p-0 mr-3" (click)="openAdvancedSearch()">Advanced Search</div>
-        <div class="btn btn-link p-0" (click)="openSynonymSearch()">Find Synonyms</div>
+        <div class="btn btn-link p-0 mr-3" (click)="openAdvancedSearch()">
+          Advanced Search
+        </div>
+        <div class="btn btn-link p-0" (click)="openSynonymSearch()">
+          Find Synonyms
+        </div>
       </div>
     </div>
 
@@ -39,10 +45,14 @@
                   </h5>
                   <div class="search-results-item-body">
                     <div>
-                      <span class="placeholder-box">Loading loading loading</span>
+                      <span class="placeholder-box"
+                        >Loading loading loading</span
+                      >
                     </div>
                     <div class="mt-2">
-                      <span class="placeholder-box">Loading loading loading loading</span>
+                      <span class="placeholder-box"
+                        >Loading loading loading loading</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -56,7 +66,9 @@
                       <span class="placeholder-box">Loading loading</span>
                     </div>
                     <div class="mt-2">
-                      <span class="placeholder-box">Loading loading loading load loading</span>
+                      <span class="placeholder-box"
+                        >Loading loading loading load loading</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -69,26 +81,43 @@
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
-                      [page]="params.page"
-                      [pageSize]="params.limit"
-                      [collectionSize]="collectionSize"></app-results-summary>
+                    [page]="params.page"
+                    [pageSize]="params.limit"
+                    [collectionSize]="collectionSize"
+                  ></app-results-summary>
                 </div>
 
                 <div class="search-results search-results-selectable">
-                  <div *ngFor="let result of results.view$ | async" class="search-results-item"
-                       (appTabSelectable)="results.select(result)"
-                       [class.active]="results.isSelected(result)"
-                       draggable="true" (dragstart)="itemDragStart($event, result.item)">
-                    <div class="text-truncate mb-1" [title]="getBreadCrumbsTitle(result.item.parent)">
-                      <app-object-path [object]="result.item.parent" [newTab]="true"></app-object-path>
+                  <div
+                    *ngFor="let result of results.view$ | async"
+                    class="search-results-item"
+                    (appTabSelectable)="results.select(result)"
+                    [class.active]="results.isSelected(result)"
+                    draggable="true"
+                    (dragstart)="itemDragStart($event, result.item)"
+                  >
+                    <div
+                      class="text-truncate mb-1"
+                      [title]="getBreadCrumbsTitle(result.item.parent)"
+                    >
+                      <app-object-path
+                        [object]="result.item.parent"
+                        [newTab]="true"
+                      ></app-object-path>
                     </div>
                     <div class="search-results-item-header text-truncate">
                       <h5 class="text-truncate" [style.padding]="'1px 0'">
-                        <app-file-type-label [object]="result.item" [showLabel]="false" class="mr-1"></app-file-type-label>
-                        <a [appLink]="result.item.getCommands(false)"
-                           [newTab]="true"
-                           [sideBySide]="true"
-                           (dragstart)="itemDragStart($event, result.item, true)">
+                        <app-file-type-label
+                          [object]="result.item"
+                          [showLabel]="false"
+                          class="mr-1"
+                        ></app-file-type-label>
+                        <a
+                          [appLink]="result.item.getCommands(false)"
+                          [newTab]="true"
+                          [sideBySide]="true"
+                          (dragstart)="itemDragStart($event, result.item, true)"
+                        >
                           <app-term-highlight
                             [text]="result.item.name"
                             [highlightTerms]="highlightTerms"
@@ -97,7 +126,13 @@
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate"><i>Created by <app-user [user]="result.item.user"></app-user> on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
+                    <div class="mt-2 text-truncate">
+                      <i
+                        >Created by
+                        <app-user [user]="result.item.user"></app-user> on
+                        {{ result.item.creationDate | date : "fullDate" }}</i
+                      >
+                    </div>
                     <div class="mt-2 paragraph-truncate-3">
                       <app-term-highlight
                         [text]="result.item.description"
@@ -108,23 +143,30 @@
                     <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
                       <div class="mt-2 paragraph-truncate-3">
-                        <app-highlight-text [appInnerXML]="result.item.highlight[0]"></app-highlight-text>
+                        <app-highlight-text
+                          [appInnerXML]="result.item.highlight[0]"
+                        ></app-highlight-text>
                       </div>
-                      <div class="d-flex align-items-center justify-content-end">
+                      <div
+                        class="d-flex align-items-center justify-content-end"
+                      >
                         <a
-                        *ngIf="result.item.doi"
-                        [href]="result.item.doi"
-                        target="_blank">DOI Link</a>
+                          *ngIf="result.item.doi"
+                          [href]="result.item.doi"
+                          target="_blank"
+                          >DOI Link</a
+                        >
                       </div>
                     </ng-container>
                   </div>
                 </div>
                 <div class="mt-4">
                   <ngb-pagination
-                      [page]="params.page"
-                      [pageSize]="params.limit"
-                      [collectionSize]="collectionSize"
-                      (pageChange)="goToPage($event)"></ngb-pagination>
+                    [page]="params.page"
+                    [pageSize]="params.limit"
+                    [collectionSize]="collectionSize"
+                    (pageChange)="goToPage($event)"
+                  ></ngb-pagination>
                 </div>
               </div>
             </ng-container>
@@ -146,13 +188,16 @@
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selectionLength$ | async">
           <app-object-info
-                  *ngIf="(results.firstSelection$ | async) as firstSelection"
-                  [forEditing]="false"
-                           (highlightClick)="highlightClicked(firstSelection.item, $event)"
-                           (highlightDisplayLimitChange)="highlightDisplayLimitChanged(firstSelection.item, $event)"
-                           [object]="firstSelection.item"
-                           (objectOpen)="openObject($event)"
-                           [highlightTerms]="highlightTerms"></app-object-info>
+            *ngIf="results.firstSelection$ | async as firstSelection"
+            [forEditing]="false"
+            (highlightClick)="highlightClicked(firstSelection.item, $event)"
+            (highlightDisplayLimitChange)="
+              highlightDisplayLimitChanged(firstSelection.item, $event)
+            "
+            [object]="firstSelection.item"
+            (objectOpen)="openObject($event)"
+            [highlightTerms]="highlightTerms"
+          ></app-object-info>
         </ng-container>
       </div>
     </div>

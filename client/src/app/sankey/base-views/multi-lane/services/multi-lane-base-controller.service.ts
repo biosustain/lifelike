@@ -1,24 +1,39 @@
-import { Injectable, Injector, OnDestroy } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from "@angular/core";
 
-import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
-import { merge, isNil, uniq } from 'lodash-es';
-import { of, iif, defer } from 'rxjs';
+import { switchMap, map, shareReplay, takeUntil } from "rxjs/operators";
+import { merge, isNil, uniq } from "lodash-es";
+import { of, iif, defer } from "rxjs";
 
-import { ViewBase } from 'app/sankey/interfaces';
-import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { BaseControllerService } from 'app/sankey/services/base-controller.service';
-import { ControllerService } from 'app/sankey/services/controller.service';
-import { unifiedSingularAccessor } from 'app/sankey/utils/rxjs';
-import { debug } from 'app/shared/rxjs/debug';
-import { ServiceOnInit } from 'app/shared/schemas/common';
-import { PREDEFINED_VALUE, LINK_VALUE_GENERATOR } from 'app/sankey/interfaces/valueAccessors';
-import { SankeyLink, TraceNetwork, SankeyTraceLink, View } from 'app/sankey/model/sankey-document';
+import { ViewBase } from "app/sankey/interfaces";
+import { WarningControllerService } from "app/shared/services/warning-controller.service";
+import { BaseControllerService } from "app/sankey/services/base-controller.service";
+import { ControllerService } from "app/sankey/services/controller.service";
+import { unifiedSingularAccessor } from "app/sankey/utils/rxjs";
+import { debug } from "app/shared/rxjs/debug";
+import { ServiceOnInit } from "app/shared/schemas/common";
+import {
+  PREDEFINED_VALUE,
+  LINK_VALUE_GENERATOR,
+} from "app/sankey/interfaces/valueAccessors";
+import {
+  SankeyLink,
+  TraceNetwork,
+  SankeyTraceLink,
+  View,
+} from "app/sankey/model/sankey-document";
 
-import { createMapToColor, christianColors, linkPalettes, LINK_PALETTE_ID, DEFAULT_ALPHA, DEFAULT_SATURATION } from '../color-palette';
-import { inputCount } from '../algorithms/linkValues';
-import { Base } from '../interfaces';
-import { getBaseState } from '../../../utils/stateLevels';
-import { EditService } from '../../../services/edit.service';
+import {
+  createMapToColor,
+  christianColors,
+  linkPalettes,
+  LINK_PALETTE_ID,
+  DEFAULT_ALPHA,
+  DEFAULT_SATURATION,
+} from "../color-palette";
+import { inputCount } from "../algorithms/linkValues";
+import { Base } from "../interfaces";
+import { getBaseState } from "../../../utils/stateLevels";
+import { EditService } from "../../../services/edit.service";
 
 /**
  * Service meant to hold overall state of Sankey view (for ease of use in nested components)
@@ -27,7 +42,10 @@ import { EditService } from '../../../services/edit.service';
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class MultiLaneBaseControllerService extends BaseControllerService<Base> implements ServiceOnInit, OnDestroy {
+export class MultiLaneBaseControllerService
+  extends BaseControllerService<Base>
+  implements ServiceOnInit, OnDestroy
+{
   constructor(
     readonly common: ControllerService,
     readonly warningController: WarningControllerService,
@@ -40,114 +58,139 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
 
   viewBase = ViewBase.sankeyMultiLane;
 
-  state$ = this.delta$.pipe(
-    switchMap(delta =>
-      this.common.view$.pipe(
-        switchMap(view =>
-          iif(
-            () => !isNil(view),
-            defer(() => of(getBaseState((view as View).state))),
-            of({})
-          )
-        ),
-        map(state => merge({}, state, delta))
-      )
-    ),
-    map(delta => merge(
-      {},
-      {
-        nodeHeight: {
-          min: {
-            enabled: true,
-            value: 1
-          },
-          max: {
-            enabled: false,
-            ratio: 10
-          }
-        },
-        linkPaletteId: LINK_PALETTE_ID.hue_palette,
-      },
-      delta
-    )),
-    switchMap(delta =>
-      iif(
-        () => isNil(delta.predefinedValueAccessorId),
-        this.common.networkTraceDefaultSizing$,
-        of(delta.predefinedValueAccessorId)
-      ).pipe(
-        switchMap(predefinedValueAccessorId =>
-          this.common.options$.pipe(
-            map(({predefinedValueAccessors}) => ({
-              predefinedValueAccessorId,
-              ...this.common.pickPartialAccessors(predefinedValueAccessors[predefinedValueAccessorId]),
-            })),
+  state$ = this.delta$
+    .pipe(
+      switchMap((delta) =>
+        this.common.view$.pipe(
+          switchMap((view) =>
+            iif(
+              () => !isNil(view),
+              defer(() => of(getBaseState((view as View).state))),
+              of({})
+            )
           ),
-        ),
-        map(state => merge({}, delta, state))
+          map((state) => merge({}, state, delta))
+        )
+      ),
+      map((delta) =>
+        merge(
+          {},
+          {
+            nodeHeight: {
+              min: {
+                enabled: true,
+                value: 1,
+              },
+              max: {
+                enabled: false,
+                ratio: 10,
+              },
+            },
+            linkPaletteId: LINK_PALETTE_ID.hue_palette,
+          },
+          delta
+        )
+      ),
+      switchMap((delta) =>
+        iif(
+          () => isNil(delta.predefinedValueAccessorId),
+          this.common.networkTraceDefaultSizing$,
+          of(delta.predefinedValueAccessorId)
+        ).pipe(
+          switchMap((predefinedValueAccessorId) =>
+            this.common.options$.pipe(
+              map(({ predefinedValueAccessors }) => ({
+                predefinedValueAccessorId,
+                ...this.common.pickPartialAccessors(
+                  predefinedValueAccessors[predefinedValueAccessorId]
+                ),
+              }))
+            )
+          ),
+          map((state) => merge({}, delta, state))
+        )
       )
     )
-  ).pipe(
-    takeUntil(this.destroy$),
-    debug('MultiLaneBaseControllerService.state$'),
-    shareReplay<Base['state']>({bufferSize: 1, refCount: true})
-  );
+    .pipe(
+      takeUntil(this.destroy$),
+      debug("MultiLaneBaseControllerService.state$"),
+      shareReplay<Base["state"]>({ bufferSize: 1, refCount: true })
+    );
 
   linkValueAccessors = {
     ...this.linkValueAccessors,
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: inputCount,
-      disabled: () => false
-    }
+      disabled: () => false,
+    },
   };
 
-  options$ = of(Object.freeze({
-    linkPalettes
-  }));
+  options$ = of(
+    Object.freeze({
+      linkPalettes,
+    })
+  );
 
-  palette$ = this.optionStateAccessor('linkPalettes', 'linkPaletteId');
+  palette$ = this.optionStateAccessor("linkPalettes", "linkPaletteId");
 
   traceGroupColorMapping$ = this.palette$.pipe(
-    switchMap((palette: any) => this.common.networkTrace$.pipe(
-        map(({traces}) => uniq(traces.map(({group}) => group))),
-        map(groups => createMapToColor(
-          groups.sort((a: number, b: number) => a - b),
-          {alpha: _ => DEFAULT_ALPHA, saturation: _ => DEFAULT_SATURATION},
-          palette.palette
-        ))
+    switchMap((palette: any) =>
+      this.common.networkTrace$.pipe(
+        map(({ traces }) => uniq(traces.map(({ group }) => group))),
+        map((groups) =>
+          createMapToColor(
+            groups.sort((a: number, b: number) => a - b),
+            {
+              alpha: (_) => DEFAULT_ALPHA,
+              saturation: (_) => DEFAULT_SATURATION,
+            },
+            palette.palette
+          )
+        )
       )
     ),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   networkTraceData$ = this.common.data$.pipe(
-    switchMap(({links, nodes, getNodeById}) => this.common.networkTrace$.pipe(
-        switchMap(({traces, sources, targets}) => this.common.stateAccessor('shortestPathPlusN').pipe(
-          map(shortestPathPlusN => ({
-            sources,
-            targets,
-            traces: traces.filter((trace) =>
-              trace.shortestPathPlusN ? (trace.shortestPathPlusN <= shortestPathPlusN) : true
-            )
-          }))
-        )),
-        map(({traces, sources, targets}) => {
-          const networkTraceLinks = this.getAndColorNetworkTraceLinks(traces, links);
-          const networkTraceNodes = this.common.getNetworkTraceNodes(networkTraceLinks);
+    switchMap(({ links, nodes, getNodeById }) =>
+      this.common.networkTrace$.pipe(
+        switchMap(({ traces, sources, targets }) =>
+          this.common.stateAccessor("shortestPathPlusN").pipe(
+            map((shortestPathPlusN) => ({
+              sources,
+              targets,
+              traces: traces.filter((trace) =>
+                trace.shortestPathPlusN
+                  ? trace.shortestPathPlusN <= shortestPathPlusN
+                  : true
+              ),
+            }))
+          )
+        ),
+        map(({ traces, sources, targets }) => {
+          const networkTraceLinks = this.getAndColorNetworkTraceLinks(
+            traces,
+            links
+          );
+          const networkTraceNodes =
+            this.common.getNetworkTraceNodes(networkTraceLinks);
           this.colorNodes(networkTraceNodes);
           return {
             nodes: networkTraceNodes,
             links: networkTraceLinks,
-            getNodeById, sources, targets
+            getNodeById,
+            sources,
+            targets,
           };
         }),
-        debug('MultiLaneBaseControllerService.networkTraceData$'),
-        shareReplay<Base['data']>(1)
+        debug("MultiLaneBaseControllerService.networkTraceData$"),
+        shareReplay<Base["data"]>(1)
       )
     )
   );
 
-  linkPalettes$ = unifiedSingularAccessor(this.options$, 'linkPalettes');
+  linkPalettes$ = unifiedSingularAccessor(this.options$, "linkPalettes");
 
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -161,19 +204,19 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
    * Should return copy of link Objects (do not mutate links!)
    */
   getAndColorNetworkTraceLinks(
-    traces: TraceNetwork['traces'],
+    traces: TraceNetwork["traces"],
     links: ReadonlyArray<Readonly<SankeyLink>>,
     colorMap?
   ) {
     const traceBasedLinkSplitMap = new Map();
-    const traceGroupColorMap = colorMap ?? new Map(
-      traces.map(({group}) => [group, christianColors[group]])
-    );
+    const traceGroupColorMap =
+      colorMap ??
+      new Map(traces.map(({ group }) => [group, christianColors[group]]));
     const networkTraceLinks = traces.reduce((o, trace, traceIdx) => {
       const color = traceGroupColorMap.get(trace.group);
       trace.color = color;
       return o.concat(
-        trace.edges.map(linkIdx => {
+        trace.edges.map((linkIdx) => {
           const originLink = links[linkIdx];
           const link = new SankeyTraceLink(originLink, trace, traceIdx);
           let adjacentLinks = traceBasedLinkSplitMap.get(originLink);
@@ -190,7 +233,7 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
       const adjacentLinkGroupLength = adjacentLinkGroup.length;
       // normalise only if multiple (skip /1)
       if (adjacentLinkGroupLength) {
-        adjacentLinkGroup.forEach(l => {
+        adjacentLinkGroup.forEach((l) => {
           l.adjacentDivider = adjacentLinkGroupLength;
         });
       }
@@ -201,22 +244,22 @@ export class MultiLaneBaseControllerService extends BaseControllerService<Base> 
   /**
    * Color nodes in gray scale based on group they are relating to.
    */
-  colorNodes(nodes, nodeColorCategoryAccessor = ({schemaClass}) => schemaClass) {
+  colorNodes(
+    nodes,
+    nodeColorCategoryAccessor = ({ schemaClass }) => schemaClass
+  ) {
     // set colors for all node types
     const nodeCategories = new Set(nodes.map(nodeColorCategoryAccessor));
-    const nodesColorMap = createMapToColor(
-      nodeCategories,
-      {
-        hue: () => 0,
-        lightness: (i, n) => {
-          // all but not extreme (white, black)
-          return (i + 1) / (n + 2);
-        },
-        saturation: () => 0,
-        alpha: () => 0.75
-      }
-    );
-    nodes.forEach(node => {
+    const nodesColorMap = createMapToColor(nodeCategories, {
+      hue: () => 0,
+      lightness: (i, n) => {
+        // all but not extreme (white, black)
+        return (i + 1) / (n + 2);
+      },
+      saturation: () => 0,
+      alpha: () => 0.75,
+    });
+    nodes.forEach((node) => {
       node.color = nodesColorMap.get(nodeColorCategoryAccessor(node));
     });
   }

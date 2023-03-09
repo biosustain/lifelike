@@ -1,14 +1,14 @@
-import { Directive, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, OnDestroy, OnInit } from "@angular/core";
 
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Subject, Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 @Directive({
-  selector: '[appContainerBreakpoints]',
+  selector: "[appContainerBreakpoints]",
 })
 export class ContainerBreakpointsDirective implements OnInit, OnDestroy {
   private _queryDelay = 50;
-  protected readonly classPrefix = 'cbp';
+  protected readonly classPrefix = "cbp";
   protected readonly resizes$ = new Subject<any>();
   // @ts-ignore // todo use createResizeObservable instead
   protected readonly observer = new ResizeObserver(() => this.resizes$.next());

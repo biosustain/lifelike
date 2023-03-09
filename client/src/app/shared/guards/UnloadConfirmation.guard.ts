@@ -1,22 +1,25 @@
-import { Injectable } from '@angular/core';
-import { CanDeactivate } from '@angular/router';
+import { Injectable } from "@angular/core";
+import { CanDeactivate } from "@angular/router";
 
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 
-import { ModuleAwareComponent, ShouldConfirmUnload } from '../modules';
+import { ModuleAwareComponent, ShouldConfirmUnload } from "../modules";
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***',
+  providedIn: "***ARANGO_USERNAME***",
 })
-export class UnloadConfirmationGuard<T extends ShouldConfirmUnload> implements CanDeactivate<T> {
+export class UnloadConfirmationGuard<T extends ShouldConfirmUnload>
+  implements CanDeactivate<T>
+{
   canDeactivate(component: T): Promise<boolean> {
-    return Promise.resolve(component.shouldConfirmUnload)
-      .then(shouldConfirmUnload => {
+    return Promise.resolve(component.shouldConfirmUnload).then(
+      (shouldConfirmUnload) => {
         if (shouldConfirmUnload) {
-          return confirm('Leave page? Changes you made may not be saved.');
+          return confirm("Leave page? Changes you made may not be saved.");
         } else {
           return true;
         }
-      });
+      }
+    );
   }
 }

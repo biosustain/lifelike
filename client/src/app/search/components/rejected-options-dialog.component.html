@@ -3,13 +3,14 @@
   <div *ngIf="rejectedFolders?.length" class="mb-3">
     <div>
       <p class="mb-3">
-        It looks like you attempted to search a folder that doesn't exist! The following folder IDs seem to be erroneous:
+        It looks like you attempted to search a folder that doesn't exist! The
+        following folder IDs seem to be erroneous:
       </p>
     </div>
-    <div style="max-height: 225px; overflow-y: auto;">
+    <div style="max-height: 225px; overflow-y: auto">
       <div *ngFor="let folder of rejectedFolders; let last = last">
         <ul [class]="last ? 'mb-0' : 'mb-3'">
-          <li>{{folder}}</li>
+          <li>{{ folder }}</li>
         </ul>
       </div>
     </div>

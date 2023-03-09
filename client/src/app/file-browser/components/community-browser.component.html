@@ -1,6 +1,12 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
-  <app-module-error *ngIf="status.failedErrorShown; else noError" class="p-4" [error]="status.error">
-    <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+<ng-container *ngIf="loadTask.status$ | async as status">
+  <app-module-error
+    *ngIf="status.failedErrorShown; else noError"
+    class="p-4"
+    [error]="status.error"
+  >
+    <button class="btn btn-primary" type="button" (click)="refresh()">
+      Retry
+    </button>
   </app-module-error>
 
   <ng-template #noError>
@@ -13,15 +19,17 @@
             <ng-container *ngIf="locator.q; else noQuery">
               Results for "{{ locator.q }}"
             </ng-container>
-            <ng-template #noQuery>
-              Community Content
-            </ng-template>
+            <ng-template #noQuery> Community Content </ng-template>
           </div>
         </div>
 
         <!-- Toolbar -->
-        <div class="module-toolbar mt-2 ">
-          <form [formGroup]="filterForm" (ngSubmit)="search()" class="d-flex align-items-center">
+        <div class="module-toolbar mt-2">
+          <form
+            [formGroup]="filterForm"
+            (ngSubmit)="search()"
+            class="d-flex align-items-center"
+          >
             <div class="input-group flex-fill">
               <div class="input-group-prepend">
                 <div class="input-group-text bg-transparent border-right-0">
@@ -29,24 +37,27 @@
                 </div>
               </div>
 
-              <input class="form-control py-2 pl-0 border-left-0 border"
-                     formControlName="q"
-                     placeholder="Search" maxlength="40">
+              <input
+                class="form-control py-2 pl-0 border-left-0 border"
+                formControlName="q"
+                placeholder="Search"
+                maxlength="40"
+              />
             </div>
 
-            <button class="btn btn-primary ml-2">
-              Search
-            </button>
+            <button class="btn btn-primary ml-2">Search</button>
           </form>
         </div>
       </div>
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-object-list [objects]="status.placeholdersShown ? null : list.results"
-                         [appLinks]="true"
-                         [forEditing]="false"
-                         (refreshRequest)="refresh()"></app-object-list>
+        <app-object-list
+          [objects]="status.placeholdersShown ? null : list.results"
+          [appLinks]="true"
+          [forEditing]="false"
+          (refreshRequest)="refresh()"
+        ></app-object-list>
       </div>
     </div>
   </ng-template>

@@ -1,28 +1,32 @@
-import { SelectionModel } from '@angular/cdk/collections';
-import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { SelectionModel } from "@angular/cdk/collections";
+import { Component } from "@angular/core";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 
-import { ENTITY_TYPES } from 'app/shared/annotation-types';
-import { ORGANISM_SHORTLIST } from 'app/shared/constants';
-import { uuidv4 } from 'app/shared/utils';
+import { ENTITY_TYPES } from "app/shared/annotation-types";
+import { ORGANISM_SHORTLIST } from "app/shared/constants";
+import { uuidv4 } from "app/shared/utils";
 
-import { ContentSearchService } from '../services/content-search.service';
-import { SynonymData } from '../shared';
+import { ContentSearchService } from "../services/content-search.service";
+import { SynonymData } from "../shared";
 
 @Component({
-  selector: 'app-synonym-search',
-  templateUrl: './synonym-search.component.html',
-  styleUrls: ['./synonym-search.component.scss']
+  selector: "app-synonym-search",
+  templateUrl: "./synonym-search.component.html",
+  styleUrls: ["./synonym-search.component.scss"],
 })
 export class SynonymSearchComponent {
   id = uuidv4();
 
   synonymData: SynonymData[];
-  entityChecklistSelection = new SelectionModel<SynonymData>(true /* multiple */);
+  entityChecklistSelection = new SelectionModel<SynonymData>(
+    true /* multiple */
+  );
 
-  typeFilters = ENTITY_TYPES.sort((a, b) => a.name.localeCompare(b.name)).map(entity => entity.name);
+  typeFilters = ENTITY_TYPES.sort((a, b) => a.name.localeCompare(b.name)).map(
+    (entity) => entity.name
+  );
   selectedTypeFilters: string[] = [];
   organismFilters = Array.from(ORGANISM_SHORTLIST.keys());
   selectedOrganismFilters: string[] = [];
@@ -30,7 +34,7 @@ export class SynonymSearchComponent {
   organismChecklistSelection = new SelectionModel<string>(true /* multiple */);
 
   form = new FormGroup({
-    q: new FormControl('', Validators.required),
+    q: new FormControl("", Validators.required),
   });
 
   SYNONYM_SEARCH_LIMIT = 100;
@@ -44,7 +48,7 @@ export class SynonymSearchComponent {
 
   constructor(
     private readonly modal: NgbActiveModal,
-    protected readonly contentSearchService: ContentSearchService,
+    protected readonly contentSearchService: ContentSearchService
   ) {}
 
   dismiss() {
@@ -64,40 +68,50 @@ export class SynonymSearchComponent {
     this.loading = true;
     this.synonymData = [];
     this.mostRecentSearchTerm = this.form.value.q;
-    this.contentSearchService.getSynoynms(
-      (this.form.value.q as string).split(/\s/).filter((s: string) => s !== '').join(' '),
-      this.selectedOrganismFilters.map((organism) => ORGANISM_SHORTLIST.get(organism)),
-      this.selectedTypeFilters.map((type: string) => type.split(' ').join('')),
-      this.page,
-      this.SYNONYM_SEARCH_LIMIT
-    ).subscribe(
-      (result) => {
-        this.loading = false;
-        this.synonymData = result.data;
-        this.total = result.count;
-      },
-      (error) => {
-        this.loading = false;
-        try {
-          this.errorMsg = error.error.message;
-        } catch (err) {
-          this.errorMsg = 'A system error occurred while searching for synonyms, we are working on a solution. Please try again later.';
+    this.contentSearchService
+      .getSynoynms(
+        (this.form.value.q as string)
+          .split(/\s/)
+          .filter((s: string) => s !== "")
+          .join(" "),
+        this.selectedOrganismFilters.map((organism) =>
+          ORGANISM_SHORTLIST.get(organism)
+        ),
+        this.selectedTypeFilters.map((type: string) =>
+          type.split(" ").join("")
+        ),
+        this.page,
+        this.SYNONYM_SEARCH_LIMIT
+      )
+      .subscribe(
+        (result) => {
+          this.loading = false;
+          this.synonymData = result.data;
+          this.total = result.count;
+        },
+        (error) => {
+          this.loading = false;
+          try {
+            this.errorMsg = error.error.message;
+          } catch (err) {
+            this.errorMsg =
+              "A system error occurred while searching for synonyms, we are working on a solution. Please try again later.";
+          }
         }
-      }
-    );
+      );
   }
 
   submit() {
     const expressionsToAdd = this.synonymData
-      .filter(entity => this.entityChecklistSelection.isSelected(entity))
-      .map(entity => {
+      .filter((entity) => this.entityChecklistSelection.isSelected(entity))
+      .map((entity) => {
         const regex = /\W+/g;
         const synonyms = entity.synonyms
           .map((synonym: string) => {
             const synonymHasNonWordChars = synonym.match(regex);
             return synonymHasNonWordChars ? `"${synonym}"` : synonym;
           })
-          .join(' or ');
+          .join(" or ");
         return `(${synonyms})`;
       });
     this.modal.close(expressionsToAdd);
@@ -112,17 +126,25 @@ export class SynonymSearchComponent {
   }
 
   allEntitiesChecked() {
-    return this.synonymData.every((entity) => this.entityChecklistSelection.isSelected(entity));
+    return this.synonymData.every((entity) =>
+      this.entityChecklistSelection.isSelected(entity)
+    );
   }
 
   toggleAllEntities() {
     // Just get the current state of the checkbox so we don't have to check the synonym data unnecessarily
-    const checkboxHeader = document.getElementById(this.id + '-synonym-checklist-header') as HTMLInputElement;
+    const checkboxHeader = document.getElementById(
+      this.id + "-synonym-checklist-header"
+    ) as HTMLInputElement;
 
     if (checkboxHeader.checked) {
-      this.synonymData.forEach(entity => this.entityChecklistSelection.select(entity));
+      this.synonymData.forEach((entity) =>
+        this.entityChecklistSelection.select(entity)
+      );
     } else {
-      this.synonymData.forEach(entity => this.entityChecklistSelection.deselect(entity));
+      this.synonymData.forEach((entity) =>
+        this.entityChecklistSelection.deselect(entity)
+      );
     }
   }
 

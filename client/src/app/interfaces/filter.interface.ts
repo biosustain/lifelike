@@ -9,7 +9,7 @@ export interface FilterEntity {
 export interface Visibility {
   identifier: string;
   visible: boolean;
-  entity: FilterEntity|WordCloudFilterEntity;
+  entity: FilterEntity | WordCloudFilterEntity;
 }
 
 export interface WordCloudFilterEntity extends FilterEntity {
@@ -18,8 +18,8 @@ export interface WordCloudFilterEntity extends FilterEntity {
 }
 
 export enum DefaultGroupByOptions {
-  NONE = 'None',
-  ENTITY_TYPE = 'Entity Type',
+  NONE = "None",
+  ENTITY_TYPE = "Entity Type",
   // Disabling this for now, maybe bring it back in the future
   // FILTERED = 'Filtered',
   // TODO: Might want to have this later, right now the API response for the combined s doesn't tell us what kind each row is
@@ -27,10 +27,10 @@ export enum DefaultGroupByOptions {
 }
 
 export enum DefaultOrderByOptions {
-  FREQUENCY = 'Frequency',
+  FREQUENCY = "Frequency",
 }
 
 export enum OrderDirection {
-  ASCENDING = 'Ascending',
-  DESCENDING = 'Descending'
+  ASCENDING = "Ascending",
+  DESCENDING = "Descending",
 }

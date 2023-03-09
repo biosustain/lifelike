@@ -1,7 +1,7 @@
 /**
  * Separated from interfaces.ts so it can be imported in webworker enviroment
  */
-import { Color } from 'd3-color';
+import { Color } from "d3-color";
 
 // region Graph as Sankey
 export type SankeyId = string | number;
@@ -34,7 +34,7 @@ export interface SankeyNodeInterface {
 }
 
 export enum DisplayPropertyType {
-  URL = 'URL'
+  URL = "URL",
 }
 
 export interface BaseDisplayProperty {
@@ -76,4 +76,3 @@ export interface SankeyNodePosition {
   height: number;
   reversedDepth: number;
 }
-

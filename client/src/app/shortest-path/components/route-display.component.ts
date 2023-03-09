@@ -1,19 +1,19 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input } from "@angular/core";
 
-import { isNil } from 'lodash-es';
-import { Options } from 'vis-network';
+import { isNil } from "lodash-es";
+import { Options } from "vis-network";
 
-import { GraphData } from 'app/interfaces/vis-js.interface';
+import { GraphData } from "app/interfaces/vis-js.interface";
 
 export enum DisplayType {
-  NETWORK = 'network',
-  SANKEY = 'sankey'
+  NETWORK = "network",
+  SANKEY = "sankey",
 }
 
 @Component({
-  selector: 'app-route-display',
-  templateUrl: './route-display.component.html',
-  styleUrls: ['./route-display.component.scss']
+  selector: "app-route-display",
+  templateUrl: "./route-display.component.html",
+  styleUrls: ["./route-display.component.scss"],
 })
 export class RouteDisplayComponent {
   @Input() set displayType(displayType: DisplayType) {
@@ -56,7 +56,7 @@ export class RouteDisplayComponent {
       },
       physics: {
         enabled: true,
-        solver: 'barnesHut',
+        solver: "barnesHut",
       },
       edges: {
         font: {
@@ -79,7 +79,7 @@ export class RouteDisplayComponent {
             drawThreshold: 5,
           },
         },
-        shape: 'box',
+        shape: "box",
         widthConstraint: {
           maximum: 180,
         },
@@ -107,8 +107,11 @@ export class RouteDisplayComponent {
     });
 
     const seenEdges = new Map<string, number>();
-    edges.forEach(edge => {
-      const sankeyEdge = [nodeIdentityMap.get(edge.from), nodeIdentityMap.get(edge.to)];
+    edges.forEach((edge) => {
+      const sankeyEdge = [
+        nodeIdentityMap.get(edge.from),
+        nodeIdentityMap.get(edge.to),
+      ];
       if (seenEdges.has(sankeyEdge.toString())) {
         value[seenEdges.get(sankeyEdge.toString())] += 1;
       } else {
@@ -120,15 +123,15 @@ export class RouteDisplayComponent {
     });
 
     this.sankeyData = {
-      type: 'sankey',
-      orientation: 'h',
+      type: "sankey",
+      orientation: "h",
       node: {
-        arrangement: 'snap',
+        arrangement: "snap",
         pad: 15,
         thickness: 20,
         line: {
-          color: 'black',
-          width: 0.5
+          color: "black",
+          width: 0.5,
         },
         label,
         color,
@@ -136,23 +139,23 @@ export class RouteDisplayComponent {
       link: {
         source,
         target,
-        value
-      }
+        value,
+      },
     };
   }
 
   initPlotlySankeySettings() {
     // Init plotly sankey settings
     this.sankeyData = {
-      type: 'sankey',
-      orientation: 'h',
+      type: "sankey",
+      orientation: "h",
       node: {
-        arrangement: 'snap',
+        arrangement: "snap",
         pad: 15,
         thickness: 20,
         line: {
-          color: 'black',
-          width: 0.5
+          color: "black",
+          width: 0.5,
         },
         label: [],
         color: [],
@@ -161,14 +164,14 @@ export class RouteDisplayComponent {
       link: {
         source: [],
         target: [],
-        value: []
-      }
+        value: [],
+      },
     };
 
     this.sankeyConfig = {
       font: {
-        size: 10
-      }
+        size: 10,
+      },
     };
   }
 
@@ -181,10 +184,12 @@ export class RouteDisplayComponent {
     nodes.forEach((node) => {
       if (!isNil(node.databaseLabel)) {
         if (!this.legend.has(node.databaseLabel)) {
-          this.legend.set(node.databaseLabel, [node.color.border, node.color.background]);
+          this.legend.set(node.databaseLabel, [
+            node.color.border,
+            node.color.background,
+          ]);
         }
       }
     });
   }
-
 }

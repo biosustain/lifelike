@@ -1,4 +1,4 @@
-@import 'src/scss/variables';
+@import "src/scss/variables";
 
 .select-input-container {
   cursor: text;
@@ -18,7 +18,7 @@
 }
 
 .select-input-inner-container {
-  margin-bottom: -($spacer * .25);
+  margin-bottom: -($spacer * 0.25);
 }
 
 .select-input-input {
@@ -29,7 +29,7 @@
     display: block;
     top: 0;
     left: 0;
-    content: var(--placeholder-text, 'Start typing...');
+    content: var(--placeholder-text, "Start typing...");
     color: $input-placeholder-color;
     pointer-events: none;
   }

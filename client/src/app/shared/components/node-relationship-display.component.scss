@@ -1,13 +1,13 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import 'src/scss/variables';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "src/scss/variables";
 
 .material-icons {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 .invalid-msg {
-  margin-top: .25rem;
+  margin-top: 0.25rem;
   font-size: 80%;
   color: #dc3545;
 }

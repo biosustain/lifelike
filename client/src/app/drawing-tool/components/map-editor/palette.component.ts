@@ -1,24 +1,24 @@
-import { Component } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component } from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
-import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
+import { AnnotationStyle, annotationTypes } from "app/shared/annotation-styles";
 
-import { UniversalGraphNode, UniversalGraphNodeTemplate } from '../../services/interfaces';
-import { createNodeDragImage } from '../../utils/drag';
+import {
+  UniversalGraphNode,
+  UniversalGraphNodeTemplate,
+} from "../../services/interfaces";
+import { createNodeDragImage } from "../../utils/drag";
 
 @Component({
-  selector: 'app-palette',
-  templateUrl: './palette.component.html',
-  styleUrls: ['./palette.component.scss'],
+  selector: "app-palette",
+  templateUrl: "./palette.component.html",
+  styleUrls: ["./palette.component.scss"],
 })
 export class PaletteComponent {
   nodeTemplates = annotationTypes;
   expanded = false;
 
-  constructor(
-    private readonly snackBar: MatSnackBar,
-  ) {
-  }
+  constructor(private readonly snackBar: MatSnackBar) {}
 
   /**
    * Get the node templates that we plan to show, based on whether
@@ -45,7 +45,7 @@ export class PaletteComponent {
 
     const dragImageNode: UniversalGraphNode = {
       ...copiedNode,
-      hash: '',
+      hash: "",
       data: {
         x: 0,
         y: 0,
@@ -54,13 +54,20 @@ export class PaletteComponent {
 
     const dataTransfer: DataTransfer = event.dataTransfer;
     createNodeDragImage(dragImageNode).addDataTransferData(dataTransfer);
-    dataTransfer.setData('text/plain', annotationStyle.label);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(copiedNode));
+    dataTransfer.setData("text/plain", annotationStyle.label);
+    dataTransfer.setData(
+      "application/***ARANGO_DB_NAME***-node",
+      JSON.stringify(copiedNode)
+    );
   }
 
   click() {
-    this.snackBar.open('Drag from the palette to the graph to create new nodes.', null, {
-      duration: 3000,
-    });
+    this.snackBar.open(
+      "Drag from the palette to the graph to create new nodes.",
+      null,
+      {
+        duration: 3000,
+      }
+    );
   }
 }

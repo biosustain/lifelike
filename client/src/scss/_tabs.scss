@@ -36,16 +36,20 @@
           bottom: 20%;
           width: 1px;
           background: $gray-500;
-          content: '';
+          content: "";
         }
       }
 
-      &, a {
-        &, &:link, &:visited {
+      &,
+      a {
+        &,
+        &:link,
+        &:visited {
           color: $body-color;
         }
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
           text-decoration: none;
         }
       }

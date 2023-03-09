@@ -1,7 +1,7 @@
-import Graph from 'app/shared/providers/graph-type/interfaces';
-import { MatchPriority } from 'app/shared/utils/find/prioritised-find';
+import Graph from "app/shared/providers/graph-type/interfaces";
+import { MatchPriority } from "app/shared/utils/find/prioritised-find";
 
-import { SankeyId } from './pure';
+import { SankeyId } from "./pure";
 
 export interface SearchLink extends Graph.Link {
   id: SankeyId;
@@ -12,9 +12,9 @@ export interface SearchNode extends Graph.Node {
 }
 
 export enum EntityType {
-  Link = 'link',
-  Node = 'node',
-  Trace = 'trace',
+  Link = "link",
+  Node = "node",
+  Trace = "trace",
 }
 
 export interface Match {

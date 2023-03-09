@@ -1,34 +1,35 @@
-Type: {{type}}
-<br/>
+Type: {{ type }}
+<br />
 Id:
 <!--null/undefined because a data source did not match-->
 <!--e.g we use "Custom" for phenotype-->
-<ng-container *ngIf="annoId else noneAnnoId">
-  <a *ngIf="idLink else noneIdLink" [href]="idLink.url + annoId" target="_blank">
-    {{annoId}}
+<ng-container *ngIf="annoId; else noneAnnoId">
+  <a
+    *ngIf="idLink; else noneIdLink"
+    [href]="idLink.url + annoId"
+    target="_blank"
+  >
+    {{ annoId }}
   </a>
-  <ng-template #noneIdLink>{{annoId}}</ng-template>
+  <ng-template #noneIdLink>{{ annoId }}</ng-template>
 </ng-container>
 <ng-template #noneAnnoId>None</ng-template>
-<br/>
-Data Source: {{idType ? idType : 'None'}}
+<br />
+Data Source: {{ idType ? idType : "None" }}
 
 <ng-container *ngIf="isCustom">
-  <br/>
+  <br />
   User generated annotation
 </ng-container>
 <!-- source links if any -->
 <div *ngIf="idHyperlinks && idHyperlinks.length">
   <a>Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i></a>
   <div>
-    <a *ngFor="let link of idHyperlinks"
-       target="_blank"
-       [href]="link.url"
-    >
-      {{link.label}}
+    <a *ngFor="let link of idHyperlinks" target="_blank" [href]="link.url">
+      {{ link.label }}
     </a>
 
-    <br>
+    <br />
   </div>
 </div>
 <!-- search links -->
@@ -40,15 +41,22 @@ Data Source: {{idType ? idType : 'None'}}
     (click)="searchLinksCollapse.collapsed = !searchLinksCollapse.collapsed"
     [attr.aria-expanded]="!searchLinksCollapse.collapsed"
     [attr.aria-controls]="searchLinkCollapseTarget.uid"
-  >Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i></div>
-  <div #searchLinkCollapseTarget="uid" appUid
-       #searchLinksCollapse="ngbCollapse" ngbCollapse="true">
-    <a *ngFor="let link of searchLinks"
-       target="_blank"
-       [href]="link.url"
-       [style.display]="'block'"
+  >
+    Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
+  </div>
+  <div
+    #searchLinkCollapseTarget="uid"
+    appUid
+    #searchLinksCollapse="ngbCollapse"
+    ngbCollapse="true"
+  >
+    <a
+      *ngFor="let link of searchLinks"
+      target="_blank"
+      [href]="link.url"
+      [style.display]="'block'"
     >
-      {{link.label}}
+      {{ link.label }}
     </a>
   </div>
 </div>
@@ -58,43 +66,58 @@ Data Source: {{idType ? idType : 'None'}}
     class="tooltip-collapse-control"
     role="button"
     data-toggle="collapse"
-    (click)="searchInternalLinksCollapse.collapsed = !searchInternalLinksCollapse.collapsed"
+    (click)="
+      searchInternalLinksCollapse.collapsed =
+        !searchInternalLinksCollapse.collapsed
+    "
     [attr.aria-expanded]="!searchInternalLinksCollapse.collapsed"
     [attr.aria-controls]="searchInternalLinkCollapseTarget.uid"
-  >Search internal link
+  >
+    Search internal link
   </div>
-  <div #searchInternalLinkCollapseTarget="uid" appUid
-       #searchInternalLinksCollapse="ngbCollapse" ngbCollapse="true">
-    <a *ngFor="let link of internalSearchLinks"
-       target="_blank"
-       [href]="link.url"
-       [style.display]="'block'"
+  <div
+    #searchInternalLinkCollapseTarget="uid"
+    appUid
+    #searchInternalLinksCollapse="ngbCollapse"
+    ngbCollapse="true"
+  >
+    <a
+      *ngFor="let link of internalSearchLinks"
+      target="_blank"
+      [href]="link.url"
+      [style.display]="'block'"
     >
-      {{link.label}}
+      {{ link.label }}
     </a>
   </div>
 </div>
-<ng-template #buttonWithIcon let-label="label" let-icon="icon" let-click="click">
-  <button
-    type="button"
-    class="btn btn-primary btn-block"
-    (click)="click()"
-  >
+<ng-template
+  #buttonWithIcon
+  let-label="label"
+  let-icon="icon"
+  let-click="click"
+>
+  <button type="button" class="btn btn-primary btn-block" (click)="click()">
     <i [ngClass]="['fas', 'fa-fw', icon]"></i>
-    <span>{{label}}</span>
+    <span>{{ label }}</span>
   </button>
 </ng-template>
 <div class="mt-1" *ngIf="isCustom || !isExcluded">
-  <ng-container *ngTemplateOutlet="buttonWithIcon; context:
-                isCustom ? {
-                  label: 'Delete Annotation',
-                  click: removeCustomAnnotation.bind(this),
-                  icon: 'fa-trash'
-                } : {
-                  label: 'Mark for Exclusion',
-                  click: openExclusionPanel.bind(this),
-                  icon: 'fa-minus-circle'
-                }"
+  <ng-container
+    *ngTemplateOutlet="
+      buttonWithIcon;
+      context: isCustom
+        ? {
+            label: 'Delete Annotation',
+            click: removeCustomAnnotation.bind(this),
+            icon: 'fa-trash'
+          }
+        : {
+            label: 'Mark for Exclusion',
+            click: openExclusionPanel.bind(this),
+            icon: 'fa-minus-circle'
+          }
+    "
   ></ng-container>
 </div>
 <div class="mt-1">
@@ -111,8 +134,9 @@ Data Source: {{idType ? idType : 'None'}}
   <div style="display: flex; flex-direction: column">
     <span style="line-height: 16px">Manually excluded</span>
     <span style="line-height: 16px"><i>reason: </i>{{ exclusionReason }}</span>
-    <span *ngIf="exclusionComment"
-          style="line-height: 16px"><i>comment: </i>{{ exclusionComment }}</span>
+    <span *ngIf="exclusionComment" style="line-height: 16px"
+      ><i>comment: </i>{{ exclusionComment }}</span
+    >
   </div>
   <div class="mt-1">
     <button
