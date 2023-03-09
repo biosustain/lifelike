@@ -36,7 +36,7 @@ jobs:
     name: Annotate code style
     if: |
       (!github.event.action == 'issue_comment') || (
-       (github.event.issue.pull_request &&
+       github.event.issue.pull_request &&
        (github.event.comment.body == 'autofix') &&
        (github.event.sender.id == github.event.issue.user.id)
       )
