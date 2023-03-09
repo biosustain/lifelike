@@ -23,9 +23,17 @@ on:
     types: [created]
 
 jobs:
+  debug:
+    steps:
+      - run: echo "github.event.action: ${{github.event.action}}"
+      - run: echo "github.event.issue.pull_request: ${{github.event.issue.pull_request}}"
+      - run: echo "github.event.sender.id: ${{github.event.sender.id}}"
+      - run: echo "github.event.issue.user.id: ${{github.event.issue.user.id}}"
+      - run: echo "github.event.comment.body: ${{github.event.comment.body}}"
+
   appserver:
     name: Annotate code style
-    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && github.event.sender.id == github.event.issue.user.id)
+    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && github.event.sender.id == github.event.issue.user.id && github.event.comment.body == 'autofix')
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +44,7 @@ jobs:
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          auto_fix: ${{ github.event.inputs.autoFix || ( github.event.comment.body == 'autofix' && github.event.sender.id == github.event.pull_request.user.id ) }}
+          auto_fix: ${{ github.event.inputs.autoFix || ( && github.event.sender.id == github.event.pull_request.user.id ) }}
           neutral_check_on_warning: true
           continue_on_error: true
           black: true
