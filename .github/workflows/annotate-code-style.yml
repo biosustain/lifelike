@@ -24,6 +24,7 @@ on:
 
 jobs:
   debug:
+    runs-on: ubuntu-latest
     steps:
       - run: echo "github.event.action ${{ github.event.action }}"
       - run: echo "github.event.issue.pull_request ${{ github.event.issue.pull_request }}"
@@ -35,7 +36,6 @@ jobs:
     name: Annotate code style
     if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && github.event.sender.id == github.event.issue.user.id && github.event.comment.body == 'autofix')
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
