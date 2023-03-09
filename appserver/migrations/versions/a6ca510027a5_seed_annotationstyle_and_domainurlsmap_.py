@@ -18,32 +18,32 @@ from neo4japp.models import AnnotationStyle, DomainURLsMap
 
 
 # revision identifiers, used by Alembic.
-revision = 'a6ca510027a5'
-down_revision = 'fb1654973fbd'
+revision = "a6ca510027a5"
+down_revision = "fb1654973fbd"
 branch_labels = None
 depends_on = None
 
 t_annotation_style = table(
-    'annotation_style',
-    column('id', sa.Integer),
-    column('label', sa.String),
-    column('color', sa.String),
-    column('icon_code', sa.String),
-    column('font_color', sa.String),
-    column('border_color', sa.String),
-    column('background_color', sa.String),
+    "annotation_style",
+    column("id", sa.Integer),
+    column("label", sa.String),
+    column("color", sa.String),
+    column("icon_code", sa.String),
+    column("font_color", sa.String),
+    column("border_color", sa.String),
+    column("background_color", sa.String),
 )
 
 t_domain_urls_map = table(
-    'domain_urls_map',
-    column('id', sa.Integer),
-    column('domain', sa.String),
-    column('base_URL', sa.String),
+    "domain_urls_map",
+    column("id", sa.Integer),
+    column("domain", sa.String),
+    column("base_URL", sa.String),
 )
 
 
 def upgrade():
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 
@@ -67,21 +67,18 @@ def data_upgrades():
         data = json.load(f)
 
         for model in data:
-            if model['model'] == 'neo4japp.models.DomainURLsMap':
-                domain_urls_map_json = model['records']
+            if model["model"] == "neo4japp.models.DomainURLsMap":
+                domain_urls_map_json = model["records"]
                 continue
 
-            if model['model'] == 'neo4japp.models.AnnotationStyle':
-                annotation_style_json = model['records']
+            if model["model"] == "neo4japp.models.AnnotationStyle":
+                annotation_style_json = model["records"]
                 continue
 
     domain_urls_map_data = []
     for row in domain_urls_map_json:
         domain_urls_map_data.append(
-            {
-                'domain': row['domain'],
-                'base_URL': row['base_URL']
-            }
+            {"domain": row["domain"], "base_URL": row["base_URL"]}
         )
     session.execute(t_domain_urls_map.insert(), domain_urls_map_data)
 
@@ -89,12 +86,12 @@ def data_upgrades():
     for row in annotation_style_json:
         annotation_style_data.append(
             {
-                'label': row['label'],
-                'color': row['color'],
-                'border_color': row.get('border_color', None),
-                'background_color': row.get('background_color', None),
-                'font_color': row.get('font_color', None),
-                'icon_code': row.get('icon_code', None),
+                "label": row["label"],
+                "color": row["color"],
+                "border_color": row.get("border_color", None),
+                "background_color": row.get("background_color", None),
+                "font_color": row.get("font_color", None),
+                "icon_code": row.get("icon_code", None),
             }
         )
     session.execute(t_annotation_style.insert(), annotation_style_data)

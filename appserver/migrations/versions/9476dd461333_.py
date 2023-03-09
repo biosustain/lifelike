@@ -21,14 +21,14 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 
 
 # revision identifiers, used by Alembic.
-revision = '9476dd461333'
-down_revision = '3234be6a4bd8'
+revision = "9476dd461333"
+down_revision = "3234be6a4bd8"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 
@@ -37,138 +37,116 @@ def downgrade():
 
 
 DEFAULT_DOMAIN_INFO = {
-    "Regulon": {
-        "labels": [
-            "Regulator Family",
-            "Activated By",
-            "Repressed By"
-        ]
-    },
-    "UniProt": {
-        "labels": [
-            "Function"
-        ]
-    },
-    "String": {
-        "labels": [
-            "Annotation"
-        ]
-    },
-    "GO": {
-        "labels": [
-            "Annotation"
-        ]
-    },
-    "BioCyc": {
-        "labels": [
-            "Pathways"
-        ]
-    }
+    "Regulon": {"labels": ["Regulator Family", "Activated By", "Repressed By"]},
+    "UniProt": {"labels": ["Function"]},
+    "String": {"labels": ["Annotation"]},
+    "GO": {"labels": ["Annotation"]},
+    "BioCyc": {"labels": ["Pathways"]},
 }
 
 ORGANISM_MAP = {
-    '511145': 'Escherichia coli str. K-12 substr. MG1655',
-    '9606': 'Homo sapiens'
+    "511145": "Escherichia coli str. K-12 substr. MG1655",
+    "9606": "Homo sapiens",
 }
 
 
 def _fix_str_annos(annos):
-    genes, tax_id, organism, sources = annos.split('/')
-    sources = sources.split(',')
+    genes, tax_id, organism, sources = annos.split("/")
+    sources = sources.split(",")
 
-    if tax_id and organism == '':
+    if tax_id and organism == "":
         organism = ORGANISM_MAP[tax_id]
 
-    if 'Biocyc' in sources:
-        sources[sources.index('Biocyc')] = 'BioCyc'
+    if "Biocyc" in sources:
+        sources[sources.index("Biocyc")] = "BioCyc"
 
     return {
-        'data': {
-            'genes': genes,
-            'taxId': tax_id,
-            'sources': sources,
-            'organism': organism
+        "data": {
+            "genes": genes,
+            "taxId": tax_id,
+            "sources": sources,
+            "organism": organism,
         },
-        'result': {
-            'genes': [{'imported': gene} for gene in genes],
-            'domainInfo': DEFAULT_DOMAIN_INFO
-        }
+        "result": {
+            "genes": [{"imported": gene} for gene in genes],
+            "domainInfo": DEFAULT_DOMAIN_INFO,
+        },
     }
 
 
 def _fix_annos_based_on_error(enrichment_annos: dict, error: str):
     if error == "data.result must not contain {'version'} properties":
-        enrichment_annos['result'].pop('version')
+        enrichment_annos["result"].pop("version")
     elif error == "data must contain ['data'] properties":
         # Remove and cache 'genes' and 'domainInfo' from the object
-        genes = enrichment_annos.pop('genes')
-        domain_info = enrichment_annos.pop('domain_info')
+        genes = enrichment_annos.pop("genes")
+        domain_info = enrichment_annos.pop("domain_info")
 
         # Make sure the domains have the proper casing
         for gene in genes:
-            if 'domains' in gene and 'Biocyc' in gene['domains']:
-                gene['domains']['BioCyc'] = gene['domains'].pop('Biocyc')
-            if 'annotated_imported' in gene:
-                gene['annotatedImported'] = gene.pop('annotated_imported')
-            if 'annotated_full_name' in gene:
-                gene['annotatedFullName'] = gene.pop('annotated_full_name')
-            if 'annotated_matched' in gene:
-                gene['annotatedMatched'] = gene.pop('annotated_matched')
-            if 'full_name' in gene:
-                gene['fullName'] = gene.pop('full_name')
+            if "domains" in gene and "Biocyc" in gene["domains"]:
+                gene["domains"]["BioCyc"] = gene["domains"].pop("Biocyc")
+            if "annotated_imported" in gene:
+                gene["annotatedImported"] = gene.pop("annotated_imported")
+            if "annotated_full_name" in gene:
+                gene["annotatedFullName"] = gene.pop("annotated_full_name")
+            if "annotated_matched" in gene:
+                gene["annotatedMatched"] = gene.pop("annotated_matched")
+            if "full_name" in gene:
+                gene["fullName"] = gene.pop("full_name")
 
-        if 'Biocyc' in domain_info:
-            domain_info['BioCyc'] = domain_info.pop('Biocyc')
+        if "Biocyc" in domain_info:
+            domain_info["BioCyc"] = domain_info.pop("Biocyc")
 
         # Check if 'version' is a property and remove it
-        if 'version' in enrichment_annos:
-            enrichment_annos.pop('version')
+        if "version" in enrichment_annos:
+            enrichment_annos.pop("version")
 
         # Synthesize the 'data' and 'result' properties from the old props
-        enrichment_annos['data'] = {
-            'genes': ','.join([gene['imported'] for gene in genes]),
-            'taxId': '511145',
-            'sources': ['UniProt', 'String', 'GO', 'BioCyc', 'KEGG'],
-            'organism': 'Escherichia coli str. K-12 substr. MG1655'
+        enrichment_annos["data"] = {
+            "genes": ",".join([gene["imported"] for gene in genes]),
+            "taxId": "511145",
+            "sources": ["UniProt", "String", "GO", "BioCyc", "KEGG"],
+            "organism": "Escherichia coli str. K-12 substr. MG1655",
         }
-        enrichment_annos['result'] = {'genes': genes, 'domainInfo': domain_info}
-    elif error == 'data must be object' or error == 'data.data must be object':
+        enrichment_annos["result"] = {"genes": genes, "domainInfo": domain_info}
+    elif error == "data must be object" or error == "data.data must be object":
         # Remove and cache 'genes' and 'domainInfo' from the 'result' object
-        genes = enrichment_annos['result'].pop('genes')
-        domain_info = enrichment_annos['result'].pop('domainInfo')
+        genes = enrichment_annos["result"].pop("genes")
+        domain_info = enrichment_annos["result"].pop("domainInfo")
 
         # Make sure the domains have the proper casing
         for gene in genes:
-            if 'domains' in gene and 'Biocyc' in gene['domains']:
-                gene['domains']['BioCyc'] = gene['domains'].pop('Biocyc')
-            if 'annotated_imported' in gene:
-                gene['annotatedImported'] = gene.pop('annotated_imported')
-            if 'annotated_full_name' in gene:
-                gene['annotatedFullName'] = gene.pop('annotated_full_name')
-            if 'annotated_matched' in gene:
-                gene['annotatedMatched'] = gene.pop('annotated_matched')
-            if 'full_name' in gene:
-                gene['fullName'] = gene.pop('full_name')
+            if "domains" in gene and "Biocyc" in gene["domains"]:
+                gene["domains"]["BioCyc"] = gene["domains"].pop("Biocyc")
+            if "annotated_imported" in gene:
+                gene["annotatedImported"] = gene.pop("annotated_imported")
+            if "annotated_full_name" in gene:
+                gene["annotatedFullName"] = gene.pop("annotated_full_name")
+            if "annotated_matched" in gene:
+                gene["annotatedMatched"] = gene.pop("annotated_matched")
+            if "full_name" in gene:
+                gene["fullName"] = gene.pop("full_name")
 
-        if 'Biocyc' in domain_info:
-            domain_info['BioCyc'] = domain_info.pop('Biocyc')
+        if "Biocyc" in domain_info:
+            domain_info["BioCyc"] = domain_info.pop("Biocyc")
 
         # Set final 'result' object
-        enrichment_annos['result'] = {'genes': genes, 'domainInfo': domain_info}
+        enrichment_annos["result"] = {"genes": genes, "domainInfo": domain_info}
 
         # Next make sure 'data' object has correct schema
-        genes, tax_id, organism, sources = enrichment_annos['data'].split('/')
-        sources = sources.split(',')
+        genes, tax_id, organism, sources = enrichment_annos["data"].split("/")
+        sources = sources.split(",")
 
-        if 'Biocyc' in sources:
-            sources[sources.index('Biocyc')] = 'BioCyc'
+        if "Biocyc" in sources:
+            sources[sources.index("Biocyc")] = "BioCyc"
 
         # Set final 'data' object
-        enrichment_annos['data'] = {
-            'genes': genes,
-            'taxId': tax_id,
-            'sources': sources,
-            'organism': organism
+        enrichment_annos["data"] = {
+            "genes": genes,
+            "taxId": tax_id,
+            "sources": sources,
+            "organism": organism,
         }
     return enrichment_annos
 
@@ -179,29 +157,27 @@ def data_upgrades():
     session = Session(conn)
 
     t_files = sa.table(
-        'files',
-        sa.column('id', sa.Integer),
-        sa.column('content_id', sa.Integer),
-        sa.column('mime_type', sa.String),
-        sa.column('enrichment_annotations', postgresql.JSONB)
+        "files",
+        sa.column("id", sa.Integer),
+        sa.column("content_id", sa.Integer),
+        sa.column("mime_type", sa.String),
+        sa.column("enrichment_annotations", postgresql.JSONB),
     )
 
     t_files_content = sa.table(
-        'files_content',
-        sa.column('id', sa.Integer),
-        sa.column('raw_file', sa.LargeBinary),
-        sa.column('checksum_sha256', sa.Binary)
+        "files_content",
+        sa.column("id", sa.Integer),
+        sa.column("raw_file", sa.LargeBinary),
+        sa.column("checksum_sha256", sa.Binary),
     )
 
     # This will retrieve all enrichment tables that *have* annotations. The annotations and the
     # content *might* be invalid. If the annotations are invalid, we will fix them and then
     # replace the content with them.
     files = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files.c.id,
-            t_files.c.content_id,
-            t_files.c.enrichment_annotations
-        ]).where(
+        sa.select(
+            [t_files.c.id, t_files.c.content_id, t_files.c.enrichment_annotations]
+        ).where(
             sa.and_(
                 t_files.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
                 t_files.c.enrichment_annotations.isnot(None),
@@ -212,17 +188,19 @@ def data_upgrades():
     # This will retrieve the *content* of all enrichment tables *without* annotations. If the
     # content is invalid, we will fix it, and update the row with the valid content.
     files_content = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files_content.c.id,
-            t_files_content.c.raw_file,
-        ]).select_from(
+        sa.select(
+            [
+                t_files_content.c.id,
+                t_files_content.c.raw_file,
+            ]
+        ).select_from(
             t_files_content.join(
                 t_files,
                 sa.and_(
                     t_files.c.content_id == t_files_content.c.id,
                     t_files.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
                     t_files.c.enrichment_annotations.is_(None),
-                )
+                ),
             )
         )
     )
@@ -231,7 +209,7 @@ def data_upgrades():
         file_content_to_update = []
         for id, raw in chunk:
             try:
-                decoded_raw = raw.decode('utf-8')
+                decoded_raw = raw.decode("utf-8")
                 enrichment_annos = json.loads(decoded_raw)
                 validate_enrichment_table(enrichment_annos)
             except json.JSONDecodeError:
@@ -244,9 +222,13 @@ def data_upgrades():
             validate_enrichment_table(enrichment_annos)
 
             # Add the FileContent update mapping to the list
-            new_content = json.dumps(enrichment_annos, separators=(',', ':')).encode('utf-8')
+            new_content = json.dumps(enrichment_annos, separators=(",", ":")).encode(
+                "utf-8"
+            )
             new_hash = hashlib.sha256(new_content).digest()
-            file_content_to_update.append({'id': id, 'raw_file': new_content, 'checksum_sha256': new_hash})  # noqa
+            file_content_to_update.append(
+                {"id": id, "raw_file": new_content, "checksum_sha256": new_hash}
+            )  # noqa
 
         session.bulk_update_mappings(FileContent, file_content_to_update)
         session.commit()
@@ -270,13 +252,17 @@ def data_upgrades():
 
                 # Do the same for FileContent, i.e., if the enrichment annotations were
                 # invalid, the raw content is too since they're more or less the same
-                new_content = json.dumps(enrichment_annos, separators=(',', ':')).encode('utf-8')
+                new_content = json.dumps(
+                    enrichment_annos, separators=(",", ":")
+                ).encode("utf-8")
                 new_hash = hashlib.sha256(new_content).digest()
 
                 existing_content = conn.execute(
-                    sa.select([
-                        t_files_content.c.id,
-                    ]).where(
+                    sa.select(
+                        [
+                            t_files_content.c.id,
+                        ]
+                    ).where(
                         t_files_content.c.checksum_sha256 == new_hash,
                     )
                 ).scalar()
@@ -287,9 +273,21 @@ def data_upgrades():
                     # And it's not a duplicate of a newly fixed file...
                     if new_hash not in unique_content_map:
                         unique_content_map[new_hash] = content_id
-                        file_content_to_update.append({'id': content_id, 'raw_file': new_content, 'checksum_sha256': new_hash})  # noqa
+                        file_content_to_update.append(
+                            {
+                                "id": content_id,
+                                "raw_file": new_content,
+                                "checksum_sha256": new_hash,
+                            }
+                        )  # noqa
                     file_content_id = unique_content_map[new_hash]
-                files_to_update.append({'id': id, 'enrichment_annotations': enrichment_annos, 'content_id': file_content_id})  # noqa
+                files_to_update.append(
+                    {
+                        "id": id,
+                        "enrichment_annotations": enrichment_annos,
+                        "content_id": file_content_id,
+                    }
+                )  # noqa
 
         session.bulk_update_mappings(Files, files_to_update)
         session.bulk_update_mappings(FileContent, file_content_to_update)

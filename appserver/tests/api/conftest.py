@@ -26,20 +26,23 @@ from neo4japp.services.elastic import ElasticService
 #################
 # Service mocks
 ################
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    PDFTypeProvider,
+)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_global_compound_inclusion(session):
     annotation = {
-        'meta': {
-            'id': 'BIOC:Fake',
-            'type': EntityType.COMPOUND.value,
+        "meta": {
+            "id": "BIOC:Fake",
+            "type": EntityType.COMPOUND.value,
         },
-        'keyword': 'compound-(12345)'
+        "keyword": "compound-(12345)",
     }
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    file_content = FileContent(raw_file=b"", checksum_sha256=b"")
     session.add(file_content)
     session.flush()
 
@@ -55,17 +58,17 @@ def mock_global_compound_inclusion(session):
     session.flush()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_global_gene_exclusion(session):
     annotation = {
-        'meta': {
-            'id': '59272',
-            'type': EntityType.GENE.value,
+        "meta": {
+            "id": "59272",
+            "type": EntityType.GENE.value,
         },
-        'keyword': 'fake-gene'
+        "keyword": "fake-gene",
     }
 
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    file_content = FileContent(raw_file=b"", checksum_sha256=b"")
     session.add(file_content)
     session.flush()
 
@@ -81,17 +84,17 @@ def mock_global_gene_exclusion(session):
     session.flush()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_global_list(fix_admin_user, fix_project, session):
-    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    file_content = FileContent(raw_file=b"", checksum_sha256=b"")
     session.add(file_content)
     session.flush()
 
     f = Files(
-        hash_id='pdf1',
+        hash_id="pdf1",
         mime_type=PDFTypeProvider.MIME_TYPE,
-        filename='pdf1',
-        description='a test pdf',
+        filename="pdf1",
+        description="a test pdf",
         user=fix_admin_user,
         content=file_content,
         parent=fix_project.***ARANGO_USERNAME***,
@@ -100,12 +103,12 @@ def mock_global_list(fix_admin_user, fix_project, session):
     session.flush()
 
     annotation = {
-        'meta': {
-            'id': 'BIOC:Fake',
-            'type': EntityType.COMPOUND.value,
-            'allText': 'compound-(12345)'
+        "meta": {
+            "id": "BIOC:Fake",
+            "type": EntityType.COMPOUND.value,
+            "allText": "compound-(12345)",
         },
-        'user_id': fix_admin_user.id
+        "user_id": fix_admin_user.id,
     }
     # inclusion = GlobalList(
     #     annotation=annotation,
@@ -118,10 +121,10 @@ def mock_global_list(fix_admin_user, fix_project, session):
     session.flush()
 
     annotation = {
-        'id': '59272',
-        'type': EntityType.GENE.value,
-        'text': 'fake-gene',
-        'user_id': fix_admin_user.id
+        "id": "59272",
+        "type": EntityType.GENE.value,
+        "text": "fake-gene",
+        "user_id": fix_admin_user.id,
     }
     exclusion = GlobalList(
         annotation=annotation,
@@ -134,86 +137,86 @@ def mock_global_list(fix_admin_user, fix_project, session):
     session.flush()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_get_combined_annotations_result(monkeypatch):
     def get_combined_annotations_result(*args, **kwargs):
         return [
             {
-                'meta': {
-                    'type': EntityType.GENE.value,
-                    'id': '59272',
+                "meta": {
+                    "type": EntityType.GENE.value,
+                    "id": "59272",
                 },
-                'keyword': 'ace2',
-                'primaryName': 'ACE2',
+                "keyword": "ace2",
+                "primaryName": "ACE2",
             },
             {
-                'meta': {
-                    'type': EntityType.SPECIES.value,
-                    'id': '9606',
+                "meta": {
+                    "type": EntityType.SPECIES.value,
+                    "id": "9606",
                 },
-                'keyword': 'human',
-                'primaryName': 'Homo Sapiens',
+                "keyword": "human",
+                "primaryName": "Homo Sapiens",
             },
         ]
 
     monkeypatch.setattr(
         ManualAnnotationService,
-        'get_file_annotations',
+        "get_file_annotations",
         get_combined_annotations_result,
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_get_organisms_from_gene_ids_result(monkeypatch):
     def get_organisms_from_gene_ids_result(*args, **kwargs):
         return [
             {
-                'gene_id': '59272',
-                'gene_name': 'ACE2',
-                'taxonomy_id': '9606',
-                'species_name': 'Homo sapiens',
+                "gene_id": "59272",
+                "gene_name": "ACE2",
+                "taxonomy_id": "9606",
+                "species_name": "Homo sapiens",
             }
         ]
 
     # This SO post was useful to find what path to use: https://stackoverflow.com/a/64161240
     monkeypatch.setattr(
-        'neo4japp.blueprints.annotations.get_organisms_from_gene_ids',
+        "neo4japp.blueprints.annotations.get_organisms_from_gene_ids",
         get_organisms_from_gene_ids_result,
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_index_files(monkeypatch):
     def index_files(*args, **kwargs):
         return None
 
     monkeypatch.setattr(
         ElasticService,
-        'index_files',
+        "index_files",
         index_files,
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_index_maps(monkeypatch):
     def index_maps(*args, **kwargs):
         return None
 
     monkeypatch.setattr(
         ElasticService,
-        'index_maps',
+        "index_maps",
         index_maps,
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def mock_delete_elastic_documents(monkeypatch):
     def delete_documents_with_index(*args, **kwargs):
         return None
 
     monkeypatch.setattr(
         ElasticService,
-        'delete_documents_with_index',
+        "delete_documents_with_index",
         delete_documents_with_index,
     )
 
@@ -222,79 +225,80 @@ def mock_delete_elastic_documents(monkeypatch):
 # End service mocks
 ####################
 
-@pytest.fixture(scope='function')
+
+@pytest.fixture(scope="function")
 def fix_admin_role(account_service: AccountService) -> AppRole:
-    return account_service.get_or_create_role('admin')
+    return account_service.get_or_create_role("admin")
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_superuser_role(account_service: AccountService) -> AppRole:
-    return account_service.get_or_create_role('private-data-access')
+    return account_service.get_or_create_role("private-data-access")
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_user_role(account_service: AccountService) -> AppRole:
-    return account_service.get_or_create_role('user')
+    return account_service.get_or_create_role("user")
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_admin_user(session, fix_admin_role, fix_superuser_role) -> AppUser:
     user = AppUser(
         id=100,
-        username='api_owner',
-        email='admin@***ARANGO_DB_NAME***.bio',
-        first_name='Jim',
-        last_name='Melancholy',
-        subject='admin@***ARANGO_DB_NAME***.bio',
+        username="api_owner",
+        email="admin@***ARANGO_DB_NAME***.bio",
+        first_name="Jim",
+        last_name="Melancholy",
+        subject="admin@***ARANGO_DB_NAME***.bio",
     )
-    user.set_password('password')
+    user.set_password("password")
     user.roles.extend([fix_admin_role, fix_superuser_role])
     session.add(user)
     session.flush()
     return user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def test_user(session, fix_user_role) -> AppUser:
     user = AppUser(
         id=200,
-        username='test',
-        email='test@***ARANGO_DB_NAME***.bio',
-        first_name='Jim',
-        last_name='Melancholy',
-        subject='test@***ARANGO_DB_NAME***.bio',
+        username="test",
+        email="test@***ARANGO_DB_NAME***.bio",
+        first_name="Jim",
+        last_name="Melancholy",
+        subject="test@***ARANGO_DB_NAME***.bio",
     )
-    user.set_password('password')
+    user.set_password("password")
     user.roles.append(fix_user_role)
     session.add(user)
     session.flush()
     return user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def test_user_2(session) -> AppUser:
     user = AppUser(
         id=300,
-        username='pleb',
-        email='pleblife@hut.org',
-        first_name='pleb',
-        last_name='life',
-        subject='pleblife@hut.org',
+        username="pleb",
+        email="pleblife@hut.org",
+        first_name="pleb",
+        last_name="life",
+        subject="pleblife@hut.org",
     )
-    user.set_password('password')
+    user.set_password("password")
     user.roles.append(fix_user_role)
     session.add(user)
     session.flush()
     return user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_directory(session, test_user: AppUser) -> Files:
     dir = Files(
-        filename='/',
+        filename="/",
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         user=test_user,
-        path='/Lifelike'
+        path="/Lifelike",
     )
 
     session.add(dir)
@@ -303,47 +307,40 @@ def fix_directory(session, test_user: AppUser) -> Files:
     return dir
 
 
-@pytest.fixture(scope='function')
-def fix_project(
-    session,
-    fix_directory: Files,
-    test_user: AppUser
-) -> Projects:
+@pytest.fixture(scope="function")
+def fix_project(session, fix_directory: Files, test_user: AppUser) -> Projects:
     project = Projects(
-        name='Lifelike',
-        description='Test project',
+        name="Lifelike",
+        description="Test project",
         ***ARANGO_USERNAME***=fix_directory,
         creation_date=datetime.now(),
     )
     session.add(project)
     session.flush()
 
-    role = AppRole.query.filter(
-        AppRole.name == 'project-admin'
-    ).one()
+    role = AppRole.query.filter(AppRole.name == "project-admin").one()
 
     session.execute(
         projects_collaborator_role.insert(),
-        [{
-            'appuser_id': test_user.id,
-            'app_role_id': role.id,
-            'projects_id': project.id,
-        }]
+        [
+            {
+                "appuser_id": test_user.id,
+                "app_role_id": role.id,
+                "projects_id": project.id,
+            }
+        ],
     )
     session.flush()
     return project
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def test_user_with_pdf(
-        session,
-        test_user: AppUser,
-        fix_project: Projects,
-        pdf_dir: str
+    session, test_user: AppUser, fix_project: Projects, pdf_dir: str
 ) -> Files:
-    pdf_path = os.path.join(pdf_dir, 'example3.pdf')
+    pdf_path = os.path.join(pdf_dir, "example3.pdf")
 
-    with open(pdf_path, 'rb') as pdf_file:
+    with open(pdf_path, "rb") as pdf_file:
         pdf_content = pdf_file.read()
 
         file_content = FileContent(
@@ -353,15 +350,15 @@ def test_user_with_pdf(
         )
 
         fake_file = Files(
-            filename='example3.pdf',
+            filename="example3.pdf",
             content_id=file_content.id,
             user_id=test_user.id,
             mime_type=PDFTypeProvider.MIME_TYPE,
             creation_date=datetime.now(),
             parent_id=fix_project.***ARANGO_USERNAME***_id,
-            organism_name='Homo sapiens',
-            organism_synonym='Homo sapiens',
-            organism_taxonomy_id='9606'
+            organism_name="Homo sapiens",
+            organism_synonym="Homo sapiens",
+            organism_taxonomy_id="9606",
         )
 
         session.add(file_content)
@@ -372,17 +369,17 @@ def test_user_with_pdf(
 
 
 def login_as_user(self, email, password) -> AppUser:
-    """ Returns the authenticated JWT tokens """
-    credentials = {'email': email, 'password': password}
+    """Returns the authenticated JWT tokens"""
+    credentials = {"email": email, "password": password}
     login_resp = self.post(
-        '/auth/login',
+        "/auth/login",
         data=json.dumps(credentials),
-        content_type='application/json',
+        content_type="application/json",
     )
     return login_resp.get_json()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def client(app: Flask):
     """Creates a HTTP client for REST actions for a test."""
     client = app.test_client()
@@ -390,23 +387,27 @@ def client(app: Flask):
     return client
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def user_client(client, test_user: AppUser):
-    """ Returns an authenticated client as well as the JWT information """
-    auth = client.login_as_user('test@***ARANGO_DB_NAME***.bio', 'password')
+    """Returns an authenticated client as well as the JWT information"""
+    auth = client.login_as_user("test@***ARANGO_DB_NAME***.bio", "password")
     return client, auth
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def uri_fixture(client, session) -> DomainURLsMap:
-    uri1 = DomainURLsMap(domain="CHEBI",
-                         base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
-    uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
+    uri1 = DomainURLsMap(
+        domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}"
+    )  # noqa
+    uri2 = DomainURLsMap(
+        domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}"
+    )
 
     session.add(uri1)
     session.add(uri2)
     session.flush()
 
     return uri1
+
 
 # TODO: Need to create actual mock data for these

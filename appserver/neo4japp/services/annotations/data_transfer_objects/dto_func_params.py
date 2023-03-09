@@ -11,7 +11,7 @@ function parameters into one object.
 
 
 @attr.s(frozen=True)
-class CreateAnnotationObjParams():
+class CreateAnnotationObjParams:
     entity_synonym: str = attr.ib()
     entity_name: str = attr.ib()
     entity_category: str = attr.ib()

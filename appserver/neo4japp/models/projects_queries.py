@@ -5,8 +5,14 @@ from neo4japp.models import Projects, AppRole, AppUser, projects_collaborator_ro
 from neo4japp.models.projects import ProjectPrivileges
 
 
-def add_project_user_role_columns(query, project_table, user_id, role_names=None,
-                                  column_format=None, access_override=False):
+def add_project_user_role_columns(
+    query,
+    project_table,
+    user_id,
+    role_names=None,
+    column_format=None,
+    access_override=False,
+):
     """
     Add columns to a query for fetching the value of the provided roles for the
     provided user ID for projects in the provided project table.
@@ -20,31 +26,43 @@ def add_project_user_role_columns(query, project_table, user_id, role_names=None
     :return: the new query
     """
 
-    role_names = role_names if role_names is not None else [
-        'project-read',
-        'project-write',
-        'project-admin'
-    ]
-    column_format = column_format if column_format is not None else f'has_{{}}_{user_id}'
+    role_names = (
+        role_names
+        if role_names is not None
+        else ["project-read", "project-write", "project-admin"]
+    )
+    column_format = (
+        column_format if column_format is not None else f"has_{{}}_{user_id}"
+    )
 
     for role_name in role_names:
         if access_override:
-            query = query.add_column(literal(True).label(column_format.format(role_name)))
+            query = query.add_column(
+                literal(True).label(column_format.format(role_name))
+            )
         else:
             t_role = db.aliased(AppRole)
             t_user = db.aliased(AppUser)
 
-            project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
-                .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
-                .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id) \
+            project_role_sq = (
+                db.session.query(projects_collaborator_role, t_role.name)
+                .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id)
+                .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id)
                 .subquery()
+            )
 
-            query = query \
-                .outerjoin(project_role_sq, and_(project_role_sq.c.projects_id == project_table.id,
-                                                 project_role_sq.c.appuser_id == user_id,
-                                                 project_role_sq.c.name == role_name)) \
-                .add_column(project_role_sq.c.name.isnot(None)
-                            .label(column_format.format(role_name)))
+            query = query.outerjoin(
+                project_role_sq,
+                and_(
+                    project_role_sq.c.projects_id == project_table.id,
+                    project_role_sq.c.appuser_id == user_id,
+                    project_role_sq.c.name == role_name,
+                ),
+            ).add_column(
+                project_role_sq.c.name.isnot(None).label(
+                    column_format.format(role_name)
+                )
+            )
 
     return query
 
@@ -60,8 +78,11 @@ class ProjectCalculator:
         self.project_table = project_table
         # TODO: The following line probably is hacky because I can't figure out the SQLAlchemy API
         # with its terrible docs
-        self.project_key = inspect(
-            self.project_table).name if project_table != Projects else 'Projects'
+        self.project_key = (
+            inspect(self.project_table).name
+            if project_table != Projects
+            else "Projects"
+        )
 
     @property
     def project(self) -> Projects:
@@ -71,9 +92,9 @@ class ProjectCalculator:
         project: Projects = self.result[self.project_key]
 
         for user_id in user_ids:
-            project_manageable = self.result[f'has_project-admin_{user_id}']
-            project_readable = self.result[f'has_project-read_{user_id}']
-            project_writable = self.result[f'has_project-write_{user_id}']
+            project_manageable = self.result[f"has_project-admin_{user_id}"]
+            project_readable = self.result[f"has_project-read_{user_id}"]
+            project_writable = self.result[f"has_project-write_{user_id}"]
 
             privileges = ProjectPrivileges(
                 readable=project_manageable or project_readable or project_writable,
@@ -86,12 +107,12 @@ class ProjectCalculator:
     def calculate_starred(self):
         project: Projects = self.result[self.project_key]
 
-        if self.result['starred_id'] is not None:
+        if self.result["starred_id"] is not None:
             project.***ARANGO_USERNAME***.calculated_starred = {
-                'id': self.result['starred_id'],
-                'file_id': self.result['starred_file_id'],
-                'user_id': self.result['starred_user_id'],
-                'creation_date': self.result['starred_creation_date'],
+                "id": self.result["starred_id"],
+                "file_id": self.result["starred_file_id"],
+                "user_id": self.result["starred_user_id"],
+                "creation_date": self.result["starred_creation_date"],
             }
         else:
             project.***ARANGO_USERNAME***.calculated_starred = None

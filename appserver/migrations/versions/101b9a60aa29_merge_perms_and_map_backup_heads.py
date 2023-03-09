@@ -11,15 +11,15 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '101b9a60aa29'
-down_revision = ('847a58fbcf30', 'f71f7fc1e1c2')
+revision = "101b9a60aa29"
+down_revision = ("847a58fbcf30", "f71f7fc1e1c2")
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     pass
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 

@@ -1,1 +1,1 @@
-LIFELIKE_SUPERUSER = '***ARANGO_DB_NAME***.science@gmail.com'
+LIFELIKE_SUPERUSER = "***ARANGO_DB_NAME***.science@gmail.com"

@@ -35,7 +35,7 @@ from neo4japp.database import (
     close_arango_client,
     db,
     ma,
-    migrate
+    migrate,
 )
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
@@ -47,24 +47,24 @@ apm = ElasticAPM()
 
 # Set the following modules to have a minimum of log level 'WARNING'
 module_logs = [
-    'pdfminer',
-    'graphviz',
-    'flask_caching',
-    'urllib3',
-    'alembic',
-    'webargs',
-    'werkzeug'
+    "pdfminer",
+    "graphviz",
+    "flask_caching",
+    "urllib3",
+    "alembic",
+    "webargs",
+    "werkzeug",
 ]
 
 for mod in module_logs:
     logging.getLogger(mod).setLevel(logging.WARNING)
 
 # Commit Hash (Version) of Application
-GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
+GITHUB_HASH = os.environ.get("GITHUB_HASH", "undefined")
 
 # Used for registering blueprints
-BLUEPRINT_PACKAGE = __package__ + '.blueprints'
-BLUEPRINT_OBJNAME = 'bp'
+BLUEPRINT_PACKAGE = __package__ + ".blueprints"
+BLUEPRINT_OBJNAME = "bp"
 
 cors = CORS()
 cache = Cache()
@@ -84,16 +84,17 @@ def load_mixed_form_json(request, name, field):
 
     # Memoize the JSON parsing - we don't have to do this in newer versions
     # of webargs but we are stuck on this old version because of flask-apispec
-    cache_field = '_mixed_form_json_cache'
+    cache_field = "_mixed_form_json_cache"
 
     if hasattr(request, cache_field):
         getter = getattr(request, cache_field)
     else:
         try:
-            data = json.loads(request.form['json$'])
+            data = json.loads(request.form["json$"])
 
             def getter():
                 return data
+
         except (KeyError, ValueError) as e:
             exception = e
 
@@ -109,7 +110,7 @@ def load_mixed_form_json(request, name, field):
 
 
 def filter_to_sentry(event, hint):
-    """ filter_to_sentry is used for filtering what
+    """filter_to_sentry is used for filtering what
     to return or manipulating the exception before sending
     it off to Sentry (sentry.io)
 
@@ -123,38 +124,38 @@ def filter_to_sentry(event, hint):
         err_formatted, exc_info=ex, extra={'to_sentry': True})
     """
     # By default, we send to sentry
-    to_sentry = event['extra'].get('to_sentry', True)
+    to_sentry = event["extra"].get("to_sentry", True)
     if to_sentry:
         return event
     return None
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    """ Adds meta data about the request when available """
+    """Adds meta data about the request when available"""
 
     def add_fields(self, log_record, record, message_dict):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
         if has_request_context():
-            log_record['request_url'] = request.url
-            log_record['request_ip_addr'] = request.remote_addr
+            log_record["request_url"] = request.url
+            log_record["request_ip_addr"] = request.remote_addr
 
 
-def create_app(name='neo4japp', config='config.Development'):
+def create_app(name="neo4japp", config="config.Development"):
     app_logger = logging.getLogger(name)
     log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
-    format_str = '%(message)%(levelname)%(asctime)%(module)'
+    format_str = "%(message)%(levelname)%(asctime)%(module)"
     formatter = CustomJsonFormatter(format_str)
     log_handler.setFormatter(formatter)
     app_logger.addHandler(log_handler)
 
-    if config in ['config.Staging', 'config.Production']:
+    if config in ["config.Staging", "config.Production"]:
         sentry_logging = LoggingIntegration(
             level=logging.ERROR,
             event_level=logging.ERROR,
         )
         sentry_sdk.init(
             before_send=filter_to_sentry,
-            dsn=os.environ.get('SENTRY_KEY'),
+            dsn=os.environ.get("SENTRY_KEY"),
             integrations=[
                 sentry_logging,
                 FlaskIntegration(),
@@ -162,12 +163,12 @@ def create_app(name='neo4japp', config='config.Development'):
             ],
             send_default_pii=True,
         )
-        ignore_logger('werkzeug')
+        ignore_logger("werkzeug")
         app_logger.setLevel(logging.INFO)
     else:
         # Set to 'true' for dev mode to have
         # the same format as staging.
-        if os.environ.get('FORMAT_AS_JSON', 'false') == 'false':
+        if os.environ.get("FORMAT_AS_JSON", "false") == "false":
             app_logger.removeHandler(log_handler)
         app_logger.setLevel(logging.DEBUG)
 
@@ -176,7 +177,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.teardown_appcontext_funcs = [
         close_neo4j_db,
         close_redis_conn,
-        close_arango_client
+        close_arango_client,
     ]
 
     cors.init_app(app)
@@ -187,8 +188,8 @@ def create_app(name='neo4japp', config='config.Development'):
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
     cache_config = {
-        'CACHE_TYPE': 'simple',
-        'CACHE_THRESHOLD': 10,
+        "CACHE_TYPE": "simple",
+        "CACHE_THRESHOLD": 10,
     }
 
     app.config.from_object(cache_config)
@@ -210,11 +211,12 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
 
     # Initialize Elastic APM if configured
-    if os.getenv('ELASTIC_APM_SERVER_URL'):
+    if os.getenv("ELASTIC_APM_SERVER_URL"):
         apm.init_app(
             app,
-            service_name='***ARANGO_DB_NAME***-appserver',
-            environment=os.getenv('FLASK_APP_CONFIG'))
+            service_name="***ARANGO_DB_NAME***-appserver",
+            environment=os.getenv("FLASK_APP_CONFIG"),
+        )
 
     return app
 
@@ -230,52 +232,53 @@ def handle_error(ex):
     if isinstance(ex, BrokenPipeError) or isinstance(ex, ServiceUnavailable):
         # hopefully these were caught at the query level
         ex = ServerException(message=str(ex))
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_user = g.current_user.username if g.get("current_user") else "anonymous"
     current_app.logger.error(
-        f'Request caused a handled exception <{type(ex)}>',
+        f"Request caused a handled exception <{type(ex)}>",
         exc_info=ex,
         extra={
-            **{'to_sentry': False},
+            **{"to_sentry": False},
             **ErrorLog(
-                error_name=f'{type(ex)}',
+                error_name=f"{type(ex)}",
                 expected=True,
                 event_type=LogEventType.SENTRY_HANDLED.value,
                 transaction_id=ex.transaction_id,
                 username=current_user,
-            ).to_dict()
-        }
+            ).to_dict(),
+        },
     )
 
     ex.version = GITHUB_HASH
-    if current_app.config.get('FORWARD_STACKTRACE'):
-        ex.stacktrace = ''.join(
-            traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__
-            )
+    if current_app.config.get("FORWARD_STACKTRACE"):
+        ex.stacktrace = "".join(
+            traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
         )
 
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
 def handle_warning(warn):
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_user = g.current_user.username if g.get("current_user") else "anonymous"
     current_app.logger.warning(
-        f'Request returned a handled warning <{type(warn)}>',
+        f"Request returned a handled warning <{type(warn)}>",
         exc_info=warn,
         extra={
-            **{'to_sentry': False},
+            **{"to_sentry": False},
             **WarningLog(
-                warning_name=f'{type(warn)}',
+                warning_name=f"{type(warn)}",
                 event_type=LogEventType.SENTRY_WARNINIG.value,
                 username=current_user,
-            ).to_dict()
-        }
+            ).to_dict(),
+        },
     )
 
     warn.version = GITHUB_HASH
     if current_app.debug:
-        warn.stacktrace = ''.join(traceback.format_exception(
-            etype=type(warn), value=warn, tb=warn.__traceback__))
+        warn.stacktrace = "".join(
+            traceback.format_exception(
+                etype=type(warn), value=warn, tb=warn.__traceback__
+            )
+        )
 
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
 
@@ -285,26 +288,27 @@ def handle_generic_error(code: int, ex: Exception):
     # display to user the default error message
     # but log with the real exception message below
     newex = ServerException()
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_user = g.current_user.username if g.get("current_user") else "anonymous"
     current_app.logger.error(
-        f'Request caused a unhandled exception <{type(ex)}>',
+        f"Request caused a unhandled exception <{type(ex)}>",
         exc_info=ex,
         extra={
-            **{'to_sentry': False},
+            **{"to_sentry": False},
             **ErrorLog(
-                error_name=f'{type(ex)}',
+                error_name=f"{type(ex)}",
                 expected=True,
                 event_type=LogEventType.SENTRY_UNHANDLED.value,
                 transaction_id=g.transaction_id,
                 username=current_user,
-            ).to_dict()
-        }
+            ).to_dict(),
+        },
     )
 
     newex.version = GITHUB_HASH
     if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
+        newex.stacktrace = "".join(
+            traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
+        )
 
     return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
@@ -314,24 +318,25 @@ def handle_generic_warning(code: int, ex: Warning):
     # display to user the default warning message
     # but log with the real warning message below
     newex = ServerWarning()
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    current_user = g.current_user.username if g.get("current_user") else "anonymous"
     current_app.logger.error(
-        f'Request caused a unhandled exception <{type(ex)}>',
+        f"Request caused a unhandled exception <{type(ex)}>",
         exc_info=ex,
         extra={
-            **{'to_sentry': False},
+            **{"to_sentry": False},
             **WarningLog(
-                warning_name=f'{type(ex)}',
+                warning_name=f"{type(ex)}",
                 event_type=LogEventType.SENTRY_WARNINIG.value,
                 username=current_user,
-            ).to_dict()
-        }
+            ).to_dict(),
+        },
     )
 
     newex.version = GITHUB_HASH
     if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
+        newex.stacktrace = "".join(
+            traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
+        )
 
     return jsonify(WarningResponseSchema().dump(newex)), newex.code
 
@@ -349,7 +354,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     on the field names and that doesn't happen here, but we cannot just blindly camelCase the field
     names because not all our API payloads use camel case.
     """
-    current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
+    current_app.logger.error("Request caused UnprocessableEntity error", exc_info=error)
 
     fields: dict = messages or error.normalized_messages()
     field_keys = list(fields.keys())
@@ -358,13 +363,13 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     if len(field_keys) == 1:
         key = field_keys[0]
         field = fields[key]
-        message = '; '.join(field)
+        message = "; ".join(field)
     else:
-        message = 'An error occurred with the provided input.'
+        message = "An error occurred with the provided input."
 
     ex = ServerException(message=message, code=code, fields=fields)
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
+    current_user = g.current_user.username if g.get("current_user") else "anonymous"
+    transaction_id = request.headers.get("X-Transaction-Id", "")
 
     ex.version = GITHUB_HASH
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
@@ -372,4 +377,4 @@ def handle_validation_error(code, error: ValidationError, messages=None):
 
 # Ensure that response includes all error messages produced from the parser
 def handle_webargs_error(code, error):
-    return handle_validation_error(code, error, error.data['messages'])
+    return handle_validation_error(code, error, error.data["messages"])

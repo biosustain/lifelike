@@ -76,10 +76,7 @@
                       "items": {
                         "type": "array",
                         "items": {
-                          "type": [
-                            "integer",
-                            "object"
-                          ],
+                          "type": ["integer", "object"],
                           "properties": {
                             "type": {
                               "type": "string"
@@ -105,12 +102,7 @@
               }
             },
             "additionalProperties": true,
-            "required": [
-              "sources",
-              "targets",
-              "description",
-              "traces"
-            ]
+            "required": ["sources", "targets", "description", "traces"]
           }
         },
         "sizing": {
@@ -145,11 +137,7 @@
         }
       },
       "additionalProperties": true,
-      "required": [
-        "node_sets",
-        "description",
-        "trace_networks"
-      ]
+      "required": ["node_sets", "description", "trace_networks"]
     },
     "nodes": {
       "type": "array",
@@ -245,10 +233,7 @@
             "type": "number"
           },
           "pageMetab": {
-            "type": [
-              "number",
-              "integer"
-            ]
+            "type": ["number", "integer"]
           },
           "label": {
             "type": "string"
@@ -267,9 +252,7 @@
           }
         },
         "additionalProperties": true,
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       }
     },
     "links": {
@@ -306,11 +289,7 @@
               }
             },
             "additionalProperties": true,
-            "required": [
-              "types",
-              "nodes",
-              "left"
-            ]
+            "required": ["types", "nodes", "left"]
           },
           "outedge": {
             "type": "object",
@@ -332,11 +311,7 @@
               }
             },
             "additionalProperties": true,
-            "required": [
-              "types",
-              "nodes",
-              "left"
-            ]
+            "required": ["types", "nodes", "left"]
           },
           "node": {
             "type": "integer"
@@ -345,19 +320,13 @@
             "type": "number"
           },
           "1/pageUpdown": {
-            "type": [
-              "number",
-              "string"
-            ]
+            "type": ["number", "string"]
           },
           "pageMetab": {
             "type": "number"
           },
           "1/pageMetab": {
-            "type": [
-              "number",
-              "string"
-            ]
+            "type": ["number", "string"]
           },
           "NLG": {
             "type": "string"
@@ -367,20 +336,10 @@
           }
         },
         "additionalProperties": true,
-        "required": [
-          "description",
-          "source",
-          "target"
-        ]
+        "required": ["description", "source", "target"]
       }
     }
   },
   "additionalProperties": true,
-  "required": [
-    "directed",
-    "multigraph",
-    "graph",
-    "nodes",
-    "links"
-  ]
+  "required": ["directed", "multigraph", "graph", "nodes", "links"]
 }

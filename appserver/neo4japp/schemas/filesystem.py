@@ -7,14 +7,17 @@ from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
-from neo4japp.schemas.annotations import AnnotationConfigurations, FallbackOrganismSchema
+from neo4japp.schemas.annotations import (
+    AnnotationConfigurations,
+    FallbackOrganismSchema,
+)
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import (
     ResultListSchema,
     ResultMappingSchema,
     SingleResultSchema,
     RankedItemSchema,
-    WarningSchema
+    WarningSchema,
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
@@ -31,27 +34,30 @@ class ProjectSchema(CamelCaseSchema):
     description = fields.String()
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
-    privileges = fields.Method('get_privileges')
+    privileges = fields.Method("get_privileges")
     ***ARANGO_USERNAME*** = fields.Nested(lambda: ProjectRootSchema())
 
     def get_user_privilege_filter(self):
         try:
-            return self.context['user_privilege_filter']
+            return self.context["user_privilege_filter"]
         except KeyError:
-            raise RuntimeError('user_privilege_filter context key should be set '
-                               'for ProjectSchema to determine what to show')
+            raise RuntimeError(
+                "user_privilege_filter context key should be set "
+                "for ProjectSchema to determine what to show"
+            )
 
     def get_privileges(self, obj: Projects):
         privilege_user_id = self.get_user_privilege_filter()
         if privilege_user_id is not None and obj.calculated_privileges:
-            return ProjectPrivilegesSchema(context=self.context) \
-                .dump(obj.calculated_privileges[privilege_user_id])
+            return ProjectPrivilegesSchema(context=self.context).dump(
+                obj.calculated_privileges[privilege_user_id]
+            )
         else:
             return None
 
 
 class StarredFileSchema(CamelCaseSchema):
-    starred = fields.Method('get_starred')
+    starred = fields.Method("get_starred")
 
     def get_starred(self, obj: Files):
         if obj.calculated_starred is not None:
@@ -73,10 +79,9 @@ ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
 # Requests
 # ----------------------------------------
 
+
 class ProjectListRequestSchema(CamelCaseSchema):
-    sort = SortField(columns={
-        'name': Projects.name
-    }, missing=lambda: [Projects.name])
+    sort = SortField(columns={"name": Projects.name}, missing=lambda: [Projects.name])
 
 
 class ProjectListSchema(ResultListSchema):
@@ -88,21 +93,21 @@ class ProjectSearchRequestSchema(ProjectListRequestSchema):
 
 
 class ProjectCreateSchema(CamelCaseSchema):
-    name = fields.String(required=True,
-                         validators=[
-                             marshmallow.validate.Regexp('^[A-Za-z0-9-]+$'),
-                             marshmallow.validate.Length(min=1, max=50),
-                         ])
+    name = fields.String(
+        required=True,
+        validators=[
+            marshmallow.validate.Regexp("^[A-Za-z0-9-]+$"),
+            marshmallow.validate.Length(min=1, max=50),
+        ],
+    )
     description = fields.String(validate=marshmallow.validate.Length(max=1024 * 500))
 
 
 class BulkProjectRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(
-        fields.String(
-            validate=marshmallow.validate.Length(min=1, max=200)
-        ),
+        fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
         required=True,
-        validate=marshmallow.validate.Length(min=1, max=100)
+        validate=marshmallow.validate.Length(min=1, max=100),
     )
     reqursive = fields.Boolean(missing=False)
 
@@ -112,22 +117,25 @@ class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
 
 
 class BulkProjectUpdateRequestSchema(CamelCaseSchema):
-    name = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
-    description = fields.String(validate=marshmallow.validate.Length(
-        max=MAX_FILE_DESCRIPTION_LENGTH))
+    name = fields.String(
+        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    description = fields.String(
+        validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
+    )
     public = fields.Boolean()
 
 
 # Response
 # ----------------------------------------
 
+
 class ProjectResponseSchema(SingleResultSchema):
     result = fields.Nested(ProjectSchema)
 
 
 class MultipleProjectResponseSchema(ResultMappingSchema):
-    mapping = fields.Dict(keys=fields.String(),
-                          values=fields.Nested(ProjectSchema))
+    mapping = fields.Dict(keys=fields.String(), values=fields.Nested(ProjectSchema))
 
 
 # ========================================
@@ -153,11 +161,11 @@ class FileSchema(StarredFileSchema):
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     recycling_date = fields.DateTime()
-    parent = fields.Method('get_parent')
-    children = fields.Method('get_children')
-    project = fields.Method('get_project', exclude='***ARANGO_USERNAME***')
-    privileges = fields.Method('get_privileges')
-    highlight = fields.Method('get_highlight')
+    parent = fields.Method("get_parent")
+    children = fields.Method("get_children")
+    project = fields.Method("get_project", exclude="***ARANGO_USERNAME***")
+    privileges = fields.Method("get_privileges")
+    highlight = fields.Method("get_highlight")
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     path = fields.String()
@@ -168,16 +176,19 @@ class FileSchema(StarredFileSchema):
 
     def get_user_privilege_filter(self):
         try:
-            return self.context['user_privilege_filter']
+            return self.context["user_privilege_filter"]
         except KeyError:
-            raise RuntimeError('user_privilege_filter context key should be set '
-                               'for FileSchema to determine what to show')
+            raise RuntimeError(
+                "user_privilege_filter context key should be set "
+                "for FileSchema to determine what to show"
+            )
 
     def get_privileges(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
         if privilege_user_id is not None and obj.calculated_privileges:
-            return FilePrivilegesSchema(context=self.context) \
-                .dump(obj.calculated_privileges[privilege_user_id])
+            return FilePrivilegesSchema(context=self.context).dump(
+                obj.calculated_privileges[privilege_user_id]
+            )
         else:
             return None
 
@@ -185,19 +196,23 @@ class FileSchema(StarredFileSchema):
         return obj.calculated_highlight
 
     def get_project(self, obj: Files):
-        return ProjectSchema(context=self.context, exclude=(
-            '***ARANGO_USERNAME***',
-        )).dump(obj.calculated_project)
+        return ProjectSchema(context=self.context, exclude=("***ARANGO_USERNAME***",)).dump(
+            obj.calculated_project
+        )
 
     def get_parent(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
-        if obj.parent is not None and (privilege_user_id is None
-                                       or obj.parent.calculated_privileges[
-                                           privilege_user_id].readable):
-            return FileSchema(context=self.context, exclude=(
-                'project',
-                'children',
-            )).dump(obj.parent)
+        if obj.parent is not None and (
+            privilege_user_id is None
+            or obj.parent.calculated_privileges[privilege_user_id].readable
+        ):
+            return FileSchema(
+                context=self.context,
+                exclude=(
+                    "project",
+                    "children",
+                ),
+            ).dump(obj.parent)
         else:
             return None
 
@@ -205,14 +220,19 @@ class FileSchema(StarredFileSchema):
         privilege_user_id = self.get_user_privilege_filter()
         if obj.calculated_children is not None:
             children = [
-                child for child in obj.calculated_children
-                if
-                privilege_user_id is None or child.calculated_privileges[privilege_user_id].readable
+                child
+                for child in obj.calculated_children
+                if privilege_user_id is None
+                or child.calculated_privileges[privilege_user_id].readable
             ]
-            return FileSchema(context=self.context, exclude=(
-                'project',
-                'parent',
-            ), many=True).dump(children)
+            return FileSchema(
+                context=self.context,
+                exclude=(
+                    "project",
+                    "parent",
+                ),
+                many=True,
+            ).dump(children)
         else:
             return None
 
@@ -224,39 +244,45 @@ class RankedFileSchema(RankedItemSchema):
 # Requests
 # ----------------------------------------
 
+
 class BulkFileRequestSchema(CamelCaseSchema):
-    hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
-                           required=True,
-                           validate=marshmallow.validate.Length(min=1, max=100))
+    hash_ids = fields.List(
+        fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
+        required=True,
+        validate=marshmallow.validate.Length(min=1, max=100),
+    )
 
 
 class FileSearchRequestSchema(CamelCaseSchema):
-    type = fields.String(required=True, validate=marshmallow.validate.OneOf([
-        'public',
-        'linked',
-        'pinned'
-    ]))
+    type = fields.String(
+        required=True,
+        validate=marshmallow.validate.OneOf(["public", "linked", "pinned"]),
+    )
     linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    mime_types = fields.List(fields.String(),
-                             validate=marshmallow.validate.Length(min=1))
-    sort = SortField(columns={
-        'filename': Files.filename,
-        'creationDate': Files.creation_date,
-        'modificationDate': Files.modified_date,
-    })
+    mime_types = fields.List(
+        fields.String(), validate=marshmallow.validate.Length(min=1)
+    )
+    sort = SortField(
+        columns={
+            "filename": Files.filename,
+            "creationDate": Files.creation_date,
+            "modificationDate": Files.modified_date,
+        }
+    )
 
     @validates_schema
     def validate_options(self, data, **kwargs):
-        if data['type'] == 'linked':
-            if data.get('linked_hash_id') is None:
-                raise ValidationError("A linkedHashId is required.", 'linked_hash_id')
+        if data["type"] == "linked":
+            if data.get("linked_hash_id") is None:
+                raise ValidationError("A linkedHashId is required.", "linked_hash_id")
 
 
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
     filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    description = fields.String(validate=marshmallow.validate.Length(
-        max=MAX_FILE_DESCRIPTION_LENGTH))
+    description = fields.String(
+        validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
+    )
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)
@@ -273,10 +299,12 @@ class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
 
 
 class FileCreateRequestSchema(FileUpdateRequestSchema):
-    filename = NiceFilenameString(required=True,
-                                  validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(required=True,
-                                   validate=marshmallow.validate.Length(min=1, max=36))
+    filename = NiceFilenameString(
+        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    parent_hash_id = fields.String(
+        required=True, validate=marshmallow.validate.Length(min=1, max=36)
+    )
     mime_type = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
     content_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     content_url = fields.URL()
@@ -284,9 +312,9 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
 
     @validates_schema
     def validate_content(self, data, **kwargs):
-        mime_type = data.get('mime_type')
+        mime_type = data.get("mime_type")
         provided_content_sources = []
-        for key in ['content_hash_id', 'content_url', 'content_value']:
+        for key in ["content_hash_id", "content_url", "content_value"]:
             if data.get(key) is not None:
                 provided_content_sources.append(key)
         if mime_type == DirectoryTypeProvider.MIME_TYPE:
@@ -295,9 +323,12 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
         else:
             if len(provided_content_sources) == 0:
                 raise ValidationError(
-                    "Content must be provided from an upload, a URL, or an existing file.")
+                    "Content must be provided from an upload, a URL, or an existing file."
+                )
             elif len(provided_content_sources) > 1:
-                raise ValidationError("More than one source of content cannot be specified.")
+                raise ValidationError(
+                    "More than one source of content cannot be specified."
+                )
 
 
 class FileExportRequestSchema(CamelCaseSchema):
@@ -314,12 +345,14 @@ class FileHierarchyRequestSchema(CamelCaseSchema):
 
 
 class FileResponseSchema(SingleResultSchema, WarningSchema):
-    result = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
+    result = fields.Nested(FileSchema, exclude=("project.***ARANGO_USERNAME***",))
 
 
 class MultipleFileResponseSchema(ResultMappingSchema):
-    mapping = fields.Dict(keys=fields.String(),
-                          values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
+    mapping = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(FileSchema, exclude=("project.***ARANGO_USERNAME***",)),
+    )
 
 
 class FileListSchema(ResultListSchema):
@@ -329,8 +362,8 @@ class FileListSchema(ResultListSchema):
 class FileNode(CamelCaseSchema):
     data = fields.Nested(
         FileSchema,
-        only=(
-            'hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename'))
+        only=("hash_id", "filename", "mime_type", "creation_date", "true_filename"),
+    )
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 
@@ -345,6 +378,7 @@ class FileHierarchyResponseSchema(CamelCaseSchema):
 
 # Requests
 # ----------------------------------------
+
 
 class FileBackupCreateRequestSchema(CamelCaseSchema):
     content_value = FileUploadField(required=True)
@@ -364,12 +398,13 @@ class FileVersionSchema(CamelCaseSchema):
 
 
 class FileVersionHistorySchema(ResultListSchema):
-    object = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
+    object = fields.Nested(FileSchema, exclude=("project.***ARANGO_USERNAME***",))
     results = fields.List(fields.Nested(FileVersionSchema))
 
 
 # Responses
 # ----------------------------------------
+
 
 class FileVersionResponseSchema(CamelCaseSchema):
     version = fields.Nested(FileVersionSchema)
@@ -379,17 +414,19 @@ class FileVersionResponseSchema(CamelCaseSchema):
 # File Locks
 # ========================================
 
+
 class FileLockSchema(CamelCaseSchema):
     user = fields.Nested(UserSchema)
     acquire_date = fields.DateTime()
-    own = fields.Method('get_own')
+    own = fields.Method("get_own")
 
     def get_own(self, obj: FileLock):
-        return self.context['current_user'].id == obj.user.id
+        return self.context["current_user"].id == obj.user.id
 
 
 # Requests
 # ----------------------------------------
+
 
 class FileLockCreateRequest(CamelCaseSchema):
     own = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
@@ -401,6 +438,7 @@ class FileLockDeleteRequest(CamelCaseSchema):
 
 # Responses
 # ----------------------------------------
+
 
 class FileLockListResponse(ResultListSchema):
     results = fields.List(fields.Nested(FileLockSchema))

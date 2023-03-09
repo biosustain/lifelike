@@ -1,6 +1,7 @@
 from neo4japp.models import Files
 from neo4japp.models.auth import (
-    AppRole, AppUser,
+    AppRole,
+    AppUser,
 )
 from neo4japp.models.projects import (
     Projects,
@@ -11,14 +12,14 @@ from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 def test_can_add_project_collaborator(session, fix_projects, test_user):
     proj_service = ProjectsService(session)
-    role = AppRole.query.filter(AppRole.name == 'project-read').one()
+    role = AppRole.query.filter(AppRole.name == "project-read").one()
     proj_service.add_collaborator(test_user, role, fix_projects)
 
     user_role = Projects.query_project_roles(
         test_user.id, fix_projects.id
     ).one_or_none()
 
-    assert user_role.name == 'project-read'
+    assert user_role.name == "project-read"
 
 
 def test_can_delete_project_collaborator(session, fix_projects, test_user):
@@ -36,13 +37,13 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     proj_service = ProjectsService(session)
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
-        filename='/',
-        path='/cookie',
+        filename="/",
+        path="/cookie",
         user=test_user,
     )
     projects = Projects(
-        name='cookie',
-        description='monster',
+        name="cookie",
+        description="monster",
         ***ARANGO_USERNAME***=***ARANGO_USERNAME***_dir,
     )
     session.add(***ARANGO_USERNAME***_dir)
@@ -50,8 +51,6 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     session.flush()
     new_project = proj_service.create_projects(test_user, projects)
 
-    user_role = Projects.query_project_roles(
-        test_user.id, new_project.id
-    ).one_or_none()
+    user_role = Projects.query_project_roles(test_user.id, new_project.id).one_or_none()
 
-    assert user_role.name == 'project-admin'
+    assert user_role.name == "project-admin"

@@ -7,6 +7,7 @@ from neo4japp.constants import MAX_FILE_SIZE
 
 class FileContentBufferBase(BinaryIO):
     """Wrapper around any buffer adding a size limit"""
+
     _max_size: int
     _stream: Union[io.BytesIO, SpooledTemporaryFile]
 
@@ -27,10 +28,12 @@ class FileContentBufferBase(BinaryIO):
         def check_and_forward(s):
             self._check_overflow(len(s))
             return s
+
         self._stream.writelines(
             # Wrap iterable steps to check for overflow
             map(check_and_forward, lines)
         )
+
     # endregion
 
     # region forward
@@ -96,6 +99,7 @@ class FileContentBufferBase(BinaryIO):
 
     def __exit__(self, type, value, traceback) -> None:
         self._stream.__exit__(type, value, traceback)
+
     # endregion
 
 
@@ -126,7 +130,8 @@ class FileContentBuffer(FileContentBufferBase):
 
     def getvalue(self):
         with self as bufferView:
-            return getattr(bufferView, 'getvalue', bufferView.read)()
+            return getattr(bufferView, "getvalue", bufferView.read)()
+
     # endregion
 
     # region diassallowed ussage
@@ -134,26 +139,27 @@ class FileContentBuffer(FileContentBufferBase):
         raise IOError(f'Operation "{operation}" not allowed outside of view')
 
     def __iter__(self) -> Iterator[bytes]:
-        self._not_allowed('__iter__')
+        self._not_allowed("__iter__")
         return self._stream.__iter__()
 
     def __next__(self) -> bytes:
-        self._not_allowed('__next__')
+        self._not_allowed("__next__")
         return self._stream.__next__()
 
     def read(self, n: int = -1) -> bytes:
-        self._not_allowed('read')
+        self._not_allowed("read")
         return self._stream.read(n)
 
     def readline(self, limit: int = -1) -> Union[bytes, Any]:
-        self._not_allowed('readline')
+        self._not_allowed("readline")
         return self._stream.readline(limit)
 
     def readlines(self, hint: int = -1) -> Union[List[bytes], List[Any]]:
-        self._not_allowed('readlines')
+        self._not_allowed("readlines")
         return self._stream.readlines(hint)
 
     def seek(self, offset: int, whence: int = 0) -> int:
-        self._not_allowed('seek')
+        self._not_allowed("seek")
         return self._stream.seek(offset, whence)
+
     # endregion

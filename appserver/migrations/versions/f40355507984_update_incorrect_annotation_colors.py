@@ -14,14 +14,14 @@ from sqlalchemy.sql import table, column
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'f40355507984'
-down_revision = '64838825541f'
+revision = "f40355507984"
+down_revision = "64838825541f"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 
@@ -39,43 +39,53 @@ def data_upgrades():
     session = Session(op.get_bind())
 
     files_table = table(
-        'files',
-        column('id', sa.Integer),
-        column('annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB))
+        "files",
+        column("id", sa.Integer),
+        column("annotations", postgresql.JSONB),
+        column("custom_annotations", postgresql.JSONB),
+    )
 
-    files = session.execute(sa.select([
-        files_table.c.id,
-        files_table.c.annotations,
-        files_table.c.custom_annotations
-    ])).fetchall()
+    files = session.execute(
+        sa.select(
+            [
+                files_table.c.id,
+                files_table.c.annotations,
+                files_table.c.custom_annotations,
+            ]
+        )
+    ).fetchall()
 
-    color_swap = {
-        '#fae0b8': '#ff9800',
-        '#cee5cb': '#4caf50'
-    }
+    color_swap = {"#fae0b8": "#ff9800", "#cee5cb": "#4caf50"}
 
     for f in files:
         if f.annotations:
-            annotations_list = f.annotations['documents'][0]['passages'][0]['annotations']
+            annotations_list = f.annotations["documents"][0]["passages"][0][
+                "annotations"
+            ]
 
             updated_annotations = []
 
             for annotation in annotations_list:
                 try:
-                    if annotation['meta']['color'] in color_swap:
-                        annotation['meta']['color'] = color_swap.get(annotation['meta']['color'])
+                    if annotation["meta"]["color"] in color_swap:
+                        annotation["meta"]["color"] = color_swap.get(
+                            annotation["meta"]["color"]
+                        )
                 except KeyError:
                     pass
 
                 updated_annotations.append(annotation)
 
-            f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+            f.annotations["documents"][0]["passages"][0][
+                "annotations"
+            ] = updated_annotations
 
             try:
                 session.execute(
-                    files_table.update().where(
-                        files_table.c.id == f.id).values(annotations=f.annotations))
+                    files_table.update()
+                    .where(files_table.c.id == f.id)
+                    .values(annotations=f.annotations)
+                )
             except Exception:
                 session.rollback()
                 session.close()
@@ -87,8 +97,10 @@ def data_upgrades():
             updated_custom_annotations = []
             for custom_annotation in custom_annotations_list:
                 try:
-                    if custom_annotation['meta']['color'] in color_swap:
-                        custom_annotation['meta']['color'] = color_swap.get(custom_annotation['meta']['color'])
+                    if custom_annotation["meta"]["color"] in color_swap:
+                        custom_annotation["meta"]["color"] = color_swap.get(
+                            custom_annotation["meta"]["color"]
+                        )
                 except KeyError:
                     pass
 
@@ -96,8 +108,10 @@ def data_upgrades():
 
             try:
                 session.execute(
-                    files_table.update().where(
-                        files_table.c.id == f.id).values(custom_annotations=updated_custom_annotations))
+                    files_table.update()
+                    .where(files_table.c.id == f.id)
+                    .values(custom_annotations=updated_custom_annotations)
+                )
             except Exception:
                 session.rollback()
                 session.close()

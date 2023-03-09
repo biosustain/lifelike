@@ -13,16 +13,17 @@ def ft_search(query, search_query, vector=None, regconfig=None):
         vector = search_vectors[0]
 
     if regconfig is None:
-        regconfig = search_manager.options['regconfig']
+        regconfig = search_manager.options["regconfig"]
 
     query = query.filter(
-        vector.op('@@')(sqlalchemy.func.tsq_parse(regconfig, search_query))
+        vector.op("@@")(sqlalchemy.func.tsq_parse(regconfig, search_query))
     )
 
-    query = query.add_columns(sqlalchemy.func.ts_rank_cd(
-        vector,
-        sqlalchemy.func.tsq_parse(search_query)
-    ).label('rank'))
+    query = query.add_columns(
+        sqlalchemy.func.ts_rank_cd(
+            vector, sqlalchemy.func.tsq_parse(search_query)
+        ).label("rank")
+    )
 
     return query.params(term=search_query)
 

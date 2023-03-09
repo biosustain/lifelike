@@ -12,47 +12,60 @@ from uuid import uuid4
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_MAP,
-    MASTER_INITIAL_PROJECT_NAME
+    MASTER_INITIAL_PROJECT_NAME,
 )
 from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.models.common import generate_hash_id
-from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion, FileContent, Files
+from neo4japp.models.files import (
+    AnnotationChangeCause,
+    FileAnnotationsVersion,
+    FileContent,
+    Files,
+)
 from neo4japp.models.projects import Projects, projects_collaborator_role
 from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    MapTypeProvider,
+)
 
 
 class ProjectsService(RDBMSBaseDao):
-
     def __init__(self, session: Session):
         super().__init__(session)
 
     def get_accessible_projects(self, user: AppUser, filter=None) -> Sequence[Projects]:
-        """ Return list a of projects that user either has collab rights to
-            or owns it
+        """Return list a of projects that user either has collab rights to
+        or owns it
         """
 
         t_role = aliased(AppRole)
         t_user = aliased(AppUser)
 
-        project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
-            .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
-            .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id) \
+        project_role_sq = (
+            db.session.query(projects_collaborator_role, t_role.name)
+            .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id)
+            .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id)
             .subquery()
+        )
 
-        query = db.session.query(Projects) \
-            .outerjoin(project_role_sq,
-                       and_(project_role_sq.c.projects_id == Projects.id,
-                            project_role_sq.c.appuser_id == user.id,
-                            project_role_sq.c.name.in_(
-                                ['project-read', 'project-write', 'project-admin'])))
+        query = db.session.query(Projects).outerjoin(
+            project_role_sq,
+            and_(
+                project_role_sq.c.projects_id == Projects.id,
+                project_role_sq.c.appuser_id == user.id,
+                project_role_sq.c.name.in_(
+                    ["project-read", "project-write", "project-admin"]
+                ),
+            ),
+        )
 
         if filter:
             query = query.filter(filter)
 
-        if not get_authorization_service().has_role(user, 'private-data-access'):
+        if not get_authorization_service().has_role(user, "private-data-access"):
             query = query.filter(project_role_sq.c.name.isnot(None))
 
         return query.all()
@@ -62,8 +75,8 @@ class ProjectsService(RDBMSBaseDao):
 
         ***ARANGO_USERNAME*** = Files()
         ***ARANGO_USERNAME***.mime_type = DirectoryTypeProvider.MIME_TYPE
-        ***ARANGO_USERNAME***.filename = '/'
-        ***ARANGO_USERNAME***.path = f'/{projects.name}'
+        ***ARANGO_USERNAME***.filename = "/"
+        ***ARANGO_USERNAME***.path = f"/{projects.name}"
         ***ARANGO_USERNAME***.user = user
         ***ARANGO_USERNAME***.creator = user
         db.session.add(***ARANGO_USERNAME***)
@@ -71,7 +84,9 @@ class ProjectsService(RDBMSBaseDao):
         projects.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***
 
         # Set default ownership
-        admin_role = db.session.query(AppRole).filter(AppRole.name == 'project-admin').one()
+        admin_role = (
+            db.session.query(AppRole).filter(AppRole.name == "project-admin").one()
+        )
         self.add_collaborator_uncommitted(user, admin_role, projects)
 
         return projects
@@ -86,14 +101,16 @@ class ProjectsService(RDBMSBaseDao):
         user_role = Projects.query_project_roles(user.id, projects.id).one_or_none()
         return user_role
 
-    def add_collaborator_uncommitted(self, user: AppUser, role: AppRole, projects: Projects):
-        """ Add a collaborator to a project or modify existing role """
+    def add_collaborator_uncommitted(
+        self, user: AppUser, role: AppRole, projects: Projects
+    ):
+        """Add a collaborator to a project or modify existing role"""
         existing_role = self.session.execute(
             projects_collaborator_role.select().where(
                 and_(
                     projects_collaborator_role.c.appuser_id == user.id,
                     projects_collaborator_role.c.projects_id == projects.id,
-                    )
+                )
             )
         ).fetchone()
 
@@ -103,11 +120,13 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.execute(
             projects_collaborator_role.insert(),
-            [{
-                'appuser_id': user.id,
-                'app_role_id': role.id,
-                'projects_id': projects.id,
-            }]
+            [
+                {
+                    "appuser_id": user.id,
+                    "app_role_id": role.id,
+                    "projects_id": projects.id,
+                }
+            ],
         )
 
     def add_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
@@ -119,7 +138,7 @@ class ProjectsService(RDBMSBaseDao):
         self.add_collaborator(user, role, projects)
 
     def remove_collaborator(self, user: AppUser, projects: Projects):
-        """ Removes a collaborator """
+        """Removes a collaborator"""
         self.session.execute(
             projects_collaborator_role.delete().where(
                 and_(
@@ -132,7 +151,7 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
 
     def _remove_role(self, user: AppUser, role: AppRole, projects: Projects):
-        """ Remove a role """
+        """Remove a role"""
         self.session.execute(
             projects_collaborator_role.delete().where(
                 and_(
@@ -174,8 +193,8 @@ class ProjectsService(RDBMSBaseDao):
         db.session.add(new_file)
         db.session.flush()
         current_app.logger.info(
-            f'Initial file with id {new_file.id} flushed to pending transaction. ' +
-            f'User: {user.id}.'
+            f"Initial file with id {new_file.id} flushed to pending transaction. "
+            + f"User: {user.id}."
         )
 
         if master_file.annotations:
@@ -190,13 +209,13 @@ class ProjectsService(RDBMSBaseDao):
             cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
             custom_annotations=[],
             excluded_annotations=[],
-            user_id=user.id
+            user_id=user.id,
         )
         db.session.add(new_file_annotations_version)
         db.session.flush()
         current_app.logger.info(
-            f'Annotations version with id {new_file_annotations_version.id} flushed to ' +
-            f'pending transaction. User: {user.id}.'
+            f"Annotations version with id {new_file_annotations_version.id} flushed to "
+            + f"pending transaction. User: {user.id}."
         )
 
     def _add_map(
@@ -205,39 +224,35 @@ class ProjectsService(RDBMSBaseDao):
         project: Projects,
         parent_id: int,
         user: AppUser,
-        hash_id_map: Dict[str, str]
+        hash_id_map: Dict[str, str],
     ):
         def update_map_links(map_json):
-            new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
-            for node in map_json['nodes']:
-                for source in node['data'].get('sources', []):
-                    link_search = re.search(new_link_re, source['url'])
+            new_link_re = r"^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)"
+            for node in map_json["nodes"]:
+                for source in node["data"].get("sources", []):
+                    link_search = re.search(new_link_re, source["url"])
                     if link_search is not None:
                         project_name = link_search.group(1)
                         hash_id = link_search.group(2)
                         if hash_id in hash_id_map:
-                            source['url'] = source['url'].replace(
-                                project_name,
-                                project.name
-                            ).replace(
-                                hash_id,
-                                hash_id_map[hash_id]
+                            source["url"] = (
+                                source["url"]
+                                .replace(project_name, project.name)
+                                .replace(hash_id, hash_id_map[hash_id])
                             )
 
-            for edge in map_json['edges']:
-                if 'data' in edge:
-                    for source in edge['data'].get('sources', []):
-                        link_search = re.search(new_link_re, source['url'])
+            for edge in map_json["edges"]:
+                if "data" in edge:
+                    for source in edge["data"].get("sources", []):
+                        link_search = re.search(new_link_re, source["url"])
                         if link_search is not None:
                             project_name = link_search.group(1)
                             hash_id = link_search.group(2)
                             if hash_id in hash_id_map:
-                                source['url'] = source['url'].replace(
-                                    project_name,
-                                    project.name
-                                ).replace(
-                                    hash_id,
-                                    hash_id_map[hash_id]
+                                source["url"] = (
+                                    source["url"]
+                                    .replace(project_name, project.name)
+                                    .replace(hash_id, hash_id_map[hash_id])
                                 )
 
             return map_json
@@ -246,9 +261,7 @@ class ProjectsService(RDBMSBaseDao):
         mapTypeProvider = MapTypeProvider()
         map_content = BytesIO(master_map.content.raw_file)
         updated_map_content = mapTypeProvider.update_map(
-            {},
-            map_content,
-            update_map_links
+            {}, map_content, update_map_links
         )
         map_content_id = FileContent().get_or_create(updated_map_content)
         self._add_generic_file(
@@ -262,8 +275,8 @@ class ProjectsService(RDBMSBaseDao):
 
     def _add_project(self, user: AppUser) -> Union[Projects, None]:
         project = Projects()
-        project.name = f'{user.username}-example'
-        project.description = f'Initial project for {user.username}'
+        project.name = f"{user.username}-example"
+        project.description = f"Initial project for {user.username}"
         try:
             db.session.begin_nested()
             self.create_project_uncommitted(user, project)
@@ -272,11 +285,11 @@ class ProjectsService(RDBMSBaseDao):
         except IntegrityError as e:
             db.session.rollback()
             current_app.logger.warning(
-                f'Failed to create initial project with default name {project.name} for user ' +
-                f'{user.username}. Will retry project creation with a unique project name.',
+                f"Failed to create initial project with default name {project.name} for user "
+                + f"{user.username}. Will retry project creation with a unique project name.",
                 exc_info=e,
             )
-            project.name += '-' + uuid4().hex[:8]
+            project.name += "-" + uuid4().hex[:8]
             try:
                 db.session.begin_nested()
                 self.create_project_uncommitted(user, project)
@@ -285,38 +298,35 @@ class ProjectsService(RDBMSBaseDao):
             except IntegrityError as e:
                 db.session.rollback()
                 current_app.logger.error(
-                    f'Failed to create initial project for user {user.username} with modified ' +
-                    f'project name: {project.name}. See attached exception info for details.',
-                    exc_info=e
+                    f"Failed to create initial project for user {user.username} with modified "
+                    + f"project name: {project.name}. See attached exception info for details.",
+                    exc_info=e,
                 )
                 # If we couldn't create and add the project, then return None
                 return None
         return project
 
     def _get_all_master_project_files(self) -> List[Files]:
-        master_initial_***ARANGO_USERNAME***_folder = db.session.query(
-            Files
-        ).join(
-            Projects,
-            and_(
-                Projects.***ARANGO_USERNAME***_id == Files.id,
-                Projects.name == MASTER_INITIAL_PROJECT_NAME
+        master_initial_***ARANGO_USERNAME***_folder = (
+            db.session.query(Files)
+            .join(
+                Projects,
+                and_(
+                    Projects.***ARANGO_USERNAME***_id == Files.id,
+                    Projects.name == MASTER_INITIAL_PROJECT_NAME,
+                ),
             )
-        ).one()
+            .one()
+        )
 
-        return db.session.query(
-            Files
-        ).filter(
-            Files.path.startswith(master_initial_***ARANGO_USERNAME***_folder.path)
-        ).order_by(
-            asc(Files.path)
-        ).all()
+        return (
+            db.session.query(Files)
+            .filter(Files.path.startswith(master_initial_***ARANGO_USERNAME***_folder.path))
+            .order_by(asc(Files.path))
+            .all()
+        )
 
-    def _copy_master_files(
-        self,
-        new_project: Projects,
-        user: AppUser
-    ):
+    def _copy_master_files(self, new_project: Projects, user: AppUser):
         master_files = self._get_all_master_project_files()
 
         # Pre-calculate hash ids for all files so we can update the new maps with the new hash ids
@@ -332,8 +342,10 @@ class ProjectsService(RDBMSBaseDao):
             # If we've moved past a folder's last child, cutoff that path
             if master_file.parent_id != master_folder_stack[-1]:
                 cutoff = master_folder_stack.index(master_file.parent_id)
-                master_folder_stack = master_folder_stack[:cutoff + 1]  # Include the cutoff index
-                new_folder_stack = new_folder_stack[:cutoff + 1]
+                master_folder_stack = master_folder_stack[
+                    : cutoff + 1
+                ]  # Include the cutoff index
+                new_folder_stack = new_folder_stack[: cutoff + 1]
 
             if master_file.mime_type == FILE_MIME_TYPE_MAP:
                 self._add_map(
@@ -341,7 +353,7 @@ class ProjectsService(RDBMSBaseDao):
                     new_project,
                     new_folder_stack[-1],
                     user,
-                    file_hash_id_map
+                    file_hash_id_map,
                 )
             else:
                 new_file = self._add_generic_file(
@@ -367,11 +379,11 @@ class ProjectsService(RDBMSBaseDao):
             self._copy_master_files(new_project, user)
         else:
             raise ServerException(
-                title='User Initial Project Creation Error',
-                message=f'There was an issue creating the initial project for the user.',
+                title="User Initial Project Creation Error",
+                message=f"There was an issue creating the initial project for the user.",
                 fields={
-                    'user_id': user.id,
-                    'username': user.username,
-                    'user_email': user.email
+                    "user_id": user.id,
+                    "username": user.username,
+                    "user_email": user.email,
                 },
             )

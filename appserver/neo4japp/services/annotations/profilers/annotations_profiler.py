@@ -19,7 +19,7 @@ from neo4japp.services.annotations.initializer import (
     get_recognition_service,
     get_annotation_tokenizer,
     get_annotation_service,
-    get_bioc_document_service
+    get_bioc_document_service,
 )
 
 
@@ -27,14 +27,13 @@ from neo4japp.services.annotations.initializer import (
 directory = os.path.realpath(os.path.dirname(__file__))
 
 
-ORGANISM_SYNONYM = ''
-ORGANISM_TAX_ID = ''
+ORGANISM_SYNONYM = ""
+ORGANISM_TAX_ID = ""
 
 
 @contextlib.contextmanager
 def cprofiled():
-    """Used to generate cProfile report of function calls.
-    """
+    """Used to generate cProfile report of function calls."""
     pr = cProfile.Profile()
     pr.enable()
     yield
@@ -42,11 +41,11 @@ def cprofiled():
     s = io.StringIO()
 
     try:
-        log_path = os.path.join(directory, 'results')
+        log_path = os.path.join(directory, "results")
         os.makedirs(log_path)
     except FileExistsError:
         pass
-    file_name = f'{log_path}/{datetime.now().isoformat()}-annotations.dmp'
+    file_name = f"{log_path}/{datetime.now().isoformat()}-annotations.dmp"
     # ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
     ps = pstats.Stats(pr, stream=s).dump_stats(file_name)
     # ps.print_stats()
@@ -56,61 +55,68 @@ def cprofiled():
 
 
 def main():
-    app = create_app('Functional Test Flask App', config='config.Testing')
+    app = create_app("Functional Test Flask App", config="config.Testing")
     with app.app_context():
         req = requests.post(
-            'http://localhost:5000/auth/login',
-            data=json.dumps({'email': 'admin@example.com', 'password': 'password'}),
-            headers={'Content-type': 'application/json'})
+            "http://localhost:5000/auth/login",
+            data=json.dumps({"email": "admin@example.com", "password": "password"}),
+            headers={"Content-type": "application/json"},
+        )
 
-        access_token = json.loads(req.text)['accessToken']['token']
+        access_token = json.loads(req.text)["accessToken"]["token"]
 
         pdf = os.path.join(
             directory,
-            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf'
+            "../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf",
         )
 
         hash_id = None
-        with open(pdf, 'rb') as f:
+        with open(pdf, "rb") as f:
             upload_req = requests.post(
-                'http://localhost:5000/filesystem/objects',
-                headers={'Authorization': f'Bearer {access_token}'},
-                files={'contentValue': f},
+                "http://localhost:5000/filesystem/objects",
+                headers={"Authorization": f"Bearer {access_token}"},
+                files={"contentValue": f},
                 data={
-                    'filename': 'Protein Protein Interactions for Covid.pdf',
-                    'parentHashId': 'lazhauxymcrahybaxcvkathnofyissffuidu'}
+                    "filename": "Protein Protein Interactions for Covid.pdf",
+                    "parentHashId": "lazhauxymcrahybaxcvkathnofyissffuidu",
+                },
             )
 
-            hash_id = json.loads(upload_req.text)['result']['hashId']
+            hash_id = json.loads(upload_req.text)["result"]["hashId"]
 
         f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
         with cprofiled():
             text, parsed = Pipeline.parse(
-              f.mime_type, file_id=f.id,
-              exclude_references=DEFAULT_ANNOTATION_CONFIGS['exclude_references'])
+                f.mime_type,
+                file_id=f.id,
+                exclude_references=DEFAULT_ANNOTATION_CONFIGS["exclude_references"],
+            )
 
             pipeline = Pipeline(
                 {
-                    'adbs': get_annotation_db_service,
-                    'ags': get_annotation_graph_service,
-                    'aers': get_recognition_service,
-                    'tkner': get_annotation_tokenizer,
-                    'as': get_annotation_service,
-                    'bs': get_bioc_document_service
+                    "adbs": get_annotation_db_service,
+                    "ags": get_annotation_graph_service,
+                    "aers": get_recognition_service,
+                    "tkner": get_annotation_tokenizer,
+                    "as": get_annotation_service,
+                    "bs": get_bioc_document_service,
                 },
-                text=text, parsed=parsed)
+                text=text,
+                parsed=parsed,
+            )
 
             pipeline.get_globals(
                 excluded_annotations=f.excluded_annotations or [],
-                custom_annotations=f.custom_annotations or []
+                custom_annotations=f.custom_annotations or [],
             ).identify(
-                annotation_methods=DEFAULT_ANNOTATION_CONFIGS['annotation_methods']
+                annotation_methods=DEFAULT_ANNOTATION_CONFIGS["annotation_methods"]
             ).annotate(
                 specified_organism_synonym=ORGANISM_SYNONYM,
                 specified_organism_tax_id=ORGANISM_TAX_ID,
                 custom_annotations=f.custom_annotations or [],
-                filename=f.filename)
+                filename=f.filename,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

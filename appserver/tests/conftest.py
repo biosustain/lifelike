@@ -45,18 +45,21 @@ def setup_before_request_callbacks(app: Flask):
     @app.before_request
     def init_exceptions_handling():
         g.warnings = list()
-        g.transaction_id = 'test'
+        g.transaction_id = "test"
 
     @app.before_request
     def default_login_required():
         # exclude 404 errors and static routes
         # uses split to handle blueprint static routes as well
-        if not flask_request.endpoint or flask_request.endpoint.rsplit('.', 1)[-1] == 'static':
+        if (
+            not flask_request.endpoint
+            or flask_request.endpoint.rsplit(".", 1)[-1] == "static"
+        ):
             return
 
         view = app.view_functions[flask_request.endpoint]
 
-        if getattr(view, 'login_exempt', False):
+        if getattr(view, "login_exempt", False):
             return
 
         return login_required_dummy_view()
@@ -66,10 +69,10 @@ def setup_request_callbacks(app: Flask):
     setup_before_request_callbacks(app)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def app(request) -> Flask:
     """Session-wide test Flask application."""
-    app: Flask = create_app('Functional Test Flask App', config='config.Testing')
+    app: Flask = create_app("Functional Test Flask App", config="config.Testing")
 
     setup_request_callbacks(app)
 
@@ -84,12 +87,12 @@ def app(request) -> Flask:
     return app
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def session(app, request):
-    """ Creates a new database session """
+    """Creates a new database session"""
     connection = db.engine.connect()
     transaction = connection.begin()
-    options = {'bind': connection, 'binds': {}}
+    options = {"bind": connection, "binds": {}}
     session = db.create_scoped_session(options=options)
     db.session = session
 
@@ -103,23 +106,23 @@ def session(app, request):
     return session
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def graph(request, app) -> Session:
     """Returns a graph connection to the Neo4J database.
     IMPORTANT: Tests may not behave as expected if the
     Neo4J database is not cleared before running tests!
     """
-    host = os.getenv('NEO4J_HOST', '0.0.0.0')
-    scheme = os.getenv('NEO4J_SCHEME', 'bolt')
-    port = os.getenv('NEO4J_PORT', '7687')
-    url = f'{scheme}://{host}:{port}'
-    username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+    host = os.getenv("NEO4J_HOST", "0.0.0.0")
+    scheme = os.getenv("NEO4J_SCHEME", "bolt")
+    port = os.getenv("NEO4J_PORT", "7687")
+    url = f"{scheme}://{host}:{port}"
+    username, password = os.getenv("NEO4J_AUTH", "neo4j/password").split("/")
     driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
 
     graph = driver.session()
 
     # Ensure a clean graph state before every test
-    graph.write_transaction(lambda tx: tx.run('MATCH(n) DETACH DELETE n'))
+    graph.write_transaction(lambda tx: tx.run("MATCH(n) DETACH DELETE n"))
 
     def teardown():
         graph.close()
@@ -128,21 +131,19 @@ def graph(request, app) -> Session:
     return graph
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def graph_driver(request, app):
-    host = os.getenv('NEO4J_HOST', '0.0.0.0')
-    scheme = os.getenv('NEO4J_SCHEME', 'bolt')
-    port = os.getenv('NEO4J_PORT', '7687')
-    url = f'{scheme}://{host}:{port}'
-    username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+    host = os.getenv("NEO4J_HOST", "0.0.0.0")
+    scheme = os.getenv("NEO4J_SCHEME", "bolt")
+    port = os.getenv("NEO4J_PORT", "7687")
+    url = f"{scheme}://{host}:{port}"
+    username, password = os.getenv("NEO4J_AUTH", "neo4j/password").split("/")
     return GraphDatabase.driver(url, auth=basic_auth(username, password))
 
 
 @pytest.fixture(scope="function")
 def arango_client(app):
-    arango_client = create_arango_client(
-        hosts=app.config.get('ARANGO_HOST')
-    )
+    arango_client = create_arango_client(hosts=app.config.get("ARANGO_HOST"))
 
     yield arango_client
 
@@ -160,17 +161,15 @@ def system_db(app, arango_client: ArangoClient):
 
 
 @pytest.fixture(scope="function")
-def test_arango_db(
-        app, arango_client: ArangoClient, system_db: StandardDatabase
-):
-    create_db(system_db, app.config.get('ARANGO_DB_NAME'))
+def test_arango_db(app, arango_client: ArangoClient, system_db: StandardDatabase):
+    create_db(system_db, app.config.get("ARANGO_DB_NAME"))
 
-    test_db_name = app.config.get('ARANGO_DB_NAME')
+    test_db_name = app.config.get("ARANGO_DB_NAME")
     test_db = get_db(
         arango_client=arango_client,
         name=test_db_name,
-        username=app.config.get('ARANGO_USERNAME'),
-        password=app.config.get('ARANGO_PASSWORD'),
+        username=app.config.get("ARANGO_USERNAME"),
+        password=app.config.get("ARANGO_PASSWORD"),
     )
     yield test_db
 
@@ -178,38 +177,32 @@ def test_arango_db(
     system_db.delete_database(test_db_name)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def account_service(app, session):
     return AccountService(session)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def auth_service(app, session):
     return AuthService(session)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def account_user(app, session):
     return AccountService(session)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def kg_service(graph, session):
-    return KgService(
-        graph=graph,
-        session=session
-    )
+    return KgService(graph=graph, session=session)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def visualizer_service(app, graph, session):
-    return VisualizerService(
-        graph=graph,
-        session=session
-    )
+    return VisualizerService(graph=graph, session=session)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def elastic_service(app, session):
     elastic_service = ElasticService()
 
@@ -230,9 +223,7 @@ def create_chemical_node(tx: Transaction, chem_name: str, chem_id: str) -> Node:
     query = """
         CREATE (c:Chemical {name: $chem_name, eid: $chem_id}) RETURN c
     """
-    return tx.run(
-        query, chem_name=chem_name, chem_id=chem_id
-    ).single()['c']
+    return tx.run(query, chem_name=chem_name, chem_id=chem_id).single()["c"]
 
 
 def create_disease_node(tx: Transaction, disease_name: str, disease_id: str) -> Node:
@@ -240,48 +231,36 @@ def create_disease_node(tx: Transaction, disease_name: str, disease_id: str) -> 
     query = """
         CREATE (d:Disease {name: $disease_name, eid: $disease_id}) RETURN d
     """
-    return tx.run(
-        query, disease_name=disease_name, disease_id=disease_id
-    ).single()['d']
+    return tx.run(query, disease_name=disease_name, disease_id=disease_id).single()["d"]
 
 
 def create_gene_node(
-        tx: Transaction,
-        gene_name: str,
-        gene_id: str,
+    tx: Transaction,
+    gene_name: str,
+    gene_id: str,
 ) -> Node:
     """Creates a gene node and adds it to the graph."""
     query = """
         CREATE (g:Gene {name: $gene_name, eid: $gene_id}) RETURN g
     """
-    return tx.run(
-        query, gene_name=gene_name, gene_id=gene_id
-    ).single()['g']
+    return tx.run(query, gene_name=gene_name, gene_id=gene_id).single()["g"]
 
 
 def create_taxonomy_node(
-        tx: Transaction,
-        name: str,
-        rank: str,
-        tax_id: str,
+    tx: Transaction,
+    name: str,
+    rank: str,
+    tax_id: str,
 ) -> Node:
     """Creates a taxonomy node and adds it to the graph."""
     query = """
         CREATE (t:Taxonomy {tax_id: $tax_id, name: $name, rank: $rank}) RETURN t
     """
-    return tx.run(
-        query,
-        name=name,
-        rank=rank,
-        tax_id=tax_id
-    ).single()['t']
+    return tx.run(query, name=name, rank=rank, tax_id=tax_id).single()["t"]
 
 
 def create_association_node(
-        tx: Transaction,
-        assoc_type: str,
-        description: str,
-        assoc_id: int
+    tx: Transaction, assoc_type: str, description: str, assoc_id: int
 ) -> Node:
     """Creates an association node and adds it to the graph."""
     query = """
@@ -290,14 +269,10 @@ def create_association_node(
     """
     return tx.run(
         query, assoc_type=assoc_type, description=description, assoc_id=assoc_id
-    ).single()['a']
+    ).single()["a"]
 
 
-def create_snippet_node(
-        tx: Transaction,
-        snippet_id: int,
-        sentence: str
-) -> Node:
+def create_snippet_node(tx: Transaction, snippet_id: int, sentence: str) -> Node:
     """Creates a snippet node and adds it to the graph."""
     query = """
         CREATE (s:Snippet {
@@ -305,33 +280,27 @@ def create_snippet_node(
             sentence: $sentence
         }) RETURN s
     """
-    return tx.run(
-        query,
-        snippet_id=snippet_id,
-        sentence=sentence
-    ).single()['s']
+    return tx.run(query, snippet_id=snippet_id, sentence=sentence).single()["s"]
 
 
 def create_publication_node(
-        tx: Transaction,
-        pub_id: int,
-        pub_year: Optional[int] = None,
+    tx: Transaction,
+    pub_id: int,
+    pub_year: Optional[int] = None,
 ) -> Node:
     """Creates a publication node and adds it to the graph."""
     query = """
         CREATE (p:Publication {pmid: $pub_id, pub_year: $pub_year}) RETURN p
     """
-    return tx.run(
-        query, pub_id=pub_id, pub_year=pub_year
-    ).single()['p']
+    return tx.run(query, pub_id=pub_id, pub_year=pub_year).single()["p"]
 
 
 def create_associated_relationship(
-        tx: Transaction,
-        source_id: int,
-        target_id: int,
-        assoc_type: str,
-        description: str,
+    tx: Transaction,
+    source_id: int,
+    target_id: int,
+    assoc_type: str,
+    description: str,
 ) -> Relationship:
     """
     Creates an association relationship between two nodes (these should already be in the
@@ -349,16 +318,14 @@ def create_associated_relationship(
         source_id=source_id,
         target_id=target_id,
         assoc_type=assoc_type,
-        description=description
+        description=description,
     )
     single = result.single()
-    return single['r']
+    return single["r"]
 
 
 def create_has_association_relationship(
-        tx: Transaction,
-        source_id: int,
-        target_id: int
+    tx: Transaction, source_id: int, target_id: int
 ) -> Relationship:
     """
     Creates a has_association relationship between two nodes (these should already be in the
@@ -370,21 +337,17 @@ def create_has_association_relationship(
         CREATE (source)-[r:HAS_ASSOCIATION]->(target)
         RETURN r, source, target
     """
-    return tx.run(
-        query,
-        source_id=source_id,
-        target_id=target_id
-    ).single()['r']
+    return tx.run(query, source_id=source_id, target_id=target_id).single()["r"]
 
 
 def create_predicts_relationship(
-        tx: Transaction,
-        source_id: int,
-        target_id: int,
-        entry1_text: str,
-        entry2_text: str,
-        raw_score: Optional[float] = None,
-        normalized_score: Optional[float] = None,
+    tx: Transaction,
+    source_id: int,
+    target_id: int,
+    entry1_text: str,
+    entry2_text: str,
+    raw_score: Optional[float] = None,
+    normalized_score: Optional[float] = None,
 ) -> Relationship:
     """
     Creates a predicts relationship between two nodes (these should already be in the
@@ -408,14 +371,12 @@ def create_predicts_relationship(
         source_id=source_id,
         target_id=target_id,
         raw_score=raw_score,
-        normalized_score=normalized_score
-    ).single()['r']
+        normalized_score=normalized_score,
+    ).single()["r"]
 
 
 def create_in_pub_relationship(
-        tx: Transaction,
-        source_id: int,
-        target_id: int
+    tx: Transaction, source_id: int, target_id: int
 ) -> Relationship:
     """
     Creates an in_pub relationship between two nodes (these should already be in the
@@ -427,17 +388,11 @@ def create_in_pub_relationship(
         CREATE (source)-[r:IN_PUB]->(target)
         RETURN r, source, target
     """
-    return tx.run(
-        query,
-        source_id=source_id,
-        target_id=target_id
-    ).single()['r']
+    return tx.run(query, source_id=source_id, target_id=target_id).single()["r"]
 
 
 def create_has_taxonomy_relationship(
-        tx: Transaction,
-        source_id: int,
-        target_id: int
+    tx: Transaction, source_id: int, target_id: int
 ) -> Relationship:
     """
     Creates a has_taxonomy relationship between two nodes (these should already be in the
@@ -449,42 +404,38 @@ def create_has_taxonomy_relationship(
         CREATE (source)-[r:HAS_TAXONOMY]->(target)
         RETURN r, source, target
     """
-    return tx.run(
-        query,
-        source_id=source_id,
-        target_id=target_id
-    ).single()['r']
+    return tx.run(query, source_id=source_id, target_id=target_id).single()["r"]
 
 
 # End Graph Data Helpers #
 
 
 # Begin Entity Node Fixtures #
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        gas_gangrene = create_disease_node(tx, 'gas gangrene', 'MESH:D005738')
+        gas_gangrene = create_disease_node(tx, "gas gangrene", "MESH:D005738")
     return gas_gangrene
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        penicillins = create_chemical_node(tx, 'Penicillins', 'MESH:D010406')
+        penicillins = create_chemical_node(tx, "Penicillins", "MESH:D010406")
     return penicillins
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def oxygen(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        oxygen = create_chemical_node(tx, 'Oxygen', 'MESH:D010100')
+        oxygen = create_chemical_node(tx, "Oxygen", "MESH:D010100")
     return oxygen
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def pomc(graph: Session) -> Node:
     with graph.begin_transaction() as tx:
-        pomc = create_gene_node(tx, 'POMC', '5443')
+        pomc = create_gene_node(tx, "POMC", "5443")
     return pomc
 
 
@@ -492,70 +443,71 @@ def pomc(graph: Session) -> Node:
 
 # Begin Entity -> Entity Relationship Fixtures #
 
-@pytest.fixture(scope='function')
+
+@pytest.fixture(scope="function")
 def pomc_to_gas_gangrene_pathogenesis_edge(
-        graph: Session,
-        gas_gangrene: Node,
-        pomc: Node,
+    graph: Session,
+    gas_gangrene: Node,
+    pomc: Node,
 ) -> Relationship:
     with graph.begin_transaction() as tx:
         pomc_to_gas_gangrene_pathogenesis_edge = create_associated_relationship(
             tx=tx,
             source_id=pomc.id,
             target_id=gas_gangrene.id,
-            assoc_type='J',
-            description='role in disease pathogenesis',
+            assoc_type="J",
+            description="role in disease pathogenesis",
         )
     return pomc_to_gas_gangrene_pathogenesis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_alleviates_edge(
-        graph: Session,
-        gas_gangrene: Node,
-        penicillins: Node,
+    graph: Session,
+    gas_gangrene: Node,
+    penicillins: Node,
 ) -> Relationship:
     with graph.begin_transaction() as tx:
         penicillins_to_gas_gangrene_alleviates_edge = create_associated_relationship(
             tx=tx,
             source_id=penicillins.id,
             target_id=gas_gangrene.id,
-            assoc_type='Pa',
-            description='alleviates, reduces',
+            assoc_type="Pa",
+            description="alleviates, reduces",
         )
     return penicillins_to_gas_gangrene_alleviates_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def oxygen_to_gas_gangrene_treatment_edge(
-        graph: Session,
-        gas_gangrene: Node,
-        oxygen: Node,
+    graph: Session,
+    gas_gangrene: Node,
+    oxygen: Node,
 ) -> Relationship:
     with graph.begin_transaction() as tx:
         oxygen_to_gas_gangrene_treatment_edge = create_associated_relationship(
             tx=tx,
             source_id=oxygen.id,
             target_id=gas_gangrene.id,
-            assoc_type='Pa',
-            description='treatment/therapy (including investigatory)',
+            assoc_type="Pa",
+            description="treatment/therapy (including investigatory)",
         )
     return oxygen_to_gas_gangrene_treatment_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_treatment_edge(
-        graph: Session,
-        gas_gangrene: Node,
-        penicillins: Node,
+    graph: Session,
+    gas_gangrene: Node,
+    penicillins: Node,
 ) -> Relationship:
     with graph.begin_transaction() as tx:
         penicillins_to_gas_gangrene_treatment_edge = create_associated_relationship(
             tx=tx,
             source_id=penicillins.id,
             target_id=gas_gangrene.id,
-            assoc_type='Pa',
-            description='treatment/therapy (including investigatory)',
+            assoc_type="Pa",
+            description="treatment/therapy (including investigatory)",
         )
     return penicillins_to_gas_gangrene_treatment_edge
 
@@ -564,42 +516,42 @@ def penicillins_to_gas_gangrene_treatment_edge(
 
 
 # Start Misc. Fixtures #
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_with_associations_and_references(
-        graph: Session,
-        gas_gangrene: Node,
-        oxygen: Node,
-        penicillins: Node,
-        pomc: Node,
-        oxygen_to_gas_gangrene_treatment_edge: Relationship,
-        pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
-        penicillins_to_gas_gangrene_alleviates_edge: Relationship,
-        penicillins_to_gas_gangrene_treatment_edge: Relationship,
+    graph: Session,
+    gas_gangrene: Node,
+    oxygen: Node,
+    penicillins: Node,
+    pomc: Node,
+    oxygen_to_gas_gangrene_treatment_edge: Relationship,
+    pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
+    penicillins_to_gas_gangrene_alleviates_edge: Relationship,
+    penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
     with graph.begin_transaction() as tx:
         # Association Nodes
         oxygen_to_gas_gangrene_association_node = create_association_node(
             tx=tx,
-            assoc_type='J',
-            description='treatment/therapy (including investigatory)',
+            assoc_type="J",
+            description="treatment/therapy (including investigatory)",
             assoc_id=1089126,
         )
         pomc_to_gas_gangrene_association_node = create_association_node(
             tx=tx,
-            assoc_type='J',
-            description='role in disease pathogenesis',
+            assoc_type="J",
+            description="role in disease pathogenesis",
             assoc_id=1387448,
         )
         penicillins_to_gas_gangrene_association_node1 = create_association_node(
             tx=tx,
-            assoc_type='Pa',
-            description='alleviates, reduces',
+            assoc_type="Pa",
+            description="alleviates, reduces",
             assoc_id=2771500,
         )
         penicillins_to_gas_gangrene_association_node2 = create_association_node(
             tx=tx,
-            assoc_type='J',
-            description='treatment/therapy (including investigatory)',
+            assoc_type="J",
+            description="treatment/therapy (including investigatory)",
             assoc_id=2771501,
         )
 
@@ -607,32 +559,32 @@ def gas_gangrene_with_associations_and_references(
         oxygen_to_gas_gangrene_snippet_node1 = create_snippet_node(
             tx=tx,
             snippet_id=7430189,
-            sentence='In this study , we aimed to investigate the effect of HBO2...',
+            sentence="In this study , we aimed to investigate the effect of HBO2...",
         )
         oxygen_to_gas_gangrene_snippet_node2 = create_snippet_node(
             tx=tx,
             snippet_id=1890743,
-            sentence='Hyperbaric oxygen therapy has an adjunctive role...',
+            sentence="Hyperbaric oxygen therapy has an adjunctive role...",
         )
         penicillins_to_gas_gangrene_snippet_node1 = create_snippet_node(
             tx=tx,
             snippet_id=9810347,
-            sentence='In a mouse model of gas_gangrene caused by...',
+            sentence="In a mouse model of gas_gangrene caused by...",
         )
         penicillins_to_gas_gangrene_snippet_node2 = create_snippet_node(
             tx=tx,
             snippet_id=9810346,
-            sentence='Toxin suppression and rapid bacterial killing may...',
+            sentence="Toxin suppression and rapid bacterial killing may...",
         )
         penicillins_to_gas_gangrene_snippet_node3 = create_snippet_node(
             tx=tx,
             snippet_id=9810348,
-            sentence='...penicillin was found to reduce the affect of...',
+            sentence="...penicillin was found to reduce the affect of...",
         )
         penicillins_to_gas_gangrene_snippet_node4 = create_snippet_node(
             tx=tx,
             snippet_id=9810349,
-            sentence='...suppresses toxins and rapidly kills bacteria...',
+            sentence="...suppresses toxins and rapidly kills bacteria...",
         )
 
         # Publication Nodes
@@ -642,9 +594,7 @@ def gas_gangrene_with_associations_and_references(
             pub_year=2019,
         )
         penicillins_to_gas_gangrene_publication_node1 = create_publication_node(
-            tx=tx,
-            pub_id=1,
-            pub_year=2014
+            tx=tx, pub_id=1, pub_year=2014
         )
         penicillins_to_gas_gangrene_publication_node2 = create_publication_node(
             tx=tx,
@@ -656,13 +606,11 @@ def gas_gangrene_with_associations_and_references(
             [oxygen, oxygen_to_gas_gangrene_association_node],
             [pomc, pomc_to_gas_gangrene_association_node],
             [penicillins, penicillins_to_gas_gangrene_association_node1],
-            [penicillins, penicillins_to_gas_gangrene_association_node2]
+            [penicillins, penicillins_to_gas_gangrene_association_node2],
         ]
         for rel in entity_to_association_rels:
             create_has_association_relationship(
-                tx=tx,
-                source_id=rel[0].id,
-                target_id=rel[1].id
+                tx=tx, source_id=rel[0].id, target_id=rel[1].id
             )
 
         # Association -> Entity Relationships
@@ -670,7 +618,7 @@ def gas_gangrene_with_associations_and_references(
             [oxygen_to_gas_gangrene_association_node, gas_gangrene],
             [pomc_to_gas_gangrene_association_node, gas_gangrene],
             [penicillins_to_gas_gangrene_association_node1, gas_gangrene],
-            [penicillins_to_gas_gangrene_association_node2, gas_gangrene]
+            [penicillins_to_gas_gangrene_association_node2, gas_gangrene],
         ]
         for rel in association_to_entity_rels:
             create_has_association_relationship(
@@ -681,21 +629,57 @@ def gas_gangrene_with_associations_and_references(
 
         # Snippet -> Association Relationships
         snippet_to_association_rels = [
-            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association_node, None,
-             None, 'oxygen', 'gas gangrene'],  # noqa
-            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association_node, None,
-             None, 'oxygen', 'gas gangrene'],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node1,
-             penicillins_to_gas_gangrene_association_node1, 2, 0.385, 'penicillin', 'gas gangrene'],
+            [
+                oxygen_to_gas_gangrene_snippet_node1,
+                oxygen_to_gas_gangrene_association_node,
+                None,
+                None,
+                "oxygen",
+                "gas gangrene",
+            ],  # noqa
+            [
+                oxygen_to_gas_gangrene_snippet_node2,
+                oxygen_to_gas_gangrene_association_node,
+                None,
+                None,
+                "oxygen",
+                "gas gangrene",
+            ],  # noqa
+            [
+                penicillins_to_gas_gangrene_snippet_node1,
+                penicillins_to_gas_gangrene_association_node1,
+                2,
+                0.385,
+                "penicillin",
+                "gas gangrene",
+            ],
             # noqa
-            [penicillins_to_gas_gangrene_snippet_node3,
-             penicillins_to_gas_gangrene_association_node1, 5, 0.693, 'penicillin', 'gas gangrene'],
+            [
+                penicillins_to_gas_gangrene_snippet_node3,
+                penicillins_to_gas_gangrene_association_node1,
+                5,
+                0.693,
+                "penicillin",
+                "gas gangrene",
+            ],
             # noqa
-            [penicillins_to_gas_gangrene_snippet_node2,
-             penicillins_to_gas_gangrene_association_node2, 1, 0.222, 'penicillin', 'gas gangrene'],
+            [
+                penicillins_to_gas_gangrene_snippet_node2,
+                penicillins_to_gas_gangrene_association_node2,
+                1,
+                0.222,
+                "penicillin",
+                "gas gangrene",
+            ],
             # noqa
-            [penicillins_to_gas_gangrene_snippet_node4,
-             penicillins_to_gas_gangrene_association_node2, 3, 0.456, 'penicillin', 'gas gangrene'],
+            [
+                penicillins_to_gas_gangrene_snippet_node4,
+                penicillins_to_gas_gangrene_association_node2,
+                3,
+                0.456,
+                "penicillin",
+                "gas gangrene",
+            ],
             # noqa
         ]
         for rel in snippet_to_association_rels:
@@ -711,80 +695,82 @@ def gas_gangrene_with_associations_and_references(
 
         # Snippet -> Publication Relationships
         snippet_to_pub_rels = [
-            [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_publication_node],
-            [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_publication_node],
-            [penicillins_to_gas_gangrene_snippet_node1,
-             penicillins_to_gas_gangrene_publication_node1],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node3,
-             penicillins_to_gas_gangrene_publication_node2],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node2,
-             penicillins_to_gas_gangrene_publication_node2],  # noqa
-            [penicillins_to_gas_gangrene_snippet_node4,
-             penicillins_to_gas_gangrene_publication_node2]  # noqa
+            [
+                oxygen_to_gas_gangrene_snippet_node1,
+                oxygen_to_gas_gangrene_publication_node,
+            ],
+            [
+                oxygen_to_gas_gangrene_snippet_node2,
+                oxygen_to_gas_gangrene_publication_node,
+            ],
+            [
+                penicillins_to_gas_gangrene_snippet_node1,
+                penicillins_to_gas_gangrene_publication_node1,
+            ],  # noqa
+            [
+                penicillins_to_gas_gangrene_snippet_node3,
+                penicillins_to_gas_gangrene_publication_node2,
+            ],  # noqa
+            [
+                penicillins_to_gas_gangrene_snippet_node2,
+                penicillins_to_gas_gangrene_publication_node2,
+            ],  # noqa
+            [
+                penicillins_to_gas_gangrene_snippet_node4,
+                penicillins_to_gas_gangrene_publication_node2,
+            ],  # noqa
         ]
         for rel in snippet_to_pub_rels:
-            create_in_pub_relationship(
-                tx=tx,
-                source_id=rel[0].id,
-                target_id=rel[1].id
-            )
+            create_in_pub_relationship(tx=tx, source_id=rel[0].id, target_id=rel[1].id)
     return gas_gangrene
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def example4_pdf_gene_and_organism_network(
-        graph: Session,
+    graph: Session,
 ):
     with graph.begin_transaction() as tx:
         cysB = create_gene_node(
             tx=tx,
-            gene_name='cysB',
-            gene_id='945771',
+            gene_name="cysB",
+            gene_id="945771",
         )
 
         mcrB = create_gene_node(
             tx=tx,
-            gene_name='mcrB',
-            gene_id='949122',
+            gene_name="mcrB",
+            gene_id="949122",
         )
 
         oxyR_e_coli = create_gene_node(
             tx=tx,
-            gene_name='oxyR',
-            gene_id='948462',
+            gene_name="oxyR",
+            gene_id="948462",
         )
 
         oxyR_salmonella = create_gene_node(
             tx=tx,
-            gene_name='cysB',
-            gene_id='1255651',
+            gene_name="cysB",
+            gene_id="1255651",
         )
 
         e_coli = create_taxonomy_node(
-            tx=tx,
-            name='Escherichia coli',
-            rank='species',
-            tax_id='562'
+            tx=tx, name="Escherichia coli", rank="species", tax_id="562"
         )
 
         salmonella = create_taxonomy_node(
-            tx=tx,
-            name='Salmonella enterica',
-            rank='species',
-            tax_id='28901'
+            tx=tx, name="Salmonella enterica", rank="species", tax_id="28901"
         )
 
         gene_to_organism_rels = [
             [cysB, e_coli],
             [mcrB, e_coli],
             [oxyR_e_coli, e_coli],
-            [oxyR_salmonella, salmonella]
+            [oxyR_salmonella, salmonella],
         ]
         for rel in gene_to_organism_rels:
             create_has_taxonomy_relationship(
-                tx=tx,
-                source_id=rel[0].id,
-                target_id=rel[1].id
+                tx=tx, source_id=rel[0].id, target_id=rel[1].id
             )
     return graph
 
@@ -794,7 +780,7 @@ def example4_pdf_gene_and_organism_network(
 # Start DTO Fixtures #
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_vis_node(gas_gangrene: Node):
     """Creates a VisNode from gas gangrene"""
     labels = list(gas_gangrene.labels)
@@ -804,7 +790,8 @@ def gas_gangrene_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
@@ -823,7 +810,7 @@ def gas_gangrene_vis_node(gas_gangrene: Node):
     return gas_gangrene_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
     """Creates a DuplicateVisNode from gas gangrene"""
     labels = list(gas_gangrene.labels)
@@ -833,13 +820,14 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=gas_gangrene.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]),  # noqa
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(gas_gangrene), {}),
         url=None,
     )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
-        id=f'duplicateNode:{node_as_graph_node.id}',
+        id=f"duplicateNode:{node_as_graph_node.id}",
         label=node_as_graph_node.label,
         data=node_as_graph_node.data,
         sub_labels=node_as_graph_node.sub_labels,
@@ -847,13 +835,13 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene: Node):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return gas_gangrene_duplicate_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def oxygen_duplicate_vis_node(oxygen: Node):
     """Creates a DuplicateVisNode from oxygen"""
     labels = list(oxygen.labels)
@@ -862,13 +850,15 @@ def oxygen_duplicate_vis_node(oxygen: Node):
         label=labels[0],
         sub_labels=labels,
         domain_labels=[],
-        display_name=oxygen.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]),  # noqa
+        display_name=oxygen.get(
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(oxygen), {}),
         url=None,
     )
 
     oxygen_duplicate_vis_node = DuplicateVisNode(
-        id=f'duplicateNode:{node_as_graph_node.id}',
+        id=f"duplicateNode:{node_as_graph_node.id}",
         label=node_as_graph_node.label,
         data=node_as_graph_node.data,
         sub_labels=node_as_graph_node.sub_labels,
@@ -876,13 +866,13 @@ def oxygen_duplicate_vis_node(oxygen: Node):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return oxygen_duplicate_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_vis_node(penicillins: Node):
     """Creates a VisNode from penicillins"""
     labels = list(penicillins.labels)
@@ -892,7 +882,8 @@ def penicillins_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
@@ -911,7 +902,7 @@ def penicillins_vis_node(penicillins: Node):
     return penicillins_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_duplicate_vis_node(penicillins: Node):
     """Creates a DuplicateVisNode from penicillins"""
     labels = list(penicillins.labels)
@@ -921,13 +912,14 @@ def penicillins_duplicate_vis_node(penicillins: Node):
         sub_labels=labels,
         domain_labels=[],
         display_name=penicillins.get(
-            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]),  # noqa
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
-        id=f'duplicateNode:{node_as_graph_node.id}',
+        id=f"duplicateNode:{node_as_graph_node.id}",
         label=node_as_graph_node.label,
         data=node_as_graph_node.data,
         sub_labels=node_as_graph_node.sub_labels,
@@ -935,13 +927,13 @@ def penicillins_duplicate_vis_node(penicillins: Node):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return penicillins_duplicate_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def pomc_vis_node(pomc: Node):
     """Creates a VisNode from pomc"""
     labels = list(pomc.labels)
@@ -950,7 +942,9 @@ def pomc_vis_node(pomc: Node):
         label=labels[0],
         sub_labels=labels,
         domain_labels=[],
-        display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
+        display_name=pomc.get(
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
@@ -969,7 +963,7 @@ def pomc_vis_node(pomc: Node):
     return pomc_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def pomc_duplicate_vis_node(pomc: Node):
     """Creates a DuplicateVisNode from pomc"""
     labels = list(pomc.labels)
@@ -978,13 +972,15 @@ def pomc_duplicate_vis_node(pomc: Node):
         label=labels[0],
         sub_labels=labels,
         domain_labels=[],
-        display_name=pomc.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]),  # noqa
+        display_name=pomc.get(
+            DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)]
+        ),  # noqa
         data=snake_to_camel_dict(dict(pomc), {}),
         url=None,
     )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
-        id=f'duplicateNode:{node_as_graph_node.id}',
+        id=f"duplicateNode:{node_as_graph_node.id}",
         label=node_as_graph_node.label,
         data=node_as_graph_node.data,
         sub_labels=node_as_graph_node.sub_labels,
@@ -992,15 +988,15 @@ def pomc_duplicate_vis_node(pomc: Node):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return pomc_duplicate_vis_node
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
-        oxygen_to_gas_gangrene_treatment_edge: Relationship,
+    oxygen_to_gas_gangrene_treatment_edge: Relationship,
 ):
     """Creates a DuplicateVisEdge from the oxygen to gas_gangrene
     alleviates/reduces relationship."""
@@ -1012,18 +1008,18 @@ def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         to=oxygen_to_gas_gangrene_treatment_edge.end_node.id,
         _from=oxygen_to_gas_gangrene_treatment_edge.start_node.id,
         to_label=list(oxygen_to_gas_gangrene_treatment_edge.end_node.labels)[0],
-        from_label=list(oxygen_to_gas_gangrene_treatment_edge.start_node.labels)[0]
+        from_label=list(oxygen_to_gas_gangrene_treatment_edge.start_node.labels)[0],
     )
 
     oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
-        to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-        from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-        to_label='Disease',
-        from_label='Chemical',
-        arrows='to',
+        to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+        from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+        to_label="Disease",
+        from_label="Chemical",
+        arrows="to",
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
         original_to=edge_as_graph_relationship.to,
@@ -1032,9 +1028,9 @@ def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
     return oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
-        pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
+    pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
 ):
     """Creates a VisEdge from the pomc to gas gangrene
     role in disease pathogenesis relationship."""
@@ -1045,26 +1041,26 @@ def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
         to=pomc_to_gas_gangrene_pathogenesis_edge.end_node.id,
         _from=pomc_to_gas_gangrene_pathogenesis_edge.start_node.id,
         to_label=list(pomc_to_gas_gangrene_pathogenesis_edge.end_node.labels)[0],
-        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0]
+        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0],
     )
 
     pomc_to_gas_gangrene_pathogenesis_as_vis_edge = VisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
-        to_label='Disease',
-        from_label='Gene',
-        arrows='to',
+        to_label="Disease",
+        from_label="Gene",
+        arrows="to",
     )
 
     return pomc_to_gas_gangrene_pathogenesis_as_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
-        pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
+    pomc_to_gas_gangrene_pathogenesis_edge: Relationship,
 ):
     """Creates a DuplicateVisEdge from the pomc to gas_gangrene
     role in disease pathogenesis relationship."""
@@ -1075,18 +1071,18 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
         to=pomc_to_gas_gangrene_pathogenesis_edge.end_node.id,
         _from=pomc_to_gas_gangrene_pathogenesis_edge.start_node.id,
         to_label=list(pomc_to_gas_gangrene_pathogenesis_edge.end_node.labels)[0],
-        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0]
+        from_label=list(pomc_to_gas_gangrene_pathogenesis_edge.start_node.labels)[0],
     )
 
     pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge = DuplicateVisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
-        to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-        from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-        to_label='Disease',
-        from_label='Gene',
-        arrows='to',
+        to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+        from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+        to_label="Disease",
+        from_label="Gene",
+        arrows="to",
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
         original_to=edge_as_graph_relationship.to,
@@ -1095,9 +1091,9 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
     return pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
-        penicillins_to_gas_gangrene_alleviates_edge: Relationship,
+    penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
     """Creates a VisEdge from the penicillins to gas gangrene
     alleviates/reduces relationship."""
@@ -1108,26 +1104,28 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
         to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[
+            0
+        ],
     )
 
     penicillins_to_gas_gangrene_alleviates_as_vis_edge = VisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
-        to_label='Disease',
-        from_label='Chemical',
-        arrows='to',
+        to_label="Disease",
+        from_label="Chemical",
+        arrows="to",
     )
 
     return penicillins_to_gas_gangrene_alleviates_as_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
-        penicillins_to_gas_gangrene_alleviates_edge: Relationship,
+    penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     alleviates/reduces relationship."""
@@ -1138,18 +1136,20 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
         to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[
+            0
+        ],
     )
 
     penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge = DuplicateVisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
-        to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-        from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-        to_label='Disease',
-        from_label='Chemical',
-        arrows='to',
+        to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+        from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+        to_label="Disease",
+        from_label="Chemical",
+        arrows="to",
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
         original_to=edge_as_graph_relationship.to,
@@ -1158,9 +1158,9 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
     return penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_treatment_as_vis_edge(
-        penicillins_to_gas_gangrene_treatment_edge: Relationship,
+    penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
     """Creates a VisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
@@ -1171,26 +1171,28 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
         to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[
+            0
+        ],
     )
 
     penicillins_to_gas_gangrene_treatment_as_vis_edge = VisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
-        to_label='Disease',
-        from_label='Chemical',
-        arrows='to',
+        to_label="Disease",
+        from_label="Chemical",
+        arrows="to",
     )
 
     return penicillins_to_gas_gangrene_treatment_as_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
-        penicillins_to_gas_gangrene_treatment_edge: Relationship,
+    penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
@@ -1201,18 +1203,20 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[
+            0
+        ],
     )
 
     penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
-        id=f'duplicateEdge:{edge_as_graph_relationship.id}',
-        label=edge_as_graph_relationship.data['description'],
+        id=f"duplicateEdge:{edge_as_graph_relationship.id}",
+        label=edge_as_graph_relationship.data["description"],
         data=edge_as_graph_relationship.data,
-        to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-        from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-        to_label='Disease',
-        from_label='Chemical',
-        arrows='to',
+        to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+        from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+        to_label="Disease",
+        from_label="Chemical",
+        arrows="to",
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
         original_to=edge_as_graph_relationship.to,
@@ -1221,12 +1225,12 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
     return penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_treatment_cluster_node_edge_pairs(
-        oxygen_duplicate_vis_node,
-        oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
-        penicillins_duplicate_vis_node,
-        penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
+    oxygen_duplicate_vis_node,
+    oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
+    penicillins_duplicate_vis_node,
+    penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge,
 ):
     """Creates a list of DuplicateNodeEdgePairs. Used for testing the
     reference table endpoints and services."""
@@ -1235,7 +1239,7 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
             node=ReferenceTablePair.NodeData(
                 id=oxygen_duplicate_vis_node.id,
                 display_name=oxygen_duplicate_vis_node.display_name,
-                label=oxygen_duplicate_vis_node.primary_label
+                label=oxygen_duplicate_vis_node.primary_label,
             ),
             edge=ReferenceTablePair.EdgeData(
                 original_from=oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,
@@ -1248,23 +1252,20 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
             node=ReferenceTablePair.NodeData(
                 id=penicillins_duplicate_vis_node.id,
                 display_name=penicillins_duplicate_vis_node.display_name,
-                label=penicillins_duplicate_vis_node.primary_label
+                label=penicillins_duplicate_vis_node.primary_label,
             ),
             edge=ReferenceTablePair.EdgeData(
-                original_from=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge\
-                    .original_from,
-                original_to=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge\
-                    .original_to,
-                label=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge\
-                    .label,
+                original_from=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,
+                original_to=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_to,
+                label=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.label,
             ),
-        )
+        ),
     ]
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_treatement_edge_data(
-        penicillins_to_gas_gangrene_treatment_edge: Relationship,
+    penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
     edge_as_graph_relationship = GraphRelationship(
         id=penicillins_to_gas_gangrene_treatment_edge.id,
@@ -1273,21 +1274,23 @@ def gas_gangrene_treatement_edge_data(
         to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[
+            0
+        ],
     )
 
     return EdgeConnectionData(
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
-        to_label='Disease',
-        from_label='Chemical',
+        to_label="Disease",
+        from_label="Chemical",
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_alleviates_edge_data(
-        penicillins_to_gas_gangrene_alleviates_edge: Relationship,
+    penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
     edge_as_graph_relationship = GraphRelationship(
         id=penicillins_to_gas_gangrene_alleviates_edge.id,
@@ -1296,21 +1299,23 @@ def gas_gangrene_alleviates_edge_data(
         to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[
+            0
+        ],
     )
 
     return EdgeConnectionData(
-        label=edge_as_graph_relationship.data['description'],
+        label=edge_as_graph_relationship.data["description"],
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
-        to_label='Disease',
-        from_label='Chemical',
+        to_label="Disease",
+        from_label="Chemical",
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_treatement_duplicate_edge_data(
-        penicillins_to_gas_gangrene_treatment_edge: Relationship,
+    penicillins_to_gas_gangrene_treatment_edge: Relationship,
 ):
     edge_as_graph_relationship = GraphRelationship(
         id=penicillins_to_gas_gangrene_treatment_edge.id,
@@ -1319,25 +1324,27 @@ def gas_gangrene_treatement_duplicate_edge_data(
         to=penicillins_to_gas_gangrene_treatment_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_treatment_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_treatment_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_treatment_edge.start_node.labels)[
+            0
+        ],
     )
 
     return [
         DuplicateEdgeConnectionData(
-            label=edge_as_graph_relationship.data['description'],
-            to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-            from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-            to_label='Disease',
-            from_label='Chemical',
+            label=edge_as_graph_relationship.data["description"],
+            to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+            from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+            to_label="Disease",
+            from_label="Chemical",
             original_from=edge_as_graph_relationship._from,
             original_to=edge_as_graph_relationship.to,
         )
     ]
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def gas_gangrene_alleviates_duplicate_edge_data(
-        penicillins_to_gas_gangrene_alleviates_edge: Relationship,
+    penicillins_to_gas_gangrene_alleviates_edge: Relationship,
 ):
     edge_as_graph_relationship = GraphRelationship(
         id=penicillins_to_gas_gangrene_alleviates_edge.id,
@@ -1346,16 +1353,18 @@ def gas_gangrene_alleviates_duplicate_edge_data(
         to=penicillins_to_gas_gangrene_alleviates_edge.end_node.id,
         _from=penicillins_to_gas_gangrene_alleviates_edge.start_node.id,
         to_label=list(penicillins_to_gas_gangrene_alleviates_edge.end_node.labels)[0],
-        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[0]
+        from_label=list(penicillins_to_gas_gangrene_alleviates_edge.start_node.labels)[
+            0
+        ],
     )
 
     return [
         DuplicateEdgeConnectionData(
-            label=edge_as_graph_relationship.data['description'],
-            to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-            from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-            to_label='Disease',
-            from_label='Chemical',
+            label=edge_as_graph_relationship.data["description"],
+            to=f"duplicateNode:{edge_as_graph_relationship.to}",  # type:ignore
+            from_=f"duplicateNode:{edge_as_graph_relationship._from}",  # type:ignore
+            to_label="Disease",
+            from_label="Chemical",
             original_from=edge_as_graph_relationship._from,
             original_to=edge_as_graph_relationship.to,
         )
@@ -1365,10 +1374,12 @@ def gas_gangrene_alleviates_duplicate_edge_data(
 # End DTO Fixtures #
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def pdf_dir() -> str:
-    """ Returns the directory of the example PDFs """
-    return os.path.join(Path(__file__).parent, 'database', 'services', 'annotations', 'pdf_samples')
+    """Returns the directory of the example PDFs"""
+    return os.path.join(
+        Path(__file__).parent, "database", "services", "annotations", "pdf_samples"
+    )
 
 
 @pytest.fixture

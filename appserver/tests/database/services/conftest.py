@@ -1,52 +1,55 @@
 import pytest
 
 from neo4japp.models import AppUser, Projects, Files, FileContent
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    MapTypeProvider,
+)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_owner(session) -> AppUser:
     user = AppUser(
         id=100,
-        username='test_admin_user',
-        email='admin@***ARANGO_DB_NAME***.bio',
-        password_hash='password',
-        first_name='Jim',
-        last_name='Melancholy',
-        subject='admin@***ARANGO_DB_NAME***.bio',
+        username="test_admin_user",
+        email="admin@***ARANGO_DB_NAME***.bio",
+        password_hash="password",
+        first_name="Jim",
+        last_name="Melancholy",
+        subject="admin@***ARANGO_DB_NAME***.bio",
     )
     session.add(user)
     session.flush()
     return user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def test_user(session) -> AppUser:
     user = AppUser(
         id=200,
-        username='test_user',
-        email='test@***ARANGO_DB_NAME***.bio',
-        password_hash='password',
-        first_name='Jim',
-        last_name='Melancholy',
-        subject='test@***ARANGO_DB_NAME***.bio',
+        username="test_user",
+        email="test@***ARANGO_DB_NAME***.bio",
+        password_hash="password",
+        first_name="Jim",
+        last_name="Melancholy",
+        subject="test@***ARANGO_DB_NAME***.bio",
     )
     session.add(user)
     session.flush()
     return user
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_projects(session, test_user: AppUser) -> Projects:
     ***ARANGO_USERNAME***_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
-        filename='/',
-        path='/test-project',
+        filename="/",
+        path="/test-project",
         user=test_user,
     )
     projects = Projects(
-        name='test-project',
-        description='test project',
+        name="test-project",
+        description="test project",
         ***ARANGO_USERNAME***=***ARANGO_USERNAME***_dir,
     )
     session.add(***ARANGO_USERNAME***_dir)
@@ -56,10 +59,10 @@ def fix_projects(session, test_user: AppUser) -> Projects:
     return projects
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_directory(session, fix_projects: Projects, test_user: AppUser) -> Files:
     dir = Files(
-        filename='/',
+        filename="/",
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         user=test_user,
     )
@@ -68,15 +71,15 @@ def fix_directory(session, fix_projects: Projects, test_user: AppUser) -> Files:
     return dir
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_project(fix_owner, fix_directory, session) -> Files:
     content = FileContent()
-    content.raw_file_utf8 = '{}'
+    content.raw_file_utf8 = "{}"
     file = Files(
-        hash_id='map1',
+        hash_id="map1",
         mime_type=MapTypeProvider.MIME_TYPE,
-        filename='Project1',
-        description='a test project',
+        filename="Project1",
+        description="a test project",
         user=fix_owner,
         content=content,
         parent=fix_directory,
@@ -87,10 +90,10 @@ def fix_project(fix_owner, fix_directory, session) -> Files:
     return file
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def fix_nested_dir(fix_owner, fix_directory, session) -> Files:
     child_dir = Files(
-        filename='child-level-1',
+        filename="child-level-1",
         parent=fix_directory,
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         user_id=fix_owner.id,

@@ -20,7 +20,7 @@ class UserRequest(CamelDictMixin):
 
 @attr.s(frozen=True)
 class UserUpdateRequest(UserRequest):
-    new_password: str = attr.ib(default='')
+    new_password: str = attr.ib(default="")
 
 
 @attr.s(frozen=True)

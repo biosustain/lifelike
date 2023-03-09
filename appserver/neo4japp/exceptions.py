@@ -20,6 +20,7 @@ class ServerException(Exception):
     :param code: the error code
     :param fields:
     """
+
     title: str = "We're sorry!"
     message: Optional[str] = "Looks like something went wrong!"
     additional_msgs: Tuple[str, ...] = tuple()
@@ -37,12 +38,12 @@ class ServerException(Exception):
         return get_transaction_id()
 
     def __str__(self):
-        lines = [f'<Exception {self.transaction_id}> {self.title}: {self.message}']
+        lines = [f"<Exception {self.transaction_id}> {self.title}: {self.message}"]
         try:
-            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+            lines = lines + [f"\t{key}:\t{value}" for key, value in self.fields.items()]
         except Exception:
             pass
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def to_dict(self):
         return asdict(self)
@@ -61,17 +62,20 @@ class StatisticalEnrichmentError(ServerException):
 @dataclass
 class AnnotationError(ServerException):
     term: Optional[str] = None
-    title: str = 'Unable to Annotate'
+    title: str = "Unable to Annotate"
     message: Optional[str] = None
 
     def __post_init__(self):
         if self.message is None:
             if not self.term:
-                raise NotImplementedError("To render default Annotation error, term must be given.")
-            self.message = \
-                f'There was a problem annotating "{self.term}". ' \
-                f'Please make sure the term is correct, ' \
-                f'including correct spacing and no extra characters.'
+                raise NotImplementedError(
+                    "To render default Annotation error, term must be given."
+                )
+            self.message = (
+                f'There was a problem annotating "{self.term}". '
+                f"Please make sure the term is correct, "
+                f"including correct spacing and no extra characters."
+            )
 
 
 @dataclass
@@ -86,7 +90,7 @@ class FileUploadError(ServerException):
 
 @dataclass
 class ContentValidationError(ServerException):
-    title: str = 'Content validation error'
+    title: str = "Content validation error"
 
 
 @dataclass
@@ -107,12 +111,14 @@ class InvalidArgument(ServerException):
 @dataclass
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
+
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
 
 
 @dataclass
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
+
     pass
 
 
@@ -120,24 +126,28 @@ class JWTAuthTokenException(JWTTokenException):
 class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
+
     pass
 
 
 @dataclass
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
+
     code: Union[HTTPStatus, int] = HTTPStatus.NOT_ACCEPTABLE
 
 
 @dataclass
 class UnsupportedMediaTypeError(ServerException):
     """Signals that the client sent a request for an unsupported media type."""
+
     code: Union[HTTPStatus, int] = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
 
 @dataclass
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
+
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
 
 
@@ -166,6 +176,7 @@ class AuthenticationError(ServerException):
 #                              }
 #                          })
 
+
 @dataclass
 class AccessRequestRequiredError(ServerException):
     """
@@ -178,18 +189,20 @@ class AccessRequestRequiredError(ServerException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
+
     curr_access: Optional[str] = None
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
-    title: str = 'You need access'
+    title: str = "You need access"
     message: Optional[str] = None
     code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
 
     def __post_init__(self):
         if self.message is None:
-            self.message = \
-                f'You have "{self.curr_access}" access. Please request "{self.req_access}" ' \
-                f'access at minimum for this content.'
+            self.message = (
+                f'You have "{self.curr_access}" access. Please request "{self.req_access}" '
+                f"access at minimum for this content."
+            )
 
 
 class GDownException(Exception):

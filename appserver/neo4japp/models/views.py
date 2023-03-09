@@ -9,7 +9,7 @@ from neo4japp.models.common import RDBMSBase
 
 
 class View(RDBMSBase):
-    __tablename__ = 'views'
+    __tablename__ = "views"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     params = db.Column(db.JSON, nullable=False)
     # Note that this column expects sha256 values, and it is theoretically possible for different
@@ -19,7 +19,7 @@ class View(RDBMSBase):
 
     @classmethod
     def get_checksum(cls, params) -> bytes:
-        return hashlib.sha256(json.dumps(params).encode('utf-8')).digest()
+        return hashlib.sha256(json.dumps(params).encode("utf-8")).digest()
 
     @classmethod
     def get_or_create(cls, params: Dict, checksum_sha256: bytes = None):
@@ -33,11 +33,11 @@ class View(RDBMSBase):
             checksum_sha256 = cls.get_checksum(params)
 
         return db.session.execute(
-                insert(cls)
-                .values(checksum_sha256=checksum_sha256, params=params)
-                .on_conflict_do_update(
-                    index_elements=[cls.checksum_sha256],
-                    set_=dict(modification_date=db.func.now())
-                )
-                .returning(cls.id)
+            insert(cls)
+            .values(checksum_sha256=checksum_sha256, params=params)
+            .on_conflict_do_update(
+                index_elements=[cls.checksum_sha256],
+                set_=dict(modification_date=db.func.now()),
+            )
+            .returning(cls.id)
         ).fetchone()

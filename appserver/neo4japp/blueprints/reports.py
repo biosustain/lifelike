@@ -15,30 +15,30 @@ from neo4japp.database import db
 from neo4japp.models.reports import CopyrightInfringementRequest
 from neo4japp.schemas.reports import CopyrightInfringementRequestSchema
 
-bp = Blueprint('reports', __name__, url_prefix='/reports')
+bp = Blueprint("reports", __name__, url_prefix="/reports")
 
 
 class CopyrightInfringementReportView(MethodView):
     @use_args(CopyrightInfringementRequestSchema)
     def post(self, params: dict):
         copyright_infringement_report = CopyrightInfringementRequest(
-            url=params['url'],
-            description=params['description'],
-            name=params['name'],
-            company=params['company'],
-            address=params['address'],
-            country=params['country'],
-            city=params['city'],
-            province=params['province'],
-            zip=params['zip'],
-            phone=params['phone'],
-            fax=params['fax'],
-            email=params['email'],
-            attestationCheck1=params['attestationCheck1'],
-            attestationCheck2=params['attestationCheck2'],
-            attestationCheck3=params['attestationCheck3'],
-            attestationCheck4=params['attestationCheck4'],
-            signature=params['signature'],
+            url=params["url"],
+            description=params["description"],
+            name=params["name"],
+            company=params["company"],
+            address=params["address"],
+            country=params["country"],
+            city=params["city"],
+            province=params["province"],
+            zip=params["zip"],
+            phone=params["phone"],
+            fax=params["fax"],
+            email=params["email"],
+            attestationCheck1=params["attestationCheck1"],
+            attestationCheck2=params["attestationCheck2"],
+            attestationCheck3=params["attestationCheck3"],
+            attestationCheck4=params["attestationCheck4"],
+            signature=params["signature"],
         )
 
         try:
@@ -50,21 +50,21 @@ class CopyrightInfringementReportView(MethodView):
 
         message = Mail(
             from_email=MESSAGE_SENDER_IDENTITY,
-            to_emails=params['email'],
+            to_emails=params["email"],
             subject=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
             html_content=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT.format(
-                url=params['url'],
-                description=params['description'],
-                name=params['name'],
-                company=params['company'],
-                address=params['address'],
-                country=params['country'],
-                city=params['city'],
-                province=params['province'],
-                zip=params['zip'],
-                phone=params['phone'],
-                fax=params['fax'],
-                email=params['email'],
+                url=params["url"],
+                description=params["description"],
+                name=params["name"],
+                company=params["company"],
+                address=params["address"],
+                country=params["country"],
+                city=params["city"],
+                province=params["province"],
+                zip=params["zip"],
+                phone=params["phone"],
+                fax=params["fax"],
+                email=params["email"],
             ),
         )
         message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
@@ -82,10 +82,10 @@ class CopyrightInfringementReportView(MethodView):
 
 
 copyright_infringement_report_view = CopyrightInfringementReportView.as_view(
-    'accounts_api'
+    "accounts_api"
 )
 bp.add_url_rule(
-    '/copyright-infringement-report',
+    "/copyright-infringement-report",
     view_func=copyright_infringement_report_view,
-    methods=['POST'],
+    methods=["POST"],
 )

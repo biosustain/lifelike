@@ -1,4 +1,3 @@
-
 def example_long_calculation_job(x: int, y: int) -> int:
     """
     This example function can be invoked from anywhere as follows: long_calculation.queue(x, y)
@@ -34,6 +33,7 @@ def example_long_calculation_job(x: int, y: int) -> int:
 
     return x + y
 
+
 # ========================================
 # Unit Test Helpers
 # ========================================
@@ -48,7 +48,7 @@ def hard_job():
 
 
 def bad_job():
-    raise Exception('Oops!')
+    raise Exception("Oops!")
 
 
 # Note that this should only be run exactly twice per unit test, it is meant to mock a bad job
@@ -56,4 +56,4 @@ def bad_job():
 def bad_then_good_job(mutable_arg=[True]):
     if mutable_arg[0]:
         mutable_arg[0] = False
-        raise Exception('Oops!')
+        raise Exception("Oops!")

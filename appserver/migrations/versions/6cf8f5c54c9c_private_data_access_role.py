@@ -13,17 +13,18 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 from sqlalchemy.orm import Session
 
-revision = '6cf8f5c54c9c'
-down_revision = '151b6ffde36f'
+revision = "6cf8f5c54c9c"
+down_revision = "151b6ffde36f"
 branch_labels = None
 depends_on = None
 
 t_app_role = sa.Table(
-    'app_role',
+    "app_role",
     sa.MetaData(),
-    sa.Column('id', sa.Integer(), primary_key=True),
-    sa.Column('name'),
+    sa.Column("id", sa.Integer(), primary_key=True),
+    sa.Column("name"),
 )
+
 
 def upgrade():
     session = Session(op.get_bind())

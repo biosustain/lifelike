@@ -19,8 +19,8 @@ def generate_hash_id():
     return timeflake.random().base62
 
 
-class NEO4JBase():
-    """ Base class for all neo4j related ORM """
+class NEO4JBase:
+    """Base class for all neo4j related ORM"""
 
     def to_dict(self, keyfn=None):
         d = self.__dict__
@@ -41,21 +41,22 @@ class NEO4JBase():
 
 
 class RDBMSBase(db.Model):  # type: ignore
-    """ Base class for RDBMS database (e.g. Postgres)
+    """Base class for RDBMS database (e.g. Postgres)
 
-        An unambiguous string representation of this object.
-        In the form of <class_name>#<id>.
+    An unambiguous string representation of this object.
+    In the form of <class_name>#<id>.
 
-        The string can be passed as is, or after encryption, to the
-        client for the purpose of unambiguously identifying a database
-        object in the system.
+    The string can be passed as is, or after encryption, to the
+    client for the purpose of unambiguously identifying a database
+    object in the system.
     """
+
     __abstract__ = True
 
     def __repr__(self) -> str:
         identifier = sa.inspect(self).identity
-        pk = self.id if identifier else 'None'
-        return f'{type(self).__name__}#{pk}'
+        pk = self.id if identifier else "None"
+        return f"{type(self).__name__}#{pk}"
 
     def __get_columns(self):
         return {x.name: x.type for x in sa.inspect(self).mapper.columns}
@@ -99,7 +100,7 @@ class RDBMSBase(db.Model):  # type: ignore
             if include:
                 attrs = include
             else:
-                exclude = (exclude or [])
+                exclude = exclude or []
                 attrs = [k for k in columns.keys() if k not in exclude]
 
         keyfn = keyfn or snake_to_camel
@@ -144,9 +145,8 @@ class RDBMSBase(db.Model):  # type: ignore
         if only:
             attrs = only
         else:
-            exclude = (exclude or [])
-            attrs = (include or []) + [
-                k for k in columns.keys() if k not in exclude]
+            exclude = exclude or []
+            attrs = (include or []) + [k for k in columns.keys() if k not in exclude]
 
         update_keys = set(map(snake_to_camel, attrs)) & set(data.keys())
 
@@ -168,11 +168,12 @@ class RDBMSBase(db.Model):  # type: ignore
 
 
 class ModelConverter(BaseModelConverter):
-    """ Custom Model Converter to extend the BaseModelConverter to allow new types
-        for example: TSVector type for full text search.
-        This is been explain in the issue on the sqlalchemy repo:
-        https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/55#issuecomment-472684594
+    """Custom Model Converter to extend the BaseModelConverter to allow new types
+    for example: TSVector type for full text search.
+    This is been explain in the issue on the sqlalchemy repo:
+    https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/55#issuecomment-472684594
     """
+
     SQLA_TYPE_MAPPING = {
         **BaseModelConverter.SQLA_TYPE_MAPPING,
         **{TSVectorType: fields.Field},
@@ -180,46 +181,54 @@ class ModelConverter(BaseModelConverter):
 
 
 class TimestampMixin:
-    """ Tables that need a created/updated """
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    """Tables that need a created/updated"""
+
+    creation_date = db.Column(
+        TIMESTAMP(timezone=True), default=db.func.now(), nullable=False
+    )
     modified_date = db.Column(
-        TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())
+        TIMESTAMP(timezone=True),
+        default=db.func.now(),
+        nullable=False,
+        onupdate=db.func.now(),
+    )
 
 
 class FullTimestampMixin(TimestampMixin):
-    """ Tables that need a created/updated """
+    """Tables that need a created/updated"""
+
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
 
     @declared_attr
     def creator_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+        return db.Column(db.Integer, db.ForeignKey("appuser.id"), nullable=True)
 
     @declared_attr
     def creator(cls):
-        return db.relationship('AppUser', foreign_keys=cls.creator_id, uselist=False)
+        return db.relationship("AppUser", foreign_keys=cls.creator_id, uselist=False)
 
     @declared_attr
     def modifier_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+        return db.Column(db.Integer, db.ForeignKey("appuser.id"), nullable=True)
 
     @declared_attr
     def modifier(cls):
-        return db.relationship('AppUser', foreign_keys=cls.modifier_id, uselist=False)
+        return db.relationship("AppUser", foreign_keys=cls.modifier_id, uselist=False)
 
     @declared_attr
     def deleter_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+        return db.Column(db.Integer, db.ForeignKey("appuser.id"), nullable=True)
 
     @declared_attr
     def deleter(cls):
-        return db.relationship('AppUser', foreign_keys=cls.deleter_id, uselist=False)
+        return db.relationship("AppUser", foreign_keys=cls.deleter_id, uselist=False)
 
     @property
     def deleted(self):
         return self.deletion_date is not None
 
     def delete(self, current_user=None):
-        """ Mark object as deleted"""
+        """Mark object as deleted"""
         if not self.deleted:
             current_user = current_user or g.current_user
             self.deletion_date = datetime.now()
@@ -231,15 +240,16 @@ class RecyclableMixin:
     """
     A model that is recyclable supports a recycle bin.
     """
+
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
 
     @declared_attr
     def recycler_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+        return db.Column(db.Integer, db.ForeignKey("appuser.id"), nullable=True)
 
     @declared_attr
     def recycler(cls):
-        return db.relationship('AppUser', foreign_keys=cls.recycler_id, uselist=False)
+        return db.relationship("AppUser", foreign_keys=cls.recycler_id, uselist=False)
 
     @property
     def recycled(self):
@@ -250,4 +260,7 @@ class HashIdMixin:
     """
     A model with a roughly-ordered hash ID with a bit of randomness.
     """
-    hash_id = db.Column(db.String(86), unique=True, nullable=False, default=generate_hash_id)
+
+    hash_id = db.Column(
+        db.String(86), unique=True, nullable=False, default=generate_hash_id
+    )

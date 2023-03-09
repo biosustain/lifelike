@@ -15,4 +15,4 @@ class CamelCaseSchema(Schema):
         field_obj.data_key = camelcase(field_obj.data_key or field_name)
 
 
-not_blank = validate.Length(min=1, error='Field cannot be blank')
+not_blank = validate.Length(min=1, error="Field cannot be blank")

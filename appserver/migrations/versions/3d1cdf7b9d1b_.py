@@ -20,43 +20,43 @@ from sqlalchemy import (
 from migrations.constants import LIFELIKE_SUPERUSER
 
 # revision identifiers, used by Alembic.
-revision = '3d1cdf7b9d1b'
-down_revision = '647dad6e2adf'
+revision = "3d1cdf7b9d1b"
+down_revision = "647dad6e2adf"
 branch_labels = None
 depends_on = None
 
 t_app_role = Table(
-    'app_role',
+    "app_role",
     MetaData(),
-    Column('id', Integer, primary_key=True),
-    Column('name', String)
+    Column("id", Integer, primary_key=True),
+    Column("name", String),
 )
 
 t_appuser = Table(
-    'appuser',
+    "appuser",
     MetaData(),
-    Column('id', Integer, primary_key=True),
-    Column('hash_id', String),
-    Column('username', String),
-    Column('email', String),
-    Column('first_name', String),
-    Column('last_name', String),
-    Column('password_hash', String),
-    Column('failed_login_count', Integer),
-    Column('forced_password_reset', Boolean),
-    Column('subject', String),
+    Column("id", Integer, primary_key=True),
+    Column("hash_id", String),
+    Column("username", String),
+    Column("email", String),
+    Column("first_name", String),
+    Column("last_name", String),
+    Column("password_hash", String),
+    Column("failed_login_count", Integer),
+    Column("forced_password_reset", Boolean),
+    Column("subject", String),
 )
 
 t_appuser_role = Table(
-    'app_user_role',
+    "app_user_role",
     MetaData(),
-    Column('appuser_id', Integer),
-    Column('app_role_id', Integer)
+    Column("appuser_id", Integer),
+    Column("app_role_id", Integer),
 )
 
 
 def upgrade():
-    if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
+    if context.get_x_argument(as_dictionary=True).get("data_migrate", None):
         data_upgrades()
 
 
@@ -73,41 +73,44 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
     conn = op.get_bind()
 
-    existing_superuser = conn.execute(select([
-        t_appuser.c.id,
-    ]).where(
-        t_appuser.c.email == LIFELIKE_SUPERUSER
-    )).scalar()
+    existing_superuser = conn.execute(
+        select(
+            [
+                t_appuser.c.id,
+            ]
+        ).where(t_appuser.c.email == LIFELIKE_SUPERUSER)
+    ).scalar()
 
     if existing_superuser is None:
         # Add ***ARANGO_USERNAME*** project system user
         new_superuser_id = conn.execute(
             t_appuser.insert().values(
                 hash_id=str(uuid.uuid4()),
-                username='***ARANGO_DB_NAME***-bot',
+                username="***ARANGO_DB_NAME***-bot",
                 email=LIFELIKE_SUPERUSER,
-                first_name='***ARANGO_DB_NAME***',
-                last_name='bot',
-                password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
+                first_name="***ARANGO_DB_NAME***",
+                last_name="bot",
+                password_hash=b"$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502".decode(
+                    "utf8"
+                ),
                 failed_login_count=0,
                 forced_password_reset=False,
-                subject=LIFELIKE_SUPERUSER
+                subject=LIFELIKE_SUPERUSER,
             )
         ).inserted_primary_key[0]
 
         superuser_role_ids = conn.execute(
-            select([
-                t_app_role.c.id,
-            ]).where(
-                t_app_role.c.name.in_(['user']
-            ))
+            select(
+                [
+                    t_app_role.c.id,
+                ]
+            ).where(t_app_role.c.name.in_(["user"]))
         ).fetchall()
 
-        for role_id, in superuser_role_ids:
+        for (role_id,) in superuser_role_ids:
             conn.execute(
                 t_appuser_role.insert().values(
-                    appuser_id=new_superuser_id,
-                    app_role_id=role_id
+                    appuser_id=new_superuser_id, app_role_id=role_id
                 )
             )
 

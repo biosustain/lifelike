@@ -3,16 +3,19 @@ from typing import List, Tuple
 from neo4japp.services.annotations import (
     EntityRecognitionService,
     LMDBService,
-    Tokenizer
+    Tokenizer,
 )
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
     NLPResults,
-    SpecifiedOrganismStrain
+    SpecifiedOrganismStrain,
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
-from neo4japp.services.annotations.data_transfer_objects import GlobalExclusions, GlobalInclusions
+from neo4japp.services.annotations.data_transfer_objects import (
+    GlobalExclusions,
+    GlobalInclusions,
+)
 
 
 class MockTokenizer(Tokenizer):
@@ -25,7 +28,7 @@ class MockEntityRecognitionService(EntityRecognitionService):
         self,
         exclusions: GlobalExclusions,
         inclusions: GlobalInclusions,
-        lmdb: LMDBService
+        lmdb: LMDBService,
     ):
         super().__init__(exclusions, inclusions, lmdb)
 
@@ -42,9 +45,7 @@ def get_recognition_service(get_lmdb_service, exclusions=None, inclusions=None):
         inclusions = GlobalInclusions()
 
     return MockEntityRecognitionService(
-        exclusions=exclusions,
-        inclusions=inclusions,
-        lmdb=get_lmdb_service
+        exclusions=exclusions, inclusions=inclusions, lmdb=get_lmdb_service
     )
 
 
@@ -61,12 +62,12 @@ def create_mock_entity_annotations(data: Tuple[str, str, int, int, str]):
         rects=[[1, 2]],
         meta=Annotation.Meta(
             type=kwtype,
-            id='',
-            id_type='',
+            id="",
+            id_type="",
             id_hyperlinks=[],
             links=Annotation.Meta.Links(),
         ),
-        uuid='',
+        uuid="",
     )
 
 
@@ -83,13 +84,13 @@ def create_mock_gene_annotations(data: Tuple[str, str, int, int, str]):
         rects=[[1, 2]],
         meta=GeneAnnotation.GeneMeta(
             type=EntityType.GENE.value,
-            id='',
-            id_type='',
+            id="",
+            id_type="",
             id_hyperlinks=[],
             links=Annotation.Meta.Links(),
             category=OrganismCategory.EUKARYOTA.value,
         ),
-        uuid='',
+        uuid="",
     )
 
 
@@ -111,7 +112,7 @@ def annotate_pdf_for_testing(
     exclusions=None,
     inclusions=None,
     nlp_results=None,
-    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
+    specified_organism=SpecifiedOrganismStrain(synonym="", organism_id="", category=""),
 ):
     tokenizer = get_annotation_tokenizer()
     entity_recognition = get_recognition_service(lmdb_service, exclusions, inclusions)
@@ -120,12 +121,11 @@ def annotate_pdf_for_testing(
         nlp_results = NLPResults()
 
     entity_results = entity_recognition.identify(
-        tokens=tokenizer.create(parsed),
-        nlp_results=nlp_results
+        tokens=tokenizer.create(parsed), nlp_results=nlp_results
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-        specified_organism=specified_organism
+        specified_organism=specified_organism,
     )

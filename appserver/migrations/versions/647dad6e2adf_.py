@@ -10,46 +10,46 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '647dad6e2adf'
-down_revision = '6d4adebe79eb'
+revision = "647dad6e2adf"
+down_revision = "6d4adebe79eb"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.alter_column(
-        'files',
-        'hash_id',
+        "files",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 
     op.alter_column(
-        'appuser',
-        'hash_id',
+        "appuser",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 
     op.alter_column(
-        'file_annotations_version',
-        'hash_id',
+        "file_annotations_version",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 
     op.alter_column(
-        'file_version',
-        'hash_id',
+        "file_version",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 
     op.alter_column(
-        'file_backup',
-        'hash_id',
+        "file_backup",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 
     op.alter_column(
-        'projects',
-        'hash_id',
+        "projects",
+        "hash_id",
         type_=sa.VARCHAR(length=86),
     )
 

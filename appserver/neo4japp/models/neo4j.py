@@ -25,12 +25,12 @@ class GraphRelationship(NEO4JBase):
     @classmethod
     def from_dict(cls, d):
         copy = d.copy()
-        copy['_from'] = copy['from']
-        del copy['from']
+        copy["_from"] = copy["from"]
+        del copy["from"]
         return super().from_dict(copy)
 
     def to_dict(self):
         copy = super().to_dict().copy()
-        copy['from'] = copy['From']
-        del copy['From']
+        copy["from"] = copy["From"]
+        del copy["From"]
         return copy

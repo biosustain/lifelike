@@ -15,7 +15,7 @@ from .constants import (
     SPECIES_LMDB,
     FOODS_LMDB,
     ANATOMY_LMDB,
-    EntityType
+    EntityType,
 )
 from .lmdb_connection import LMDBConnection
 from .utils.lmdb import (
@@ -36,19 +36,19 @@ from neo4japp.util import normalize_str
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
-LMDB_CHEMICALS_SOURCE = 'datasets/chebi.tsv'
-LMDB_COMPOUNDS_SOURCE = 'datasets/compounds.csv'
-LMDB_DISEASES_SOURCE = 'datasets/disease.tsv'
-LMDB_GENES_SOURCE = 'datasets/genes.tsv'
-LMDB_PSEUDOMONAS_GENES_SOURCE = 'datasets/pseudomonasCyc_genes.tsv'
-LMDB_PHENOMONAS_SOURCE = 'datasets/phenomena.tsv'
-LMDB_PHENOTYPE_SOURCE = 'datasets/phenotype.tsv'
-LMDB_PROTEINS_SOURCE = 'datasets/proteins.tsv'
-LMDB_UNIPROT_PROTEINS_SOURCE = 'datasets/sprot2syn_gene.tsv'
-LMDB_TAXONOMY_SOURCE = 'datasets/taxonomy.tsv'
-LMDB_COVID_TAXONOMY_SOURCE = 'datasets/covid19_taxonomy2.tsv'
-LMDB_FOOD_SOURCE = 'datasets/food.tsv'
-LMDB_ANATOMY_SOURCE = 'datasets/anatomy.tsv'
+LMDB_CHEMICALS_SOURCE = "datasets/chebi.tsv"
+LMDB_COMPOUNDS_SOURCE = "datasets/compounds.csv"
+LMDB_DISEASES_SOURCE = "datasets/disease.tsv"
+LMDB_GENES_SOURCE = "datasets/genes.tsv"
+LMDB_PSEUDOMONAS_GENES_SOURCE = "datasets/pseudomonasCyc_genes.tsv"
+LMDB_PHENOMONAS_SOURCE = "datasets/phenomena.tsv"
+LMDB_PHENOTYPE_SOURCE = "datasets/phenotype.tsv"
+LMDB_PROTEINS_SOURCE = "datasets/proteins.tsv"
+LMDB_UNIPROT_PROTEINS_SOURCE = "datasets/sprot2syn_gene.tsv"
+LMDB_TAXONOMY_SOURCE = "datasets/taxonomy.tsv"
+LMDB_COVID_TAXONOMY_SOURCE = "datasets/covid19_taxonomy2.tsv"
+LMDB_FOOD_SOURCE = "datasets/food.tsv"
+LMDB_ANATOMY_SOURCE = "datasets/anatomy.tsv"
 
 
 """JIRA LL-1015:
@@ -84,19 +84,17 @@ class LMDBService(LMDBConnection):
 
     def _lmdb_open(self, file):
         return lmdb.open(
-            path.join(directory, 'lmdb', file),
-            map_size=self.map_size,
-            max_dbs=2
+            path.join(directory, "lmdb", file), map_size=self.map_size, max_dbs=2
         )
 
     def create_lmdb_genes_database(self):
         for filename in [LMDB_GENES_SOURCE, LMDB_PSEUDOMONAS_GENES_SOURCE]:
-            with open(path.join(directory, filename), 'r') as f:
-                env = self._lmdb_open('genes')
-                db = env.open_db(GENES_LMDB.encode('utf-8'), dupsort=True)
+            with open(path.join(directory, filename), "r") as f:
+                env = self._lmdb_open("genes")
+                db = env.open_db(GENES_LMDB.encode("utf-8"), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
-                    reader = csv.reader(f, delimiter='\t', quotechar='"')
+                    reader = csv.reader(f, delimiter="\t", quotechar='"')
                     # skip headers
                     # geneId	geneName	synonym	data_source
                     next(reader)
@@ -106,27 +104,28 @@ class LMDBService(LMDBConnection):
                         data_source = line[3]
 
                         gene = create_ner_type_gene(
-                            name=gene_name, synonym=synonym, data_source=data_source)
+                            name=gene_name, synonym=synonym, data_source=data_source
+                        )
 
                         try:
                             transaction.put(
-                                normalize_str(synonym).encode('utf-8'),
-                                json.dumps(gene).encode('utf-8'),
+                                normalize_str(synonym).encode("utf-8"),
+                                json.dumps(gene).encode("utf-8"),
                             )
                         except lmdb.BadValsizeError:
                             # ignore any keys that are too large
                             # LMDB has max key size 512 bytes
                             # can change but larger keys mean performance issues
                             continue
-        print('Done creating genes')
+        print("Done creating genes")
 
     def create_lmdb_chemicals_database(self):
-        with open(path.join(directory, LMDB_CHEMICALS_SOURCE), 'r') as f:
-            env = self._lmdb_open('chemicals')
-            db = env.open_db(CHEMICALS_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_CHEMICALS_SOURCE), "r") as f:
+            env = self._lmdb_open("chemicals")
+            db = env.open_db(CHEMICALS_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # id	name	synonym
                 next(reader)
@@ -143,32 +142,32 @@ class LMDBService(LMDBConnection):
 
                     try:
                         transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(chemical).encode('utf-8'),
+                            normalize_str(synonym).encode("utf-8"),
+                            json.dumps(chemical).encode("utf-8"),
                         )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating chemicals')
+        print("Done creating chemicals")
 
     def create_lmdb_compounds_database(self):
-        with open(path.join(directory, LMDB_COMPOUNDS_SOURCE), 'r') as f:
-            env = self._lmdb_open('compounds')
-            db = env.open_db(COMPOUNDS_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_COMPOUNDS_SOURCE), "r") as f:
+            env = self._lmdb_open("compounds")
+            db = env.open_db(COMPOUNDS_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter=',', quotechar='"')
+                reader = csv.reader(f, delimiter=",", quotechar='"')
                 # skip headers
                 # n.biocyc_id,n.common_name,n.synonyms
                 next(reader)
                 for line in reader:
                     compound_id = line[0]
                     compound_name = line[1]
-                    synonyms = line[2].split('|')
+                    synonyms = line[2].split("|")
 
-                    if compound_name != 'null':
+                    if compound_name != "null":
                         compound = create_ner_type_compound(
                             id=compound_id,
                             name=compound_name,
@@ -177,13 +176,13 @@ class LMDBService(LMDBConnection):
 
                         try:
                             transaction.put(
-                                normalize_str(compound_name).encode('utf-8'),
-                                json.dumps(compound).encode('utf-8'),
+                                normalize_str(compound_name).encode("utf-8"),
+                                json.dumps(compound).encode("utf-8"),
                             )
 
                             if synonyms:
                                 for synonym_term in synonyms:
-                                    if synonym_term != 'null':
+                                    if synonym_term != "null":
                                         normalized_key = normalize_str(synonym_term)
 
                                         synonym = create_ner_type_compound(
@@ -193,24 +192,24 @@ class LMDBService(LMDBConnection):
                                         )
 
                                         transaction.put(
-                                            normalized_key.encode('utf-8'),
-                                            json.dumps(synonym).encode('utf-8'),
+                                            normalized_key.encode("utf-8"),
+                                            json.dumps(synonym).encode("utf-8"),
                                         )
                         except lmdb.BadValsizeError:
                             # ignore any keys that are too large
                             # LMDB has max key size 512 bytes
                             # can change but larger keys mean performance issues
                             continue
-        print('Done creating compounds')
+        print("Done creating compounds")
 
     def create_lmdb_proteins_database(self):
         for filename in [LMDB_PROTEINS_SOURCE, LMDB_UNIPROT_PROTEINS_SOURCE]:
-            with open(path.join(directory, filename), 'r') as f:
-                env = self._lmdb_open('proteins')
-                db = env.open_db(PROTEINS_LMDB.encode('utf-8'), dupsort=True)
+            with open(path.join(directory, filename), "r") as f:
+                env = self._lmdb_open("proteins")
+                db = env.open_db(PROTEINS_LMDB.encode("utf-8"), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
-                    reader = csv.reader(f, delimiter='\t', quotechar='"')
+                    reader = csv.reader(f, delimiter="\t", quotechar='"')
                     # skip headers (only care for first 3)
                     # id	name	synonym	...
                     next(reader)
@@ -222,28 +221,29 @@ class LMDBService(LMDBConnection):
                         # changed protein_id to protein_name for now (JIRA LL-671)
                         # will eventually change back to protein_id
                         protein = create_ner_type_protein(
-                            name=protein_name, synonym=protein_name)
+                            name=protein_name, synonym=protein_name
+                        )
 
                         try:
                             transaction.put(
-                                normalize_str(protein_name).encode('utf-8'),
-                                json.dumps(protein).encode('utf-8'),
+                                normalize_str(protein_name).encode("utf-8"),
+                                json.dumps(protein).encode("utf-8"),
                             )
                         except lmdb.BadValsizeError:
                             # ignore any keys that are too large
                             # LMDB has max key size 512 bytes
                             # can change but larger keys mean performance issues
                             continue
-        print('Done creating proteins')
+        print("Done creating proteins")
 
     def create_lmdb_species_database(self):
         for filename in [LMDB_TAXONOMY_SOURCE, LMDB_COVID_TAXONOMY_SOURCE]:
-            with open(path.join(directory, filename), 'r') as f:
-                env = self._lmdb_open('species')
-                db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
+            with open(path.join(directory, filename), "r") as f:
+                env = self._lmdb_open("species")
+                db = env.open_db(SPECIES_LMDB.encode("utf-8"), dupsort=True)
 
                 with env.begin(db=db, write=True) as transaction:
-                    reader = csv.reader(f, delimiter='\t', quotechar='"')
+                    reader = csv.reader(f, delimiter="\t", quotechar='"')
                     # skip headers
                     # tax_id	rank	category	name	name_class
                     next(reader)
@@ -256,29 +256,32 @@ class LMDBService(LMDBConnection):
 
                         species = create_ner_type_species(
                             id=species_id,
-                            category=species_category if species_category else 'Uncategorized',
+                            category=species_category
+                            if species_category
+                            else "Uncategorized",
                             name=species_name,
                             synonym=species_name,
                         )
 
                         try:
                             transaction.put(
-                                normalize_str(species_name).encode('utf-8'),
-                                json.dumps(species).encode('utf-8'))
+                                normalize_str(species_name).encode("utf-8"),
+                                json.dumps(species).encode("utf-8"),
+                            )
                         except lmdb.BadValsizeError:
                             # ignore any keys that are too large
                             # LMDB has max key size 512 bytes
                             # can change but larger keys mean performance issues
                             continue
-        print('Done creating taxonomy')
+        print("Done creating taxonomy")
 
     def create_lmdb_diseases_database(self):
-        with open(path.join(directory, LMDB_DISEASES_SOURCE), 'r') as f:
-            env = self._lmdb_open('diseases')
-            db = env.open_db(DISEASES_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_DISEASES_SOURCE), "r") as f:
+            env = self._lmdb_open("diseases")
+            db = env.open_db(DISEASES_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # MeshID	Name	Synonym
                 next(reader)
@@ -288,26 +291,28 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     disease = create_ner_type_disease(
-                        id=disease_id, name=disease_name, synonym=synonym)
+                        id=disease_id, name=disease_name, synonym=synonym
+                    )
 
                     try:
                         transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(disease).encode('utf-8'))
+                            normalize_str(synonym).encode("utf-8"),
+                            json.dumps(disease).encode("utf-8"),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating disease')
+        print("Done creating disease")
 
     def create_lmdb_phenomenas_database(self):
-        with open(path.join(directory, LMDB_PHENOMONAS_SOURCE), 'r') as f:
-            env = self._lmdb_open('phenomenas')
-            db = env.open_db(PHENOMENAS_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_PHENOMONAS_SOURCE), "r") as f:
+            env = self._lmdb_open("phenomenas")
+            db = env.open_db(PHENOMENAS_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # mesh_id,name,synonym
                 next(reader)
@@ -317,30 +322,28 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     phenomena = create_ner_type_phenomena(
-                        id=phenomena_id,
-                        name=phenomena_name,
-                        synonym=synonym
+                        id=phenomena_id, name=phenomena_name, synonym=synonym
                     )
 
                     try:
                         transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(phenomena).encode('utf-8'),
+                            normalize_str(synonym).encode("utf-8"),
+                            json.dumps(phenomena).encode("utf-8"),
                         )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating phenomenas')
+        print("Done creating phenomenas")
 
     def create_lmdb_phenotypes_database(self):
-        with open(path.join(directory, LMDB_PHENOTYPE_SOURCE), 'r') as f:
-            env = self._lmdb_open('phenotypes')
-            db = env.open_db(PHENOTYPES_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_PHENOTYPE_SOURCE), "r") as f:
+            env = self._lmdb_open("phenotypes")
+            db = env.open_db(PHENOTYPES_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # mesh_id,name,synonym
                 next(reader)
@@ -350,30 +353,28 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     phenotype = create_ner_type_phenotype(
-                        id=phenotype_id,
-                        name=phenotype_name,
-                        synonym=synonym
+                        id=phenotype_id, name=phenotype_name, synonym=synonym
                     )
 
                     try:
                         transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(phenotype).encode('utf-8'),
+                            normalize_str(synonym).encode("utf-8"),
+                            json.dumps(phenotype).encode("utf-8"),
                         )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating phenotypes')
+        print("Done creating phenotypes")
 
     def create_lmdb_foods_database(self):
-        with open(path.join(directory, LMDB_FOOD_SOURCE), 'r') as f:
-            env = self._lmdb_open('foods')
-            db = env.open_db(FOODS_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_FOOD_SOURCE), "r") as f:
+            env = self._lmdb_open("foods")
+            db = env.open_db(FOODS_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # MeshID	Name	Synonym
                 headers = next(reader)
@@ -390,22 +391,23 @@ class LMDBService(LMDBConnection):
 
                     try:
                         transaction.put(
-                            normalize_str(foods_synonym).encode('utf-8'),
-                            json.dumps(foods).encode('utf-8'))
+                            normalize_str(foods_synonym).encode("utf-8"),
+                            json.dumps(foods).encode("utf-8"),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating foods')
+        print("Done creating foods")
 
     def create_lmdb_anatomy_database(self):
-        with open(path.join(directory, LMDB_ANATOMY_SOURCE), 'r') as f:
-            env = self._lmdb_open('anatomy')
-            db = env.open_db(ANATOMY_LMDB.encode('utf-8'), dupsort=True)
+        with open(path.join(directory, LMDB_ANATOMY_SOURCE), "r") as f:
+            env = self._lmdb_open("anatomy")
+            db = env.open_db(ANATOMY_LMDB.encode("utf-8"), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
+                reader = csv.reader(f, delimiter="\t", quotechar='"')
                 # skip headers
                 # MeshID	Name	Synonym
                 next(reader)
@@ -422,14 +424,15 @@ class LMDBService(LMDBConnection):
 
                     try:
                         transaction.put(
-                            normalize_str(anatomy_synonym).encode('utf-8'),
-                            json.dumps(anatomy).encode('utf-8'))
+                            normalize_str(anatomy_synonym).encode("utf-8"),
+                            json.dumps(anatomy).encode("utf-8"),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating anatomy')
+        print("Done creating anatomy")
 
     def create_lmdb_files(self, file_type=None):
         funcs = {
@@ -442,7 +445,7 @@ class LMDBService(LMDBConnection):
             EntityType.PHENOMENA.value: self.create_lmdb_phenomenas_database,
             EntityType.PHENOTYPE.value: self.create_lmdb_phenotypes_database,
             EntityType.PROTEIN.value: self.create_lmdb_proteins_database,
-            EntityType.SPECIES.value: self.create_lmdb_species_database
+            EntityType.SPECIES.value: self.create_lmdb_species_database,
         }
 
         if file_type is None:
@@ -452,5 +455,5 @@ class LMDBService(LMDBConnection):
             funcs[file_type]()
         else:
             raise ValueError(
-                f'Invalid argument, cannot identify which LMDB file to create: {file_type}'
+                f"Invalid argument, cannot identify which LMDB file to create: {file_type}"
             )

@@ -12,5 +12,5 @@ queue = Queue(is_async=False, connection=FakeStrictRedis())
 def test_example_long_calculation_job():
     job = queue.enqueue(example_long_calculation_job, 123, 456)
 
-    assert job.is_finished, 'Always true as the job is enqueued synchronously'
-    assert job.result == 279, '123 + 456 should be equal to 279'
+    assert job.is_finished, "Always true as the job is enqueued synchronously"
+    assert job.result == 279, "123 + 456 should be equal to 279"

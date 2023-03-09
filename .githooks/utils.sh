@@ -21,7 +21,7 @@ getStaged () {
   matching_pattern=${2:-''}
   # for all `&& git ls-files --cached --modified --other --exclude-standard \`
   cd "${relative_dir}" \
-   && git diff --diff-filter=d --cached --name-only --relative \
+   && git ls-files --cached --modified --other --exclude-standard \
     | grep -E "${matching_pattern}" \
     | sed 's/.*/"&"/'
 }
