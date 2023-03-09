@@ -34,12 +34,17 @@ jobs:
 
   appserver:
     name: Annotate code style
-    if: (! github.event.action == 'issue_comment' ) || (github.event.issue.pull_request && ( github.event.sender.id == github.event.issue.user.id ) && github.event.comment.body == 'autofix')
+    if: |
+      ${{
+        (!github.event.action == 'issue_comment') || (
+         (github.event.issue.pull_request &&
+         (github.event.comment.body == 'autofix') &&
+         (github.event.sender.id == github.event.issue.user.id)
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - run: echo "${{ toJSON(github.event.comment) }}-${{ toJSON(github.event.sender) }}-${{ toJSON(github.event.pull_request.user) }}"
 
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
