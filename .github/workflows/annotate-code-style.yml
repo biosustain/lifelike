@@ -25,11 +25,11 @@ on:
 jobs:
   debug:
     steps:
-      - run: echo "github.event.action: ${{ github.event.action }}"
-      - run: echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
-      - run: echo "github.event.sender.id: ${{ github.event.sender.id }}"
-      - run: echo "github.event.issue.user.id: ${{ github.event.issue.user.id }}"
-      - run: echo "github.event.comment.body: ${{ github.event.comment.body }}"
+      - run: echo "github.event.action ${{ github.event.action }}"
+      - run: echo "github.event.issue.pull_request ${{ github.event.issue.pull_request }}"
+      - run: echo "github.event.sender.id ${{ github.event.sender.id }}"
+      - run: echo "github.event.issue.user.id ${{ github.event.issue.user.id }}"
+      - run: echo "github.event.comment.body ${{ github.event.comment.body }}"
 
   appserver:
     name: Annotate code style
