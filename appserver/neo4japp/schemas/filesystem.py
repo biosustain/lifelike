@@ -146,6 +146,7 @@ class FileSchema(StarredFileSchema):
     mime_type = fields.String()
     doi = fields.String()
     upload_url = fields.String()
+    size = fields.String()
     public = fields.Boolean()
     pinned = fields.Boolean()
     annotations_date = fields.DateTime()
@@ -329,8 +330,8 @@ class FileListSchema(ResultListSchema):
 class FileNode(CamelCaseSchema):
     data = fields.Nested(
         FileSchema,
-        only=(
-            'hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename'))
+        only=('hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename', 'size')
+    )
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 

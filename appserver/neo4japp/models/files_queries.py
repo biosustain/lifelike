@@ -9,7 +9,7 @@ from typing import Optional, Union, Literal
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects
-from .files import Files, StarredFile, file_collaborator_role
+from .files import Files, StarredFile, file_collaborator_role, FileContent
 from .projects_queries import ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
 
@@ -281,6 +281,20 @@ def add_file_starred_columns(query, file_id, user_id):
     return query
 
 
+def add_file_size_column(query, file_content_id):
+    """
+    Add column to a query for fetching the size for files in the provided file table.
+
+    :param query: the query to modify
+    """
+
+    query = query \
+        .outerjoin(FileContent, FileContent.id == file_content_id) \
+        .add_column(FileContent.size)
+
+    return query
+
+
 def get_nondeleted_recycled_children_query(
         file_filter,
         children_filter=None,
@@ -429,3 +443,12 @@ class FileHierarchy:
                 }
             else:
                 file.calculated_starred = None
+
+    def calculate_size(self):
+        for row in self.results:
+            file: Files = row[self.file_key]
+
+            if row['size'] is not None:
+                file.size = row['size']
+            else:
+                file.size = None
