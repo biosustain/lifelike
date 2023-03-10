@@ -23,10 +23,13 @@ from sqlalchemy import (
     CheckConstraint,
     Integer as sa_Integer,
     String as sa_String,
+    func,
+    BIGINT,
+    cast
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm import Mapper
+from sqlalchemy.orm import Mapper, column_property
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import Optional, List, Dict
@@ -92,6 +95,17 @@ class FileContent(RDBMSBase):
     # files to produce the same vaue!
     checksum_sha256 = db.Column(db.Binary(32), nullable=False, index=True, unique=True)
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
+
+    size = column_property(
+        func.pg_size_pretty(
+            cast(
+                func.length(
+                    raw_file
+                ),
+                BIGINT
+            )
+        )
+    )
 
     @property
     def raw_file_utf8(self):

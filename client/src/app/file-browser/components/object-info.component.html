@@ -52,6 +52,9 @@
       <li *ngIf="object.isAnnotatable">
         <strong>Annotation Organism:</strong>&nbsp;<app-organism [organism]="object.fallbackOrganism" [highlightTerms]="highlightTerms"></app-organism>
       </li>
+      <li *ngIf="object.size">
+        <strong>Size:</strong> {{ object.size }}
+      </li>
       <li *ngIf="object.modifiedDate">
         <strong>Modified:</strong> {{ object.modifiedDate | date: 'short' }}
       </li>
