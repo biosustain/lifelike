@@ -62,6 +62,7 @@ from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
     FileHierarchy,
+    add_file_size_column,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
@@ -236,6 +237,7 @@ class FilesystemBaseView(MethodView):
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
         query = add_file_starred_columns(query, t_file.id, current_user.id)
+        query = add_file_size_column(query, t_file.content_id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
@@ -261,6 +263,7 @@ class FilesystemBaseView(MethodView):
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
             hierarchy.calculate_starred_files()
+            hierarchy.calculate_size()
             files.append(hierarchy.file)
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
