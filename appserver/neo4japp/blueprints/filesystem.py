@@ -519,7 +519,7 @@ class FilesystemBaseView(MethodView):
                     file.annotation_configs = params['annotation_configs']
 
                 if 'content_value' in params:
-                    buffer = params['content_value']
+                    buffer = FileContentBuffer(stream=params['content_value'].stream)
 
                     # Get file size
                     size = buffer.size
@@ -533,14 +533,13 @@ class FilesystemBaseView(MethodView):
                     provider = file_type_service.get(file)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
-                        with buffer as bufferView:
-                            provider.validate_content(bufferView)
-                    except ValueError:
+                        provider.validate_content(buffer)
+                    except ValueError as e:
                         raise ValidationError(
                             f"The provided file may be corrupt for files of type "
                             f"'{file.mime_type}' (which '{file.hash_id}' is of).",
                             "contentValue"
-                        )
+                        ) from e
                     except HandledException:
                         pass
 

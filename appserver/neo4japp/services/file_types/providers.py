@@ -1391,11 +1391,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         doc.save(result_string)
         return FileContentBuffer(result_string.getvalue().encode(BYTE_ENCODING))
 
-    def update_map(self, params: dict, file_content, updater=lambda x: x):
-        try:
-            zip_file = zipfile.ZipFile(file_content)
-        except zipfile.BadZipfile:
-            raise ValidationError('Previous content of the map is corrupted!')
+    def update_map(self, params: dict, file_content: FileContentBuffer, updater=lambda x: x):
+        with file_content as bufferView:
+            try:
+                zip_file = zipfile.ZipFile(bufferView)
+            except zipfile.BadZipfile as e:
+                raise ValidationError('Previous content of the map is corrupted!') from e
 
         images_to_delete = params.get('deleted_images') or []
         new_images = params.get('new_images') or []
