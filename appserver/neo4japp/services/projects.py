@@ -22,6 +22,7 @@ from neo4japp.models.files import AnnotationChangeCause, FileAnnotationsVersion,
 from neo4japp.models.projects import Projects, projects_collaborator_role
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+from neo4japp.utils import FileContentBuffer
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -244,7 +245,7 @@ class ProjectsService(RDBMSBaseDao):
 
         # Create initial map for this user
         mapTypeProvider = MapTypeProvider()
-        map_content = BytesIO(master_map.content.raw_file)
+        map_content = FileContentBuffer(master_map.content.raw_file)
         updated_map_content = mapTypeProvider.update_map(
             {},
             map_content,
