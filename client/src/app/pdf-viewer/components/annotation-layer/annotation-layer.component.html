@@ -13,7 +13,7 @@
        [ngClass]="[
           'system-annotation',
           annotation.meta.isExcluded ? 'excluded' : '',
-          currentHighlightAnnotationId === annotation.meta.id ? ' annotation-highlight' : ''
+          (currentHighlightAnnotationId$ | async) === annotation.meta.id ? 'annotation-highlight' : ''
         ]"
        [attr.location]="{
             pageNumber: annotation.pageNumber,
