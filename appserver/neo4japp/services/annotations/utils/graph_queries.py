@@ -103,7 +103,7 @@ def get_gene_to_organism_query():
                 'gene_name': gene.name,
                 'gene_synonym': s.name,
                 'gene_id': gene.eid,
-                'organism_id': organism_to_use.eid,
+                'organism_id': organism_to_use,
                 'data_source': gene.data_source
             }
     """
