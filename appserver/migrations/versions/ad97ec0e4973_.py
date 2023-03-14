@@ -6,15 +6,11 @@ Create Date: 2023-02-09 20:59:14.824234
 
 """
 import enum
-import fastjsonschema
-import json
-import os
 import uuid
 
 from alembic import context, op
 from datetime import timezone
 from flask_sqlalchemy import SQLAlchemy
-from pathlib import Path
 from sqlalchemy import Boolean, Column, Integer, MetaData, String, Table, Text, func, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Connection
