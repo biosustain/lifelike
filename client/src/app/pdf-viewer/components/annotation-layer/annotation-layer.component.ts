@@ -3,33 +3,26 @@ import {
   Component,
   ComponentFactoryResolver,
   ElementRef, Injector, NgZone,
-  OnInit, Output, Input, EventEmitter,
+  Output, Input, EventEmitter,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { escape, isNil, uniqueId, unary, isEqual, kebabCase } from 'lodash-es';
+import { kebabCase } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { toValidLink } from 'app/shared/utils/browser';
-import { SEARCH_LINKS } from 'app/shared/links';
-import { composeInternalLink } from 'app/shared/workspace-manager';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { ExtendedWeakMap } from 'app/shared/utils/types';
 import { PDFAnnotationService } from 'app/pdf-viewer/services/pdf-annotation.service';
 
-import { Annotation, Location } from '../../annotation-type';
+import { Annotation } from '../../annotation-type';
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFPageView } from '../../pdf-viewer/interfaces';
-import {
-  AnnotationDragEvent,
-  AnnotationHighlightResult,
-  PdfViewerLibComponent,
-} from '../../pdf-viewer-lib.component';
+import { AnnotationDragEvent } from '../../pdf-viewer-lib.component';
 
 @Component({
   selector: 'app-annotation-layer',
@@ -58,7 +51,8 @@ export class AnnotationLayerComponent {
     )
   );
 
-  currentHighlightAnnotationId: string;
+  currentHighlightAnnotationId$: Observable<string> = this.annotationService.highlightAnnotationId$;
+
   @Input() pdfPageView: PDFPageView;
   @Output() dragStart = new EventEmitter<AnnotationDragEvent>();
   annotationRectsMap = new ExtendedWeakMap<Annotation, { top: number, left: number, width: number, height: number, rect: any }>();
