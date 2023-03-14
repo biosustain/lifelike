@@ -8,6 +8,7 @@ Create Date: 2023-02-09 23:40:44.192896
 import uuid
 from alembic import context, op
 from sqlalchemy import (
+    func,
     select,
     Boolean,
     Column,
@@ -16,6 +17,7 @@ from sqlalchemy import (
     String,
     Table,
 )
+from sqlalchemy.types import TIMESTAMP
 
 from migrations.constants import LIFELIKE_SUPERUSER
 
@@ -41,6 +43,8 @@ t_appuser = Table(
     Column('email', String),
     Column('first_name', String),
     Column('last_name', String),
+    Column('creation_date', TIMESTAMP(timezone=True), default=func.now()),
+    Column('modified_date', TIMESTAMP(timezone=True), default=func.now()),
     Column('password_hash', String),
     Column('failed_login_count', Integer),
     Column('forced_password_reset', Boolean),
