@@ -43,6 +43,7 @@ import { ObjectUploadDialogComponent } from './components/dialog/object-upload-d
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 import { StarredBrowserComponent } from './components/starred-browser.component';
+import { CollaboratorTableComponent } from './components/dialog/collaborator-table/collaborator-table.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +79,8 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
-    ObjectTileDeckComponent
+    ObjectTileDeckComponent,
+    CollaboratorTableComponent
   ],
   imports: [
     SharedModule,

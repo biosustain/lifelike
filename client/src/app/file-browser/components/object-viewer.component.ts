@@ -14,6 +14,8 @@ import { ModuleAwareComponent } from 'app/shared/modules';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
+import { addStatus, PipeStatus } from '../../shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-object-viewer',
@@ -26,6 +28,7 @@ export class ObjectViewerComponent implements OnDestroy {
 
   protected readonly subscriptions = new Subscription();
   object$: Observable<FilesystemObject>;
+  objectWithStatus$: Observable<PipeStatus<FilesystemObject>>;
 
   constructor(
     protected readonly route: ActivatedRoute,
@@ -37,6 +40,9 @@ export class ObjectViewerComponent implements OnDestroy {
     moduleContext.register(this);
     this.subscriptions.add(this.route.params.subscribe(params => {
       this.object$ = this.filesystemService.get(params.hash_id);
+      this.objectWithStatus$ = this.object$.pipe(
+        addStatus(filesystemObjectLoadingMock)
+      );
     }));
   }
 

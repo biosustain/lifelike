@@ -10,6 +10,10 @@ $placeholder-border-radius: $border-radius;
   border-radius: $placeholder-border-radius;
   user-select: none;
   animation: 1s linear infinite alternate placeholder-pulse;
+
+  &:empty:before {
+    content: "Loading Loading";
+  }
 }
 
 @keyframes placeholder-pulse {
@@ -21,3 +25,6 @@ $placeholder-border-radius: $border-radius;
     opacity: 0.2;
   }
 }
+
+show-placeholders
+placeholder-slot

@@ -14,6 +14,7 @@ import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/sche
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
+import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-community-browser',
@@ -42,7 +43,10 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     limit: new FormControl(100),
   });
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList([
+    filesystemObjectLoadingMock,
+    filesystemObjectLoadingMock
+  ]);
 
   private routerParamSubscription: Subscription;
   private loadTaskSubscription: Subscription;

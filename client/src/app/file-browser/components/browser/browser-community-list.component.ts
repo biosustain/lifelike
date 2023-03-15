@@ -6,6 +6,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
 import { FilesystemService } from '../../services/filesystem.service';
+import { filesystemObjectLoadingMock } from '../../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-browser-community-list',
@@ -21,7 +22,10 @@ export class BrowserCommunityListComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList([
+    filesystemObjectLoadingMock,
+    filesystemObjectLoadingMock
+  ]);
 
   constructor(protected readonly filesystemService: FilesystemService) {
   }

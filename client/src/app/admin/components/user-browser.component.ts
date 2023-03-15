@@ -19,6 +19,7 @@ import { State } from 'app/***ARANGO_USERNAME***-store';
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
+import { appUserLoadingMock } from '../../shared/mocks/loading/user';
 
 
 @Component({
@@ -28,7 +29,10 @@ import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 export class UserBrowserComponent implements OnInit, OnDestroy {
   currentUser: AppUser;
   users: AppUser[];
-  shownUsers: AppUser[] = [];
+  shownUsers: AppUser[] = [
+    appUserLoadingMock,
+    appUserLoadingMock
+  ];
   filterQuery = '';
   loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(
     () => this.accountService.getUsers()

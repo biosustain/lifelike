@@ -20,6 +20,8 @@ import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
 import { ProjectsService } from '../../services/projects.service';
 import { MultiCollaboratorUpdateRequest } from '../../schema';
+import { addStatus } from '../../../shared/pipes/add-status.pipe';
+import { appUserLoadingMock } from '../../../shared/mocks/loading/user';
 
 @Component({
   selector: 'app-project-collaborators-dialog',
@@ -30,6 +32,11 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
 
   private _project: ProjectImpl;
   collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
+  collaboratorsWithStatus$ = this.collaborators$.pipe(
+    addStatus(new ModelList([
+      new Collaborator().update({user: appUserLoadingMock})
+    ]))
+  );
   readonly addForm: FormGroup = new FormGroup({
     roleName: new FormControl('project-read', Validators.required),
     users: new FormControl([], nonEmptyList),

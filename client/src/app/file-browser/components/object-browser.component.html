@@ -1,4 +1,4 @@
-<ng-container *ngIf="(object$ | addStatus | async) as result">
+<ng-container *ngIf="(objectWithStatus$ | async) as result">
     <app-module-error *ngIf="result.error; else notError" [error]="result.error" class="d-block p-4">
         <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>

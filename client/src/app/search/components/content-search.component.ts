@@ -41,6 +41,8 @@ import {
   createContentSearchParamsFromQuery,
   getContentSearchQueryParams
 } from '../utils/search';
+import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
+import { rankedItemLoadingMock } from '../../shared/mocks/loading/common';
 
 
 @Component({
@@ -56,7 +58,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   private readonly DEFAULT_LIMIT = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
 
-  results = new CollectionModel<RankedItem<FilesystemObject>>([], { multipleSelection: false });
+  results = new CollectionModel<RankedItem<FilesystemObject>>(
+    [
+      rankedItemLoadingMock(filesystemObjectLoadingMock),
+      rankedItemLoadingMock(filesystemObjectLoadingMock)
+    ],
+    { multipleSelection: false }
+  );
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightTerms: string[] = [];
   highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};

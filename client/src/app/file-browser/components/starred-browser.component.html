@@ -59,7 +59,7 @@
                             </div>
                         </ng-template>
                     </app-object-tile-deck>
-        <app-object-list [objects]="(status.placeholdersShown ? null : fileList.results)"
+        <app-object-list [objects]="fileList.results"
                          [appLinks]="{forceWorkbench: true, preferPane: 'left'}"
                          [forEditing]="false"
                          [showStars]="true"

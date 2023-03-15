@@ -21,6 +21,8 @@ import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { ProjectsService } from '../services/projects.service';
+import { addStatus } from '../../shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-object-browser',
@@ -96,6 +98,9 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
       ))
     ),
     shareReplay(1)
+  );
+  objectWithStatus$ = this.object$.pipe(
+    addStatus(filesystemObjectLoadingMock)
   );
 
   sourceData$ = defer(() => this.object$.pipe(

@@ -12,6 +12,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { ProjectList } from '../models/project-list';
 import { ProjectActions } from '../services/project-actions';
 import { ProjectsService } from '../services/projects.service';
+import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-starred-browser',
@@ -34,7 +35,10 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
     )),
     shareReplay({bufferSize: 1, refCount: true})
   );
-  fileList: FilesystemObjectList = new FilesystemObjectList();
+  fileList: FilesystemObjectList = new FilesystemObjectList([
+    filesystemObjectLoadingMock,
+    filesystemObjectLoadingMock
+  ]);
   projectList: ProjectList = new ProjectList();
 
   private loadTaskSubscription: Subscription;

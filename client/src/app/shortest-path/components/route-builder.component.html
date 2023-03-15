@@ -23,12 +23,6 @@
       </div>
     </div>
     <div *ngIf="(loadShortestPathQueries?.status$ | async) as status">
-      <div *ngIf="status.placeholdersShown" class="d-flex justify-content-start">
-        <div class="d-flex justify-content-center align-items-center mr-2">
-          <i class="fa fa-spinner fa-spin text-white"></i>
-        </div>
-        <p class="text-white m-0 d-flex align-items-center">Loading pre-defined queries...</p>
-      </div>
       <div *ngIf="status.failedErrorShown" class="d-flex justify-content-start">
         <div class="fa-stack fa-lg mr-2" style="width: 20px;">
           <i class="fas fa-circle fa-stack-1x text-white"></i>
@@ -36,7 +30,7 @@
         </div>
         <p class="text-white m-0 d-flex align-items-center">Could not load pre-defined shortest path queries!</p>
       </div>
-      <div *ngIf="status.resultsShown && !status.failedErrorShown">
+      <div *ngIf="status.placeholdersShown || (status.resultsShown && !status.failedErrorShown)">
         <label class="text-white">Pre-defined Queries:</label>
         <select class="custom-select" (change)="requestQueryLoadFromParent($event)">
           <option *ngFor="let query of queries" [value]="query[0]">{{ query[1] }}</option>

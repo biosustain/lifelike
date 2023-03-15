@@ -39,6 +39,8 @@ import { EnrichmentTableService } from '../../services/enrichment-table.service'
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { EnrichmentService } from '../../services/enrichment.service';
+import { addStatus, PipeStatus } from '../../../shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from '../../../shared/mocks/loading/file';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -86,6 +88,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   fileId: string;
   object$: Observable<FilesystemObject>;
+  objectWithStatus$: Observable<PipeStatus<FilesystemObject>>;
   document$: Observable<EnrichmentDocument>;
   table$: Observable<EnrichmentTable>;
   scrollTopAmount: number;
@@ -122,6 +125,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
         this.emitModuleProperties();
       }),
       shareReplay(),
+    );
+    this.objectWithStatus$ = this.object$.pipe(
+      addStatus(filesystemObjectLoadingMock)
     );
     this.document$ = this.enrichmentService.getContent(this.fileId).pipe(
       mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)),

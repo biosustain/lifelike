@@ -18,6 +18,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
+import { addStatus } from '../../shared/pipes/add-status.pipe';
 
 @Component({
   selector: 'app-object-preview',
@@ -44,6 +45,9 @@ export class ObjectPreviewComponent implements OnChanges {
         return of(null);
       }
     }),
+  );
+  previewComponentWithStatus$ = this.previewComponent$.pipe(
+    addStatus(undefined)
   );
 
   constructor(protected readonly filesystemService: FilesystemService,

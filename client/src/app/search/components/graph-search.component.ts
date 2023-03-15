@@ -13,6 +13,7 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { GraphSearchService } from '../services/graph-search.service';
 import { createGraphSearchParamsFromQuery, getGraphQueryParams, GraphQueryParameters } from '../utils/search';
 import { GraphSearchParameters } from '../graph-search';
+import { fTSQueryRecordLoadingMock } from '../../shared/mocks/loading/graph-search';
 
 @Component({
   selector: 'app-graph-search',
@@ -36,7 +37,10 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
 
   params: GraphSearchParameters | undefined;
   collectionSize = 0;
-  results: FTSQueryRecord[] = [];
+  results: FTSQueryRecord[] = [
+    fTSQueryRecordLoadingMock,
+    fTSQueryRecordLoadingMock
+  ];
 
   legend: Map<string, string> = new Map();
 

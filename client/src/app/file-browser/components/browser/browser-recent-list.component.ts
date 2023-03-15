@@ -7,6 +7,7 @@ import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { RecentFilesService } from '../../services/recent-files.service';
+import { filesystemObjectLoadingMock } from '../../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-browser-recent-list',
@@ -24,7 +25,10 @@ export class BrowserRecentListComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList([
+    filesystemObjectLoadingMock,
+    filesystemObjectLoadingMock
+  ]);
 
   constructor(protected readonly recentFilesService: RecentFilesService) {}
 

@@ -18,26 +18,17 @@
       <app-background-task-progress
         [status]="status" (refresh)="this.refresh()" childClass="mb-4"></app-background-task-progress>
 
-      <ng-container *ngIf="status.placeholdersShown">
+      <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
         <div class="card">
           <div class="card-header">
-            <span class="placeholder-box">Loading loading</span>
-          </div>
-          <div class="card-body">
-            <div class="chart-container">
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="status.resultsShown">
-        <div class="card">
-          <div class="card-header">
-            Total Number of Nodes <span class="badge badge-pill badge-primary ml-1">{{totalCount | number}}</span>
+            <span appHasPlaceholder>
+              Total Number of Nodes <span class="badge badge-pill badge-primary ml-1">{{totalCount | number}}</span>
+            </span>
           </div>
           <div class="card-body">
             <div class="chart-container">
               <canvas baseChart
+                      *ngIf="status.resultsShown"
                       [datasets]="chartDataAllDomains"
                       [labels]="chartLabelsDomains"
                       [colors]="chartColorsDomains"

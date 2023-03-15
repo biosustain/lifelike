@@ -23,7 +23,10 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
 
   routeBuilderOpen: boolean;
 
-  queries: string[][];
+  queries: string[][] = [
+    ['Loading', 'Loading Loading'],
+    ['Loading Loading', 'Loading'],
+  ];
 
   constructor(
     public shortestPathService: ShortestPathService,
