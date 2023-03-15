@@ -657,6 +657,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
         null,
         {name: 'XYZ'},
         highlightRect[0],
+        // Could add an offset here. Doing so would mimic the behavior we used
+        // to have.
         highlightRect[1],
         null
       ];
