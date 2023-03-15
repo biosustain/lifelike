@@ -1,3 +1,5 @@
+from enum import IntEnum, unique
+
 import magic
 
 from typing import Dict, List, Optional, Tuple
@@ -5,6 +7,19 @@ from typing import Dict, List, Optional, Tuple
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 from neo4japp.utils import FileContentBuffer
+
+
+@unique
+class Certanity(IntEnum):
+    """Helper enum to asess result certanity in meaningfull way
+    We could simply use int of float, yet having named scale in form of enum
+    should provide better overview.
+
+    The higher the number the more certain we are about given result
+    """
+    default = -100
+    assumed = -1
+    match = 0
 
 
 class BaseFileTypeProvider:
@@ -32,7 +47,7 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
+    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
         Larger numbers indicate a higher confidence and negative
@@ -44,12 +59,16 @@ class BaseFileTypeProvider:
         :param file: the file
         :return: whether this provide should be used
         """
-        return [(0, self)] if file.mime_type.lower() in self.mime_types else []
+        return [(Certanity.match, self)] if file.mime_type.lower() in self.mime_types else []
 
     def convert(self, buffer):
         raise NotImplementedError
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[Tuple[float, str]]:
+    def detect_mime_type(
+        self,
+        buffer: FileContentBuffer,
+        extension: str = None
+    ) -> List[Tuple[Certanity, str]]:
         """
         Given the byte buffer, return a list of possible mime types with
         confidence levels. Larger numbers indicate a higher confidence and negative
@@ -62,6 +81,7 @@ class BaseFileTypeProvider:
         file type when uploading a file (as of writing).
 
         :param buffer: the file buffer
+        :param extension: the file extension
         :return: a list of mime types and their confidence levels
         """
         return []
@@ -168,13 +188,17 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         self.mime_type = mime_type
         self.mime_types = (mime_type,)
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
-        return [(-100, GenericFileTypeProvider(file.mime_type))]
+    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
+        return [(Certanity.default, GenericFileTypeProvider(file.mime_type))]
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension: str = None
+            ) -> List[Tuple[Certanity, str]]:
         with buffer as bufferView:
             mime_type = magic.from_buffer(bufferView.read(2048), mime=True)
-            return [(-100, mime_type)]
+            return [(Certanity.default, mime_type)]
 
     def validate_content(self, buffer: FileContentBuffer):
         return
@@ -230,7 +254,7 @@ class FileTypeService:
         :param file: the file
         :return: a provider, which may be the default one
         """
-        results: List[Tuple[float, BaseFileTypeProvider]] = []
+        results: List[Tuple[Certanity, BaseFileTypeProvider]] = []
         for provider in self.providers:
             results.extend(provider.detect_provider(file))
         if len(results):
@@ -238,19 +262,20 @@ class FileTypeService:
             return results[-1][1]
         return self.default_provider
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> str:
+    def detect_mime_type(self, buffer: FileContentBuffer, extension: str = None) -> str:
         """
         Detect the file type based on the file's contents. A provider
         will be returned regardless, although it may be the default one.
         :param buffer: the file's contents
+        :param extension: the file's extension
         :return: a provider
         """
-        results: List[Tuple[float, str]] = []
+        results: List[Tuple[Certanity, str]] = []
         for provider in self.providers:
             # Note that each provider sets the same priority value for each mime_type, so the
             # priority is in the order the providers are registered. This is not ideal, we
             # should explicitly set the priority.
-            results.extend(provider.detect_mime_type(buffer))
+            results.extend(provider.detect_mime_type(buffer, extension))
         if len(results):
             results.sort(key=lambda item: item[0])
             return results[-1][1]

@@ -74,13 +74,13 @@ from neo4japp.constants import (
     MAX_NODE_HEIGHT,
     NODE_INSET
 )
-from neo4japp.exceptions import FileUploadError, HandledException
+from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
-from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
 from neo4japp.utils import FileContentBuffer
 from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
@@ -282,9 +282,13 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
         with buffer as bufferView:
-            return [(0, self.MIME_TYPE)] if bufferView.read(5) == b'%PDF-' else []
+            return [(Certanity.match, self.MIME_TYPE)] if bufferView.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
@@ -372,12 +376,16 @@ class BiocTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
     ALLOWED_TYPES = ['.xml', '.bioc']
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
         with buffer as bufferView:
             try:
                 # If it is xml file and bioc
                 self.check_xml_and_bioc(bufferView)
-                return [(0, self.MIME_TYPE)]
+                return [(Certanity.match, self.MIME_TYPE)]
             except BaseException:
                 return []
 
@@ -1007,11 +1015,15 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+        self,
+        buffer: FileContentBuffer,
+        extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
 
@@ -1451,19 +1463,24 @@ class GraphTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_GRAPH
     SHORTHAND = 'Graph'
     mime_types = (MIME_TYPE,)
+    EXTENSIONS = {'.graph'}
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
+        certanity = None
+        if extension in self.EXTENSIONS:
+            certanity = Certanity.assumed
         try:
-            # If the data validates, I guess it's a map?
-            if os.path.splitext(str(
-                    # buffer in here is actually wrapper of FileContentBuffer and it contains
-                    # filename even if type check fails
-                    buffer.filename  # type: ignore[attr-defined]
-            ))[1] == '.graph':
-                return [(0, self.MIME_TYPE)]
-            else:
-                return []
-        except (ValueError, AttributeError):
+            self.validate_content(buffer)
+            certanity = Certanity.match
+        except (ValueError, ContentValidationError):
+            pass
+        if certanity is not None:
+            return [(certanity, self.MIME_TYPE)]
+        else:
             return []
 
     def can_create(self) -> bool:
@@ -1497,13 +1514,17 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: FileContentBuffer) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
             self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
 
