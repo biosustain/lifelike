@@ -8,6 +8,7 @@ from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 from neo4japp.utils import FileContentBuffer
 
+
 @unique
 class Certanity(IntEnum):
     """Helper enum to asess result certanity in meaningfull way
@@ -17,8 +18,8 @@ class Certanity(IntEnum):
     The higher the number the more certain we are about given result
     """
     default = -100
+    assumed = -1
     match = 0
-    certain = 1
 
 
 class BaseFileTypeProvider:
@@ -63,7 +64,11 @@ class BaseFileTypeProvider:
     def convert(self, buffer):
         raise NotImplementedError
 
-    def detect_mime_type(self, buffer: FileContentBuffer, extension: str=None) -> List[Tuple[Certanity, str]]:
+    def detect_mime_type(
+        self,
+        buffer: FileContentBuffer,
+        extension: str = None
+    ) -> List[Tuple[Certanity, str]]:
         """
         Given the byte buffer, return a list of possible mime types with
         confidence levels. Larger numbers indicate a higher confidence and negative

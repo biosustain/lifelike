@@ -1016,10 +1016,10 @@ class MapTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension=None
-        ) -> List[typing.Tuple[Certanity, str]]:
+        self,
+        buffer: FileContentBuffer,
+        extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer)
@@ -1470,16 +1470,16 @@ class GraphTypeProvider(BaseFileTypeProvider):
             buffer: FileContentBuffer,
             extension=None
             ) -> List[typing.Tuple[Certanity, str]]:
-        c = -1
+        certanity = None
         if extension in self.EXTENSIONS:
-            c += 1
+            certanity = Certanity.assumed
         try:
             self.validate_content(buffer)
-            c += 1
+            certanity = Certanity.match
         except (ValueError, ContentValidationError):
             pass
-        if c >= 0:
-            return [(Certanity(c), self.MIME_TYPE)]
+        if certanity is not None:
+            return [(certanity, self.MIME_TYPE)]
         else:
             return []
 
