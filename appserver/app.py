@@ -578,7 +578,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     buffer = FileContentBuffer(file_bstr)
 
     # Detect the mime type of the file
-    mime_type = file_type_service.detect_mime_type(buffer)
+    mime_type = file_type_service.detect_mime_type(buffer, file.extension)
     file.mime_type = mime_type
 
     # Figure out file size
