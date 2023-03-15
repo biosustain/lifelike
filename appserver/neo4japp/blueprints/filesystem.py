@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import gdown
 import hashlib
 import itertools
@@ -837,7 +839,16 @@ class FileListView(FilesystemBaseView):
             if mime_type:
                 file.mime_type = mime_type
             else:
-                mime_type = file_type_service.detect_mime_type(buffer)
+                extension = None
+                try:
+                    extension = (
+                            file.extension or
+                            Path(params['content_value'].filename).suffix
+                    )
+                except Exception:
+                    pass
+
+                mime_type = file_type_service.detect_mime_type(buffer, extension)
                 file.mime_type = mime_type
 
             # Get the provider based on what we know now
