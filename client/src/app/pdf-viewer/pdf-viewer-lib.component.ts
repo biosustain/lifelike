@@ -61,6 +61,10 @@ import { AnnotationLayerComponent } from './components/annotation-layer/annotati
 import { PDFAnnotationService } from './services/pdf-annotation.service';
 import { PDFSearchService } from './services/pdf-search.service';
 
+// PDF.js defaults
+// https://github.com/mozilla/pdf.js/blob/5e4b3d13ebc6eb2453f0cad12f33964e2d4fc6fc/web/pdf_find_controller.js#L32:L33
+const MATCH_SCROLL_OFFSET_TOP = -50; // px
+const MATCH_SCROLL_OFFSET_LEFT = -400; // px
 
 @Component({
   selector: 'app-lib-pdf-viewer-lib',
@@ -652,12 +656,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
    */
   scrollToPage(pageNum: number, highlightRect?: number[]) {
     const dest = {pageNumber: pageNum} as ScrollDestination;
-    if (highlightRect.length >= 2) {
+    // Alike PDF.js search navigation
+    // https://github.com/mozilla/pdf.js/blob/5e4b3d13ebc6eb2453f0cad12f33964e2d4fc6fc/web/pdf_find_controller.js#L502:L522
+    if (highlightRect.length) {
+      const [left, bottom, right, top] = highlightRect;
       dest.destArray = [
         null,
         {name: 'XYZ'},
-        highlightRect[0],
-        highlightRect[1],
+        left - MATCH_SCROLL_OFFSET_LEFT,
+        top - MATCH_SCROLL_OFFSET_TOP,
         null
       ];
     }
