@@ -37,6 +37,7 @@ export const filesystemObjectLoadingMock:
     mimeType: LOADING,
     doi: LOADING,
     public: false,
+    size: LOADING,
     pinned: false,
     uploadUrl: LOADING,
     annotationsDate: DATE,
