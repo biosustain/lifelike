@@ -47,7 +47,7 @@ export class ObjectAnnotationHistoryComponent {
     }).pipe(
       this.errorHandler.create({label: 'Refresh file annotation history'}),
     ) : from([])).pipe(
-      addStatus(new FileAnnotationHistory().update(fileAnnotationHistoryResponseLoadingMock)),
+      addStatus(new FileAnnotationHistory().update(fileAnnotationHistoryResponseLoadingMock())),
     );
   }
 

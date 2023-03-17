@@ -1,5 +1,5 @@
 <div class="d-flex flex-column h-100">
-  <ng-container *ngIf="(previewComponentWithStatus$ | async) as result">
+  <ng-container *ngIf="(previewComponent$ | addStatus | async) as result">
     <ng-container *ngIf="result.error">
       <app-module-error [error]="result.error" class="d-block p-4">
       </app-module-error>

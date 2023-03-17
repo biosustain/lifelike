@@ -30,7 +30,7 @@
         </div>
         <p class="text-white m-0 d-flex align-items-center">Could not load pre-defined shortest path queries!</p>
       </div>
-      <div *ngIf="status.placeholdersShown || (status.resultsShown && !status.failedErrorShown)">
+      <div *ngIf="status.placeholdersShown || (status.resultsShown && !status.failedErrorShown)" [appShowPlaceholders]="status.placeholdersShown">
         <label class="text-white">Pre-defined Queries:</label>
         <select class="custom-select" (change)="requestQueryLoadFromParent($event)">
           <option *ngFor="let query of queries" [value]="query[0]">{{ query[1] }}</option>

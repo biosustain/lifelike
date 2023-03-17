@@ -6,10 +6,13 @@
       </div>
 
       <div class="ml-auto">
-        <ng-container *ngIf="(buildInfo$ | async) as buildInfo">
-          <span *ngIf="buildInfo.buildTimestamp !== 'undefined'; else undefinedTimestamp">
+        <ng-container *ngIf="(buildInfoWithStatus$ | async) as buildInfoWithStatus">
+          <span
+            *ngIf="buildInfoWithStatus.value.buildTimestamp !== 'undefined'; else undefinedTimestamp"
+            [appShowPlaceholders]="buildInfoWithStatus.loading"
+          >
             Version:
-            {{ buildInfo.buildTimestamp }}
+            <app-with-placeholder>{{ buildInfoWithStatus.value.buildTimestamp }}</app-with-placeholder>
           </span>
           <ng-template #undefinedTimestamp>
             Version Not Available

@@ -22,9 +22,9 @@ export class HasPlaceholderDirective {
   selector: 'input[appHasPlaceholder],button[appHasPlaceholder]'
 })
 export class InteractiveInterfaceHasPlaceholderDirective {
-  constructor(@Inject(PLACEHOLDER_CONTEXT) public placeholderContext: ShowPlaceholderDirective) {}
+  constructor(@Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective) {}
   @HostBinding('attr.disabled') get disabled() {
-    return this.placeholderContext.showPlaceholders;
+    return this.placeholderContext?.showPlaceholders;
   }
 }
 

@@ -19,9 +19,9 @@
       <a [appLink]="o.getCommands(forEditing)"
          [newTab]="newTabObject"
          class="d-block text-truncate"
-         appHasPlaceholder
          [appTextTruncateToTooltip]="o.filename"
          [scroll$]="bodyObserver.scroll$"
+         appHasPlaceholder
       >
         <strong>{{ o.effectiveName }}</strong>
       </a>

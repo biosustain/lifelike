@@ -14,9 +14,6 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { LOADING } from 'app/shared/mocks/loading/utils';
-
-import { addStatus, PipeStatus } from '../../pipes/add-status.pipe';
 
 @Component({
   selector: 'app-object-menu',
@@ -38,7 +35,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   @Output() objectUpdate = new EventEmitter<FilesystemObject>();
   typeProvider$: Observable<ObjectTypeProvider>;
   exporters$: Observable<Exporter[]>;
-  exportersWithStatus$: Observable<PipeStatus<Exporter[]>>;
 
   constructor(readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -59,9 +55,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
       this.errorHandler.create({label: 'Get exporters'}),
       mergeMap(typeProvider => typeProvider.getExporters(object)),
       shareReplay(),
-    );
-    this.exportersWithStatus$ = this.exporters$.pipe(
-      addStatus([{name: LOADING}, {name: LOADING}] as any as Exporter[]),
     );
   }
 

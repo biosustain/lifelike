@@ -19,7 +19,7 @@
         [status]="status" (refresh)="this.refresh()" childClass="mb-4"></app-background-task-progress>
 
       <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
-        <div class="card">
+        <div class="card" [appShowPlaceholders]="status.placeholdersShown">
           <div class="card-header">
             <span appHasPlaceholder>
               Total Number of Nodes <span class="badge badge-pill badge-primary ml-1">{{totalCount | number}}</span>

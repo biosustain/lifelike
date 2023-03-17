@@ -4,7 +4,7 @@
       There is no history to show for this file.
     </div>
     <ng-container *ngIf="log.results.length">
-      <table class="table" style="table-layout: fixed">
+      <table class="table" style="table-layout: fixed" [appShowPlaceholders]="logWithStatus.loading">
         <colgroup>
           <col style="width: 140px">
           <col style="width: 145px">

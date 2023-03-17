@@ -15,7 +15,6 @@ import { mergeMap } from 'rxjs/operators';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { addStatus } from 'app/shared/pipes/add-status.pipe';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
@@ -45,9 +44,6 @@ export class ObjectPreviewComponent implements OnChanges {
         return of(null);
       }
     }),
-  );
-  previewComponentWithStatus$ = this.previewComponent$.pipe(
-    addStatus(undefined)
   );
 
   constructor(protected readonly filesystemService: FilesystemService,

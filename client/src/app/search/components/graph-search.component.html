@@ -25,22 +25,24 @@
           [status]="status" (refresh)="refresh()" childClass="mb-2"></app-background-task-progress>
 
         <ng-container *ngIf="status.placeholdersShown || (status.resultsShown && results.length)">
-          <div class="text-muted mb-3">
+          <div class="text-muted mb-3" [appShowPlaceholders]="status.placeholdersShown">
             <app-results-summary
               [page]="params.page"
               [pageSize]="params.limit"
               [collectionSize]="collectionSize"
               [resultCountLimited]="true"
-              [resultLimit]="1000"></app-results-summary>
+              [resultLimit]="1000"
+              appHasPlaceholder
+            ></app-results-summary>
           </div>
 
-          <div class="search-results">
+          <div class="search-results" [appShowPlaceholders]="status.placeholdersShown">
             <div class="search-results-item"
                  *ngFor="let n of results; let i = index"
                  [ngSwitch]="n.node.label">
-              <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'" [params]="params">
+              <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'" [params]="params" appHasPlaceholder>
               </app-search-record-relationships>
-              <app-search-record-node [node]="n" [legend]="legend" [params]="params" *ngSwitchDefault>
+              <app-search-record-node [node]="n" [legend]="legend" [params]="params" *ngSwitchDefault appHasPlaceholder>
               </app-search-record-node>
             </div>
           </div>

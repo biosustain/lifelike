@@ -1,10 +1,11 @@
 import { AppUser } from 'app/interfaces';
 import { RecursiveReadonly } from 'app/shared/utils/types';
+import { Collaborator } from 'app/file-browser/models/collaborator';
 
 import { freezeDeep } from '../../utils';
 import { LOADING } from './utils';
 
-export const appUserLoadingMock: AppUser = {
+export const appUserLoadingMock: () => AppUser = () => ({
   /**
    * @deprecated
    */
@@ -22,4 +23,7 @@ export const appUserLoadingMock: AppUser = {
    * @deprecated
    */
   roles: [],
-};
+});
+
+export const collaboratorLoadingMock: () => Collaborator = () =>
+  new Collaborator().update({user: appUserLoadingMock(), roleName: LOADING});

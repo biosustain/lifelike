@@ -15,7 +15,7 @@
 
   <ng-template #noError>
     <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
-      <div class="module-section">
+      <div class="module-section" [appShowPlaceholders]="status.placeholdersShown">
         <div class="module-section-header d-flex align-items-center">
           <h2 class="module-section-header-title mr-2">
             Associated Maps

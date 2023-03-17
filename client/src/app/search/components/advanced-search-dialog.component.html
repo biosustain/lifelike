@@ -20,30 +20,33 @@
       <label class="col-sm-4 col-form-label">File Types:</label>
       <div class="col-sm-8">
         <app-select formId="types" [choices]="typeChoices"
-                [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
-                (touch)="form.get('types').markAsTouched()"
-                [choiceLabel]="typeLabel">
+                    [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
+                    (touch)="form.get('types').markAsTouched()"
+                    [choiceLabel]="typeLabel">
         </app-select>
       </div>
     </div>
 
-    <div>
+    <div *ngIf="fileHierarchyTreeWithStatus$ | async as fileHierarchyTreeWithStatus">
       <label class="m-0 mb-4">Folders to Include (default all if none selected):</label>
-      <div *ngIf="hierarchyLoaded; else hierarchyNotLoaded" style="max-height: 480px; overflow: auto;">
-        <app-hierarchy-search-tree
-          [treeData]="fileHierarchyTree"
-          [initiallyCheckedNodesFilterFn]="initiallyCheckedNodesFilterFn"
-          [resetTree]="resetHierarchyTreeSubject"
-          (folderSelectionChanged)="updateFolders($event)"
-        ></app-hierarchy-search-tree>
+      <div *ngIf="fileHierarchyTreeWithStatus.error; else content"
+           class="d-flex justify-content-between alert alert-danger"
+      >
+        <div class="d-flex align-items-center">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          Something went wrong retrieving the file structure!
+        </div>
+        <button class="btn btn-secondary" type="button" (click)="try$.next()">Try Again</button>
       </div>
-      <ng-template #hierarchyNotLoaded>
-        <div class="d-flex justify-content-between alert alert-danger" *ngIf="hierarchyError">
-          <div class="d-flex align-items-center">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            Something went wrong retrieving the file structure!
-          </div>
-          <button class="btn btn-secondary" type="button" (click)="getFileHierarchy()">Try Again</button>
+      <ng-template #content>
+        <div *ngIf="fileHierarchyTreeWithStatus.value as fileHierarchyTree"
+             style="max-height: 480px; overflow: auto;">
+          <app-hierarchy-search-tree
+            [treeData]="fileHierarchyTree"
+            [initiallyCheckedNodesFilterFn]="initiallyCheckedNodesFilterFn"
+            [resetTree]="resetHierarchyTreeSubject"
+            (folderSelectionChanged)="updateFolders($event)"
+          ></app-hierarchy-search-tree>
         </div>
       </ng-template>
     </div>
@@ -67,7 +70,8 @@
           Surround one or more words with " to create a phrase term. Ex: "Homo Sapiens"
         </li>
         <li class="small-font">
-          Use * in a word to match 0 or more characters. ? will match 0 or 1 characters. Ex: CO*ID, CO?ID
+          Use * in a word to match 0 or more characters. ? will match 0 or 1 characters. Ex: CO*ID,
+          CO?ID
         </li>
       </ul>
     </div>

@@ -32,8 +32,6 @@ import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { closePopups } from 'app/shared/DOMutils';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
-import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -88,7 +86,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   fileId: string;
   object$: Observable<FilesystemObject>;
-  objectWithStatus$: Observable<PipeStatus<FilesystemObject>>;
   document$: Observable<EnrichmentDocument>;
   table$: Observable<EnrichmentTable>;
   scrollTopAmount: number;
@@ -125,9 +122,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
         this.emitModuleProperties();
       }),
       shareReplay(),
-    );
-    this.objectWithStatus$ = this.object$.pipe(
-      addStatus(filesystemObjectLoadingMock())
     );
     this.document$ = this.enrichmentService.getContent(this.fileId).pipe(
       mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)),

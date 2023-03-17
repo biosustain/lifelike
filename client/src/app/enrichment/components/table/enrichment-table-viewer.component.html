@@ -1,5 +1,5 @@
 <div class="module"
-     *ngIf="({object: objectWithStatus$ | async, document: document$ | async, table: table$ | addStatus | async}) as result"
+     *ngIf="({object$ | addStatus | async, document: document$ | async, table: table$ | addStatus | async}) as result"
 >
     <app-module-error *ngIf="result.object.error" [error]="result.object.error">
     </app-module-error>

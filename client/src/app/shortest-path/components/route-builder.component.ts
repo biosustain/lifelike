@@ -3,10 +3,10 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { combineLatest, Subscription } from 'rxjs';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { loadingText, mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ShortestPathService } from '../services/shortest-path.service';
 import { DisplayType } from './route-display.component';
-import { loadingText } from '../../shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-route-builder',
@@ -24,10 +24,7 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
 
   routeBuilderOpen: boolean;
 
-  queries: string[][] = [
-    [loadingText(), loadingText()],
-    [loadingText(), loadingText()]
-  ];
+  queries: string[][] = mockArrayOf(() => mockArrayOf(loadingText));
 
   constructor(
     public shortestPathService: ShortestPathService,

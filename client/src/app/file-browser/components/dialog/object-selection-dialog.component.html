@@ -3,7 +3,7 @@
         {{ title }}
     </app-modal-header>
 
-    <app-modal-body *ngIf="(objectWithStatus$ | async) as result">
+    <app-modal-body *ngIf="(objectSelect.object$ | addStatus | async) as result">
         <app-module-error *ngIf="result.error" [error]="result.error" class="d-block p-4">
         </app-module-error>
 

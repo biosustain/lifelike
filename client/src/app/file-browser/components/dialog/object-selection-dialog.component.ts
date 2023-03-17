@@ -3,13 +3,11 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { isEmpty } from 'lodash-es';
 import { first, map, switchMap } from 'rxjs/operators';
-import { iif, of, defer, Observable } from 'rxjs';
+import { iif, of, defer } from 'rxjs';
 
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
-import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 
 import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';
@@ -29,10 +27,6 @@ export class ObjectSelectionDialogComponent
               readonly objectSelect: ObjectSelectService) {
     super(modal, messageDialog);
   }
-
-  objectWithStatus$: Observable<PipeStatus<FilesystemObject>> = this.objectSelect.object$.pipe(
-    addStatus(filesystemObjectLoadingMock()),
-  );
 
   @Input()
   set hashId(hashId: string) {

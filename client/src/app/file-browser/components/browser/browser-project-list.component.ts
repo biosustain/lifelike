@@ -11,7 +11,6 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PaginatedRequestOptions } from 'app/shared/schemas/common';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { AuthSelectors } from 'app/auth/store';
-import { pipeStatusLoadingMock } from 'app/shared/mocks/loading/status';
 import { projectImplLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 

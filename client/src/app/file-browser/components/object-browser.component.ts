@@ -17,13 +17,13 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { addStatus } from 'app/shared/pipes/add-status.pipe';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { ProjectsService } from '../services/projects.service';
-import { mockArrayOf } from '../../shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-object-browser',

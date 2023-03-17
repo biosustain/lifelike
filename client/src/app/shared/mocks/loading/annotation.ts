@@ -31,7 +31,7 @@ export const globalAnnotationListItemLoadingMock: () => GlobalAnnotationListItem
     comment: loadingText()
 });
 
-export const addedAnnotationExclusionLoadingMock: AddedAnnotationExclusion = {
+export const addedAnnotationExclusionLoadingMock: () => AddedAnnotationExclusion = () => ({
   type: LOADING,
   text: loadingText(),
   id: LOADING,
@@ -45,52 +45,52 @@ export const addedAnnotationExclusionLoadingMock: AddedAnnotationExclusion = {
   pageNumber: INDEX,
   excludeGlobally: false,
   isCaseInsensitive: false
-};
+});
 
-export const annotationChangeDataLoadingMock: AnnotationChangeData = {
+const annotationChangeDataLoadingMock: () => AnnotationChangeData = () => ({
   action: 'added' // | 'removed';
-};
+});
 
-export const metaLoadingMock: Meta = {
+export const metaLoadingMock: () => Meta = () => ({
   type: LOADING,
   allText: LOADING
-};
+});
 
-export const annotationChangeExclusionMetaLoadingMock: AnnotationChangeExclusionMeta = _pick(
-  addedAnnotationExclusionLoadingMock,
+export const annotationChangeExclusionMetaLoadingMock: () => AnnotationChangeExclusionMeta = () => _pick(
+  addedAnnotationExclusionLoadingMock(),
   ['id' , 'idHyperlinks' , 'text' , 'type' , 'reason' , 'comment' ,
   'excludeGlobally' , 'isCaseInsensitive']
 );
 
-export const annotationInclusionChangeDataLoadingMock: AnnotationInclusionChangeData = {
-  ...annotationChangeDataLoadingMock,
-  meta: metaLoadingMock
-};
+export const annotationInclusionChangeDataLoadingMock: () => AnnotationInclusionChangeData = () => ({
+  ...annotationChangeDataLoadingMock(),
+  meta: metaLoadingMock()
+});
 
-export const annotationExclusionChangeDataLoadingMock: AnnotationExclusionChangeData = {
-  ...annotationChangeDataLoadingMock,
-  meta: annotationChangeExclusionMetaLoadingMock
-};
+export const annotationExclusionChangeDataLoadingMock: () => AnnotationExclusionChangeData = () => ({
+  ...annotationChangeDataLoadingMock(),
+  meta: annotationChangeExclusionMetaLoadingMock()
+});
 
 
-export const fileAnnotationChangeDataLoadingMock: FileAnnotationChangeData = {
+export const fileAnnotationChangeDataLoadingMock: () => FileAnnotationChangeData = () => ({
   date: 'XX/XX/XX XX:XX XX',
-  user: appUserLoadingMock,
+  user: appUserLoadingMock(),
   cause: 'user',
   inclusionChanges: [
-    annotationInclusionChangeDataLoadingMock,
-    annotationInclusionChangeDataLoadingMock
+    annotationInclusionChangeDataLoadingMock(),
+    annotationInclusionChangeDataLoadingMock()
   ],
   exclusionChanges: [
-    annotationExclusionChangeDataLoadingMock,
-    annotationExclusionChangeDataLoadingMock
+    annotationExclusionChangeDataLoadingMock(),
+    annotationExclusionChangeDataLoadingMock()
   ]
-};
+});
 
-export const fileAnnotationHistoryResponseLoadingMock: FileAnnotationHistoryResponse = {
+export const fileAnnotationHistoryResponseLoadingMock: () => FileAnnotationHistoryResponse = () => ({
   total: 2,
   results: [
-    fileAnnotationChangeDataLoadingMock,
-    fileAnnotationChangeDataLoadingMock,
+    fileAnnotationChangeDataLoadingMock(),
+    fileAnnotationChangeDataLoadingMock(),
   ]
-};
+});

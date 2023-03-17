@@ -24,7 +24,9 @@
      (keyup)="onDropdownKeyUpPressed($event)" appMouseNavigable
      [navigationWrap]="false" (navigationEndReached)="focusInput()"
      style="z-index: 10000">
-    <div *ngIf="!unselectedChoices.length" class="dropdown-item-text text-muted">
+    <div *ngIf="!unselectedChoices.length"
+         class="dropdown-item-text text-muted"
+    >
       <ng-container *ngIf="noResultsTemplateRef != null; else noResultsTextDisplay">
         <ng-container
           *ngTemplateOutlet="noResultsTemplateRef; context: { request: request }"></ng-container>
@@ -33,10 +35,14 @@
         <em>{{ noResultsText }}</em>
       </ng-template>
     </div>
-    <div class="dropdown-item cursor-pointer" href="#" *ngFor="let choice of unselectedChoices"
+    <div *ngFor="let choice of unselectedChoices"
+         class="dropdown-item cursor-pointer"
+         href="#"
          appMouseNavigableItem
          (click)="toggle(choice)" tabindex="0"
-         (keypress)="onItemKeyPress($event, choice)">
+         (keypress)="onItemKeyPress($event, choice)"
+         [appShowPlaceholders]="loading"
+    >
       <ng-container
         *ngTemplateOutlet="dropdownChoiceTemplateRef; context: { $implicit: choice, request: request }"></ng-container>
     </div>
