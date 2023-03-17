@@ -3,6 +3,11 @@ import { Component, Input } from '@angular/core';
 import { from, Observable, Subscription } from 'rxjs';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import {
+  fileAnnotationChangeDataLoadingMock,
+  fileAnnotationHistoryResponseLoadingMock,
+} from 'app/shared/mocks/loading/annotation';
 
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { FilesystemService } from '../services/filesystem.service';
@@ -17,7 +22,7 @@ export class ObjectAnnotationHistoryComponent {
   _object: FilesystemObject;
   page = 1;
   @Input() limit = 20;
-  log$: Observable<FileAnnotationHistory> = from([]);
+  logWithStatus$: Observable<PipeStatus<FileAnnotationHistory>> = from([]);
 
   protected subscriptions = new Subscription();
 
@@ -36,12 +41,14 @@ export class ObjectAnnotationHistoryComponent {
   }
 
   refresh() {
-    this.log$ = this.object ? this.filesystemService.getAnnotationHistory(this.object.hashId, {
+    this.logWithStatus$ = (this.object ? this.filesystemService.getAnnotationHistory(this.object.hashId, {
       page: this.page,
       limit: this.limit,
     }).pipe(
       this.errorHandler.create({label: 'Refresh file annotation history'}),
-    ) : from([]);
+    ) : from([])).pipe(
+      addStatus(new FileAnnotationHistory().update(fileAnnotationHistoryResponseLoadingMock)),
+    );
   }
 
   goToPage(page: number) {

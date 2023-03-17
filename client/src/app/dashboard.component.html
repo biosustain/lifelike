@@ -6,7 +6,7 @@
       </div>
 
       <div class="ml-auto">
-        <ng-container *ngIf="(buildInfo$ | async) as buildInfo; else buildInfoLoading">
+        <ng-container *ngIf="(buildInfo$ | async) as buildInfo">
           <span *ngIf="buildInfo.buildTimestamp !== 'undefined'; else undefinedTimestamp">
             Version:
             {{ buildInfo.buildTimestamp }}
@@ -15,12 +15,6 @@
             Version Not Available
           </ng-template>
         </ng-container>
-        <ng-template #buildInfoLoading>
-          <!-- Show placeholder while we load the build info -->
-          <span class="placeholder-box">
-            Version: Unknown
-          </span>
-        </ng-template>
       </div>
     </div>
   </div>

@@ -5,6 +5,8 @@ import { Subscription, combineLatest, Observable, BehaviorSubject } from 'rxjs';
 import { tap, map, switchMap, zip, shareReplay } from 'rxjs/operators';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
@@ -12,7 +14,6 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { ProjectList } from '../models/project-list';
 import { ProjectActions } from '../services/project-actions';
 import { ProjectsService } from '../services/projects.service';
-import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-starred-browser',
@@ -35,10 +36,7 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
     )),
     shareReplay({bufferSize: 1, refCount: true})
   );
-  fileList: FilesystemObjectList = new FilesystemObjectList([
-    filesystemObjectLoadingMock,
-    filesystemObjectLoadingMock
-  ]);
+  fileList: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
   projectList: ProjectList = new ProjectList();
 
   private loadTaskSubscription: Subscription;

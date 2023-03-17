@@ -15,11 +15,11 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { AuthActions, AuthSelectors } from 'app/auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
+import { appUserLoadingMock } from 'app/shared/mocks/loading/user';
 
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
-import { appUserLoadingMock } from '../../shared/mocks/loading/user';
 
 
 @Component({
@@ -40,12 +40,14 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<AppUser>(true, []);
 
-  constructor(private readonly accountService: AccountService,
-              private readonly modalService: NgbModal,
-              private readonly progressDialog: ProgressDialog,
-              private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler,
-              private store: Store<State> ) {
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly modalService: NgbModal,
+    private readonly progressDialog: ProgressDialog,
+    private readonly snackBar: MatSnackBar,
+    private readonly errorHandler: ErrorHandler,
+    private store: Store<State>,
+  ) {
   }
 
   ngOnInit() {
@@ -210,5 +212,4 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       }
     });
   }
-
 }

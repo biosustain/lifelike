@@ -15,13 +15,13 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { appUserLoadingMock } from 'app/shared/mocks/loading/user';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
 import { ProjectsService } from '../../services/projects.service';
 import { MultiCollaboratorUpdateRequest } from '../../schema';
-import { addStatus } from '../../../shared/pipes/add-status.pipe';
-import { appUserLoadingMock } from '../../../shared/mocks/loading/user';
 
 @Component({
   selector: 'app-project-collaborators-dialog',
@@ -34,7 +34,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
   collaboratorsWithStatus$ = this.collaborators$.pipe(
     addStatus(new ModelList([
-      new Collaborator().update({user: appUserLoadingMock})
+      new Collaborator().update({user: appUserLoadingMock, roleName: ''})
     ]))
   );
   readonly addForm: FormGroup = new FormGroup({

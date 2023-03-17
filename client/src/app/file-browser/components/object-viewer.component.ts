@@ -10,12 +10,12 @@ import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ModuleAwareComponent } from 'app/shared/modules';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
-import { addStatus, PipeStatus } from '../../shared/pipes/add-status.pipe';
-import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-object-viewer',
@@ -41,7 +41,7 @@ export class ObjectViewerComponent implements OnDestroy {
     this.subscriptions.add(this.route.params.subscribe(params => {
       this.object$ = this.filesystemService.get(params.hash_id);
       this.objectWithStatus$ = this.object$.pipe(
-        addStatus(filesystemObjectLoadingMock)
+        addStatus(filesystemObjectLoadingMock())
       );
     }));
   }

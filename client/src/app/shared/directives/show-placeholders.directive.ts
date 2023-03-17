@@ -5,6 +5,6 @@ import { makeid } from '../utils/identifiers';
 @Directive({
   selector: '[appShowPlaceholders]'
 })
-export class HasPlaceholderDirective {
+export class ShowPlaceholderDirective {
   @HostBinding('class.show-placeholders') @Input() appShowPlaceholders = true;
 }

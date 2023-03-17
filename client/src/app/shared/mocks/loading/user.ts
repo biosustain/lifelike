@@ -2,20 +2,21 @@ import { AppUser } from 'app/interfaces';
 import { RecursiveReadonly } from 'app/shared/utils/types';
 
 import { freezeDeep } from '../../utils';
+import { LOADING } from './utils';
 
-export const appUserLoadingMock: RecursiveReadonly<AppUser> = {
+export const appUserLoadingMock: AppUser = {
   /**
    * @deprecated
    */
   id: -1,
-  hashId: 'Loading',
+  hashId: LOADING,
   /**
    * @deprecated
    */
-  email: 'Loading',
-  firstName: 'Loading',
-  lastName: 'Loading',
-  username: 'Loading',
+  email: LOADING,
+  firstName: LOADING,
+  lastName: LOADING,
+  username: LOADING,
 
   /**
    * @deprecated

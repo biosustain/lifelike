@@ -10,11 +10,12 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
-import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-community-browser',
@@ -43,10 +44,7 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     limit: new FormControl(100),
   });
 
-  list: FilesystemObjectList = new FilesystemObjectList([
-    filesystemObjectLoadingMock,
-    filesystemObjectLoadingMock
-  ]);
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   private routerParamSubscription: Subscription;
   private loadTaskSubscription: Subscription;

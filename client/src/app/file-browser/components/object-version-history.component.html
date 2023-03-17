@@ -1,4 +1,4 @@
-<ng-container *ngIf="(log$ | async) as log; else loading">
+<ng-container *ngIf="(log$ | async) as log">
   <div *ngIf="!log.results.length" class="p-4 text-center">
     There is no history to show for this file.
   </div>
@@ -70,52 +70,3 @@
     </div>
   </ng-container>
 </ng-container>
-<ng-template #loading>
-  <div class="split-view d-flex">
-    <div class="split-view-left">
-      <table class="table table-selectable">
-        <colgroup>
-          <col style="width: 1%">
-          <col style="width: 1%">
-        </colgroup>
-        <thead>
-        <tr>
-          <th>Entry</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>
-            <div class="custom-control custom-checkbox">
-              <span class="placeholder-box"></span>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="custom-control custom-checkbox">
-              <span class="placeholder-box"></span>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="custom-control custom-checkbox">
-              <span class="placeholder-box"></span>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="custom-control custom-checkbox">
-              <span class="placeholder-box"></span>
-            </div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="split-view-right flex-fill">
-    </div>
-  </div>
-</ng-template>

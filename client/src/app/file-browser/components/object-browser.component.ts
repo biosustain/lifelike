@@ -15,14 +15,15 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { ProjectsService } from '../services/projects.service';
-import { addStatus } from '../../shared/pipes/add-status.pipe';
-import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
+import { mockArrayOf } from '../../shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-object-browser',
@@ -100,7 +101,11 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     shareReplay(1)
   );
   objectWithStatus$ = this.object$.pipe(
-    addStatus(filesystemObjectLoadingMock)
+    addStatus(
+      filesystemObjectLoadingMock(
+        mockArrayOf(filesystemObjectLoadingMock)
+      )
+    )
   );
 
   sourceData$ = defer(() => this.object$.pipe(

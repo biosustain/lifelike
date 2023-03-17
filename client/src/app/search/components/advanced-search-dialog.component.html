@@ -38,20 +38,13 @@
         ></app-hierarchy-search-tree>
       </div>
       <ng-template #hierarchyNotLoaded>
-        <div class="d-flex justify-content-between alert alert-danger" *ngIf="hierarchyError; else loadingPlaceholders">
+        <div class="d-flex justify-content-between alert alert-danger" *ngIf="hierarchyError">
           <div class="d-flex align-items-center">
             <i class="fas fa-exclamation-circle mr-2"></i>
             Something went wrong retrieving the file structure!
           </div>
           <button class="btn btn-secondary" type="button" (click)="getFileHierarchy()">Try Again</button>
         </div>
-        <ng-template #loadingPlaceholders>
-          <div class="d-flex flex-column">
-            <span class="placeholder-box w-25 mb-2">Loading loading</span>
-            <span class="placeholder-box w-25 mb-2">Loading loading</span>
-            <span class="placeholder-box w-25">Loading loading</span>
-          </div>
-        </ng-template>
       </ng-template>
     </div>
 

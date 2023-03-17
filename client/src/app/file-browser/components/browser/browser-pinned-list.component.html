@@ -16,7 +16,7 @@
         <!-- Content -->
         <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
             <ng-container *ngIf="(list.results.view$ | async).length; else noResults">
-              <div class="flex-fill overflow-auto">
+              <div class="flex-fill overflow-auto" [appShowPlaceholders]="status.placeholdersShown">
                 <app-object-list [objects]="list.results"
                                  [appLinks]="true"
                                  [forEditing]="false"

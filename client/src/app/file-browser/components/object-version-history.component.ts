@@ -5,6 +5,7 @@ import { Observable, ReplaySubject, forkJoin, iif, of, BehaviorSubject, combineL
 import { map, tap, switchMap, distinctUntilChanged, first, defaultIfEmpty, shareReplay } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { addStatus } from 'app/shared/pipes/add-status.pipe';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectVersionHistory } from '../models/object-version';
@@ -97,6 +98,9 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
       )
     ),
     this.errorHandler.create({label: 'Get object version history'})
+  );
+  logWithStatus$ = this.log$.pipe(
+    addStatus({} as ObjectVersionHistory)
   );
 
   registerOnChange(fn): void {

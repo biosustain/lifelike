@@ -60,7 +60,10 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     };
 
     readonly results = new CollectionModel<GlobalAnnotationListItem>(
-      [globalAnnotationListItemLoadingMock, globalAnnotationListItemLoadingMock],
+      [
+        globalAnnotationListItemLoadingMock(),
+        globalAnnotationListItemLoadingMock()
+      ],
       { multipleSelection: true }
     );
 

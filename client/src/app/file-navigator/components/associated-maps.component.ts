@@ -13,7 +13,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { CreateActionOptions } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { MimeTypes } from 'app/shared/constants';
-import { filesystemObjectLoadingMock } from '../../shared/mocks/loading/file';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-associated-maps',
@@ -33,10 +34,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   );
 
   hashId: string;
-  list: FilesystemObjectList = new FilesystemObjectList([
-    filesystemObjectLoadingMock,
-    filesystemObjectLoadingMock,
-  ]);
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   constructor(protected readonly filesystemService: FilesystemService,
               protected readonly filesystemObjectActions: FilesystemObjectActions,

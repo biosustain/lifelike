@@ -6,8 +6,13 @@ import { AppUser } from 'app/interfaces';
   selector: 'app-user',
   template: `
     <ng-container *ngIf="user; else noUser">
-      <span [ngbPopover]="infoPopover" popoverTitle="User Information" triggers="hover"
-            container="body">
+      <span
+        [ngbPopover]="infoPopover"
+        popoverTitle="User Information"
+        triggers="hover"
+        container="body"
+        class="placeholder-slot"
+      >
         <ng-container *ngIf="highlightTerms && highlightTerms.length; else noHighlight">
           <app-term-highlight [text]="user.firstName + ' ' + user.lastName"
                               [highlightTerms]="highlightTerms"

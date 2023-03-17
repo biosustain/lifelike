@@ -24,15 +24,6 @@
      (keyup)="onDropdownKeyUpPressed($event)" appMouseNavigable
      [navigationWrap]="false" (navigationEndReached)="focusInput()"
      style="z-index: 10000">
-  <ng-container *ngIf="loading; else choices">
-    <div class="dropdown-item-text">
-      <span class="placeholder-box"></span>
-    </div>
-    <div class="dropdown-item-text">
-      <span class="placeholder-box">Load load</span>
-    </div>
-  </ng-container>
-  <ng-template #choices>
     <div *ngIf="!unselectedChoices.length" class="dropdown-item-text text-muted">
       <ng-container *ngIf="noResultsTemplateRef != null; else noResultsTextDisplay">
         <ng-container
@@ -49,5 +40,4 @@
       <ng-container
         *ngTemplateOutlet="dropdownChoiceTemplateRef; context: { $implicit: choice, request: request }"></ng-container>
     </div>
-  </ng-template>
 </div>

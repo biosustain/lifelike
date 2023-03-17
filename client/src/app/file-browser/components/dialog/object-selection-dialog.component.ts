@@ -8,11 +8,11 @@ import { iif, of, defer, Observable } from 'rxjs';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 
 import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';
-import { addStatus, PipeStatus } from '../../../shared/pipes/add-status.pipe';
-import { filesystemObjectLoadingMock } from '../../../shared/mocks/loading/file';
 
 @Component({
   selector: 'app-object-selection-dialog',
@@ -31,7 +31,7 @@ export class ObjectSelectionDialogComponent
   }
 
   objectWithStatus$: Observable<PipeStatus<FilesystemObject>> = this.objectSelect.object$.pipe(
-    addStatus(filesystemObjectLoadingMock),
+    addStatus(filesystemObjectLoadingMock()),
   );
 
   @Input()

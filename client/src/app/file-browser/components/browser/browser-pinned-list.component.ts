@@ -5,7 +5,8 @@ import { Subscription } from 'rxjs';
 import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-list';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { filesystemObjectLoadingMock } from '../../../shared/mocks/loading/file';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 
 @Component({
@@ -22,10 +23,7 @@ export class BrowserPinnedListComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList([
-    filesystemObjectLoadingMock,
-    filesystemObjectLoadingMock
-  ]);
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   constructor(protected readonly filesystemService: FilesystemService) {}
 

@@ -75,6 +75,8 @@ def check_version_header():
     API version content negotiation. Check if the client requested a specific version,
     if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
     """
+    import time
+    time.sleep(15)
     requested_version = request.headers.get("Accept-Lifelike-Version")
     if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
         raise OutdatedVersionException(

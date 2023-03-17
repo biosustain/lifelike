@@ -3,7 +3,7 @@
     <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
       <div class="border-bottom p-4 text-muted d-flex align-items-start">
         <div class="flex-fill">
-          <span style="white-space: pre-line">{{ parent.description }}</span>
+          <span style="white-space: pre-line" appHasPlaceholder>{{ parent.description }}</span>
           <a href="#"
              ngbTooltip="Edit Folder Description"
              container="body"
@@ -48,64 +48,6 @@
 
       <!-- Results -->
       <tbody>
-      <!-- Placeholders -->
-        <ng-template #placeholders>
-          <tr *ngFor="let _ of [1,2]">
-            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'">
-              <div class="custom-control custom-checkbox overflow-hidden">
-                <input type="checkbox" disabled class="custom-control-input">
-              </div>
-            </td>
-
-            <td *ngIf="showStars" class="align-middle text-nowrap overflow-hidden">
-              <div class="d-flex align-items-center" container="body">
-                <div class="d-inline-block mr-1">
-                  <i class="fas fa-star text-secondary"></i>
-                </div>
-              </div>
-            </td>
-
-            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'">
-              <div class="d-flex align-items-center">
-                <div class="d-inline-block mr-1">
-                  <i class="fa-fw text-icon"></i>
-                </div>
-
-                <div class="d-inline-block text-truncate">
-                  <span class="placeholder-box">Loading loading</span>
-                </div>
-              </div>
-            </td>
-
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-              <div class="text-truncate">
-                <span class="placeholder-box">Loading</span>
-              </div>
-            </td>
-
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-              <span class="placeholder-box"></span>
-            </td>
-
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
-              <span class="placeholder-box"></span>
-            </td>
-
-            <td class="align-middle text-nowrap overflow-hidden text-truncate">
-              <span class="placeholder-box"></span>
-            </td>
-
-            <td>
-              <div class="d-flex align-items-end" *ngIf="objectControls">
-                <button class="btn btn-sm" disabled>
-                  <i class="fas fa-cog fa-fw"></i>
-                  <i class="fas fa-caret-down fa-fw"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-        <ng-container *ngIf="objects; else placeholders">
           <tr *ngFor="let object of objects.view$ | async; index as objectIndex"
               tabindex="0"
               [class.active]="objects.isSelected(object)"
@@ -148,7 +90,9 @@
                 <div class="d-inline-block text-truncate">
                   <a [appLink]="object.getCommands(forEditing)"
                      [handleClick]="false"
-                     (click)="openObject(object); $event.preventDefault()">
+                     (click)="openObject(object); $event.preventDefault()"
+                     appHasPlaceholder
+                  >
                     <ng-container *ngIf="!object.isDirectory; else dirLabel">{{ object.effectiveName }}</ng-container>
                     <ng-template #dirLabel>
                       <strong>{{ object.effectiveName }}</strong>
@@ -192,21 +136,26 @@
                     popoverTitle="Annotation Status"
                     [ngbPopover]="object.annotationsTooltipContent"
                     [disablePopover]="!object.annotationsTooltipContent">
-                <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
-                  <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
-                </ng-container>
-                {{ (object.annotationsDate | date: 'short') || 'No annotations'}}
+                <span appHasPlaceholder>
+                  <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
+                    <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+                  </ng-container>
+                  {{ (object.annotationsDate | date: 'short') || 'No annotations'}}
+                </span>
               </div>
             </td>
 
             <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell" (click)="objects.toggle(object)">
-              <div *ngIf="object.size" class="text-truncate">
+              <span *ngIf="object.size"
+                    class="text-truncate"
+                    appHasPlaceholder
+              >
                 {{ object.size }}
-              </div>
+              </span>
             </td>
 
             <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate" (click)="objects.toggle(object)">
-              {{ object.updatedTimestamp | date:'shortDate'}}
+              <span appHasPlaceholder>{{ object.updatedTimestamp | date:'shortDate'}}</span>
             </td>
 
             <td class="align-middle text-nowrap overflow-hidden text-truncate" (click)="objects.toggle(object)">
@@ -231,7 +180,6 @@
               </div>
             </td>
           </tr>
-        </ng-container>
       </tbody>
     </table>
 

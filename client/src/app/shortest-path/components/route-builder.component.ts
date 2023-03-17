@@ -6,6 +6,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { ShortestPathService } from '../services/shortest-path.service';
 import { DisplayType } from './route-display.component';
+import { loadingText } from '../../shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-route-builder',
@@ -24,8 +25,8 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
   routeBuilderOpen: boolean;
 
   queries: string[][] = [
-    ['Loading', 'Loading Loading'],
-    ['Loading Loading', 'Loading'],
+    [loadingText(), loadingText()],
+    [loadingText(), loadingText()]
   ];
 
   constructor(

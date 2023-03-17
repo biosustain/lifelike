@@ -14,51 +14,48 @@
         </div>
 
         <ng-container *ngIf="(projectList$ | async) as projectList">
-            <ng-container *ngIf="projectList.error">
-                <app-module-error [error]="projectList.error">
-                </app-module-error>
-            </ng-container>
-
-            <ng-container *ngIf="projectList.loading || projectList.value">
-                <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
-                    <app-object-tile-deck
-                            [objects]="projectList.value.results"
-                            [showAuthor]="false"
-                    >
-                        <ng-template let-project #tileToolbar>
-                            <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
-                                <i class="fas fa-star text-warning"></i>
+            <app-module-error *ngIf="projectList.error; else content" [error]="projectList.error">
+            </app-module-error>
+            <ng-template #content>
+              <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
+                <app-object-tile-deck
+                        [objects]="projectList.value.results"
+                        [showAuthor]="false"
+                        [ngClass]="{ 'show-placeholders': projectList.loading }"
+                >
+                    <ng-template let-project #tileToolbar>
+                        <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
+                            <i class="fas fa-star text-warning"></i>
+                        </button>
+                        <button *ngIf="project.public"
+                                class="btn btn-sm"
+                                ngbTooltip="This project is public and can be viewed by any logged-in user."
+                                container="body">
+                            <i class="fa fa-fw text-icon fa-globe"></i>
+                        </button>
+                        <div ngbDropdown class="d-inline-block ml-auto" container="body">
+                            <button class="btn btn-sm" ngbDropdownToggle>
+                                <i class="fas fa-cog fa-fw"></i>
                             </button>
-                            <button *ngIf="project.public"
-                                    class="btn btn-sm"
-                                    ngbTooltip="This project is public and can be viewed by any logged-in user."
-                                    container="body">
-                                <i class="fa fa-fw text-icon fa-globe"></i>
-                            </button>
-                            <div ngbDropdown class="d-inline-block ml-auto" container="body">
-                                <button class="btn btn-sm" ngbDropdownToggle>
-                                    <i class="fas fa-cog fa-fw"></i>
-                                </button>
-                                <div ngbDropdownMenu>
-                                    <app-project-menu [project]="project"></app-project-menu>
-                                </div>
+                            <div ngbDropdownMenu>
+                                <app-project-menu [project]="project"></app-project-menu>
                             </div>
-                        </ng-template>
-                    </app-object-tile-deck>
+                        </div>
+                    </ng-template>
+                </app-object-tile-deck>
 
-                    <div class="mt-4">
+                <div class="mt-4">
                         <app-pagination [paging]="paging$.value" [collectionSize]="projectList.value.collectionSize"
                                         (pageChange)="this.paging$.next($event)"></app-pagination>
                     </div>
-                </ng-container>
-
-                <ng-template #noProjectResults>
-                    <div class="my-4">
-                        You have no projects. Create projects to store collections of
-                        documents and knowledge maps.
-                    </div>
-                </ng-template>
-            </ng-container>
+              </ng-container>
+            </ng-template>
+            <ng-template #noProjectResults>
+                <div class="my-4">
+                    You have no projects. Create projects to store collections of
+                    documents and knowledge maps.
+                </div>
+            </ng-template>
         </ng-container>
     </div>
 </div>

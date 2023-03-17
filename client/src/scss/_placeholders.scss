@@ -1,20 +1,7 @@
+@import 'src/scss/variables';
+
 $placeholder-bg: $gray-200;
 $placeholder-border-radius: $border-radius;
-
-.placeholder-box {
-  position: relative;
-  display: inline-block;
-  background: $placeholder-bg;
-  color: transparent;
-  min-height: 1rem;
-  border-radius: $placeholder-border-radius;
-  user-select: none;
-  animation: 1s linear infinite alternate placeholder-pulse;
-
-  &:empty:before {
-    content: "Loading Loading";
-  }
-}
 
 @keyframes placeholder-pulse {
   0% {
@@ -26,5 +13,27 @@ $placeholder-border-radius: $border-radius;
   }
 }
 
-show-placeholders
-placeholder-slot
+.show-placeholders {
+  pointer-events: none;
+
+  .placeholder-slot {
+    position: relative;
+    background: $placeholder-bg;
+    color: transparent !important;
+    border-radius: $placeholder-border-radius;
+    user-select: none;
+    animation: 1s linear infinite alternate placeholder-pulse;
+
+    &:empty:before {
+      content: "Loading Loading";
+    }
+
+    .text-truncate {
+      text-overflow: none;
+    }
+  }
+
+  .placeholder-slot .text-truncate,.text-truncate .placeholder-slot {
+    text-overflow: none !important;
+  }
+}
