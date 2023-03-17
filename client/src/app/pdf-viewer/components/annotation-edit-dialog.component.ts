@@ -3,7 +3,7 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { isNil, isEqual, isEmpty, pick, partialRight, fromPairs } from 'lodash-es';
-import { Subject, iif, of } from 'rxjs';
+import { Subject, iif, of, defer } from 'rxjs';
 import { takeUntil, map, shareReplay, distinctUntilChanged, switchMap, tap, filter, startWith } from 'rxjs/operators';
 
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
@@ -128,9 +128,11 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent<Ann
 
   getFormFieldObservable(fieldName: string) {
     const field = this.form.get(fieldName);
-    return field.valueChanges.pipe(
-      startWith(field.value),
-      distinctUntilChanged()
+    return defer(() =>
+      field.valueChanges.pipe(
+        startWith(field.value),
+        distinctUntilChanged()
+      )
     );
   }
 
