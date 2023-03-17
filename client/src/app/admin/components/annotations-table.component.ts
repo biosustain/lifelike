@@ -25,7 +25,7 @@ import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.
 import { downloader } from 'app/shared/DOMutils';
 import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 import { globalAnnotationListItemLoadingMock } from 'app/shared/mocks/loading/annotation';
-import { mockArrayOf } from '../../shared/mocks/loading/utils';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 @Component({
     selector: 'app-annotations-table',

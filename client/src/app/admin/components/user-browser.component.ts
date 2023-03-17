@@ -44,7 +44,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     private readonly progressDialog: ProgressDialog,
     private readonly snackBar: MatSnackBar,
     private readonly errorHandler: ErrorHandler,
-              private store: Store<State> ) {
+    private store: Store<State>
+  ) {
   }
 
   ngOnInit() {
