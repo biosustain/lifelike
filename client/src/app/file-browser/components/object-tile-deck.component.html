@@ -18,7 +18,8 @@
     <div class="text-truncate text-center">
       <a [appLink]="o.getCommands(forEditing)"
          [newTab]="newTabObject"
-         class="d-block text-truncate placeholder-slot"
+         class="d-block text-truncate"
+         appHasPlaceholder
          [appTextTruncateToTooltip]="o.filename"
          [scroll$]="bodyObserver.scroll$"
       >

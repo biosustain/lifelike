@@ -13,27 +13,39 @@ $placeholder-border-radius: $border-radius;
   }
 }
 
+// Class beeing added by 'appShowPlaceholders' attribute when we want to render content as placeholder
+// This class should not be assigned manually!!!
 .show-placeholders {
-  pointer-events: none;
+  background-color: deeppink !important; // good for visual debugging
 
+  // Actual placeholder styling assigned by 'appHasPlaceholder' attribute
+  // It is better to assign it with the directive to cover all edge cases
   .placeholder-slot {
+    background-color: deepskyblue !important; // good for visual debugging
     position: relative;
     background: $placeholder-bg;
     color: transparent !important;
     border-radius: $placeholder-border-radius;
+    pointer-events: none;
     user-select: none;
     animation: 1s linear infinite alternate placeholder-pulse;
 
+    // If placeholder slot is empty it's most likely cause of missing value in loading mock
+    // catch and handle gracefully
     &:empty:before {
       content: "Loading Loading";
     }
 
-    .text-truncate {
-      text-overflow: none;
+    // icon within shown placeholder slot should not be visible
+    i.fas {
+      color: transparent !important;
     }
   }
 
-  .placeholder-slot .text-truncate,.text-truncate .placeholder-slot {
-    text-overflow: none !important;
+  // if placeholder is truncated dont show (black) ellipsis
+  .placeholder-slot .text-truncate,
+  // works only in newest browsers but it is just an eye candy
+  .text-truncate:has(.placeholder-slot) {
+    text-overflow: clip !important;
   }
 }

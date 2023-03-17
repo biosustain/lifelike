@@ -14,9 +14,9 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
+import { LOADING } from 'app/shared/mocks/loading/utils';
 
 import { addStatus, PipeStatus } from '../../pipes/add-status.pipe';
-import { LOADING } from 'app/shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-object-menu',

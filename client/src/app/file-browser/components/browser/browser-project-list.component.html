@@ -21,7 +21,7 @@
                 <app-object-tile-deck
                         [objects]="projectList.value.results"
                         [showAuthor]="false"
-                        [ngClass]="{ 'show-placeholders': projectList.loading }"
+                        [appShowPlaceholders]="projectList.loading"
                 >
                     <ng-template let-project #tileToolbar>
                         <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">

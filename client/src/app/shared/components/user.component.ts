@@ -11,7 +11,7 @@ import { AppUser } from 'app/interfaces';
         popoverTitle="User Information"
         triggers="hover"
         container="body"
-        class="placeholder-slot"
+        appHasPlaceholder
       >
         <ng-container *ngIf="highlightTerms && highlightTerms.length; else noHighlight">
           <app-term-highlight [text]="user.firstName + ' ' + user.lastName"

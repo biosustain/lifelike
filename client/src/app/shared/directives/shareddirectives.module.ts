@@ -20,11 +20,15 @@ import { UidDirective } from './uid.directive';
 import { AutoGrowDirective } from './auto-grow.directive';
 import { InnerXMLDirective } from './innerXML.directive';
 import { AutoCloseTooltipOutOfViewDirective } from './auto-close-tooltip-out-of-view.directive';
-import { HasPlaceholderDirective } from './has-placeholder.directive';
-import { ShowPlaceholderDirective } from './show-placeholders.directive';
+import {
+  HasPlaceholderDirective,
+  InteractiveInterfaceHasPlaceholderDirective,
+  ShowPlaceholderDirective,
+} from './placeholder.directive';
 
 const directives = [
   HasPlaceholderDirective,
+  InteractiveInterfaceHasPlaceholderDirective,
   ShowPlaceholderDirective,
   AbstractLinkDirective,
   DebounceClickDirective,

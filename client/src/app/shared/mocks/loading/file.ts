@@ -34,7 +34,6 @@ export const filesystemObjectLoadingMock:
     filename: loadingText(),
     effectiveName: loadingText(),
     user: appUserLoadingMock,
-    description: loadingText(),
     mimeType: LOADING,
     doi: LOADING,
     public: false,
@@ -70,7 +69,6 @@ export const projectPrivilegesLoadingMock: ProjectPrivileges = {
 
 export const projectImplLoadingMock: () => ProjectImpl = () => {
   const mock = {
-    hashId: LOADING,
     name: LOADING,
     starred: false,
     public: false,

@@ -9,13 +9,12 @@
        [newTab]="newTab"
        [appFSObjectTarget]="item.isDirectory ? item : null"
        (refreshRequest)="refreshRequest.emit()"
-       class="placeholder-slot"
+       appHasPlaceholder
     >
       <app-project-icon *ngIf="!item.parent"
                         class="mr-1"
                         size="16"
                         [project]="item.project"
-                        class="placeholder-slot"
       >
       </app-project-icon>
       {{ item.isProjectRoot && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
