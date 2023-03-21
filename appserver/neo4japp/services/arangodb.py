@@ -17,7 +17,12 @@ def convert_datetime(date_val: str) -> datetime:
     except ValueError:
         # If the above doesn't work, then the inclusion probably uses the time-zone format, which
         # is the correct one.
-        return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%S.%fZ')
+        try:
+            return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            # Finally, try a slight variation of the above but with the "[UTC]" suffix. Some
+            # versions of our Arango DBs use this format for some reason.
+            return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%SZ[UTC]')
 
 
 def get_version(client: ArangoClient):
