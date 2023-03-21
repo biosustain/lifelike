@@ -12,7 +12,7 @@ import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 })
 export class DashboardComponent {
   readonly buildInfoWithStatus$: Observable<PipeStatus<BuildInfo>> = this.metadataService.getBuildInfo().pipe(
-    addStatus({})
+    addStatus({} as BuildInfo)
   );
 
   constructor(private readonly metadataService: MetaDataService) {}

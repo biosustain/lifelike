@@ -35,7 +35,7 @@ export class AdvancedSearchDialogComponent {
   @Input() typeChoices: SearchType[] = [];
 
   fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
-  try$ = new BehaviorSubject(undefined);
+  try$ = new BehaviorSubject<any>(undefined);
   fileHierarchyTree$: Observable<TreeNode<FilesystemObject>[]> = this.try$.pipe(
     switchMap(() =>
       this.filesystemService.getHierarchy(true).pipe(

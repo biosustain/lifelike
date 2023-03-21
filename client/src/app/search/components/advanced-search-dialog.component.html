@@ -36,7 +36,7 @@
           <i class="fas fa-exclamation-circle mr-2"></i>
           Something went wrong retrieving the file structure!
         </div>
-        <button class="btn btn-secondary" type="button" (click)="try$.next()">Try Again</button>
+        <button class="btn btn-secondary" type="button" (click)="try$.next($event)">Try Again</button>
       </div>
       <ng-template #content>
         <div *ngIf="fileHierarchyTreeWithStatus.value as fileHierarchyTree"
