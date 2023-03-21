@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
+import { select, Store } from '@ngrx/store';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { isNil, isEqual, isEmpty, pick, partialRight, fromPairs } from 'lodash-es';
-import { Subject, iif, of, defer } from 'rxjs';
-import { takeUntil, map, shareReplay, distinctUntilChanged, switchMap, tap, filter, startWith } from 'rxjs/operators';
+import { isEqual, isEmpty, pick, partialRight, fromPairs } from 'lodash-es';
+import { Observable, Subject, of, defer } from 'rxjs';
+import { takeUntil, map, shareReplay, distinctUntilChanged, switchMap, tap, startWith } from 'rxjs/operators';
 
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, DatabaseType, EntityType } from 'app/shared/annotation-types';
+import { AuthSelectors } from 'app/auth/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/links';
@@ -29,16 +32,23 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent<Ann
   @Input() keywords: string[];
   @Input() coords: number[][];
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+  constructor(
+    private readonly store: Store<State>,
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog
+  ) {
     super(modal, messageDialog);
     this.updateIdField$.subscribe();
     this.updateIncludeGlobally$.subscribe();
+
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   isTextEnabled = false;
   sourceLinks: Hyperlink[] = [];
   destroyed$ = new Subject();
 
+  readonly userRoles$: Observable<string[]>;
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
     url: 'The provided URL is not valid.',

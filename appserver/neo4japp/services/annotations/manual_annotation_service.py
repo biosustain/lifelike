@@ -618,19 +618,12 @@ class ManualAnnotationService:
                     )
                 }
 
-                try:
-                    query_fn, params = queries[entity_type]
-                except KeyError:
-                    current_app.logger.error(
-                        f'Failed to create global inclusion, type {entity_type} unrecognized.',
-                        extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-                    )
-                    raise
-                try:
-                    if not query_fn:
-                        query_fn = get_create_***ARANGO_DB_NAME***_global_inclusion_query
-                        params = all_params
+                query_fn, params = queries.get(
+                    entity_type,
+                    (get_create_***ARANGO_DB_NAME***_global_inclusion_query, all_params)
+                )
 
+                try:
                     execute_arango_query(
                         db=get_db(self.arango_client),
                         query=query_fn(),
@@ -721,14 +714,7 @@ class ManualAnnotationService:
             EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, other_params)
         }
 
-        try:
-            query_fn, params = queries[entity_type]
-        except KeyError:
-            current_app.logger.error(
-                f'Failed to create global inclusion, entity type {entity_type} unrecognized.',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
-            raise
+        query_fn, params = queries.get(entity_type, (None, None))
         try:
             check = execute_arango_query(
                 db=get_db(self.arango_client),
@@ -743,6 +729,7 @@ class ManualAnnotationService:
                 f'knowledge graph failed with query: {query_fn()}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
+            raise
 
         if check['node_exist']:
             return check
