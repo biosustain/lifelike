@@ -9,20 +9,23 @@ from typing import Any, Dict, List, Optional
 
 
 def convert_datetime(date_val: str) -> datetime:
-    try:
-        # The inclusions from the original data load don't seem to have timezone info, so try
-        # creating a datetime object without it first. This is likely a bug, as the inclusion_date
-        # is also not a date object but a raw string.
-        return datetime.strptime(date_val, '%Y-%m-%d %H:%M:%S')
-    except ValueError:
-        # If the above doesn't work, then the inclusion probably uses the time-zone format, which
-        # is the correct one.
+    # 2021-08-17T23:32Z[UTC]
+    valid_formats = [
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%dT%H:%M:%S.%fZ',
+        '%Y-%m-%dT%H:%M:%SZ[UTC]',
+        '%Y-%m-%dT%H:%MZ[UTC]'
+    ]
+    for format in valid_formats:
         try:
-            return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%S.%fZ')
+            # The inclusions from the original data load don't seem to have timezone info, so try
+            # creating a datetime object without it first. This is likely a bug, as the inclusion_date
+            # is also not a date object but a raw string.
+            return datetime.strptime(date_val, format)
         except ValueError:
-            # Finally, try a slight variation of the above but with the "[UTC]" suffix. Some
-            # versions of our Arango DBs use this format for some reason.
-            return datetime.strptime(date_val, '%Y-%m-%dT%H:%M:%SZ[UTC]')
+            continue
+    raise ValueError(f'time data {date_val} does not match any of the accepted formats.')
+
 
 
 def get_version(client: ArangoClient):
