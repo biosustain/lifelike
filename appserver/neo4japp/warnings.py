@@ -1,11 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Union, Optional
 
 from neo4japp.base_server_exception import BaseServerException
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerWarning(Warning, BaseServerException):
     """
     Create a new warning.
@@ -20,6 +20,10 @@ class ServerWarning(Warning, BaseServerException):
     code: Union[HTTPStatus, int] = 199
 
 
-@dataclass(repr=False)
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass(repr=False, frozen=True)
 class ContentValidationWarning(ServerWarning):
     pass

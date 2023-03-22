@@ -1,16 +1,18 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from http import HTTPStatus
-from typing import Union, Optional
+from typing import Union, Optional, cast
 
+from neo4japp.util import get_transaction_id
+from neo4japp.utils.dataclass import TemplateDescriptor
 from neo4japp.base_server_exception import BaseServerException
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class HandledException(Exception):
     exception: Exception
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerException(Exception, BaseServerException):
     """
     Create a new exception.
@@ -24,111 +26,138 @@ class ServerException(Exception, BaseServerException):
     message: Optional[str] = "Looks like something went wrong!"
     code: Union[HTTPStatus, int] = HTTPStatus.INTERNAL_SERVER_ERROR
 
+    @property
+    def type(self):
+        return type(self).__name__
 
-@dataclass
+    @property
+    def transaction_id(self):
+        return get_transaction_id()
+
+    def __str__(self):
+        lines = [f'<Exception {self.transaction_id}> {self.title}: {self.message}']
+        try:
+            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+        except Exception:
+            pass
+        return '\n'.join(lines)
+
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass(repr=False, frozen=True)
 class DeleteNonEmpty(ServerException):
     pass
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class StatisticalEnrichmentError(ServerException):
     pass
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message: Optional[str] = None
+    message: Optional[str] = cast(
+        Optional[str],
+        TemplateDescriptor(
+            default='There was a problem annotating "$term". '
+                    'Please make sure the term is correct, '
+                    'including correct spacing and no extra characters.'
+        )
+    )
 
     def __post_init__(self):
-        if self.message is None:
-            if not self.term:
-                raise NotImplementedError("To render default Annotation error, term must be given.")
-            self.message = \
-                f'There was a problem annotating "{self.term}". ' \
-                f'Please make sure the term is correct, ' \
-                f'including correct spacing and no extra characters.'
+        if self.message is None and not self.term:
+            raise NotImplementedError("To render default Annotation error, term must be given.")
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class LMDBError(ServerException):
     pass
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class FileUploadError(ServerException):
     pass
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class ContentValidationError(ServerException):
     title: str = 'Content validation error'
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class NotAuthorized(ServerException):
-    message = 'You do not have sufficient privileges.'
+    message: str = 'You do not have sufficient privileges.'
     code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class CannotCreateNewUser(ServerException):
     title = 'Cannot Create New User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class CannotCreateNewProject(ServerException):
     title = 'Cannot Create New Project'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class FailedToUpdateUser(ServerException):
     title = 'Failed to Update User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class RecordNotFound(ServerException):
     code: Union[HTTPStatus, int] = HTTPStatus.NOT_FOUND
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class InvalidArgument(ServerException):
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
+class JWTAuthTokenException(JWTTokenException):
+    """Signals the JWT auth token has an issue"""
+    pass
+
+
+@dataclass(repr=False, frozen=True)
 class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
     pass
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
     code: Union[HTTPStatus, int] = HTTPStatus.NOT_ACCEPTABLE
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class UnsupportedMediaTypeError(ServerException):
     """Signals that the client sent a request for an unsupported media type."""
     code: Union[HTTPStatus, int] = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
-    title = 'Failed to Authenticate'
+    title: str = 'Failed to Authenticate'
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
 
 
@@ -157,7 +186,8 @@ class AuthenticationError(ServerException):
 #                              }
 #                          })
 
-@dataclass
+
+@dataclass(repr=False, frozen=True)
 class AccessRequestRequiredError(ServerException):
     """
     Raised when access needs to be requested for a project. The end goal is to
@@ -173,14 +203,14 @@ class AccessRequestRequiredError(ServerException):
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
-    message: Optional[str] = None
+    message: Optional[str] = cast(
+        Optional[str],
+        TemplateDescriptor(
+            default='You have "$curr_access" access. Please request "$req_access" '
+                    'access at minimum for this content.'
+        )
+    )
     code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
-
-    def __post_init__(self):
-        if self.message is None:
-            self.message = \
-                f'You have "{self.curr_access}" access. Please request "{self.req_access}" ' \
-                f'access at minimum for this content.'
 
 
 class GDownException(Exception):
