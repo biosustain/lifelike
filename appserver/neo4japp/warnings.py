@@ -3,7 +3,7 @@ from http import HTTPStatus
 from typing import Union, Tuple, Optional, List
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerWarning(Warning):
     """
     Create a new warning.
@@ -32,22 +32,6 @@ class ServerWarning(Warning):
         return asdict(self)
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class ContentValidationWarning(ServerWarning):
     pass
-
-
-@dataclass
-class ServerWarningGroup(ServerWarning):
-    warnings: Optional[List[ServerWarning]] = None
-    title: str = "Server returned group of warnings"
-
-    def __post_init__(self, *args, **kwargs):
-        if self.warnings:
-            self.additional_msgs = tuple((warning.title for warning in self.warnings))
-
-    def __str__(self):
-        compose = f'<WarningGroup> {self.title}:{self.message}'
-        for warning in self.warnings:
-            compose += f'\n\t{warning}'
-        return compose

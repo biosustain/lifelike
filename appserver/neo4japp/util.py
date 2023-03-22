@@ -444,7 +444,7 @@ class Enumd(Enum):
 
 def warn(w: ServerWarning):
     if hasattr(g, 'warnings'):
-        g.warnings.append(w)
+        g.warnings.add(w)
     else:
         current_app.logging.warn(w)
 

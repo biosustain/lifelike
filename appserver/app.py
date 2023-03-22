@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 @app.before_request
 def init_exceptions_handling():
-    g.warnings = list()
+    g.warnings = set()
 
     g.transaction_id = request.headers.get('X-Transaction-Id')
     if not g.transaction_id:

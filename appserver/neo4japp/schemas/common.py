@@ -1,5 +1,7 @@
+import traceback
+
 import marshmallow.validate
-from flask import g
+from flask import current_app
 from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
@@ -60,15 +62,27 @@ class ErrorResponseSchema(CamelCaseSchema):
     type = fields.String()
     message = fields.String()
     additional_msgs = fields.List(fields.String())
-    stacktrace = fields.String()
     code = fields.Integer()
-    version = fields.String()
     transaction_id = fields.String()
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
         attribute='fields', allow_none=True
     )
+    version = fields.Method('get_version')
+
+    def get_version(self):
+        return current_app.config.get('GITHUB_HASH')
+
+    stacktrace = fields.Method('get_stacktrace')
+
+    def get_stacktrace(self, obj):
+        if current_app.config.get('FORWARD_STACKTRACE'):
+            return ''.join(
+                traceback.format_exception(
+                    etype=type(obj), value=obj, tb=obj.__traceback__
+                )
+            )
 
 
 class WarningResponseSchema(CamelCaseSchema):
@@ -77,14 +91,26 @@ class WarningResponseSchema(CamelCaseSchema):
     type = fields.String()
     message = fields.String()
     additional_msgs = fields.List(fields.String())
-    stacktrace = fields.String()
     code = fields.Integer()
-    version = fields.String()
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
         attribute='fields', allow_none=True
     )
+    version = fields.Method('get_version')
+
+    def get_version(self):
+        return current_app.config.get('GITHUB_HASH')
+
+    stacktrace = fields.Method('get_stacktrace')
+
+    def get_stacktrace(self, obj):
+        if current_app.config.get('FORWARD_STACKTRACE'):
+            return ''.join(
+                traceback.format_exception(
+                    etype=type(obj), value=obj, tb=obj.__traceback__
+                )
+            )
 
 
 class WarningSchema(CamelCaseSchema):

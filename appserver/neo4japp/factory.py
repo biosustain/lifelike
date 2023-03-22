@@ -246,14 +246,6 @@ def handle_error(ex):
         }
     )
 
-    ex.version = GITHUB_HASH
-    if current_app.config.get('FORWARD_STACKTRACE'):
-        ex.stacktrace = ''.join(
-            traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__
-            )
-        )
-
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
@@ -301,11 +293,6 @@ def handle_generic_error(code: int, ex: Exception):
         }
     )
 
-    newex.version = GITHUB_HASH
-    if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
-
     return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
@@ -327,11 +314,6 @@ def handle_generic_warning(code: int, ex: Warning):
             ).to_dict()
         }
     )
-
-    newex.version = GITHUB_HASH
-    if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(WarningResponseSchema().dump(newex)), newex.code
 
@@ -363,10 +345,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
         message = 'An error occurred with the provided input.'
 
     ex = ServerException(message=message, code=code, fields=fields)
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
 
-    ex.version = GITHUB_HASH
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 

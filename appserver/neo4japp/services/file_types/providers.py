@@ -269,7 +269,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             raise ValueError("Directories can't have content")
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class TextExtractionNotAllowedWarning(ServerWarning):
     title: str = \
         "Author of this PDF disallowed content extraction"
