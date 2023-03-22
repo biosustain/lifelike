@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 from http import HTTPStatus
-from typing import Union, Tuple, Optional, cast
+from typing import Union, Tuple, Optional
 
 from neo4japp.util import get_transaction_id
 from neo4japp.utils.dataclass import TemplateDescriptor
@@ -61,13 +61,10 @@ class StatisticalEnrichmentError(ServerException):
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message: Optional[str] = cast(
-        Optional[str],
-        TemplateDescriptor(
-            default='There was a problem annotating "$term". '
-                    'Please make sure the term is correct, '
-                    'including correct spacing and no extra characters.'
-        )
+    message = TemplateDescriptor(
+        default='There was a problem annotating "$term". '
+                'Please make sure the term is correct, '
+                'including correct spacing and no extra characters.'
     )
 
     def __post_init__(self):
@@ -184,12 +181,9 @@ class AccessRequestRequiredError(ServerException):
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
-    message: Optional[str] = cast(
-        Optional[str],
-        TemplateDescriptor(
-            default='You have "$curr_access" access. Please request "$req_access" '
-                    'access at minimum for this content.'
-        )
+    message: TemplateDescriptor = TemplateDescriptor(
+        default='You have "$curr_access" access. Please request "$req_access" '
+                'access at minimum for this content.'
     )
     code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
 
