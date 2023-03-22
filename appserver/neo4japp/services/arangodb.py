@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional
 
 
 def convert_datetime(date_val: str) -> datetime:
-    # 2021-08-17T23:32Z[UTC]
     valid_formats = [
         '%Y-%m-%d %H:%M:%S',
         '%Y-%m-%dT%H:%M:%S.%fZ',
@@ -18,9 +17,6 @@ def convert_datetime(date_val: str) -> datetime:
     ]
     for format in valid_formats:
         try:
-            # The inclusions from the original data load don't seem to have timezone info, so try
-            # creating a datetime object without it first. This is likely a bug, as the inclusion_date
-            # is also not a date object but a raw string.
             return datetime.strptime(date_val, format)
         except ValueError:
             continue
