@@ -71,7 +71,7 @@ class ErrorResponseSchema(CamelCaseSchema):
     )
     version = fields.Method('get_version')
 
-    def get_version(self):
+    def get_version(self, obj):
         return current_app.config.get('GITHUB_HASH')
 
     stacktrace = fields.Method('get_stacktrace')
@@ -99,7 +99,7 @@ class WarningResponseSchema(CamelCaseSchema):
     )
     version = fields.Method('get_version')
 
-    def get_version(self):
+    def get_version(self, obj):
         return current_app.config.get('GITHUB_HASH')
 
     stacktrace = fields.Method('get_stacktrace')

@@ -148,6 +148,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
     assert response.status_code == 400
 
 
+
 @pytest.mark.parametrize('attribute, value, is_editable', [
     ('firstName', 'fresh', True),
     ('lastName', 'smith', True),
