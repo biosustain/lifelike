@@ -6,6 +6,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { FileTypesModule } from 'app/file-types/file-types.module';
 
 import { BrowserProjectListComponent } from './browser-project-list.component';
 
@@ -17,6 +18,7 @@ describe('ProjectSpaceComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
+        FileTypesModule,
         FileBrowserModule,
         RootStoreModule,
         RouterTestingModule
