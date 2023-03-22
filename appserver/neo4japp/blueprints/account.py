@@ -162,9 +162,8 @@ class AccountView(MethodView):
                     'user_id': app_user.id if app_user.id is not None else 'N/A',
                     'username': app_user.username,
                     'user_email': app_user.email
-                },
-                stacktrace=str(e)
-            )
+                }
+            ) from e
         except ServerException:
             db.session.rollback()
             raise
