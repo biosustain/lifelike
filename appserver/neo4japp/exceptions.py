@@ -61,7 +61,7 @@ class StatisticalEnrichmentError(ServerException):
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message = TemplateDescriptor( # no-types
+    message = TemplateDescriptor( # type: ignore
         default='There was a problem annotating "$term". '
                 'Please make sure the term is correct, '
                 'including correct spacing and no extra characters.'
@@ -181,7 +181,7 @@ class AccessRequestRequiredError(ServerException):
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
-    message = TemplateDescriptor(  # no-types
+    message = TemplateDescriptor(  # type: ignore
         default='You have "$curr_access" access. Please request "$req_access" '
                 'access at minimum for this content.'
     )
