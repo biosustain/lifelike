@@ -61,7 +61,7 @@ class StatisticalEnrichmentError(ServerException):
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message = TemplateDescriptor( # type: ignore
+    message = TemplateDescriptor(  # type: ignore
         default='There was a problem annotating "$term". '
                 'Please make sure the term is correct, '
                 'including correct spacing and no extra characters.'
