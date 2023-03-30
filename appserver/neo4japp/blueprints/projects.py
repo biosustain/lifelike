@@ -9,7 +9,12 @@ from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
 
 from neo4japp.database import db, get_projects_service, get_authorization_service
-from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound, DeleteNonEmpty
+from neo4japp.exceptions import (
+    AccessRequestRequiredError,
+    RecordNotFound,
+    DeleteNonEmpty,
+    FileNotFound
+)
 from neo4japp.models import (
     AppRole,
     AppUser,
@@ -101,9 +106,8 @@ class ProjectBaseView(MethodView):
         files, *_ = self.get_nondeleted_projects(filter)
         if not len(files):
             raise RecordNotFound(
-                title='File Not Found',
-                message='The requested project could not be found.',
-                code=404
+                title='Project Not Found',
+                message='The requested project could not be found.'
             )
         return files[0]
 
@@ -159,11 +163,9 @@ class ProjectBaseView(MethodView):
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
 
             if len(missing_hash_ids):
-                raise RecordNotFound(
-                    title='File Not Found',
+                raise FileNotFound(
                     message=f"The request specified one or more projects "
-                    f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404
+                    f"({', '.join(missing_hash_ids)}) that could not be found."
                 )
 
         return projects, total

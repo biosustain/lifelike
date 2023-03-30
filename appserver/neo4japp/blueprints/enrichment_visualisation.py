@@ -4,7 +4,7 @@ import requests
 
 from flask import Blueprint, Response, current_app, request
 
-from neo4japp.exceptions import StatisticalEnrichmentError
+from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
@@ -70,5 +70,6 @@ def forward_request():
 
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
+@wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()

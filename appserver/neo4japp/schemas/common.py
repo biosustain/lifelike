@@ -70,21 +70,20 @@ class BaseResponseSchema(CamelCaseSchema):
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
-        attribute='fields', allow_none=True
+        attribute='fields',
+        allow_none=True
     )
     version = fields.Method('get_version')
 
-    def get_version(self, obj):
+    def get_version(self, ex):
         return current_app.config.get('GITHUB_HASH')
 
     stacktrace = fields.Method('get_stacktrace')
 
-    def get_stacktrace(self, obj):
+    def get_stacktrace(self, ex):
         if current_app.config.get('FORWARD_STACKTRACE'):
             return ''.join(
-                traceback.format_exception(
-                    etype=type(obj), value=obj, tb=obj.__traceback__
-                )
+                traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
             )
 
     cause = fields.Method('get_cause')
@@ -113,7 +112,7 @@ class WarningSchema(CamelCaseSchema):
     warnings = fields.Method('get_warnings')
 
     def get_warnings(self, obj):
-        return [WarningResponseSchema().dump(w) for w in get_warnings()]
+        return [WarningResponseSchema().dump(w) for w in warnings]
 
 
 class InformationSchema(CamelCaseSchema):

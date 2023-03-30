@@ -28,6 +28,7 @@ class ErrorLog(UserEventLog, EventLog):
 class WarningLog(UserEventLog, EventLog):
     """ Used to describe warnings """
     warning_name: str = attr.ib()
+    transaction_id: str = attr.ib()
 
 
 @attr.s(frozen=True)

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, request, jsonify
 from flask_apispec import use_kwargs
 
@@ -68,7 +70,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
         raise InvalidArgument(
             title='Failed to Get Edge Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=400
+            code=HTTPStatus.BAD_REQUEST
         )
 
     edge_snippets_result = visualizer.get_snippets_for_edge(
@@ -90,7 +92,7 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
         raise InvalidArgument(
             title='Failed to Get Cluster Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=400
+            code=HTTPStatus.BAD_REQUEST
         )
 
     cluster_snippets_result = visualizer.get_snippets_for_cluster(

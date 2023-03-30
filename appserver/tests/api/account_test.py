@@ -81,7 +81,7 @@ def test_nonadmin_cannot_create_user(client, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
@@ -145,8 +145,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 400
-
+    assert response.status_code == 403
 
 
 @pytest.mark.parametrize('attribute, value, is_editable', [

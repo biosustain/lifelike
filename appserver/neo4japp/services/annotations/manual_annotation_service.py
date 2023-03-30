@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
-from neo4japp.exceptions import AnnotationError
+from neo4japp.exceptions import AnnotationError, ServerException, wrap_exceptions
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.util import standardize_str
@@ -106,6 +106,7 @@ class ManualAnnotationService:
                 code=HTTPStatus.BAD_REQUEST
             )
 
+    @wrap_exceptions(AnnotationError, title='Failed to Create Custom Annotation')
     def add_inclusions(self, file: Files, user: AppUser, custom_annotation, annotate_all):
         """Adds custom annotation to a given file.
 
@@ -142,7 +143,6 @@ class ManualAnnotationService:
                 raise
             except Exception as e:
                 raise AnnotationError(
-                    title='Failed to Create Custom Annotation',
                     message='A system error occurred while creating the annotation, '
                             'we are working on a solution. Please try again later.',
                 ) from e
@@ -191,7 +191,7 @@ class ManualAnnotationService:
             ]
 
             if not inclusions:
-                raise AnnotationError()
+                raise ServerException()
         else:
             if not self._annotation_exists(term, annotation_to_add, file.custom_annotations):
                 inclusions = [annotation_to_add]
@@ -225,14 +225,14 @@ class ManualAnnotationService:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            raise AnnotationError(
-                title='Failed to Create Custom Annotation',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
             ) from e
 
         return inclusions
 
+    @wrap_exceptions(AnnotationError, title='Failed to Remove Annotation')
     def remove_inclusions(self, file: Files, user: AppUser, uuid, remove_all):
         """ Removes custom annotation from a given file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
@@ -277,14 +277,14 @@ class ManualAnnotationService:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            raise AnnotationError(
-                title='Failed to Remove Annotation',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
             ) from e
 
         return removed_annotation_uuids
 
+    @wrap_exceptions(AnnotationError, title='Failed to Remove Global Inclusion')
     def remove_global_inclusions(self, inclusion_ids: List[Tuple[int, int]]):
         try:
             self.graph.exec_write_query_with_params(
@@ -298,8 +298,7 @@ class ManualAnnotationService:
                 f'PARAMETERS: <node_ids: {inclusion_ids}>.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise AnnotationError(
-                title='Failed to Remove Global Inclusion',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
             ) from e
@@ -356,12 +355,12 @@ class ManualAnnotationService:
                 f'PARAMETERS: <node_id: {result["node_id"]}>.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise AnnotationError(
-                title='Failed to Remove Global Inclusion',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
             ) from e
 
+    @wrap_exceptions(AnnotationError, title='Failed to Create Custom Annotation')
     def add_exclusion(self, file: Files, user: AppUser, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
         """
@@ -395,12 +394,12 @@ class ManualAnnotationService:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            raise AnnotationError(
-                title='Failed to Create Custom Annotation',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
             ) from e
 
+    @wrap_exceptions(AnnotationError, title='Failed to Remove Annotation')
     def remove_exclusion(self, file: Files, user: AppUser, entity_type, term):
         """ Removes exclusion of automatic annotation from a given file.
         """
@@ -411,10 +410,9 @@ class ManualAnnotationService:
                     self._terms_match(term, exclusion['text'], exclusion['isCaseInsensitive']))]
 
         if initial_length == len(updated_exclusions):
-            raise AnnotationError(
-                title='Failed to Annotate',
+            raise ServerException(
                 message='File does not have any annotations.',
-                code=404
+                code=HTTPStatus.NOT_FOUND
             )
 
         try:
@@ -430,8 +428,7 @@ class ManualAnnotationService:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            raise AnnotationError(
-                title='Failed to Remove Annotation',
+            raise ServerException(
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',
             ) from e
@@ -463,6 +460,7 @@ class ManualAnnotationService:
         ]
         return filtered_annotations + file.custom_annotations
 
+    @wrap_exceptions(AnnotationError, title='Failed to Create Custom Annotation')
     def save_global(
         self,
         annotation: dict,
@@ -494,10 +492,9 @@ class ManualAnnotationService:
                 hyperlinks = meta['idHyperlinks']
                 username = username
             except KeyError as e:
-                raise AnnotationError(
-                    title='Failed to Create Custom Annotation',
+                raise ServerException(
                     message='Could not create global annotation inclusion/exclusion, '
-                            'the data is corrupted. Please try again.',
+                            'the data is corrupted. Please try again.'
                 ) from e
 
             if entity_id == '':
@@ -602,8 +599,7 @@ class ManualAnnotationService:
                     db.session.commit()
                 except Exception as e:
                     db.session.rollback()
-                    raise AnnotationError(
-                        title='Failed to Create Custom Annotation',
+                    raise ServerException(
                         message='A system error occurred while creating the annotation, '
                                 'we are working on a solution. Please try again later.',
                     ) from e

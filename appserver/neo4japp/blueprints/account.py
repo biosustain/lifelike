@@ -16,6 +16,8 @@ from webargs.flaskparser import use_args
 from neo4japp.blueprints.auth import login_exempt
 from neo4japp.exceptions import RecordNotFound, CannotCreateNewUser, FailedToUpdateUser, \
     AuthenticationError
+from neo4japp.exceptions import FailedToUpdateUser, AuthenticationError, \
+    UserNotFound
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MAX_TEMP_PASS_LENGTH,
@@ -29,9 +31,9 @@ from neo4japp.constants import (
     LogEventType
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
-from neo4japp.exceptions import NotAuthorized, ServerException
 from neo4japp.models import AppUser, AppRole
 from neo4japp.models.auth import user_role
+from neo4japp.exceptions import NotAuthorized, RecordNotFound, ServerException, wrap_exceptions
 from neo4japp.schemas.account import (
     UserChangePasswordSchema,
     UserCreateSchema,
@@ -92,7 +94,7 @@ class AccountView(MethodView):
         else:
             # Regular users can only see themselves
             if hash_id and hash_id != g.current_user.hash_id:
-                raise NotAuthorized(code=400)
+                raise NotAuthorized()
             query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
 
         results = [
@@ -114,16 +116,17 @@ class AccountView(MethodView):
         }))
 
     @use_args(UserCreateSchema)
+    @wrap_exceptions(ServerException, title='Cannot Create New User')
     def post(self, params: dict):
         with db.session.begin_nested():
             admin_or_private_access = g.current_user.has_role('admin') or \
                                       g.current_user.has_role('private-data-access')
             if not admin_or_private_access:
-                raise NotAuthorized(title=CannotCreateNewUser.title, code=400)
+            raise NotAuthorized()
             if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-                raise CannotCreateNewUser(message=f'E-mail {params["email"]} already taken.')
+            raise ServerException(message=f'E-mail {params["email"]} already taken.')
             elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
-                raise CannotCreateNewUser(message=f'Username {params["username"]} already taken.')
+            raise ServerException(message=f'Username {params["username"]} already taken.')
 
             app_user = AppUser(
                 username=params['username'],
@@ -156,9 +159,11 @@ class AccountView(MethodView):
                         'user_email': app_user.email
                     }
                 ) from e
+            ) from e
             return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)
+    @wrap_exceptions(FailedToUpdateUser)
     def put(self, params: dict, hash_id):
         """ Updating password and roles will be delegated to a separate function """
         admin_access = g.current_user.has_role('admin')
@@ -166,7 +171,7 @@ class AccountView(MethodView):
         modifying_own_data = g.current_user.hash_id == hash_id
 
         if not modifying_own_data and not (admin_access or private_access):
-            raise NotAuthorized(title='Failed to Update User')
+            raise NotAuthorized()
         else:
             with db.session.begin_nested():
                 target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
@@ -174,12 +179,12 @@ class AccountView(MethodView):
                 if target.username != username:
                     if db.session.query(AppUser.query_by_username(username).exists()
                                         ).scalar():
-                        raise FailedToUpdateUser(message=f'Username {username} already taken.')
+                        raise ServerException(message=f'Username {username} already taken.')
                 if params.get('roles'):
                     if not admin_access:
-                        raise NotAuthorized(title='Failed to Update User')
+                        raise NotAuthorized()
                     if modifying_own_data:
-                        raise FailedToUpdateUser(message='You cannot update your own roles!')
+                        raise NotAuthorized(message='You cannot update your own roles!')
                     params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
 
                 for attribute, new_value in params.items():
@@ -201,11 +206,7 @@ class AccountSubjectView(MethodView):
         3rd-party auth provider, like Keycloak or Google Sign In."""
         user = AppUser.query_by_subject(subject).one_or_none()
         if user is None:
-            raise RecordNotFound(
-                title='User Not Found',
-                message='The requested user could not be found.',
-                code=404
-            )
+            raise UserNotFound()
         return jsonify(UserProfileSchema().dump({
             'hash_id': user.hash_id,
             'email': user.email,
@@ -229,21 +230,22 @@ bp.add_url_rule('/subject/<string:subject>', view_func=account_subject_view, met
 
 @bp.route('/<string:hash_id>/change-password', methods=['POST', 'PUT'])
 @use_args(UserChangePasswordSchema)
+@wrap_exceptions(ServerException, title='Failed to update password')
 def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
                               g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise NotAuthorized(title='Failed to Update User')
+        raise NotAuthorized()
     else:
         with db.session.begin_nested():
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
             if target.check_password(params['password']):
                 if target.check_password(params['new_password']):
-                    raise FailedToUpdateUser(message='New password cannot be the old one.')
+                    raise ServerException(message='New password cannot be the old one.')
                 target.set_password(params['new_password'])
                 target.forced_password_reset = False
             else:
-                raise FailedToUpdateUser(message='Old password is invalid.')
+                raise ServerException(message='Old password is invalid.')
 
             db.session.add(target)
 
@@ -306,9 +308,10 @@ def reset_password(email: str):
 
 
 @bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
+@wrap_exceptions(ServerException, title='Failed to Unlock User')
 def unlock_user(hash_id):
     if g.current_user.has_role('admin') is False:
-        raise NotAuthorized(title='Failed to Unlock User')
+        raise NotAuthorized()
     else:
         with db.session.begin_nested():
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()

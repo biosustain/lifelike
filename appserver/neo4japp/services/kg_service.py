@@ -168,10 +168,7 @@ class KgService(HybridDBDao):
         ).one_or_none()
 
         if domain is None:
-            raise ServerException(
-                title='Could not create enrichment table',
-                message='There was a problem finding UniProt domain URLs.'
-            )
+            raise ServerException(message='There was a problem finding UniProt domain URLs.')
 
         return {
             result['node_id']: {

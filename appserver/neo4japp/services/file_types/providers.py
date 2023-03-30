@@ -13,6 +13,13 @@ import typing
 import zipfile
 
 from base64 import b64encode
+from http import HTTPStatus
+
+import bioc
+import graphviz
+import numpy as np
+import requests
+import svg_stack
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from dataclasses import dataclass
 from flask import current_app
@@ -74,6 +81,14 @@ from neo4japp.constants import (
     MAX_NODE_HEIGHT,
     NODE_INSET
 )
+from neo4japp.exceptions import (
+    HandledException,
+    ServerException,
+    ServerWarning,
+    ContentValidationWarning,
+    wrap_exceptions,
+    ContentValidationError
+)
 from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
 from neo4japp.info import ContentValidationInfo
 from neo4japp.models import Files
@@ -113,7 +128,7 @@ def is_valid_doi(doi):
                                               "(KHTML, like Gecko) Chrome/51.0.2704.103 "
                                               "Safari/537.36"
                             }
-                            ).status_code not in [400, 404]
+                            ).status_code not in [HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND]
     except Exception as e:
         current_app.logger.error(
             f'An unexpected error occurred while requesting DOI: {doi}',
@@ -295,6 +310,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
+    @wrap_exceptions(ServerException, title='Failed to Read PDF')
     def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with buffer as bufferView:
             # Check that the pdf is considered openable
@@ -309,17 +325,16 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 else:
                     raise
             except PDFEncryptionError as e:
-                raise FileUploadError(
-                    title='Failed to Read PDF',
+                raise ServerException(
                     message='This pdf is locked and cannot be loaded into Lifelike.'
                 ) from e
             except Exception as e:
-                raise FileUploadError(
-                    title='Failed to Read PDF',
+                raise ServerException(
                     message='An error occurred while reading this pdf.'
                             ' Please check if the pdf is unlocked and openable.'
                 ) from e
 
+    @wrap_exceptions(ServerException, title='Failed to Read PDF')
     def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
         with buffer as bufferView:
             # Attempt 1: search through the first N bytes (most probably containing only metadata)
@@ -337,8 +352,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 warn(TextExtractionNotAllowedWarning())
                 raise HandledException(e) from e
             except Exception as e:
-                raise FileUploadError(
-                    title='Failed to Read PDF',
+                raise ServerException(
                     message='An error occurred while reading this pdf.'
                             ' Please check if the pdf is unlocked and openable.'
                 ) from e

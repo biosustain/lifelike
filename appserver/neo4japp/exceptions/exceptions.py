@@ -1,10 +1,27 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, MISSING, field, Field, fields
 from http import HTTPStatus
-from typing import Union, Optional
+from typing import Union, Tuple, Optional, Any
 
-from neo4japp.util import get_transaction_id
+from neo4japp.utils.globals import transaction_id
 from neo4japp.utils.dataclass import TemplateDescriptor
 from neo4japp.base_server_exception import BaseServerException
+
+class CauseDefaultField(Field):
+    @property
+    def is_default(self, value):
+        return self.default is value or self.default_factory() is value
+
+
+def cause_field(
+        *, default:Any=MISSING, default_factory=MISSING, init=True, repr=True,
+        hash=None, compare=True, metadata=None
+):
+    if default is not MISSING and default_factory is not MISSING:
+        raise ValueError('cannot specify both default and default_factory')
+    return CauseDefaultField(
+        default, default_factory, init, repr, hash, compare,
+        metadata
+    )
 
 
 @dataclass(repr=False, frozen=True)
@@ -22,9 +39,26 @@ class ServerException(Exception, BaseServerException):
     :param code: the error code
     :param fields:
     """
-    title: str = "We're sorry!"
-    message: Optional[str] = "Looks like something went wrong!"
-    code: Union[HTTPStatus, int] = HTTPStatus.INTERNAL_SERVER_ERROR
+    title: str = cause_field(default="We're sorry!")
+    message: Optional[str] = cause_field(default="Looks like something went wrong!")
+    additional_msgs: Tuple[str, ...] = cause_field(default=tuple())
+    fields: Optional[dict] = cause_field(default=None)
+    code: HTTPStatus = cause_field(default=HTTPStatus.INTERNAL_SERVER_ERROR)
+    cause: Exception = field(init=False, default=None)
+
+    @property
+    def __cause__(self):
+        return self.cause
+
+    @__cause__.setter
+    def __cause__(self, c):
+        for field in fields(self):
+            if isinstance(field, CauseDefaultField):
+                new_default = getattr(c, field.name, MISSING)
+                if new_default is not MISSING and not field.is_default(new_default):
+                    setattr(self, field.name, new_default)
+        self.cause = c
+        super.__cause__ = c
 
     @property
     def type(self):
@@ -32,12 +66,15 @@ class ServerException(Exception, BaseServerException):
 
     @property
     def transaction_id(self):
-        return get_transaction_id()
+        return transaction_id
+
+    def __repr__(self):
+        return f'<{self.type} {self.transaction_id}>\t{self.title}:\t{self.message}'
 
     def __str__(self):
-        lines = [f'<Exception {self.transaction_id}> {self.title}: {self.message}']
+        lines = [self.__repr__()]
         try:
-            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+            lines += [f'\t{key}:\t{value}' for key, value in self.fields.items()]
         except Exception:
             pass
         return '\n'.join(lines)
@@ -89,7 +126,12 @@ class ContentValidationError(ServerException):
 @dataclass(repr=False, frozen=True)
 class NotAuthorized(ServerException):
     message: str = 'You do not have sufficient privileges.'
-    code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
+    code: HTTPStatus = HTTPStatus.FORBIDDEN
+
+
+@dataclass(repr=False, frozen=True)
+class FailedToUpdateUser(ServerException):
+    title = 'Failed to Update User'
 
 
 @dataclass(repr=False, frozen=True)
@@ -112,18 +154,29 @@ class FailedToUpdateUser(ServerException):
 
 @dataclass(repr=False, frozen=True)
 class RecordNotFound(ServerException):
-    code: Union[HTTPStatus, int] = HTTPStatus.NOT_FOUND
+    code: HTTPStatus = HTTPStatus.NOT_FOUND
 
 
 @dataclass(repr=False, frozen=True)
+class UserNotFound(RecordNotFound):
+    title: str = 'User Not Found'
+    message: str = 'The requested user could not be found.'
+
+
+@dataclass(repr=False, frozen=True)
+class FileNotFound(RecordNotFound):
+    title: str = 'File Not Found'
+    message: str = 'The requested file object could not be found.'
+
+@dataclass(repr=False, frozen=True)
 class InvalidArgument(ServerException):
-    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+    code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, frozen=True)
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
-    code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
+    code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
 
 @dataclass(repr=False, frozen=True)
@@ -142,20 +195,20 @@ class FormatterException(ServerException):
 @dataclass(repr=False, frozen=True)
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
-    code: Union[HTTPStatus, int] = HTTPStatus.NOT_ACCEPTABLE
+    code: HTTPStatus = HTTPStatus.NOT_ACCEPTABLE
 
 
 @dataclass(repr=False, frozen=True)
 class UnsupportedMediaTypeError(ServerException):
     """Signals that the client sent a request for an unsupported media type."""
-    code: Union[HTTPStatus, int] = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+    code: HTTPStatus = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
 
 @dataclass(repr=False, frozen=True)
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
     title: str = 'Failed to Authenticate'
-    code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
+    code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
 
 # TODO: finish this
@@ -208,4 +261,29 @@ class AccessRequestRequiredError(ServerException):
 
 
 class GDownException(Exception):
-    code = 400
+    code = HTTPStatus.BAD_REQUEST
+
+
+__all__ = [
+    "HandledException",
+    "ServerException",
+    "DeleteNonEmpty",
+    "StatisticalEnrichmentError",
+    "AnnotationError",
+    "ContentValidationError",
+    "NotAuthorized",
+    "FailedToUpdateUser",
+    "RecordNotFound",
+    "UserNotFound",
+    "FileNotFound",
+    "InvalidArgument",
+    "JWTTokenException",
+    "JWTAuthTokenException",
+    "FormatterException",
+    "OutdatedVersionException",
+    "UnsupportedMediaTypeError",
+    "AuthenticationError",
+    # "FilesystemAccessRequestRequired",
+    "AccessRequestRequiredError",
+    "GDownException",
+]

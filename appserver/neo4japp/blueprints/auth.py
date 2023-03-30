@@ -1,4 +1,5 @@
 import jwt
+from http import HTTPStatus
 
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, current_app, g, jsonify, request
@@ -8,9 +9,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES, LogEventType
-from neo4japp.database import db, get_projects_service, jwt_client
-from neo4japp.exceptions import AuthenticationError, JWTTokenException, ServerException
+from neo4japp.database import get_projects_service, db, jwt_client
+from neo4japp.constants import LogEventType
+from neo4japp.exceptions import (
+    AuthenticationError,
+    JWTTokenException,
+    ServerException,
+    UserNotFound,
+    wrap_exceptions
+)
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.schemas.auth import LifelikeJWTTokenResponse
 from neo4japp.utils.logger import UserEventLog
@@ -110,6 +117,7 @@ class TokenService:
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
+    @wrap_exceptions(JWTTokenException)
     def decode_token(self, token: str, **options):
         try:
             return jwt.decode(
@@ -123,14 +131,12 @@ class TokenService:
         # display an error message about
         # authorization header (for security purposes)?
         except InvalidTokenError as e:
-            raise JWTTokenException(
-                title='Failed to Authenticate',
+            raise ServerException(
                 message='The current authentication session is invalid, '
                         'please try logging back in.'
             ) from e
         except ExpiredSignatureError as e:
-            raise JWTTokenException(
-                title='Failed to Authenticate',
+            raise ServerException(
                 message='The current authentication session has expired, '
                         'please try logging back in.'
             ) from e
@@ -192,6 +198,7 @@ def verify_token(token):
 
 @bp.route('/refresh', methods=['POST'])
 @login_exempt
+@wrap_exceptions(AuthenticationError)
 def refresh():
     """ Renew access token with refresh token """
     data = request.get_json()
@@ -216,10 +223,7 @@ def refresh():
     try:
         user = AppUser.query_by_subject(decoded['sub']).one()
     except NoResultFound as e:
-        raise AuthenticationError(
-            message='There was a problem authenticating, please try again.',
-            code=404
-        ) from e
+        raise UserNotFound(message='There was a problem authenticating, please try again.') from e
     else:
         return jsonify(LifelikeJWTTokenResponse().dump({
             'access_token': access_jwt,
@@ -238,31 +242,28 @@ def refresh():
 
 @bp.route('/login', methods=['POST'])
 @login_exempt
+@wrap_exceptions(AuthenticationError)
 def login():
     """
         Generate JWT to validate graph API calls
         based on successful user login
     """
     data = request.get_json()
+    exception = None
 
     with db.session.begin_nested():
         # Pull user by email
         try:
             user = AppUser.query.filter_by(email=data.get('email')).one()
-        except NoResultFound as e:
-            raise AuthenticationError(
-                title='Failed to Authenticate',
-                message='Could not find an account with that username/password combination. '
-                        'Please try again.'
-            ) from e
+    except NoResultFound as e:
+        exception = e
         else:
             if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
                 raise ServerException(
-                    title='Failed to Login',
                     message='The account has been suspended after too many failed login attempts.\
                     Please contact an administrator for help.',
-                    code=423
-                )
+                code=HTTPStatus.LOCKED
+            )
             elif user.check_password(data.get('password')):
                 current_app.logger.info(
                     UserEventLog(
@@ -297,7 +298,7 @@ def login():
 
                 db.session.add(user)
 
-                raise AuthenticationError(
+    raise ServerException(
                     message='Could not find an account with that username/password combination. ' +
                             'Please try again.'
-                )
+    ) from exception
