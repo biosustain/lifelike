@@ -1,26 +1,65 @@
-from dataclasses import dataclass, asdict, MISSING, field, Field, fields
+from dataclasses import dataclass, asdict, MISSING, field, fields
 from http import HTTPStatus
-from typing import Union, Tuple, Optional, Any
+from typing import Union, Tuple, Optional, TypeVar, Generic
 
 from neo4japp.utils.globals import transaction_id
 from neo4japp.utils.dataclass import TemplateDescriptor
 from neo4japp.base_server_exception import BaseServerException
 
-class CauseDefaultField(Field):
+T = TypeVar('T')
+
+
+class CauseDefaultingDescriptor(Generic[T]):
+    _default: T
+    _prefix: str
+
+    def __init__(self, default=MISSING, prefix='_'):
+        self._default = default
+        self._prefix = prefix
+
+    def __set_name__(self, owner, name):
+        self._name = name
+
     @property
-    def is_default(self, value):
-        return self.default is value or self.default_factory() is value
+    def _prefixed_name(self):
+        return self._prefix + self._name
+
+    def __get__(self, instance, owner):
+        set_value = getattr(instance, self._prefixed_name, MISSING)
+        if set_value is not MISSING:
+            return set_value
+        cause = getattr(instance, '__cause__', MISSING)
+        if cause is not MISSING:
+            cause_value = getattr(cause, self._name, MISSING)
+            if cause_value is not MISSING:
+                return cause_value
+        return self._default
+
+    def __set__(self, instance, value):
+        if value is not self:
+            setattr(instance, self._prefixed_name, value)
+
+    def __repr__(self):
+        return f'<{type(self).__name__} {self._name}>'
 
 
 def cause_field(
-        *, default:Any=MISSING, default_factory=MISSING, init=True, repr=True,
-        hash=None, compare=True, metadata=None
+        *, default=MISSING, default_factory=MISSING, **kwargs
 ):
-    if default is not MISSING and default_factory is not MISSING:
-        raise ValueError('cannot specify both default and default_factory')
-    return CauseDefaultField(
-        default, default_factory, init, repr, hash, compare,
-        metadata
+    """
+    Convinience function which inits dataclass field with defaults created based on
+    exception __cause__
+    :param default: same as for dataclass.field
+    :param default_factory: same as for dataclass.field
+    :param kwargs: same as for dataclass.field
+    :return:
+    """
+    return field(
+        default=CauseDefaultingDescriptor(default) if default is not MISSING else MISSING,
+        default_factory=(lambda: CauseDefaultingDescriptor(
+            default_factory()
+        )) if default_factory is not MISSING else MISSING,
+        **kwargs
     )
 
 
@@ -131,24 +170,24 @@ class NotAuthorized(ServerException):
 
 @dataclass(repr=False, frozen=True)
 class FailedToUpdateUser(ServerException):
-    title = 'Failed to Update User'
+    title: str = 'Failed to Update User'
 
 
 @dataclass(repr=False, frozen=True)
 class CannotCreateNewUser(ServerException):
-    title = 'Cannot Create New User'
+    title: str = 'Cannot Create New User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, frozen=True)
 class CannotCreateNewProject(ServerException):
-    title = 'Cannot Create New Project'
+    title: str = 'Cannot Create New Project'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, frozen=True)
 class FailedToUpdateUser(ServerException):
-    title = 'Failed to Update User'
+    title: str = 'Failed to Update User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 

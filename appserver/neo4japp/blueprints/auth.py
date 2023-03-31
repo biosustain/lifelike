@@ -10,7 +10,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
 from neo4japp.database import get_projects_service, db, jwt_client
-from neo4japp.constants import LogEventType
+from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     AuthenticationError,
     JWTTokenException,
