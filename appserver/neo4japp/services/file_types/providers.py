@@ -14,12 +14,6 @@ import zipfile
 
 from base64 import b64encode
 from http import HTTPStatus
-
-import bioc
-import graphviz
-import numpy as np
-import requests
-import svg_stack
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from dataclasses import dataclass
 from flask import current_app
