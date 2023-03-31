@@ -2,9 +2,9 @@ import { Observable, of } from 'rxjs';
 import { isEqual } from 'lodash-es';
 
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
-import { isNotEmpty } from '../../shared/utils';
 
 export class EnrichmentTable {
   DEFAULT_HEADERS = [
