@@ -4,6 +4,7 @@ import { isEqual } from 'lodash-es';
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
 
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
+import { isNotEmpty } from '../../shared/utils';
 
 export class EnrichmentTable {
   DEFAULT_HEADERS = [
@@ -32,9 +33,12 @@ export class EnrichmentTable {
 
       // Some domains have multiple labels so we need to activate a
       // second header line in those cases
-      let tableHeaderLine2Needed = false;
+      let tableHeaderLine2Needed = true;
       const tableHeaderLine2: TableHeader[] = [
-        {name: '', span: this.DEFAULT_HEADERS.length.toString()},
+        {name: `Count: ${result.genes.filter(({imported}) => isNotEmpty(imported)).length}`, span: '1'},
+        {name: '', span: '1'},
+        {name: `Count: ${result.genes.filter(({matched}) => isNotEmpty(matched)).length}`, span: '1'},
+        {name: '', span: (this.DEFAULT_HEADERS.length - 3).toString()},
       ];
 
       for (const domainId of document.domains) {
