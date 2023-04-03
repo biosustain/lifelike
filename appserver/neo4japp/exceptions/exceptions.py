@@ -13,7 +13,7 @@ class CauseDefaultingDescriptor(Generic[T]):
     _default: T
     _prefix: str
 
-    def __init__(self, default=MISSING, prefix='_'):
+    def __init__(self, default: T = MISSING, prefix: str = '_'):  # type: ignore
         self._default = default
         self._prefix = prefix
 
@@ -63,12 +63,12 @@ def cause_field(
     )
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class HandledException(Exception):
     exception: Exception
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class ServerException(Exception, BaseServerException):
     """
     Create a new exception.
@@ -122,17 +122,17 @@ class ServerException(Exception, BaseServerException):
         return asdict(self)
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class DeleteNonEmpty(ServerException):
     pass
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class StatisticalEnrichmentError(ServerException):
     pass
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
@@ -147,28 +147,27 @@ class AnnotationError(ServerException):
             raise NotImplementedError("To render default Annotation error, term must be given.")
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class LMDBError(ServerException):
     pass
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class FileUploadError(ServerException):
     pass
 
-
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class ContentValidationError(ServerException):
     title: str = 'Content validation error'
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class NotAuthorized(ServerException):
     message: str = 'You do not have sufficient privileges.'
     code: HTTPStatus = HTTPStatus.FORBIDDEN
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class FailedToUpdateUser(ServerException):
     title: str = 'Failed to Update User'
 
@@ -191,59 +190,60 @@ class FailedToUpdateUser(ServerException):
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class RecordNotFound(ServerException):
     code: HTTPStatus = HTTPStatus.NOT_FOUND
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class UserNotFound(RecordNotFound):
     title: str = 'User Not Found'
     message: str = 'The requested user could not be found.'
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class FileNotFound(RecordNotFound):
     title: str = 'File Not Found'
     message: str = 'The requested file object could not be found.'
 
-@dataclass(repr=False, frozen=True)
+
+@dataclass(repr=False, eq=False, frozen=True)
 class InvalidArgument(ServerException):
     code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
     code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
     pass
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
     pass
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
     code: HTTPStatus = HTTPStatus.NOT_ACCEPTABLE
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class UnsupportedMediaTypeError(ServerException):
     """Signals that the client sent a request for an unsupported media type."""
     code: HTTPStatus = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
     title: str = 'Failed to Authenticate'
@@ -276,7 +276,7 @@ class AuthenticationError(ServerException):
 #                          })
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class AccessRequestRequiredError(ServerException):
     """
     Raised when access needs to be requested for a project. The end goal is to
@@ -300,7 +300,7 @@ class AccessRequestRequiredError(ServerException):
 
 
 class GDownException(Exception):
-    code = HTTPStatus.BAD_REQUEST
+    code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
 __all__ = [
