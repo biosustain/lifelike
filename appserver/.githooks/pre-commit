@@ -3,7 +3,19 @@
 # Path from shell to folder containing this file
 __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# Runs linting on only files that are staged
 staged_files=$(getStaged appserver '\.(py)$')
+
+# Turn debugging on by the flag
+if [[ -n $DEBUG_HOOKS ]];
+then
+  echo "> 🐛 flake8 version:"
+  $DOCKER_COMPOSE_RUN --no-deps appserver flake8 --version
+  echo "> 🐛 mypy version:"
+  $DOCKER_COMPOSE_RUN --no-deps appserver mypy --version
+  echo "> 🐛 pycodestyle version:"
+  $DOCKER_COMPOSE_RUN --no-deps appserver pycodestyle --version
+fi
 
 # shellcheck disable=SC2236
 if [[ -n $staged_files ]];
@@ -17,7 +29,7 @@ then
       $image_hash
   ) && (
     echo "> 🥧 Running mypy..."
-    echo ${staged_files} | xargs docker exec appserver mypy
+    echo ${staged_files} | xargs $DOCKER_COMPOSE_RUN --no-deps appserver mypy
   ) && (
     echo "> 🐍 Running pycodestyle..."
     echo ${staged_files} | \

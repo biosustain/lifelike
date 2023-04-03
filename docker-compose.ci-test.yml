@@ -1,5 +1,6 @@
 # CI Test
 version: "3.8"
+name: '***ARANGO_DB_NAME***-testing'
 
 x-appserver: &appserver
   image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
@@ -40,7 +41,6 @@ x-appserver: &appserver
 services:
   appserver:
     <<: *appserver
-    container_name: appserver
 
   worker:
     <<: *appserver
@@ -67,13 +67,11 @@ services:
       - bootstrap.memory_lock=true
 
   redis:
-    container_name: redis
     image: redis:7-alpine
     command: redis-server --requirepass password
 
   arangodb:
     image: arangodb:3.9
-    container_name: arangodb
     environment:
       ARANGO_ROOT_PASSWORD: password
       LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***

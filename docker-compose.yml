@@ -1,4 +1,5 @@
 version: "3.8"
+name: '***ARANGO_DB_NAME***'
 
 services:
   appserver:

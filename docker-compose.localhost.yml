@@ -10,7 +10,6 @@ version: "3.8"
 
 services:
   webserver:
-    container_name: webserver
     build:
       context: ./client
       dockerfile: Dockerfile

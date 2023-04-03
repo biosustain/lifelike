@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
   kibana:
-    container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.10.1
     ports:
       - 5601:5601
@@ -15,7 +14,6 @@ services:
       - elasticsearch
 
   logstash:
-    container_name: logstash
     build:
       dockerfile: Dockerfile
       context: logstash
@@ -30,7 +28,6 @@ services:
       - elasticsearch
 
   metricbeat:
-    container_name: metricbeat
     user: ***ARANGO_USERNAME***
     environment:
       - MB_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
@@ -49,7 +46,6 @@ services:
       - elastic
 
   filebeat:
-    container_name: filebeat
     user: ***ARANGO_USERNAME***
     build:
       context: filebeat/
