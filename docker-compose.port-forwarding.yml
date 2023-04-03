@@ -1,0 +1,41 @@
+version: "3.8"
+name: '***ARANGO_DB_NAME***-development'
+
+services:
+  appserver:
+    ports:
+      - "5000:5000"
+
+  webserver:
+    ports:
+      - "4200:4200"
+
+  statistical-enrichment:
+    ports:
+      - "5010:5010"
+
+  pdfparser:
+    ports:
+      - "7600:7600"
+
+  pgdatabase:
+    ports:
+      - "5431:5432"
+
+  graphdatabase:
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  arangodb:
+    ports:
+      - "8529:8529"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  elasticsearch:
+    ports:
+      - "9200:9200"
+      - "9300:9300"

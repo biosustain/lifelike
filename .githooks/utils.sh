@@ -1,5 +1,6 @@
 #!/bin/bash
 # Common utils used in git-hook scripts
+DOCKER_COMPOSE_RUN = 'docker compose -f docker-compose.override.yml -p ***ARANGO_DB_NAME***-pre-commit run -rm'
 cache_dir=".cache"
 
 # Formatting
@@ -143,6 +144,7 @@ recurseHook () {
   export -f HEADER
   export -f getStaged
   export -f debug
+  export -f DOCKER_COMPOSE_RUN
   #endregion
 
   for d in */; do

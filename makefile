@@ -16,8 +16,7 @@ container-login:
 
 # Fetches the LMDB files needed to run the application
 lmdb:
-	docker compose up -d appserver
-	docker compose exec appserver flask load-lmdb
+	docker compose -p ***ARANGO_DB_NAME***-lmdb run appserver flask load-lmdb
 	find $(LMDB_PATH) -name '*.mdb.backup' -delete
 
 # Sets up everything you need to run the application
