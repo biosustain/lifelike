@@ -1,0 +1,3045 @@
+/Users/dommas/Projects/graphdbdiff/graph.py:22: ExperimentalWarning: The configuration may change in the future.
+  self.driver.verify_connectivity()
+/Users/dommas/Projects/graphdbdiff/graph.py:22: ExperimentalWarning: The configuration may change in the future.
+  self.driver.verify_connectivity()
+---
+# Comparing bolt://localhost:7688?database=robins (aka "Old") to bolt://localhost:7688?database=reversefromchangelog3 (aka "New")
+# Compare apoc meta stats
+dictionary_item_added:
+  "root['labels']['NegativePrecedingEvent']": 0
+  "root['labels']['NegativePrecedingEventReason']": 1
+  "root['labels']['ControlledVocabulary']": 2
+  "root['labels']['CellType']": 3
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:cellType]->()']": 4
+  "root['relTypes']['(:CellType)-[:referenceDatabase]->()']": 5
+  "root['relTypes']['(:ChemicalDrug)-[:cellType]->()']": 6
+  "root['relTypes']['()-[:modification]->(:ReferenceMolecule)']": 7
+  "root['relTypes']['(:NegativeRegulation)-[:activity]->()']": 8
+  "root['relTypes']['(:DefinedSet)-[:cellType]->()']": 9
+  "root['relTypes']['()-[:cellType]->(:ExternalOntology)']": 10
+  "root['relTypes']['(:NegativePrecedingEvent)-[:reason]->()']": 11
+  "root['relTypes']['()-[:output]->(:Gene)']": 12
+  "root['relTypes']['()-[:cellType]->()']": 13
+  "root['relTypes']['(:EntitySet)-[:cellType]->()']": 14
+  "root['relTypes']['(:GenomeEncodedEntity)-[:cellType]->()']": 15
+  "root['relTypes']['(:Drug)-[:cellType]->()']": 16
+  "root['relTypes']['()-[:reason]->()']": 17
+  "root['relTypes']['(:Chemical)-[:cellType]->()']": 18
+  "root['relTypes']['(:Event)-[:negativePrecedingEvent]->()']": 19
+  "root['relTypes']['()-[:reason]->(:ControlledVocabulary)']": 20
+  "root['relTypes']['(:Reaction)-[:negativePrecedingEvent]->()']": 21
+  "root['relTypes']['(:SimpleEntity)-[:cellType]->()']": 22
+  "root['relTypes']['()-[:cellType]->(:CellType)']": 23
+  "root['relTypes']['(:Complex)-[:cellType]->()']": 24
+  "root['relTypes']['()-[:negativePrecedingEvent]->(:NegativePrecedingEvent)']": 25
+  "root['relTypes']['()-[:hasModifiedResidue]->(:TranscriptionalModification)']": 26
+  "root['relTypes']['(:Protein)-[:cellType]->()']": 27
+  "root['relTypes']['(:NegativePrecedingEvent)-[:precedingEvent]->()']": 28
+  "root['relTypes']['()-[:negativePrecedingEvent]->()']": 29
+  "root['relTypes']['(:BlackBoxEvent)-[:negativePrecedingEvent]->()']": 30
+  "root['relTypes']['(:PhysicalEntity)-[:cellType]->()']": 31
+  "root['relTypes']['()-[:hasModifiedResidue]->(:ModifiedNucleotide)']": 32
+  "root['relTypes']['()-[:reason]->(:NegativePrecedingEventReason)']": 33
+  "root['relTypes']['(:ReactionLikeEvent)-[:negativePrecedingEvent]->()']": 34
+  "root['relTypesCount']['reason']": 35
+  "root['relTypesCount']['negativePrecedingEvent']": 36
+  "root['relTypesCount']['cellType']": 37
+dictionary_item_removed:
+  "root['relTypes']['()-[:secondReferenceSequence]->(:ReferenceIsoform)']": 0
+  "root['relTypes']['(:NegativeGeneExpressionRegulation)-[:summation]->()']": 1
+  "root['relTypes']['(:Regulation)-[:summation]->()']": 2
+  "root['relTypes']['(:PositiveRegulation)-[:summation]->()']": 3
+  "root['relTypes']['(:Interaction)-[:referenceDatabase]->()']": 4
+  "root['relTypes']['(:UndirectedInteraction)-[:referenceDatabase]->()']": 5
+  "root['relTypes']['(:Requirement)-[:summation]->()']": 6
+  "root['relTypes']['(:NegativeRegulation)-[:summation]->()']": 7
+  "root['relTypes']['(:PositiveGeneExpressionRegulation)-[:summation]->()']": 8
+values_changed:
+  "root['labelCount']":
+    new_value: 90
+    old_value: 86
+  "root['relTypeCount']":
+    new_value: 55
+    old_value: 52
+  "root['propertyKeyCount']":
+    new_value: 89
+    old_value: 87
+  "root['labels']['BlackBoxEvent']":
+    new_value: 2179
+    old_value: 2038
+  "root['labels']['TopLevelPathway']":
+    new_value: 29
+    old_value: 27
+  "root['labels']['Disease']":
+    new_value: 710
+    old_value: 575
+  "root['labels']['RNA']":
+    new_value: 306
+    old_value: 229
+  "root['labels']['Pathway']":
+    new_value: 2559
+    old_value: 2477
+  "root['labels']['Compartment']":
+    new_value: 149
+    old_value: 148
+  "root['labels']['ControlReference']":
+    new_value: 2215
+    old_value: 2094
+  "root['labels']['GO_Term']":
+    new_value: 2917
+    old_value: 2849
+  "root['labels']['NegativeRegulation']":
+    new_value: 2322
+    old_value: 2232
+  "root['labels']['ModifiedNucleotide']":
+    new_value: 13
+    old_value: 10
+  "root['labels']['EntitySet']":
+    new_value: 5399
+    old_value: 5119
+  "root['labels']['GO_CellularComponent']":
+    new_value: 459
+    old_value: 453
+  "root['labels']['Gene']":
+    new_value: 1309
+    old_value: 893
+  "root['labels']['PositiveGeneExpressionRegulation']":
+    new_value: 825
+    old_value: 820
+  "root['labels']['FragmentReplacedModification']":
+    new_value: 709
+    old_value: 421
+  "root['labels']['ReferenceGroup']":
+    new_value: 109
+    old_value: 108
+  "root['labels']['GO_MolecularFunction']":
+    new_value: 1514
+    old_value: 1492
+  "root['labels']['DefinedSet']":
+    new_value: 4118
+    old_value: 3927
+  "root['labels']['TranscriptionalModification']":
+    new_value: 13
+    old_value: 10
+  "root['labels']['SimpleEntity']":
+    new_value: 3568
+    old_value: 3449
+  "root['labels']['GeneticallyModifiedResidue']":
+    new_value: 3641
+    old_value: 3079
+  "root['labels']['ReferenceTherapeutic']":
+    new_value: 896
+    old_value: 389
+  "root['labels']['CandidateSet']":
+    new_value: 1281
+    old_value: 1192
+  "root['labels']['Protein']":
+    new_value: 27308
+    old_value: 26607
+  "root['labels']['ProteinDrug']":
+    new_value: 52
+    old_value: 27
+  "root['labels']['Chemical']":
+    new_value: 3568
+    old_value: 3449
+  "root['labels']['ReplacedResidue']":
+    new_value: 2725
+    old_value: 2462
+  "root['labels']['FragmentModification']":
+    new_value: 916
+    old_value: 617
+  "root['labels']['EntityWithAccessionedSequence']":
+    new_value: 28925
+    old_value: 27729
+  "root['labels']['NegativeGeneExpressionRegulation']":
+    new_value: 228
+    old_value: 219
+  "root['labels']['CatalystActivityReference']":
+    new_value: 892
+    old_value: 825
+  "root['labels']['Summation']":
+    new_value: 18546
+    old_value: 17875
+  "root['labels']['ExternalOntology']":
+    new_value: 898
+    old_value: 753
+  "root['labels']['ReferenceMolecule']":
+    new_value: 1929
+    old_value: 1897
+  "root['labels']['FragmentInsertionModification']":
+    new_value: 128
+    old_value: 117
+  "root['labels']['Complex']":
+    new_value: 13772
+    old_value: 13187
+  "root['labels']['GenomeEncodedEntity']":
+    new_value: 29374
+    old_value: 28169
+  "root['labels']['FailedReaction']":
+    new_value: 435
+    old_value: 423
+  "root['labels']['RegulationReference']":
+    new_value: 1323
+    old_value: 1269
+  "root['labels']['Drug']":
+    new_value: 964
+    old_value: 414
+  "root['labels']['NonsenseMutation']":
+    new_value: 862
+    old_value: 34
+  "root['labels']['Polymer']":
+    new_value: 226
+    old_value: 218
+  "root['labels']['GO_BiologicalProcess']":
+    new_value: 944
+    old_value: 904
+  "root['labels']['ReactionLikeEvent']":
+    new_value: 14380
+    old_value: 14301
+  "root['labels']['Figure']":
+    new_value: 828
+    old_value: 819
+  "root['labels']['ChemicalDrug']":
+    new_value: 912
+    old_value: 387
+  "root['labels']['PhysicalEntity']":
+    new_value: 53640
+    old_value: 50891
+  "root['labels']['OtherEntity']":
+    new_value: 337
+    old_value: 335
+  "root['labels']['Event']":
+    new_value: 16939
+    old_value: 16778
+  "root['labels']['Regulation']":
+    new_value: 5596
+    old_value: 5583
+  "root['relTypes']['()-[:output]->(:Complex)']":
+    new_value: 8470
+    old_value: 8181
+  "root['relTypes']['()-[:normalReaction]->(:Reaction)']":
+    new_value: 667
+    old_value: 658
+  "root['relTypes']['(:ProteinDrug)-[:input]->()']":
+    new_value: 19
+    old_value: 14
+  "root['relTypes']['(:Chemical)-[:disease]->()']":
+    new_value: 46
+    old_value: 45
+  "root['relTypes']['()-[:normalEntity]->(:Protein)']":
+    new_value: 185
+    old_value: 183
+  "root['relTypes']['()-[:output]->(:RNA)']":
+    new_value: 97
+    old_value: 96
+  "root['relTypes']['()-[:diseaseEntity]->(:CandidateSet)']":
+    new_value: 73
+    old_value: 69
+  "root['relTypes']['()-[:regulatorOf]->(:PositiveRegulation)']":
+    new_value: 1442
+    old_value: 1411
+  "root['relTypes']['(:RNA)-[:referenceEntity]->()']":
+    new_value: 306
+    old_value: 229
+  "root['relTypes']['()-[:precedingEvent]->(:Event)']":
+    new_value: 12711
+    old_value: 11931
+  "root['relTypes']['(:PhysicalEntity)-[:componentOf]->()']":
+    new_value: 31850
+    old_value: 30834
+  "root['relTypes']['(:ReferenceTherapeutic)-[:crossReference]->()']":
+    new_value: 781
+    old_value: 40
+  "root['relTypes']['()-[:catalystOf]->(:CatalystActivity)']":
+    new_value: 4678
+    old_value: 4524
+  "root['relTypes']['(:Gene)-[:referenceEntity]->()']":
+    new_value: 1309
+    old_value: 893
+  "root['relTypes']['(:TranscriptionalModification)-[:modification]->()']":
+    new_value: 13
+    old_value: 10
+  "root['relTypes']['()-[:normalReaction]->(:ReactionLikeEvent)']":
+    new_value: 693
+    old_value: 683
+  "root['relTypes']['()-[:regulation]->(:Requirement)']":
+    new_value: 81
+    old_value: 79
+  "root['relTypes']['(:ModifiedNucleotide)-[:modification]->()']":
+    new_value: 13
+    old_value: 10
+  "root['relTypes']['(:Event)-[:hasEncapsulatedEvent]->()']":
+    new_value: 455
+    old_value: 391
+  "root['relTypes']['()-[:regulation]->(:Regulation)']":
+    new_value: 1323
+    old_value: 1269
+  "root['relTypes']['()-[:repeatedUnit]->(:GenomeEncodedEntity)']":
+    new_value: 69
+    old_value: 64
+  "root['relTypes']['()-[:hasEvent]->(:Polymerisation)']":
+    new_value: 39
+    old_value: 38
+  "root['relTypes']['()-[:catalystActivityReference]->()']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypes']['()-[:entityOnOtherCell]->(:PhysicalEntity)']":
+    new_value: 426
+    old_value: 425
+  "root['relTypes']['()-[:instanceOf]->(:GO_CellularComponent)']":
+    new_value: 545
+    old_value: 532
+  "root['relTypes']['()-[:goCellularComponent]->(:Compartment)']":
+    new_value: 55
+    old_value: 49
+  "root['relTypes']['()-[:normalPathway]->()']":
+    new_value: 412
+    old_value: 399
+  "root['relTypes']['()-[:output]->(:Drug)']":
+    new_value: 70
+    old_value: 10
+  "root['relTypes']['()-[:goCellularComponent]->(:GO_Term)']":
+    new_value: 210
+    old_value: 195
+  "root['relTypes']['(:GO_Term)-[:instanceOf]->()']":
+    new_value: 545
+    old_value: 532
+  "root['relTypes']['(:Complex)-[:memberOf]->()']":
+    new_value: 3350
+    old_value: 3022
+  "root['relTypes']['(:Protein)-[:input]->()']":
+    new_value: 5252
+    old_value: 5071
+  "root['relTypes']['(:ReactionLikeEvent)-[:requiredInputComponent]->()']":
+    new_value: 61
+    old_value: 52
+  "root['relTypes']['(:Protein)-[:memberOf]->()']":
+    new_value: 17042
+    old_value: 16538
+  "root['relTypes']['(:Drug)-[:crossReference]->()']":
+    new_value: 335
+    old_value: 188
+  "root['relTypes']['(:Drug)-[:disease]->()']":
+    new_value: 1973
+    old_value: 720
+  "root['relTypes']['(:Reaction)-[:summation]->()']":
+    new_value: 11411
+    old_value: 10973
+  "root['relTypes']['()-[:includedLocation]->(:GO_Term)']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['()-[:hasCandidate]->(:GenomeEncodedEntity)']":
+    new_value: 6158
+    old_value: 4874
+  "root['relTypes']['()-[:activeUnitOf]->(:CatalystActivity)']":
+    new_value: 1140
+    old_value: 1057
+  "root['relTypes']['()-[:entityOnOtherCell]->()']":
+    new_value: 426
+    old_value: 425
+  "root['relTypes']['(:SimpleEntity)-[:crossReference]->()']":
+    new_value: 1206
+    old_value: 1195
+  "root['relTypes']['()-[:normalReaction]->()']":
+    new_value: 693
+    old_value: 683
+  "root['relTypes']['(:Event)-[:disease]->()']":
+    new_value: 2582
+    old_value: 2471
+  "root['relTypes']['(:Protein)-[:catalystOf]->()']":
+    new_value: 1112
+    old_value: 1089
+  "root['relTypes']['()-[:hasEvent]->(:ReactionLikeEvent)']":
+    new_value: 14527
+    old_value: 14000
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:catalystOf]->()']":
+    new_value: 1112
+    old_value: 1089
+  "root['relTypes']['(:Gene)-[:componentOf]->()']":
+    new_value: 640
+    old_value: 616
+  "root['relTypes']['(:ProteinDrug)-[:componentOf]->()']":
+    new_value: 17
+    old_value: 12
+  "root['relTypes']['()-[:catalystActivity]->(:CatalystActivity)']":
+    new_value: 892
+    old_value: 825
+  "root['relTypes']['(:ProteinDrug)-[:memberOf]->()']":
+    new_value: 35
+    old_value: 17
+  "root['relTypes']['(:RegulationReference)-[:regulation]->()']":
+    new_value: 1323
+    old_value: 1269
+  "root['relTypes']['()-[:requiredInputComponent]->(:GenomeEncodedEntity)']":
+    new_value: 25
+    old_value: 19
+  "root['relTypes']['()-[:activeUnitOf]->(:PositiveRegulation)']":
+    new_value: 503
+    old_value: 481
+  "root['relTypes']['()-[:hasEvent]->(:Reaction)']":
+    new_value: 11804
+    old_value: 11408
+  "root['relTypes']['()-[:repeatedUnit]->()']":
+    new_value: 232
+    old_value: 224
+  "root['relTypes']['()-[:instanceOf]->()']":
+    new_value: 545
+    old_value: 532
+  "root['relTypes']['()-[:disease]->(:ExternalOntology)']":
+    new_value: 15261
+    old_value: 12752
+  "root['relTypes']['()-[:normalReaction]->(:BlackBoxEvent)']":
+    new_value: 26
+    old_value: 25
+  "root['relTypes']['(:EntityFunctionalStatus)-[:functionalStatus]->()']":
+    new_value: 1000
+    old_value: 990
+  "root['relTypes']['(:Pathway)-[:hasEncapsulatedEvent]->()']":
+    new_value: 455
+    old_value: 391
+  "root['relTypes']['(:Polymer)-[:componentOf]->()']":
+    new_value: 188
+    old_value: 179
+  "root['relTypes']['(:EntitySet)-[:hasCandidate]->()']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypes']['()-[:regulation]->(:PositiveGeneExpressionRegulation)']":
+    new_value: 519
+    old_value: 506
+  "root['relTypes']['(:NegativeRegulation)-[:regulates]->()']":
+    new_value: 789
+    old_value: 724
+  "root['relTypes']['(:BlackBoxEvent)-[:goBiologicalProcess]->()']":
+    new_value: 75
+    old_value: 68
+  "root['relTypes']['(:ReactionLikeEvent)-[:catalystActivityReference]->()']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypes']['()-[:hasModifiedResidue]->(:NonsenseMutation)']":
+    new_value: 895
+    old_value: 34
+  "root['relTypes']['(:ReactionLikeEvent)-[:disease]->()']":
+    new_value: 1802
+    old_value: 1725
+  "root['relTypes']['()-[:isoformParent]->(:ReferenceEntity)']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:hasCandidate]->(:SimpleEntity)']":
+    new_value: 30
+    old_value: 27
+  "root['relTypes']['(:Regulation)-[:goBiologicalProcess]->()']":
+    new_value: 12
+    old_value: 5
+  "root['relTypes']['()-[:disease]->(:Disease)']":
+    new_value: 15261
+    old_value: 12752
+  "root['relTypes']['()-[:hasCandidate]->(:RNA)']":
+    new_value: 13
+    old_value: 10
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceGeneProduct)']":
+    new_value: 27308
+    old_value: 26607
+  "root['relTypes']['(:Reaction)-[:catalystActivityReference]->()']":
+    new_value: 951
+    old_value: 904
+  "root['relTypes']['(:DefinedSet)-[:regulatorOf]->()']":
+    new_value: 106
+    old_value: 103
+  "root['relTypes']['(:PhysicalEntity)-[:input]->()']":
+    new_value: 26606
+    old_value: 25485
+  "root['relTypes']['()-[:componentOf]->(:GO_Term)']":
+    new_value: 286
+    old_value: 282
+  "root['relTypes']['()-[:activeUnitOf]->(:NegativeGeneExpressionRegulation)']":
+    new_value: 150
+    old_value: 145
+  "root['relTypes']['()-[:goBiologicalProcess]->()']":
+    new_value: 1789
+    old_value: 1683
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceTherapeutic)']":
+    new_value: 956
+    old_value: 414
+  "root['relTypes']['(:SimpleEntity)-[:memberOf]->()']":
+    new_value: 1877
+    old_value: 1732
+  "root['relTypes']['(:Event)-[:regulationReference]->()']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypes']['(:PhysicalEntity)-[:entityOnOtherCell]->()']":
+    new_value: 200
+    old_value: 199
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceRNASequence)']":
+    new_value: 306
+    old_value: 229
+  "root['relTypes']['(:ReactionLikeEvent)-[:summation]->()']":
+    new_value: 14168
+    old_value: 13479
+  "root['relTypes']['(:Event)-[:requiredInputComponent]->()']":
+    new_value: 61
+    old_value: 52
+  "root['relTypes']['()-[:regulation]->(:PositiveRegulation)']":
+    new_value: 914
+    old_value: 887
+  "root['relTypes']['(:PhysicalEntity)-[:referenceEntity]->()']":
+    new_value: 33291
+    old_value: 31592
+  "root['relTypes']['()-[:surroundedBy]->()']":
+    new_value: 181
+    old_value: 179
+  "root['relTypes']['(:Protein)-[:disease]->()']":
+    new_value: 8051
+    old_value: 7127
+  "root['relTypes']['(:BlackBoxEvent)-[:summation]->()']":
+    new_value: 2283
+    old_value: 2040
+  "root['relTypes']['(:Event)-[:hasEvent]->()']":
+    new_value: 17088
+    old_value: 16497
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:componentOf]->()']":
+    new_value: 16265
+    old_value: 15883
+  "root['relTypes']['()-[:catalystActivity]->()']":
+    new_value: 892
+    old_value: 825
+  "root['relTypes']['(:Pathway)-[:goBiologicalProcess]->()']":
+    new_value: 1210
+    old_value: 1149
+  "root['relTypes']['(:Complex)-[:regulatorOf]->()']":
+    new_value: 1321
+    old_value: 1275
+  "root['relTypes']['(:ChemicalDrug)-[:activeUnitOf]->()']":
+    new_value: 6
+    old_value: 5
+  "root['relTypes']['(:GenomeEncodedEntity)-[:activeUnitOf]->()']":
+    new_value: 1041
+    old_value: 971
+  "root['relTypes']['(:SimpleEntity)-[:goCellularComponent]->()']":
+    new_value: 14
+    old_value: 13
+  "root['relTypes']['()-[:output]->(:OtherEntity)']":
+    new_value: 129
+    old_value: 126
+  "root['relTypes']['(:Gene)-[:input]->()']":
+    new_value: 1264
+    old_value: 1211
+  "root['relTypes']['(:ChemicalDrug)-[:disease]->()']":
+    new_value: 1881
+    old_value: 678
+  "root['relTypes']['(:RNA)-[:memberOf]->()']":
+    new_value: 195
+    old_value: 123
+  "root['relTypes']['(:Reaction)-[:regulationReference]->()']":
+    new_value: 331
+    old_value: 304
+  "root['relTypes']['()-[:hasModifiedResidue]->(:FragmentModification)']":
+    new_value: 1089
+    old_value: 777
+  "root['relTypes']['()-[:input]->(:BlackBoxEvent)']":
+    new_value: 2867
+    old_value: 2595
+  "root['relTypes']['()-[:hasEvent]->(:Pathway)']":
+    new_value: 2561
+    old_value: 2497
+  "root['relTypes']['(:FailedReaction)-[:disease]->()']":
+    new_value: 501
+    old_value: 483
+  "root['relTypes']['(:Reaction)-[:output]->()']":
+    new_value: 18309
+    old_value: 17598
+  "root['relTypes']['(:Reaction)-[:precedingEvent]->()']":
+    new_value: 10106
+    old_value: 9675
+  "root['relTypes']['()-[:hasPart]->()']":
+    new_value: 32
+    old_value: 31
+  "root['relTypes']['(:CatalystActivity)-[:catalyzes]->()']":
+    new_value: 6352
+    old_value: 6112
+  "root['relTypes']['()-[:catalyzes]->(:Reaction)']":
+    new_value: 5634
+    old_value: 5433
+  "root['relTypes']['()-[:goCellularComponent]->(:GO_CellularComponent)']":
+    new_value: 210
+    old_value: 195
+  "root['relTypes']['(:CatalystActivityReference)-[:catalystActivity]->()']":
+    new_value: 892
+    old_value: 825
+  "root['relTypes']['(:PhysicalEntity)-[:disease]->()']":
+    new_value: 12679
+    old_value: 10281
+  "root['relTypes']['(:CandidateSet)-[:componentOf]->()']":
+    new_value: 1215
+    old_value: 1148
+  "root['relTypes']['(:Protein)-[:hasModifiedResidue]->()']":
+    new_value: 20023
+    old_value: 19303
+  "root['relTypes']['(:Gene)-[:hasModifiedResidue]->()']":
+    new_value: 3
+    old_value: 2
+  "root['relTypes']['()-[:memberOf]->(:DefinedSet)']":
+    new_value: 21991
+    old_value: 19958
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:input]->()']":
+    new_value: 6630
+    old_value: 6396
+  "root['relTypes']['()-[:hasCandidate]->(:EntityWithAccessionedSequence)']":
+    new_value: 6158
+    old_value: 4874
+  "root['relTypes']['(:CandidateSet)-[:hasCandidate]->()']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypes']['()-[:goCellularComponent]->()']":
+    new_value: 210
+    old_value: 195
+  "root['relTypes']['()-[:disease]->()']":
+    new_value: 15261
+    old_value: 12752
+  "root['relTypes']['()-[:hasModifiedResidue]->(:FragmentInsertionModification)']":
+    new_value: 248
+    old_value: 226
+  "root['relTypes']['(:ChemicalDrug)-[:componentOf]->()']":
+    new_value: 46
+    old_value: 36
+  "root['relTypes']['(:Protein)-[:regulatorOf]->()']":
+    new_value: 461
+    old_value: 454
+  "root['relTypes']['()-[:requiredInputComponent]->(:EntityWithAccessionedSequence)']":
+    new_value: 25
+    old_value: 19
+  "root['relTypes']['(:Drug)-[:activeUnitOf]->()']":
+    new_value: 10
+    old_value: 9
+  "root['relTypes']['(:CandidateSet)-[:memberOf]->()']":
+    new_value: 154
+    old_value: 138
+  "root['relTypes']['(:SimpleEntity)-[:regulatorOf]->()']":
+    new_value: 239
+    old_value: 233
+  "root['relTypes']['(:EntitySet)-[:catalystOf]->()']":
+    new_value: 1043
+    old_value: 1003
+  "root['relTypes']['()-[:regulates]->(:BlackBoxEvent)']":
+    new_value: 1319
+    old_value: 1278
+  "root['relTypes']['(:ReferenceMolecule)-[:referenceDatabase]->()']":
+    new_value: 1929
+    old_value: 1897
+  "root['relTypes']['(:CandidateSet)-[:catalystOf]->()']":
+    new_value: 263
+    old_value: 239
+  "root['relTypes']['()-[:referenceEntity]->()']":
+    new_value: 33291
+    old_value: 31592
+  "root['relTypes']['(:GeneticallyModifiedResidue)-[:psiMod]->()']":
+    new_value: 4564
+    old_value: 4198
+  "root['relTypes']['()-[:hasModifiedResidue]->(:ModifiedResidue)']":
+    new_value: 14004
+    old_value: 13795
+  "root['relTypes']['(:SimpleEntity)-[:input]->()']":
+    new_value: 8723
+    old_value: 8398
+  "root['relTypes']['(:EntitySet)-[:memberOf]->()']":
+    new_value: 614
+    old_value: 553
+  "root['relTypes']['()-[:output]->(:Protein)']":
+    new_value: 3056
+    old_value: 2846
+  "root['relTypes']['()-[:output]->(:Chemical)']":
+    new_value: 7868
+    old_value: 7514
+  "root['relTypes']['(:Complex)-[:catalystOf]->()']":
+    new_value: 2439
+    old_value: 2345
+  "root['relTypes']['(:GeneticallyModifiedResidue)-[:referenceSequence]->()']":
+    new_value: 3641
+    old_value: 3079
+  "root['relTypes']['(:PhysicalEntity)-[:goCellularComponent]->()']":
+    new_value: 210
+    old_value: 195
+  "root['relTypes']['()-[:hasEvent]->(:Event)']":
+    new_value: 17088
+    old_value: 16497
+  "root['relTypes']['(:CandidateSet)-[:input]->()']":
+    new_value: 756
+    old_value: 692
+  "root['relTypes']['()-[:hasCandidate]->(:Protein)']":
+    new_value: 6119
+    old_value: 4838
+  "root['relTypes']['(:BlackBoxEvent)-[:requiredInputComponent]->()']":
+    new_value: 25
+    old_value: 18
+  "root['relTypes']['(:BlackBoxEvent)-[:regulationReference]->()']":
+    new_value: 815
+    old_value: 793
+  "root['relTypes']['()-[:hasModifiedResidue]->(:TranslationalModification)']":
+    new_value: 15989
+    old_value: 15846
+  "root['relTypes']['(:EntitySet)-[:activeUnitOf]->()']":
+    new_value: 327
+    old_value: 300
+  "root['relTypes']['()-[:precedingEvent]->(:FailedReaction)']":
+    new_value: 4
+    old_value: 1
+  "root['relTypes']['(:PhysicalEntity)-[:repeatedUnit]->()']":
+    new_value: 232
+    old_value: 224
+  "root['relTypes']['(:Event)-[:summation]->()']":
+    new_value: 16722
+    old_value: 15958
+  "root['relTypes']['()-[:hasEncapsulatedEvent]->()']":
+    new_value: 455
+    old_value: 391
+  "root['relTypes']['()-[:input]->(:FailedReaction)']":
+    new_value: 921
+    old_value: 893
+  "root['relTypes']['()-[:normalPathway]->(:Event)']":
+    new_value: 412
+    old_value: 399
+  "root['relTypes']['()-[:regulation]->(:NegativeRegulation)']":
+    new_value: 409
+    old_value: 382
+  "root['relTypes']['(:Requirement)-[:regulates]->()']":
+    new_value: 156
+    old_value: 154
+  "root['relTypes']['(:EntitySet)-[:componentOf]->()']":
+    new_value: 4693
+    old_value: 4458
+  "root['relTypes']['(:Compartment)-[:componentOf]->()']":
+    new_value: 121
+    old_value: 119
+  "root['relTypes']['(:Drug)-[:memberOf]->()']":
+    new_value: 963
+    old_value: 391
+  "root['relTypes']['(:Drug)-[:input]->()']":
+    new_value: 173
+    old_value: 84
+  "root['relTypes']['(:PhysicalEntity)-[:crossReference]->()']":
+    new_value: 5704
+    old_value: 5449
+  "root['relTypes']['(:ModifiedNucleotide)-[:referenceSequence]->()']":
+    new_value: 13
+    old_value: 10
+  "root['relTypes']['(:Protein)-[:crossReference]->()']":
+    new_value: 2923
+    old_value: 2237
+  "root['relTypes']['()-[:precedingEvent]->()']":
+    new_value: 12711
+    old_value: 11931
+  "root['relTypes']['()-[:componentOf]->(:Complex)']":
+    new_value: 31850
+    old_value: 30834
+  "root['relTypes']['()-[:functionalStatus]->()']":
+    new_value: 1000
+    old_value: 990
+  "root['relTypes']['(:PositiveGeneExpressionRegulation)-[:activity]->()']":
+    new_value: 9
+    old_value: 2
+  "root['relTypes']['()-[:activeUnitOf]->()']":
+    new_value: 1920
+    old_value: 1799
+  "root['relTypes']['()-[:hasModifiedResidue]->(:FragmentReplacedModification)']":
+    new_value: 737
+    old_value: 447
+  "root['relTypes']['(:OtherEntity)-[:input]->()']":
+    new_value: 177
+    old_value: 173
+  "root['relTypes']['(:DefinedSet)-[:catalystOf]->()']":
+    new_value: 780
+    old_value: 764
+  "root['relTypes']['(:FailedReaction)-[:precedingEvent]->()']":
+    new_value: 12
+    old_value: 10
+  "root['relTypes']['(:Regulation)-[:regulates]->()']":
+    new_value: 2273
+    old_value: 2165
+  "root['relTypes']['(:ReplacedResidue)-[:referenceSequence]->()']":
+    new_value: 2725
+    old_value: 2462
+  "root['relTypes']['()-[:regulation]->(:NegativeGeneExpressionRegulation)']":
+    new_value: 153
+    old_value: 148
+  "root['relTypes']['(:Chemical)-[:memberOf]->()']":
+    new_value: 1877
+    old_value: 1732
+  "root['relTypes']['()-[:entityOnOtherCell]->(:SimpleEntity)']":
+    new_value: 42
+    old_value: 41
+  "root['relTypes']['()-[:hasCandidate]->(:Complex)']":
+    new_value: 616
+    old_value: 550
+  "root['relTypes']['(:Reaction)-[:disease]->()']":
+    new_value: 1074
+    old_value: 1031
+  "root['relTypes']['(:Complex)-[:disease]->()']":
+    new_value: 1830
+    old_value: 1668
+  "root['relTypes']['()-[:normalEntity]->(:EntityWithAccessionedSequence)']":
+    new_value: 187
+    old_value: 185
+  "root['relTypes']['(:PhysicalEntity)-[:includedLocation]->()']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['()-[:componentOf]->()']":
+    new_value: 32136
+    old_value: 31116
+  "root['relTypes']['()-[:output]->(:EntityWithAccessionedSequence)']":
+    new_value: 3154
+    old_value: 2942
+  "root['relTypes']['(:GenomeEncodedEntity)-[:input]->()']":
+    new_value: 6795
+    old_value: 6556
+  "root['relTypes']['(:NegativeGeneExpressionRegulation)-[:regulates]->()']":
+    new_value: 193
+    old_value: 184
+  "root['relTypes']['(:Event)-[:catalystActivityReference]->()']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypes']['()-[:hasModifiedResidue]->(:AbstractModifiedResidue)']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypes']['(:ChemicalDrug)-[:input]->()']":
+    new_value: 154
+    old_value: 70
+  "root['relTypes']['(:FragmentInsertionModification)-[:referenceSequence]->()']":
+    new_value: 128
+    old_value: 117
+  "root['relTypes']['(:Reaction)-[:goBiologicalProcess]->()']":
+    new_value: 491
+    old_value: 460
+  "root['relTypes']['(:PhysicalEntity)-[:hasCandidate]->()']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypes']['(:CandidateSet)-[:activeUnitOf]->()']":
+    new_value: 110
+    old_value: 102
+  "root['relTypes']['(:Event)-[:normalPathway]->()']":
+    new_value: 412
+    old_value: 399
+  "root['relTypes']['(:PhysicalEntity)-[:activeUnitOf]->()']":
+    new_value: 1920
+    old_value: 1799
+  "root['relTypes']['(:Compartment)-[:surroundedBy]->()']":
+    new_value: 141
+    old_value: 138
+  "root['relTypes']['(:ReferenceSequence)-[:isoformParent]->()']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceRNASequence)']":
+    new_value: 12
+    old_value: 10
+  "root['relTypes']['(:Complex)-[:includedLocation]->()']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['(:TopLevelPathway)-[:goBiologicalProcess]->()']":
+    new_value: 21
+    old_value: 19
+  "root['relTypes']['()-[:output]->(:PhysicalEntity)']":
+    new_value: 21367
+    old_value: 20388
+  "root['relTypes']['()-[:hasEvent]->(:FailedReaction)']":
+    new_value: 440
+    old_value: 432
+  "root['relTypes']['()-[:includedLocation]->(:Compartment)']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['()-[:regulates]->(:Reaction)']":
+    new_value: 942
+    old_value: 875
+  "root['relTypes']['()-[:repeatedUnit]->(:DefinedSet)']":
+    new_value: 60
+    old_value: 57
+  "root['relTypes']['()-[:normalReaction]->(:Event)']":
+    new_value: 693
+    old_value: 683
+  "root['relTypes']['(:ReferenceEntity)-[:isoformParent]->()']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['(:CandidateSet)-[:disease]->()']":
+    new_value: 282
+    old_value: 255
+  "root['relTypes']['(:PhysicalEntity)-[:regulatorOf]->()']":
+    new_value: 2166
+    old_value: 2100
+  "root['relTypes']['(:NonsenseMutation)-[:referenceSequence]->()']":
+    new_value: 862
+    old_value: 34
+  "root['relTypes']['()-[:includedLocation]->()']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['(:Event)-[:goBiologicalProcess]->()']":
+    new_value: 1777
+    old_value: 1678
+  "root['relTypes']['()-[:output]->(:DefinedSet)']":
+    new_value: 1151
+    old_value: 1104
+  "root['relTypes']['()-[:modification]->(:PhysicalEntity)']":
+    new_value: 2981
+    old_value: 2387
+  "root['relTypes']['()-[:hasCandidate]->()']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypes']['(:Event)-[:figure]->()']":
+    new_value: 624
+    old_value: 618
+  "root['relTypes']['(:Disease)-[:referenceDatabase]->()']":
+    new_value: 710
+    old_value: 575
+  "root['relTypes']['(:ChemicalDrug)-[:crossReference]->()']":
+    new_value: 330
+    old_value: 183
+  "root['relTypes']['(:GenomeEncodedEntity)-[:crossReference]->()']":
+    new_value: 3586
+    old_value: 2893
+  "root['relTypes']['(:ChemicalDrug)-[:memberOf]->()']":
+    new_value: 928
+    old_value: 374
+  "root['relTypes']['()-[:surroundedBy]->(:GO_CellularComponent)']":
+    new_value: 181
+    old_value: 179
+  "root['relTypes']['()-[:summation]->()']":
+    new_value: 17492
+    old_value: 17057
+  "root['relTypes']['(:BlackBoxEvent)-[:precedingEvent]->()']":
+    new_value: 2163
+    old_value: 2015
+  "root['relTypes']['()-[:regulatorOf]->(:NegativeRegulation)']":
+    new_value: 724
+    old_value: 689
+  "root['relTypes']['(:PhysicalEntity)-[:hasModifiedResidue]->()']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypes']['(:PhysicalEntity)-[:catalystOf]->()']":
+    new_value: 4678
+    old_value: 4524
+  "root['relTypes']['()-[:input]->(:Event)']":
+    new_value: 26606
+    old_value: 25485
+  "root['relTypes']['(:GO_CellularComponent)-[:componentOf]->()']":
+    new_value: 286
+    old_value: 282
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceSequence)']":
+    new_value: 28923
+    old_value: 27729
+  "root['relTypes']['(:GenomeEncodedEntity)-[:catalystOf]->()']":
+    new_value: 1187
+    old_value: 1167
+  "root['relTypes']['(:Pathway)-[:normalPathway]->()']":
+    new_value: 412
+    old_value: 399
+  "root['relTypes']['(:Pathway)-[:summation]->()']":
+    new_value: 2554
+    old_value: 2479
+  "root['relTypes']['()-[:regulationReference]->(:RegulationReference)']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypes']['()-[:hasCandidate]->(:ChemicalDrug)']":
+    new_value: 109
+    old_value: 68
+  "root['relTypes']['()-[:hasEncapsulatedEvent]->(:Event)']":
+    new_value: 455
+    old_value: 391
+  "root['relTypes']['()-[:precedingEvent]->(:Reaction)']":
+    new_value: 10493
+    old_value: 9964
+  "root['relTypes']['(:FailedReaction)-[:normalReaction]->()']":
+    new_value: 435
+    old_value: 423
+  "root['relTypes']['(:Complex)-[:goCellularComponent]->()']":
+    new_value: 181
+    old_value: 167
+  "root['relTypes']['()-[:catalystOf]->()']":
+    new_value: 4678
+    old_value: 4524
+  "root['relTypes']['(:ReactionLikeEvent)-[:output]->()']":
+    new_value: 21367
+    old_value: 20388
+  "root['relTypes']['()-[:summation]->(:Summation)']":
+    new_value: 17492
+    old_value: 17057
+  "root['relTypes']['()-[:activeUnitOf]->(:NegativeRegulation)']":
+    new_value: 277
+    old_value: 261
+  "root['relTypes']['()-[:hasPart]->(:GO_Term)']":
+    new_value: 32
+    old_value: 31
+  "root['relTypes']['(:GO_CellularComponent)-[:referenceDatabase]->()']":
+    new_value: 459
+    old_value: 453
+  "root['relTypes']['()-[:output]->(:CandidateSet)']":
+    new_value: 303
+    old_value: 294
+  "root['relTypes']['(:Compartment)-[:referenceDatabase]->()']":
+    new_value: 149
+    old_value: 148
+  "root['relTypes']['()-[:hasCandidate]->(:Chemical)']":
+    new_value: 30
+    old_value: 27
+  "root['relTypes']['()-[:precedingEvent]->(:ReactionLikeEvent)']":
+    new_value: 12588
+    old_value: 11779
+  "root['relTypes']['(:Chemical)-[:goCellularComponent]->()']":
+    new_value: 14
+    old_value: 13
+  "root['relTypes']['()-[:regulates]->()']":
+    new_value: 2273
+    old_value: 2165
+  "root['relTypes']['()-[:repeatedUnit]->(:EntityWithAccessionedSequence)']":
+    new_value: 68
+    old_value: 63
+  "root['relTypes']['(:Chemical)-[:crossReference]->()']":
+    new_value: 1206
+    old_value: 1195
+  "root['relTypes']['(:Polymer)-[:repeatedUnit]->()']":
+    new_value: 232
+    old_value: 224
+  "root['relTypes']['(:ReplacedResidue)-[:psiMod]->()']":
+    new_value: 4564
+    old_value: 4198
+  "root['relTypes']['()-[:regulatorOf]->(:NegativeGeneExpressionRegulation)']":
+    new_value: 185
+    old_value: 177
+  "root['relTypes']['()-[:output]->(:SimpleEntity)']":
+    new_value: 7868
+    old_value: 7514
+  "root['relTypes']['(:GO_BiologicalProcess)-[:referenceDatabase]->()']":
+    new_value: 944
+    old_value: 904
+  "root['relTypes']['(:NonsenseMutation)-[:psiMod]->()']":
+    new_value: 862
+    old_value: 34
+  "root['relTypes']['(:EntitySet)-[:regulatorOf]->()']":
+    new_value: 132
+    old_value: 129
+  "root['relTypes']['(:TopLevelPathway)-[:summation]->()']":
+    new_value: 29
+    old_value: 27
+  "root['relTypes']['()-[:requiredInputComponent]->(:PhysicalEntity)']":
+    new_value: 61
+    old_value: 52
+  "root['relTypes']['()-[:entityOnOtherCell]->(:Chemical)']":
+    new_value: 42
+    old_value: 41
+  "root['relTypes']['(:GO_MolecularFunction)-[:referenceDatabase]->()']":
+    new_value: 1514
+    old_value: 1492
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:memberOf]->()']":
+    new_value: 17983
+    old_value: 17006
+  "root['relTypes']['()-[:hasEncapsulatedEvent]->(:Pathway)']":
+    new_value: 455
+    old_value: 391
+  "root['relTypes']['()-[:hasModifiedResidue]->(:ReplacedResidue)']":
+    new_value: 2947
+    old_value: 2682
+  "root['relTypes']['()-[:output]->(:GenomeEncodedEntity)']":
+    new_value: 3284
+    old_value: 3067
+  "root['relTypes']['(:Protein)-[:activeUnitOf]->()']":
+    new_value: 1029
+    old_value: 959
+  "root['relTypes']['()-[:hasModifiedResidue]->(:GroupModifiedResidue)']":
+    new_value: 1792
+    old_value: 1552
+  "root['relTypes']['(:BlackBoxEvent)-[:disease]->()']":
+    new_value: 221
+    old_value: 205
+  "root['relTypes']['(:ReferenceIsoform)-[:isoformParent]->()']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:hasEvent]->(:BlackBoxEvent)']":
+    new_value: 2238
+    old_value: 2116
+  "root['relTypes']['(:PositiveGeneExpressionRegulation)-[:regulates]->()']":
+    new_value: 725
+    old_value: 705
+  "root['relTypes']['(:GO_Term)-[:referenceDatabase]->()']":
+    new_value: 2917
+    old_value: 2849
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceDNASequence)']":
+    new_value: 3
+    old_value: 2
+  "root['relTypes']['()-[:memberOf]->(:EntitySet)']":
+    new_value: 25146
+    old_value: 23055
+  "root['relTypes']['(:FragmentReplacedModification)-[:referenceSequence]->()']":
+    new_value: 709
+    old_value: 421
+  "root['relTypes']['()-[:memberOf]->(:PhysicalEntity)']":
+    new_value: 25146
+    old_value: 23055
+  "root['relTypes']['(:ReferenceGroup)-[:referenceDatabase]->()']":
+    new_value: 109
+    old_value: 108
+  "root['relTypes']['()-[:input]->()']":
+    new_value: 26606
+    old_value: 25485
+  "root['relTypes']['()-[:catalystActivityReference]->(:CatalystActivityReference)']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypes']['()-[:goBiologicalProcess]->(:GO_BiologicalProcess)']":
+    new_value: 1789
+    old_value: 1683
+  "root['relTypes']['(:ReferenceMolecule)-[:crossReference]->()']":
+    new_value: 3469
+    old_value: 2307
+  "root['relTypes']['(:EntitySet)-[:input]->()']":
+    new_value: 3280
+    old_value: 3066
+  "root['relTypes']['()-[:regulatorOf]->(:Requirement)']":
+    new_value: 154
+    old_value: 152
+  "root['relTypes']['(:Pathway)-[:disease]->()']":
+    new_value: 780
+    old_value: 746
+  "root['relTypes']['(:Complex)-[:input]->()']":
+    new_value: 7298
+    old_value: 7050
+  "root['relTypes']['()-[:regulatorOf]->()']":
+    new_value: 2166
+    old_value: 2100
+  "root['relTypes']['(:NegativeRegulation)-[:goBiologicalProcess]->()']":
+    new_value: 10
+    old_value: 3
+  "root['relTypes']['(:ProteinDrug)-[:referenceEntity]->()']":
+    new_value: 52
+    old_value: 27
+  "root['relTypes']['(:Drug)-[:componentOf]->()']":
+    new_value: 63
+    old_value: 48
+  "root['relTypes']['(:GenomeEncodedEntity)-[:hasModifiedResidue]->()']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypes']['(:Protein)-[:referenceEntity]->()']":
+    new_value: 27308
+    old_value: 26607
+  "root['relTypes']['()-[:normalEntity]->(:GenomeEncodedEntity)']":
+    new_value: 187
+    old_value: 185
+  "root['relTypes']['(:Complex)-[:activeUnitOf]->()']":
+    new_value: 534
+    old_value: 513
+  "root['relTypes']['()-[:regulation]->()']":
+    new_value: 1323
+    old_value: 1269
+  "root['relTypes']['(:Polymer)-[:input]->()']":
+    new_value: 160
+    old_value: 158
+  "root['relTypes']['()-[:catalyzes]->(:Event)']":
+    new_value: 6352
+    old_value: 6112
+  "root['relTypes']['(:ControlReference)-[:catalystActivity]->()']":
+    new_value: 892
+    old_value: 825
+  "root['relTypes']['(:ChemicalDrug)-[:regulatorOf]->()']":
+    new_value: 7
+    old_value: 5
+  "root['relTypes']['()-[:normalPathway]->(:Pathway)']":
+    new_value: 412
+    old_value: 399
+  "root['relTypes']['()-[:hasCandidate]->(:PhysicalEntity)']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypes']['(:Regulation)-[:activity]->()']":
+    new_value: 38
+    old_value: 25
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:activeUnitOf]->()']":
+    new_value: 1041
+    old_value: 971
+  "root['relTypes']['(:BlackBoxEvent)-[:catalystActivityReference]->()']":
+    new_value: 90
+    old_value: 71
+  "root['relTypes']['()-[:requiredInputComponent]->(:Protein)']":
+    new_value: 25
+    old_value: 19
+  "root['relTypes']['()-[:memberOf]->()']":
+    new_value: 25146
+    old_value: 23055
+  "root['relTypes']['(:SimpleEntity)-[:activeUnitOf]->()']":
+    new_value: 8
+    old_value: 6
+  "root['relTypes']['()-[:repeatedUnit]->(:PhysicalEntity)']":
+    new_value: 232
+    old_value: 224
+  "root['relTypes']['(:Gene)-[:memberOf]->()']":
+    new_value: 744
+    old_value: 345
+  "root['relTypes']['()-[:hasPart]->(:GO_CellularComponent)']":
+    new_value: 32
+    old_value: 31
+  "root['relTypes']['()-[:isoformParent]->()']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:requiredInputComponent]->()']":
+    new_value: 61
+    old_value: 52
+  "root['relTypes']['()-[:catalyzes]->(:BlackBoxEvent)']":
+    new_value: 438
+    old_value: 401
+  "root['relTypes']['()-[:regulatorOf]->(:Regulation)']":
+    new_value: 2166
+    old_value: 2100
+  "root['relTypes']['(:DefinedSet)-[:disease]->()']":
+    new_value: 479
+    old_value: 450
+  "root['relTypes']['(:DefinedSet)-[:activeUnitOf]->()']":
+    new_value: 217
+    old_value: 198
+  "root['relTypes']['()-[:figure]->()']":
+    new_value: 627
+    old_value: 621
+  "root['relTypes']['(:GenomeEncodedEntity)-[:regulatorOf]->()']":
+    new_value: 466
+    old_value: 457
+  "root['relTypes']['(:SimpleEntity)-[:componentOf]->()']":
+    new_value: 2055
+    old_value: 1917
+  "root['relTypes']['(:ReactionLikeEvent)-[:precedingEvent]->()']":
+    new_value: 12318
+    old_value: 11737
+  "root['relTypes']['()-[:regulatorOf]->(:PositiveGeneExpressionRegulation)']":
+    new_value: 716
+    old_value: 700
+  "root['relTypes']['(:ProteinDrug)-[:disease]->()']":
+    new_value: 92
+    old_value: 42
+  "root['relTypes']['()-[:hasModifiedResidue]->()']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypes']['(:GenomeEncodedEntity)-[:componentOf]->()']":
+    new_value: 16498
+    old_value: 16111
+  "root['relTypes']['()-[:goBiologicalProcess]->(:GO_Term)']":
+    new_value: 1789
+    old_value: 1683
+  "root['relTypes']['(:ChemicalDrug)-[:referenceEntity]->()']":
+    new_value: 904
+    old_value: 387
+  "root['relTypes']['(:ReactionLikeEvent)-[:goBiologicalProcess]->()']":
+    new_value: 567
+    old_value: 529
+  "root['relTypes']['()-[:componentOf]->(:GO_CellularComponent)']":
+    new_value: 286
+    old_value: 282
+  "root['relTypes']['(:FailedReaction)-[:catalystActivityReference]->()']":
+    new_value: 7
+    old_value: 3
+  "root['relTypes']['(:GO_Term)-[:hasPart]->()']":
+    new_value: 32
+    old_value: 31
+  "root['relTypes']['(:FailedReaction)-[:entityFunctionalStatus]->()']":
+    new_value: 433
+    old_value: 425
+  "root['relTypes']['()-[:regulates]->(:ReactionLikeEvent)']":
+    new_value: 2273
+    old_value: 2165
+  "root['relTypes']['()-[:catalyzes]->(:ReactionLikeEvent)']":
+    new_value: 6352
+    old_value: 6112
+  "root['relTypes']['()-[:hasEncapsulatedEvent]->(:TopLevelPathway)']":
+    new_value: 2
+    old_value: 1
+  "root['relTypes']['()-[:repeatedUnit]->(:EntitySet)']":
+    new_value: 63
+    old_value: 60
+  "root['relTypes']['()-[:isoformParent]->(:ReferenceGeneProduct)']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:activeUnitOf]->(:Regulation)']":
+    new_value: 780
+    old_value: 742
+  "root['relTypes']['(:Pathway)-[:hasEvent]->()']":
+    new_value: 17088
+    old_value: 16497
+  "root['relTypes']['()-[:precedingEvent]->(:BlackBoxEvent)']":
+    new_value: 2059
+    old_value: 1782
+  "root['relTypes']['(:Gene)-[:disease]->()']":
+    new_value: 5
+    old_value: 3
+  "root['relTypes']['(:Chemical)-[:regulatorOf]->()']":
+    new_value: 239
+    old_value: 233
+  "root['relTypes']['()-[:surroundedBy]->(:GO_Term)']":
+    new_value: 181
+    old_value: 179
+  "root['relTypes']['()-[:input]->(:Reaction)']":
+    new_value: 22762
+    old_value: 21941
+  "root['relTypes']['()-[:hasModifiedResidue]->(:GeneticallyModifiedResidue)']":
+    new_value: 4036
+    old_value: 3459
+  "root['relTypes']['(:Protein)-[:componentOf]->()']":
+    new_value: 15486
+    old_value: 15126
+  "root['relTypes']['(:GO_CellularComponent)-[:instanceOf]->()']":
+    new_value: 545
+    old_value: 532
+  "root['relTypes']['(:ReactionLikeEvent)-[:regulationReference]->()']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypes']['(:Chemical)-[:componentOf]->()']":
+    new_value: 2055
+    old_value: 1917
+  "root['relTypes']['()-[:requiredInputComponent]->(:Complex)']":
+    new_value: 31
+    old_value: 28
+  "root['relTypes']['()-[:figure]->(:Figure)']":
+    new_value: 627
+    old_value: 621
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:crossReference]->()']":
+    new_value: 3003
+    old_value: 2317
+  "root['relTypes']['()-[:regulationReference]->(:ControlReference)']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypes']['()-[:regulates]->(:Event)']":
+    new_value: 2273
+    old_value: 2165
+  "root['relTypes']['(:GenomeEncodedEntity)-[:memberOf]->()']":
+    new_value: 18166
+    old_value: 17181
+  "root['relTypes']['()-[:output]->(:EntitySet)']":
+    new_value: 1454
+    old_value: 1398
+  "root['relTypes']['(:FragmentModification)-[:referenceSequence]->()']":
+    new_value: 916
+    old_value: 617
+  "root['relTypes']['()-[:catalystActivityReference]->(:ControlReference)']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypes']['()-[:hasCandidate]->(:ProteinDrug)']":
+    new_value: 3
+    old_value: 2
+  "root['relTypes']['()-[:activeUnitOf]->(:PositiveGeneExpressionRegulation)']":
+    new_value: 465
+    old_value: 448
+  "root['relTypes']['(:Drug)-[:referenceEntity]->()']":
+    new_value: 956
+    old_value: 414
+  "root['relTypes']['(:GO_CellularComponent)-[:hasPart]->()']":
+    new_value: 32
+    old_value: 31
+  "root['relTypes']['()-[:diseaseEntity]->(:EntitySet)']":
+    new_value: 322
+    old_value: 318
+  "root['relTypes']['(:ControlReference)-[:regulation]->()']":
+    new_value: 1323
+    old_value: 1269
+  "root['relTypes']['(:GO_Term)-[:surroundedBy]->()']":
+    new_value: 181
+    old_value: 179
+  "root['relTypes']['()-[:input]->(:ReactionLikeEvent)']":
+    new_value: 26606
+    old_value: 25485
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceEntity)']":
+    new_value: 33291
+    old_value: 31592
+  "root['relTypes']['()-[:functionalStatus]->(:FunctionalStatus)']":
+    new_value: 1000
+    old_value: 990
+  "root['relTypes']['(:Chemical)-[:activeUnitOf]->()']":
+    new_value: 8
+    old_value: 6
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:referenceEntity]->()']":
+    new_value: 28923
+    old_value: 27729
+  "root['relTypes']['(:FailedReaction)-[:summation]->()']":
+    new_value: 431
+    old_value: 423
+  "root['relTypes']['()-[:surroundedBy]->(:Compartment)']":
+    new_value: 177
+    old_value: 175
+  "root['relTypes']['(:DefinedSet)-[:componentOf]->()']":
+    new_value: 3478
+    old_value: 3310
+  "root['relTypes']['()-[:hasCandidate]->(:Drug)']":
+    new_value: 112
+    old_value: 70
+  "root['relTypes']['()-[:memberOf]->(:CandidateSet)']":
+    new_value: 3155
+    old_value: 3097
+  "root['relTypes']['(:PhysicalEntity)-[:memberOf]->()']":
+    new_value: 25146
+    old_value: 23055
+  "root['relTypes']['(:Event)-[:normalReaction]->()']":
+    new_value: 693
+    old_value: 683
+  "root['relTypes']['(:Complex)-[:entityOnOtherCell]->()']":
+    new_value: 200
+    old_value: 199
+  "root['relTypes']['(:PositiveRegulation)-[:activity]->()']":
+    new_value: 34
+    old_value: 25
+  "root['relTypes']['(:EntitySet)-[:disease]->()']":
+    new_value: 761
+    old_value: 705
+  "root['relTypes']['(:GO_CellularComponent)-[:surroundedBy]->()']":
+    new_value: 181
+    old_value: 179
+  "root['relTypes']['(:GO_Term)-[:componentOf]->()']":
+    new_value: 286
+    old_value: 282
+  "root['relTypes']['()-[:repeatedUnit]->(:Protein)']":
+    new_value: 68
+    old_value: 63
+  "root['relTypes']['()-[:componentOf]->(:PhysicalEntity)']":
+    new_value: 31850
+    old_value: 30834
+  "root['relTypes']['(:GenomeEncodedEntity)-[:disease]->()']":
+    new_value: 8056
+    old_value: 7130
+  "root['relTypes']['(:BlackBoxEvent)-[:output]->()']":
+    new_value: 3003
+    old_value: 2735
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:disease]->()']":
+    new_value: 8056
+    old_value: 7130
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceDNASequence)']":
+    new_value: 1309
+    old_value: 893
+  "root['relTypes']['(:Drug)-[:regulatorOf]->()']":
+    new_value: 7
+    old_value: 5
+  "root['relTypes']['(:ReferenceGeneProduct)-[:isoformParent]->()']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['()-[:instanceOf]->(:GO_Term)']":
+    new_value: 545
+    old_value: 532
+  "root['relTypes']['(:Complex)-[:componentOf]->()']":
+    new_value: 7985
+    old_value: 7749
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:regulatorOf]->()']":
+    new_value: 464
+    old_value: 455
+  "root['relTypes']['(:SimpleEntity)-[:disease]->()']":
+    new_value: 46
+    old_value: 45
+  "root['relTypes']['(:DefinedSet)-[:memberOf]->()']":
+    new_value: 460
+    old_value: 415
+  "root['relTypes']['(:Event)-[:precedingEvent]->()']":
+    new_value: 12507
+    old_value: 11931
+  "root['relTypes']['()-[:modification]->(:Polymer)']":
+    new_value: 2559
+    old_value: 1802
+  "root['relTypes']['()-[:catalyzes]->(:FailedReaction)']":
+    new_value: 265
+    old_value: 263
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceIsoform)']":
+    new_value: 605
+    old_value: 594
+  "root['relTypes']['(:Reaction)-[:requiredInputComponent]->()']":
+    new_value: 27
+    old_value: 25
+  "root['relTypes']['()-[:output]->(:ChemicalDrug)']":
+    new_value: 70
+    old_value: 10
+  "root['relTypes']['()-[:output]->()']":
+    new_value: 21367
+    old_value: 20388
+  "root['relTypes']['(:GenomeEncodedEntity)-[:referenceEntity]->()']":
+    new_value: 28923
+    old_value: 27729
+  "root['relTypes']['(:Chemical)-[:input]->()']":
+    new_value: 8723
+    old_value: 8398
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:hasModifiedResidue]->()']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypes']['(:ReactionLikeEvent)-[:normalReaction]->()']":
+    new_value: 693
+    old_value: 683
+  "root['relTypes']['(:Event)-[:output]->()']":
+    new_value: 21367
+    old_value: 20388
+  "root['relTypes']['()-[:catalyzes]->()']":
+    new_value: 6352
+    old_value: 6112
+  "root['relTypes']['(:TranscriptionalModification)-[:referenceSequence]->()']":
+    new_value: 13
+    old_value: 10
+  "root['relTypes']['(:DefinedSet)-[:input]->()']":
+    new_value: 2524
+    old_value: 2374
+  "root['relTypes']['(:ExternalOntology)-[:referenceDatabase]->()']":
+    new_value: 898
+    old_value: 753
+  "root['relTypes']['()-[:hasEvent]->()']":
+    new_value: 17088
+    old_value: 16497
+  "root['relTypes']['(:Pathway)-[:figure]->()']":
+    new_value: 380
+    old_value: 366
+  "root['relTypes']['(:PositiveRegulation)-[:regulates]->()']":
+    new_value: 1484
+    old_value: 1441
+  "root['relTypes']['()-[:isoformParent]->(:ReferenceSequence)']":
+    new_value: 353
+    old_value: 338
+  "root['relTypes']['(:TopLevelPathway)-[:hasEvent]->()']":
+    new_value: 197
+    old_value: 192
+  "root['relTypes']['()-[:includedLocation]->(:GO_CellularComponent)']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypes']['(:RNA)-[:regulatorOf]->()']":
+    new_value: 3
+    old_value: 1
+  "root['relTypes']['()-[:regulationReference]->()']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypes']['(:ReferenceTherapeutic)-[:referenceDatabase]->()']":
+    new_value: 896
+    old_value: 389
+  "root['relTypesCount']['repeatedUnit']":
+    new_value: 232
+    old_value: 224
+  "root['relTypesCount']['goCellularComponent']":
+    new_value: 210
+    old_value: 195
+  "root['relTypesCount']['regulationReference']":
+    new_value: 1150
+    old_value: 1101
+  "root['relTypesCount']['instanceOf']":
+    new_value: 545
+    old_value: 532
+  "root['relTypesCount']['componentOf']":
+    new_value: 32136
+    old_value: 31116
+  "root['relTypesCount']['summation']":
+    new_value: 17492
+    old_value: 17057
+  "root['relTypesCount']['output']":
+    new_value: 21367
+    old_value: 20388
+  "root['relTypesCount']['includedLocation']":
+    new_value: 5379
+    old_value: 4987
+  "root['relTypesCount']['hasCandidate']":
+    new_value: 7046
+    old_value: 5651
+  "root['relTypesCount']['activeUnitOf']":
+    new_value: 1920
+    old_value: 1799
+  "root['relTypesCount']['hasPart']":
+    new_value: 32
+    old_value: 31
+  "root['relTypesCount']['hasModifiedResidue']":
+    new_value: 20026
+    old_value: 19305
+  "root['relTypesCount']['referenceEntity']":
+    new_value: 33291
+    old_value: 31592
+  "root['relTypesCount']['normalPathway']":
+    new_value: 412
+    old_value: 399
+  "root['relTypesCount']['input']":
+    new_value: 26606
+    old_value: 25485
+  "root['relTypesCount']['regulatorOf']":
+    new_value: 2166
+    old_value: 2100
+  "root['relTypesCount']['precedingEvent']":
+    new_value: 12711
+    old_value: 11931
+  "root['relTypesCount']['normalReaction']":
+    new_value: 693
+    old_value: 683
+  "root['relTypesCount']['catalystActivity']":
+    new_value: 892
+    old_value: 825
+  "root['relTypesCount']['requiredInputComponent']":
+    new_value: 61
+    old_value: 52
+  "root['relTypesCount']['isoformParent']":
+    new_value: 353
+    old_value: 338
+  "root['relTypesCount']['surroundedBy']":
+    new_value: 181
+    old_value: 179
+  "root['relTypesCount']['hasEvent']":
+    new_value: 17088
+    old_value: 16497
+  "root['relTypesCount']['functionalStatus']":
+    new_value: 1000
+    old_value: 990
+  "root['relTypesCount']['memberOf']":
+    new_value: 25146
+    old_value: 23055
+  "root['relTypesCount']['catalyzes']":
+    new_value: 6352
+    old_value: 6112
+  "root['relTypesCount']['figure']":
+    new_value: 627
+    old_value: 621
+  "root['relTypesCount']['disease']":
+    new_value: 15261
+    old_value: 12752
+  "root['relTypesCount']['hasEncapsulatedEvent']":
+    new_value: 455
+    old_value: 391
+  "root['relTypesCount']['catalystActivityReference']":
+    new_value: 1049
+    old_value: 979
+  "root['relTypesCount']['entityOnOtherCell']":
+    new_value: 426
+    old_value: 425
+  "root['relTypesCount']['regulation']":
+    new_value: 1323
+    old_value: 1269
+  "root['relTypesCount']['catalystOf']":
+    new_value: 4678
+    old_value: 4524
+  "root['relTypesCount']['regulates']":
+    new_value: 2273
+    old_value: 2165
+  "root['relTypesCount']['goBiologicalProcess']":
+    new_value: 1789
+    old_value: 1683
+additive_change:
+  "root['nodeCount']":
+    old_value: 1565511
+    new_value: 911147
+    "increased:": 58 %
+  "root['relCount']":
+    old_value: 3117451
+    new_value: 1259644
+    "increased:": 40 %
+  "root['labels']['ReferenceIsoform']":
+    old_value: 2148
+    new_value: 1503
+    "increased:": 69 %
+  "root['labels']['IntraChainCrosslinkedResidue']":
+    old_value: 355
+    new_value: 325
+    "increased:": 91 %
+  "root['labels']['Interaction']":
+    old_value: 46003
+    new_value: 33700
+    "increased:": 73 %
+  "root['labels']['AbstractModifiedResidue']":
+    old_value: 49128
+    new_value: 42741
+    "increased:": 86 %
+  "root['labels']['Requirement']":
+    old_value: 608
+    new_value: 540
+    "increased:": 88 %
+  "root['labels']['InterChainCrosslinkedResidue']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['labels']['ReferenceDatabase']":
+    old_value: 139
+    new_value: 104
+    "increased:": 74 %
+  "root['labels']['TranslationalModification']":
+    old_value: 46039
+    new_value: 39087
+    "increased:": 84 %
+  "root['labels']['ReferenceSequence']":
+    old_value: 680115
+    new_value: 300392
+    "increased:": 44 %
+  "root['labels']['ReferenceRNASequence']":
+    old_value: 112899
+    new_value: 35550
+    "increased:": 31 %
+  "root['labels']['ReferenceEntity']":
+    old_value: 682509
+    new_value: 303326
+    "increased:": 44 %
+  "root['labels']['ReferenceGeneProduct']":
+    old_value: 98852
+    new_value: 84892
+    "increased:": 85 %
+  "root['labels']['ReferenceDNASequence']":
+    old_value: 468364
+    new_value: 179950
+    "increased:": 38 %
+  "root['labels']['GroupModifiedResidue']":
+    old_value: 9610
+    new_value: 8499
+    "increased:": 88 %
+  "root['labels']['CrosslinkedResidue']":
+    old_value: 3447
+    new_value: 847
+    "increased:": 24 %
+  "root['labels']['DatabaseIdentifier']":
+    old_value: 654630
+    new_value: 397890
+    "increased:": 60 %
+  "root['labels']['ModifiedResidue']":
+    old_value: 32982
+    new_value: 29741
+    "increased:": 90 %
+  "root['labels']['Reaction']":
+    old_value: 11797
+    new_value: 11723
+    "increased:": 99 %
+  "root['labels']['CatalystActivity']":
+    old_value: 34765
+    new_value: 30893
+    "increased:": 88 %
+  "root['labels']['PositiveRegulation']":
+    old_value: 3351
+    new_value: 3274
+    "increased:": 97 %
+  "root['labels']['UndirectedInteraction']":
+    old_value: 46003
+    new_value: 33700
+    "increased:": 73 %
+  "root['relTypes']['(:Complex)-[:summation]->()']":
+    old_value: 356
+    new_value: 354
+    "increased:": 99 %
+  "root['relTypes']['()-[:interactor]->(:ReferenceEntity)']":
+    old_value: 92006
+    new_value: 58792
+    "increased:": 63 %
+  "root['relTypes']['(:ReferenceIsoform)-[:referenceGene]->()']":
+    old_value: 3357
+    new_value: 870
+    "increased:": 25 %
+  "root['relTypes']['(:ReferenceSequence)-[:referenceTranscript]->()']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:TranslationalModification)-[:modification]->()']":
+    old_value: 12833
+    new_value: 9026
+    "increased:": 70 %
+  "root['relTypes']['(:ReferenceRNASequence)-[:referenceDatabase]->()']":
+    old_value: 112899
+    new_value: 35550
+    "increased:": 31 %
+  "root['relTypes']['()-[:referenceSequence]->()']":
+    old_value: 49128
+    new_value: 40519
+    "increased:": 82 %
+  "root['relTypes']['(:ReferenceGeneProduct)-[:referenceTranscript]->()']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['()-[:referenceGene]->()']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceSequence)']":
+    old_value: 49128
+    new_value: 40519
+    "increased:": 82 %
+  "root['relTypes']['()-[:diseaseEntity]->(:Complex)']":
+    old_value: 285
+    new_value: 281
+    "increased:": 98 %
+  "root['relTypes']['()-[:referenceGene]->(:ReferenceDNASequence)']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['()-[:secondReferenceSequence]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['(:TranslationalModification)-[:secondReferenceSequence]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['()-[:equivalentTo]->()']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['(:ReferenceSequence)-[:referenceDatabase]->()']":
+    old_value: 680115
+    new_value: 203723
+    "increased:": 29 %
+  "root['relTypes']['(:ReferenceSequence)-[:crossReference]->()']":
+    old_value: 643979
+    new_value: 348285
+    "increased:": 54 %
+  "root['relTypes']['(:ReferenceSequence)-[:referenceGene]->()']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['()-[:activity]->(:GO_Term)']":
+    old_value: 34790
+    new_value: 30908
+    "increased:": 88 %
+  "root['relTypes']['(:CandidateSet)-[:summation]->()']":
+    old_value: 102
+    new_value: 97
+    "increased:": 95 %
+  "root['relTypes']['()-[:precedingEvent]->(:Pathway)']":
+    old_value: 152
+    new_value: 123
+    "increased:": 80 %
+  "root['relTypes']['()-[:referenceGene]->(:ReferenceEntity)']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['(:Reaction)-[:crossReference]->()']":
+    old_value: 1559
+    new_value: 1287
+    "increased:": 82 %
+  "root['relTypes']['(:Chemical)-[:referenceEntity]->()']":
+    old_value: 3449
+    new_value: 3412
+    "increased:": 98 %
+  "root['relTypes']['(:ReferenceEntity)-[:referenceGene]->()']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['()-[:interactor]->(:ReferenceGeneProduct)']":
+    old_value: 91610
+    new_value: 58685
+    "increased:": 64 %
+  "root['relTypes']['(:IntraChainCrosslinkedResidue)-[:referenceSequence]->()']":
+    old_value: 355
+    new_value: 315
+    "increased:": 88 %
+  "root['relTypes']['(:Pathway)-[:precedingEvent]->()']":
+    old_value: 194
+    new_value: 189
+    "increased:": 97 %
+  "root['relTypes']['(:InterChainCrosslinkedResidue)-[:secondReferenceSequence]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['()-[:secondReferenceSequence]->(:ReferenceGeneProduct)']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['(:TranslationalModification)-[:referenceSequence]->()']":
+    old_value: 46039
+    new_value: 36865
+    "increased:": 80 %
+  "root['relTypes']['(:Reaction)-[:figure]->()']":
+    old_value: 232
+    new_value: 224
+    "increased:": 96 %
+  "root['relTypes']['(:CrosslinkedResidue)-[:psiMod]->()']":
+    old_value: 3447
+    new_value: 847
+    "increased:": 24 %
+  "root['relTypes']['(:CrosslinkedResidue)-[:secondReferenceSequence]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['(:Pathway)-[:crossReference]->()']":
+    old_value: 1585
+    new_value: 504
+    "increased:": 31 %
+  "root['relTypes']['()-[:referenceDatabase]->(:ReferenceDatabase)']":
+    old_value: 1386744
+    new_value: 251862
+    "increased:": 18 %
+  "root['relTypes']['(:ReferenceGeneProduct)-[:crossReference]->()']":
+    old_value: 643975
+    new_value: 348281
+    "increased:": 54 %
+  "root['relTypes']['(:RNA)-[:componentOf]->()']":
+    old_value: 141
+    new_value: 139
+    "increased:": 98 %
+  "root['relTypes']['(:OtherEntity)-[:crossReference]->()']":
+    old_value: 343
+    new_value: 341
+    "increased:": 99 %
+  "root['relTypes']['(:DefinedSet)-[:crossReference]->()']":
+    old_value: 16
+    new_value: 15
+    "increased:": 93 %
+  "root['relTypes']['(:CatalystActivity)-[:activity]->()']":
+    old_value: 34765
+    new_value: 30870
+    "increased:": 88 %
+  "root['relTypes']['(:Complex)-[:crossReference]->()']":
+    old_value: 596
+    new_value: 9
+    "increased:": 1 %
+  "root['relTypes']['(:Reaction)-[:entityFunctionalStatus]->()']":
+    old_value: 330
+    new_value: 322
+    "increased:": 97 %
+  "root['relTypes']['(:SimpleEntity)-[:referenceEntity]->()']":
+    old_value: 3449
+    new_value: 3412
+    "increased:": 98 %
+  "root['relTypes']['(:OtherEntity)-[:componentOf]->()']":
+    old_value: 372
+    new_value: 368
+    "increased:": 98 %
+  "root['relTypes']['(:GenomeEncodedEntity)-[:summation]->()']":
+    old_value: 207
+    new_value: 203
+    "increased:": 98 %
+  "root['relTypes']['(:InterChainCrosslinkedResidue)-[:equivalentTo]->()']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['(:AbstractModifiedResidue)-[:modification]->()']":
+    old_value: 12843
+    new_value: 9039
+    "increased:": 70 %
+  "root['relTypes']['()-[:reverseReaction]->(:Reaction)']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['()-[:psiMod]->(:PsiMod)']":
+    old_value: 50237
+    new_value: 43651
+    "increased:": 86 %
+  "root['relTypes']['(:ReferenceGeneProduct)-[:referenceGene]->()']":
+    old_value: 468525
+    new_value: 167735
+    "increased:": 35 %
+  "root['relTypes']['()-[:modification]->(:ReferenceGroup)']":
+    old_value: 10456
+    new_value: 6057
+    "increased:": 57 %
+  "root['relTypes']['()-[:modification]->()']":
+    old_value: 12843
+    new_value: 9039
+    "increased:": 70 %
+  "root['relTypes']['()-[:normalEntity]->(:EntitySet)']":
+    old_value: 103
+    new_value: 101
+    "increased:": 98 %
+  "root['relTypes']['(:ReactionLikeEvent)-[:crossReference]->()']":
+    old_value: 1559
+    new_value: 1287
+    "increased:": 82 %
+  "root['relTypes']['()-[:activity]->(:GO_MolecularFunction)']":
+    old_value: 34790
+    new_value: 30908
+    "increased:": 88 %
+  "root['relTypes']['()-[:interactor]->(:ReferenceMolecule)']":
+    old_value: 396
+    new_value: 107
+    "increased:": 27 %
+  "root['relTypes']['(:InterChainCrosslinkedResidue)-[:psiMod]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['(:AbstractModifiedResidue)-[:secondReferenceSequence]->()']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['()-[:reverseReaction]->()']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['(:ModifiedResidue)-[:referenceSequence]->()']":
+    old_value: 32982
+    new_value: 28250
+    "increased:": 85 %
+  "root['relTypes']['(:UndirectedInteraction)-[:interactor]->()']":
+    old_value: 92006
+    new_value: 58792
+    "increased:": 63 %
+  "root['relTypes']['(:Event)-[:crossReference]->()']":
+    old_value: 3144
+    new_value: 1791
+    "increased:": 56 %
+  "root['relTypes']['(:ReactionLikeEvent)-[:reverseReaction]->()']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['()-[:diseaseEntity]->(:EntityWithAccessionedSequence)']":
+    old_value: 56
+    new_value: 55
+    "increased:": 98 %
+  "root['relTypes']['(:ReferenceEntity)-[:referenceDatabase]->()']":
+    old_value: 682509
+    new_value: 206657
+    "increased:": 30 %
+  "root['relTypes']['()-[:normalEntity]->(:DefinedSet)']":
+    old_value: 70
+    new_value: 68
+    "increased:": 97 %
+  "root['relTypes']['(:InterChainCrosslinkedResidue)-[:referenceSequence]->()']":
+    old_value: 3092
+    new_value: 508
+    "increased:": 16 %
+  "root['relTypes']['(:Interaction)-[:interactor]->()']":
+    old_value: 92006
+    new_value: 58792
+    "increased:": 63 %
+  "root['relTypes']['()-[:referenceEntity]->(:ReferenceMolecule)']":
+    old_value: 3449
+    new_value: 3412
+    "increased:": 98 %
+  "root['relTypes']['(:EntitySet)-[:summation]->()']":
+    old_value: 152
+    new_value: 146
+    "increased:": 96 %
+  "root['relTypes']['(:ReferenceEntity)-[:crossReference]->()']":
+    old_value: 646327
+    new_value: 352536
+    "increased:": 54 %
+  "root['relTypes']['(:EntitySet)-[:crossReference]->()']":
+    old_value: 24
+    new_value: 17
+    "increased:": 70 %
+  "root['relTypes']['(:GroupModifiedResidue)-[:psiMod]->()']":
+    old_value: 9610
+    new_value: 8499
+    "increased:": 88 %
+  "root['relTypes']['(:TranslationalModification)-[:psiMod]->()']":
+    old_value: 46039
+    new_value: 39087
+    "increased:": 84 %
+  "root['relTypes']['(:IntraChainCrosslinkedResidue)-[:modification]->()']":
+    old_value: 167
+    new_value: 163
+    "increased:": 97 %
+  "root['relTypes']['(:EntityWithAccessionedSequence)-[:summation]->()']":
+    old_value: 197
+    new_value: 193
+    "increased:": 97 %
+  "root['relTypes']['(:IntraChainCrosslinkedResidue)-[:psiMod]->()']":
+    old_value: 355
+    new_value: 325
+    "increased:": 91 %
+  "root['relTypes']['(:EntityFunctionalStatus)-[:diseaseEntity]->()']":
+    old_value: 659
+    new_value: 658
+    "increased:": 99 %
+  "root['relTypes']['(:CrosslinkedResidue)-[:referenceSequence]->()']":
+    old_value: 3447
+    new_value: 823
+    "increased:": 23 %
+  "root['relTypes']['()-[:diseaseEntity]->(:PhysicalEntity)']":
+    old_value: 659
+    new_value: 658
+    "increased:": 99 %
+  "root['relTypes']['(:GroupModifiedResidue)-[:modification]->()']":
+    old_value: 9604
+    new_value: 8361
+    "increased:": 87 %
+  "root['relTypes']['(:Event)-[:reverseReaction]->()']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['(:AbstractModifiedResidue)-[:equivalentTo]->()']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['()-[:referenceTranscript]->(:ReferenceEntity)']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:ReferenceDNASequence)-[:referenceDatabase]->()']":
+    old_value: 468364
+    new_value: 83640
+    "increased:": 17 %
+  "root['relTypes']['(:CrosslinkedResidue)-[:modification]->()']":
+    old_value: 3229
+    new_value: 665
+    "increased:": 20 %
+  "root['relTypes']['()-[:psiMod]->()']":
+    old_value: 50237
+    new_value: 43651
+    "increased:": 86 %
+  "root['relTypes']['(:ReferenceIsoform)-[:referenceDatabase]->()']":
+    old_value: 2148
+    new_value: 1503
+    "increased:": 69 %
+  "root['relTypes']['()-[:referenceTranscript]->(:ReferenceRNASequence)']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:DefinedSet)-[:summation]->()']":
+    old_value: 50
+    new_value: 49
+    "increased:": 98 %
+  "root['relTypes']['(:ReactionLikeEvent)-[:figure]->()']":
+    old_value: 252
+    new_value: 244
+    "increased:": 96 %
+  "root['relTypes']['()-[:referenceGene]->(:ReferenceSequence)']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypes']['(:Protein)-[:summation]->()']":
+    old_value: 196
+    new_value: 192
+    "increased:": 97 %
+  "root['relTypes']['(:DatabaseIdentifier)-[:referenceDatabase]->()']":
+    old_value: 654630
+    new_value: 41390
+    "increased:": 6 %
+  "root['relTypes']['()-[:hasModifiedResidue]->(:InterChainCrosslinkedResidue)']":
+    old_value: 398
+    new_value: 92
+    "increased:": 23 %
+  "root['relTypes']['()-[:equivalentTo]->(:InterChainCrosslinkedResidue)']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['(:ReferenceIsoform)-[:referenceTranscript]->()']":
+    old_value: 1790
+    new_value: 532
+    "increased:": 29 %
+  "root['relTypes']['(:Reaction)-[:normalReaction]->()']":
+    old_value: 253
+    new_value: 251
+    "increased:": 99 %
+  "root['relTypes']['(:ModifiedResidue)-[:psiMod]->()']":
+    old_value: 32982
+    new_value: 29741
+    "increased:": 90 %
+  "root['relTypes']['()-[:reverseReaction]->(:Event)']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['(:CrosslinkedResidue)-[:equivalentTo]->()']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['(:InterChainCrosslinkedResidue)-[:modification]->()']":
+    old_value: 3062
+    new_value: 502
+    "increased:": 16 %
+  "root['relTypes']['(:GroupModifiedResidue)-[:referenceSequence]->()']":
+    old_value: 9610
+    new_value: 7792
+    "increased:": 81 %
+  "root['relTypes']['()-[:modification]->(:ReferenceEntity)']":
+    old_value: 10456
+    new_value: 6058
+    "increased:": 57 %
+  "root['relTypes']['()-[:instanceOf]->(:Compartment)']":
+    old_value: 89
+    new_value: 88
+    "increased:": 98 %
+  "root['relTypes']['()-[:psiMod]->(:ExternalOntology)']":
+    old_value: 50237
+    new_value: 43651
+    "increased:": 86 %
+  "root['relTypes']['()-[:secondReferenceSequence]->(:ReferenceEntity)']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['(:Compartment)-[:instanceOf]->()']":
+    old_value: 184
+    new_value: 174
+    "increased:": 94 %
+  "root['relTypes']['(:CandidateSet)-[:crossReference]->()']":
+    old_value: 8
+    new_value: 2
+    "increased:": 25 %
+  "root['relTypes']['(:TranslationalModification)-[:equivalentTo]->()']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['()-[:referenceTranscript]->()']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:ReferenceEntity)-[:referenceTranscript]->()']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:PhysicalEntity)-[:summation]->()']":
+    old_value: 782
+    new_value: 770
+    "increased:": 98 %
+  "root['relTypes']['()-[:activity]->()']":
+    old_value: 34790
+    new_value: 30908
+    "increased:": 88 %
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceEntity)']":
+    old_value: 49128
+    new_value: 40519
+    "increased:": 82 %
+  "root['relTypes']['(:Reaction)-[:reverseReaction]->()']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['()-[:referenceDatabase]->()']":
+    old_value: 1386744
+    new_value: 251862
+    "increased:": 18 %
+  "root['relTypes']['()-[:reverseReaction]->(:ReactionLikeEvent)']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceIsoform)']":
+    old_value: 393
+    new_value: 383
+    "increased:": 97 %
+  "root['relTypes']['()-[:interactor]->(:ReferenceIsoform)']":
+    old_value: 5450
+    new_value: 2170
+    "increased:": 39 %
+  "root['relTypes']['()-[:referenceSequence]->(:ReferenceGeneProduct)']":
+    old_value: 49116
+    new_value: 40504
+    "increased:": 82 %
+  "root['relTypes']['(:AbstractModifiedResidue)-[:referenceSequence]->()']":
+    old_value: 49128
+    new_value: 40519
+    "increased:": 82 %
+  "root['relTypes']['()-[:interactor]->(:ReferenceSequence)']":
+    old_value: 91610
+    new_value: 58685
+    "increased:": 64 %
+  "root['relTypes']['()-[:interactor]->()']":
+    old_value: 92006
+    new_value: 58792
+    "increased:": 63 %
+  "root['relTypes']['()-[:referenceTranscript]->(:ReferenceSequence)']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypes']['(:ReferenceGeneProduct)-[:referenceDatabase]->()']":
+    old_value: 98852
+    new_value: 84533
+    "increased:": 85 %
+  "root['relTypes']['()-[:diseaseEntity]->()']":
+    old_value: 659
+    new_value: 658
+    "increased:": 99 %
+  "root['relTypes']['()-[:modification]->(:EntitySet)']":
+    old_value: 585
+    new_value: 422
+    "increased:": 72 %
+  "root['relTypes']['()-[:diseaseEntity]->(:GenomeEncodedEntity)']":
+    old_value: 56
+    new_value: 55
+    "increased:": 98 %
+  "root['relTypes']['()-[:equivalentTo]->(:TranslationalModification)']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['()-[:diseaseEntity]->(:Protein)']":
+    old_value: 54
+    new_value: 53
+    "increased:": 98 %
+  "root['relTypes']['()-[:equivalentTo]->(:CrosslinkedResidue)']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypes']['()-[:crossReference]->(:DatabaseIdentifier)']":
+    old_value: 654920
+    new_value: 360031
+    "increased:": 54 %
+  "root['relTypes']['()-[:componentOf]->(:Compartment)']":
+    old_value: 93
+    new_value: 92
+    "increased:": 98 %
+  "root['relTypes']['()-[:hasModifiedResidue]->(:CrosslinkedResidue)']":
+    old_value: 499
+    new_value: 193
+    "increased:": 38 %
+  "root['relTypes']['()-[:crossReference]->()']":
+    old_value: 654920
+    new_value: 360031
+    "increased:": 54 %
+  "root['relTypes']['(:ReferenceIsoform)-[:crossReference]->()']":
+    old_value: 11511
+    new_value: 7588
+    "increased:": 65 %
+  "root['relTypes']['()-[:modification]->(:DefinedSet)']":
+    old_value: 585
+    new_value: 422
+    "increased:": 72 %
+  "root['relTypes']['(:AbstractModifiedResidue)-[:psiMod]->()']":
+    old_value: 50237
+    new_value: 43651
+    "increased:": 86 %
+  "root['relTypes']['()-[:secondReferenceSequence]->(:ReferenceSequence)']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypes']['()-[:equivalentTo]->(:AbstractModifiedResidue)']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypesCount']['reverseReaction']":
+    old_value: 95
+    new_value: 94
+    "increased:": 98 %
+  "root['relTypesCount']['modification']":
+    old_value: 12843
+    new_value: 9039
+    "increased:": 70 %
+  "root['relTypesCount']['referenceSequence']":
+    old_value: 49128
+    new_value: 40519
+    "increased:": 82 %
+  "root['relTypesCount']['referenceTranscript']":
+    old_value: 112660
+    new_value: 31105
+    "increased:": 27 %
+  "root['relTypesCount']['activity']":
+    old_value: 34790
+    new_value: 30908
+    "increased:": 88 %
+  "root['relTypesCount']['equivalentTo']":
+    old_value: 2880
+    new_value: 467
+    "increased:": 16 %
+  "root['relTypesCount']['crossReference']":
+    old_value: 654920
+    new_value: 360031
+    "increased:": 54 %
+  "root['relTypesCount']['secondReferenceSequence']":
+    old_value: 3092
+    new_value: 522
+    "increased:": 16 %
+  "root['relTypesCount']['diseaseEntity']":
+    old_value: 659
+    new_value: 658
+    "increased:": 99 %
+  "root['relTypesCount']['referenceDatabase']":
+    old_value: 1386744
+    new_value: 251862
+    "increased:": 18 %
+  "root['relTypesCount']['referenceGene']":
+    old_value: 468566
+    new_value: 167776
+    "increased:": 35 %
+  "root['relTypesCount']['interactor']":
+    old_value: 92006
+    new_value: 58792
+    "increased:": 63 %
+  "root['relTypesCount']['psiMod']":
+    old_value: 50237
+    new_value: 43651
+    "increased:": 86 %
+# Compare CONSUMED_BY
+# No changes
+# Compare PRODUCES
+# No changes
+# Compare constrains
+# No changes
+# Compare constrained values
+# Compare constrained values {'type': 'UNIQUENESS', 'entityType': 'NODE', 'labelsOrTypes': ['DatabaseObject'], 'properties': ['dbId']}
+# No changes
+# Compare constrained values {'type': 'UNIQUENESS', 'entityType': 'NODE', 'labelsOrTypes': ['EntitySet'], 'properties': ['dbId']}
+values_changed:
+  "root[80]['dbId']":
+    new_value: 9819367
+    old_value: 30595
+  "root[2338]":
+    new_value:
+      dbId: 9713797
+    old_value:
+      dbId: 8948966
+  "root[2337]":
+    new_value:
+      dbId: 9713836
+    old_value:
+      dbId: 8948978
+iterable_item_added:
+  "root[42]":
+    dbId: 9820428
+  "root[122]":
+    dbId: 9756821
+  "root[123]":
+    dbId: 9756822
+  "root[126]":
+    dbId: 9754127
+  "root[127]":
+    dbId: 9755201
+  "root[128]":
+    dbId: 9755202
+  "root[129]":
+    dbId: 9755199
+  "root[130]":
+    dbId: 9754133
+  "root[131]":
+    dbId: 9754132
+  "root[132]":
+    dbId: 9755203
+  "root[133]":
+    dbId: 9755197
+  "root[134]":
+    dbId: 9755198
+  "root[135]":
+    dbId: 9754128
+  "root[138]":
+    dbId: 9758262
+  "root[139]":
+    dbId: 9758263
+  "root[143]":
+    dbId: 9758261
+  "root[144]":
+    dbId: 9758259
+  "root[371]":
+    dbId: 9815671
+  "root[373]":
+    dbId: 9815664
+  "root[377]":
+    dbId: 9815683
+  "root[388]":
+    dbId: 9815678
+  "root[668]":
+    dbId: 9708724
+  "root[742]":
+    dbId: 171175
+  "root[761]":
+    dbId: 2176487
+  "root[835]":
+    dbId: 9734712
+  "root[852]":
+    dbId: 2187328
+  "root[858]":
+    dbId: 2395250
+  "root[893]":
+    dbId: 9707798
+  "root[899]":
+    dbId: 9729312
+  "root[927]":
+    dbId: 9729448
+  "root[938]":
+    dbId: 9730456
+  "root[939]":
+    dbId: 9730454
+  "root[952]":
+    dbId: 9691614
+  "root[1008]":
+    dbId: 9758606
+  "root[1024]":
+    dbId: 9769564
+  "root[1025]":
+    dbId: 9770128
+  "root[1026]":
+    dbId: 9770137
+  "root[1027]":
+    dbId: 9770136
+  "root[1028]":
+    dbId: 9770120
+  "root[1029]":
+    dbId: 9770781
+  "root[1067]":
+    dbId: 9764636
+  "root[1090]":
+    dbId: 9692432
+  "root[1359]":
+    dbId: 9691420
+  "root[1470]":
+    dbId: 9715042
+  "root[1487]":
+    dbId: 9710298
+  "root[1492]":
+    dbId: 9793686
+  "root[1497]":
+    dbId: 9714904
+  "root[1682]":
+    dbId: 9708562
+  "root[1683]":
+    dbId: 9708459
+  "root[1694]":
+    dbId: 9648956
+  "root[1814]":
+    dbId: 9708469
+  "root[1853]":
+    dbId: 9734267
+  "root[1878]":
+    dbId: 9716714
+  "root[2097]":
+    dbId: 9660116
+  "root[2098]":
+    dbId: 9717840
+  "root[2099]":
+    dbId: 9705575
+  "root[2100]":
+    dbId: 9757024
+  "root[2101]":
+    dbId: 9756546
+  "root[2159]":
+    dbId: 9726184
+  "root[2160]":
+    dbId: 9726189
+  "root[2163]":
+    dbId: 9726186
+  "root[2169]":
+    dbId: 9757478
+  "root[2170]":
+    dbId: 9757476
+  "root[2171]":
+    dbId: 9710957
+  "root[2172]":
+    dbId: 9708729
+  "root[2198]":
+    dbId: 9677898
+  "root[2199]":
+    dbId: 9714584
+  "root[2200]":
+    dbId: 9714406
+  "root[2205]":
+    dbId: 9816126
+  "root[2339]":
+    dbId: 9713799
+  "root[2340]":
+    dbId: 9736545
+  "root[2341]":
+    dbId: 9714114
+  "root[2342]":
+    dbId: 9713820
+  "root[2343]":
+    dbId: 9736536
+  "root[2427]":
+    dbId: 9728790
+  "root[2434]":
+    dbId: 9707552
+  "root[2435]":
+    dbId: 9707575
+  "root[2436]":
+    dbId: 9707486
+  "root[2437]":
+    dbId: 9707636
+  "root[2488]":
+    dbId: 9714134
+  "root[2511]":
+    dbId: 9707420
+  "root[2524]":
+    dbId: 9659678
+  "root[2525]":
+    dbId: 9659675
+  "root[2579]":
+    dbId: 9728134
+  "root[2707]":
+    dbId: 9659575
+  "root[2715]":
+    dbId: 9701105
+  "root[2717]":
+    dbId: 9701208
+  "root[2718]":
+    dbId: 9701157
+  "root[2721]":
+    dbId: 9649961
+  "root[2770]":
+    dbId: 9706850
+  "root[2780]":
+    dbId: 9705896
+  "root[2781]":
+    dbId: 9725881
+  "root[3163]":
+    dbId: 9634907
+  "root[3164]":
+    dbId: 9634889
+  "root[3535]":
+    dbId: 9699973
+  "root[3536]":
+    dbId: 9699981
+  "root[3537]":
+    dbId: 9700528
+  "root[3538]":
+    dbId: 9700529
+  "root[3539]":
+    dbId: 9700081
+  "root[3540]":
+    dbId: 9700552
+  "root[3541]":
+    dbId: 9700555
+  "root[3542]":
+    dbId: 9700086
+  "root[3543]":
+    dbId: 9700013
+  "root[3544]":
+    dbId: 3215043
+  "root[3545]":
+    dbId: 9699986
+  "root[3546]":
+    dbId: 9700560
+  "root[3547]":
+    dbId: 9700568
+  "root[3548]":
+    dbId: 9700564
+  "root[3549]":
+    dbId: 9700553
+  "root[3550]":
+    dbId: 9700079
+  "root[3551]":
+    dbId: 9699980
+  "root[3552]":
+    dbId: 9700080
+  "root[3553]":
+    dbId: 9700436
+  "root[3554]":
+    dbId: 9700082
+  "root[3555]":
+    dbId: 9700430
+  "root[3556]":
+    dbId: 9700078
+  "root[3557]":
+    dbId: 9700566
+  "root[3558]":
+    dbId: 9700085
+  "root[3559]":
+    dbId: 9700077
+  "root[3560]":
+    dbId: 9700558
+  "root[3561]":
+    dbId: 9700567
+  "root[3562]":
+    dbId: 9700087
+  "root[3563]":
+    dbId: 9700083
+  "root[3564]":
+    dbId: 9700559
+  "root[3565]":
+    dbId: 191476
+  "root[3566]":
+    dbId: 191477
+  "root[3591]":
+    dbId: 9705798
+  "root[3592]":
+    dbId: 9707314
+  "root[3594]":
+    dbId: 9677913
+  "root[3595]":
+    dbId: 9680941
+  "root[3624]":
+    dbId: 9679016
+  "root[3746]":
+    dbId: 5621452
+  "root[3747]":
+    dbId: 9667622
+  "root[3748]":
+    dbId: 9667595
+  "root[3755]":
+    dbId: 9696324
+  "root[3756]":
+    dbId: 9704291
+  "root[3757]":
+    dbId: 9704266
+  "root[3758]":
+    dbId: 9704261
+  "root[3759]":
+    dbId: 9626909
+  "root[3761]":
+    dbId: 9653947
+  "root[3762]":
+    dbId: 9692737
+  "root[3763]":
+    dbId: 9692532
+  "root[3764]":
+    dbId: 9693410
+  "root[3765]":
+    dbId: 9648224
+  "root[3813]":
+    dbId: 9623990
+  "root[3814]":
+    dbId: 9629673
+  "root[3815]":
+    dbId: 9708276
+  "root[3821]":
+    dbId: 9735776
+  "root[3892]":
+    dbId: 9710467
+  "root[3901]":
+    dbId: 9763197
+  "root[3902]":
+    dbId: 9709284
+  "root[3904]":
+    dbId: 9702088
+  "root[3906]":
+    dbId: 9704406
+  "root[3907]":
+    dbId: 9704332
+  "root[3913]":
+    dbId: 9730920
+  "root[3959]":
+    dbId: 9700238
+  "root[3965]":
+    dbId: 9652588
+  "root[3970]":
+    dbId: 9650988
+  "root[4058]":
+    dbId: 9758669
+  "root[4059]":
+    dbId: 9758668
+  "root[4060]":
+    dbId: 9759400
+  "root[4061]":
+    dbId: 9758675
+  "root[4062]":
+    dbId: 9659966
+  "root[4063]":
+    dbId: 9759448
+  "root[4064]":
+    dbId: 9758681
+  "root[4065]":
+    dbId: 9751044
+  "root[4066]":
+    dbId: 9753567
+  "root[4067]":
+    dbId: 9753559
+  "root[4068]":
+    dbId: 9753562
+  "root[4069]":
+    dbId: 9753787
+  "root[4070]":
+    dbId: 9753629
+  "root[4071]":
+    dbId: 9753624
+  "root[4072]":
+    dbId: 9753675
+  "root[4073]":
+    dbId: 9753788
+  "root[4074]":
+    dbId: 9753583
+  "root[4076]":
+    dbId: 9677343
+  "root[4081]":
+    dbId: 9756331
+  "root[4082]":
+    dbId: 9757155
+  "root[4083]":
+    dbId: 9757150
+  "root[4084]":
+    dbId: 9757148
+  "root[4085]":
+    dbId: 9748972
+  "root[4086]":
+    dbId: 9751045
+  "root[4087]":
+    dbId: 9750587
+  "root[4088]":
+    dbId: 9750548
+  "root[4089]":
+    dbId: 9750557
+  "root[4090]":
+    dbId: 9750602
+  "root[4455]":
+    dbId: 9708310
+  "root[4456]":
+    dbId: 9708332
+  "root[4457]":
+    dbId: 9708344
+  "root[4458]":
+    dbId: 9708316
+  "root[4459]":
+    dbId: 9708315
+  "root[4460]":
+    dbId: 9708815
+  "root[4461]":
+    dbId: 9708818
+  "root[4524]":
+    dbId: 9724734
+  "root[4528]":
+    dbId: 9726945
+  "root[4541]":
+    dbId: 9674540
+  "root[4542]":
+    dbId: 9674560
+  "root[4543]":
+    dbId: 9674547
+  "root[4544]":
+    dbId: 9010176
+  "root[4602]":
+    dbId: 9733334
+  "root[4603]":
+    dbId: 9817990
+  "root[4604]":
+    dbId: 9680346
+  "root[4605]":
+    dbId: 1888197
+  "root[4606]":
+    dbId: 9680655
+  "root[4679]":
+    dbId: 9734495
+  "root[4695]":
+    dbId: 9707237
+  "root[4947]":
+    dbId: 9709178
+  "root[4998]":
+    dbId: 9700681
+  "root[4999]":
+    dbId: 9708098
+  "root[5003]":
+    dbId: 9613840
+  "root[5004]":
+    dbId: 9613262
+  "root[5007]":
+    dbId: 9614108
+  "root[5043]":
+    dbId: 9726901
+  "root[5105]":
+    dbId: 9658849
+  "root[5106]":
+    dbId: 9663799
+  "root[5107]":
+    dbId: 9717399
+  "root[5108]":
+    dbId: 9737063
+  "root[5109]":
+    dbId: 9749945
+  "root[5110]":
+    dbId: 9717371
+  "root[5111]":
+    dbId: 9735538
+  "root[5112]":
+    dbId: 9737118
+  "root[5113]":
+    dbId: 9737102
+  "root[5114]":
+    dbId: 9712173
+  "root[5115]":
+    dbId: 9737371
+  "root[5116]":
+    dbId: 9737372
+  "root[5117]":
+    dbId: 9753711
+  "root[5118]":
+    dbId: 9753740
+  "root[5119]":
+    dbId: 9753741
+  "root[5120]":
+    dbId: 9737288
+  "root[5121]":
+    dbId: 9753724
+  "root[5122]":
+    dbId: 9737161
+  "root[5123]":
+    dbId: 9737263
+  "root[5124]":
+    dbId: 9753743
+  "root[5125]":
+    dbId: 9735725
+  "root[5126]":
+    dbId: 9737301
+  "root[5127]":
+    dbId: 9737155
+  "root[5128]":
+    dbId: 9737172
+  "root[5129]":
+    dbId: 9737280
+  "root[5130]":
+    dbId: 9737202
+  "root[5131]":
+    dbId: 9737265
+  "root[5132]":
+    dbId: 9735719
+  "root[5133]":
+    dbId: 9737191
+  "root[5134]":
+    dbId: 9737310
+  "root[5135]":
+    dbId: 9737184
+  "root[5136]":
+    dbId: 9753727
+  "root[5137]":
+    dbId: 9753721
+  "root[5138]":
+    dbId: 9753738
+  "root[5139]":
+    dbId: 9737199
+  "root[5140]":
+    dbId: 9753707
+  "root[5141]":
+    dbId: 9737176
+  "root[5142]":
+    dbId: 9712176
+  "root[5143]":
+    dbId: 9712200
+  "root[5144]":
+    dbId: 9752979
+  "root[5145]":
+    dbId: 9752978
+  "root[5146]":
+    dbId: 9752476
+  "root[5147]":
+    dbId: 9751605
+  "root[5165]":
+    dbId: 9018840
+  "root[5167]":
+    dbId: 9696296
+  "root[5168]":
+    dbId: 9019558
+  "root[5169]":
+    dbId: 9020391
+  "root[5170]":
+    dbId: 9020389
+  "root[5171]":
+    dbId: 9714686
+  "root[5172]":
+    dbId: 9020386
+  "root[5173]":
+    dbId: 9020393
+  "root[5174]":
+    dbId: 9017487
+  "root[5175]":
+    dbId: 9017486
+  "root[5176]":
+    dbId: 9017506
+  "root[5177]":
+    dbId: 9014455
+  "root[5178]":
+    dbId: 9014432
+  "root[5179]":
+    dbId: 9014451
+  "root[5180]":
+    dbId: 9014436
+  "root[5181]":
+    dbId: 9013046
+  "root[5182]":
+    dbId: 9013035
+  "root[5183]":
+    dbId: 9013040
+  "root[5184]":
+    dbId: 9013052
+  "root[5185]":
+    dbId: 9690490
+  "root[5186]":
+    dbId: 9693284
+  "root[5187]":
+    dbId: 9693124
+  "root[5188]":
+    dbId: 9013178
+  "root[5189]":
+    dbId: 9013168
+  "root[5190]":
+    dbId: 9013175
+  "root[5191]":
+    dbId: 9012837
+  "root[5192]":
+    dbId: 9714459
+  "root[5193]":
+    dbId: 9693252
+  "root[5194]":
+    dbId: 9013450
+  "root[5195]":
+    dbId: 5674243
+  "root[5196]":
+    dbId: 9013445
+  "root[5197]":
+    dbId: 9693211
+  "root[5198]":
+    dbId: 9014398
+  "root[5199]":
+    dbId: 5674231
+  "root[5200]":
+    dbId: 9014408
+  "root[5201]":
+    dbId: 9014425
+  "root[5202]":
+    dbId: 9013234
+  "root[5203]":
+    dbId: 9013227
+  "root[5204]":
+    dbId: 9013242
+  "root[5205]":
+    dbId: 9013243
+  "root[5206]":
+    dbId: 9018917
+  "root[5207]":
+    dbId: 9018843
+  "root[5208]":
+    dbId: 9018845
+  "root[5209]":
+    dbId: 9020366
+  "root[5212]":
+    dbId: 9013119
+  "root[5213]":
+    dbId: 9013126
+  "root[5214]":
+    dbId: 9013138
+  "root[5215]":
+    dbId: 9696288
+  "root[5216]":
+    dbId: 9714325
+  "root[5217]":
+    dbId: 8980694
+  "root[5218]":
+    dbId: 9013003
+  "root[5219]":
+    dbId: 8981636
+  "root[5220]":
+    dbId: 9696290
+  "root[5221]":
+    dbId: 9020433
+  "root[5222]":
+    dbId: 9020415
+  "root[5223]":
+    dbId: 9703850
+  "root[5224]":
+    dbId: 9702821
+  "root[5225]":
+    dbId: 9702346
+iterable_item_removed:
+  "root[258]":
+    dbId: 453132
+  "root[489]":
+    dbId: 374848
+  "root[548]":
+    dbId: 420566
+  "root[978]":
+    dbId: 2176482
+  "root[984]":
+    dbId: 2187329
+  "root[1331]":
+    dbId: 9644838
+  "root[1332]":
+    dbId: 2975817
+  "root[1465]":
+    dbId: 744229
+  "root[1466]":
+    dbId: 744234
+  "root[1475]":
+    dbId: 2869445
+  "root[1501]":
+    dbId: 2090076
+  "root[1548]":
+    dbId: 981567
+  "root[2245]":
+    dbId: 6794283
+  "root[2349]":
+    dbId: 9690532
+  "root[2454]":
+    dbId: 5229038
+  "root[2495]":
+    dbId: 4657039
+  "root[2710]":
+    dbId: 9682022
+  "root[3228]":
+    dbId: 381741
+  "root[3229]":
+    dbId: 8939445
+  "root[3230]":
+    dbId: 8939723
+  "root[3335]":
+    dbId: 194092
+  "root[3336]":
+    dbId: 194131
+  "root[4221]":
+    dbId: 3006323
+  "root[4435]":
+    dbId: 8933132
+  "root[4678]":
+    dbId: 4084703
+  "root[4862]":
+    dbId: 194906
+  "root[4863]":
+    dbId: 194862
+  "root[4864]":
+    dbId: 194897
+  "root[4865]":
+    dbId: 195337
+  "root[4866]":
+    dbId: 194904
+  "root[4867]":
+    dbId: 195116
+  "root[4922]":
+    dbId: 2889081
+  "root[4923]":
+    dbId: 2889062
+  "root[4944]":
+    dbId: 937304
+additive_change:
+  "root[5091]['dbId']":
+    old_value: 2203503
+    new_value: 173511
+    "increased:": 7 %
+# Compare constrained values {'type': 'UNIQUENESS', 'entityType': 'NODE', 'labelsOrTypes': ['DatabaseObject'], 'properties': ['stId']}
+# No changes
+# Compare constrained values {'type': 'UNIQUENESS', 'entityType': 'NODE', 'labelsOrTypes': ['PhysicalEntity'], 'properties': ['stId']}
