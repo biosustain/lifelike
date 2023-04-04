@@ -279,6 +279,8 @@ services:
       dockerfile: Dockerfile
     container_name: rabbitmq
     environment:
+      - ANNOTATOR_QUEUE=annotator
+      - POST_ANNOTATOR_QUEUE=post_annotator
       - RMQ_ADMIN_USERNAME=admin
       - RMQ_ADMIN_PASSWORD=password
       - RMQ_MESSENGER_USERNAME=messenger

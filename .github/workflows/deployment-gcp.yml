@@ -63,6 +63,12 @@ jobs:
             path: ./filebeat
           - image: metricbeat
             path: ./metricbeat
+          - image: annotator
+            path: ./annotator
+          - image: post-annotator
+            path: ./post-annotator
+          - image: rabbitmq
+            path: ./rabbitmq
 
     steps:
       - uses: actions/checkout@v3

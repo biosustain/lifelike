@@ -3,8 +3,8 @@
         {"name": "/"}
     ],
     "users": [
-        { "name": "__ADMIN_USERNAME__", "password": "__ADMIN_PASSWORD__", "tags": "administrator" },
-        { "name": "__MESSENGER_USERNAME__", "password": "__MESSENGER_PASSWORD__", "tags": "" }
+        { "name": "__RMQ_ADMIN_USERNAME__", "password": "__RMQ_ADMIN_PASSWORD__", "tags": "administrator" },
+        { "name": "__RMQ_MESSENGER_USERNAME__", "password": "__RMQ_MESSENGER_PASSWORD__", "tags": "" }
     ],
     "permissions":[
         { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" }
@@ -20,7 +20,7 @@
             }
         },
         {
-            "name": "annotator",
+            "name": "__ANNOTATOR_QUEUE__",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -32,7 +32,7 @@
             }
         },
         {
-            "name": "post_annotator",
+            "name": "__POST_ANNOTATOR_QUEUE__",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,

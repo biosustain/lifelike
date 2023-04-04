@@ -1,12 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
-# Admin vars
-sed -i "s/__ADMIN_USERNAME__/${RMQ_ADMIN_USERNAME}/" /etc/rabbitmq/definitions.json
-sed -i "s/__ADMIN_PASSWORD__/${RMQ_ADMIN_PASSWORD}/" /etc/rabbitmq/definitions.json
+# Add expected environment variables here as necessary
+declare -a arr=(
+    "ANNOTATOR_QUEUE"
+    "POST_ANNOTATOR_QUEUE"
+    "RMQ_ADMIN_USERNAME"
+    "RMQ_ADMIN_PASSWORD"
+    "RMQ_MESSENGER_USERNAME"
+    "RMQ_MESSENGER_PASSWORD"
+)
 
-# Messenger vars
-sed -i "s/__MESSENGER_USERNAME__/${RMQ_MESSENGER_USERNAME}/" /etc/rabbitmq/definitions.json
-sed -i "s/__MESSENGER_PASSWORD__/${RMQ_MESSENGER_PASSWORD}/" /etc/rabbitmq/definitions.json
+for varname in "${arr[@]}"
+do
+    varval=$(eval "echo \$${varname}")
+    sed -i "s/__${varname}__/${varval}/" /etc/rabbitmq/definitions.json
+done
 
 # Run the original entrypoint once we're done with any init work.
 exec /usr/local/bin/docker-entrypoint.sh "$@"
