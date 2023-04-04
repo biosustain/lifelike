@@ -9,5 +9,5 @@
 	url = https://github.com/SBRG/***ARANGO_DB_NAME***-website
 [submodule "deployment"]
 	path = deployment
-	url = git@github.com:SBRG/***ARANGO_DB_NAME***-infra.git
+	url = https://github.com/SBRG/***ARANGO_DB_NAME***-infra
 	branch = ansible
