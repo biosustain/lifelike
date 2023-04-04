@@ -1,26 +1,8 @@
 // Modify Reactome database for GDS (LL-3119)
 
-////// 0. Reverse input
+////// 0. Reverse inputs
+Somewhere between version 75 and 84 reactome reversed these relations so we reverse them for cosistency with old code
 ```cypher
-// version 75 (robins) was released on 02 December 2020
-call apoc.periodic.iterate(
-    'MATCH (ie:InstanceEdit)-[:created]-(n)
-     where apoc.date.parse(ie.dateTime) > apoc.date.parse("2020-12-02 00:00:00")
-     return n', 
-    'detach delete n', 
-    {batchSize: 5000, parallel:True}
-)
-
-call apoc.periodic.iterate(
-    'MATCH (ie:InstanceEdit)-[r]-(n)
-        where
-            apoc.date.parse(ie.dateTime) > apoc.date.parse("2020-12-02 00:00:00") and
-            type(r) <> "created"
-        return n',
-    'set n.modified_since_version_v75 = True', 
-    {batchSize: 5000, parallel:True}
-)
-
 MATCH ()-[r:input]->() call apoc.refactor.invert(r) yield input, output return count(*)
 ```
 
