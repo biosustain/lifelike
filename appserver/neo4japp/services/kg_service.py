@@ -50,7 +50,7 @@ class KgService(HybridDBDao):
         for node in nodes:
             try:
                 label = get_first_known_label_from_node(node)
-            except ValueError:
+            except ValueError as e:
                 label = 'Unknown'
                 current_app.logger.warning(
                     f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}",
@@ -58,6 +58,7 @@ class KgService(HybridDBDao):
                         event_type=LogEventType.KNOWLEDGE_GRAPH.value
                     ).to_dict()
                 )
+                # TODO warning
             graph_node = GraphNode(
                 id=node.id,
                 label=get_first_known_label_from_node(node),
@@ -163,7 +164,8 @@ class KgService(HybridDBDao):
         if domain is None:
             raise ServerException(
                 title='Could not create enrichment table',
-                message='There was a problem finding UniProt domain URLs.')
+                message='There was a problem finding UniProt domain URLs.'
+            )
 
         return {
             result['node_id']: {
@@ -305,7 +307,7 @@ class KgService(HybridDBDao):
                         try:
                             node_label = get_first_known_label_from_list(node['labels'])
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
-                        except ValueError:
+                        except ValueError as e:
                             # If label is unknown, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
@@ -315,6 +317,7 @@ class KgService(HybridDBDao):
                                     event_type=LogEventType.KNOWLEDGE_GRAPH.value
                                 ).to_dict()
                             )
+                            # TODO warning
                         except KeyError:
                             # If label does not exist in styles dict, then use fallbacks
                             node_label = 'Unknown'

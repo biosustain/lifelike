@@ -652,13 +652,13 @@ class ElasticService(ElasticConnection, GraphConnection):
                 size=limit,
                 rest_total_hits_as_int=True,
             )
-        except ElasticRequestError:
+        except ElasticRequestError as e:
             raise ServerException(
                 title='Content Search Error',
                 message='Something went wrong during content search. Please simplify your query ' +
                         '(e.g. remove terms, filters, flags, etc.) and try again.',
                 code=400
-            )
+            ) from e
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
         return es_response, search_phrases

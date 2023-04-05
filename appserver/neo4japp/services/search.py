@@ -66,12 +66,13 @@ class SearchService(GraphBaseDao):
 
             try:
                 entity_label = get_first_known_label_from_list(entity["labels"])
-            except ValueError:
+            except ValueError as e:
                 current_app.logger.warning(
                     f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
                     f'{entity["labels"]}',
                     extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
                 )
+                # TODO warning
                 entity_label = 'Unknown'
 
             graph_node = GraphNode(
@@ -274,12 +275,13 @@ class SearchService(GraphBaseDao):
         for row in results:
             try:
                 type = get_first_known_label_from_list(row['entity_labels'])
-            except ValueError:
+            except ValueError as e:
                 type = 'Unknown'
                 current_app.logger.warning(
                     f"Node had an unexpected list of labels: {row['entity_labels']}",
                     extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
                 )
+                # TODO warning
 
             synonym_data.append({
                 'type': type,

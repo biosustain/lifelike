@@ -301,17 +301,18 @@ class PDFTypeProvider(BaseFileTypeProvider):
             except PDFTextExtractionNotAllowed as e:
                 # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
                 warn(TextExtractionNotAllowedWarning())
-                raise HandledException(e)
-            except PDFEncryptionError:
+                raise HandledException(e) from e
+            except PDFEncryptionError as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
-                    message='This pdf is locked and cannot be loaded into Lifelike.')
-            except Exception:
+                    message='This pdf is locked and cannot be loaded into Lifelike.'
+                ) from e
+            except Exception as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
-                    message='An error occurred while reading this pdf. '
-                            'Please check if the pdf is unlocked and openable.'
-                )
+                    message='An error occurred while reading this pdf.'
+                            ' Please check if the pdf is unlocked and openable.'
+                ) from e
 
     def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
         with buffer as bufferView:
@@ -328,13 +329,13 @@ class PDFTypeProvider(BaseFileTypeProvider):
             except PDFTextExtractionNotAllowed as e:
                 # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
                 warn(TextExtractionNotAllowedWarning())
-                raise HandledException(e)
-            except Exception:
+                raise HandledException(e) from e
+            except Exception as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
                     message='An error occurred while reading this pdf.'
                             ' Please check if the pdf is unlocked and openable.'
-                )
+                ) from e
             else:
                 return _search_doi_in(bytes(text, encoding='utf8'))
 
@@ -1098,20 +1099,24 @@ class MapTypeProvider(BaseFileTypeProvider):
         try:
             zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
             json_graph = json.loads(zip_file.read('graph.json'))
-        except KeyError:
+        except KeyError as e:
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )
-            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
-        except zipfile.BadZipFile:
+            raise ValidationError(
+                'Cannot retrieve contents of the file - it might be corrupted'
+            ) from e
+        except zipfile.BadZipFile as e:
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} File is a bad zipfile.',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )
-            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+            raise ValidationError(
+                'Cannot retrieve contents of the file - it might be corrupted'
+            ) from e
 
         graph = graphviz.Digraph(
             escape(file.filename),
@@ -1181,7 +1186,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                         file_path = os.path.sep.join([folder.name, image_name])
                         im.save(file_path)
                     # Note: Add placeholder images instead?
-                    except KeyError:
+                    except KeyError as e:
                         name = node.get('image_id') + '.png'
                         current_app.logger.info(
                             f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
@@ -1189,7 +1194,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
                         )
                         raise ValidationError(
-                            f"Cannot retrieve image: {name} - file might be corrupted")
+                            f"Cannot retrieve image: {name} - file might be corrupted"
+                        ) from e
                     params = create_image_node(node, params)
                     if node['display_name']:
                         body.node(**create_image_label(node))
@@ -1298,9 +1304,9 @@ class MapTypeProvider(BaseFileTypeProvider):
             return FileContentBuffer(
                 self.generate_export(file, format, self_contained_export=True).content.getvalue()
             )
-        except ExportFormatError:
+        except ExportFormatError as e:
             raise ValidationError("Unknown or invalid export "
-                                  "format for the requested file.", format)
+                                  "format for the requested file.", format) from e
 
     def merge_pngs_vertically(self, files, _=None):
         """ Append pngs vertically.

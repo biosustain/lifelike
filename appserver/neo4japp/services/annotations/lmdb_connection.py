@@ -41,19 +41,21 @@ class LMDBConnection(DatabaseConnection):
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message='Unable to connect to LMDB, database name is invalid.')
+                message='Unable to connect to LMDB, database name is invalid.'
+            )
 
         dbpath = path.join(self.dirpath, self.configs[dbname])
         try:
             env: Environment = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
-        except Exception:
+        except Exception as e:
             current_app.logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message=f'Encountered unexpected error connecting to LMDB.'
+            ) from e
 
         try:
             """
@@ -73,11 +75,12 @@ class LMDBConnection(DatabaseConnection):
             else:
                 db = self.dbs[dbname]
             return self._context(env, db)
-        except Exception:
+        except Exception as e:
             current_app.logger.error(
                 f'Failed to open LMDB database named {dbname}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message=f'Encountered unexpected error connecting to LMDB.'
+            ) from e
