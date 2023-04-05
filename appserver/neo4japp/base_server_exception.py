@@ -8,7 +8,7 @@ from neo4japp.utils.transaction import get_transaction_id
 from neo4japp.utils.string import indent_lines, compose_lines
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False, frozen=True)
 class BaseServerException(ABC):
     title: str
     message: Optional[str] = None

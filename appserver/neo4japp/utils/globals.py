@@ -1,5 +1,3 @@
-from flask import current_app, g
-
 from neo4japp.info import ServerInfo
 from neo4japp.warnings import ServerWarning
 from flask import g, current_app

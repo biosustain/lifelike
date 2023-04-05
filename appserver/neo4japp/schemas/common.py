@@ -4,12 +4,13 @@ from typing import Any
 
 import attr
 import marshmallow.validate
+from flask import current_app
 from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
+from neo4japp.utils.globals import warnings, info
 from neo4japp.util import CamelDictMixin
-from neo4japp.utils.globals import get_warnings, get_info
 from neo4japp.utils.request import Pagination
 
 
@@ -119,7 +120,7 @@ class InformationSchema(CamelCaseSchema):
     info = fields.Method('get_info')
 
     def get_info(self, obj):
-        return [InformationResponseSchema().dump(i) for i in get_info()]
+        return [InformationResponseSchema().dump(i) for i in info]
 
 
 @attr.s(frozen=True)

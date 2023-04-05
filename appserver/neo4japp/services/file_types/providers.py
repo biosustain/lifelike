@@ -76,14 +76,12 @@ from neo4japp.constants import (
     NODE_INSET
 )
 from neo4japp.exceptions import (
-    HandledException,
     ServerException,
-    ServerWarning,
     ContentValidationWarning,
     wrap_exceptions,
-    ContentValidationError
+    HandledException,
+    ContentValidationError, ServerWarning
 )
-from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
 from neo4japp.info import ContentValidationInfo
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -93,12 +91,11 @@ from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
 from neo4japp.utils import FileContentBuffer
-from neo4japp.utils.globals import warn, info
+from neo4japp.utils.globals import info
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text, compose_lines
-from neo4japp.warnings import ServerWarning, ContentValidationWarning
 
 extension_mime_types = {
     '.pdf': 'application/pdf',

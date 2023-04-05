@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict, MISSING, field, fields
+from dataclasses import dataclass, asdict, MISSING, field
 from http import HTTPStatus
 from typing import Union, Tuple, Optional, TypeVar, Generic
 
@@ -84,20 +84,6 @@ class ServerException(Exception, BaseServerException):
     fields: Optional[dict] = cause_field(default=None)
     code: HTTPStatus = cause_field(default=HTTPStatus.INTERNAL_SERVER_ERROR)
     cause: Exception = field(init=False, default=None)
-
-    @property
-    def __cause__(self):
-        return self.cause
-
-    @__cause__.setter
-    def __cause__(self, c):
-        for field in fields(self):
-            if isinstance(field, CauseDefaultField):
-                new_default = getattr(c, field.name, MISSING)
-                if new_default is not MISSING and not field.is_default(new_default):
-                    setattr(self, field.name, new_default)
-        self.cause = c
-        super.__cause__ = c
 
     @property
     def type(self):
