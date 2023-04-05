@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
-import { ErrorResponse, WarningResponse } from '../../schemas/common';
+import { ErrorResponse, InformationResponse, WarningResponse } from '../../schemas/common';
 
-type ResponseAlert = WarningResponse | ErrorResponse;
+type ResponseAlert = InformationResponse | WarningResponse | ErrorResponse;
 type ResponseAlertType =
   'success'
   | 'info'
@@ -21,15 +21,23 @@ type ResponseAlertType =
 export class ResponseAlertComponent implements OnChanges {
   @Input() responseAlert: ResponseAlert;
   @Input() dismissible: boolean;
-  @Input() type: ResponseAlertType;
+  @Input() type: ResponseAlertType | string;
+  @Input() alertClass: string;
+  _type: ResponseAlertType;
   responseTypeToAlertTypeMap: Map<string, ResponseAlertType> = new Map([
     ['Warning', 'warning'],
     ['Error', 'danger'],
+    ['Info', 'info'],
   ]);
 
-  ngOnChanges({responseAlert}: SimpleChanges) {
+  ngOnChanges({responseAlert, type}: SimpleChanges) {
+    if (type && this.responseTypeToAlertTypeMap.has(type.currentValue)) {
+      this._type = this.responseTypeToAlertTypeMap.has(type.currentValue) ?
+        this.responseTypeToAlertTypeMap.get(type.currentValue) :
+        type.currentValue;
+    }
     if (!this.type && responseAlert) {
-      this.type = this.responseTypeToAlertTypeMap.get(responseAlert.currentValue.type);
+      this._type = this.responseTypeToAlertTypeMap.get(responseAlert.currentValue.type);
     }
   }
 }

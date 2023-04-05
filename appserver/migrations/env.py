@@ -140,7 +140,10 @@ class MigrationValidator:
                     exceptions = []
                     try:
                         provider = file_type_service.get(entity)
-                        provider.validate_content(BytesIO(entity.raw_file))
+                        provider.validate_content(
+                            BytesIO(entity.raw_file),
+                            log_status_messages=False
+                        )
                     except Exception as validation_exception:
                         # TODO after migrating to python 3.11: use .add_note
                         try:

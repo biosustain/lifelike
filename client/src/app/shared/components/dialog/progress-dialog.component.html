@@ -19,42 +19,50 @@
       <div class="mb-2">
         {{progress.status}}
       </div>
+      <ng-template #collpsedResponseAlerts let-entities let-type="type" let-summary="summary">
+        <ng-container *ngIf="entities?.length">
+          <div class="mb-2">
+            <app-response-alert *ngIf="entities.length == 1; else multiple"
+                                [type]="type"
+                                alertClass="mt-3 mb-0"
+                                [responseAlert]="entities[0]"
+            ></app-response-alert>
+            <ng-template #multiple>
+              <details>
+                <summary>{{summary}} ({{entities.length}})</summary>
+                <app-response-alert *ngFor="let entity of entities"
+                                    [type]="type"
+                                    alertClass="mt-3 mb-0"
+                                    [responseAlert]="entity"
+                ></app-response-alert>
+              </details>
+            </ng-template>
+          </div>
+        </ng-container>
+      </ng-template>
 
-      <ng-container *ngIf="progress.warnings?.length">
-        <div class="mb-2">
-          <app-response-alert *ngIf="progress.warnings.length == 1; else multiple"
-                              class="mt-1"
-                              [responseAlert]="progress.warnings[0]"
-          ></app-response-alert>
-          <ng-template #multiple>
-            <details>
-              <summary>Warnings ({{progress.warnings.length}})</summary>
-              <app-response-alert *ngFor="let warning of progress.warnings"
-                                  class="mt-1"
-                                  [responseAlert]="warning"
-              ></app-response-alert>
-            </details>
-          </ng-template>
-        </div>
-      </ng-container>
+      <div class="mb-2" *ngIf="progress.errors?.length">
+        <ng-container
+          *ngTemplateOutlet="collpsedResponseAlerts; context: {
+            $implicit: progress.errors, type: 'Error', summary: 'Errors'
+          }"
+        ></ng-container>
+      </div>
+      <div class="mb-2" *ngIf="progress.warnings?.length">
+        <ng-container
+          *ngTemplateOutlet="collpsedResponseAlerts; context: {
+           $implicit: progress.warnings, type: 'Warning', summary: 'Warnings'
+          }"
+        ></ng-container>
+      </div>
 
-      <ng-container *ngIf="progress.errors?.length">
-        <div class="mb-2">
-          <app-response-alert *ngIf="progress.errors.length == 1; else multiple"
-                              class="mt-1"
-                              [responseAlert]="progress.errors[0]"
-          ></app-response-alert>
-          <ng-template #multiple>
-            <details>
-              <summary>Errors ({{progress.errors.length}})</summary>
-              <app-response-alert *ngFor="let error of progress.errors"
-                                  class="mt-1"
-                                  [responseAlert]="error"
-              ></app-response-alert>
-            </details>
-          </ng-template>
-        </div>
-      </ng-container>
+      <div class="mb-2" *ngIf="progress.info?.length">
+        <ng-container
+          *ngTemplateOutlet="collpsedResponseAlerts; context: {
+           $implicit: progress.info, type: 'Info', summary: 'Messages'
+          }"
+        ></ng-container>
+      </div>
     </div>
   </ng-container>
 </div>

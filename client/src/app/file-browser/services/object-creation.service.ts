@@ -52,6 +52,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import {
   ErrorResponse,
+  InformationResponse,
   ResultMapping,
   SingleResult,
   WarningResponse,
@@ -81,6 +82,7 @@ import File = GraphNS.File;
 
 interface CreationResult {
   result?: FilesystemObject;
+  info?: InformationResponse[];
   warnings?: WarningResponse[];
   errors?: ErrorResponse[];
 }
@@ -191,6 +193,7 @@ export class ObjectCreationService {
                 status: `Done uploading ${request.filename || 'file'}...`,
                 value: 1,
                 warnings: event.body?.warnings,
+                info: event.body?.info,
               };
             /**
              * A custom event from an interceptor or a backend.
@@ -390,6 +393,10 @@ export class ObjectCreationService {
           // Accumulate warnings and errors
           scan((prev, next) => ({
             ...next,
+            info: [
+              ...(prev.info ?? []),
+              ...(next.info ?? []),
+            ],
             warnings: [
               ...(prev.warnings ?? []),
               ...(next.warnings ?? []),

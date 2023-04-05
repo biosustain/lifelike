@@ -47,8 +47,8 @@ from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.utils.warnings import warn
 from neo4japp.warnings import ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
@@ -58,6 +58,7 @@ logger = logging.getLogger(__name__)
 
 @app.before_request
 def init_exceptions_handling():
+    g.info = list()
     g.warnings = list()
 
     g.transaction_id = request.headers.get('X-Transaction-Id')
@@ -598,7 +599,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
 
     # Validate the content
     try:
-        provider.validate_content(buffer)
+        provider.validate_content(buffer, log_status_messages=True)
     except ServerWarning as w:
         warn(w)
     except ValueError as e:

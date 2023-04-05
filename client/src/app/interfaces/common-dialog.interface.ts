@@ -3,7 +3,7 @@ import { Warnings } from '@angular/cli/lib/config/schema';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { ErrorResponse, WarningResponse } from 'app/shared/schemas/common';
+import { ErrorResponse, InformationResponse, WarningResponse } from 'app/shared/schemas/common';
 
 export enum ProgressMode {
   Determinate = 'DETERMINATE',
@@ -19,6 +19,7 @@ export interface ProgressArguments {
    */
   value?: number;
   status?: string;
+  info?: InformationResponse[];
   warnings?: WarningResponse[];
   errors?: ErrorResponse[];
 }
@@ -30,6 +31,7 @@ export class Progress {
   public readonly mode: ProgressMode;
   public readonly value: number;
   public readonly status: string;
+  public readonly info?: Readonly<InformationResponse[]>;
   public readonly warnings?: Readonly<WarningResponse[]>;
   public readonly errors?: Readonly<ErrorResponse[]>;
 
@@ -41,6 +43,7 @@ export class Progress {
     this.mode = args.mode;
     this.value = args.value;
     this.status = args.status;
+    this.info = Object.freeze(args.info);
     this.warnings = Object.freeze(args.warnings);
     this.errors = Object.freeze(args.errors);
   }
