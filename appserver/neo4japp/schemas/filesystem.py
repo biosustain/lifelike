@@ -14,7 +14,8 @@ from neo4japp.schemas.common import (
     ResultMappingSchema,
     SingleResultSchema,
     RankedItemSchema,
-    WarningSchema
+    WarningSchema,
+    InformationSchema
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
@@ -314,7 +315,7 @@ class FileHierarchyRequestSchema(CamelCaseSchema):
 # ----------------------------------------
 
 
-class FileResponseSchema(SingleResultSchema, WarningSchema):
+class FileResponseSchema(SingleResultSchema, WarningSchema, InformationSchema):
     result = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
 
 

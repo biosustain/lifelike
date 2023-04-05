@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional, List
-
-from flask import g, current_app
+from http import HTTPStatus
+from typing import Union, Optional
 
 from neo4japp.base_server_exception import BaseServerException
 
@@ -18,25 +17,9 @@ class ServerWarning(Warning, BaseServerException):
     """
     title: str = "Server returned warning"
     message: Optional[str] = "Code executed with following warnings"
-
-    def __post_init__(self):
-        try:
-            g.warnings.add(self)
-        except AttributeError:  # we are not running in request context
-            current_app.logger.warning(self)
+    code: Union[HTTPStatus, int] = 199
 
 
-@dataclass
+@dataclass(repr=False)
 class ContentValidationWarning(ServerWarning):
     pass
-
-
-@dataclass
-class ServerWarningGroup(ServerWarning):
-    title: str = "Server returned group of warnings"
-    warnings: Optional[List[ServerWarning]] = None
-
-    def __post_init__(self, *args, **kwargs):
-        if self.warnings:
-            self.additional_msgs = tuple((warning.title for warning in self.warnings))
-        super().__post_init__()

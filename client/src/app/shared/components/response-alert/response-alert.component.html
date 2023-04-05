@@ -1,4 +1,4 @@
-<ngb-alert [dismissible]="dismissible">
+<ngb-alert [dismissible]="dismissible" [type]="_type" [class]="alertClass">
   <header class="d-block" *ngIf="responseAlert.title">
     <strong>{{responseAlert.title}}</strong>
   </header>

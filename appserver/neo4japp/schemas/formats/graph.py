@@ -1,19 +1,32 @@
 import importlib.resources as resources
 import json
+from dataclasses import dataclass
 from itertools import chain
+from typing import Optional, Tuple
 
 import fastjsonschema
 
 from .. import formats
 
-# noinspection PyTypeChecker
-from ...exceptions import ContentValidationError
+from ...message import ServerMessage
 
 with resources.open_text(formats, 'graph_v6.json') as f:
     # Use this method to validate the content of an enrichment table
     validate_graph_format = fastjsonschema.compile(json.load(f))
     # used during migration to fix outdated json
     current_version = '6'
+
+
+@dataclass(repr=False)
+class ContentValidationMessage(ServerMessage):
+    message: Optional[str] = None
+    additional_msgs: Tuple[str, ...] = tuple()
+
+
+@dataclass(repr=False)
+class ContentValidationNotDefinedSourceTargetMessage(ContentValidationMessage):
+    message: Optional[str] = None
+    additional_msgs: Tuple[str, ...] = tuple()
 
 
 def validate_graph_content(data):
@@ -30,11 +43,11 @@ def validate_graph_content(data):
     links = data['links']
     links_length = len(links)
     #   if not links_length:
-    #       yield ContentValidationError(message='Graph has no links!')
+    #       yield ContentValidationMessage(message='Graph has no links!')
     if not len(nodes):
-        yield ContentValidationError(message='Graph has no nodes!')
+        yield ContentValidationMessage(message='Graph has no nodes!')
     if not len(trace_networks):
-        yield ContentValidationError(message='Graph has no trace networks!')
+        yield ContentValidationMessage(message='Graph has no trace networks!')
 
     node_ids = set([node['id'] for node in nodes])
 
@@ -43,7 +56,7 @@ def validate_graph_content(data):
 
     for node_set_name, node_set in node_sets.items():
         if not set(node_set).issubset(node_ids):
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message=f'Node set "{node_set_name}" contains nodes that are not in the graph!',
                 additional_msgs=(
                     f'Offending node ids:',
@@ -63,7 +76,7 @@ def validate_graph_content(data):
         )
 
         if sources not in node_sets:
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message=f'Trace network ({trace_network_idx})'
                         f' sources points to non-existing node set!',
                 additional_msgs=(
@@ -75,8 +88,8 @@ def validate_graph_content(data):
         else:
             sources_ids = node_sets[sources]
             if not set(sources_ids).issubset(trace_network_nodes):
-                yield ContentValidationError(
-                    message='Trace network source contains nodes that are not in it!',
+                yield ContentValidationNotDefinedSourceTargetMessage(
+                    message='Trace network nodes defined as sources was not mapped into graph',
                     additional_msgs=(
                         f'Offending node ids: {set(sources_ids) - trace_network_nodes}',
                         f'Path: graph.trace_networks.{trace_network_idx}'
@@ -84,7 +97,7 @@ def validate_graph_content(data):
                 )
 
         if targets not in node_sets:
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message=f'Trace network ({trace_network_idx})'
                         f' targets points to non-existing node set!',
                 additional_msgs=(
@@ -96,8 +109,8 @@ def validate_graph_content(data):
         else:
             targets_ids = node_sets[targets]
             if not set(targets_ids).issubset(trace_network_nodes):
-                yield ContentValidationError(
-                    message='Trace network source contains nodes that are not in it!',
+                yield ContentValidationNotDefinedSourceTargetMessage(
+                    message='Trace network nodes defined as targets was not mapped into graph',
                     additional_msgs=(
                         f'Offending node ids: {set(targets_ids) - trace_network_nodes}',
                         f'Path: graph.trace_networks.{trace_network_idx}'
@@ -105,7 +118,7 @@ def validate_graph_content(data):
                 )
         default_sizing = trace_network.get('default_sizing')
         if default_sizing and (default_sizing not in sizings):
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message='Default sizing for trace network is not in sizing list!',
                 additional_msgs=(
                     f'Declared sizings: {list(sizings.keys())}',
@@ -116,7 +129,7 @@ def validate_graph_content(data):
         for trace_idx, trace in enumerate(trace_network['traces']):
             for node_path in trace['node_paths']:
                 if not set(node_path).issubset(node_ids):
-                    yield ContentValidationError(
+                    yield ContentValidationMessage(
                         message='Trace contains nodes that are not in the graph!',
                         additional_msgs=(
                             f'Offending node ids: {set(node_path) - node_ids}',
@@ -126,7 +139,7 @@ def validate_graph_content(data):
                     )
             for link_idx in trace['edges']:
                 if not valid_link_idx(link_idx):
-                    yield ContentValidationError(
+                    yield ContentValidationMessage(
                         message='Trace edge contains links that are not in the graph!',
                         additional_msgs=(
                             f'Offending link: {link_idx}',
@@ -135,7 +148,7 @@ def validate_graph_content(data):
                         )
                     )
             if trace['source'] not in node_ids:
-                yield ContentValidationError(
+                yield ContentValidationMessage(
                     message='Trace source is not in the graph!',
                     additional_msgs=(
                         f"Offending node id: {trace['source']}",
@@ -144,7 +157,7 @@ def validate_graph_content(data):
                     )
                 )
             if trace['target'] not in node_ids:
-                yield ContentValidationError(
+                yield ContentValidationMessage(
                     message='Trace target is not in the graph!',
                     additional_msgs=(
                         f"Offending node id: {trace['target']}",
@@ -155,7 +168,7 @@ def validate_graph_content(data):
             for detail_edge in trace.get('detail_edges', []):
                 for link_idx in detail_edge[:2]:
                     if not valid_link_idx(link_idx):
-                        yield ContentValidationError(
+                        yield ContentValidationMessage(
                             message='Trace detail edge contains links that are not in the graph!',
                             additional_msgs=(
                                 f'Offending link: {link_idx}',
@@ -174,7 +187,7 @@ def validate_graph_content(data):
     raised = dict()
     for idx, link in enumerate(links):
         if link['source'] not in node_ids:
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message='Link source is not in the graph!',
                 additional_msgs=(
                     f'Link with idx {idx} has source {link["source"]} which is not in the '
@@ -183,7 +196,7 @@ def validate_graph_content(data):
                 )
             )
         if link['target'] not in node_ids:
-            yield ContentValidationError(
+            yield ContentValidationMessage(
                 message='Link target is not in the graph!',
                 additional_msgs=(
                     f'Link with idx {idx} has target {link["target"]} which is not in the '
@@ -194,7 +207,7 @@ def validate_graph_content(data):
         for prop in sizing_link_properties:
             if prop not in link:
                 if prop not in raised:
-                    raised[prop] = ContentValidationError(
+                    raised[prop] = ContentValidationMessage(
                         message='Link has no sizing property!',
                         additional_msgs=(
                             f'Link sizing properties: {list(sizing_link_properties)}',
@@ -211,7 +224,7 @@ def validate_graph_content(data):
         for prop in link:
             if prop.startswith('_'):
                 if prop not in raised:
-                    raised[prop] = ContentValidationError(
+                    raised[prop] = ContentValidationMessage(
                         message='Additional properties cannot start with underscore!',
                         additional_msgs=(
                             f'Link with idx {idx} has property ({prop}) with reserved property '
@@ -230,7 +243,7 @@ def validate_graph_content(data):
         for prop in sizing_node_properties:
             if prop not in node:
                 if prop not in raised:
-                    raised[prop] = ContentValidationError(
+                    raised[prop] = ContentValidationMessage(
                         message='Node has no sizing property!',
                         additional_msgs=(
                             f'Node sizing properties: {list(sizing_node_properties)}',
@@ -247,7 +260,7 @@ def validate_graph_content(data):
         for prop in node:
             if prop.startswith('_'):
                 if prop not in raised:
-                    raised[prop] = ContentValidationError(
+                    raised[prop] = ContentValidationMessage(
                         message='Additional properties cannot start with underscore!',
                         additional_msgs=(
                             f'Node with id {node.get("id")} has property ({prop}) with reserved '
