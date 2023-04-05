@@ -16,12 +16,12 @@ $placeholder-border-radius: $border-radius;
 // Class beeing added by 'appShowPlaceholders' attribute when we want to render content as placeholder
 // This class should not be assigned manually!!!
 .show-placeholders {
-  background-color: deeppink !important; // good for visual debugging
+  //background-color: deeppink !important; // good for visual debugging
 
   // Actual placeholder styling assigned by 'appHasPlaceholder' attribute
   // It is better to assign it with the directive to cover all edge cases
   .placeholder-slot {
-    background-color: deepskyblue !important; // good for visual debugging
+    //background-color: deepskyblue !important; // good for visual debugging
     position: relative;
     background: $placeholder-bg;
     color: transparent !important;
