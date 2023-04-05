@@ -37,7 +37,7 @@
                 <ng-template disabled="true" ngbPanelHeader>
 <!-- Ussing 'url' property to mitigate issue with wrong links on old files -->
 <!-- Assuming that this property always points out to biocyc (based on source code of our datapraser) -->
-                    <a [href]="entity.url ? entity.url : biocycLink(entity.biocyc_id)"
+                    <a [href]="entity.url ? fixCircumstantialBiocycLink(entity.url) : biocycLink(entity.biocyc_id)"
                        class="btn btn-link w-100 d-flex align-items-center justify-content-between"
                        target="_blank">
                         <span>BioCyc</span>
