@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict, field, MISSING
+from dataclasses import dataclass, asdict, MISSING
 from http import HTTPStatus
 from typing import Union, Tuple, Optional, Generic, TypeVar, List, Any, cast
 
