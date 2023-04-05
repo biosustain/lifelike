@@ -103,7 +103,8 @@ class ProjectBaseView(MethodView):
             raise RecordNotFound(
                 title='File Not Found',
                 message='The requested project could not be found.',
-                code=404)
+                code=404
+            )
         return files[0]
 
     def get_nondeleted_projects(
@@ -162,7 +163,8 @@ class ProjectBaseView(MethodView):
                     title='File Not Found',
                     message=f"The request specified one or more projects "
                     f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404)
+                    code=404
+                )
 
         return projects, total
 
@@ -188,7 +190,8 @@ class ProjectBaseView(MethodView):
                     raise AccessRequestRequiredError(
                         curr_access='no',
                         req_access=permission,
-                        hash_id=project.hash_id)
+                        hash_id=project.hash_id
+                    )
 
     def get_project_response(self, hash_id: str, user: AppUser):
         """
@@ -253,7 +256,7 @@ class ProjectBaseView(MethodView):
                 db.session.commit()
             except IntegrityError as e:
                 db.session.rollback()
-                raise ValidationError("The project name is already taken.")
+                raise ValidationError("The project name is already taken.") from e
 
         return missing_hash_ids
 
@@ -305,9 +308,9 @@ class ProjectListView(ProjectBaseView):
             project_service.create_project_uncommitted(current_user, project)
             db.session.commit()
             db.session.flush()
-        except IntegrityError:
+        except IntegrityError as e:
             db.session.rollback()
-            raise ValidationError('The project name already is already taken.', 'name')
+            raise ValidationError('The project name already is already taken.', 'name') from e
 
         db.session.commit()
         # rollback in case of error?

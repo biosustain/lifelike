@@ -37,9 +37,9 @@ class ProjectSchema(CamelCaseSchema):
     def get_user_privilege_filter(self):
         try:
             return self.context['user_privilege_filter']
-        except KeyError:
+        except KeyError as e:
             raise RuntimeError('user_privilege_filter context key should be set '
-                               'for ProjectSchema to determine what to show')
+                               'for ProjectSchema to determine what to show') from e
 
     def get_privileges(self, obj: Projects):
         privilege_user_id = self.get_user_privilege_filter()
@@ -170,9 +170,9 @@ class FileSchema(StarredFileSchema):
     def get_user_privilege_filter(self):
         try:
             return self.context['user_privilege_filter']
-        except KeyError:
+        except KeyError as e:
             raise RuntimeError('user_privilege_filter context key should be set '
-                               'for FileSchema to determine what to show')
+                               'for FileSchema to determine what to show') from e
 
     def get_privileges(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()

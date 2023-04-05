@@ -624,7 +624,7 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
     # Trial 4: Give up
     # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-    with db.session.begin():
+    with db.session.begin_nested():
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:

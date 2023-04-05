@@ -482,6 +482,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         f'Cannot annotate file with invalid content: {file.hash_id}, '
                         f'{file.filename}'
                     )
+                    # TODO: warning
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
@@ -1036,46 +1037,47 @@ class GlobalAnnotationListView(MethodView):
         exclusion_pids = [gid for gid, sid in params['pids'] if sid == -1]
         inclusion_pids = [(gid, sid) for gid, sid in params['pids'] if sid != -1]
 
-        if exclusion_pids:
-            query = GlobalList.__table__.delete().where(
-                GlobalList.id.in_(exclusion_pids)
-            )
-            try:
-                db.session.execute(query)
-                db.session.commit()
+        with db.session.begin_nested():
+            if exclusion_pids:
+                query = GlobalList.__table__.delete().where(
+                    GlobalList.id.in_(exclusion_pids)
+                )
+                try:
+                    db.session.execute(query)
+                except SQLAlchemyError as e:
+                    raise ServerException(
+                        title='Could not delete exclusion',
+                        message='A database error occurred when deleting the global exclusion(s).'
+                    ) from e
+                else:
+                    current_app.logger.info(
+                        f'Deleted {len(exclusion_pids)} global exclusions',
+                        extra=UserEventLog(
+                            username=g.current_user.username,
+                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
 
-                current_app.logger.info(
-                    f'Deleted {len(exclusion_pids)} global exclusions',
-                    extra=UserEventLog(
-                        username=g.current_user.username,
-                        event_type=LogEventType.ANNOTATION.value).to_dict()
-                )
-            except SQLAlchemyError:
-                db.session.rollback()
-                raise ServerException(
-                    title='Could not delete exclusion',
-                    message='A database error occurred when deleting the global exclusion(s).')
-
-        if inclusion_pids:
-            manual_as = get_manual_annotation_service()
-            try:
-                manual_as.remove_global_inclusions(inclusion_pids)
-                current_app.logger.info(
-                    f'Deleted {len(inclusion_pids)} global inclusions',
-                    extra=UserEventLog(
-                        username=g.current_user.username,
-                        event_type=LogEventType.ANNOTATION.value).to_dict()
-                )
-            except Exception as e:
-                current_app.logger.error(
-                    f'{str(e)}',
-                    extra=UserEventLog(
-                        username=g.current_user.username,
-                        event_type=LogEventType.ANNOTATION.value).to_dict()
-                )
-                raise ServerException(
-                    title='Could not delete inclusion',
-                    message='A database error occurred when deleting the global inclusion(s).')
+            if inclusion_pids:
+                manual_as = get_manual_annotation_service()
+                try:
+                    manual_as.remove_global_inclusions(inclusion_pids)
+                    current_app.logger.info(
+                        f'Deleted {len(inclusion_pids)} global inclusions',
+                        extra=UserEventLog(
+                            username=g.current_user.username,
+                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                except Exception as e:
+                    current_app.logger.error(
+                        f'{str(e)}',
+                        extra=UserEventLog(
+                            username=g.current_user.username,
+                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                    )
+                    raise ServerException(
+                        title='Could not delete inclusion',
+                        message='A database error occurred when deleting the global inclusion(s).'
+                    ) from e
 
         yield jsonify(dict(result='success'))
 
@@ -1096,7 +1098,8 @@ def get_pdf_to_annotate(file_id):
         raise AnnotationError(
             title='Failed to Annotate',
             message=f'File with file id {file_id} not found.',
-            code=404)
+            code=404
+        )
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'

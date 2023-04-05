@@ -155,6 +155,7 @@ class AnnotationGraphService(GraphConnection):
                     f'Error creating local inclusion {local_inclusion} for {entity_type}',
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
+                # TODO Warning
             else:
                 # entity_name could be empty strings
                 # probably a result of testing

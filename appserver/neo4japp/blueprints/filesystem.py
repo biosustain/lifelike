@@ -18,7 +18,7 @@ from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
@@ -113,7 +113,7 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 def get_all_enrichment_tables():
     is_admin = g.current_user.has_role('admin')
     if is_admin is False:
-        raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
+        raise NotAuthorized()
 
     query = db.session.query(Files.hash_id).filter(
         Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
@@ -278,7 +278,8 @@ class FilesystemBaseView(MethodView):
                     title='File Not Found',
                     message=f"The request specified one or more file or directory "
                             f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404)
+                    code=404
+                )
 
         # In the end, we just return a list of Files instances!
         return files
@@ -510,12 +511,12 @@ class FilesystemBaseView(MethodView):
                             file.organism_name = params['fallback_organism']['organism_name']
                             file.organism_synonym = params['fallback_organism']['synonym']
                             file.organism_taxonomy_id = params['fallback_organism']['tax_id']
-                        except KeyError:
+                        except KeyError as e:
                             raise InvalidArgument(
                                 title='Failed to Update File',
                                 message='You must provide the following properties for a ' +
                                         'fallback organism: "organism_name", "synonym", "tax_id".',
-                            )
+                            ) from e
 
                 if 'annotation_configs' in params:
                     file.annotation_configs = params['annotation_configs']
@@ -571,7 +572,7 @@ class FilesystemBaseView(MethodView):
             raise ValidationError(
                 "No two items (folder or file) can share the same name.",
                 "filename"
-            )
+            ) from e
 
     def get_file_response(self, hash_id: str, user: AppUser):
         """
@@ -769,10 +770,12 @@ class FileListView(FilesystemBaseView):
         try:
             parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
             self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
-        except RecordNotFound:
+        except RecordNotFound as e:
             # Rewrite the error to make more sense
-            raise ValidationError("The requested parent object could not be found.",
-                                  "parent_hash_id")
+            raise ValidationError(
+                "The requested parent object could not be found.",
+                "parent_hash_id"
+            ) from e
 
         if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
             raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
@@ -797,10 +800,12 @@ class FileListView(FilesystemBaseView):
                 existing_file = self.get_nondeleted_recycled_file(Files.hash_id == source_hash_id)
                 self.check_file_permissions([existing_file], current_user, ['readable'],
                                             permit_recycled=True)
-            except RecordNotFound:
-                raise ValidationError(f"The requested file or directory to clone from "
-                                      f"({source_hash_id}) could not be found.",
-                                      "content_hash_id")
+            except RecordNotFound as e:
+                raise ValidationError(
+                    f"The requested file or directory to clone from "
+                    f"({source_hash_id}) could not be found.",
+                    "content_hash_id"
+                ) from e
 
             if existing_file.mime_type == DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(f"The specified clone source ({source_hash_id}) "
@@ -923,23 +928,25 @@ class FileListView(FilesystemBaseView):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
                     file.filename = file.generate_non_conflicting_filename()
-                except ValueError:
+                except ValueError as e:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
-                        "filename")
+                        "filename"
+                    ) from e
             elif trial == 3:  # Give up
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
-                    "filename")
+                    "filename"
+                )
 
             try:
-                db.session.begin_nested()
-                db.session.add(file)
-                db.session.commit()
-                break
-            except IntegrityError as e:
+                with db.session.begin_nested():
+                    db.session.add(file)
+            except IntegrityError:
                 # Warning: this could catch some other integrity error
-                db.session.rollback()
+                pass
+            else:
+                break
 
         db.session.commit()
         # rollback in case of error?
@@ -1006,7 +1013,8 @@ class FileListView(FilesystemBaseView):
             )
         )
         linked_files_id = list(map(lambda f: f.id, linked_files))
-        try:
+
+        with db.session.begin_nested():
             if map_target_files_id:
                 db.session.query(
                     MapLinks
@@ -1028,10 +1036,6 @@ class FileListView(FilesystemBaseView):
                         constraint='uq_map_id_linked_id'
                     )
                 )
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
 
         return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
@@ -1131,7 +1135,7 @@ class FileListView(FilesystemBaseView):
                             'problem persists, please download the file to your computer from ' +
                             'the original website and upload the file from your device.',
                     code=e.code
-                )
+                ) from e
             except (HTTPError, GDownException) as http_err:
                 # Should be raised because of the 'Accept' content type header above.
                 if http_err.code == 406:
@@ -1142,7 +1146,7 @@ class FileListView(FilesystemBaseView):
                                 'the problem persists, please download the file to your ' +
                                 'computer from the original website and upload the file from ' +
                                 'your device.',
-                    )
+                    ) from http_err
                 else:
                     # An error occurred that we were not expecting.
                     raise FileUploadError(
@@ -1151,13 +1155,13 @@ class FileListView(FilesystemBaseView):
                                 'please try again. If the problem persists, please download the ' +
                                 'file to your computer from the original website and upload the ' +
                                 'file from your device.'
-                    )
-            except (ContentTooLongError, OverflowError):
+                    ) from http_err
+            except (ContentTooLongError, OverflowError) as e:
                 raise FileUploadError(
                     title='File Upload Error',
                     message='Your file could not be uploaded. The requested file is too large. ' +
                             'Please limit file uploads to less than 315MB.',
-                )
+                ) from e
 
             return buffer, url
 
@@ -1363,9 +1367,11 @@ class FileExportView(FilesystemBaseView):
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
-            except ExportFormatError:
-                raise ValidationError("Unknown or invalid export format for the requested file.",
-                                      params["format"])
+            except ExportFormatError as e:
+                raise ValidationError(
+                    "Unknown or invalid export format for the requested file.",
+                    params["format"]
+                ) from e
 
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
@@ -1388,8 +1394,8 @@ class FileExportView(FilesystemBaseView):
         zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
-        except KeyError:
-            raise ValidationError
+        except KeyError as e:
+            raise ValidationError from e
         for node in chain(
                 json_graph['nodes'],
                 flatten(
@@ -1423,7 +1429,7 @@ class FileExportView(FilesystemBaseView):
                                 child_file, map_hash_set, files, link_to_page_map
                             )
 
-                        except RecordNotFound:
+                        except RecordNotFound as e:
                             current_app.logger.info(
                                 f'Map file: {map_hash} requested for linked '
                                 f'export does not exist.',
@@ -1431,6 +1437,7 @@ class FileExportView(FilesystemBaseView):
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()
                             )
+                            # TODO: warning
                     destination_page = find_index(
                         lambda f: f.hash_id == map_hash,
                         files
@@ -1529,7 +1536,8 @@ class FileBackupContentView(FilesystemBaseView):
             raise RecordNotFound(
                 title='Failed to Get File Backup',
                 message='No backup stored for this file.',
-                code=404)
+                code=404
+            )
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
@@ -1810,38 +1818,33 @@ class FileStarUpdateView(FilesystemBaseView):
 
         try:
             result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
-        except NoResultFound:
+        except NoResultFound as e:
             raise RecordNotFound(
                 title='Failed to Update File',
                 message=f'Could not identify file with hash id {hash_id}',
-            )
+            ) from e
 
         # If the user doesn't have permission to read the file they want to star, we throw
         self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
 
-        if starred:
-            # Don't need to update if the file is already starred by this user
-            if result.calculated_starred is None:
-                starred_file = StarredFile(
-                    user_id=user.id,
-                    file_id=result.id
-                )
-                db.session.add(starred_file)
-                result.calculated_starred = starred_file
-        # Delete the row only if it exists
-        elif result.calculated_starred is not None:
-            db.session.query(
-                StarredFile
-            ).filter(
-                StarredFile.id == result.calculated_starred['id']
-            ).delete()
-            result.calculated_starred = None
-
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+        with db.session.begin_nested():
+            if starred:
+                # Don't need to update if the file is already starred by this user
+                if result.calculated_starred is None:
+                    starred_file = StarredFile(
+                        user_id=user.id,
+                        file_id=result.id
+                    )
+                    db.session.add(starred_file)
+                    result.calculated_starred = starred_file
+            # Delete the row only if it exists
+            elif result.calculated_starred is not None:
+                db.session.query(
+                    StarredFile
+                ).filter(
+                    StarredFile.id == result.calculated_starred['id']
+                ).delete()
+                result.calculated_starred = None
 
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': user.id,

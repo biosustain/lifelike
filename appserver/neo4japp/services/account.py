@@ -14,11 +14,7 @@ class AccountService(RDBMSBaseDao):
         if retval is None:
             retval = AppRole(name=rolename)
             self.session.add(retval)
-
-            try:
-                self.commit_or_flush(commit_now)
-            except SQLAlchemyError:
-                raise
+            self.commit_or_flush(commit_now)
         return retval
 
     def delete_user(self, admin_username: str, username: str, commit_now=True):
@@ -29,14 +25,14 @@ class AccountService(RDBMSBaseDao):
                 raise ServerException(
                     title='Failed to Delete User',
                     message='You do not have enough privileges to delete a user.',
-                    code=403)
+                    code=403
+                )
             elif user.id == admin.id:
                 raise ServerException(
                     title='Failed to Delete User',
                     message='You cannot delete your own account.',
-                    code=400)
-        try:
-            self.session.delete(user)
-            self.commit_or_flush(commit_now)
-        except SQLAlchemyError:
-            raise
+                    code=400
+                )
+
+        self.session.delete(user)
+        self.commit_or_flush(commit_now)

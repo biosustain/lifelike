@@ -96,61 +96,61 @@ class GraphConnection(DatabaseConnection):
         try:
             with self.begin() as session:
                 return session.read_transaction(lambda tx: list(tx.run(query)))
-        except BrokenPipeError:
+        except BrokenPipeError as e:
             raise BrokenPipeError(
                 'The graph connection became stale while processing data. '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
+                'Please refresh the browser and try again.'
+            ) from e
+        except ServiceUnavailable as e:
             raise ServiceUnavailable(
                 'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
+                'Please try again at a later time.'
+            ) from e
 
     def exec_write_query(self, query: str):
         try:
             with self.begin() as session:
                 return session.write_transaction(lambda tx: list(tx.run(query)))
-        except BrokenPipeError:
+        except BrokenPipeError as e:
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
+                'Please refresh the browser and try again.'
+            ) from e
+        except ServiceUnavailable as e:
             raise ServiceUnavailable(
                 'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
+                'Please try again at a later time.'
+            ) from e
 
     def exec_read_query_with_params(self, query: str, values: dict):
         try:
             with self.begin() as session:
                 return session.read_transaction(lambda tx: list(tx.run(query, **values)))
-        except BrokenPipeError:
+        except BrokenPipeError as e:
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
+                'Please refresh the browser and try again.'
+            ) from e
+        except ServiceUnavailable as e:
             raise ServiceUnavailable(
                 'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
+                'Please try again at a later time.'
+            ) from e
 
     def exec_write_query_with_params(self, query: str, values: dict):
         try:
             with self.begin() as session:
                 return session.write_transaction(lambda tx: list(tx.run(query, **values)))
-        except BrokenPipeError:
+        except BrokenPipeError as e:
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.')
-        except ServiceUnavailable:
+                'Please refresh the browser and try again.'
+            ) from e
+        except ServiceUnavailable as e:
             raise ServiceUnavailable(
                 'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.')
-        except Exception:
-            raise
+                'Please try again at a later time.'
+            ) from e
 
 
 class GraphBaseDao:

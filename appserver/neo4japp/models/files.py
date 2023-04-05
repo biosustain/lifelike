@@ -353,7 +353,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             raise ServerException(
                 title=f'Cannot Get Project of File',
                 message=f'Could not find project of file {self.filename}.',
-            )
+            ) from e
 
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
@@ -575,12 +575,12 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_file_insert, target)
-    except Exception:
+    except Exception as e:
         raise ServerException(
             title='Failed to Create File',
             message='Something unexpected occurred while creating your file! Please try again ' +
                     'later.'
-        )
+        ) from e
 
 
 @event.listens_for(Files, 'before_update')
@@ -667,12 +667,12 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
             from neo4japp.services.redis.redis_queue_service import RedisQueueService
             rq_service = RedisQueueService()
             rq_service.enqueue(_after_file_update, target, get_model_changes(target))
-    except Exception:
+    except Exception as e:
         raise ServerException(
                 title='Failed to Update File',
                 message='Something unexpected occurred while updating your file! Please try ' +
                         'again later.'
-            )
+            ) from e
 
 
 def _after_file_delete(target: Files):
@@ -722,12 +722,12 @@ def after_file_delete(mapper: Mapper, connection: Connection, target: Files):
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_file_delete, target)
-    except Exception:
+    except Exception as e:
         raise ServerException(
             title='Failed to Delete File',
             message='Something unexpected occurred while updating your file! Please try again ' +
                     'later.'
-        )
+        ) from e
 
 
 class AnnotationChangeCause(enum.Enum):
