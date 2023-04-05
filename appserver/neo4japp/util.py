@@ -5,12 +5,10 @@ import itertools
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json, jsonify, request, g, current_app
+from flask import json, jsonify, request
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, Optional, Type, Iterator, Dict
-
-from neo4japp.warnings import ServerWarning
 
 
 def normalize_str(s) -> str:
@@ -440,21 +438,3 @@ class Enumd(Enum):
             return cls(key)
         except ValueError:
             return default
-
-
-def warn(w: ServerWarning):
-    if hasattr(g, 'warnings'):
-        g.warnings.append(w)
-    else:
-        current_app.logging.warn(w)
-
-
-def get_warnings():
-    if hasattr(g, 'warnings'):
-        return tuple(g.warnings)
-    else:
-        return tuple()
-
-
-def get_transaction_id():
-    return getattr(g, 'transaction_id', 'call_from_outside_of_request_scope')

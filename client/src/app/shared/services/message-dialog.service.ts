@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { assign as _assign } from 'lodash/fp';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
@@ -20,16 +21,11 @@ export class MessageDialog {
   ) {
   }
 
-  display(args: MessageArguments) {
+  display({type, ...error}: MessageArguments) {
     const modalRef = this.modalService.open(MessageDialogComponent, {
-      size: args.stacktrace ? 'lg' : 'md',
+      size: error.stacktrace ? 'lg' : 'md',
     });
-    modalRef.componentInstance.title = args.title;
-    modalRef.componentInstance.message = args.message;
-    modalRef.componentInstance.additionalMsgs = args.additionalMsgs;
-    modalRef.componentInstance.stacktrace = args.stacktrace;
-    modalRef.componentInstance.type = args.type;
-    modalRef.componentInstance.transactionId = args.transactionId;
+    _assign(modalRef.componentInstance, {type, error});
     return modalRef.result;
   }
 }

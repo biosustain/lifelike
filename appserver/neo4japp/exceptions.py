@@ -1,8 +1,8 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Union, Tuple, Optional
+from typing import Union, Optional
 
-from neo4japp.util import get_transaction_id
+from neo4japp.base_server_exception import BaseServerException
 
 
 @dataclass(repr=False)
@@ -11,7 +11,7 @@ class HandledException(Exception):
 
 
 @dataclass(repr=False)
-class ServerException(Exception):
+class ServerException(Exception, BaseServerException):
     """
     Create a new exception.
     :param title: the title of the error, which sometimes used on the client
@@ -22,30 +22,7 @@ class ServerException(Exception):
     """
     title: str = "We're sorry!"
     message: Optional[str] = "Looks like something went wrong!"
-    additional_msgs: Tuple[str, ...] = tuple()
-    fields: Optional[dict] = None
     code: Union[HTTPStatus, int] = HTTPStatus.INTERNAL_SERVER_ERROR
-    stacktrace: Optional[str] = None
-    version: Optional[str] = None
-
-    @property
-    def type(self):
-        return type(self).__name__
-
-    @property
-    def transaction_id(self):
-        return get_transaction_id()
-
-    def __str__(self):
-        lines = [f'<Exception {self.transaction_id}> {self.title}: {self.message}']
-        try:
-            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
-        except Exception:
-            pass
-        return '\n'.join(lines)
-
-    def to_dict(self):
-        return asdict(self)
 
 
 @dataclass

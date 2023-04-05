@@ -47,8 +47,8 @@ from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
-from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
+from neo4japp.utils.warnings import warn
 from neo4japp.warnings import ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')

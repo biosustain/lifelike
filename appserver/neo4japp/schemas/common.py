@@ -1,11 +1,13 @@
 import marshmallow.validate
-from flask import g
 from marshmallow import post_load, fields
 
+from neo4japp.base_server_exception import BaseServerException
+from neo4japp.exceptions import ServerException
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
-from neo4japp.util import get_warnings
+from neo4japp.utils.warnings import get_warnings
 from neo4japp.utils.request import Pagination
+from neo4japp.warnings import ServerWarning
 
 
 class PaginatedRequestSchema(CamelCaseSchema):
@@ -54,14 +56,13 @@ class ResultMappingSchema(CamelCaseSchema):
 # (i.e. ResultList + ResultMapping in the same response)
 
 
-class ErrorResponseSchema(CamelCaseSchema):
+class BaseResponseSchema(CamelCaseSchema):
     """All errors are emitted with this schema."""
     title = fields.String()
     type = fields.String()
     message = fields.String()
     additional_msgs = fields.List(fields.String())
     stacktrace = fields.String()
-    code = fields.Integer()
     version = fields.String()
     transaction_id = fields.String()
     fields_ = fields.Dict(
@@ -69,22 +70,20 @@ class ErrorResponseSchema(CamelCaseSchema):
         values=fields.Raw(),  # raw means can be anything
         attribute='fields', allow_none=True
     )
+    cause = fields.Method('get_cause')
+
+    def get_cause(self, e):
+        if isinstance(e.__cause__, BaseServerException):
+            return BaseResponseSchema().dump(e.__cause__)
 
 
-class WarningResponseSchema(CamelCaseSchema):
+class ErrorResponseSchema(BaseResponseSchema):
     """All errors are emitted with this schema."""
-    title = fields.String()
-    type = fields.String()
-    message = fields.String()
-    additional_msgs = fields.List(fields.String())
-    stacktrace = fields.String()
     code = fields.Integer()
-    version = fields.String()
-    fields_ = fields.Dict(
-        keys=fields.String(),
-        values=fields.Raw(),  # raw means can be anything
-        attribute='fields', allow_none=True
-    )
+
+
+class WarningResponseSchema(BaseResponseSchema):
+    """All warnings are emitted with this schema."""
 
 
 class WarningSchema(CamelCaseSchema):
