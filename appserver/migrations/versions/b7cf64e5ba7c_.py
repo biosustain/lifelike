@@ -2,7 +2,7 @@
 across all tables which use the TimestampMixin
 
 Revision ID: b7cf64e5ba7c
-Revises: 6a280c7c84f2
+Revises: 7fb303ae343b
 Create Date: 2020-09-10 23:36:03.265070
 
 """
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'b7cf64e5ba7c'
-down_revision = '6a280c7c84f2'
+down_revision = '7fb303ae343b'
 branch_labels = None
 depends_on = None
 
