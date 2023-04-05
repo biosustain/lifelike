@@ -1,0 +1,25 @@
+@import 'src/scss/variables';
+
+.detail {
+  margin: 20px 0 0 0;
+  border: 1px solid $gray-400;
+  border-radius: 8px;
+
+  > header {
+    padding: 5px 15px;
+    margin: 0;
+    font-size: inherit;
+    font-weight: bold;
+    background: $gray-200;
+  }
+
+  > section {
+    padding: 10px 15px;
+  }
+
+  pre {
+    max-height: calc(100vh - 400px);
+    margin: 0;
+    overflow: auto;
+  }
+}

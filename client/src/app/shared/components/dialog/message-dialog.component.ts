@@ -3,6 +3,9 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { ErrorLog } from 'app/shared/schemas/common';
+
+import { MessageArguments } from '../../services/message-dialog.service';
 
 /**
  * A generic alert dialog.
@@ -13,12 +16,8 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
   styleUrls: ['./message-dialog.component.scss'],
 })
 export class MessageDialogComponent {
-  @Input() title: string;
-  @Input() message: string;
-  @Input() additionalMsgs: string[];
-  @Input() stacktrace: string;
-  @Input() transactionId: string;
   @Input() type: MessageType;
+  @Input() error: ErrorLog;
 
   constructor(
     private readonly modal: NgbActiveModal,
