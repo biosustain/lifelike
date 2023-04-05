@@ -39,6 +39,8 @@ export interface ResultQuery {
 
 export interface SingleResult<T> {
   result: T;
+  info: WarningResponse[];
+  warnings: WarningResponse[];
 }
 
 export interface ResultMapping<T> {
@@ -52,15 +54,28 @@ export interface ResultList<T> {
   query?: ResultQuery;
 }
 
-export interface ErrorResponse {
+export interface MessageResponse {
   title: string;
   message: string;
+  type: string;
   additionalMsgs?: string[];
   stacktrace?: string;
   code?: number;
   version?: string;
   transactionId?: string;
   fields?: { [key: string]: string[] };
+}
+
+// tslint:disable-next-line:no-empty-interface
+export interface InformationResponse extends MessageResponse {
+}
+
+// tslint:disable-next-line:no-empty-interface
+export interface WarningResponse extends MessageResponse {
+}
+
+// tslint:disable-next-line:no-empty-interface
+export interface ErrorResponse extends MessageResponse {
 }
 
 export interface ErrorLogMeta {
@@ -75,6 +90,7 @@ export interface ErrorLog extends ErrorLogMeta {
   additionalMsgs?: string[];
   stacktrace?: string;
   transactionId?: string;
+  cause?: ErrorLog;
 }
 
 export interface ServiceOnInit {

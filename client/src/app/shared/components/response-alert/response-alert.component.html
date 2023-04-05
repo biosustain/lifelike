@@ -1,0 +1,11 @@
+<ngb-alert [dismissible]="dismissible" [type]="_type" [class]="alertClass">
+  <header class="d-block" *ngIf="responseAlert.title">
+    <strong>{{responseAlert.title}}</strong>
+  </header>
+  <p>{{responseAlert.message}}</p>
+  <ng-content></ng-content>
+  <details *ngIf="responseAlert.additionalMsgs?.length">
+    <summary>Details</summary>
+    <p *ngFor="let additionalMsg of responseAlert.additionalMsgs">{{additionalMsg}}</p>
+  </details>
+</ngb-alert>

@@ -1,0 +1,87 @@
+@mixin first-row() {
+  tr {
+    &:first-of-type {
+      th, td {
+        @content
+      }
+    }
+  }
+}
+
+@mixin last-row() {
+  tr {
+    &:last-of-type {
+      th, td {
+        @content
+      }
+    }
+  }
+}
+
+@mixin first-column() {
+  th, td {
+    &:first-of-type {
+      @content
+    }
+  }
+}
+
+@mixin last-column() {
+  th, td {
+    &:last-of-type {
+      @content
+    }
+  }
+}
+
+@mixin section-border($external-border, $internal-border) {
+  // border between columns
+  th + th, td + td {
+    border-left: $internal-border;
+  }
+
+  // border between section rows
+  tr + tr {
+    th, td {
+      border-top: $internal-border;
+    }
+  }
+
+  @include first-column {
+    border-left: $external-border;
+  }
+
+  @include last-column {
+    border-right: $external-border;
+  }
+
+  @include first-row {
+    border-top: $external-border;
+  }
+
+  @include last-row {
+    border-bottom: $external-border;
+  }
+}
+
+// Manual collapsing of table borders
+// border-collapse: collapse; does not work with header sticky positions
+@mixin border($section-border, $internal-border) {
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead, tbody, tfoot {
+    @include section-border($section-border, $internal-border)
+  }
+
+  // Allows for overwrite projections which respects section border collapsing
+  @content;
+
+  :where(thead, tbody, tfoot) + :where(thead, tbody, tfoot) {
+    tr:first-of-type {
+      th, td {
+        border-top: 0;
+      }
+    }
+  }
+}

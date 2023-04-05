@@ -142,12 +142,12 @@ class ManualAnnotationService:
                 pass
             except BrokenPipeError:
                 raise
-            except Exception:
+            except Exception as e:
                 raise AnnotationError(
                     title='Failed to Create Custom Annotation',
                     message='A system error occurred while creating the annotation, '
                             'we are working on a solution. Please try again later.',
-                )
+                ) from e
 
         annotation_to_add = {
             **custom_annotation,
@@ -225,13 +225,13 @@ class ManualAnnotationService:
             file.custom_annotations = [*inclusions, *file.custom_annotations]
 
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             raise AnnotationError(
                 title='Failed to Create Custom Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
-            )
+            ) from e
 
         return inclusions
 
@@ -277,13 +277,13 @@ class ManualAnnotationService:
             ]
 
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             raise AnnotationError(
                 title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
-            )
+            ) from e
 
         return removed_annotation_uuids
 
@@ -297,7 +297,7 @@ class ManualAnnotationService:
             )
         except BrokenPipeError:
             raise
-        except Exception:
+        except Exception as e:
             current_app.logger.error(
                 f'Failed executing cypher: {get_delete_global_inclusion_query()}.\n' +
                 f'PARAMETERS: <pairs: {pairs}>.',
@@ -307,7 +307,7 @@ class ManualAnnotationService:
                 title='Failed to Remove Global Inclusion',
                 message='A system error occurred while deleting the annotation, '
                         'we are working on a solution. Please try again later.'
-            )
+            ) from e
 
         try:
             # we need to do some cleaning up
@@ -418,13 +418,13 @@ class ManualAnnotationService:
             file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
 
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             raise AnnotationError(
                 title='Failed to Create Custom Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.'
-            )
+            ) from e
 
     def remove_exclusion(self, file: Files, user: AppUser, entity_type, term):
         """ Removes exclusion of automatic annotation from a given file.
@@ -453,13 +453,13 @@ class ManualAnnotationService:
 
             file.excluded_annotations = updated_exclusions
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             raise AnnotationError(
                 title='Failed to Remove Annotation',
                 message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',
-            )
+            ) from e
 
     # TODO: does this belong here?
     def get_file_annotations(self, file):
@@ -523,12 +523,12 @@ class ManualAnnotationService:
                 inclusion_date = annotation['inclusion_date']
                 hyperlinks = meta['idHyperlinks']
                 username = username
-            except KeyError:
+            except KeyError as e:
                 raise AnnotationError(
                     title='Failed to Create Custom Annotation',
                     message='Could not create global annotation inclusion/exclusion, '
                             'the data is corrupted. Please try again.',
-                )
+                ) from e
 
             if entity_id == '':
                 entity_id = f'NULL-{str(uuid.uuid4())}'
@@ -631,7 +631,7 @@ class ManualAnnotationService:
                     )
                 except BrokenPipeError:
                     raise
-                except Exception:
+                except Exception as e:
                     current_app.logger.error(
                         f'Failed to create global inclusion, '
                         f'knowledge graph failed with query: {query_fn()}.',
@@ -652,7 +652,7 @@ class ManualAnnotationService:
                     )
                 except BrokenPipeError:
                     raise
-                except Exception:
+                except Exception as e:
                     current_app.logger.info(
                         f'Failed to create global inclusion, '
                         f'knowledge graph failed with query: {query}.',
@@ -676,13 +676,13 @@ class ManualAnnotationService:
                 try:
                     db.session.add(global_list_annotation)
                     db.session.commit()
-                except Exception:
+                except Exception as e:
                     db.session.rollback()
                     raise AnnotationError(
                         title='Failed to Create Custom Annotation',
                         message='A system error occurred while creating the annotation, '
                                 'we are working on a solution. Please try again later.',
-                    )
+                    ) from e
 
     def _global_annotation_exists_in_kg(self, values: dict):
         entity_type = values['entity_type']
@@ -723,7 +723,7 @@ class ManualAnnotationService:
             )[0] if query_fn else {'node_exist': False}
         except BrokenPipeError:
             raise
-        except Exception:
+        except Exception as e:
             current_app.logger.error(
                 f'Failed to create global inclusion, '
                 f'knowledge graph failed with query: {query_fn()}.',
@@ -742,7 +742,7 @@ class ManualAnnotationService:
                 )[0]
             except BrokenPipeError:
                 raise
-            except Exception:
+            except Exception as e:
                 current_app.logger.error(
                     f'Failed to create global inclusion, '
                     f'knowledge graph failed with query: {query_fn()}.',

@@ -3,6 +3,7 @@ import multiprocessing as mp
 from typing import Dict, List
 
 from neo4japp.database import get_or_create_arango_client
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.annotations.utils.graph_queries import get_docs_by_ids_query

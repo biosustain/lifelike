@@ -1,3 +1,10 @@
+import { Warnings } from '@angular/cli/lib/config/schema';
+
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { ErrorResponse, InformationResponse, WarningResponse } from 'app/shared/schemas/common';
+
 export enum ProgressMode {
   Determinate = 'DETERMINATE',
   Indeterminate = 'INDETERMINATE',
@@ -12,23 +19,32 @@ export interface ProgressArguments {
    */
   value?: number;
   status?: string;
+  info?: InformationResponse[];
+  warnings?: WarningResponse[];
+  errors?: ErrorResponse[];
 }
 
 /**
  * Holds a progress update
  */
 export class Progress {
-  public mode: ProgressMode;
-  public value: number;
-  public status: string;
+  public readonly mode: ProgressMode;
+  public readonly value: number;
+  public readonly status: string;
+  public readonly info?: Readonly<InformationResponse[]>;
+  public readonly warnings?: Readonly<WarningResponse[]>;
+  public readonly errors?: Readonly<ErrorResponse[]>;
 
   constructor(args: ProgressArguments = {
     mode: ProgressMode.Indeterminate,
     value: 0,
-    status: 'Working...'
+    status: 'Working...',
   }) {
     this.mode = args.mode;
     this.value = args.value;
     this.status = args.status;
+    this.info = Object.freeze(args.info);
+    this.warnings = Object.freeze(args.warnings);
+    this.errors = Object.freeze(args.errors);
   }
 }

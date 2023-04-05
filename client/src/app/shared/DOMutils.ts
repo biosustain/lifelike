@@ -75,10 +75,61 @@ export function isCtrlOrMetaPressed(event: KeyboardEvent | MouseEvent) {
   }
 }
 
-export const closePopups = () =>
+export const closePopups = (target: EventTarget = document, options?: MouseEventInit) =>
   // events used to trigger popups closing might be consumed by libs like d3_zoom
   // this funciton triggers synthetic mouse down/up on document to close possible popups
   (
-    document.dispatchEvent(new MouseEvent('mousedown')) &&
-    document.dispatchEvent(new MouseEvent('mouseup'))
+    target.dispatchEvent(new MouseEvent('mousedown', options))
+    &&
+    target.dispatchEvent(new MouseEvent('mouseup', options))
   );
+
+export const isScrollable = (element: Element) =>
+  element.scrollHeight > element.clientHeight;
+
+export const enclosingScrollableView = (element: Element) => {
+  if (!element) {
+    return null;
+  }
+  return isScrollable(element) ? element : enclosingScrollableView(element.parentElement);
+};
+
+export const isWithinScrollableView = (element: Element, container?: Element) => {
+  const defaultedContainer = container ?? enclosingScrollableView(element as HTMLElement);
+  if (!defaultedContainer) {
+    throw Error('isWithinScrollableView has been called with invalid container declaration');
+  }
+  const containerBBox = defaultedContainer.getBoundingClientRect();
+  const elementBBox = element.getBoundingClientRect();
+
+  if (
+    (elementBBox.top >= containerBBox.top)
+    &&
+    (elementBBox.bottom <= containerBBox.bottom)
+    &&
+    (elementBBox.left >= containerBBox.left)
+    &&
+    (elementBBox.right <= containerBBox.right)
+  ) { // enclosed
+    return true;
+  }
+
+  if (
+    (elementBBox.top > containerBBox.bottom)
+    ||
+    (elementBBox.bottom < containerBBox.top)
+    ||
+    (elementBBox.left > containerBBox.right)
+    ||
+    (elementBBox.right < containerBBox.left)
+  ) { // out
+    return false;
+  }
+
+  return { // partial
+    top: elementBBox.top - containerBBox.top,
+    bottom: elementBBox.bottom - containerBBox.bottom,
+    left: elementBBox.left - containerBBox.left,
+    right: elementBBox.right - containerBBox.right,
+  };
+};

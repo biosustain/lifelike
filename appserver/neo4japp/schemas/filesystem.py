@@ -13,7 +13,9 @@ from neo4japp.schemas.common import (
     ResultListSchema,
     ResultMappingSchema,
     SingleResultSchema,
-    RankedItemSchema
+    RankedItemSchema,
+    WarningSchema,
+    InformationSchema
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
@@ -36,9 +38,9 @@ class ProjectSchema(CamelCaseSchema):
     def get_user_privilege_filter(self):
         try:
             return self.context['user_privilege_filter']
-        except KeyError:
+        except KeyError as e:
             raise RuntimeError('user_privilege_filter context key should be set '
-                               'for ProjectSchema to determine what to show')
+                               'for ProjectSchema to determine what to show') from e
 
     def get_privileges(self, obj: Projects):
         privilege_user_id = self.get_user_privilege_filter()
@@ -145,6 +147,7 @@ class FileSchema(StarredFileSchema):
     mime_type = fields.String()
     doi = fields.String()
     upload_url = fields.String()
+    size = fields.String()
     public = fields.Boolean()
     pinned = fields.Boolean()
     annotations_date = fields.DateTime()
@@ -168,9 +171,9 @@ class FileSchema(StarredFileSchema):
     def get_user_privilege_filter(self):
         try:
             return self.context['user_privilege_filter']
-        except KeyError:
+        except KeyError as e:
             raise RuntimeError('user_privilege_filter context key should be set '
-                               'for FileSchema to determine what to show')
+                               'for FileSchema to determine what to show') from e
 
     def get_privileges(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
@@ -312,7 +315,7 @@ class FileHierarchyRequestSchema(CamelCaseSchema):
 # ----------------------------------------
 
 
-class FileResponseSchema(SingleResultSchema):
+class FileResponseSchema(SingleResultSchema, WarningSchema, InformationSchema):
     result = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
 
 
@@ -328,8 +331,8 @@ class FileListSchema(ResultListSchema):
 class FileNode(CamelCaseSchema):
     data = fields.Nested(
         FileSchema,
-        only=(
-            'hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename'))
+        only=('hash_id', 'filename', 'mime_type', 'creation_date', 'true_filename', 'size')
+    )
     level = fields.Integer()
     children = fields.List(fields.Nested(lambda: FileNode()))
 

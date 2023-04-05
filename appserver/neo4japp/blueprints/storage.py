@@ -42,9 +42,11 @@ class UserManualAPI(MethodView):
         if g.current_user.has_role('admin'):
             try:
                 file = request.files['file']
-            except KeyError:
+            except KeyError as e:
                 raise ServerException(
-                    title='Unable to Upload File', message='No file specified.')
+                    title='Unable to Upload File',
+                    message='No file specified.'
+                ) from e
             bc = self.get_blob_service()
             bc.upload_blob(
                 file.read(),

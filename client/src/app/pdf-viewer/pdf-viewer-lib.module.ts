@@ -23,6 +23,8 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewComponent } from './components/pdf-view.component';
 import { AnnotationToolbarComponent } from './components/annotation-toolbar.component';
+import { AnnotationLayerComponent } from './components/annotation-layer/annotation-layer.component';
+import { AnnotationTooltipComponent } from './components/annotation-tooltip/annotation-tooltip.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +33,8 @@ import { AnnotationToolbarComponent } from './components/annotation-toolbar.comp
     AnnotationExcludeDialogComponent,
     PdfViewComponent,
     AnnotationToolbarComponent,
+    AnnotationLayerComponent,
+    AnnotationTooltipComponent
   ],
   imports: [
     PdfViewerModule,

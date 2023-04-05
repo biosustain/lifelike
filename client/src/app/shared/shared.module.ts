@@ -69,8 +69,6 @@ import { PaginationComponent } from './components/pagination.component';
 import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
 import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
-import { AnnotationTagHandler } from './providers/highlight-text/annotation-tag.provider';
-import { HighlightTagHandler } from './providers/highlight-text/highlight-tag.provider';
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
 import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
@@ -87,14 +85,21 @@ import { InternalSearchService } from './services/internal-search.service';
 import { PasswordInputComponent } from './components/form/password-input.component';
 import { SearchableDropdownMenuComponent } from './components/form/searchable-dropdown-menu.component';
 import { SearchableTreeComponent } from './components/form/searchable-tree/searchable-tree.component';
+import { XMLSnippetComponent } from './providers/highlight-text/xml-snippet.component';
+import { XMLHighlightComponent } from './providers/highlight-text/xml-highlight.component';
+import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotation/xml-annotation.component';
+import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
+import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 
 const components = [
+  ResponseAlertComponent,
   VisJsNetworkComponent,
   SearchableDropdownMenuComponent,
   PlotlySankeyDiagramComponent,
   AnnotationFilterComponent,
   WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
+  ErrorDetailsComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,
   LegendComponent,
@@ -178,6 +183,7 @@ const components = [
     AddStatusPipe,
     ModuleHeaderComponent,
     PasswordInputComponent,
+    XMLAnnotationComponent,
   ],
   providers: [
     TruncatePipe,
@@ -193,15 +199,31 @@ const components = [
       useClass: GenericDataProvider,
       multi: true,
     },
-    HighlightTextService,
     {
       provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useClass: AnnotationTagHandler,
+      useValue: {
+        tag: 'annotation',
+        component: XMLAnnotationComponent,
+        attributes: [ 'type', 'meta' ]
+      },
       multi: true,
     },
     {
       provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useClass: HighlightTagHandler,
+      useValue: {
+        tag: 'highlight' ,
+        component: XMLHighlightComponent,
+        attributes: []
+      },
+      multi: true,
+    },
+    {
+      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+      useValue: {
+        tag: 'snippet',
+        component: XMLSnippetComponent,
+        attributes: []
+      },
       multi: true,
     },
   ],

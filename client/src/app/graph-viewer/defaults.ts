@@ -2,7 +2,8 @@ import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 import { freezeDeep } from 'app/shared/utils';
 
-export const NODE_DEFAULTS = freezeDeep({
+// Use factory so it might contain muttable parameters
+export const NODE_DEFAULTS_FACTORY = () => ({
   display_name: '',
   sub_labels: [],
   data: {
@@ -11,7 +12,8 @@ export const NODE_DEFAULTS = freezeDeep({
   }
 });
 
-export const GROUP_DEFAULTS = freezeDeep({
+// Use factory so it might contain muttable parameters
+export const GROUP_DEFAULTS_FACTORY = () => ({
   margin: 10,
   label: GROUP_LABEL,
   // This data depends on members, fill as placeholder
@@ -23,6 +25,7 @@ export const GROUP_DEFAULTS = freezeDeep({
   },
 });
 
-export const IMAGE_DEFAULTS = freezeDeep({
+// Use factory so it might contain muttable parameters
+export const IMAGE_DEFAULTS_FACTORY = () => ({
   label: IMAGE_LABEL,
 });

@@ -1,13 +1,25 @@
-from io import BufferedIOBase, BytesIO
-from typing import Dict, List, Optional, Tuple
-
-import typing
+from enum import IntEnum, unique
 
 import magic
-from werkzeug.datastructures import FileStorage
+
+from typing import Dict, List, Optional, Tuple
 
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
+from neo4japp.utils import FileContentBuffer
+
+
+@unique
+class Certanity(IntEnum):
+    """Helper enum to asess result certanity in meaningfull way
+    We could simply use int of float, yet having named scale in form of enum
+    should provide better overview.
+
+    The higher the number the more certain we are about given result
+    """
+    default = -100
+    assumed = -1
+    match = 0
 
 
 class BaseFileTypeProvider:
@@ -35,7 +47,7 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
+    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
         Larger numbers indicate a higher confidence and negative
@@ -47,12 +59,16 @@ class BaseFileTypeProvider:
         :param file: the file
         :return: whether this provide should be used
         """
-        return [(0, self)] if file.mime_type.lower() in self.mime_types else []
+        return [(Certanity.match, self)] if file.mime_type.lower() in self.mime_types else []
 
     def convert(self, buffer):
         raise NotImplementedError
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
+    def detect_mime_type(
+        self,
+        buffer: FileContentBuffer,
+        extension: str = None
+    ) -> List[Tuple[Certanity, str]]:
         """
         Given the byte buffer, return a list of possible mime types with
         confidence levels. Larger numbers indicate a higher confidence and negative
@@ -65,6 +81,7 @@ class BaseFileTypeProvider:
         file type when uploading a file (as of writing).
 
         :param buffer: the file buffer
+        :param extension: the file extension
         :return: a list of mime types and their confidence levels
         """
         return []
@@ -81,7 +98,7 @@ class BaseFileTypeProvider:
         """
         return False
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         """
         Validate the contents of the given buffer to see if it is correct for
         this given file type.
@@ -89,6 +106,7 @@ class BaseFileTypeProvider:
         You MUST validate the data if possible, especially if it's our
         own format, especially if it's JSON that we generate!
 
+        :param log_status_messages:
         :param buffer: the file's contents
         :raises ValueError: raised if the content is invalid
         """
@@ -96,7 +114,7 @@ class BaseFileTypeProvider:
         # See the map and enrichment table formats for examples
         raise ValueError('format cannot be validated')
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
+    def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
         """
         Attempt to extract a DOI from the file.
 
@@ -107,7 +125,7 @@ class BaseFileTypeProvider:
         # contents to look for the DOI
         return None
 
-    def to_indexable_content(self, buffer: BufferedIOBase) -> BufferedIOBase:
+    def to_indexable_content(self, buffer: FileContentBuffer) -> FileContentBuffer:
         """
         Return a new buffer that is suited for indexing by Elasticsearch. For
         some file formats, this operation may return a whole different type of file
@@ -120,7 +138,7 @@ class BaseFileTypeProvider:
         # Files of this file type cannot be indexed until you override this method
         # You can actually just return a blob of text (encoded in UTF-8)
         # with all the relevant keywords
-        return typing.cast(BufferedIOBase, BytesIO())
+        return FileContentBuffer()
 
     def should_highlight_content_text_matches(self) -> bool:
         """
@@ -148,7 +166,7 @@ class BaseFileTypeProvider:
         """
         raise ExportFormatError()
 
-    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files):
+    def prepare_content(self, buffer: FileContentBuffer, params: dict, file: Files):
         """
         Create a content to store from request data. Return unmodified if the content does not
         require additional processing (currently, only maps do).
@@ -171,24 +189,29 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         self.mime_type = mime_type
         self.mime_types = (mime_type,)
 
-    def detect_provider(self, file: Files) -> List[Tuple[float, 'BaseFileTypeProvider']]:
-        return [(-100, GenericFileTypeProvider(file.mime_type))]
+    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
+        return [(Certanity.default, GenericFileTypeProvider(file.mime_type))]
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[Tuple[float, str]]:
-        mime_type = magic.from_buffer(buffer.read(2048), mime=True)
-        return [(-100, mime_type)]
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension: str = None
+            ) -> List[Tuple[Certanity, str]]:
+        with buffer as bufferView:
+            mime_type = magic.from_buffer(bufferView.read(2048), mime=True)
+            return [(Certanity.default, mime_type)]
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         return
 
     def can_create(self) -> bool:
         return True
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileContentBuffer):
         if self.mime_type.startswith('text/'):
             return buffer  # Have Elasticsearch index these files
         else:
-            return typing.cast(BufferedIOBase, BytesIO())
+            return FileContentBuffer()
 
     def should_highlight_content_text_matches(self) -> bool:
         if self.mime_type.startswith('text/'):
@@ -232,7 +255,7 @@ class FileTypeService:
         :param file: the file
         :return: a provider, which may be the default one
         """
-        results: List[Tuple[float, BaseFileTypeProvider]] = []
+        results: List[Tuple[Certanity, BaseFileTypeProvider]] = []
         for provider in self.providers:
             results.extend(provider.detect_provider(file))
         if len(results):
@@ -240,22 +263,20 @@ class FileTypeService:
             return results[-1][1]
         return self.default_provider
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> str:
+    def detect_mime_type(self, buffer: FileContentBuffer, extension: str = None) -> str:
         """
         Detect the file type based on the file's contents. A provider
         will be returned regardless, although it may be the default one.
         :param buffer: the file's contents
+        :param extension: the file's extension
         :return: a provider
         """
-        results: List[Tuple[float, str]] = []
+        results: List[Tuple[Certanity, str]] = []
         for provider in self.providers:
-            try:
-                # Note that each provider sets the same priority value for each mime_type, so the
-                # priority is in the order the providers are registered. This is not ideal, we
-                # should explicitly set the priority.
-                results.extend(provider.detect_mime_type(buffer))
-            finally:
-                buffer.seek(0)
+            # Note that each provider sets the same priority value for each mime_type, so the
+            # priority is in the order the providers are registered. This is not ideal, we
+            # should explicitly set the priority.
+            results.extend(provider.detect_mime_type(buffer, extension))
         if len(results):
             results.sort(key=lambda item: item[0])
             return results[-1][1]

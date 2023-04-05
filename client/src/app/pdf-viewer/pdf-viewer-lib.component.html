@@ -5,9 +5,11 @@
                             [rotation]="rotation"
                             [originalSize]="originalSize"
                             [fitToPage]="fitToPage"
+                            [selecting]="selecting"
                             (afterLoadComplete)="afterLoadComplete($event)"
                             [zoom]="zoom"
                             [showAll]="showAll"
+                            [search]="search.query$ | async"
                             [stickToPage]="stickToPage"
                             [renderText]="renderText"
                             [renderTextMode]="renderTextMode"
@@ -16,7 +18,7 @@
                             (errorCallback)="onError($event)"
                             (progressCallback)="onProgress($event)"
                             (pageRendered)="pageRendered($event)"
-                            (matchesCountUpdated)="matchesCountUpdated.emit($event)"
+                            (matchesCountUpdated)="matchesCountUpdated($event)"
                             (findControlStateUpdated)="findControlStateUpdated($event)">
         </app-pdf-viewer-lib>
     </div>

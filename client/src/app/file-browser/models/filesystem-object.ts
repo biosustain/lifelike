@@ -192,6 +192,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   // as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
   trueFilename: string;
   path: string;
+  size: string;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -581,7 +582,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     assign(this, pick(
       data,
       [
-        'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
+        'hashId', 'size', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
         'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
         'fallbackOrganism', 'annotationConfigs', 'path', 'trueFilename', 'starred'
       ]

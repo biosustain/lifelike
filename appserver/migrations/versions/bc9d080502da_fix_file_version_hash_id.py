@@ -12,6 +12,7 @@ from alembic import op
 # revision identifiers, used by Alembic.
 from sqlalchemy.orm import Session
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models.common import generate_hash_id
 
 revision = 'bc9d080502da'

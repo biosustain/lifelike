@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 from os import path
 
 from migrations.utils import window_chunk
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
 from neo4japp.models import Files, FileContent
 

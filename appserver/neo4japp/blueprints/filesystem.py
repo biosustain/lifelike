@@ -1,10 +1,11 @@
+from pathlib import Path
+
+import gdown
 import hashlib
-import io
 import itertools
 import json
 import os
-from typing import Set, cast
-from urllib.error import HTTPError
+import urllib
 import zipfile
 
 from collections import defaultdict
@@ -12,17 +13,18 @@ from datetime import datetime, timedelta
 from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
+from itertools import chain
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union, cast
+from urllib.error import HTTPError
 from webargs.flaskparser import use_args
-from itertools import chain
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
@@ -44,7 +46,9 @@ from neo4japp.exceptions import (
     InvalidArgument,
     RecordNotFound,
     NotAuthorized,
-    UnsupportedMediaTypeError
+    UnsupportedMediaTypeError,
+    GDownException,
+    HandledException
 )
 from neo4japp.models import (
     Projects,
@@ -60,6 +64,7 @@ from neo4japp.models.files_queries import (
     add_file_user_role_columns,
     build_file_hierarchy_query,
     FileHierarchy,
+    add_file_size_column,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
@@ -84,7 +89,9 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
+from neo4japp.utils import FileContentBuffer
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.utils.globals import warn
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
@@ -105,7 +112,7 @@ bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 def get_all_enrichment_tables():
     is_admin = g.current_user.has_role('admin')
     if is_admin is False:
-        raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
+        raise NotAuthorized()
 
     query = db.session.query(Files.hash_id).filter(
         Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table')
@@ -231,6 +238,7 @@ class FilesystemBaseView(MethodView):
         query = add_file_user_role_columns(query, t_file, current_user.id,
                                            access_override=private_data_access)
         query = add_file_starred_columns(query, t_file.id, current_user.id)
+        query = add_file_size_column(query, t_file.content_id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
@@ -256,6 +264,7 @@ class FilesystemBaseView(MethodView):
             hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
             hierarchy.calculate_starred_files()
+            hierarchy.calculate_size()
             files.append(hierarchy.file)
 
         # Handle helper require_hash_ids argument that check to see if all files wanted
@@ -268,7 +277,8 @@ class FilesystemBaseView(MethodView):
                     title='File Not Found',
                     message=f"The request specified one or more file or directory "
                             f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404)
+                    code=404
+                )
 
         # In the end, we just return a list of Files instances!
         return files
@@ -500,23 +510,21 @@ class FilesystemBaseView(MethodView):
                             file.organism_name = params['fallback_organism']['organism_name']
                             file.organism_synonym = params['fallback_organism']['synonym']
                             file.organism_taxonomy_id = params['fallback_organism']['tax_id']
-                        except KeyError:
+                        except KeyError as e:
                             raise InvalidArgument(
                                 title='Failed to Update File',
                                 message='You must provide the following properties for a ' +
                                         'fallback organism: "organism_name", "synonym", "tax_id".',
-                            )
+                            ) from e
 
                 if 'annotation_configs' in params:
                     file.annotation_configs = params['annotation_configs']
 
                 if 'content_value' in params:
-                    buffer = params['content_value']
+                    buffer = FileContentBuffer(stream=params['content_value'].stream)
 
                     # Get file size
-                    buffer.seek(0, io.SEEK_END)
-                    size = buffer.tell()
-                    buffer.seek(0)
+                    size = buffer.size
 
                     if size > self.file_max_size:
                         raise ValidationError(
@@ -527,15 +535,17 @@ class FilesystemBaseView(MethodView):
                     provider = file_type_service.get(file)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
-                        provider.validate_content(buffer)
-                        buffer.seek(0)  # Must rewind
-                    except ValueError:
-                        raise ValidationError(f"The provided file may be corrupt for files of type "
-                                              f"'{file.mime_type}' (which '{file.hash_id}' is of).",
-                                              "contentValue")
+                        provider.validate_content(buffer, log_status_messages=True)
+                    except ValueError as e:
+                        raise ValidationError(
+                            f"The provided file may be corrupt for files of type "
+                            f"'{file.mime_type}' (which '{file.hash_id}' is of).",
+                            "contentValue"
+                        ) from e
+                    except HandledException:
+                        pass
 
                     new_content_id = FileContent.get_or_create(buffer)
-                    buffer.seek(0)  # Must rewind
 
                     # Only make a file version if the content actually changed
                     if file.content_id != new_content_id:
@@ -561,7 +571,7 @@ class FilesystemBaseView(MethodView):
             raise ValidationError(
                 "No two items (folder or file) can share the same name.",
                 "filename"
-            )
+            ) from e
 
     def get_file_response(self, hash_id: str, user: AppUser):
         """
@@ -759,10 +769,12 @@ class FileListView(FilesystemBaseView):
         try:
             parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
             self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
-        except RecordNotFound:
+        except RecordNotFound as e:
             # Rewrite the error to make more sense
-            raise ValidationError("The requested parent object could not be found.",
-                                  "parent_hash_id")
+            raise ValidationError(
+                "The requested parent object could not be found.",
+                "parent_hash_id"
+            ) from e
 
         if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
             raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
@@ -787,10 +799,12 @@ class FileListView(FilesystemBaseView):
                 existing_file = self.get_nondeleted_recycled_file(Files.hash_id == source_hash_id)
                 self.check_file_permissions([existing_file], current_user, ['readable'],
                                             permit_recycled=True)
-            except RecordNotFound:
-                raise ValidationError(f"The requested file or directory to clone from "
-                                      f"({source_hash_id}) could not be found.",
-                                      "content_hash_id")
+            except RecordNotFound as e:
+                raise ValidationError(
+                    f"The requested file or directory to clone from "
+                    f"({source_hash_id}) could not be found.",
+                    "content_hash_id"
+                ) from e
 
             if existing_file.mime_type == DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(f"The specified clone source ({source_hash_id}) "
@@ -813,9 +827,7 @@ class FileListView(FilesystemBaseView):
             buffer, url = self._get_content_from_params(params)
 
             # Figure out file size
-            buffer.seek(0, io.SEEK_END)
-            size = buffer.tell()
-            buffer.seek(0)
+            size = buffer.size
 
             # Check max file size
             if size > self.file_max_size:
@@ -831,8 +843,16 @@ class FileListView(FilesystemBaseView):
             if mime_type:
                 file.mime_type = mime_type
             else:
-                mime_type = file_type_service.detect_mime_type(buffer)
-                buffer.seek(0)  # Must rewind
+                extension = None
+                try:
+                    extension = (
+                            file.extension or
+                            Path(params['content_value'].filename).suffix
+                    )
+                except Exception:
+                    pass
+
+                mime_type = file_type_service.detect_mime_type(buffer, extension)
                 file.mime_type = mime_type
 
             # Get the provider based on what we know now
@@ -861,19 +881,24 @@ class FileListView(FilesystemBaseView):
 
             # Validate the content
             try:
-                provider.validate_content(buffer)
-                buffer.seek(0)  # Must rewind
+                provider.validate_content(
+                    buffer,
+                    log_status_messages=True
+                )
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-            # Get the DOI
-            file.doi = provider.extract_doi(buffer)
-            buffer.seek(0)  # Must rewind
+            except HandledException:
+                pass
+            else:
+                try:
+                    # Get the DOI only if content could be validated
+                    file.doi = provider.extract_doi(buffer)
+                except Warning as w:
+                    warn(w)
 
             # Save the file content if there's any
             if size:
                 file.content_id = FileContent.get_or_create(buffer)
-                buffer.seek(0)  # Must rewind
                 try:
                     buffer.close()
                 except Exception:
@@ -905,23 +930,25 @@ class FileListView(FilesystemBaseView):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
                     file.filename = file.generate_non_conflicting_filename()
-                except ValueError:
+                except ValueError as e:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
-                        "filename")
+                        "filename"
+                    ) from e
             elif trial == 3:  # Give up
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
-                    "filename")
+                    "filename"
+                )
 
             try:
-                db.session.begin_nested()
-                db.session.add(file)
-                db.session.commit()
-                break
-            except IntegrityError as e:
+                with db.session.begin_nested():
+                    db.session.add(file)
+            except IntegrityError:
                 # Warning: this could catch some other integrity error
-                db.session.rollback()
+                pass
+            else:
+                break
 
         db.session.commit()
         # rollback in case of error?
@@ -988,7 +1015,8 @@ class FileListView(FilesystemBaseView):
             )
         )
         linked_files_id = list(map(lambda f: f.id, linked_files))
-        try:
+
+        with db.session.begin_nested():
             if map_target_files_id:
                 db.session.query(
                     MapLinks
@@ -1010,10 +1038,6 @@ class FileListView(FilesystemBaseView):
                         constraint='uq_map_id_linked_id'
                     )
                 )
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
 
         return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
@@ -1070,26 +1094,39 @@ class FileListView(FilesystemBaseView):
             missing=[],
         )))
 
-    def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
+    def _get_content_from_params(self, params: dict) -> Tuple[FileContentBuffer, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
         # Fetch from URL
         if url is not None:
             try:
+                response_buffer = FileContentBuffer(max_size=self.file_max_size)
                 # Note that in the future, we may wish to upload files of many different types
                 # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
                 # now it is the expectation.
-                buffer = read_url(
-                    url=url,
-                    headers={
-                        'User-Agent': self.url_fetch_user_agent,
-                        'Accept': FILE_MIME_TYPE_PDF,
-                    },
-                    max_length=self.file_max_size,
-                    prefer_direct_downloads=True,
-                    timeout=self.url_fetch_timeout
-                )
+                if urllib.parse.urlparse(url).netloc == 'drive.google.com':
+                    buffer = gdown.download(url, response_buffer, fuzzy=True)
+                    if buffer is None:
+                        # currently gdown fails silently - wrote path for it
+                        # https://github.com/wkentaro/gdown/pull/244
+                        # if they do not accept we should consider ussing fork
+                        raise GDownException()
+                    file_type_service = get_file_type_service()
+                    if file_type_service.detect_mime_type(buffer) != FILE_MIME_TYPE_PDF:
+                        raise UnsupportedMediaTypeError()
+                else:
+                    buffer = read_url(
+                        url=url,
+                        headers={
+                            'User-Agent': self.url_fetch_user_agent,
+                            'Accept': FILE_MIME_TYPE_PDF,
+                        },
+                        buffer=response_buffer,
+                        max_length=self.file_max_size,
+                        prefer_direct_downloads=True,
+                        timeout=self.url_fetch_timeout
+                    )
             except UnsupportedMediaTypeError as e:
                 # The server did not respect our request for a PDF and did not throw a 406, so
                 # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
@@ -1100,8 +1137,8 @@ class FileListView(FilesystemBaseView):
                             'problem persists, please download the file to your computer from ' +
                             'the original website and upload the file from your device.',
                     code=e.code
-                )
-            except HTTPError as http_err:
+                ) from e
+            except (HTTPError, GDownException) as http_err:
                 # Should be raised because of the 'Accept' content type header above.
                 if http_err.code == 406:
                     raise FileUploadError(
@@ -1111,7 +1148,7 @@ class FileListView(FilesystemBaseView):
                                 'the problem persists, please download the file to your ' +
                                 'computer from the original website and upload the file from ' +
                                 'your device.',
-                    )
+                    ) from http_err
                 else:
                     # An error occurred that we were not expecting.
                     raise FileUploadError(
@@ -1120,21 +1157,21 @@ class FileListView(FilesystemBaseView):
                                 'please try again. If the problem persists, please download the ' +
                                 'file to your computer from the original website and upload the ' +
                                 'file from your device.'
-                    )
-            except ContentTooLongError:
+                    ) from http_err
+            except (ContentTooLongError, OverflowError) as e:
                 raise FileUploadError(
                     title='File Upload Error',
                     message='Your file could not be uploaded. The requested file is too large. ' +
                             'Please limit file uploads to less than 315MB.',
-                )
+                ) from e
 
             return buffer, url
 
         # Fetch from upload
         elif buffer is not None:
-            return buffer, None
+            return FileContentBuffer(stream=buffer), None
         else:
-            return cast(io.BufferedIOBase, io.BytesIO()), None
+            return FileContentBuffer(), None
 
 
 class FileSearchView(FilesystemBaseView):
@@ -1294,7 +1331,7 @@ class MapContentView(FilesystemBaseView):
                                   f'{file.mime_type}')
 
         try:
-            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+            zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
             json_graph = zip_file.read('graph.json')
         except (KeyError, zipfile.BadZipFile):
             raise ValidationError(
@@ -1332,9 +1369,11 @@ class FileExportView(FilesystemBaseView):
         else:
             try:
                 export = file_type.generate_export(file, params['format'])
-            except ExportFormatError:
-                raise ValidationError("Unknown or invalid export format for the requested file.",
-                                      params["format"])
+            except ExportFormatError as e:
+                raise ValidationError(
+                    "Unknown or invalid export format for the requested file.",
+                    params["format"]
+                ) from e
 
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
@@ -1354,11 +1393,11 @@ class FileExportView(FilesystemBaseView):
         link_to_page_map: Dict[str, int]
     ) -> List[Files]:
         current_user = g.current_user
-        zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
         try:
             json_graph = json.loads(zip_file.read('graph.json'))
-        except KeyError:
-            raise ValidationError
+        except KeyError as e:
+            raise ValidationError from e
         for node in chain(
                 json_graph['nodes'],
                 flatten(
@@ -1392,7 +1431,7 @@ class FileExportView(FilesystemBaseView):
                                 child_file, map_hash_set, files, link_to_page_map
                             )
 
-                        except RecordNotFound:
+                        except RecordNotFound as e:
                             current_app.logger.info(
                                 f'Map file: {map_hash} requested for linked '
                                 f'export does not exist.',
@@ -1400,6 +1439,7 @@ class FileExportView(FilesystemBaseView):
                                     username=current_user.username,
                                     event_type=LogEventType.FILESYSTEM.value).to_dict()
                             )
+                            # TODO: warning
                     destination_page = find_index(
                         lambda f: f.hash_id == map_hash,
                         files
@@ -1428,7 +1468,7 @@ class FileBackupView(FilesystemBaseView):
         # or should I get the instance here?
         # Alternatively, we can zip those on the client side - but the JZip was working really slow
         if params['content_value'].content_type == FILE_MIME_TYPE_MAP:
-            new_content = io.BytesIO()
+            new_content = FileContentBuffer()
             zip_content = zipfile.ZipFile(
                 new_content,
                 'w',
@@ -1443,9 +1483,8 @@ class FileBackupView(FilesystemBaseView):
             for image in new_images:
                 zip_content.writestr('images/' + image.filename + '.png', image.read())
             zip_content.close()
-            # Always seek before the read
-            new_content.seek(0)
-            backup.raw_value = new_content.read()
+            with new_content as bufferView:
+                backup.raw_value = bufferView.read()
         else:
             backup.raw_value = params['content_value'].read()
         backup.user = current_user
@@ -1499,7 +1538,8 @@ class FileBackupContentView(FilesystemBaseView):
             raise RecordNotFound(
                 title='Failed to Get File Backup',
                 message='No backup stored for this file.',
-                code=404)
+                code=404
+            )
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
@@ -1780,38 +1820,33 @@ class FileStarUpdateView(FilesystemBaseView):
 
         try:
             result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
-        except NoResultFound:
+        except NoResultFound as e:
             raise RecordNotFound(
                 title='Failed to Update File',
                 message=f'Could not identify file with hash id {hash_id}',
-            )
+            ) from e
 
         # If the user doesn't have permission to read the file they want to star, we throw
         self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
 
-        if starred:
-            # Don't need to update if the file is already starred by this user
-            if result.calculated_starred is None:
-                starred_file = StarredFile(
-                    user_id=user.id,
-                    file_id=result.id
-                )
-                db.session.add(starred_file)
-                result.calculated_starred = starred_file
-        # Delete the row only if it exists
-        elif result.calculated_starred is not None:
-            db.session.query(
-                StarredFile
-            ).filter(
-                StarredFile.id == result.calculated_starred['id']
-            ).delete()
-            result.calculated_starred = None
-
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+        with db.session.begin_nested():
+            if starred:
+                # Don't need to update if the file is already starred by this user
+                if result.calculated_starred is None:
+                    starred_file = StarredFile(
+                        user_id=user.id,
+                        file_id=result.id
+                    )
+                    db.session.add(starred_file)
+                    result.calculated_starred = starred_file
+            # Delete the row only if it exists
+            elif result.calculated_starred is not None:
+                db.session.query(
+                    StarredFile
+                ).filter(
+                    StarredFile.id == result.calculated_starred['id']
+                ).delete()
+                result.calculated_starred = None
 
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': user.id,

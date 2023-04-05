@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify
 from flask.views import MethodView
 from sendgrid.helpers.mail import Mail
-from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
@@ -21,32 +20,27 @@ bp = Blueprint('reports', __name__, url_prefix='/reports')
 class CopyrightInfringementReportView(MethodView):
     @use_args(CopyrightInfringementRequestSchema)
     def post(self, params: dict):
-        copyright_infringement_report = CopyrightInfringementRequest(
-            url=params['url'],
-            description=params['description'],
-            name=params['name'],
-            company=params['company'],
-            address=params['address'],
-            country=params['country'],
-            city=params['city'],
-            province=params['province'],
-            zip=params['zip'],
-            phone=params['phone'],
-            fax=params['fax'],
-            email=params['email'],
-            attestationCheck1=params['attestationCheck1'],
-            attestationCheck2=params['attestationCheck2'],
-            attestationCheck3=params['attestationCheck3'],
-            attestationCheck4=params['attestationCheck4'],
-            signature=params['signature'],
-        )
-
-        try:
+        with db.session.begin_nested():
+            copyright_infringement_report = CopyrightInfringementRequest(
+                url=params['url'],
+                description=params['description'],
+                name=params['name'],
+                company=params['company'],
+                address=params['address'],
+                country=params['country'],
+                city=params['city'],
+                province=params['province'],
+                zip=params['zip'],
+                phone=params['phone'],
+                fax=params['fax'],
+                email=params['email'],
+                attestationCheck1=params['attestationCheck1'],
+                attestationCheck2=params['attestationCheck2'],
+                attestationCheck3=params['attestationCheck3'],
+                attestationCheck4=params['attestationCheck4'],
+                signature=params['signature'],
+            )
             db.session.add(copyright_infringement_report)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
 
         message = Mail(
             from_email=MESSAGE_SENDER_IDENTITY,
@@ -71,11 +65,11 @@ class CopyrightInfringementReportView(MethodView):
         try:
             SEND_GRID_API_CLIENT.send(message)
         except Exception as e:
-            # If for some reason we cannot send a confirmation email, delete the row we just
-            # created and re-raise the error.
-            db.session.delete(copyright_infringement_report)
-            db.session.commit()
-            # rollback in case of error?
+            with db.session.begin_nested():
+                # If for some reason we cannot send a confirmation email, delete the row we just
+                # created and re-raise the error.
+                db.session.delete(copyright_infringement_report)
+                # rollback in case of error?
             raise
 
         return jsonify(dict(result=copyright_infringement_report.to_dict()))

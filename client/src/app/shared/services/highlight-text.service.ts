@@ -1,106 +1,67 @@
-import { Injectable, InjectionToken, Injector } from '@angular/core';
+import { Injectable, InjectionToken, Injector, Type } from '@angular/core';
 
 import { escape } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
-export const HIGHLIGHT_TEXT_TAG_HANDLER = new InjectionToken<TagHandler[]>('highlightTextTagHandler');
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+
+import { InternalSearchService } from './internal-search.service';
+import { GenericDataProvider } from '../providers/data-transfer-data/generic-data.provider';
+
+interface XMLTagMapping {
+  tag: string;
+  component: Type<XMLTag>;
+  attributes: string[];
+}
+
+export const HIGHLIGHT_TEXT_TAG_HANDLER = new InjectionToken<XMLTagMapping[]>('highlightTextTagHandler');
 
 @Injectable()
 export class HighlightTextService {
-  protected _tagHandlers: Map<string, TagHandler> | undefined;
+  public object: FilesystemObject;
 
-  constructor(protected readonly injector: Injector) {
+  constructor(private readonly internalSearch: InternalSearchService) {
   }
 
-  get tagHandlers(): Map<string, TagHandler> {
-    const tagHandlers = this._tagHandlers;
-    if (tagHandlers != null) {
-      return tagHandlers;
-    }
-    this.reload();
-    return this._tagHandlers;
+  composeSearchInternalLinks(text) {
+    const organism = this.object?.fallbackOrganism?.tax_id;
+    return [
+      {
+        navigate: this.internalSearch.getVisualizerArguments(text, {organism}),
+        label: 'Knowledge Graph',
+      },
+      {
+        navigate: this.internalSearch.getFileContentsArguments(text),
+        label: 'File Content',
+      },
+      {
+        navigate: this.internalSearch.getFileContentsArguments(text, {types: ['map']}),
+        label: 'Map Content',
+      },
+    ];
   }
 
-  reload() {
-    const tagHandlers = new Map<string, TagHandler>();
-    for (const tagHandler of this.injector.get(HIGHLIGHT_TEXT_TAG_HANDLER)) {
-      tagHandlers.set(tagHandler.tagName, tagHandler);
-    }
-    this._tagHandlers = tagHandlers;
+  getSources(meta) {
+    return this.object?.getGraphEntitySources(meta) ?? [];
   }
 
-  generateHTML(s: string) {
-    const parser = new DOMParser();
-    return this.generateHTMLFromNode(
-      parser.parseFromString(s, 'application/xml').documentElement,
-    );
-  }
-
-  addEventListeners(element: Element, detail: { [key: string]: any } = {}): Subscription {
-    const listenerArgs: [string, EventListenerOrEventListenerObject][] = [];
-
-    for (const eventName of ['dragStart', 'mouseDown', 'click']) {
-      listenerArgs.push([
-        eventName.toLowerCase(),
-        (event: Event) => {
-          for (const tagHandler of this.tagHandlers.values()) {
-            tagHandler[eventName](event, detail);
-          }
-        },
-      ]);
-    }
-
-    for (const args of listenerArgs) {
-      element.addEventListener(...args);
-    }
-
-    const subscription = new Subscription();
-    subscription.add(() => {
-      for (const args of listenerArgs) {
-        element.removeEventListener(...args);
-      }
-    });
-
-    return subscription;
-  }
-
-  private generateHTMLFromNode(node: Node) {
-    // WARNING: Watch out for XSS vulns!
-    if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.CDATA_SECTION_NODE) {
-      return escape(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_NODE) {
-      let html = '';
-      const tagHandler = this.tagHandlers.get(node.nodeName);
-      if (tagHandler != null) {
-        html += tagHandler.start(node as Element);
-      }
-      for (let child = node.firstChild; child; child = child.nextSibling) {
-        html += this.generateHTMLFromNode(child);
-      }
-      if (tagHandler != null) {
-        html += tagHandler.end(node as Element);
-      }
-      return html;
-    } else {
-      return '';
+  addDataTransferData(dataTransfer) {
+    const {object} = this;
+    if (object) {
+      GenericDataProvider.setURIs(dataTransfer, [{
+        title: object.filename,
+        uri: object.getURL(false).toAbsolute(),
+      }]);
     }
   }
 }
 
-export abstract class TagHandler {
-  abstract get tagName(): string;
-
-  abstract start(element: Element): string;
-
-  abstract end(element: Element): string;
-
-  dragStart(event: DragEvent, detail: { [key: string]: any }) {
-  }
-
-  mouseDown(event: MouseEvent, detail: { [key: string]: any }) {
-  }
-
-  click(event: MouseEvent, detail: { [key: string]: any }) {
-  }
+export abstract class XMLTag {
+  /**
+   *   Helper method for programatically created component
+   *   to be called after input values changes
+   *   as of Angular 11 we will be able to use 'updateInput' instead
+   */
+  abstract update();
 }
 

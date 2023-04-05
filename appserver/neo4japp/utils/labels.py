@@ -9,11 +9,12 @@ from neo4japp.utils import EventLog
 def get_first_known_label_from_node(node):
     try:
         return get_first_known_label_from_list(node.labels)
-    except ValueError:
+    except ValueError as e:
         current_app.logger.warning(
             f'Node with ID {node.id} had an unexpected list of labels: {node.labels}',
             extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
         )
+        # TODO warning
         return 'Unknown'
 
 

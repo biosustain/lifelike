@@ -1,6 +1,5 @@
 import re
 import sys
-from typing import Generator, Union
 
 import unicodedata
 
@@ -44,3 +43,11 @@ def extract_text(d):
         except TypeError:
             # not iterable
             pass
+
+
+def indent_lines(*lines: str, level=1, indent_string: str = '\t'):
+    return list(map(lambda s: indent_string * level + s, lines))
+
+
+def compose_lines(*lines: str, new_line_delimeter: str = '\n'):
+    return new_line_delimeter.join(lines)

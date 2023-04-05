@@ -108,7 +108,7 @@
                     <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
                       <div class="mt-2 paragraph-truncate-3">
-                        <app-highlight-text [highlight]="result.item.highlight[0]"></app-highlight-text>
+                        <app-highlight-text [appInnerXML]="result.item.highlight[0]"></app-highlight-text>
                       </div>
                       <div class="d-flex align-items-center justify-content-end">
                         <a

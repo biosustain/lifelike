@@ -16,6 +16,7 @@ import sqlalchemy as sa
 from sqlalchemy import table, column, and_
 from sqlalchemy.orm import Session
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from migrations.utils import window_chunk
 from neo4japp.models.files import MapLinks, Files

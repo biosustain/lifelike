@@ -1,12 +1,12 @@
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { isEqual, uniqueId } from 'lodash-es';
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription, iif } from 'rxjs';
+import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -28,6 +28,7 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { AppURL } from 'app/shared/utils/url';
+import { mapIterable, findEntriesValue, findEntriesKey } from 'app/shared/utils';
 
 import {
   AddedAnnotationExclusion,
@@ -40,26 +41,28 @@ import {
   AnnotationHighlightResult,
   PdfViewerLibComponent,
 } from '../pdf-viewer-lib.component';
+import { PDFAnnotationService } from '../services/pdf-annotation.service';
+import { PDFSearchService } from '../services/pdf-search.service';
 
-class EntityTypeEntry {
-  constructor(public type: EntityType, public annotations: Annotation[]) {
-  }
-}
+type EntityTypeVisibilityMap = Map<string, boolean>;
+type ReadonlyEntityTypeVisibilityMap = ReadonlyMap<string, boolean>;
 
 @Component({
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-view.component.html',
   styleUrls: ['./pdf-view.component.scss'],
   providers: [
-    ModuleContext
-  ]
+    ModuleContext,
+    PDFAnnotationService,
+    PDFSearchService
+  ],
 })
-export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
+export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent {
 
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
-    protected readonly pdfAnnService: AnnotationsService,
+    readonly pdfAnnService: PDFAnnotationService,
     protected readonly snackBar: MatSnackBar,
     protected readonly modalService: NgbModal,
     protected readonly route: ActivatedRoute,
@@ -67,17 +70,22 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
     protected readonly moduleContext: ModuleContext,
+    readonly search: PDFSearchService,
   ) {
     moduleContext.register(this);
 
+    this.pdfAnnService.annotationHighlightChange$.subscribe(() =>
+      this.searchControlComponent?.focus(),
+    );
+
     this.loadTask = new BackgroundTask(([hashId, loc]) =>
-        combineLatest(
+      combineLatest(
           this.filesystemService.open(hashId),
-          this.filesystemService.getContent(hashId).pipe(
-            mapBlobToBuffer(),
-          ),
-          this.pdfAnnService.getAnnotations(hashId),
-        )
+        this.filesystemService.getContent(hashId).pipe(
+          mapBlobToBuffer(),
+        ),
+        this.pdfAnnService.getAnnotations(hashId),
+      ),
     );
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
@@ -90,9 +98,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
                                                           value: [file, loc],
                                                         }) => {
       this.pdfData = {data: new Uint8Array(content)};
-      this.annotations = ann;
-      this.updateAnnotationIndex();
-      this.updateSortedEntityTypeEntries();
+      this.pdfAnnService.annotations$.next(ann);
       this.object = object;
       this.emitModuleProperties();
 
@@ -102,6 +108,7 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadFromUrl();
   }
+
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
@@ -114,32 +121,9 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
   paramsSubscription: Subscription;
   returnUrl: string;
-
-  annotations: Annotation[] = [];
-  // We don't want to modify the above array when we add annotations, because
-  // data flow right now is very messy
-  addedCustomAnnotations: Annotation[] = [];
-  /**
-   * A mapping of annotation type (i.e. Genes) to a list of those annotations.
-   */
-  annotationEntityTypeMap: Map<string, Annotation[]> = new Map();
-  entityTypeVisibilityMap: Map<string, boolean> = new Map();
-  @Output() filterChangeSubject = new Subject<void>();
-
-  searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
-  searchQuery = '';
-  annotationHighlight: AnnotationHighlightResult;
-  goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations = new BehaviorSubject<{
-    id: string;
-    text: string;
-  }>(null);
-  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
-    map((value) => value ? value.id : null),
-  );
+  goToPosition$: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[string, Location], [FilesystemObject, ArrayBuffer, Annotation[]]>;
   pendingScroll: Location;
-  pendingAnnotationHighlightId: string;
   openPdfSub: Subscription;
   ready = false;
   object?: FilesystemObject;
@@ -147,27 +131,12 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
   currentFileId: string;
-  addedAnnotations: Annotation[];
-  addAnnotationSub: Subscription;
-  removedAnnotationIds: string[];
-  removeAnnotationSub: Subscription;
   pdfFileLoaded = false;
-  sortedEntityTypeEntries: EntityTypeEntry[] = [];
-  entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AddedAnnotationExclusion;
-  addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
-  removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: RemovedAnnotationExclusion;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
 
-  matchesCount = {
-    current: 0,
-    total: 0,
-  };
-  searching = false;
 
   dragTitleData$ = defer(() => {
     const sources: Source[] = this.object.getGraphEntitySources();
@@ -195,6 +164,70 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
 
   sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
+  private entityTypeVisibilityMapChange$: Subject<EntityTypeVisibilityMap> = new BehaviorSubject(
+    new Map(ENTITY_TYPES.map(({id}) => [id, true]))
+  );
+  entityTypeVisibilityMap$: Observable<ReadonlyEntityTypeVisibilityMap> = this.entityTypeVisibilityMapChange$.pipe(
+    distinctUntilChanged(isEqual)
+  );
+  sortedEntityTypeEntriesVisibilityMap$ = combineLatest([
+    this.pdfAnnService.sortedEntityTypeEntries$,
+    this.entityTypeVisibilityMap$
+  ]).pipe(
+    map(([sortedEntityTypeEntries, entityTypeVisibilityMap]) =>
+      new Map(sortedEntityTypeEntries.map(entry => [entry, entityTypeVisibilityMap.get(entry.type.id)]))
+    )
+  );
+  entityTypeVisibilityMapContainsUnchecked$ = this.entityTypeVisibilityMap$.pipe(
+    map(etvm => findEntriesKey(etvm, v => !v)),
+    distinctUntilChanged()
+  );
+  highlightController$ = this.pdfAnnService.annotationHighlightChange$.pipe(
+    switchMap(annotationHighlight =>
+      iif(
+        () => Boolean(annotationHighlight?.index$),
+        annotationHighlight?.index$.pipe(
+          map(highlightedAnnotationIndex => ({
+            type: 'annotation',
+            value: annotationHighlight.firstAnnotation?.meta.allText || annotationHighlight.id,
+            changeValue: (value) => this.pdfAnnService.highlightAllAnnotations(value),
+            color: this.getAnnotationBackground(annotationHighlight.firstAnnotation),
+            index: highlightedAnnotationIndex,
+            total: annotationHighlight.found,
+            prev: () => this.pdfAnnService.previousAnnotationHighlight(),
+            next: () => this.pdfAnnService.nextAnnotationHighlight(),
+          }))
+        ),
+        combineLatest([
+          this.search.query$,
+          this.search.resultSummary$,
+        ]).pipe(
+          map(([query, {searching, matchesCount}]) => ({
+            type: 'search',
+            value: query,
+            changeValue: (value) => this.search.query$.next(value),
+            searching: searching ?? false,
+            index: (matchesCount.current || 1) - 1,
+            total: matchesCount.total || 0,
+            prev: () => this.search.prev$.next(),
+            next: () => this.search.next$.next(),
+          }))
+        )
+      )
+    ),
+  );
+
+  ngOnInit() {
+    this.pdfAnnService.foundHighlightAnnotations$.subscribe(foundHighlightAnnotations => {
+      const foundHighlightAnnotationsTypes = new Set(
+        foundHighlightAnnotations?.annotations?.map(ann => ann.meta.type)
+      );
+      this.updateEntityTypeVisibilityMap(
+        etvm => mapIterable(etvm, ([id, state]) => [id, foundHighlightAnnotationsTypes.has(id) || state])
+      );
+    });
+  }
+
   loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
     // from
@@ -207,7 +240,8 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
       // TODO: Do proper query string parsing
       this.openPdf(linkedFileId,
         this.parseLocationFromUrl(fragment),
-        this.parseHighlightFromUrl(fragment));
+        this.parseHighlightFromUrl(fragment),
+      );
     }
   }
 
@@ -217,176 +251,9 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  updateAnnotationIndex() {
-    // Create index of annotation types
-    this.annotationEntityTypeMap.clear();
-    for (const annotation of [...this.annotations, ...this.addedCustomAnnotations]) {
-      const entityType: EntityType = ENTITY_TYPE_MAP[annotation.meta.type];
-      if (!entityType) {
-        throw new Error(`unknown entity type ${annotation.meta.type} not in ENTITY_TYPE_MAP`);
-      }
-      let typeAnnotations = this.annotationEntityTypeMap.get(entityType.id);
-      if (!typeAnnotations) {
-        typeAnnotations = [];
-        this.annotationEntityTypeMap.set(entityType.id, typeAnnotations);
-      }
-      typeAnnotations.push(annotation);
-    }
-  }
-
-  updateSortedEntityTypeEntries() {
-    this.sortedEntityTypeEntries = ENTITY_TYPES
-      .map(entityType => new EntityTypeEntry(entityType, this.annotationEntityTypeMap.get(entityType.id) || []))
-      .sort((a, b) => {
-        if (a.annotations.length && !b.annotations.length) {
-          return -1;
-        } else if (!a.annotations.length && b.annotations.length) {
-          return 1;
-        } else {
-          return a.type.name.localeCompare(b.type.name);
-        }
-      });
-  }
-
-  isEntityTypeVisible(entityType: EntityType) {
-    const value = this.entityTypeVisibilityMap.get(entityType.id);
-    if (value === undefined) {
-      return true;
-    } else {
-      return value;
-    }
-  }
-
-  setAllEntityTypesVisibility(state: boolean) {
-    for (const type of ENTITY_TYPES) {
-      this.entityTypeVisibilityMap.set(type.id, state);
-    }
-    this.invalidateEntityTypeVisibility();
-  }
-
-  changeEntityTypeVisibility(entityType: EntityType, event) {
-    this.entityTypeVisibilityMap.set(entityType.id, event.target.checked);
-    this.invalidateEntityTypeVisibility();
-  }
-
-  enableEntityTypeVisibility(annotation: Annotation) {
-    this.entityTypeVisibilityMap.set(annotation.meta.type, true);
-    this.invalidateEntityTypeVisibility();
-  }
-
-  invalidateEntityTypeVisibility() {
-    // Keep track if the user has some entity types disabled
-    let entityTypeVisibilityChanged = false;
-    for (const value of this.entityTypeVisibilityMap.values()) {
-      if (!value) {
-        entityTypeVisibilityChanged = true;
-        break;
-      }
-    }
-    this.entityTypeVisibilityChanged = entityTypeVisibilityChanged;
-
-    this.filterChangeSubject.next();
-  }
 
   closeFilterPopup() {
     this.dropdownComponent.close();
-  }
-
-  annotationCreated(annotation: Annotation) {
-    const dialogRef = this.modalService.open(ConfirmDialogComponent);
-    dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
-    dialogRef.result.then((annotateAll: boolean) => {
-      const progressDialogRef = this.progressDialog.display({
-        title: `Adding Annotations`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
-          status: 'Adding annotations to the file...',
-        }))],
-      });
-
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, {
-        annotation,
-        annotateAll,
-      })
-        .pipe(this.errorHandler.create({label: 'Custom annotation creation'}))
-        .subscribe(
-          (annotations: Annotation[]) => {
-            progressDialogRef.close();
-            this.addedAnnotations = annotations;
-            this.enableEntityTypeVisibility(annotations[0]);
-            this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
-          },
-          err => {
-            progressDialogRef.close();
-          },
-        );
-    }, () => {
-    });
-
-    this.addedCustomAnnotations.push(annotation);
-    this.updateAnnotationIndex();
-    this.updateSortedEntityTypeEntries();
-  }
-
-  matchesCountUpdated({matchesCount, ready = true}) {
-    this.searching = !ready;
-    this.matchesCount = matchesCount;
-  }
-
-  annotationRemoved(uuid) {
-    const dialogRef = this.modalService.open(ConfirmDialogComponent);
-    dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
-    dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, {
-        removeAll,
-      })
-        .pipe(this.errorHandler.create({label: 'Custom annotation removal'}))
-        .subscribe(
-          response => {
-            this.removedAnnotationIds = response;
-            this.snackBar.open('Removal completed', 'Close', {duration: 10000});
-          },
-          err => {
-            this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
-          },
-        );
-    }, () => {
-    });
-  }
-
-  annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, {
-        exclusion: exclusionData,
-      },
-    )
-      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion addition'}))
-      .subscribe(
-        response => {
-          this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open(`${exclusionData.text}: annotation has been excluded`, 'Close', {duration: 10000});
-        },
-        err => {
-          this.snackBar.open(`${exclusionData.text}: failed to exclude annotation`, 'Close', {duration: 10000});
-        },
-      );
-  }
-
-  annotationExclusionRemoved({type, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, {
-      type,
-      text,
-    })
-      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion removal'}))
-      .subscribe(
-        response => {
-          this.removedAnnotationExclusion = {type, text};
-          this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
-        },
-        (err: HttpErrorResponse) => {
-          const error = (err.error as ErrorResponse);
-          this.snackBar.open(`${error.title}: ${error.message}`, 'Close', {duration: 10000});
-        },
-      );
   }
 
   /**
@@ -504,11 +371,11 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
         this.scrollInPdf(loc);
       }
       if (annotationHighlightId != null) {
-        this.highlightAnnotation(annotationHighlightId);
+        this.pdfAnnService.highlightAnnotation(annotationHighlightId);
       }
       return;
     }
-    this.pendingAnnotationHighlightId = annotationHighlightId;
+    this.pdfAnnService.highlightAllAnnotations(annotationHighlightId);
     this.pdfFileLoaded = false;
     this.ready = false;
 
@@ -522,18 +389,6 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.openPdfSub) {
       this.openPdfSub.unsubscribe();
     }
-    if (this.addAnnotationSub) {
-      this.addAnnotationSub.unsubscribe();
-    }
-    if (this.removeAnnotationSub) {
-      this.removeAnnotationSub.unsubscribe();
-    }
-    if (this.addAnnotationExclusionSub) {
-      this.addAnnotationExclusionSub.unsubscribe();
-    }
-    if (this.removeAnnotationExclusionSub) {
-      this.removeAnnotationExclusionSub.unsubscribe();
-    }
   }
 
   scrollInPdf(loc: Location) {
@@ -542,32 +397,34 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
       console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
       return;
     }
-    this.goToPosition.next(loc);
+    this.goToPosition$.next(loc);
   }
 
   goToPositionVisit(loc: Location) {
     this.pendingScroll = null;
   }
 
-  highlightAnnotation(annotationId: string) {
-    if (!this.pdfFileLoaded) {
-      this.pendingAnnotationHighlightId = annotationId;
-      return;
-    }
-    let text = annotationId;
-    if (annotationId != null) {
-      for (const annotation of this.annotations) {
-        if (annotation.meta.id === annotationId) {
-          text = annotation.meta.allText || text;
-          this.entityTypeVisibilityMap.set(annotation.meta.type, true);
-          this.invalidateEntityTypeVisibility();
-          break;
-        }
-      }
-    }
-    this.highlightAnnotations.next({
-      id: annotationId,
-      text,
+
+  setAllEntityTypesVisibility(state: boolean) {
+    return this.updateEntityTypeVisibilityMap(
+      etvm => mapIterable(etvm, ([id]) => [id, state])
+    );
+  }
+
+  updateEntityTypeVisibilityMap(callback: (currentMap: ReadonlyEntityTypeVisibilityMap) => EntityTypeVisibilityMap) {
+    return this.entityTypeVisibilityMap$.pipe(
+      first(),
+      tap(etvm => {
+        this.entityTypeVisibilityMapChange$.next(callback(etvm));
+      })
+    ).toPromise();
+  }
+
+  changeEntityTypeVisibility(entityTypeId: string, visible: boolean) {
+    return this.updateEntityTypeVisibilityMap(etvm => {
+      const newEntityTypeVisibilityMap = new Map(etvm);
+      newEntityTypeVisibilityMap.set(entityTypeId, visible);
+      return newEntityTypeVisibilityMap;
     });
   }
 
@@ -576,58 +433,10 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.pendingScroll) {
       this.scrollInPdf(this.pendingScroll);
     }
-    if (this.pendingAnnotationHighlightId) {
-      this.highlightAnnotation(this.pendingAnnotationHighlightId);
-      this.pendingAnnotationHighlightId = null;
-    }
   }
 
   close() {
     this.requestClose.emit(null);
-  }
-
-  searchQueryChanged() {
-    if (this.searchQuery === '') {
-      this.pdfViewerLib.nullifyMatchesCount();
-    }
-    this.searchChanged.next({
-      keyword: this.searchQuery,
-      findPrevious: false,
-    });
-  }
-
-  searchQueryChangedFromViewer(keyword: string) {
-    this.searchQuery = keyword;
-  }
-
-  annotationHighlightChangedFromViewer(result: AnnotationHighlightResult | undefined) {
-    this.annotationHighlight = result;
-    if (this.searchControlComponent) {
-      this.searchControlComponent.focus();
-    }
-  }
-
-  annotationHighlightNext() {
-    if (this.pdfViewerLib) {
-      this.pdfViewerLib.nextAnnotationHighlight();
-    }
-  }
-
-  annotationHighlightPrevious() {
-    if (this.pdfViewerLib) {
-      this.pdfViewerLib.previousAnnotationHighlight();
-    }
-  }
-
-  findNext() {
-    this.searchQueryChanged();
-  }
-
-  findPrevious() {
-    this.searchChanged.next({
-      keyword: this.searchQuery,
-      findPrevious: true,
-    });
   }
 
   emitModuleProperties() {
@@ -686,10 +495,12 @@ export class PdfViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   isPendingPostLoadAction() {
-    return this.isPendingScroll() || this.isPendingJump()
-      || this.pendingAnnotationHighlightId != null;
+    return this.isPendingScroll() || this.isPendingJump();
   }
 
+  highlightAnnotation(id) {
+    return this.pdfAnnService.highlightAnnotation(id);
+  }
 
   getAnnotationBackground(an: Annotation | undefined) {
     if (an != null) {

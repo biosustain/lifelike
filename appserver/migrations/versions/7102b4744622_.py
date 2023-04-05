@@ -12,6 +12,7 @@ from sqlalchemy import table, column
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import AppUser
 
 # revision identifiers, used by Alembic.

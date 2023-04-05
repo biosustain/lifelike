@@ -21,7 +21,7 @@ export class DragImage {
 
 export class CdkNativeDragItegration {
   constructor(
-    private dragData$: Observable<Record<string, string>>
+    private dragData$: Observable<Record<string, string>>,
   ) {
   }
 
@@ -41,20 +41,21 @@ export class CdkNativeDragItegration {
   }
 
   cdkDragReleased($event: CdkDragRelease<Tab>) {
-    const dropRect = document.getElementsByClassName('cdk-drag-preview')[0].getBoundingClientRect();
-    const dropTarget = document.elementFromPoint(dropRect.x + (dropRect.width / 2), dropRect.y + (dropRect.height / 2));
-    const synthDropEvent = new DragEvent('drop', {
-      dataTransfer: new DataTransfer(),
-      bubbles: true,
-    });
+    const dropTarget = this.lastTabDragTarget;
+    if (dropTarget) {
+      const synthDropEvent = new DragEvent('drop', {
+        dataTransfer: new DataTransfer(),
+        bubbles: true,
+      });
 
-    return this.dragData$.pipe(
-      first(),
-      map(dragData => {
-        toPairs(dragData).forEach(args => synthDropEvent.dataTransfer.setData(...args));
-        return dropTarget.dispatchEvent(synthDropEvent);
-      }),
-    ).toPromise();
+      return this.dragData$.pipe(
+        first(),
+        map(dragData => {
+          toPairs(dragData).forEach(args => synthDropEvent.dataTransfer.setData(...args));
+          return dropTarget.dispatchEvent(synthDropEvent);
+        }),
+      ).toPromise();
+    }
   }
 }
 

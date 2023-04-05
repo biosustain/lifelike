@@ -22,12 +22,12 @@ class EnrichmentTableService(RDBMSBaseDao):
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
             validate_enrichment_table(enrichment)
-        except Exception:
+        except Exception as e:
             raise AnnotationError(
                 title='Could not annotate enrichment table',
                 message='Could not annotate enrichment table, '
                         'there was a problem validating the format.'
-            )
+            ) from e
 
         # got here so passed validation
         data = enrichment['result']
@@ -96,11 +96,12 @@ class EnrichmentTableService(RDBMSBaseDao):
                                 'domain': k,
                                 'label': 'Function'
                             })
-            except KeyError:
+            except KeyError as e:
                 current_app.logger.error(
                     f'Missing key when creating enrichment table text row/column mapping.',
                     extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
                 )
+                # TODO warning
                 continue
 
         for text in cell_texts:

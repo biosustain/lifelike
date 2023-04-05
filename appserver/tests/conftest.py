@@ -1,7 +1,7 @@
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from arango.graph import Graph
-from flask import request as flask_request
+from flask import request as flask_request, g
 from flask.app import Flask
 from pathlib import Path
 import pytest
@@ -20,6 +20,11 @@ from .constants import DOCUMENT_COLLECTIONS, EDGE_COLLECTIONS, GRAPHS
 
 def setup_before_request_callbacks(app: Flask):
     login_required_dummy_view = auth.login_required(lambda: None)
+
+    @app.before_request
+    def init_exceptions_handling():
+        g.warnings = list()
+        g.transaction_id = 'test'
 
     @app.before_request
     def default_login_required():
@@ -124,7 +129,7 @@ def _create_empty_graphs(arango_db: StandardDatabase):
 
 @pytest.fixture(scope="function")
 def test_arango_db(
-    app, arango_client: ArangoClient, system_db: StandardDatabase
+        app, arango_client: ArangoClient, system_db: StandardDatabase
 ):
     test_db_name = app.config.get('ARANGO_DB_NAME')
     create_db(system_db, test_db_name)

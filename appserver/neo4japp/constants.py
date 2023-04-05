@@ -2,9 +2,9 @@ import codecs
 import os
 import re
 import string
+
 from datetime import timezone
 from enum import Enum
-
 from sendgrid import SendGridAPIClient
 
 from neo4japp.util import Enumd
@@ -37,6 +37,8 @@ DB_NCBI = 'NCBI'
 DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
+
+MASTER_INITIAL_PROJECT_NAME = 'master-initial-project'
 
 FILE_MIME_TYPE_DIRECTORY = 'vnd.***ARANGO_DB_NAME***.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
@@ -87,6 +89,7 @@ class LogEventType(Enum):
     MAP_EXPORT_FAILURE = 'map-export-failure'
     RESET_PASSWORD = 'reset_password'
     SENTRY_HANDLED = 'handled_exception'
+    SENTRY_WARNINIG = 'handled_warning'
     SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
     VISUALIZER = 'visualizer'
@@ -434,12 +437,15 @@ ANNOTATION_STYLES_DICT = {
 }
 
 # Style constants
-DEFAULT_FONT_SIZE = 14.0
-DEFAULT_FONT_RATIO = 0.5  # width / height
+DEFAULT_FONT_SIZE = 16.0
+DEFAULT_FONT_RATIO = 0.43  # width / height
 DEFAULT_BORDER_COLOR = '#2B7CE9'
 DEFAULT_NODE_WIDTH = 41.25
 DEFAULT_NODE_HEIGHT = 27.5
 MAX_LINE_WIDTH = 50
+MAX_NODE_HEIGHT = 400
+NODE_LINE_HEIGHT = 1.2
+NODE_INSET = 5
 BASE_ICON_DISTANCE = 0.6
 FONT_SIZE_MULTIPLIER = 0.25
 IMAGE_HEIGHT_INCREMENT = 0.1

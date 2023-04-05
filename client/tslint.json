@@ -24,7 +24,10 @@
     "import-blacklist": [
       true,
       [
-        "rxjs/Rx"
+        "rxjs/Rx",
+        ["lodash", ["chain"]],
+        ["lodash-es", ["chain"]],
+        ["lodash/fp", ["chain"]]
       ]
     ],
     "interface-name": false,

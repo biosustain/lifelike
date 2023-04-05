@@ -2,9 +2,12 @@ export type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export type RecursiveReadonly<T> = {
+  readonly [P in keyof T]: RecursiveReadonly<T[P]>;
+};
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 /**
  * Common describtion of getSet behaviour
@@ -37,11 +40,11 @@ export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implemen
     return value;
   }
 
-  getSetLazily(key: K, valueAccessor: () => V) {
+  getSetLazily(key: K, valueAccessor: (key: K) => V) {
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -56,11 +59,11 @@ export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
     return value;
   }
 
-  getSetLazily(key: K, valueAccessor: () => V): V {
+  getSetLazily(key: K, valueAccessor: (key: K) => V): V {
     if (this.has(key)) {
       return super.get(key);
     }
-    const loadedValue = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
     super.set(key, loadedValue);
     return loadedValue;
   }
@@ -109,7 +112,7 @@ export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {
     if (existingValue !== undefined) {
       return existingValue;
     }
-    return this[index] = valueAccessor instanceof Function ? valueAccessor() : valueAccessor;
+    return this[index] = valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor;
   }
 }
 

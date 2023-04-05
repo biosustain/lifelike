@@ -1,26 +1,27 @@
 import base64
 import click
-from collections import namedtuple
 import copy
-from flask import current_app, request
 import hashlib
 import importlib
 import io
 import json
 import logging
-from marshmallow.exceptions import ValidationError
 import math
 import os
 import re
 import requests
-from sqlalchemy import inspect, Table
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql.expression import and_, text
+import sentry_sdk
 import sys
 import timeflake
-from typing import List
 import uuid
 import zipfile
+
+from collections import namedtuple
+from flask import current_app, request, g
+from marshmallow.exceptions import ValidationError
+from sqlalchemy import inspect, Table
+from sqlalchemy.sql.expression import and_, text
+from typing import List
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
@@ -39,12 +40,16 @@ from neo4japp.exceptions import OutdatedVersionException
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
+from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
+from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
@@ -52,7 +57,36 @@ logger = logging.getLogger(__name__)
 
 
 @app.before_request
+def init_exceptions_handling():
+    g.info = list()
+    g.warnings = list()
+
+    g.transaction_id = request.headers.get('X-Transaction-Id')
+    if not g.transaction_id:
+        g.transaction_id = generate_hash_id()
+        warn(
+            ServerWarning('Request did not contain required "X-Transaction-Id" header')
+        )
+
+
+@app.before_request
+def check_version_header():
+    """
+    API version content negotiation. Check if the client requested a specific version,
+    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
+    """
+    requested_version = request.headers.get("Accept-Lifelike-Version")
+    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+        raise OutdatedVersionException(
+            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
+            'changes'
+        )
+
+
+@app.before_request
 def request_navigator_log():
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag('transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
@@ -77,20 +111,6 @@ def default_login_required():
         return
 
     return login_required_dummy_view()
-
-
-@app.before_request
-def check_version_header():
-    """
-    API version content negotiation. Check if the client requested a specific version,
-    if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
-    """
-    requested_version = request.headers.get("Accept-Lifelike-Version")
-    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
-        raise OutdatedVersionException(
-            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
-            'changes'
-        )
 
 
 @app.cli.command("seed")
@@ -556,17 +576,14 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     file.upload_url = None
 
     # Create operation
-    buffer = io.BytesIO(file_bstr)
+    buffer = FileContentBuffer(file_bstr)
 
     # Detect the mime type of the file
-    mime_type = file_type_service.detect_mime_type(buffer)
-    buffer.seek(0)  # Must rewind
+    mime_type = file_type_service.detect_mime_type(buffer, file.extension)
     file.mime_type = mime_type
 
     # Figure out file size
-    buffer.seek(0, io.SEEK_END)
-    size = buffer.tell()
-    buffer.seek(0)
+    size = buffer.size
 
     # Check max file size
     if size > 1024 * 1024 * 300:
@@ -582,19 +599,21 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
 
     # Validate the content
     try:
-        provider.validate_content(buffer)
-        buffer.seek(0)  # Must rewind
+        provider.validate_content(buffer, log_status_messages=True)
+    except ServerWarning as w:
+        warn(w)
     except ValueError as e:
         raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-
-    # Get the DOI
-    file.doi = provider.extract_doi(buffer)
-    buffer.seek(0)  # Must rewind
+    else:
+        try:
+            # Get the DOI only if content could be validated
+            file.doi = provider.extract_doi(buffer)
+        except ServerWarning as w:
+            warn(w)
 
     # Save the file content if there's any
     if size:
         file.content_id = FileContent.get_or_create(buffer)
-        buffer.seek(0)  # Must rewind
 
     # ========================================
     # Commit and filename conflict resolution
@@ -606,27 +625,22 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
     # Trial 4: Give up
     # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-    for trial in range(4):
-        if 1 <= trial <= 2:  # Try adding (N+1)
-            try:
-                file.filename = file.generate_non_conflicting_filename()
-            except ValueError:
+    with db.session.begin_nested():
+        for trial in range(4):
+            if 1 <= trial <= 2:  # Try adding (N+1)
+                try:
+                    file.filename = file.generate_non_conflicting_filename()
+                except ValueError:
+                    raise ValidationError(
+                        'Filename conflicts with an existing file in the same folder.',
+                        "filename")
+            elif trial == 3:  # Give up
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
                     "filename")
-        elif trial == 3:  # Give up
-            raise ValidationError(
-                'Filename conflicts with an existing file in the same folder.',
-                "filename")
-
-        try:
-            db.session.begin_nested()
-            db.session.add(file)
-            db.session.commit()
-            break
-        except IntegrityError as e:
-            # Warning: this could catch some other integrity error
-            db.session.rollback()
+            with db.session.begin_nested():
+                db.session.add(file)
+                break
 
     db.session.commit()
     # rollback in case of error?
@@ -996,7 +1010,7 @@ def find_broken_map_links():
                     hash_id_to_file_list_pairs[hash_id] = {files_id: [link]}
 
     for files_id, raw_file in all_maps:
-        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(raw_file))
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
@@ -1087,7 +1101,7 @@ def fix_broken_map_links():
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
         print(f'Replacing links in file #{fcid}')
-        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+        zip_file = zipfile.ZipFile(FileContentBuffer(raw_file))
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
@@ -1125,7 +1139,7 @@ def fix_broken_map_links():
         validate_map(json.loads(byte_graph))
 
         # Zip the file back up before saving to the DB
-        zip_bytes2 = io.BytesIO()
+        zip_bytes2 = FileContentBuffer()
         with zipfile.ZipFile(zip_bytes2, 'x', zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr('graph.json', byte_graph)
         new_bytes = zip_bytes2.getvalue()
