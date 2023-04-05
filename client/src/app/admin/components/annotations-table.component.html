@@ -49,7 +49,7 @@
     </tr>
     </thead>
 
-    <tbody *ngIf="status.placeholdersShown || status.resultsShown">
+    <tbody *ngIf="status.placeholdersShown || status.resultsShown" [appShowPlaceholders]="status.placeholdersShown">
       <tr *ngFor="let object of results.view$ | async; index as objectIndex"
         [class.active]="results.isSelected(object)">
         <td class="align-middle text-nowrap" (click)="results.toggle(object)">
