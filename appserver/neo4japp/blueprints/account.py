@@ -14,6 +14,8 @@ from sqlalchemy.sql import select
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import login_exempt
+from neo4japp.exceptions import RecordNotFound, CannotCreateNewUser, FailedToUpdateUser, \
+    AuthenticationError
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MAX_TEMP_PASS_LENGTH,
@@ -27,8 +29,9 @@ from neo4japp.constants import (
     LogEventType
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
-from neo4japp.exceptions import NotAuthorized, RecordNotFound, ServerException
-from neo4japp.models.auth import AppRole, AppUser, user_role
+from neo4japp.exceptions import NotAuthorized, ServerException
+from neo4japp.models import AppUser, AppRole
+from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserChangePasswordSchema,
     UserCreateSchema,
@@ -48,16 +51,13 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 class AccountView(MethodView):
 
     def get_or_create_role(self, rolename: str) -> AppRole:
-        retval = AppRole.query.filter_by(name=rolename).one_or_none()
-        if retval is None:
-            retval = AppRole(name=rolename)
-            try:
+        with db.session.begin_nested():
+            retval = AppRole.query.filter_by(name=rolename).one_or_none()
+            if retval is None:
+                retval = AppRole(name=rolename)
                 db.session.add(retval)
-                db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback()
-                raise
-        return retval
+
+            return retval
 
     def get(self, hash_id):
         t_appuser = AppUser.__table__.alias('t_appuser')
@@ -92,7 +92,7 @@ class AccountView(MethodView):
         else:
             # Regular users can only see themselves
             if hash_id and hash_id != g.current_user.hash_id:
-                raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
+                raise NotAuthorized(code=400)
             query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
 
         results = [
@@ -115,60 +115,48 @@ class AccountView(MethodView):
 
     @use_args(UserCreateSchema)
     def post(self, params: dict):
-        admin_or_private_access = g.current_user.has_role('admin') or \
-                                  g.current_user.has_role('private-data-access')
-        if not admin_or_private_access:
-            raise NotAuthorized(
-                title='Cannot Create New User',
-                message='You do not have sufficient privileges.',
-                code=400)
-        if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-            raise ServerException(
-                title='Cannot Create New User',
-                message=f'E-mail {params["email"]} already taken.',
-                code=400)
-        elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
-            raise ServerException(
-                title='Cannot Create New User',
-                message=f'Username {params["username"]} already taken.',
-                code=400)
+        with db.session.begin_nested():
+            admin_or_private_access = g.current_user.has_role('admin') or \
+                                      g.current_user.has_role('private-data-access')
+            if not admin_or_private_access:
+                raise NotAuthorized(title=CannotCreateNewUser.title, code=400)
+            if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
+                raise CannotCreateNewUser(message=f'E-mail {params["email"]} already taken.')
+            elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
+                raise CannotCreateNewUser(message=f'Username {params["username"]} already taken.')
 
-        app_user = AppUser(
-            username=params['username'],
-            email=params['email'],
-            first_name=params['first_name'],
-            last_name=params['last_name'],
-            subject=params['email'],
-            forced_password_reset=params['created_by_admin']
-        )
-        app_user.set_password(params['password'])
-        if not params.get('roles'):
-            # Add default role
-            app_user.roles.append(self.get_or_create_role('user'))
-        else:
-            for role in params['roles']:
-                app_user.roles.append(self.get_or_create_role(role))
-        try:
-            projects_service = get_projects_service()
-            projects_service.create_initial_project(app_user)
-            db.session.add(app_user)
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            raise ServerException(
-                title='Unexpected Database Transaction Error',
-                message='Something unexpected occurred while adding the user to the database.',
-                fields={
-                    'user_id': app_user.id if app_user.id is not None else 'N/A',
-                    'username': app_user.username,
-                    'user_email': app_user.email
-                },
-                stacktrace=str(e)
+            app_user = AppUser(
+                username=params['username'],
+                email=params['email'],
+                first_name=params['first_name'],
+                last_name=params['last_name'],
+                subject=params['email'],
+                forced_password_reset=params['created_by_admin']
             )
-        except ServerException:
-            db.session.rollback()
-            raise
-        return jsonify(dict(result=app_user.to_dict()))
+            app_user.set_password(params['password'])
+            if not params.get('roles'):
+                # Add default role
+                app_user.roles.append(self.get_or_create_role('user'))
+            else:
+                for role in params['roles']:
+                    app_user.roles.append(self.get_or_create_role(role))
+
+            projects_service = get_projects_service()
+            try:
+                with db.session.begin_nested():
+                    projects_service.create_initial_project(app_user)
+                    db.session.add(app_user)
+            except SQLAlchemyError as e:
+                raise ServerException(
+                    title='Unexpected Database Transaction Error',
+                    message='Something unexpected occurred while adding the user to the database.',
+                    fields={
+                        'user_id': app_user.id if app_user.id is not None else 'N/A',
+                        'username': app_user.username,
+                        'user_email': app_user.email
+                    }
+                ) from e
+            return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)
     def put(self, params: dict, hash_id):
@@ -178,39 +166,27 @@ class AccountView(MethodView):
         modifying_own_data = g.current_user.hash_id == hash_id
 
         if not modifying_own_data and not (admin_access or private_access):
-            raise NotAuthorized(
-                title='Failed to Update User',
-                message='You do not have sufficient privileges.')
+            raise NotAuthorized(title='Failed to Update User')
         else:
-            target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-            username = params.get('username') or target.username
-            if target.username != username:
-                if db.session.query(AppUser.query_by_username(username).exists()
-                                    ).scalar():
-                    raise ServerException(
-                        title='Cannot Update The User',
-                        message=f'Username {username} already taken.',
-                        code=400)
-            if params.get('roles'):
-                if not admin_access:
-                    raise NotAuthorized(
-                        title='Failed to Update User',
-                        message='You do not have sufficient privileges.')
-                if modifying_own_data:
-                    raise NotAuthorized(
-                        title='Failed to Update User',
-                        message='You cannot update your own roles!')
-                params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
+            with db.session.begin_nested():
+                target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+                username = params.get('username') or target.username
+                if target.username != username:
+                    if db.session.query(AppUser.query_by_username(username).exists()
+                                        ).scalar():
+                        raise FailedToUpdateUser(message=f'Username {username} already taken.')
+                if params.get('roles'):
+                    if not admin_access:
+                        raise NotAuthorized(title='Failed to Update User')
+                    if modifying_own_data:
+                        raise FailedToUpdateUser(message='You cannot update your own roles!')
+                    params['roles'] = [self.get_or_create_role(role) for role in params['roles']]
 
-            for attribute, new_value in params.items():
-                setattr(target, attribute, new_value)
+                for attribute, new_value in params.items():
+                    setattr(target, attribute, new_value)
 
-            try:
                 db.session.add(target)
-                db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback()
-                raise
+
         return jsonify(dict(result='')), 204
 
     def delete(self):
@@ -257,103 +233,89 @@ def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
                               g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise NotAuthorized(
-            title='Failed to Update User',
-            message='You do not have sufficient privileges.')
+        raise NotAuthorized(title='Failed to Update User')
     else:
-        target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-        if target.check_password(params['password']):
-            if target.check_password(params['new_password']):
-                raise ServerException(
-                    title='Failed to Update User',
-                    message='New password cannot be the old one.')
-            target.set_password(params['new_password'])
-            target.forced_password_reset = False
-        else:
-            raise ServerException(
-                title='Failed to Update User',
-                message='Old password is invalid.')
-        try:
+        with db.session.begin_nested():
+            target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+            if target.check_password(params['password']):
+                if target.check_password(params['new_password']):
+                    raise FailedToUpdateUser(message='New password cannot be the old one.')
+                target.set_password(params['new_password'])
+                target.forced_password_reset = False
+            else:
+                raise FailedToUpdateUser(message='Old password is invalid.')
+
             db.session.add(target)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+
     return jsonify(dict(result='')), 204
 
 
 @bp.route('/<string:email>/reset-password', methods=['GET'])
 @login_exempt
 def reset_password(email: str):
-    try:
-        target = AppUser.query.filter_by(email=email).one()
-    except NoResultFound:
-        current_app.logger.error(
-            f'Invalid email: {email} provided in password reset request.',
-            extra=EventLog(
+    with db.session.begin_nested():
+        try:
+            target = AppUser.query.filter_by(email=email).one()
+        except NoResultFound as e:
+            current_app.logger.error(
+                f'Invalid email: {email} provided in password reset request.',
+                extra=EventLog(
+                    event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+            )
+            raise AuthenticationError(
+                message=f'A problem occurred validating email {email} for password reset.'
+            ) from e
+
+        current_app.logger.info(
+            f'User: {target.username} password reset.',
+            extra=UserEventLog(
+                username=target.username,
                 event_type=LogEventType.RESET_PASSWORD.value).to_dict()
         )
-        raise ServerException(
-            title='Failed to authenticate',
-            message=f'A problem occurred validating email {email} for password reset.'
-        )
+        random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
-    current_app.logger.info(
-        f'User: {target.username} password reset.',
-        extra=UserEventLog(
-            username=target.username,
-            event_type=LogEventType.RESET_PASSWORD.value).to_dict()
-    )
-    random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
+        new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
+            (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
+            MIN_TEMP_PASS_LENGTH
+        new_password = ''.join(random.sample(
+            [secrets.choice(RESET_PASSWORD_SYMBOLS)] +
+            [secrets.choice(string.ascii_uppercase)] +
+            [secrets.choice(string.digits)] +
+            [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(new_length - 3)],
+            new_length
+        ))
 
-    new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
-        (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
-        MIN_TEMP_PASS_LENGTH
-    new_password = ''.join(random.sample([secrets.choice(RESET_PASSWORD_SYMBOLS)] +
-                                         [secrets.choice(string.ascii_uppercase)] +
-                                         [secrets.choice(string.digits)] +
-                                         [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(
-                                             new_length - 3)],
-                                         new_length))
+        message = Mail(
+            from_email=MESSAGE_SENDER_IDENTITY,
+            to_emails=email,
+            subject=RESET_PASSWORD_EMAIL_TITLE,
+            html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
+                                                        lastname=target.last_name,
+                                                        password=new_password))
+        try:
+            SEND_GRID_API_CLIENT.send(message)
+        except Exception as e:
+            raise
 
-    message = Mail(
-        from_email=MESSAGE_SENDER_IDENTITY,
-        to_emails=email,
-        subject=RESET_PASSWORD_EMAIL_TITLE,
-        html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
-                                                    lastname=target.last_name,
-                                                    password=new_password))
-    try:
-        SEND_GRID_API_CLIENT.send(message)
-    except Exception as e:
-        raise
+        target.set_password(new_password)
+        target.forced_password_reset = True
 
-    target.set_password(new_password)
-    target.forced_password_reset = True
-    try:
         db.session.add(target)
-        db.session.commit()
-    except SQLAlchemyError:
-        db.session.rollback()
-        raise
+
     return jsonify(dict(result='')), 204
 
 
 @bp.route('/<string:hash_id>/unlock-user', methods=['GET'])
 def unlock_user(hash_id):
     if g.current_user.has_role('admin') is False:
-        raise NotAuthorized(
-            title='Failed to Unlock User',
-            message='You do not have sufficient privileges.')
+        raise NotAuthorized(title='Failed to Unlock User')
     else:
-        target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-        target.failed_login_count = 0
-        try:
+        with db.session.begin_nested():
+            target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+            target.failed_login_count = 0
+
             db.session.add(target)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+
     return jsonify(dict(result='')), 204
 
 

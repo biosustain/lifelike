@@ -34,7 +34,8 @@ class Pipeline:
         if not all(k in ['adbs', 'ags', 'aers', 'tkner', 'as', 'bs'] for k in steps):
             raise AnnotationError(
                 'Unable to Annotate',
-                'Configurations for the annotation pipeline is incorrect, please try again later.')
+                'Configurations for the annotation pipeline is incorrect, please try again later.'
+            )
         self.steps = steps
         self.text = kwargs.get('text', '')
         self.parsed = kwargs.get('parsed', [])
@@ -66,7 +67,8 @@ class Pipeline:
         if content_type == FILE_MIME_TYPE_PDF and not params['file_id']:
             raise AnnotationError(
                 'Unable to Annotate',
-                'Cannot annotate the PDF file, the file id is missing or data is corrupted.')
+                'Cannot annotate the PDF file, the file id is missing or data is corrupted.'
+            )
 
         return parse_content(content_type, **params)
 

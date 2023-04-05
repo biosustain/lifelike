@@ -30,7 +30,7 @@ def forward_request():
             (name, value) for (name, value) in resp.raw.headers.items()
             if name.lower() not in excluded_headers
         ]
-    except Exception:
+    except Exception as e:
         raise StatisticalEnrichmentError(
             'Statistical Enrichment Error',
             'An unexpected error occurred while connecting to statistical enrichment service.',
@@ -39,7 +39,7 @@ def forward_request():
                 for arg in request_args
                 if arg not in ['headers', 'cookies']
             }
-        )
+        ) from e
 
     # 500 should contain message from service so we try to include it
     if resp.status_code == 500:

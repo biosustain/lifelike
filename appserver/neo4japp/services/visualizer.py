@@ -87,7 +87,7 @@ class VisualizerService(KgService):
                     url = url_map['omim'].format(uid)
             elif label == TYPE_LITERATURE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
-        except KeyError:
+        except KeyError as e:
             current_app.logger.warning(
                 f'url_map did not contain the expected key value for node with:\n' +
                 f'\tID: {id}\n'
@@ -96,6 +96,7 @@ class VisualizerService(KgService):
                 'There may be something wrong in the database.',
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
+            # TODO warning
         finally:
             return url
 

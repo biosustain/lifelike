@@ -91,7 +91,26 @@ class ContentValidationError(ServerException):
 
 @dataclass
 class NotAuthorized(ServerException):
+    message = 'You do not have sufficient privileges.'
     code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
+
+
+@dataclass
+class CannotCreateNewUser(ServerException):
+    title = 'Cannot Create New User'
+    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+
+
+@dataclass
+class CannotCreateNewProject(ServerException):
+    title = 'Cannot Create New Project'
+    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+
+
+@dataclass
+class FailedToUpdateUser(ServerException):
+    title = 'Failed to Update User'
+    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
 @dataclass
@@ -108,12 +127,6 @@ class InvalidArgument(ServerException):
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
-
-
-@dataclass
-class JWTAuthTokenException(JWTTokenException):
-    """Signals the JWT auth token has an issue"""
-    pass
 
 
 @dataclass
@@ -138,6 +151,7 @@ class UnsupportedMediaTypeError(ServerException):
 @dataclass
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
+    title = 'Failed to Authenticate'
     code: Union[HTTPStatus, int] = HTTPStatus.UNAUTHORIZED
 
 
