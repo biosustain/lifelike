@@ -78,6 +78,12 @@ export interface WarningResponse extends MessageResponse {
 export interface ErrorResponse extends MessageResponse {
 }
 
+export interface StatusSchema {
+  info?: InformationResponse[];
+  warnings?: WarningResponse[];
+  errors?: ErrorResponse[];
+}
+
 export interface ErrorLogMeta {
   label?: string;
   expected?: boolean;
