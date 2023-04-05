@@ -122,11 +122,11 @@ class AccountView(MethodView):
             admin_or_private_access = g.current_user.has_role('admin') or \
                                       g.current_user.has_role('private-data-access')
             if not admin_or_private_access:
-            raise NotAuthorized()
+                raise NotAuthorized()
             if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-            raise ServerException(message=f'E-mail {params["email"]} already taken.')
+                raise ServerException(message=f'E-mail {params["email"]} already taken.')
             elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
-            raise ServerException(message=f'Username {params["username"]} already taken.')
+                raise ServerException(message=f'Username {params["username"]} already taken.')
 
             app_user = AppUser(
                 username=params['username'],
@@ -159,7 +159,6 @@ class AccountView(MethodView):
                         'user_email': app_user.email
                     }
                 ) from e
-            ) from e
             return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)
