@@ -20,21 +20,41 @@
         {{progress.status}}
       </div>
 
-      <ngb-alert *ngFor="let warning of progress.warnings || []"
-                 [dismissible]="false"
-                 class="mt-1"
-      >
-        <strong *ngIf="warning.title">{{warning.title}}<br></strong>{{warning.message}}
-        <p *ngFor="let additionalMsg of (warning.additionalMsgs || [])">{{additionalMsg}}</p>
-      </ngb-alert>
+      <ng-container *ngIf="progress.warnings?.length">
+        <div class="mb-2">
+          <app-response-alert *ngIf="progress.warnings.length == 1; else multiple"
+                              class="mt-1"
+                              [responseAlert]="progress.warnings[0]"
+          ></app-response-alert>
+          <ng-template #multiple>
+            <details>
+              <summary>Warnings ({{progress.warnings.length}})</summary>
+              <app-response-alert *ngFor="let warning of progress.warnings"
+                                  class="mt-1"
+                                  [responseAlert]="warning"
+              ></app-response-alert>
+            </details>
+          </ng-template>
+        </div>
+      </ng-container>
 
-      <ngb-alert *ngFor="let error of progress.errors || []"
-                 [dismissible]="false"
-                 type="danger"
-                 class="mt-1"
-      >
-        <strong *ngIf="error.title">{{error.title}}<br></strong>{{error.message}}
-      </ngb-alert>
+      <ng-container *ngIf="progress.errors?.length">
+        <div class="mb-2">
+          <app-response-alert *ngIf="progress.errors.length == 1; else multiple"
+                              class="mt-1"
+                              [responseAlert]="progress.errors[0]"
+          ></app-response-alert>
+          <ng-template #multiple>
+            <details>
+              <summary>Errors ({{progress.errors.length}})</summary>
+              <app-response-alert *ngFor="let error of progress.errors"
+                                  class="mt-1"
+                                  [responseAlert]="error"
+              ></app-response-alert>
+            </details>
+          </ng-template>
+        </div>
+      </ng-container>
     </div>
   </ng-container>
 </div>

@@ -1502,7 +1502,10 @@ class GraphTypeProvider(BaseFileTypeProvider):
                 raise content_error
             else:
                 g.warnings.append(
-                    ContentValidationWarning(**content_error.to_dict())
+                    ContentValidationWarning(**{  # type: ignore
+                        **content_error.to_dict(),
+                        'title': ContentValidationWarning.title
+                    })
                 )
 
     def to_indexable_content(self, buffer: FileContentBuffer):
