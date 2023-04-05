@@ -236,7 +236,10 @@ def handle_generic_error(code: int, ex: Exception):
         ).to_dict()
     )
 
-    return jsonify(ErrorResponseSchema().dump(newex)), newex.code
+    try:
+        raise ServerException() from ex
+    except ServerException as newex:
+        return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
 def handle_generic_warning(code: int, ex: Warning):
@@ -254,7 +257,7 @@ def handle_generic_warning(code: int, ex: Warning):
         ).to_dict()
     )
 
-    return jsonify(WarningResponseSchema().dump(newex)), newex.code
+    return jsonify(WarningResponseSchema().dump(ex)), ex.code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):
@@ -283,9 +286,10 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    ex = ServerException(message=message, code=code, fields=fields)
-    ex.__cause__ = error
-    return jsonify(ErrorResponseSchema().dump(ex)), ex.code
+    try:
+        raise ServerException(message=message, code=code, fields=fields) from error
+    except ServerException as newex:
+        return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
 # Ensure that response includes all error messages produced from the parser
