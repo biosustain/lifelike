@@ -67,7 +67,7 @@ export class ProgressDialogComponent {
       map(progresses =>
         reduce(
           progresses,
-          (acc, {warnings, errors}) => acc + size(warnings) + size(errors),
+          (acc, {info, warnings, errors}) => acc + size(info) + size(warnings) + size(errors),
           0,
         ) > 0,
       ),

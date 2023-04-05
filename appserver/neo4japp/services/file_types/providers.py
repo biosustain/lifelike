@@ -15,14 +15,14 @@ import zipfile
 from base64 import b64encode
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from dataclasses import dataclass
-from flask import current_app, g
+from flask import current_app
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
 from math import ceil, floor
 from pdfminer import high_level
-from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
+from pdfminer.pdfdocument import PDFTextExtractionNotAllowed, PDFEncryptionError
 from PIL import Image, ImageColor
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from PyPDF4.generic import DictionaryObject
@@ -75,18 +75,20 @@ from neo4japp.constants import (
     NODE_INSET
 )
 from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
+from neo4japp.info import ContentValidationInfo
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content
+from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content, \
+    ContentValidationNotDefinedSourceTargetMessage
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
 from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import warn, info
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text, compose_lines
-from neo4japp.utils.warnings import warn
 from neo4japp.warnings import ServerWarning, ContentValidationWarning
 
 extension_mime_types = {
@@ -261,7 +263,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         # Figure out file size
         size = buffer.size
 
@@ -293,15 +295,19 @@ class PDFTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with buffer as bufferView:
             # Check that the pdf is considered openable
             try:
                 high_level.extract_text(bufferView, page_numbers=[0], caching=False)
             except PDFTextExtractionNotAllowed as e:
-                # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
-                warn(TextExtractionNotAllowedWarning())
-                raise HandledException(e) from e
+                if log_status_messages:
+                    # TODO once we migrate to python 3.11:
+                    #  add PDFTextExtractionNotAllowed as __cause__
+                    warn(TextExtractionNotAllowedWarning())
+                    raise HandledException(e) from e
+                else:
+                    raise
             except PDFEncryptionError as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
@@ -397,7 +403,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with BioCJsonIterReader(buffer) as reader:
             for obj in reader:
                 passage = biocFromJSON(obj, level=bioc.DOCUMENT)
@@ -1023,7 +1029,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
-            self.validate_content(buffer)
+            self.validate_content(buffer, log_status_messages=False)
             return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
@@ -1031,11 +1037,12 @@ class MapTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         """
         Validates whether the uploaded file is a Lifelike map - a zip containing graph.json file
         describing the map and optionally, folder with the images. If there are any images specified
         in the json graph, their presence and accordance to the png standard is verified.
+        :param log_status_messages:
         :params:
         :param buffer: buffer containing the bytes of the file that has to be tested
         :raises ValueError: if the file is not a proper map file
@@ -1480,7 +1487,7 @@ class GraphTypeProvider(BaseFileTypeProvider):
         if extension in self.EXTENSIONS:
             certanity = Certanity.assumed
         try:
-            self.validate_content(buffer)
+            self.validate_content(buffer, log_status_messages=False)
             certanity = Certanity.match
         except (ValueError, ContentValidationError):
             pass
@@ -1492,21 +1499,30 @@ class GraphTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with buffer as bufferView:
             data = json.loads(bufferView.read())
             validate_graph_format(data)
         raise_content_errors = 'version' in data
-        for content_error in validate_graph_content(data):
+        for message in validate_graph_content(data):
             if raise_content_errors:
-                raise content_error
+                raise ContentValidationError(**message.to_dict())
             else:
-                g.warnings.append(
-                    ContentValidationWarning(**{  # type: ignore
-                        **content_error.to_dict(),
-                        'title': ContentValidationWarning.title
-                    })
-                )
+                if log_status_messages:
+                    if isinstance(message, ContentValidationNotDefinedSourceTargetMessage):
+                        info(
+                            ContentValidationInfo(**{  # type: ignore
+                                **message.to_dict(),
+                                'title': ContentValidationInfo.title
+                            })
+                        )
+                    else:
+                        warn(
+                            ContentValidationWarning(**{  # type: ignore
+                                **message.to_dict(),
+                                'title': ContentValidationWarning.title
+                            })
+                        )
 
     def to_indexable_content(self, buffer: FileContentBuffer):
         with buffer as bufferView:
@@ -1532,7 +1548,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
-            self.validate_content(buffer)
+            self.validate_content(buffer, log_status_messages=False)
             return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
@@ -1540,7 +1556,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with buffer as bufferView:
             data = json.loads(bufferView.read())
             validate_enrichment_table(data)

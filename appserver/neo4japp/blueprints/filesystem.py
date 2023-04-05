@@ -91,7 +91,7 @@ from neo4japp.schemas.filesystem import (
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.utils import FileContentBuffer
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.utils.warnings import warn
+from neo4japp.utils.globals import warn
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
@@ -535,7 +535,7 @@ class FilesystemBaseView(MethodView):
                     provider = file_type_service.get(file)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
-                        provider.validate_content(buffer)
+                        provider.validate_content(buffer, log_status_messages=True)
                     except ValueError as e:
                         raise ValidationError(
                             f"The provided file may be corrupt for files of type "
@@ -881,7 +881,10 @@ class FileListView(FilesystemBaseView):
 
             # Validate the content
             try:
-                provider.validate_content(buffer)
+                provider.validate_content(
+                    buffer,
+                    log_status_messages=True
+                )
             except ValueError as e:
                 raise ValidationError(f"The provided file may be corrupt: {str(e)}")
             except HandledException:

@@ -98,7 +98,7 @@ class BaseFileTypeProvider:
         """
         return False
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         """
         Validate the contents of the given buffer to see if it is correct for
         this given file type.
@@ -106,6 +106,7 @@ class BaseFileTypeProvider:
         You MUST validate the data if possible, especially if it's our
         own format, especially if it's JSON that we generate!
 
+        :param log_status_messages:
         :param buffer: the file's contents
         :raises ValueError: raised if the content is invalid
         """
@@ -200,7 +201,7 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
             mime_type = magic.from_buffer(bufferView.read(2048), mime=True)
             return [(Certanity.default, mime_type)]
 
-    def validate_content(self, buffer: FileContentBuffer):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         return
 
     def can_create(self) -> bool:
