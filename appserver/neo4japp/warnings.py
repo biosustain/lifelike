@@ -1,10 +1,13 @@
-from dataclasses import dataclass, asdict
-from http import HTTPStatus
-from typing import Union, Tuple, Optional, List
+from dataclasses import dataclass
+from typing import Optional, List
+
+from flask import g, current_app
+
+from neo4japp.base_server_exception import BaseServerException
 
 
 @dataclass(repr=False)
-class ServerWarning(Warning):
+class ServerWarning(Warning, BaseServerException):
     """
     Create a new warning.
     :param title: the title of the warning, which sometimes used on the client
@@ -15,21 +18,12 @@ class ServerWarning(Warning):
     """
     title: str = "Server returned warning"
     message: Optional[str] = "Code executed with following warnings"
-    additional_msgs: Tuple[str, ...] = tuple()
-    fields: Optional[dict] = None
-    code: Union[HTTPStatus, int] = 199
-    stacktrace: Optional[str] = None
-    version: Optional[str] = None
 
-    @property
-    def type(self):
-        return type(self).__name__
-
-    def __str__(self):
-        return f'<Warning> {self.title}:{self.message}'
-
-    def to_dict(self):
-        return asdict(self)
+    def __post_init__(self):
+        try:
+            g.warnings.add(self)
+        except AttributeError:  # we are not running in request context
+            current_app.logger.warning(self)
 
 
 @dataclass
@@ -39,15 +33,10 @@ class ContentValidationWarning(ServerWarning):
 
 @dataclass
 class ServerWarningGroup(ServerWarning):
-    warnings: Optional[List[ServerWarning]] = None
     title: str = "Server returned group of warnings"
+    warnings: Optional[List[ServerWarning]] = None
 
     def __post_init__(self, *args, **kwargs):
         if self.warnings:
             self.additional_msgs = tuple((warning.title for warning in self.warnings))
-
-    def __str__(self):
-        compose = f'<WarningGroup> {self.title}:{self.message}'
-        for warning in self.warnings:
-            compose += f'\n\t{warning}'
-        return compose
+        super().__post_init__()

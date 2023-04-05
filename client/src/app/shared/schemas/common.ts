@@ -68,6 +68,7 @@ export interface WarningResponse {
 export interface ErrorResponse {
   title: string;
   message: string;
+  type: string;
   additionalMsgs?: string[];
   stacktrace?: string;
   code?: number;
@@ -88,6 +89,7 @@ export interface ErrorLog extends ErrorLogMeta {
   additionalMsgs?: string[];
   stacktrace?: string;
   transactionId?: string;
+  cause?: ErrorLog;
 }
 
 export interface ServiceOnInit {

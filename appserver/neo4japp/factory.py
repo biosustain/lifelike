@@ -41,6 +41,7 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
 from neo4japp.utils.logger import ErrorLog, WarningLog
+from neo4japp.utils.transaction import get_transaction_id
 from neo4japp.warnings import ServerWarning
 
 apm = ElasticAPM()
@@ -295,7 +296,7 @@ def handle_generic_error(code: int, ex: Exception):
                 error_name=f'{type(ex)}',
                 expected=True,
                 event_type=LogEventType.SENTRY_UNHANDLED.value,
-                transaction_id=g.transaction_id,
+                transaction_id=get_transaction_id(),
                 username=current_user,
             ).to_dict()
         }
@@ -333,7 +334,7 @@ def handle_generic_warning(code: int, ex: Warning):
         newex.stacktrace = ''.join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
 
-    return jsonify(WarningResponseSchema().dump(newex)), newex.code
+    return jsonify(WarningResponseSchema().dump(newex)), code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):
@@ -364,7 +365,6 @@ def handle_validation_error(code, error: ValidationError, messages=None):
 
     ex = ServerException(message=message, code=code, fields=fields)
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    transaction_id = request.headers.get('X-Transaction-Id', '')
 
     ex.version = GITHUB_HASH
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code

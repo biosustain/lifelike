@@ -82,11 +82,11 @@ from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
 from neo4japp.utils import FileContentBuffer
-from neo4japp.util import warn
 from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
-from neo4japp.utils.string import extract_text
+from neo4japp.utils.string import extract_text, compose_lines
+from neo4japp.utils.warnings import warn
 from neo4japp.warnings import ServerWarning, ContentValidationWarning
 
 extension_mime_types = {
@@ -538,7 +538,7 @@ def create_group_node(group: dict):
         (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     label_params = {
         'name': group['hash'] + '_label',
-        'label': escape('\n'.join(label_lines)),
+        'label': escape(compose_lines(label_lines)),
         'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
@@ -568,7 +568,7 @@ def create_default_node(node: dict):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': escape('\n'.join(label_lines)),
+        'label': escape(compose_lines(label_lines)),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{data['x'] / SCALING_FACTOR},"
@@ -610,7 +610,7 @@ def create_image_label(node: dict):
     label_offset = -height / 2.0 - LABEL_OFFSET - \
         (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     return {
-        'label': escape('\n'.join(label_lines)),
+        'label': escape(compose_lines(label_lines)),
         'pos': (
             f"{data['x'] / SCALING_FACTOR},"
             f"{(-data['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"

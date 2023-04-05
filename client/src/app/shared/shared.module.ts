@@ -89,6 +89,7 @@ import { XMLSnippetComponent } from './providers/highlight-text/xml-snippet.comp
 import { XMLHighlightComponent } from './providers/highlight-text/xml-highlight.component';
 import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotation/xml-annotation.component';
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
+import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 
 const components = [
   ResponseAlertComponent,
@@ -98,6 +99,7 @@ const components = [
   AnnotationFilterComponent,
   WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
+  ErrorDetailsComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,
   LegendComponent,

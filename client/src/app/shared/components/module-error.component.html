@@ -23,12 +23,8 @@
       </div>
     </div>
   </div>
-  <ng-container *ngIf="userError != null">
-    <div *ngIf="userError.stacktrace" class="detail mt-4">
-      <div class="detail-title">Technical Details</div>
-      <pre>{{ userError.stacktrace }}</pre>
-    </div>
-  </ng-container>
+  <app-error-details *ngIf="userError" [error]="userError" class="mt-4">
+  </app-error-details>
 </ng-container>
 <ng-template #errorLoading>
   <div style="max-width: 500px" class="card bg-light">
