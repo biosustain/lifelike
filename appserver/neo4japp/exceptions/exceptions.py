@@ -154,23 +154,18 @@ class NotAuthorized(ServerException):
 
 
 @dataclass(repr=False, eq=False, frozen=True)
-class FailedToUpdateUser(ServerException):
-    title: str = 'Failed to Update User'
-
-
-@dataclass(repr=False, frozen=True)
 class CannotCreateNewUser(ServerException):
     title: str = 'Cannot Create New User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class CannotCreateNewProject(ServerException):
     title: str = 'Cannot Create New Project'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
 
 
-@dataclass(repr=False, frozen=True)
+@dataclass(repr=False, eq=False, frozen=True)
 class FailedToUpdateUser(ServerException):
     title: str = 'Failed to Update User'
     code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
