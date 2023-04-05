@@ -88,8 +88,10 @@ import { SearchableTreeComponent } from './components/form/searchable-tree/searc
 import { XMLSnippetComponent } from './providers/highlight-text/xml-snippet.component';
 import { XMLHighlightComponent } from './providers/highlight-text/xml-highlight.component';
 import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotation/xml-annotation.component';
+import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 
 const components = [
+  ResponseAlertComponent,
   VisJsNetworkComponent,
   SearchableDropdownMenuComponent,
   PlotlySankeyDiagramComponent,
