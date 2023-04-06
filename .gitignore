@@ -65,6 +65,10 @@ appserver/neo4japp/services/annotations/**/*.mdb
 appserver/neo4japp/services/annotations/**/*.mdb.old
 appserver/neo4japp/services/annotations/datasets/**/*.csv
 appserver/neo4japp/services/annotations/datasets/**/*.tsv
+annotator/annotator_app/services/**/*.mdb
+annotator/annotator_app/services/**/*.mdb.old
+annotator/annotator_app/services/datasets/**/*.csv
+annotator/annotator_app/services/datasets/**/*.tsv
 
 # profiler results
 appserver/profilers/results/

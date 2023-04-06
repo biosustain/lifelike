@@ -3,6 +3,7 @@ import hashlib
 import html
 import io
 import json
+import requests
 import sqlalchemy as sa
 import time
 
@@ -65,6 +66,7 @@ from ..services.annotations.constants import (
     DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
+    REQUEST_TIMEOUT,
 )
 from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
@@ -539,30 +541,87 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         """Generate annotations for one or more files."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
-                                                   lazy_load_content=True)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(targets['hash_ids']),
+            lazy_load_content=True
+        )
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
-        override_organism = None
-        override_annotation_configs = None
-
-        if params.get('organism'):
-            override_organism = params['organism']
-
-        if params.get('annotation_configs'):
-            override_annotation_configs = params['annotation_configs']
+        override_organism = params.get('organism', None) or dict()
+        override_annotation_configs = params.get('annotation_configs', None)
 
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
-        updated_files, versions, results = self.annotate_files(
-            files,
-            current_user.id,
-            override_organism,
-            override_annotation_configs
-        )
+        updates = []
+        versions = []
+        results = {}
+        for file in files:
+            global_exclusions = [
+                d.annotation for d in db.session.query(
+                    GlobalList.annotation
+                ).filter(
+                    and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+                )
+            ]
+            local_exclusions = [
+                exc for exc in file.excluded_annotations
+                if not exc.get('meta', {}).get('excludeGlobally', False)
+            ]
+            local_inclusions = file.custom_annotations
+
+            try:
+                req = requests.post(
+                    'http://annotator:5020/annotate-file',
+                    data={
+                        'user_id': current_user.id,
+                        'file_id': file.hash_id,
+                        'global_exclusions': global_exclusions,
+                        'local_exclusions': local_exclusions,
+                        'local_inclusions': local_inclusions,
+                        'organism_synonym': override_organism.get('synonym', None),
+                        'organism_taxonomy_id': override_organism.get('tax_id', None),
+                        'annotation_configs': override_annotation_configs
+                    },
+                    timeout=REQUEST_TIMEOUT
+                )
+                resp = req.json()
+                req.close()
+            except Exception as e:
+                results[file.hash_id] =  {
+                    'attempted': True,
+                    'success': False,
+                    'error': ''
+                }
+                current_app.logger.error(f'Could not annotate file: {file.hash_id}, {file.filename}, {e}',)
+            else:
+                update = {
+                    'id': file.id,
+                    'annotations': resp['annotations'],
+                    'annotations_date': datetime.now(TIMEZONE)
+                }
+
+                if override_organism is not None:
+                    update['organism_name'] = override_organism.get('organism_name', None)
+                    update['organism_synonym'] = override_organism.get('synonym', None)
+                    update['organism_taxonomy_id'] = override_organism.get('tax_id', None)
+
+                updates.append(update)
+                versions.append({
+                    'file_id': file.id,
+                    'cause': AnnotationChangeCause.SYSTEM_REANNOTATION,
+                    'custom_annotations': file.custom_annotations,
+                    'excluded_annotations': file.excluded_annotations,
+                    'user_id': current_user.id,
+                })
+                results[file.hash_id] =  {
+                    'attempted': True,
+                    'success': True,
+                    'error': ''
+                }
+                current_app.logger.debug(f'File successfully annotated: {file.hash_id}, {file.filename}')
 
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
-        db.session.bulk_update_mappings(Files, updated_files)
+        db.session.bulk_update_mappings(Files, updates)
         db.session.commit()
         # rollback in case of error?
 

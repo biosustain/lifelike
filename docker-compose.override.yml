@@ -25,7 +25,7 @@ x-appserver: &appserver
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -98,7 +98,7 @@ services:
       - ARANGO_HOST=http://arangodb:8529
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -127,7 +127,7 @@ services:
     environment:
       - LOG_LEVEL=DEBUG
       # Flask
-      - FLASK_APP=annotator_app
+      - FLASK_APP=app
       - FLASK_APP_CONFIG=Development
       - FLASK_DEBUG=1
       - FLASK_ENV=development
@@ -135,7 +135,7 @@ services:
       - ARANGO_HOST=http://arangodb:8529
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
     # Allow debugging w/ IPython or pdb
     stdin_open: true
     tty: true
@@ -157,7 +157,7 @@ services:
       - ARANGO_HOST=http://arangodb:8529
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379

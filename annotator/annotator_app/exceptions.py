@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from typing import Optional
-
 class ServerException(Exception):
     def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
         """
@@ -57,19 +54,3 @@ class ServerException(Exception):
         retval['title'] = self.title
         retval['message'] = self.message
         return retval
-
-
-@dataclass
-class AnnotationError(ServerException):
-    term: Optional[str] = None
-    title: str = 'Unable to Annotate'
-    message: Optional[str] = None
-
-    def __post_init__(self):
-        if self.message is None:
-            if not self.term:
-                raise NotImplementedError("To render default Annotation error, term must be given.")
-            self.message = \
-                f'There was a problem annotating "{self.term}". ' \
-                f'Please make sure the term is correct, ' \
-                f'including correct spacing and no extra characters.'
