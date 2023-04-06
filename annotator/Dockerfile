@@ -27,6 +27,8 @@ RUN pipenv install --dev --deploy --system
 
 COPY --chown=$UID:$GID . .
 
+ENV PYTHONPATH $_HOME
+
 USER $_USER
 
-CMD [ "bin/startup.sh" ]
+CMD [ "python3", "receive.py" ]

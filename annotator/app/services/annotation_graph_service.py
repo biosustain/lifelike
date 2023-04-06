@@ -35,7 +35,7 @@ from .utils.graph_queries import (
     get_protein_to_organism_query,
 )
 
-logger = setup_annotator_logging
+logger = setup_annotator_logging()
 
 
 def _create_entity_inclusion(

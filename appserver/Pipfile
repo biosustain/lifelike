@@ -76,6 +76,8 @@ elastic-apm = {extras = ["flask"], version = "*"}
 rq = "==1.10.1"
 python-arango = "==7.5.2"
 gdown = "==4.6.0"
+aio-pika = "==9.0.5"
+asyncio = "==3.4.3"
 
 [requires]
 python_version = "3.9"

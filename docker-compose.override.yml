@@ -48,6 +48,30 @@ x-appserver: &appserver
     - redis
     - pdfparser
     - arangodb
+    - rabbitmq
+
+x-annotator: &annotator
+  build: ./annotator
+  environment:
+    - LOG_LEVEL=DEBUG
+    # Arango
+    - ARANGO_HOST=http://arangodb:8529
+    - ARANGO_USERNAME=***ARANGO_USERNAME***
+    - ARANGO_PASSWORD=password
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+  # Allow debugging w/ IPython or pdb
+  stdin_open: true
+  tty: true
+  # End debugging section
+  volumes:
+    - ./annotator:/home/user
+  depends_on:
+    - arangodb
+    - rabbitmq
+  networks:
+    - backend
+    - rabbitmq
+    - frontend
 
 services:
   appserver:
@@ -57,6 +81,7 @@ services:
       - "5000:5000"
     networks:
       - backend
+      - rabbitmq
       - frontend
 
   worker:
@@ -65,6 +90,18 @@ services:
     command: rq worker -c rq_config --with-scheduler
     networks:
       - backend
+
+  consumer_1:
+    <<: *annotator
+    ports:
+      - "5020:5020"
+    container_name: consumer_1
+
+  consumer_2:
+    <<: *annotator
+    ports:
+      - "5030:5030"
+    container_name: consumer_2
 
   webserver:
     container_name: client
@@ -115,38 +152,6 @@ services:
     depends_on:
       - arangodb
       - redis
-
-  # TODO: Note that this probably won't be a flask app once the RabbitMQ
-  # architecture is developed. We can just have a main program listening
-  # for messages on the queue and running the annotator code when necessary.
-  annotator:
-    container_name: annotator
-    build: ./annotator
-    ports:
-      - "5020:5020"
-    environment:
-      - LOG_LEVEL=DEBUG
-      # Flask
-      - FLASK_APP=app
-      - FLASK_APP_CONFIG=Development
-      - FLASK_DEBUG=1
-      - FLASK_ENV=development
-      # Arango
-      - ARANGO_HOST=http://arangodb:8529
-      - ARANGO_USERNAME=***ARANGO_USERNAME***
-      - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
-    # Allow debugging w/ IPython or pdb
-    stdin_open: true
-    tty: true
-    # End debugging section
-    volumes:
-      - ./annotator:/home/user
-    networks:
-      - backend
-    depends_on:
-      - arangodb
-      - pdfparser
 
   cache-invalidator:
     container_name: cache-invalidator
@@ -243,6 +248,17 @@ services:
       - backend
       - elastic
 
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    networks:
+      - backend
+      - rabbitmq
+
+
 volumes:
   lmdb:
 
@@ -250,3 +266,5 @@ networks:
   frontend:
   backend:
   elastic:
+  rabbitmq:
+    driver: bridge
