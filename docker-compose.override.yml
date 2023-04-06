@@ -116,6 +116,37 @@ services:
       - arangodb
       - redis
 
+  # TODO: Note that this probably won't be a flask app once the RabbitMQ
+  # architecture is developed. We can just have a main program listening
+  # for messages on the queue and running the annotator code when necessary.
+  annotator:
+    container_name: annotator
+    build: ./annotator
+    ports:
+      - "5020:5020"
+    environment:
+      # Flask
+      - FLASK_APP=annotator
+      - FLASK_APP_CONFIG=Development
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+    # Allow debugging w/ IPython or pdb
+    stdin_open: true
+    tty: true
+    # End debugging section
+    volumes:
+      - ./annotator:/home/user
+    networks:
+      - backend
+    depends_on:
+      - arangodb
+      - pdfparser
+
   cache-invalidator:
     container_name: cache-invalidator
     build: ./cache-invalidator
