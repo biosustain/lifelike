@@ -12,7 +12,6 @@ from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_or
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
 from .constants import (
     DatabaseType,
-    DEFAULT_ANNOTATION_CONFIGS,
     EntityIdStr,
     EntityType,
     OrganismCategory,
@@ -34,17 +33,10 @@ from .data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from .exceptions import AnnotationError
-from .initializer import (
-    get_annotation_service,
-    get_annotation_tokenizer,
-    get_bioc_document_service,
-    get_recognition_service,
-)
-from .pipeline import Pipeline
 from .utils.common import has_center_point
 
-from ...logs import get_annotator_extras_obj, setup_annotator_logging
-from ...utils import equal_number_of_words, normalize_str
+from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..utils import equal_number_of_words, normalize_str
 
 logger = setup_annotator_logging()
 
@@ -1154,59 +1146,3 @@ class AnnotationService:
                 return anno1
             else:
                 return anno2
-
-
-def annotate_file(
-    user_id: str,
-    file_id: str,
-    global_exclusions: List[dict],
-    local_exclusions: List[dict],
-    local_inclusions: List[dict],
-    organism_synonym: str,
-    organism_taxonomy_id: str,
-    annotation_configs=None
-):
-    effective_annotation_configs = annotation_configs or DEFAULT_ANNOTATION_CONFIGS
-
-    try:
-        text, parsed = Pipeline.parse_file(
-            file_id=file_id,
-            exclude_references=effective_annotation_configs['exclude_references']
-        )
-
-        pipeline = Pipeline(
-            {
-                'aers': get_recognition_service,
-                'tkner': get_annotation_tokenizer,
-                'as': get_annotation_service,
-                'bs': get_bioc_document_service
-            },
-            text=text, parsed=parsed
-        )
-
-        annotations_json = pipeline.get_globals(
-            global_exclusions=global_exclusions or [],
-            local_exclusions=local_exclusions or [],
-            local_inclusions=local_inclusions or []
-        ).identify(
-            annotation_methods=effective_annotation_configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism_synonym or '',
-            specified_organism_tax_id=organism_taxonomy_id or '',
-            custom_annotations=local_inclusions or [],
-            file_id=file_id
-        )
-        logger.debug(f'File successfully annotated: {file_id}')
-    except AnnotationError as e:
-        logger.error(f'Could not annotate file: {file_id}, {e}')
-        raise
-    return {
-        'file_id': file_id,
-        'user_id': user_id,
-        'annotations': annotations_json
-    }
-
-
-# TODO: This would be used for things like enrichment tables
-def annotate_text():
-    raise NotImplementedError()

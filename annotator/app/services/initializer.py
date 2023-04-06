@@ -1,8 +1,7 @@
 from os import environ
 
-from neo4japp.database import get_or_create_arango_client
-
 from .annotation_service import AnnotationService
+from .arangodb import create_arango_client
 from .bioc_service import BiocDocumentService
 from .enrichment_annotation_service import EnrichmentAnnotationService
 from .entity_recognition import EntityRecognitionService
@@ -44,13 +43,13 @@ def get_annotation_tokenizer():
 
 def get_annotation_service():
     return AnnotationService(
-        arango_client=get_or_create_arango_client(),
+        arango_client=create_arango_client(),
     )
 
 
 def get_enrichment_annotation_service():
     return EnrichmentAnnotationService(
-        arango_client=get_or_create_arango_client(),
+        arango_client=create_arango_client(),
     )
 
 

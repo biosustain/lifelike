@@ -3,10 +3,10 @@ import time
 
 from typing import Dict, List, Optional, Tuple
 
-from ...logs import get_annotator_extras_obj, setup_annotator_logging
-from ...utils import normalize_str
+from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..utils import normalize_str
 
-from ..arangodb import create_arango_client
+from .arangodb import create_arango_client
 
 from .annotation_graph_service import get_entity_inclusions
 from .constants import PARSER_PDF_ENDPOINT, PARSER_TEXT_ENDPOINT, SPECIES_LMDB, EntityType
@@ -57,9 +57,9 @@ class Pipeline:
     # TODO: May be better to squash this and the `parse_text` method below, revisit this once we
     # tackle annotating enrichment tables.
     @classmethod
-    def parse_file(self, file_id: str, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
+    def parse_file(self, file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
         """
-        :param file_id : str
+        :param file_id : int
         :param exclude_references : bool
         """
         # TODO: Probably shouldn't completely fail here, better to gracefully handle with a
@@ -205,7 +205,7 @@ class Pipeline:
         specified_organism_synonym: str,
         specified_organism_tax_id: str,
         custom_annotations: dict,
-        file_id: str,
+        file_id: int,
         enrichment_mappings: dict = {}
     ):
         annotator = self.steps['as']()

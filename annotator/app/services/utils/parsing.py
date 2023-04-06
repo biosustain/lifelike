@@ -3,7 +3,8 @@ import requests
 from string import punctuation
 from typing import List, Tuple
 
-from ....exceptions import ServerException
+from ...exceptions import ServerException
+from ...logs import setup_annotator_logging
 
 from ..constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
@@ -12,6 +13,7 @@ from ..constants import (
 )
 from ..data_transfer_objects import PDFWord
 
+logger = setup_annotator_logging()
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []
@@ -55,7 +57,7 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def get_parser_args_for_file(file_id: str, exclude_references: bool):
+def get_parser_args_for_file(file_id: int, exclude_references: bool):
     return {
         'fileUrl': f'{PARSER_RESOURCE_PULL_ENDPOINT}/{file_id}',
         'excludeReferences': exclude_references

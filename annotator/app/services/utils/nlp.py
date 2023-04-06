@@ -4,7 +4,7 @@ import requests
 from http import HTTPStatus
 from typing import Dict, Set
 
-from  ....exceptions import ServerException
+from  ...exceptions import ServerException
 
 from ..constants import (
     NLP_SERVICE_ENDPOINT,

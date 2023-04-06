@@ -1,7 +1,8 @@
+import os
+
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from arango.http import DefaultHTTPClient
-from flask import current_app
 from typing import Any, List, Optional
 
 
@@ -10,7 +11,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
     class CustomHTTPClient(DefaultHTTPClient):
         REQUEST_TIMEOUT = 1000
 
-    hosts = hosts or current_app.config.get('ARANGO_HOST')
+    hosts = hosts or os.environ.get('ARANGO_HOST')
     return ArangoClient(
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
@@ -26,9 +27,9 @@ def get_db(
     password: Optional[str] = None
 ):
     return arango_client.db(
-        name=name or current_app.config.get('ARANGO_DB_NAME'),
-        username=username or current_app.config.get('ARANGO_USERNAME'),
-        password=password or current_app.config.get('ARANGO_PASSWORD'),
+        name=name or os.environ.get('ARANGO_DB_NAME'),
+        username=username or os.environ.get('ARANGO_USERNAME'),
+        password=password or os.environ.get('ARANGO_PASSWORD'),
     )
 
 

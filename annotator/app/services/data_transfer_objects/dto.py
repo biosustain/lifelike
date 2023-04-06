@@ -2,7 +2,7 @@ import attr
 
 from typing import Dict, List, Optional, Set, Tuple
 
-from ....utils import CamelDictMixin
+from ...utils import CamelDictMixin
 
 
 @attr.s(slots=True)

@@ -1,4 +1,3 @@
-import asyncio
 import base64
 import click
 import copy
@@ -23,7 +22,6 @@ from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from typing import List
-from aio_pika import DeliveryMode, Message, connect
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
@@ -1174,34 +1172,3 @@ def retry_failed_rq_jobs(queue: str):
     """
     rq_service = RedisQueueService()
     rq_service.retry_failed_jobs(queue)
-
-
-async def send() -> None:
-    import random
-
-    # Perform connection
-    connection = await connect('amqp://guest:guest@rabbitmq/')
-
-    async with connection:
-        # Creating a channel
-        channel = await connection.channel()
-
-        message_body = b'Message' + (b'.' * random.randrange(1, 5))
-
-        message = Message(
-            message_body,
-            # Ensure the message is durable
-            delivery_mode=DeliveryMode.PERSISTENT,
-        )
-
-        # Sending the message
-        await channel.default_exchange.publish(
-            message, routing_key='task_queue',
-        )
-
-        print(f' [x] Sent {message!r}')
-
-
-@app.cli.command('send_rmq')
-def send_rmq():
-    asyncio.run(send())

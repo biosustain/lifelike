@@ -10,7 +10,11 @@ pycodestyle = "==2.5.0"
 
 [packages]
 aio-pika = "==9.0.5"
+attrs = "==20.3.0"
+bioc = "==1.3.4"
+intervaltree = "==3.1.0"
 python-arango = "==7.5.2"
+lmdb = "==1.2.1"
 
 [requires]
 python_version = "3.8.2"

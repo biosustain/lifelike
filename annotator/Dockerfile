@@ -31,4 +31,4 @@ ENV PYTHONPATH $_HOME
 
 USER $_USER
 
-CMD [ "python3", "receive.py" ]
+CMD [ "python3", "postbox.py" ]

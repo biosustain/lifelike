@@ -26,6 +26,10 @@ x-appserver: &appserver
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+    # RabbitMQ
+    - RABBITMQ_USER=guest
+    - RABBITMQ_PASSWORD=guest
+    - ANNOTATOR_QUEUE=annotator_queue
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -54,11 +58,17 @@ x-annotator: &annotator
   build: ./annotator
   environment:
     - LOG_LEVEL=DEBUG
+    # RabbitMQ
+    - RABBITMQ_USER=guest
+    - RABBITMQ_PASSWORD=guest
+    - ANNOTATOR_QUEUE=annotator_queue
     # Arango
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+    # Other
+    - LMDB_HOME_FOLDER=/home/user/app/services/lmdb/
   # Allow debugging w/ IPython or pdb
   stdin_open: true
   tty: true
@@ -93,15 +103,7 @@ services:
 
   consumer_1:
     <<: *annotator
-    ports:
-      - "5020:5020"
     container_name: consumer_1
-
-  consumer_2:
-    <<: *annotator
-    ports:
-      - "5030:5030"
-    container_name: consumer_2
 
   webserver:
     container_name: client

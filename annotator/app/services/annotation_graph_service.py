@@ -2,10 +2,10 @@ from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Any, Dict, List
 
-from ...logs import get_annotator_extras_obj, setup_annotator_logging
-from ...utils import normalize_str
+from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..utils import normalize_str
 
-from ..arangodb import execute_arango_query, get_db
+from .arangodb import execute_arango_query, get_db
 
 from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, GeneOrProteinToOrganism

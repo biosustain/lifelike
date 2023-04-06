@@ -2,10 +2,9 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional
 
-from ...exceptions import ServerException
+from ..exceptions import ServerException
 
 from .constants import MAX_ENTITY_WORD_LENGTH, MAX_GENE_WORD_LENGTH, MAX_FOOD_WORD_LENGTH
-
 
 
 @dataclass

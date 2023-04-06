@@ -1,9 +1,9 @@
+import asyncio
 import csv
 import hashlib
 import html
 import io
 import json
-import requests
 import sqlalchemy as sa
 import time
 
@@ -66,7 +66,6 @@ from ..services.annotations.constants import (
     DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
-    REQUEST_TIMEOUT,
 )
 from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
@@ -90,6 +89,7 @@ from ..services.annotations.utils.graph_queries import (
 )
 from ..services.arangodb import convert_datetime, execute_arango_query, get_db
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
+from ..services.rabbitmq import send
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 
@@ -535,6 +535,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         return updated_files, versions, results
 
+    # TODO: Need to make this work for enrichment tables too!
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: AnnotationGenerationRequestSchema())
     def post(self, targets, params):
@@ -552,8 +553,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
-        updates = []
-        versions = []
         results = {}
         for file in files:
             global_exclusions = [
@@ -570,22 +569,21 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             local_inclusions = file.custom_annotations
 
             try:
-                req = requests.post(
-                    'http://annotator:5020/annotate-file',
-                    data={
-                        'user_id': current_user.id,
-                        'file_id': file.hash_id,
-                        'global_exclusions': global_exclusions,
-                        'local_exclusions': local_exclusions,
-                        'local_inclusions': local_inclusions,
-                        'organism_synonym': override_organism.get('synonym', None),
-                        'organism_taxonomy_id': override_organism.get('tax_id', None),
-                        'annotation_configs': override_annotation_configs
-                    },
-                    timeout=REQUEST_TIMEOUT
+                asyncio.run(
+                    send(
+                        body={
+                            'user_id': current_user.id,
+                            'file_id': file.id,
+                            'global_exclusions': global_exclusions,
+                            'local_exclusions': local_exclusions,
+                            'local_inclusions': local_inclusions,
+                            'organism_synonym': override_organism.get('synonym', None),
+                            'organism_taxonomy_id': override_organism.get('tax_id', None),
+                            'annotation_configs': override_annotation_configs
+                        },
+                        queue=current_app.config.get('ANNOTATOR_QUEUE')
+                    )
                 )
-                resp = req.json()
-                req.close()
             except Exception as e:
                 results[file.hash_id] =  {
                     'attempted': True,
@@ -594,36 +592,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 }
                 current_app.logger.error(f'Could not annotate file: {file.hash_id}, {file.filename}, {e}',)
             else:
-                update = {
-                    'id': file.id,
-                    'annotations': resp['annotations'],
-                    'annotations_date': datetime.now(TIMEZONE)
-                }
-
-                if override_organism is not None:
-                    update['organism_name'] = override_organism.get('organism_name', None)
-                    update['organism_synonym'] = override_organism.get('synonym', None)
-                    update['organism_taxonomy_id'] = override_organism.get('tax_id', None)
-
-                updates.append(update)
-                versions.append({
-                    'file_id': file.id,
-                    'cause': AnnotationChangeCause.SYSTEM_REANNOTATION,
-                    'custom_annotations': file.custom_annotations,
-                    'excluded_annotations': file.excluded_annotations,
-                    'user_id': current_user.id,
-                })
                 results[file.hash_id] =  {
                     'attempted': True,
                     'success': True,
                     'error': ''
                 }
-                current_app.logger.debug(f'File successfully annotated: {file.hash_id}, {file.filename}')
-
-        db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
-        db.session.bulk_update_mappings(Files, updates)
-        db.session.commit()
-        # rollback in case of error?
+                current_app.logger.debug(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
             'mapping': results,

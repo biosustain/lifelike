@@ -4,7 +4,7 @@ import os
 from string import punctuation
 from typing import Dict, Union
 
-from ...utils import Enumd
+from ..utils import Enumd
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
