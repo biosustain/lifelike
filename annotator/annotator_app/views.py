@@ -7,3 +7,7 @@ def enrich():
 @app.route('/healthz', methods=['GET','POST'])
 def healthz():
     return "I am OK!"
+
+@app.route('/annotate', methods=['GET'])
+def annotate():
+    annotate_files()

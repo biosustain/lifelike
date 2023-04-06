@@ -125,8 +125,9 @@ services:
     ports:
       - "5020:5020"
     environment:
+      - LOG_LEVEL=DEBUG
       # Flask
-      - FLASK_APP=annotator
+      - FLASK_APP=annotator_app
       - FLASK_APP_CONFIG=Development
       - FLASK_DEBUG=1
       - FLASK_ENV=development
