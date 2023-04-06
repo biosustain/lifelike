@@ -25,7 +25,7 @@ x-appserver: &appserver
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # RabbitMQ
     - RABBITMQ_USER=guest
     - RABBITMQ_PASSWORD=guest
@@ -57,11 +57,12 @@ x-appserver: &appserver
 x-annotator: &annotator
   build: ./annotator
   environment:
-    - LOG_LEVEL=DEBUG
+    - LOG_LEVEL=INFO
     # RabbitMQ
     - RABBITMQ_USER=guest
     - RABBITMQ_PASSWORD=guest
     - ANNOTATOR_QUEUE=annotator_queue
+    - POST_ANNOTATOR_QUEUE=post_annotator_queue
     # Arango
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
@@ -69,10 +70,6 @@ x-annotator: &annotator
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # Other
     - LMDB_HOME_FOLDER=/home/user/app/services/lmdb/
-  # Allow debugging w/ IPython or pdb
-  stdin_open: true
-  tty: true
-  # End debugging section
   volumes:
     - ./annotator:/home/user
   depends_on:
@@ -81,7 +78,29 @@ x-annotator: &annotator
   networks:
     - backend
     - rabbitmq
-    - frontend
+
+x-post-annotator: &post-annotator
+  build: ./post-annotator
+  environment:
+    - LOG_LEVEL=INFO
+    # RabbitMQ
+    - RABBITMQ_USER=guest
+    - RABBITMQ_PASSWORD=guest
+    - POST_ANNOTATOR_QUEUE=post_annotator_queue
+    # Postgres
+    - POSTGRES_HOST=pgdatabase
+    - POSTGRES_PORT=5432
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=postgres
+  volumes:
+    - ./post-annotator:/home/user
+  depends_on:
+    - pgdatabase
+    - rabbitmq
+  networks:
+    - backend
+    - rabbitmq
 
 services:
   appserver:
@@ -104,6 +123,10 @@ services:
   annotator:
     <<: *annotator
     container_name: annotator
+
+  post-annotator:
+    <<: *post-annotator
+    container_name: post-annotator
 
   webserver:
     container_name: client
@@ -137,7 +160,7 @@ services:
       - ARANGO_HOST=http://arangodb:8529
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -164,7 +187,7 @@ services:
       - ARANGO_HOST=http://arangodb:8529
       - ARANGO_USERNAME=***ARANGO_USERNAME***
       - ARANGO_PASSWORD=password
-      - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
       # Redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379

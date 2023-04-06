@@ -193,21 +193,28 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           this.result = enriched.result;
           return of(this);
         } else {
-          const params = {
-            organism: {
-              organism_name: this.organism,
-              synonym: this.organism,
-              tax_id: this.taxID
-            },
-          } as TextAnnotationGenerationRequest;
-          return this.worksheetViewerService.annotateEnrichment([this.fileId], params).pipe(
-            mergeMap(() => this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
-              map((annotated: EnrichmentParsedData) => {
-                this.result = annotated.result;
-                return this;
-              })
-            ))
-          );
+          this.result = enriched.result;
+          return of(this);
+          // TODO: There is a problem here. Because we are performing the annotations
+          // asynchronously, this can fire off potentially many times before annotations are
+          // generated. Going to disable this for now, in favor of the explicit methods of
+          // annotation. Those being: 1) Uploading a file *IN PROGRESS* 2) Manually choosing
+          // re-annotation from the file toolbar.
+          // const params = {
+          //   organism: {
+          //     organism_name: this.organism,
+          //     synonym: this.organism,
+          //     tax_id: this.taxID
+          //   },
+          // } as TextAnnotationGenerationRequest;
+          // return this.worksheetViewerService.annotateEnrichment([this.fileId], params).pipe(
+          //   mergeMap(() => this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
+          //     map((annotated: EnrichmentParsedData) => {
+          //       this.result = annotated.result;
+          //       return this;
+          //     })
+          //   ))
+          // );
         }
       })
     );

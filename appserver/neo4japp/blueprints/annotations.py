@@ -447,7 +447,6 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
                 asyncio.run(
                     send(
                         body={
-                            'user_id': current_user.id,
                             'file_id': file.id,
                             'global_exclusions': global_exclusions,
                             'local_exclusions': local_exclusions,
@@ -472,7 +471,7 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
                     'success': True,
                     'error': ''
                 }
-                current_app.logger.debug(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
+                current_app.logger.info(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
             'mapping': results,
@@ -533,7 +532,6 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                 asyncio.run(
                     send(
                         body={
-                            'user_id': current_user.id,
                             'file_id': file.id,
                             'enrichment_mapping': enrichment_mapping,
                             'raw_enrichment_data': raw_enrichment_data,
@@ -560,7 +558,7 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                     'success': True,
                     'error': ''
                 }
-                current_app.logger.debug(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
+                current_app.logger.info(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
             'mapping': results,

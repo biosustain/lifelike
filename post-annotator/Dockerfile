@@ -1,5 +1,5 @@
 FROM python:3.8-buster
-LABEL app=annotator
+LABEL app=post-annotator
 
 ENV _USER user
 ENV _HOME /home/$_USER

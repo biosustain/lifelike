@@ -21,7 +21,6 @@ logger = get_logger()
 
 
 def annotate_file(
-    user_id: str,
     file_id: int,
     global_exclusions: Optional[List[dict]] = None,
     local_exclusions: List[dict] = None,
@@ -62,17 +61,16 @@ def annotate_file(
         )
         logger.debug(f'File successfully annotated: {file_id}')
     except AnnotationError as e:
-        logger.error(f'Could not annotate file: {file_id}, {e}')
+        logger.error(e, exc_info=True)
+        logger.error(f'Could not annotate file: {file_id}')
         raise
     return {
         'file_id': file_id,
-        'user_id': user_id,
         'annotations': annotations_json
     }
 
 
 def annotate_text(
-    user_id: str,
     file_id: int,
     enrichment_mapping: dict,
     raw_enrichment_data: dict,
@@ -176,8 +174,8 @@ def annotate_text(
     validate_enrichment_table(raw_enrichment_data)
     return {
         'file_id': file_id,
-        'user_id': user_id,
-        'annotations': annotations_json
+        'annotations': annotations_json,
+        'enrichment_annotations': raw_enrichment_data
     }
 
 
