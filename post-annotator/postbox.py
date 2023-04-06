@@ -11,35 +11,37 @@ from app.logs import get_logger
 
 
 # Get RabbitMQ vars
-RABBITMQ_USER = os.environ.get('RABBITMQ_USER', 'guest')
-RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD', 'guest')
-POST_ANNOTATOR_QUEUE = os.environ.get('POST_ANNOTATOR_QUEUE', 'post_annotator_queue')
+RABBITMQ_USER = os.environ.get('RABBITMQ_USER', 'messenger')
+RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD', 'password')
+POST_ANNOTATOR_QUEUE = os.environ.get('POST_ANNOTATOR_QUEUE', 'post_annotator')
 RABBITMQ_CONNECTION_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@rabbitmq/'
 
 logger = get_logger()
 
 
 async def on_message(message: AbstractIncomingMessage) -> None:
-    async with message.process():
-        logger.info(f' [x] Received message {message!r}')
+    logger.info(f' [x] Received message {message!r}')
 
+    try:
         try:
             request = json.loads(message.body)
+            logger.debug(json.dumps(request, indent=4))
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
-            logger.error(f'File Annotation Post Processing Failed: request contained malformed JSON body:')
+            logger.error(f'File Annotation Post Processing Failed. Request contained malformed JSON body:')
             logger.error(message.body)
-            return
-
-        try:
-            file_hash_id, file_annotations_version_hash_id = update_tables(request)
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            logger.error(f'File Annotation Post Processing Failed: unhandled exception occurred!')
-        else:
-            logger.info('Annotations successfully post-processed:')
-            logger.info(f'\t\tFile Hash ID: {file_hash_id}')
-            logger.info(f'\t\tFile Annotations Version Hash ID: {file_annotations_version_hash_id}')
+            raise
+        file_hash_id, file_annotations_version_hash_id = update_tables(request)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+        logger.error(f'File Annotation Post Processing Failed. Unhandled exception occurred. Request object:')
+        logger.error(json.dumps(request, indent=4))
+        await message.reject(requeue=False)
+    else:
+        logger.info('Annotations successfully post-processed:')
+        logger.info(f'\t\tFile Hash ID: {file_hash_id}')
+        logger.info(f'\t\tFile Annotations Version Hash ID: {file_annotations_version_hash_id}')
+        await message.ack()
 
 
 async def receive() -> None:
@@ -63,11 +65,7 @@ async def receive() -> None:
         )
 
         # Declaring queue
-        queue = await channel.declare_queue(
-            POST_ANNOTATOR_QUEUE,
-            # Declares this queue as persistent
-            durable=True,
-        )
+        queue = await channel.get_queue(POST_ANNOTATOR_QUEUE)
 
         # Start listening to the queue
         await queue.consume(on_message)

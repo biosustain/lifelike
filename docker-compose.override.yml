@@ -27,9 +27,9 @@ x-appserver: &appserver
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # RabbitMQ
-    - RABBITMQ_USER=guest
-    - RABBITMQ_PASSWORD=guest
-    - ANNOTATOR_QUEUE=annotator_queue
+    - RABBITMQ_USER=messenger
+    - RABBITMQ_PASSWORD=password
+    - ANNOTATOR_QUEUE=annotator
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -59,10 +59,10 @@ x-annotator: &annotator
   environment:
     - LOG_LEVEL=INFO
     # RabbitMQ
-    - RABBITMQ_USER=guest
-    - RABBITMQ_PASSWORD=guest
-    - ANNOTATOR_QUEUE=annotator_queue
-    - POST_ANNOTATOR_QUEUE=post_annotator_queue
+    - RABBITMQ_USER=messenger
+    - RABBITMQ_PASSWORD=password
+    - ANNOTATOR_QUEUE=annotator
+    - POST_ANNOTATOR_QUEUE=post_annotator
     # Arango
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
@@ -84,9 +84,9 @@ x-post-annotator: &post-annotator
   environment:
     - LOG_LEVEL=INFO
     # RabbitMQ
-    - RABBITMQ_USER=guest
-    - RABBITMQ_PASSWORD=guest
-    - POST_ANNOTATOR_QUEUE=post_annotator_queue
+    - RABBITMQ_USER=messenger
+    - RABBITMQ_PASSWORD=password
+    - POST_ANNOTATOR_QUEUE=post_annotator
     # Postgres
     - POSTGRES_HOST=pgdatabase
     - POSTGRES_PORT=5432
@@ -274,15 +274,21 @@ services:
       - elastic
 
   rabbitmq:
-    image: rabbitmq:3.11-management
-    container_name: 'rabbitmq'
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
+    container_name: rabbitmq
+    environment:
+      - RMQ_ADMIN_USERNAME=admin
+      - RMQ_ADMIN_PASSWORD=password
+      - RMQ_MESSENGER_USERNAME=messenger
+      - RMQ_MESSENGER_PASSWORD=password
     ports:
-        - 5672:5672
-        - 15672:15672
+      - 5672:5672
+      - 15672:15672
     networks:
       - backend
       - rabbitmq
-
 
 volumes:
   lmdb:

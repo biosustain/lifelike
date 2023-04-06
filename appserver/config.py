@@ -33,9 +33,9 @@ class Base():
     ARANGO_PASSWORD = os.getenv('ARANGO_PASSWORD', 'password')
     ARANGO_DB_NAME = os.getenv('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')
 
-    RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
-    RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')
-    ANNOTATOR_QUEUE = os.getenv('ANNOTATOR_QUEUE', 'annotator_queue')
+    RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'messenger')
+    RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'password')
+    ANNOTATOR_QUEUE = os.getenv('ANNOTATOR_QUEUE', 'annotator')
     RABBITMQ_CONNECTION_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@rabbitmq/'
 
     AZURE_ACCOUNT_STORAGE_NAME = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
