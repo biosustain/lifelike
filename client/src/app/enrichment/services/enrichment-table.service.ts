@@ -46,7 +46,7 @@ export class EnrichmentTableService {
   annotateEnrichment(hashIds: string[],
                      request: TextAnnotationGenerationRequest): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
     return this.http.post<ResultMapping<AnnotationGenerationResultSchema>>(
-      `/api/filesystem/annotations/generate`,
+      `/api/filesystem/annotations/generate/enrichment-table`,
       {hashIds, ...request}
     );
   }

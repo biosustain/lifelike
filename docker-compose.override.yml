@@ -66,7 +66,7 @@ x-annotator: &annotator
     - ARANGO_HOST=http://arangodb:8529
     - ARANGO_USERNAME=***ARANGO_USERNAME***
     - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***-11-17-22
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # Other
     - LMDB_HOME_FOLDER=/home/user/app/services/lmdb/
   # Allow debugging w/ IPython or pdb
@@ -101,9 +101,9 @@ services:
     networks:
       - backend
 
-  consumer_1:
+  annotator:
     <<: *annotator
-    container_name: consumer_1
+    container_name: annotator
 
   webserver:
     container_name: client

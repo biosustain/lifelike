@@ -236,8 +236,7 @@ export class FilesystemObjectActions {
         const annotationConfigs = object.annotationConfigs;
         const organism = object.fallbackOrganism;
         return this.annotationsService.generateAnnotations(
-          [object.hashId], {annotationConfigs, organism}
-        ).body$;
+          [object.hashId], object.mimeType, {annotationConfigs, organism}).body$;
       });
 
     const results: ResultMapping<AnnotationGenerationResultData>[] = [];

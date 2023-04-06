@@ -2,7 +2,7 @@ from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Any, Dict, List
 
-from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..logs import get_annotator_extras_obj, get_logger
 from ..utils import normalize_str
 
 from .arangodb import execute_arango_query, get_db
@@ -35,7 +35,7 @@ from .utils.graph_queries import (
     get_protein_to_organism_query,
 )
 
-logger = setup_annotator_logging()
+logger = get_logger()
 
 
 def _create_entity_inclusion(

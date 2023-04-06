@@ -19,6 +19,7 @@ import {
   CustomAnnotationDeleteRequest, HttpObservableResponse,
 } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
+import { MimeTypes } from 'app/shared/constants';
 
 @Injectable()
 export class AnnotationsService {
@@ -47,10 +48,16 @@ export class AnnotationsService {
     );
   }
 
-  generateAnnotations(hashIds: string[], request: PDFAnnotationGenerationRequest = {}):
+  generateAnnotations(hashIds: string[], mimeType: string, request: PDFAnnotationGenerationRequest = {}):
     HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>> {
+    let requestUrl: string;
+    if (mimeType == MimeTypes.Pdf) {
+      requestUrl = '/api/filesystem/annotations/generate/pdf';
+    } else if (mimeType == MimeTypes.EnrichmentTable) {
+      requestUrl = '/api/filesystem/annotations/generate/enrichment-table';
+    }
     const progress$ =  this.http.post<ResultMapping<AnnotationGenerationResultData>>(
-      `/api/filesystem/annotations/generate`, {
+      requestUrl, {
         hashIds,
         ...request,
       },

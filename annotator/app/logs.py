@@ -15,7 +15,7 @@ def get_annotator_extras_obj() -> dict:
     return get_logger_extras_obj(event_type='annotations')
 
 
-def setup_annotator_logging() -> logging.Logger:
+def get_logger() -> logging.Logger:
     logging.basicConfig()
     logger = logging.getLogger('Lifelike-Annotator-Service')
     try:

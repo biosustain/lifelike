@@ -125,6 +125,13 @@ def _snake_to_camel_update(k, v):
     }
 
 
+def compact(d):
+    if isinstance(d, dict):
+        return filter_dict_by_value(lambda v: v, d)
+    raise NotImplementedError
+
+
+
 def encode_to_str(obj):
     """Converts different types into a string representation. """
     if isinstance(obj, str):
@@ -139,6 +146,10 @@ def encode_to_str(obj):
 
 def equal_number_of_words(term_a: str, term_b: str) -> bool:
     return len(term_a.split(' ')) == len(term_b.split(' '))
+
+
+def filter_dict_by_value(condition, d: dict):
+    return {k: v for k, v in d.items() if condition(v)}
 
 
 def normalize_str(s) -> str:

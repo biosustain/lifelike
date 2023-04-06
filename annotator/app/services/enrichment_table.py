@@ -1,32 +1,31 @@
-from arango.client import ArangoClient
-from flask import current_app
-from sqlalchemy.orm import Session as SQLAlchemySession
 import time
+
+from arango.client import ArangoClient
 from typing import List
 from urllib.parse import urlencode
 
-from neo4japp.constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain, LogEventType
-from neo4japp.exceptions import AnnotationError
-from neo4japp.services.arangodb import execute_arango_query, get_db
-from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.util import compact
-from neo4japp.utils.logger import EventLog
+from ..logs import get_annotator_extras_obj, get_logger
+from ..schemas.formats.enrichment_tables import validate_enrichment_table
+from ..utils import compact
+
+from .constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain
+from .exceptions import AnnotationError
+from .arangodb import execute_arango_query, get_db
+from .data_transfer_objects import EnrichmentCellTextMapping
+
+logger = get_logger()
 
 
-class EnrichmentTableService(RDBMSBaseDao):
-    def __init__(self, session: SQLAlchemySession):
-        super().__init__(session=session)
-
-    def create_annotation_mappings(self, enrichment: dict) -> dict:
+class EnrichmentTableService():
+    def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
             validate_enrichment_table(enrichment)
-        except Exception as e:
+        except Exception:
             raise AnnotationError(
                 title='Could not annotate enrichment table',
                 message='Could not annotate enrichment table, '
                         'there was a problem validating the format.'
-            ) from e
+            )
 
         # got here so passed validation
         data = enrichment['result']
@@ -95,12 +94,11 @@ class EnrichmentTableService(RDBMSBaseDao):
                                 'domain': k,
                                 'label': 'Function'
                             })
-            except KeyError as e:
-                current_app.logger.error(
+            except KeyError:
+                logger.error(
                     f'Missing key when creating enrichment table text row/column mapping.',
-                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                    extra=get_annotator_extras_obj()
                 )
-                # TODO warning
                 continue
 
         for text in cell_texts:
@@ -111,11 +109,8 @@ class EnrichmentTableService(RDBMSBaseDao):
                 text_index_map.append((total_index - 1, text))
                 combined_text += ' '  # to separate prev text
 
-        return {
-            'text': combined_text,
-            'text_index_map': text_index_map,
-            'cell_texts': cell_texts
-        }
+        return EnrichmentCellTextMapping(
+            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
 
 
 def match_ncbi_genes(
@@ -154,9 +149,9 @@ def get_uniprot_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment UniProt KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {
@@ -174,9 +169,9 @@ def get_string_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment String KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {
@@ -194,9 +189,9 @@ def get_biocyc_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int], tax_
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment Biocyc KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {
@@ -217,9 +212,9 @@ def get_go_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment GO KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {
@@ -237,9 +232,9 @@ def get_regulon_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment Regulon KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {
@@ -262,9 +257,9 @@ def get_kegg_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
         ncbi_gene_ids=ncbi_gene_ids,
     )
 
-    current_app.logger.info(
+    logger.info(
         f'Enrichment KEGG KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=get_annotator_extras_obj()
     )
 
     return {

@@ -77,6 +77,8 @@ COMMON_WORDS = set.union(*[
 
 GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
+BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
+
 
 class EntityType(Enumd):
     ANATOMY = 'Anatomy'
@@ -203,3 +205,25 @@ class AnnotationChangeCause(Enum):
     USER = 'user'
     USER_REANNOTATION = 'user_reannotation'
     SYSTEM_REANNOTATION = 'sys_reannotation'
+
+
+# enrichment labels
+class EnrichmentDomain(Enumd):
+    UNIPROT = 'UniProt'
+    REGULON = 'Regulon'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'BioCyc'
+
+
+KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+
+
+class KGDomain(Enum):
+    REGULON = 'Regulon'
+    UNIPROT = 'UniProt'
+    STRING = 'String'
+    GO = 'GO'
+    BIOCYC = 'BioCyc'
+    if KEGG_ENABLED:
+        KEGG = 'KEGG'

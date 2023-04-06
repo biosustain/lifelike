@@ -4,11 +4,11 @@ import lmdb
 from os import path
 from typing import Any, Dict
 
-from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..logs import get_annotator_extras_obj, get_logger
 
 from .exceptions import LMDBError
 
-logger = setup_annotator_logging()
+logger = get_logger()
 
 class TransactionContext(metaclass=abc.ABCMeta):
     """Both __enter__ and __exit__ allows the class to be

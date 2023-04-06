@@ -4,7 +4,7 @@ from string import punctuation
 from typing import List, Tuple
 
 from ...exceptions import ServerException
-from ...logs import setup_annotator_logging
+from ...logs import get_logger
 
 from ..constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
@@ -13,7 +13,7 @@ from ..constants import (
 )
 from ..data_transfer_objects import PDFWord
 
-logger = setup_annotator_logging()
+logger = get_logger()
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []

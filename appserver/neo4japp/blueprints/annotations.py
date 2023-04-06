@@ -1,13 +1,10 @@
 import asyncio
 import csv
 import hashlib
-import html
 import io
 import json
 import sqlalchemy as sa
-import time
 
-from datetime import datetime
 from flask import (
     Blueprint,
     current_app,
@@ -21,14 +18,14 @@ from json import JSONDecodeError
 from marshmallow import validate, fields
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from webargs.flaskparser import use_args
 
 from .auth import login_exempt
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
 
-from ..constants import LogEventType, TIMEZONE
+from ..constants import LogEventType
 from ..database import (
     db,
     get_excel_export_service,
@@ -41,8 +38,6 @@ from ..models import (
     Files,
     GlobalList,
 )
-from ..schemas.formats.enrichment_tables import validate_enrichment_table
-from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
     AnnotationGenerationRequestSchema,
@@ -63,19 +58,11 @@ from ..schemas.enrichment import EnrichmentTableSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
 from ..services.annotations.constants import (
-    DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
 )
-from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
-    get_annotation_service,
-    get_annotation_db_service,
-    get_annotation_tokenizer,
-    get_bioc_document_service,
-    get_enrichment_annotation_service,
     get_manual_annotation_service,
-    get_recognition_service,
     get_sorted_annotation_service
 )
 from ..services.annotations.sorted_annotation_service import (
@@ -88,7 +75,6 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.arangodb import convert_datetime, execute_arango_query, get_db
-from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..services.rabbitmq import send
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
@@ -424,122 +410,11 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
             ]
 
 
-class FileAnnotationsGenerationView(FilesystemBaseView):
-    def annotate_files(
-        self,
-        files,
-        user_id,
-        override_organism=None,
-        override_annotation_configs=None
-    ):
-        updated_files = []
-        versions = []
-        results = {}
-
-        for file in files:
-            if override_organism is not None:
-                effective_organism = override_organism
-            else:
-                effective_organism = file.fallback_organism
-
-            if override_annotation_configs is not None:
-                effective_annotation_configs = override_annotation_configs
-            elif file.annotation_configs is not None:
-                effective_annotation_configs = file.annotation_configs
-            else:
-                effective_annotation_configs = DEFAULT_ANNOTATION_CONFIGS
-
-            if file.mime_type == 'application/pdf':
-                try:
-                    annotations, version = self._annotate(
-                        file=file,
-                        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        configs=effective_annotation_configs,
-                        organism=effective_organism,
-                        user_id=user_id
-                    )
-                except AnnotationError as e:
-                    current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)
-                    results[file.hash_id] = {
-                        'attempted': True,
-                        'success': False,
-                        'error': e.message
-                    }
-                else:
-                    current_app.logger.debug(
-                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
-                    updated_files.append(annotations)
-                    versions.append(version)
-                    results[file.hash_id] = {
-                        'attempted': True,
-                        'success': True,
-                        'error': ''
-                    }
-            elif file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
-                try:
-                    enrichment = json.loads(file.content.raw_file_utf8)
-                except JSONDecodeError:
-                    current_app.logger.error(
-                        f'Cannot annotate file with invalid content: {file.hash_id}, '
-                        f'{file.filename}'
-                    )
-                    # TODO: warning
-                    results[file.hash_id] = {
-                        'attempted': False,
-                        'success': False,
-                        'error': 'Enrichment table content is not valid JSON.'
-                    }
-                    continue
-                enrich_service = get_enrichment_table_service()
-
-                try:
-                    enriched = enrich_service.create_annotation_mappings(enrichment)
-
-                    annotations, version = self._annotate_enrichment_table(
-                        file=file,
-                        enriched=enriched,
-                        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        configs=effective_annotation_configs,
-                        organism=effective_organism,
-                        user_id=user_id,
-                        enrichment=enrichment
-                    )
-
-                    validate_enrichment_table(annotations['enrichment_annotations'])
-                except AnnotationError as e:
-                    current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e
-                    )
-                    results[file.hash_id] = {
-                        'attempted': True,
-                        'success': False,
-                        'error': e.message
-                    }
-                else:
-                    current_app.logger.debug(
-                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
-                    updated_files.append(annotations)
-                    versions.append(version)
-                    results[file.hash_id] = {
-                        'attempted': True,
-                        'success': True,
-                        'error': ''
-                    }
-            else:
-                results[file.hash_id] = {
-                    'attempted': False,
-                    'success': False,
-                    'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.'
-                }
-
-        return updated_files, versions, results
-
-    # TODO: Need to make this work for enrichment tables too!
+class FilePDFAnnotationsGenerationView(FilesystemBaseView):
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: AnnotationGenerationRequestSchema())
     def post(self, targets, params):
-        """Generate annotations for one or more files."""
+        """Generate annotations for one or more PDF files."""
         current_user = g.current_user
 
         files = self.get_nondeleted_recycled_files(
@@ -604,216 +479,93 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             'missing': missing,
         }))
 
-    def _annotate(
-        self,
-        file: Files,
-        cause: AnnotationChangeCause,
-        configs: dict,
-        organism: Optional[Dict] = None,
-        user_id: int = None
-    ):
-        """Annotate PDF files."""
-        text, parsed = Pipeline.parse(
-            file.mime_type, file_id=file.id, exclude_references=configs['exclude_references'])
 
-        pipeline = Pipeline(
-            {
-                'adbs': get_annotation_db_service,
-                'aers': get_recognition_service,
-                'tkner': get_annotation_tokenizer,
-                'as': get_annotation_service,
-                'bs': get_bioc_document_service
-            },
-            text=text, parsed=parsed)
+class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
+    @use_args(lambda request: BulkFileRequestSchema())
+    @use_args(lambda request: AnnotationGenerationRequestSchema())
+    def post(self, targets, params):
+        """Generate annotations for one or more enrichment table files."""
+        current_user = g.current_user
 
-        annotations_json = pipeline.get_globals(
-            excluded_annotations=file.excluded_annotations or [],
-            custom_annotations=file.custom_annotations or []
-        ).identify(
-            annotation_methods=configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',
-            custom_annotations=file.custom_annotations or [],
-            filename=file.filename)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(targets['hash_ids']),
+            lazy_load_content=True
+        )
+        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
-        update = {
-            'id': file.id,
-            'annotations': annotations_json,
-            'annotations_date': datetime.now(TIMEZONE),
-        }
+        override_organism = params.get('organism', None) or dict()
+        override_annotation_configs = params.get('annotation_configs', None)
 
-        if organism:
-            update['organism_name'] = organism.get('organism_name')
-            update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = organism.get('tax_id'),
+        missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
-        version = {
-            'file_id': file.id,
-            'cause': cause,
-            'custom_annotations': file.custom_annotations,
-            'excluded_annotations': file.excluded_annotations,
-            'user_id': user_id,
-        }
+        results = {}
+        for file in files:
+            global_exclusions = [
+                d.annotation for d in db.session.query(
+                    GlobalList.annotation
+                ).filter(
+                    and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+                )
+            ]
+            local_exclusions = [
+                exc for exc in file.excluded_annotations
+                if not exc.get('meta', {}).get('excludeGlobally', False)
+            ]
+            local_inclusions = file.custom_annotations
 
-        return update, version
+            try:
+                raw_enrichment_data = json.loads(file.content.raw_file_utf8)
+            except JSONDecodeError:
+                current_app.logger.error(
+                    f'Cannot annotate file with invalid content: {file.hash_id}, '
+                    f'{file.filename}'
+                )
+                results[file.hash_id] = {
+                    'attempted': False,
+                    'success': False,
+                    'error': 'Enrichment table content is not valid JSON.'
+                }
+                continue
+            enrich_service = get_enrichment_table_service()
+            enrichment_mapping = enrich_service.create_annotation_mappings(raw_enrichment_data)
 
-    def _annotate_enrichment_table(
-        self,
-        file: Files,
-        enriched: EnrichmentCellTextMapping,
-        cause: AnnotationChangeCause,
-        user_id: int,
-        enrichment: dict,
-        configs: dict,
-        organism: Optional[Dict] = None
-    ):
-        """Annotate all text in enrichment table."""
-        text, parsed = Pipeline.parse(file.mime_type, text=enriched.text)
-
-        pipeline = Pipeline(
-            {
-                'adbs': get_annotation_db_service,
-                'aers': get_recognition_service,
-                'tkner': get_annotation_tokenizer,
-                'as': get_enrichment_annotation_service,
-                'bs': get_bioc_document_service
-            },
-            text=text, parsed=parsed)
-
-        annotations_json = pipeline.get_globals(
-            excluded_annotations=file.excluded_annotations or [],
-            custom_annotations=file.custom_annotations or []
-        ).identify(
-            annotation_methods=configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',
-            custom_annotations=file.custom_annotations or [],
-            filename=file.filename,
-            enrichment_mappings=enriched.text_index_map)
-
-        # NOTE: code below to calculate the correct offsets for enrichment table
-        # and correctly highlight based on cell is not pretty
-        annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
-        # sort by lo_location_offset to go from beginning to end
-        sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
-
-        prev_index = -1
-        enriched_gene = ''
-
-        start = time.time()
-        for index, cell_text in enriched.text_index_map:
-            annotation_chunk = [anno for anno in sorted_annotations_list if anno.get(
-                'hiLocationOffset', None) and anno.get('hiLocationOffset') <= index]
-            # it's sorted so we can do this to make the list shorter every iteration
-            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk):]
-
-            # update JSON to have enrichment row and domain...
-            for anno in annotation_chunk:
-                if prev_index != -1:
-                    # only do this for subsequent cells b/c
-                    # first cell will always have the correct index
-                    # update index offset to be relative to the cell again
-                    # since they're relative to the combined text
-                    anno['loLocationOffset'] = \
-                        anno['loLocationOffset'] - (prev_index + 1) - 1
-                    anno['hiLocationOffset'] = \
-                        anno['loLocationOffset'] + anno['keywordLength'] - 1
-
-                if 'domain' in cell_text:
-                    # imported should come first for each row
-                    if cell_text['domain'] == 'Imported':
-                        enriched_gene = cell_text['text']
-                    anno['enrichmentGene'] = enriched_gene
-                    if cell_text['domain'] == 'Regulon':
-                        anno['enrichmentDomain']['domain'] = cell_text['domain']
-                        anno['enrichmentDomain']['subDomain'] = cell_text['label']
-                    else:
-                        anno['enrichmentDomain']['domain'] = cell_text['domain']
-
-            snippet = self._highlight_annotations(
-                original_text=cell_text['text'],
-                annotations=annotation_chunk
-            )
-            enrichment_genes_index = enrichment['result']['genes'][cell_text['index']]
-            if cell_text['domain'] == 'Imported':
-                enrichment_genes_index['annotatedImported'] = snippet
-            elif cell_text['domain'] == 'Matched':
-                enrichment_genes_index['annotatedMatched'] = snippet
-            elif cell_text['domain'] == 'Full Name':
-                enrichment_genes_index['annotatedFullName'] = snippet
+            try:
+                asyncio.run(
+                    send(
+                        body={
+                            'user_id': current_user.id,
+                            'file_id': file.id,
+                            'enrichment_mapping': enrichment_mapping,
+                            'raw_enrichment_data': raw_enrichment_data,
+                            'global_exclusions': global_exclusions,
+                            'local_exclusions': local_exclusions,
+                            'local_inclusions': local_inclusions,
+                            'organism_synonym': override_organism.get('synonym', None),
+                            'organism_taxonomy_id': override_organism.get('tax_id', None),
+                            'annotation_configs': override_annotation_configs
+                        },
+                        queue=current_app.config.get('ANNOTATOR_QUEUE')
+                    )
+                )
+            except Exception as e:
+                results[file.hash_id] =  {
+                    'attempted': True,
+                    'success': False,
+                    'error': ''
+                }
+                current_app.logger.error(f'Could not annotate file: {file.hash_id}, {file.filename}, {e}',)
             else:
-                enrichment_genes_index \
-                    .get('domains') \
-                    .get(cell_text['domain']) \
-                    .get(cell_text['label'])['annotatedText'] = \
-                    snippet
+                results[file.hash_id] =  {
+                    'attempted': True,
+                    'success': True,
+                    'error': ''
+                }
+                current_app.logger.debug(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
 
-            prev_index = index
-
-        current_app.logger.info(
-            f'Time to create enrichment snippets {time.time() - start}')
-
-        update = {
-            'id': file.id,
-            'annotations': annotations_json,
-            'annotations_date': datetime.now(TIMEZONE),
-            'enrichment_annotations': enrichment
-        }
-
-        if organism:
-            update['organism_name'] = organism.get('organism_name')
-            update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = organism.get('tax_id'),
-
-        version = {
-            'file_id': file.id,
-            'cause': cause,
-            'custom_annotations': file.custom_annotations,
-            'excluded_annotations': file.excluded_annotations,
-            'user_id': user_id,
-        }
-
-        return update, version
-
-    def _highlight_annotations(self, original_text: str, annotations: List[dict]):
-        # If done right, we would parse the XML but the built-in XML libraries in Python
-        # are susceptible to some security vulns, but because this is an internal API,
-        # we can accept that it can be janky
-
-        texts = []
-        prev_ending_index = -1
-
-        for annotation in annotations:
-            meta = annotation['meta']
-            meta_type = annotation['meta']['type']
-            term = annotation['textInDocument']
-            lo_location_offset = annotation['loLocationOffset']
-            hi_location_offset = annotation['hiLocationOffset']
-
-            text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
-                   f'{term}' \
-                   f'</annotation>'
-
-            if lo_location_offset == 0:
-                prev_ending_index = hi_location_offset
-                texts.append(text)
-            else:
-                if not texts:
-                    texts.append(original_text[:lo_location_offset])
-                    prev_ending_index = hi_location_offset
-                    texts.append(text)
-                else:
-                    # TODO: would lo_location_offset == prev_ending_index ever happen?
-                    # if yes, need to handle it
-                    texts.append(original_text[prev_ending_index + 1:lo_location_offset])
-                    prev_ending_index = hi_location_offset
-                    texts.append(text)
-
-        texts.append(original_text[prev_ending_index + 1:])
-        final_text = ''.join(texts)
-        return f'<snippet>{final_text}</snippet>'
+        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
+            'mapping': results,
+            'missing': missing,
+        }))
 
 
 class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
@@ -1180,8 +932,11 @@ filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/gene-counts',
     view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
 filesystem_bp.add_url_rule(
-    'annotations/generate',
-    view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
+    'annotations/generate/pdf',
+    view_func=FilePDFAnnotationsGenerationView.as_view('file_pdf_annotation_generation'))
+filesystem_bp.add_url_rule(
+    'annotations/generate/enrichment-table',
+    view_func=FileEnrichmentTableAnnotationsGenerationView.as_view('file_enrichment_table_annotation_generation'))
 filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh

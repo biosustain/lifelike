@@ -35,10 +35,10 @@ from .data_transfer_objects import (
 from .exceptions import AnnotationError
 from .utils.common import has_center_point
 
-from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..logs import get_annotator_extras_obj, get_logger
 from ..utils import equal_number_of_words, normalize_str
 
-logger = setup_annotator_logging()
+logger = get_logger()
 
 
 class AnnotationService:

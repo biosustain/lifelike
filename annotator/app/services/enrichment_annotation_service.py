@@ -6,7 +6,7 @@ from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Dict, List, Set, Tuple
 
-from ..logs import get_annotator_extras_obj, setup_annotator_logging
+from ..logs import get_annotator_extras_obj, get_logger
 
 from .annotation_service import AnnotationService
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
@@ -19,7 +19,7 @@ from .data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 
-logger = setup_annotator_logging()
+logger = get_logger()
 
 class EnrichmentAnnotationService(AnnotationService):
     def __init__(
