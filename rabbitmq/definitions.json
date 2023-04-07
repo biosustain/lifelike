@@ -7,7 +7,8 @@
         { "name": "__RMQ_MESSENGER_USERNAME__", "password": "__RMQ_MESSENGER_PASSWORD__", "tags": "" }
     ],
     "permissions":[
-        { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" }
+        { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
+        { "user": "messenger", "vhost": "/", "configure": "", "write": ".*", "read": ".*" }
     ],
     "queues": [
         {
