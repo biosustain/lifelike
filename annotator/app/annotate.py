@@ -20,7 +20,8 @@ from app.services.pipeline import Pipeline
 logger = get_logger()
 
 
-def annotate_file(
+# TODO: Need to make the annotation pipeline calls async so the event loop can cede control while annotation tasks are working
+async def annotate_file(
     file_id: int,
     global_exclusions: Optional[List[dict]] = None,
     local_exclusions: List[dict] = None,
@@ -70,7 +71,8 @@ def annotate_file(
     }
 
 
-def annotate_text(
+# TODO: Need to make the annotation pipeline calls async so the event loop can cede control while annotation tasks are working
+async def annotate_text(
     file_id: int,
     enrichment_mapping: dict,
     raw_enrichment_data: dict,

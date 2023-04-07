@@ -19,9 +19,9 @@ RABBITMQ_CONNECTION_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@rabbitmq/
 logger = get_logger()
 
 
-def _handle_file_annotation(req: dict):
+async def _handle_file_annotation(req: dict):
     try:
-        result = annotate_file(
+        result = await annotate_file(
             req['file_id'],
             req.get('global_exclusions', None),
             req.get('local_exclusions', None),
@@ -37,9 +37,9 @@ def _handle_file_annotation(req: dict):
     return result
 
 
-def _handle_text_annotation(req: dict):
+async def _handle_text_annotation(req: dict):
     try:
-        result = annotate_text(
+        result = await annotate_text(
             req['file_id'],
             req['enrichment_mapping'],
             req['raw_enrichment_data'],
@@ -102,9 +102,9 @@ async def main():
                             raise
                         try:
                             if 'enrichment_mapping' in request:
-                                result = _handle_text_annotation(request)
+                                result = await _handle_text_annotation(request)
                             else:
-                                result = _handle_file_annotation(request)
+                                result = await _handle_file_annotation(request)
                             logger.debug(result)
                         except KeyError as e:
                             logger.error(e, exc_info=True)
@@ -116,7 +116,8 @@ async def main():
                             logger.error(f'File Annotation Failed: Unhandled exception occurred. Request object:')
                             logger.error(json.dumps(request, indent=4))
                             raise
-                    except:
+                    except Exception as e:
+                        logger.error(e, exc_info=True)
                         logger.error('Message could not be processed. Rejecting.')
                         await message.reject()
                     else:
