@@ -1,23 +1,19 @@
-import { HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
+import { HttpEventType } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
-  defer,
   from,
-  iif,
   Observable,
   of,
-  throwError,
   Subject,
   concat,
-  ConnectableObservable, EMPTY,
+  EMPTY,
 } from 'rxjs';
 import {
   bufferWhen,
   catchError,
-  filter,
   map,
   mergeMap,
   reduce,
@@ -26,8 +22,6 @@ import {
   switchMap,
   startWith,
   endWith,
-  publish,
-  refCount,
   scan,
   shareReplay,
   finalize,
@@ -36,15 +30,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   assign,
   entries,
-  find,
   forEach,
   groupBy,
   isEqual,
   partition,
+  omit,
   some,
-  unionBy,
+  uniqWith,
   zip,
-  fromPairs, mapValues, startsWith, omit,
 } from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -62,23 +55,18 @@ import {
   ProgressArguments,
   ProgressMode
 } from 'app/interfaces/common-dialog.interface';
-import { isNotEmpty } from 'app/shared/utils';
 import { idle } from 'app/shared/rxjs/idle-observable';
-import { objectToMixedFormData } from 'app/shared/utils/forms';
-import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
 import {
   ObjectCreateRequest,
   PDFAnnotationGenerationRequest,
   AnnotationGenerationResultData,
-  FilesystemObjectData, HttpObservableResponse,
+  HttpObservableResponse,
 } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
-import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
-import File = GraphNS.File;
 
 interface CreationResult {
   result?: FilesystemObject;
@@ -432,15 +420,15 @@ export class ObjectCreationService {
             result?.isAnnotatable &&
             !some(warnings, ({type}) => type === 'TextExtractionNotAllowedWarning'),
         );
-        const uniqeAnnotationConfigs: PDFAnnotationGenerationRequest[] = unionBy(
-          resultsToAnnotate.map(({annotation: {options}}) => options),
-          isEqual,
+        const uniqeAnnotationConfigs = uniqWith(
+          resultsToAnnotate.map(({annotation: {options}, creation: {result: {mimeType}}}) => [mimeType, options]),
+          isEqual
         );
         // generateAnnotations can be called for multiple files but within one config
         const resultsToAnnotateGroupedByAnnotationConfig = groupBy(
           resultsToAnnotate,
           resultToAnnotate => uniqeAnnotationConfigs.findIndex(
-            ac => isEqual(resultToAnnotate.annotation.options, ac),
+            ac => isEqual([resultToAnnotate.creation.result.mimeType, resultToAnnotate.annotation.options], ac),
           ),
         );
         return from(entries(resultsToAnnotateGroupedByAnnotationConfig)).pipe(
@@ -448,7 +436,8 @@ export class ObjectCreationService {
             ({
               annotationTask: this.annotationsService.generateAnnotations(
                 creationTaskBatch.map(task => task.creation.result.hashId),
-                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex],
+                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][0],
+                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][1],
               ),
               creationTaskBatch,
             } as CreateToAnnotateStep),
