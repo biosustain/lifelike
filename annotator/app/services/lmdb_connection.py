@@ -101,7 +101,14 @@ class LMDBConnection(DatabaseConnection):
 
         dbpath = path.join(self.dirpath, self.configs[dbname])
         try:
-            env: lmdb.Environment = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
+            # Important to set locking to false, otherwise the annotators will fall over each other
+            env: lmdb.Environment = lmdb.open(
+                path=dbpath,
+                create=create,
+                readonly=readonly,
+                max_dbs=2,
+                lock=False
+            )
         except Exception:
             logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
