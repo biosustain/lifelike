@@ -27,8 +27,8 @@ x-appserver: &appserver
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***
     # RabbitMQ
-    - RABBITMQ_USER=messenger
-    - RABBITMQ_PASSWORD=password
+    - RMQ_MESSENGER_USERNAME=messenger
+    - RMQ_MESSENGER_PASSWORD=password
     - ANNOTATOR_QUEUE=annotator
     # Redis
     - REDIS_HOST=redis
@@ -59,8 +59,8 @@ x-annotator: &annotator
   environment:
     - LOG_LEVEL=INFO
     # RabbitMQ
-    - RABBITMQ_USER=messenger
-    - RABBITMQ_PASSWORD=password
+    - RMQ_MESSENGER_USERNAME=messenger
+    - RMQ_MESSENGER_PASSWORD=password
     - ANNOTATOR_QUEUE=annotator
     - POST_ANNOTATOR_QUEUE=post_annotator
     # Arango
@@ -84,8 +84,8 @@ x-post-annotator: &post-annotator
   environment:
     - LOG_LEVEL=INFO
     # RabbitMQ
-    - RABBITMQ_USER=messenger
-    - RABBITMQ_PASSWORD=password
+    - RMQ_MESSENGER_USERNAME=messenger
+    - RMQ_MESSENGER_PASSWORD=password
     - POST_ANNOTATOR_QUEUE=post_annotator
     # Postgres
     - POSTGRES_HOST=pgdatabase

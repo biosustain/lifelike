@@ -11,10 +11,10 @@ from app.logs import get_logger
 
 
 # Get RabbitMQ vars
-RABBITMQ_USER = os.environ.get('RABBITMQ_USER', 'messenger')
-RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD', 'password')
+RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
+RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
 POST_ANNOTATOR_QUEUE = os.environ.get('POST_ANNOTATOR_QUEUE', 'post_annotator')
-RABBITMQ_CONNECTION_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@rabbitmq/'
+RABBITMQ_CONNECTION_URL = f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSWORD}@rabbitmq/'
 
 logger = get_logger()
 
