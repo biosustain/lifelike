@@ -255,8 +255,8 @@ def login():
         # Pull user by email
         try:
             user = AppUser.query.filter_by(email=data.get('email')).one()
-    except NoResultFound as e:
-        exception = e
+        except NoResultFound as e:
+            exception = e
         else:
             if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
                 raise ServerException(
