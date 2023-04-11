@@ -21,6 +21,7 @@ from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from typing import List
 
+import neo4japp.utils.transaction_id
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
@@ -58,9 +59,9 @@ def init_exceptions_handling():
     g.info = set()
     g.warnings = set()
 
-    g.transaction_id = request.headers.get('X-Transaction-Id')
-    if not g.transaction_id:
-        g.transaction_id = generate_hash_id()
+    neo4japp.utils.transaction_id.transaction_id = request.headers.get('X-Transaction-Id')
+    if not neo4japp.utils.transaction_id.transaction_id:
+        neo4japp.utils.transaction_id.transaction_id = generate_hash_id()
         warn(
             ServerWarning('Request did not contain required "X-Transaction-Id" header')
         )

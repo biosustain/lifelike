@@ -2,8 +2,7 @@ from dataclasses import dataclass, asdict, MISSING
 from http import HTTPStatus
 from typing import Union, Tuple, Optional, Generic, TypeVar, List, Any, cast
 
-from neo4japp.utils.globals import transaction_id
-
+from neo4japp.utils.transaction_id import transaction_id
 
 VT = TypeVar("VT")
 

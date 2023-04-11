@@ -9,10 +9,6 @@ warnings = LocalProxy(lambda: tuple(g.warnings) if hasattr(g, 'warnings') else t
 
 info = LocalProxy(lambda: tuple(g.info) if hasattr(g, 'info') else tuple())
 
-transaction_id = LocalProxy(
-    lambda: getattr(g, 'transaction_id', 'call_from_outside_of_request_scope')
-)
-
 
 def warn(w: ServerWarning, *, cause: Exception = None):
     if cause:

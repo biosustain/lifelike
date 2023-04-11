@@ -11,6 +11,7 @@ from neo4j.graph import Node, Relationship
 from pathlib import Path
 from typing import Optional
 
+import neo4japp.utils.transaction_id
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.database import db, reset_dao, create_arango_client
@@ -45,7 +46,7 @@ def setup_before_request_callbacks(app: Flask):
     @app.before_request
     def init_exceptions_handling():
         g.warnings = list()
-        g.transaction_id = 'test'
+        neo4japp.utils.transaction_id.transaction_id = 'test'
 
     @app.before_request
     def default_login_required():

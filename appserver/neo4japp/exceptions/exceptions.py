@@ -1,8 +1,8 @@
 from dataclasses import dataclass, asdict, MISSING, field
 from http import HTTPStatus
-from typing import Union, Tuple, Optional, TypeVar, Generic, overload, Any
+from typing import Tuple, Optional, TypeVar, Generic, overload, Any
 
-from neo4japp.utils.globals import transaction_id
+from neo4japp.utils.transaction_id import transaction_id
 from neo4japp.utils.dataclass import TemplateDescriptor
 from neo4japp.base_server_exception import BaseServerException
 
