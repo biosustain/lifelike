@@ -14,10 +14,6 @@ from sqlalchemy.sql import select
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import login_exempt
-from neo4japp.exceptions import RecordNotFound, CannotCreateNewUser, FailedToUpdateUser, \
-    AuthenticationError
-from neo4japp.exceptions import FailedToUpdateUser, AuthenticationError, \
-    UserNotFound
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MAX_TEMP_PASS_LENGTH,
@@ -28,12 +24,13 @@ from neo4japp.constants import (
     RESET_PASSWORD_EMAIL_TITLE,
     RESET_PASSWORD_SYMBOLS,
     SEND_GRID_API_CLIENT,
-    LogEventType
+    LogEventType,
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
+from neo4japp.exceptions import (FailedToUpdateUser, AuthenticationError, UserNotFound)
+from neo4japp.exceptions import NotAuthorized, ServerException, wrap_exceptions
 from neo4japp.models import AppUser, AppRole
 from neo4japp.models.auth import user_role
-from neo4japp.exceptions import NotAuthorized, RecordNotFound, ServerException, wrap_exceptions
 from neo4japp.schemas.account import (
     UserChangePasswordSchema,
     UserCreateSchema,
@@ -41,7 +38,7 @@ from neo4japp.schemas.account import (
     UserProfileListSchema,
     UserProfileSchema,
     UserSearchSchema,
-    UserUpdateSchema
+    UserUpdateSchema,
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.logger import EventLog, UserEventLog
@@ -65,17 +62,20 @@ class AccountView(MethodView):
         t_appuser = AppUser.__table__.alias('t_appuser')
         t_approle = AppRole.__table__.alias('t_approle')
 
-        query = select([
-            t_appuser.c.id,
-            t_appuser.c.hash_id,
-            t_appuser.c.username,
-            t_appuser.c.email,
-            t_appuser.c.first_name,
-            t_appuser.c.last_name,
-            t_appuser.c.failed_login_count,
-            func.string_agg(
-                t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
-        ]).select_from(
+        query = select(
+            [
+                t_appuser.c.id,
+                t_appuser.c.hash_id,
+                t_appuser.c.username,
+                t_appuser.c.email,
+                t_appuser.c.first_name,
+                t_appuser.c.last_name,
+                t_appuser.c.failed_login_count,
+                func.string_agg(
+                    t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)
+                ),
+            ]
+        ).select_from(
             t_appuser
             .join(user_role, user_role.c.appuser_id == t_appuser.c.id, isouter=True)
             .join(t_approle, user_role.c.app_role_id == t_approle.c.id, isouter=True)
@@ -110,10 +110,14 @@ class AccountView(MethodView):
             } for id, hash_id, username, email, first_name,
             last_name, failed_login_count, roles in db.session.execute(query).fetchall() if id]
 
-        return jsonify(UserProfileListSchema().dump({
-            'total': len(results),
-            'results': results,
-        }))
+        return jsonify(
+            UserProfileListSchema().dump(
+                {
+                    'total': len(results),
+                    'results': results,
+                }
+            )
+        )
 
     @use_args(UserCreateSchema)
     @wrap_exceptions(ServerException, title='Cannot Create New User')
@@ -176,8 +180,9 @@ class AccountView(MethodView):
                 target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
                 username = params.get('username') or target.username
                 if target.username != username:
-                    if db.session.query(AppUser.query_by_username(username).exists()
-                                        ).scalar():
+                    if db.session.query(
+                            AppUser.query_by_username(username).exists()
+                            ).scalar():
                         raise ServerException(message=f'Username {username} already taken.')
                 if params.get('roles'):
                     if not admin_access:
@@ -206,16 +211,20 @@ class AccountSubjectView(MethodView):
         user = AppUser.query_by_subject(subject).one_or_none()
         if user is None:
             raise UserNotFound()
-        return jsonify(UserProfileSchema().dump({
-            'hash_id': user.hash_id,
-            'email': user.email,
-            'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'id': user.id,
-            'reset_password': user.forced_password_reset,
-            'roles': [u.name for u in user.roles],
-        }))
+        return jsonify(
+            UserProfileSchema().dump(
+                {
+                    'hash_id': user.hash_id,
+                    'email': user.email,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'id': user.id,
+                    'reset_password': user.forced_password_reset,
+                    'roles': [u.name for u in user.roles],
+                }
+            )
+        )
 
 
 account_view = AccountView.as_view('accounts_api')
@@ -261,7 +270,8 @@ def reset_password(email: str):
             current_app.logger.error(
                 f'Invalid email: {email} provided in password reset request.',
                 extra=EventLog(
-                    event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+                    event_type=LogEventType.RESET_PASSWORD.value
+                ).to_dict()
             )
             raise AuthenticationError(
                 message=f'A problem occurred validating email {email} for password reset.'
@@ -271,28 +281,34 @@ def reset_password(email: str):
             f'User: {target.username} password reset.',
             extra=UserEventLog(
                 username=target.username,
-                event_type=LogEventType.RESET_PASSWORD.value).to_dict()
+                event_type=LogEventType.RESET_PASSWORD.value
+            ).to_dict()
         )
         random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
         new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
-            (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
-            MIN_TEMP_PASS_LENGTH
-        new_password = ''.join(random.sample(
-            [secrets.choice(RESET_PASSWORD_SYMBOLS)] +
-            [secrets.choice(string.ascii_uppercase)] +
-            [secrets.choice(string.digits)] +
-            [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(new_length - 3)],
-            new_length
-        ))
+                     (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
+                     MIN_TEMP_PASS_LENGTH
+        new_password = ''.join(
+            random.sample(
+                [secrets.choice(RESET_PASSWORD_SYMBOLS)] +
+                [secrets.choice(string.ascii_uppercase)] +
+                [secrets.choice(string.digits)] +
+                [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(new_length - 3)],
+                new_length
+            )
+        )
 
         message = Mail(
             from_email=MESSAGE_SENDER_IDENTITY,
             to_emails=email,
             subject=RESET_PASSWORD_EMAIL_TITLE,
-            html_content=RESET_PASS_MAIL_CONTENT.format(name=target.first_name,
-                                                        lastname=target.last_name,
-                                                        password=new_password))
+            html_content=RESET_PASS_MAIL_CONTENT.format(
+                name=target.first_name,
+                lastname=target.last_name,
+                password=new_password
+                )
+        )
         try:
             SEND_GRID_API_CLIENT.send(message)
         except Exception as e:
@@ -344,11 +360,15 @@ class AccountSearchView(MethodView):
         # our entire database of users. For that reason, we only allow exact
         # email address searches at least
         query = db.session.query(AppUser) \
-            .filter(or_(AppUser.first_name.ilike(like_query),
-                        AppUser.last_name.ilike(like_query),
-                        AppUser.username.ilike(like_query),
-                        AppUser.email == query,
-                        AppUser.hash_id == query))
+            .filter(
+            or_(
+                AppUser.first_name.ilike(like_query),
+                AppUser.last_name.ilike(like_query),
+                AppUser.username.ilike(like_query),
+                AppUser.email == query,
+                AppUser.hash_id == query
+                )
+            )
 
         # On the project collaborators dialog, we exclude ourselves because you can't
         # (as of writing) change your own permission level, but if you have the private-data-access
@@ -358,10 +378,14 @@ class AccountSearchView(MethodView):
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 
-        return jsonify(UserListSchema().dump({
-            'total': paginated_result.total,
-            'results': paginated_result.items,
-        }))
+        return jsonify(
+            UserListSchema().dump(
+                {
+                    'total': paginated_result.total,
+                    'results': paginated_result.items,
+                }
+            )
+        )
 
 
 bp.add_url_rule('/search', view_func=AccountSearchView.as_view('account_search'))
