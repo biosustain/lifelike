@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, MISSING, field
 from http import HTTPStatus
-from typing import Union, Tuple, Optional, TypeVar, Generic
+from typing import Union, Tuple, Optional, TypeVar, Generic, overload, Any
 
 from neo4japp.utils.globals import transaction_id
 from neo4japp.utils.dataclass import TemplateDescriptor
@@ -24,7 +24,13 @@ class CauseDefaultingDescriptor(Generic[T]):
     def _prefixed_name(self):
         return self._prefix + self._name
 
-    def __get__(self, instance, owner):
+    @overload
+    def __get__(self, instance: None, owner: Any) -> T: ...
+
+    @overload
+    def __get__(self, instance: object, owner: Any) -> T: ...
+
+    def __get__(self, instance: Any, owner: Any) -> T:
         set_value = getattr(instance, self._prefixed_name, MISSING)
         if set_value is not MISSING:
             return set_value
@@ -83,7 +89,6 @@ class ServerException(Exception, BaseServerException):
     additional_msgs: Tuple[str, ...] = cause_field(default=tuple())
     fields: Optional[dict] = cause_field(default=None)
     code: HTTPStatus = cause_field(default=HTTPStatus.INTERNAL_SERVER_ERROR)
-    cause: Exception = field(init=False, default=None)
 
     @property
     def type(self):
@@ -142,6 +147,7 @@ class LMDBError(ServerException):
 class FileUploadError(ServerException):
     pass
 
+
 @dataclass(repr=False, eq=False, frozen=True)
 class ContentValidationError(ServerException):
     title: str = 'Content validation error'
@@ -156,19 +162,19 @@ class NotAuthorized(ServerException):
 @dataclass(repr=False, eq=False, frozen=True)
 class CannotCreateNewUser(ServerException):
     title: str = 'Cannot Create New User'
-    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+    code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class CannotCreateNewProject(ServerException):
     title: str = 'Cannot Create New Project'
-    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+    code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class FailedToUpdateUser(ServerException):
     title: str = 'Failed to Update User'
-    code: Union[HTTPStatus, int] = HTTPStatus.BAD_REQUEST
+    code: HTTPStatus = HTTPStatus.BAD_REQUEST
 
 
 @dataclass(repr=False, eq=False, frozen=True)
@@ -277,7 +283,7 @@ class AccessRequestRequiredError(ServerException):
         default='You have "$curr_access" access. Please request "$req_access" '
                 'access at minimum for this content.'
     )
-    code: Union[HTTPStatus, int] = HTTPStatus.FORBIDDEN
+    code: HTTPStatus = HTTPStatus.FORBIDDEN
 
 
 class GDownException(Exception):

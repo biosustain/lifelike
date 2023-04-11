@@ -50,7 +50,9 @@ class LMDBConnection(DatabaseConnection):
                 f'Failed to open LMDB environment in path {dbpath}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise ServerException(message=f'Encountered unexpected error connecting to LMDB.') from e
+            raise ServerException(
+                message=f'Encountered unexpected error connecting to LMDB.'
+            ) from e
 
         try:
             """
@@ -75,4 +77,6 @@ class LMDBConnection(DatabaseConnection):
                 f'Failed to open LMDB database named {dbname}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise ServerException(message=f'Encountered unexpected error connecting to LMDB.') from e
+            raise ServerException(
+                message=f'Encountered unexpected error connecting to LMDB.'
+            ) from e

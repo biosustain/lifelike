@@ -286,9 +286,11 @@ def reset_password(email: str):
         )
         random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
-        new_length = secrets.randbits(MAX_TEMP_PASS_LENGTH) % \
-                     (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) + \
-                     MIN_TEMP_PASS_LENGTH
+        new_length = (
+                secrets.randbits(MAX_TEMP_PASS_LENGTH) %
+                (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH) +
+                MIN_TEMP_PASS_LENGTH
+        )
         new_password = ''.join(
             random.sample(
                 [secrets.choice(RESET_PASSWORD_SYMBOLS)] +

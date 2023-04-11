@@ -250,13 +250,13 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 try:
                     end_of_match_idx = match.end(0)
                     first_char_after_match = content[
-                        end_of_match_idx : end_of_match_idx + 1
+                        end_of_match_idx: end_of_match_idx + 1
                     ]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
                             # new input = match + 50 chars after new line
                             match.group()
-                            + content[end_of_match_idx + 1 : end_of_match_idx + 1 + 50]
+                            + content[end_of_match_idx + 1: end_of_match_idx + 1 + 50]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -1632,7 +1632,7 @@ class GraphTypeProvider(BaseFileTypeProvider):
                             ContentValidationInfo(
                                 **{  # type: ignore
                                     **message.to_dict(),
-                                    'title': ContentValidationInfo.title,
+                                    'title': ContentValidationInfo.title,  # type: ignore
                                 }
                             )
                         )
@@ -1641,7 +1641,7 @@ class GraphTypeProvider(BaseFileTypeProvider):
                             ContentValidationWarning(
                                 **{  # type: ignore
                                     **message.to_dict(),
-                                    'title': ContentValidationWarning.title,
+                                    'title': ContentValidationWarning.title,  # type: ignore
                                 }
                             )
                         )

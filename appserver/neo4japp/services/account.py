@@ -26,6 +26,6 @@ class AccountService(RDBMSBaseDao):
                 raise NotAuthorized(message='You do not have enough privileges to delete a user.')
             elif user.id == admin.id:
                 raise ServerException(message='You cannot delete your own account.')
-        try:
+
         self.session.delete(user)
         self.commit_or_flush(commit_now)

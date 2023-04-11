@@ -257,7 +257,10 @@ def handle_generic_warning(code: int, ex: Warning):
         ).to_dict()
     )
 
-    return jsonify(WarningResponseSchema().dump(ex)), ex.code
+    try:
+        raise ServerWarning() from ex
+    except ServerException as newex:
+        return jsonify(WarningResponseSchema().dump(newex)), newex.code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):

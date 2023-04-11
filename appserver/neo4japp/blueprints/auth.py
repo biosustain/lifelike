@@ -262,8 +262,8 @@ def login():
                 raise ServerException(
                     message='The account has been suspended after too many failed login attempts.\
                     Please contact an administrator for help.',
-                code=HTTPStatus.LOCKED
-            )
+                    code=HTTPStatus.LOCKED
+                )
             elif user.check_password(data.get('password')):
                 current_app.logger.info(
                     UserEventLog(
