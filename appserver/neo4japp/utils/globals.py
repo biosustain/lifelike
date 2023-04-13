@@ -17,13 +17,13 @@ def warn(w: ServerWarning, *, cause: Exception = None):
         except ServerWarning as wwc:
             w = wwc
     if hasattr(g, 'warnings'):
-        g.warnings.append(w)
+        g.warnings.add(w)
     else:
         current_app.logging.warn(w)
 
 
 def inform(i: ServerInfo):
     if hasattr(g, 'info'):
-        g.info.append(i)
+        g.info.add(i)
     else:
         current_app.logging.info(i)
