@@ -31,6 +31,10 @@ class CauseDefaultingDescriptor(Generic[T]):
     def __get__(self, instance: object, owner: Any) -> T: ...
 
     def __get__(self, instance: Any, owner: Any) -> T:
+        # Dealing with frozen instances (once we read the value should be consider frozen)
+        if not hasattr(instance, self._prefixed_name):
+            object.__setattr__(instance, self._prefixed_name, MISSING)
+
         set_value = getattr(instance, self._prefixed_name, MISSING)
         if set_value is not MISSING:
             return set_value
@@ -43,7 +47,11 @@ class CauseDefaultingDescriptor(Generic[T]):
 
     def __set__(self, instance, value):
         if value is not self:
-            setattr(instance, self._prefixed_name, value)
+            # Dealing with frozen instances (once we read the value should be consider frozen)
+            if hasattr(instance, self._prefixed_name):
+                setattr(instance, self._prefixed_name, value)
+            else:
+                object.__setattr__(instance, self._prefixed_name, value)
 
     def __repr__(self):
         return f'<{type(self).__name__} {self._name}>'
