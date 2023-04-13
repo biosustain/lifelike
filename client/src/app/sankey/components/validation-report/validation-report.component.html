@@ -23,6 +23,6 @@
         >
           <strong *ngIf="error.title">{{error.title}}<br></strong>{{error.message}}
         </ngb-alert>
-        <span *ngIf="(!report.warnings) && (!report.errors)">File passes all sanity checks.</span>
+        <span *ngIf="!((report.warnings && report.earnings.length) || (report.errors && report.errors.length))">File passes all sanity checks.</span>
     </div>
 </div>
