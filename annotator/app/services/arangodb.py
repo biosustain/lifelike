@@ -36,3 +36,8 @@ def get_db(
 def execute_arango_query(db: StandardDatabase, query: str, **bind_vars) -> List[Any]:
     cursor = db.aql.execute(query, ttl=600, max_runtime=600, bind_vars=bind_vars)
     return [row for row in cursor]
+
+
+def create_db(sys_db: StandardDatabase, new_db_name: str):
+    if not sys_db.has_database(new_db_name):
+        sys_db.create_database(new_db_name)

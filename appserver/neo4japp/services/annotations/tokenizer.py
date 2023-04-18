@@ -1,5 +1,3 @@
-import re
-
 from string import ascii_letters, digits, punctuation, whitespace
 from typing import List, Dict
 

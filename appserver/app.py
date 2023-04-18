@@ -3,7 +3,6 @@ import click
 import copy
 import hashlib
 import importlib
-import io
 import json
 import logging
 import math
@@ -43,8 +42,6 @@ from neo4japp.models import AppUser
 from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.services.annotations.initializer import get_lmdb_service
-from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
@@ -410,25 +407,6 @@ def upload_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.upload_all(lmdb_dir_path)
-
-
-@app.cli.command('create-lmdb')
-@click.option('--file-type', type=str)
-def create_lmdb_files(file_type):
-    valid_values = {EntityType.ANATOMY.value,
-                    EntityType.CHEMICAL.value,
-                    EntityType.COMPOUND.value,
-                    EntityType.DISEASE.value,
-                    EntityType.FOOD.value,
-                    EntityType.GENE.value,
-                    EntityType.PHENOMENA.value,
-                    EntityType.PHENOTYPE.value,
-                    EntityType.PROTEIN.value,
-                    EntityType.SPECIES.value}
-    if file_type is not None and file_type not in valid_values:
-        raise ValueError(f'Only these valid values are accepted: {valid_values}')
-    service = get_lmdb_service()
-    service.create_lmdb_files(file_type)
 
 
 Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organism_id'])

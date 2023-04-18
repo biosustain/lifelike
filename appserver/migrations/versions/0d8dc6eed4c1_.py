@@ -52,8 +52,8 @@ def data_upgrades():
 
     stop_words_file = path.join(
         directory,
-        '../..',
-        'neo4japp/services/annotations/annotation_stop_words.txt')
+        '../',
+        'upgrade_data/annotation_stop_words.txt')
 
     session = Session(op.get_bind())
 

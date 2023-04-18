@@ -15,7 +15,6 @@ from sqlalchemy.orm.session import Session
 
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF
 from neo4japp.models import Files
-from neo4japp.services.annotations.constants import DEFAULT_ANNOTATION_CONFIGS
 from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
@@ -23,6 +22,16 @@ revision = '1e48a5fadb23'
 down_revision = 'c4a037faaf1a'
 branch_labels = None
 depends_on = None
+
+
+DEFAULT_ANNOTATION_CONFIGS = {
+    'exclude_references': True,
+    'annotation_methods': {
+        'Chemical': {'nlp': False, 'rules_based': True},
+        'Disease': {'nlp': False, 'rules_based': True},
+        'Gene': {'nlp': False, 'rules_based': True}
+    }
+}
 
 
 def upgrade():

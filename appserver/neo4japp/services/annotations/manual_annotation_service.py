@@ -1,9 +1,11 @@
+import uuid
+
 from arango.client import ArangoClient
 from datetime import datetime
 from flask import current_app
 from http import HTTPStatus
 from typing import List, Tuple
-import uuid
+
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -14,18 +16,38 @@ from neo4japp.services.arangodb import get_db, execute_arango_query
 from neo4japp.util import standardize_str
 from neo4japp.utils.logger import EventLog
 
-from .exceptions import AnnotationLimitationError
-from .tokenizer import Tokenizer
 from .constants import (
+    EntityType,
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
     MAX_GENE_WORD_LENGTH,
     MAX_FOOD_WORD_LENGTH, COMMON_WORDS, WORD_CHECK_REGEX, MIN_ENTITY_LENGTH
 )
-from .data_transfer_objects.dto import PDFWord
+from .data_transfer_objects import PDFWord
+from .exceptions import AnnotationLimitationError
+from .tokenizer import Tokenizer
 from .utils.common import has_center_point
+from .utils.graph_queries import (
+    get_chemical_global_inclusion_exist_query,
+    get_compound_global_inclusion_exist_query,
+    get_create_chemical_global_inclusion_query,
+    get_create_compound_global_inclusion_query,
+    get_create_gene_global_inclusion_query,
+    get_create_***ARANGO_DB_NAME***_global_inclusion_query,
+    get_create_mesh_global_inclusion_query,
+    get_create_protein_global_inclusion_query,
+    get_create_species_global_inclusion_query,
+    get_delete_global_inclusion_query,
+    get_docs_by_ids_query,
+    get_gene_global_inclusion_exist_query,
+    get_***ARANGO_DB_NAME***_global_inclusion_exist_query,
+    get_node_labels_and_relationship_query,
+    get_mesh_global_inclusion_exist_query,
+    get_pathway_global_inclusion_exist_query,
+    get_protein_global_inclusion_exist_query,
+    get_species_global_inclusion_exist_query,
+)
 from .utils.parsing import parse_content
-from .utils.graph_queries import *
 
 
 class ManualAnnotationService:
@@ -375,9 +397,8 @@ class ManualAnnotationService:
                 except BrokenPipeError:
                     raise
                 except Exception:
-                    query = query_builder(["MATCH (n) WHERE id(n) = $node_id", f"REMOVE n{s}"])
                     current_app.logger.error(
-                        f'Failed executing cypher: {query}.\n' +
+                        f'Failed executing AQL: {query}.\n' +
                         f'PARAMETERS: <node_id: {result["node_id"]}>.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
@@ -582,6 +603,12 @@ class ManualAnnotationService:
                     'file_uuid': file_hash_id,
                     'hyperlinks': hyperlinks,
                 }
+
+
+
+
+
+
 
                 queries = {
                     EntityType.ANATOMY.value: (get_create_mesh_global_inclusion_query, mesh_params),

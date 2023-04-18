@@ -1,6 +1,6 @@
 from arango.client import ArangoClient
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from ..logs import get_annotator_extras_obj, get_logger
 from ..utils import normalize_str
@@ -31,7 +31,6 @@ from .utils.graph_queries import (
     get_gene_to_organism_query,
     get_global_inclusions_by_type_query,
     get_***ARANGO_DB_NAME***_global_inclusions_by_type_query,
-    get_organisms_from_gene_ids_query,
     get_protein_to_organism_query,
 )
 
@@ -198,14 +197,6 @@ def get_entity_inclusions(arango_client, inclusions: List[dict]) -> GlobalInclus
         included_entities=inclusion_dicts[EntityType.ENTITY.value],
         included_lab_samples=inclusion_dicts[EntityType.LAB_SAMPLE.value],
         included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value]
-    )
-
-
-def get_organisms_from_gene_ids(arango_client: ArangoClient, gene_ids: Dict[Any, int]):
-    return execute_arango_query(
-        db=get_db(arango_client),
-        query=get_organisms_from_gene_ids_query(),
-        gene_ids=list(gene_ids.keys())
     )
 
 

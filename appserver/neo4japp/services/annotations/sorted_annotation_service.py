@@ -3,7 +3,7 @@ from typing import Dict, Tuple, Union, TypedDict, List
 import numpy as np
 from neo4japp.models import Files
 from neo4japp.services.annotations import ManualAnnotationService
-from pandas import DataFrame, MultiIndex
+from pandas import DataFrame
 from scipy.stats import mannwhitneyu
 import pandas as pd
 

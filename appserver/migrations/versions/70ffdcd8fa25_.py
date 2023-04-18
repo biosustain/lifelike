@@ -7,6 +7,7 @@ Create Date: 2021-07-09 20:12:43.183377
 """
 from alembic import context
 from alembic import op
+from enum import Enum
 import sqlalchemy as sa
 
 from sqlalchemy.sql import table, column
@@ -16,13 +17,23 @@ from sqlalchemy.orm.session import Session
 from migrations.utils import window_chunk
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files, GlobalList
-from neo4japp.services.annotations.constants import DatabaseType
 
 # revision identifiers, used by Alembic.
 revision = '70ffdcd8fa25'
 down_revision = '6a8b231f65b9'
 branch_labels = None
 depends_on = None
+
+
+class DatabaseType(Enum):
+    CHEBI = 'ChEBI'
+    CUSTOM = 'Custom'
+    MESH = 'MeSH'
+    UNIPROT = 'UniProt'
+    NCBI_GENE = 'NCBI Gene'
+    NCBI_TAXONOMY = 'NCBI Taxonomy'
+    BIOCYC = 'BioCyc'
+    PUBCHEM = 'PubChem'
 
 
 def upgrade():

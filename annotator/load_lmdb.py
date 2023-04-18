@@ -1,6 +1,6 @@
 import os
 
-from .lmdb_manager import AzureStorageProvider, LMDBManager
+from lmdb_manager.manager import AzureStorageProvider, LMDBManager
 
 if __name__ == '__main__':
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')

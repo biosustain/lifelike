@@ -2,10 +2,8 @@ from dataclasses import dataclass
 from http import HTTPStatus
 
 from neo4japp.exceptions import AnnotationError
-from .constants import \
-    MAX_ENTITY_WORD_LENGTH, \
-    MAX_GENE_WORD_LENGTH, \
-    MAX_FOOD_WORD_LENGTH
+
+from .constants import MAX_ENTITY_WORD_LENGTH, MAX_GENE_WORD_LENGTH, MAX_FOOD_WORD_LENGTH
 
 
 @dataclass

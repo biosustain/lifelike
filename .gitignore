@@ -63,8 +63,6 @@ outputs/
 # LMDB files
 appserver/neo4japp/services/annotations/**/*.mdb
 appserver/neo4japp/services/annotations/**/*.mdb.old
-appserver/neo4japp/services/annotations/datasets/**/*.csv
-appserver/neo4japp/services/annotations/datasets/**/*.tsv
 annotator/app/services/**/*.mdb
 annotator/app/services/**/*.mdb.old
 annotator/app/services/datasets/**/*.csv

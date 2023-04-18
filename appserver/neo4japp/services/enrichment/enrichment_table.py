@@ -1,32 +1,30 @@
+import time
+
 from arango.client import ArangoClient
 from flask import current_app
-from sqlalchemy.orm import Session as SQLAlchemySession
-import time
 from typing import List
 from urllib.parse import urlencode
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain, LogEventType
 from neo4japp.exceptions import AnnotationError
-from neo4japp.services.arangodb import execute_arango_query, get_db
-from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.util import compact
 from neo4japp.utils.logger import EventLog
 
+from .data_transfer_objects.dto import EnrichmentCellTextMapping
 
-class EnrichmentTableService(RDBMSBaseDao):
-    def __init__(self, session: SQLAlchemySession):
-        super().__init__(session=session)
 
-    def create_annotation_mappings(self, enrichment: dict) -> dict:
+class EnrichmentTableService():
+    def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
             validate_enrichment_table(enrichment)
-        except Exception as e:
+        except Exception:
             raise AnnotationError(
                 title='Could not annotate enrichment table',
                 message='Could not annotate enrichment table, '
                         'there was a problem validating the format.'
-            ) from e
+            )
 
         # got here so passed validation
         data = enrichment['result']
@@ -95,12 +93,11 @@ class EnrichmentTableService(RDBMSBaseDao):
                                 'domain': k,
                                 'label': 'Function'
                             })
-            except KeyError as e:
+            except KeyError:
                 current_app.logger.error(
                     f'Missing key when creating enrichment table text row/column mapping.',
                     extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
                 )
-                # TODO warning
                 continue
 
         for text in cell_texts:
@@ -111,11 +108,8 @@ class EnrichmentTableService(RDBMSBaseDao):
                 text_index_map.append((total_index - 1, text))
                 combined_text += ' '  # to separate prev text
 
-        return {
-            'text': combined_text,
-            'text_index_map': text_index_map,
-            'cell_texts': cell_texts
-        }
+        return EnrichmentCellTextMapping(
+            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
 
 
 def match_ncbi_genes(

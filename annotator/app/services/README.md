@@ -23,17 +23,14 @@ NLP: https://github.com/biosustain/nlp-api
 ## Creating LMDB Files
 The LMDB files are created from `.tsv` data files, which can be found on GCloud storage bucket: `annotation-data-files/used-in-annotations-pipeline`.
 
-To create them, make sure the `.tsv` files are in `neo4japp/services/annotations/datasets/`, then start the `appserver` container and run the command:
+To create them, make sure the `.tsv` files are in `app/services/datasets`, then start the `annotator` container and run the command:
 ```bash
 # create all lmdb files
-docker-compose exec appserver flask create-lmdb
-# create specific files, acceptable inputs:
-# {'Protein', 'Disease', 'Compound', 'Phenotype', 'Pathway', 'Phenomena', 'Chemical', 'Species', 'Anatomy', 'Gene', 'Food'}
-docker-compose exec appserver flask create-lmdb --file-type Food
+docker-compose exec annotator python create_lmdb.py
 ```
-Once the files are created, the version number needs to be updated in `neo4japp/lmdb_manager/lmdb_config.json`. This file is used during the deployment to pull the latest LMDB files. The LMDB files will then need to be uploaded to Azure in the correct folder, if a new version then make a new folder for it. The path on Azure is `***ARANGO_DB_NAME*** > File shares > lmdb`, there you will see `v#` folders which is where you will put the LMDB files.
+Once the files are created, the version number needs to be updated in `lmdb_manager/lmdb_config.json`. This file is used during the deployment to pull the latest LMDB files. The LMDB files will then need to be uploaded to Azure in the correct folder, if a new version then make a new folder for it. The path on Azure is `***ARANGO_DB_NAME*** > File shares > lmdb`, there you will see `v#` folders which is where you will put the LMDB files.
 
-I'm not sure if every function in `neo4japp/lmdb_manager/manager.py` is used (it was written by David B. and used with Ansible), but it does look overly complicated to me. It will probably need to be refactored - there are also JIRA cards to verify it actually works, since we rarely update our LMDB files.
+I'm not sure if every function in `lmdb_manager/manager.py` is used (it was written by David B. and used with Ansible), but it does look overly complicated to me. It will probably need to be refactored - there are also JIRA cards to verify it actually works, since we rarely update our LMDB files.
 
 ## Architecture
 ![](annotation-pipeline.png)
@@ -41,7 +38,7 @@ I'm not sure if every function in `neo4japp/lmdb_manager/manager.py` is used (it
 The `Annotation` and `Manual Annotation` processes are within the `appserver` container; there is a JIRA card to separate them out in the future if needed. The `PDF/Text Parser` process is the PDF parser itself, and is a separate docker container written in Java. The `NLP` service is also deployed separately.
 
 ## The Pipeline
-Because the pipeline involves many steps, it is abstracted away into `class Pipeline` in `neo4japp/services/annotations/pipeline.py`. This is to ensure the steps are called in the correct order.
+Because the pipeline involves many steps, it is abstracted away into `class Pipeline` in `app/services/pipeline.py`. This is to ensure the steps are called in the correct order.
 
 There might be a better way to do this, but due to time constraints it was done this way.
 
@@ -50,7 +47,6 @@ There might be a better way to do this, but due to time constraints it was done 
 text, parsed = Pipeline.parse(file.mime_type, file_id=file.id, exclude_references=configs['exclude_references'])
 pipeline = Pipeline(
   {
-    'adbs': get_annotation_db_service,
     'aers': get_recognition_service,
     'tkner': get_annotation_tokenizer,
     'as': get_annotation_service,
@@ -92,7 +88,7 @@ The code that uses LMDB to identify entities is in `class EntityRecognitionServi
 ### Handling Overlapping Words
 Sometimes there are multi-words that share a common word, e.g with the sentence `"foo boo bad"`, it is possible that `"foo boo"` and `"boo bad"` are two entities - these are overlapping words.
 
-Since each word in a PDF document is sequential, we can use their positional index as `intervals` and use an `Interval Tree` to find overlaps. Once overlaps are found, we choose based on entity precedence or if they're the same entities, then we choose the longer term. The entity precedence can be found in `neo4japp/services/annotations/constants.py`, look for `ENTITY_TYPE_PRECEDENCE`.
+Since each word in a PDF document is sequential, we can use their positional index as `intervals` and use an `Interval Tree` to find overlaps. Once overlaps are found, we choose based on entity precedence or if they're the same entities, then we choose the longer term. The entity precedence can be found in `app/services/constants.py`, look for `ENTITY_TYPE_PRECEDENCE`.
 
 There were plans to drop this, and allow the user to choose on the UI which words they want, so we might need to remove the interval tree in the future.
 
@@ -101,7 +97,7 @@ The enrichment table goes through the same annotation pipeline, but with some ex
 
 We want each cell to be counted as a separate paper, but we cannot just send an HTTP request to the PDF parser for each cell - this would take too long. So instead, the text in each cell is combined together into one large text string. With this, we only need to send one HTTP request.
 
-Because we combined the cell text together, we need to split them up again later. The mapping used to help do this is created by the `class EnrichmentTableService`. The code to split it back up can be found in `neo4japp/blueprints/annotations.py`, a small snippet is below.
+Because we combined the cell text together, we need to split them up again later. The mapping used to help do this is created by the `class EnrichmentTableService`. The code to split it back up can be found in `app/annotate.py`, a small snippet is below.
 
 ```python
 for index, cell_text in enriched.text_index_map:

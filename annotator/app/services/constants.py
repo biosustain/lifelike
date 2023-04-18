@@ -22,7 +22,6 @@ HOMO_SAPIENS_TAX_ID = '9606'
 
 ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
-PDF_CHARACTER_SPACING_THRESHOLD = .325
 
 ABBREVIATION_WORD_LENGTH = {3, 4}
 MAX_ABBREVIATION_WORD_LENGTH = 4
@@ -74,10 +73,6 @@ COMMON_WORDS = set.union(*[
     COMMON_FOUR_LETTER_WORDS,
     COMMON_MISC_WORDS,
 ])
-
-GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
-
-BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
 
 class EntityType(Enumd):
@@ -155,11 +150,6 @@ class DatabaseType(Enum):
     NCBI_TAXONOMY = 'NCBI Taxonomy'
     BIOCYC = 'BioCyc'
     PUBCHEM = 'PubChem'
-
-
-class ManualAnnotationType(Enum):
-    INCLUSION = 'inclusion'
-    EXCLUSION = 'exclusion'
 
 
 # these links are used in annotations and custom annotations

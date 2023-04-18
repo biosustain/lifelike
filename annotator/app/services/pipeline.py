@@ -6,9 +6,9 @@ from typing import Dict, List, Optional, Tuple
 from ..logs import get_annotator_extras_obj, get_logger
 from ..utils import normalize_str
 
-from .arangodb import create_arango_client
 
 from .annotation_graph_service import get_entity_inclusions
+from .arangodb import create_arango_client
 from .constants import PARSER_PDF_ENDPOINT, PARSER_TEXT_ENDPOINT, SPECIES_LMDB, EntityType
 from .data_transfer_objects import (
     GlobalExclusions,
@@ -21,6 +21,7 @@ from .utils.nlp import predict
 from .utils.parsing import get_parser_args_for_file, get_parser_args_for_text, request_parse
 
 logger = get_logger()
+
 
 class Pipeline:
     """Pipeline of steps involved in annotation of PDFs, enrichment tables, etc.
@@ -83,7 +84,7 @@ class Pipeline:
             raise AnnotationError('Unable to Annotate', 'No text provided.')
         return request_parse(url=PARSER_TEXT_ENDPOINT, data=get_parser_args_for_text(text))
 
-
+    @classmethod
     def get_entity_exclusions(
         self,
         global_exclusions: List[dict],
