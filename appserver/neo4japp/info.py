@@ -3,7 +3,7 @@ from http import HTTPStatus
 from typing import Union, Optional
 
 from neo4japp.message import ServerMessage
-from neo4japp.utils.transaction import get_transaction_id
+from neo4japp.utils.transaction_id import get_transaction_id
 
 
 @dataclass(repr=False)
@@ -20,8 +20,6 @@ class ServerInfo(ServerMessage):
     message: Optional[str] = "Code executed with following informations"
     fields: Optional[dict] = None
     code: Union[HTTPStatus, int] = 104
-    stacktrace: Optional[str] = None
-    version: Optional[str] = None
 
     @property
     def type(self):
