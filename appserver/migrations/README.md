@@ -5,7 +5,7 @@
 If you are running the app for the first time after cloning the repository, then nothing is needed except running the app via docker.
 
 ```bash
-docker compose build --no-cache; docker compose up -d
+docker compose -f docker-compose.dev.yml up --wait
 ```
 
 Once the app is running, the database should be seeded with the latest changes. If you however have an outdated or corrupted `appserver/migrations` folder, then delete that folder with `rm -rf appserver/migrations` then copy the latest from the repo before running the above command.
@@ -15,13 +15,13 @@ Once the app is running, the database should be seeded with the latest changes. 
 When new changes to the database models occur, they need to be added to the migration scripts. A new migration script can be created by running the command.
 
 ```bash
-docker compose exec appserver bin/migrate-db
+docker compose -f docker-compose.dev.yml run --name migrate --rm appserver bin/migrate-db
 ```
 
 This will create a new migration script in `appserver/migrations/versions` based on the changes. In order for the new changes to be applied to the database, run the command.
 
 ```bash
-docker compose exec appserver bin/migrate-db --upgrade
+docker compose -f docker-compose.dev.yml run --name upgrade --rm appserver bin/migrate-db --upgrade
 ```
 
 ## Making changes to database data without schema changes
@@ -29,7 +29,7 @@ docker compose exec appserver bin/migrate-db --upgrade
 If you need to generate an alembic revision for data migration, but don't have any schema changes, run:
 
 ```bash
-docker compose exec appserver flask db revision
+docker compose -f docker-compose.dev.yml run --name revision --rm appserver flask db revision
 ```
 
 This will generate a new revision with no schema changes.
@@ -70,8 +70,8 @@ op.add_column('class_a', sa.Column('test',
 If for some reason you want to upgrade or downgrade to a specific version, run the command.
 
 ```bash
-docker compose exec appserver bin/migrate-db --upgrade --version=<revision_number>
-docker compose exec appserver bin/migrate-db --downgrade --version=<revision_number>
+docker compose -f docker-compose.dev.yml run --name upgrade --rm appserver bin/migrate-db --upgrade --version=<revision_number>
+docker compose -f docker-compose.dev.yml run --name downgrade --rm appserver bin/migrate-db --downgrade --version=<revision_number>
 ```
 
 The revision number can be found in the migration script. If you are going to be jumping to a specific version, be careful to not make changes on that revision. Instead, go back to the most recent version, make changes to either undo a previous change or make new changes. If undoing, then make a new migration script, then make new changes from the newly made migration.

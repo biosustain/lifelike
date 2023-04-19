@@ -6,3 +6,6 @@ COPY config/${CONFIG_FILE} /usr/share/filebeat/filebeat.yml
 USER ***ARANGO_USERNAME***
 RUN chown ***ARANGO_USERNAME***:filebeat /usr/share/filebeat/filebeat.yml
 USER filebeat
+
+# https://github.com/elastic/beats/issues/12665
+HEALTHCHECK CMD ps aux | grep '[f]ilebeat' || exit 1

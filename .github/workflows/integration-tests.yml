@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DOCKER_COMPOSE_CMD: docker compose -f docker-compose.ci-test.yml
+      DOCKER_COMPOSE_CMD: docker compose -f docker-compose.test.yml
 
     steps:
       - name: Cancel Previous Runs
@@ -46,12 +46,10 @@ jobs:
 
       - name: Bring up containers and wait for webserver to be ready
         timeout-minutes: 10
-        run: |-
-          ${{ env.DOCKER_COMPOSE_CMD }} up -d
-          ${{ env.DOCKER_COMPOSE_CMD }} exec -T appserver bin/wait-for-flask
+        run: ${{ env.DOCKER_COMPOSE_CMD }} up appserver --wait --timestamps --no-build
 
       - name: Run PyTest
-        run: ${{ env.DOCKER_COMPOSE_CMD }} exec -T appserver pytest tests -p no:warnings
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run appserver pytest tests -p no:warnings
 
       - name: Show Docker logs
         if: ${{ failure() }}

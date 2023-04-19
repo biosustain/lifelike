@@ -1,0 +1,91 @@
+# CI Test
+version: "3.9"
+name: '***ARANGO_DB_NAME***-testing'
+
+x-appserver: &appserver
+  environment:
+    - ELASTIC_FILE_INDEX_ID=file_ci
+
+services:
+  dev-setup:
+    extends:
+      file: docker-compose.local.yml
+      service: appserver
+    restart: on-failure:3 # elastic is sometimes down during start
+    entrypoint: ./bin/dev-db-setup
+
+  appserver:
+    extends:
+      file: docker-compose.local.yml
+      service: appserver
+    <<: *appserver
+    depends_on:
+      dev-setup:
+        condition: service_completed_successfully
+
+  worker:
+    extends:
+      file: docker-compose.local.yml
+      service: worker
+    <<: *appserver
+
+  statistical-enrichment:
+    extends:
+      file: docker-compose.local.yml
+      service: statistical-enrichment
+
+  pdfparser:
+    extends:
+      file: docker-compose.local.yml
+      service: pdfparser
+
+  pgdatabase:
+    extends:
+      file: docker-compose.local.yml
+      service: pgdatabase
+    restart: on-failure
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  graphdatabase:
+    extends:
+      file: docker-compose.local.yml
+      service: graphdatabase
+    image: neo4j:4.4-community
+    restart: on-failure
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+
+  arangodb:
+    extends:
+      file: docker-compose.local.yml
+      service: arangodb
+    image: arangodb:3.9
+    environment:
+      ARANGO_ROOT_PASSWORD: password
+      LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***
+
+  redis:
+    extends:
+      file: docker-compose.local.yml
+      service: redis
+    image: redis:7-alpine
+    command: redis-server --requirepass password
+
+  elasticsearch:
+    extends:
+      file: docker-compose.local.yml
+      service: elasticsearch
+    image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+
+volumes:
+  lmdb:
+
+networks:
+  frontend:
+  backend:
+  elastic:

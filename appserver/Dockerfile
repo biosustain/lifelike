@@ -41,3 +41,5 @@ USER $N4J_USER
 ENV MAX_ALLOWED_LOGIN_FAILURES 6
 
 CMD [ "bin/startup.sh" ]
+
+HEALTHCHECK CMD curl -f http://localhost:5000/meta/ || exit 1

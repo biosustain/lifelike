@@ -32,3 +32,5 @@ COPY --chown=$UID:$GID . .
 USER $_USER
 
 CMD [ "bin/startup.sh" ]
+
+HEALTHCHECK CMD curl -f http://localhost:5010/healthz || exit 1

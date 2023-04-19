@@ -15,3 +15,5 @@ RUN echo 'y' | elasticsearch-plugin install ingest-attachment
 CMD ["/usr/local/bin/docker-entrypoint.sh", "eswrapper"]
 RUN mkdir -p /usr/share/elasticsearch/data
 RUN chmod a+rw /usr/share/elasticsearch/data/
+
+HEALTHCHECK CMD curl -f http://localhost:9200 || exit 1
