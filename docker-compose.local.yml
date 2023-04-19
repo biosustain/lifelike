@@ -75,8 +75,6 @@ x-appserver: &appserver
       condition: service_healthy
     arangodb:
       condition: service_healthy
-    statistical-enrichment:
-      condition: service_healthy
 
 services:
   appserver:
