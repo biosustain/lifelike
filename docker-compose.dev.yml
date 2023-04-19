@@ -4,6 +4,9 @@ name: '***ARANGO_DB_NAME***-development'
 x-appserver: &appserver
   env_file:
     - azure-secrets.env
+  depends_on:
+    statistical-enrichment:
+      condition: service_healthy
 
 services:
   dev-setup:

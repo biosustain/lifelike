@@ -29,11 +29,6 @@ services:
       service: worker
     <<: *appserver
 
-  statistical-enrichment:
-    extends:
-      file: docker-compose.local.yml
-      service: statistical-enrichment
-
   pdfparser:
     extends:
       file: docker-compose.local.yml
