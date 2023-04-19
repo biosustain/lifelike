@@ -48,6 +48,8 @@ COPY *.json browserslist ./
 RUN sed -i "s/__VERSION__/${CLIENT_VERSION}/" src/environments/environment.ts
 RUN yarn build --configuration=$ANGULAR_CONFIG --aot --output-path=dist
 
+HEALTHCHECK CMD curl -f http://localhost:4200 || exit 1
+
 # ========================================
 # Runtime stage - NGINX
 # ========================================
@@ -91,3 +93,5 @@ COPY --from=landing-build /app/dist ./
 COPY --from=angular-build /app/dist ./
 
 EXPOSE 80
+
+HEALTHCHECK CMD curl -f http://localhost:80 || exit 1

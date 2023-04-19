@@ -1,0 +1,129 @@
+version: "3.9"
+name: '***ARANGO_DB_NAME***-development'
+
+services:
+  dev-setup:
+    extends:
+      file: docker-compose.local.yml
+      service: appserver
+    restart: on-failure:3 # elastic is sometimes down during start
+    entrypoint: ./bin/dev-db-setup
+
+  appserver:
+    extends:
+      file: docker-compose.local.yml
+      service: appserver
+    ports:
+      - "5000:5000"
+#    depends_on:
+#      dev-setup:
+#        condition: service_completed_successfully
+
+  worker:
+    extends:
+      file: docker-compose.local.yml
+      service: worker
+
+  webserver:
+    extends:
+      file: docker-compose.local.yml
+      service: webserver
+    ports:
+      - "4200:4200"
+
+  statistical-enrichment:
+    extends:
+      file: docker-compose.local.yml
+      service: statistical-enrichment
+    # Allow debugging w/ IPython or pdb
+    stdin_open: true
+    tty: true
+    # End debugging section
+    ports:
+      - "5010:5010"
+
+  cache-invalidator:
+    extends:
+      file: docker-compose.local.yml
+      service: cache-invalidator
+
+  pdfparser:
+    extends:
+      file: docker-compose.local.yml
+      service: pdfparser
+    ports:
+      - "7600:7600"
+
+  pgdatabase:
+    extends:
+      file: docker-compose.local.yml
+      service: pgdatabase
+    ports:
+      - "5431:5432"
+
+  graphdatabase:
+    extends:
+      file: docker-compose.local.yml
+      service: graphdatabase
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  arangodb:
+    extends:
+      file: docker-compose.local.yml
+      service: arangodb
+    ports:
+      - 8529:8529
+
+  redis:
+    extends:
+      file: docker-compose.local.yml
+      service: redis
+    ports:
+      - "6379:6379"
+
+  elasticsearch:
+    extends:
+      file: docker-compose.local.yml
+      service: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  #  Middlewares
+  kibana:
+    extends:
+      file: docker-compose.local.yml
+      service: kibana
+    ports:
+      - 5601:5601
+
+  logstash:
+    extends:
+      file: docker-compose.local.yml
+      service: logstash
+    ports:
+      - 9600:9600
+    expose:
+      - 5000
+      - 5044
+
+  metricbeat:
+    extends:
+      file: docker-compose.local.yml
+      service: metricbeat
+
+  filebeat:
+    extends:
+      file: docker-compose.local.yml
+      service: filebeat
+
+
+volumes:
+  lmdb:
+
+networks:
+  frontend:
+  backend:
+  elastic:

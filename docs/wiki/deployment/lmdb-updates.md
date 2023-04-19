@@ -22,8 +22,8 @@ We load LMDB files (data.mdb) into our application, which means our LMDB databas
 
     - We need to do this since Azure Blob Storage does not generate checksums automatically when someone uploads a file, but we need the checksums in order for our automated LMDB update script to pull the correct file versions.
     - **Other Notes:** This action requires access to Azure, so be sure you have access.
-
-5. After the LMDB files are loaded into Azure Blob Storage, the Ansible playbook `deploy-gcloud.yml` will automatically run `docker compose exec -d -T appserver flask load-lmdb` to pull the LMDB files into the proper location for the Flask application.
+    - 
+5. After the LMDB files are loaded into Azure Blob Storage, the Ansible playbook `deploy-gcloud.yml` will automatically run `docker compose -f docker-compose.dev.yml exec -d -T appserver flask load-lmdb` to pull the LMDB files into the proper location for the Flask application.
 
 ## Helpful Notes
 

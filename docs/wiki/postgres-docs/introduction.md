@@ -15,7 +15,7 @@ Optionally commit the diagram to the repository (in `docs/dev`).
 1. Access PostgreSQL:
 
     ```sh
-    docker compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
+    docker compose -f docker-compose.dev.yml exec pgdatabase psql -U postgres -h pgdatabase -d postgres
     ```
 
 2. Drop the current schema:
@@ -30,5 +30,5 @@ Optionally commit the diagram to the repository (in `docs/dev`).
 4. Load the SQL dump:
 
     ```sh
-    docker compose exec -T pgdatabase psql -U postgres < $dump_file
+    docker compose -f docker-compose.dev.yml exec -T pgdatabase psql -U postgres < $dump_file
     ```

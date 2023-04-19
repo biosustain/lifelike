@@ -5,3 +5,5 @@ COPY metricbeat.yml /usr/share/metricbeat/metricbeat.yml
 USER ***ARANGO_USERNAME***
 RUN chown ***ARANGO_USERNAME***:metricbeat /usr/share/metricbeat/metricbeat.yml
 USER metricbeat
+
+HEALTHCHECK CMD metricbeat test output

@@ -9,7 +9,7 @@ We manage dependencies through _pipenv_. Dependencies are stored in `Pipfile` bu
 Use the following command to install dependencies:
 
 ```sh
-docker compose exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
+docker compose -f docker-compose.dev.yml exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
 ```
 
 Note: The `--python` argument is only required if there is a mismatch between the Python version in the Docker container and the Python version in the Pipfile, although it doesn't hurt to add it.
@@ -21,7 +21,7 @@ If two people add dependencies on different branches, you will run into a merge 
 To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
 
 ```sh
-docker compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
+docker compose -f docker-compose.dev.yml exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
 ```
 
 ## PostgreSQL Migrations
@@ -35,13 +35,13 @@ Alembic migrations are of a tree structure, so each migration has a "prior" migr
 By default, the database is empty, so you will have to run all the existing migrations to bring your database up to date using the following command:
 
 ```sh
-docker compose exec appserver flask db upgrade
+docker compose -f docker-compose.dev.yml exec appserver flask db upgrade
 ```
 
 or
 
 ```sh
-docker compose run appserver flask db upgrade
+docker compose -f docker-compose.dev.yml run appserver flask db upgrade
 ```
 
 to run the migration without starting the flask application. Remember that this will create a single-use container that should be removed with `docker volume prune` or `make docker-stop`.
@@ -52,7 +52,7 @@ Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` 
 While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data (from the specified file), run:
 
 ```sh
-docker compose exec appserver flask seed fixtures/seed.json
+docker compose -f docker-compose.dev.yml exec appserver flask seed fixtures/seed.json
 ```
 
 ### Extending Seed Data
@@ -64,7 +64,7 @@ Since seed files contain the content data of the example files, there are pretty
 -   Run `append_seed` CLI command, specifying seed file and list of filenames to append:
 
 ```shell
-docker compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
+docker compose -f docker-compose.dev.yml exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
 ```
 
 If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`.
@@ -83,13 +83,13 @@ ERROR [***ARANGO_USERNAME***] Error: Target database is not up to date.
 Once you are up-to-date, you can have Alembic generate a migration script for you by automatically inspecting the current schema structure as described in the code and comparing it to the one in the database. Run the following command to create a new migration script in `appserver/migrations`:
 
 ```sh
-docker compose exec appserver flask db migrate -m "Describe the change here"
+docker compose -f docker-compose.dev.yml exec appserver flask db migrate -m "Describe the change here"
 ```
 
 If you don't want an auto-generated migration file, you can run this command instead:
 
 ```sh
-docker compose exec appserver flask db revision -m "Describe the change here"
+docker compose -f docker-compose.dev.yml exec appserver flask db revision -m "Describe the change here"
 ```
 
 #### Don't Forget About Data Migrations
@@ -137,7 +137,7 @@ for chunk in window_chunk(users, 25):
 Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
 
 ```sh
-docker compose exec appserver flask db upgrade -x data_migrate=True
+docker compose -f docker-compose.dev.yml exec appserver flask db upgrade -x data_migrate=True
 ```
 
 When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the _restore from history_ functionality will not work.
@@ -153,7 +153,7 @@ ERROR [***ARANGO_USERNAME***] Error: Multiple head revisions are present for giv
 If you want to see which two (or more) migrations are conflicting, use this command:
 
 ```sh
-docker compose exec appserver flask db heads
+docker compose -f docker-compose.dev.yml exec appserver flask db heads
 ```
 
 #### Option 1: Merging Heads
@@ -161,7 +161,7 @@ docker compose exec appserver flask db heads
 If both heads can be merged together because they don't conflict, you can simply run the following command to automatically create another migration that merges the two forks together:
 
 ```sh
-docker compose exec appserver flask db merge -m "Describe the merge here"
+docker compose -f docker-compose.dev.yml exec appserver flask db merge -m "Describe the merge here"
 ```
 
 #### Option 2: 'Rebasing' Heads
@@ -190,7 +190,7 @@ pdb.set_trace()
 Restart the application with the following commands:
 
 ```bash
-docker compose down && docker compose up -d
+docker compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up --wait
 # seed if needed...
 docker attach <service_name> # e.g n4j-appserver
 ```
@@ -204,7 +204,7 @@ To exit out of attach mode, can do either `Ctrl+C` to exit and kill the containe
 To run the unit tests for Flask, use the following commands when Flask is running:
 
 ```sh
-docker compose exec appserver pytest
+docker compose -f docker-compose.test.yml run appserver pytest
 ```
 
 To run a specific test file you can:
@@ -212,25 +212,25 @@ To run a specific test file you can:
 -   Provide path to the file
 
 ```sh
-docker compose exec appserver pytest tests/api/filesystem/object_test.py
+docker compose -f docker-compose.test.yml run appserver pytest tests/api/filesystem/object_test.py
 ```
 
 -   Use `-k` flag with filename:
 
 ```sh
-docker compose exec appserver pytest  -k 'object_test.py'
+docker compose -f docker-compose.test.yml run appserver pytest  -k 'object_test.py'
 ```
 
 To run a specific test:
 
 ```sh
-docker compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
+docker compose -f docker-compose.test.yml run appserver pytest tests/api/filesystem/object_test.py::test_patch_file
 ```
 
 or
 
 ```sh
-docker compose exec appserver pytest -k 'test_patch_file'
+docker compose -f docker-compose.test.yml run appserver pytest -k 'test_patch_file'
 ```
 
 Some additional flags that may make tests easier to read include:
@@ -244,7 +244,7 @@ Some additional flags that may make tests easier to read include:
 Together:
 
 ```sh
-docker compose exec appserver pytest --disable-pytest-warnings --capture=no --verbose --tb=native
+docker compose -f docker-compose.test.yml run appserver pytest --disable-pytest-warnings --capture=no --verbose --tb=native
 ```
 
 ## Lint Checks
@@ -252,6 +252,7 @@ docker compose exec appserver pytest --disable-pytest-warnings --capture=no --ve
 ### Running Checks
 
 ```sh
-docker compose exec appserver pycodestyle .
-docker compose exec appserver mypy .
+docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-lint -rm appserver pycodestyle .
+docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-lint -rm appserver mypy .
 ```
+

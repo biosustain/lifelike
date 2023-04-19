@@ -22,11 +22,11 @@ rm -rf ./db/data/databases/graph.db
 Then, build the app with docker compose:
 
 ```bash
-docker compose -p ***ARANGO_DB_NAME***-test up --build
+docker compose -f docker-compose.test.yml up --build
 ```
 
 To run `pytest` inside the appserver Docker container, run this command:
 
 ```bash
-docker compose -p ***ARANGO_DB_NAME***-test run -rm appserver pytest tests
+docker compose -f docker-compose.test.yml run --name test --rm appserver pytest tests
 ```
