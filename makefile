@@ -28,15 +28,15 @@ githooks:
 	git config --local core.hooksPath .githooks/
 
 docker-build:
-	docker compose build
+	docker compose -f docker-compose.dev.yml build
 
 # Runs enough containers for the application to function
 docker-run: azure-secrets container-login lmdb
-	docker compose up -d
+	docker compose -f docker-compose.dev.yml up webserver --wait
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
 docker-run-all: azure-secrets container-login lmdb
-	docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
+	docker compose -f docker-compose.dev.yml up --wait
 
 docker-stop:
 	docker ps -aq | xargs docker stop
@@ -44,12 +44,12 @@ docker-stop:
 	docker volume prune
 
 docker-flask-seed:
-	docker compose exec appserver flask seed
+	docker compose -f docker-compose.dev.yml run --name seed --rm appserver flask seed
 
 clean-postgres:
 	# Quick command to drop the data in localhost postgres database
 	# Usually used to seed database from cloud backups
-	docker compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	docker compose -f docker-compose.dev.yml exec pgdatabase psql -U postgres -h pgdatabase -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 clean-pyc:
 	find . -name '*.pyc' -delete
