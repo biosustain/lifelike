@@ -18,8 +18,6 @@ x-appserver: &appserver
     file: docker-compose.prod.yml
     service: appserver
   build: ./appserver
-  env_file:
-    - azure-secrets.env
   environment:
     # Log Services
     - FORMAT_AS_JSON=false
