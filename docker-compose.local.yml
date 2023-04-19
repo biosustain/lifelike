@@ -101,6 +101,9 @@ services:
       - backend
 
   webserver:
+    extends:
+      file: docker-compose.prod.yml
+      service: webserver
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -118,6 +121,9 @@ services:
         condition: service_started
 
   statistical-enrichment:
+    extends:
+      file: docker-compose.prod.yml
+      service: statistical-enrichment
     build: ./statistical-enrichment
     environment:
       # Flask
@@ -149,6 +155,9 @@ services:
         condition: service_healthy
 
   cache-invalidator:
+    extends:
+      file: docker-compose.prod.yml
+      service: cache-invalidator
     build: ./cache-invalidator
     environment:
       - LOG_LEVEL=debug
@@ -314,6 +323,9 @@ services:
 
   filebeat:
     user: ***ARANGO_USERNAME***
+    extends:
+      file: docker-compose.prod.yml
+      service: filebeat
     build:
       context: filebeat/
     volumes:
