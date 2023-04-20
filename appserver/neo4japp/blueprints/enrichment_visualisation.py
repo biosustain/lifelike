@@ -5,8 +5,9 @@ import requests
 
 from flask import Blueprint, Response, current_app, request
 
-from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
+from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import config
+from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 
 bp = Blueprint(
     'enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation'
@@ -84,3 +85,17 @@ def forward_request():
 @wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()
+
+@bp.route('/enrich-with-context', methods=['POST'])
+def enrich_context():
+    data = request.get_json()
+    organism = data.get('organism', '')
+    term = data.get('term', '')
+    response = ChatGPT.Completion.create(
+      model="text-davinci-003",
+      prompt=f'What is the ralationship between ${organism} and ${term}?',
+      temperature=0,
+      max_tokens=200
+    )
+    for choice in response.get('choices'):
+        return {"result": choice.get('text').strip()}

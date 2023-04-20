@@ -9,7 +9,12 @@ import {
   SortEvent,
   SortDirection,
 } from 'app/shared/directives/table-sortable-header.directive';
-import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
+import {
+  EnrichmentVisualisationService,
+  EnrichWithGOTermsResult,
+} from 'app/enrichment/services/enrichment-visualisation.service';
+import { ExtendedMap, ExtendedWeakMap } from '../../../../../shared/utils/types';
+import { shareReplay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-table-complete',
@@ -27,9 +32,23 @@ export class TableCompleteComponent implements OnChanges {
 
   @ViewChildren(SortableTableHeaderDirective) headers: QueryList<SortableTableHeaderDirective>;
 
-  constructor(public service: DataService) {
+  constructor(
+    readonly enrichmentService: EnrichmentVisualisationService,
+    public service: DataService,
+  ) {
     this.data$ = service.data$;
     this.total$ = service.total$;
+  }
+
+  termContextExplanations = new ExtendedMap();
+
+  getTermContextExplanation(term) {
+    return this.termContextExplanations.getSetLazily(
+      term,
+      key => this.enrichmentService.enrichWithContext(key).pipe(
+        shareReplay(1)
+      )
+    );
   }
 
   ngOnChanges({ show, showMore, data }: SimpleChanges) {
