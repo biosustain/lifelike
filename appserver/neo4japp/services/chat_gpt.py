@@ -1,9 +1,7 @@
 import openai
-from cachetools import Cache, cachedmethod, cached
+from cachetools import Cache, cached
 
 from neo4japp.services.rcache import RedisCache
-
-openai.api_key = "***OPENAI_API_KEY***"
 
 class ChatGPT:
     class Completion(openai.Completion):
