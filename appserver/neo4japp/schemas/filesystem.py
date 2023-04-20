@@ -302,6 +302,14 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("More than one source of content cannot be specified.")
 
 
+class BulkFileUploadRequestSchema(CamelCaseSchema):
+    annotation_configs = fields.Nested(AnnotationConfigurations)
+    fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
+    files = fields.List(fields.Raw(type='file', required=False), required=False)
+    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    public = fields.Boolean(default=False)
+
+
 class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
     export_linked = fields.Boolean()

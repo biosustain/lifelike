@@ -72,6 +72,7 @@ from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
     BulkFileRequestSchema,
     BulkFileUpdateRequestSchema,
+    BulkFileUploadRequestSchema,
     FileBackupCreateRequestSchema,
     FileCreateRequestSchema,
     FileExportRequestSchema,
@@ -88,15 +89,16 @@ from neo4japp.schemas.filesystem import (
     FileVersionHistorySchema,
     MultipleFileResponseSchema
 )
+from neo4japp.services.annotations.annotator_interface import send_pdf_annotation_request
+from neo4japp.services.annotations.globals_service import get_global_exclusion_annotations
 from neo4japp.services.file_types.exports import ExportFormatError
+from neo4japp.services.file_types.providers import BiocTypeProvider, DirectoryTypeProvider
 from neo4japp.utils import FileContentBuffer
-from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.globals import warn
 from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
-from neo4japp.services.file_types.providers import BiocTypeProvider
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -660,6 +662,86 @@ class FilesystemBaseView(MethodView):
         return missing
 
 
+    def get_content_from_params(self, params: dict) -> Tuple[FileContentBuffer, Optional[str]]:
+        url = params.get('content_url')
+        buffer = params.get('content_value')
+
+        # Fetch from URL
+        if url is not None:
+            try:
+                response_buffer = FileContentBuffer(max_size=self.file_max_size)
+                # Note that in the future, we may wish to upload files of many different types
+                # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
+                # now it is the expectation.
+                if urllib.parse.urlparse(url).netloc == 'drive.google.com':
+                    buffer = gdown.download(url, response_buffer, fuzzy=True)
+                    if buffer is None:
+                        # currently gdown fails silently - wrote path for it
+                        # https://github.com/wkentaro/gdown/pull/244
+                        # if they do not accept we should consider ussing fork
+                        raise GDownException()
+                    file_type_service = get_file_type_service()
+                    if file_type_service.detect_mime_type(buffer) != FILE_MIME_TYPE_PDF:
+                        raise UnsupportedMediaTypeError()
+                else:
+                    buffer = read_url(
+                        url=url,
+                        headers={
+                            'User-Agent': self.url_fetch_user_agent,
+                            'Accept': FILE_MIME_TYPE_PDF,
+                        },
+                        buffer=response_buffer,
+                        max_length=self.file_max_size,
+                        prefer_direct_downloads=True,
+                        timeout=self.url_fetch_timeout
+                    )
+            except UnsupportedMediaTypeError as e:
+                # The server did not respect our request for a PDF and did not throw a 406, so
+                # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. Please make sure your URL ends ' +
+                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
+                            'problem persists, please download the file to your computer from ' +
+                            'the original website and upload the file from your device.',
+                    code=e.code
+                ) from e
+            except (HTTPError, GDownException) as http_err:
+                # Should be raised because of the 'Accept' content type header above.
+                if http_err.code == 406:
+                    raise FileUploadError(
+                        title='File Upload Error',
+                        message='Your file could not be uploaded. Please make sure your URL ends ' +
+                                'with .pdf. For example, https://www.example.com/file.pdf. If ' +
+                                'the problem persists, please download the file to your ' +
+                                'computer from the original website and upload the file from ' +
+                                'your device.',
+                    ) from http_err
+                else:
+                    # An error occurred that we were not expecting.
+                    raise FileUploadError(
+                        title='File Upload Error',
+                        message='Your file could not be uploaded due to an unexpected error, ' +
+                                'please try again. If the problem persists, please download the ' +
+                                'file to your computer from the original website and upload the ' +
+                                'file from your device.'
+                    ) from http_err
+            except (ContentTooLongError, OverflowError) as e:
+                raise FileUploadError(
+                    title='File Upload Error',
+                    message='Your file could not be uploaded. The requested file is too large. ' +
+                            'Please limit file uploads to less than 315MB.',
+                ) from e
+
+            return buffer, url
+
+        # Fetch from upload
+        elif buffer is not None:
+            return FileContentBuffer(stream=buffer), None
+        else:
+            return FileContentBuffer(), None
+
+
 class FileHierarchyView(FilesystemBaseView):
 
     @use_args(FileHierarchyRequestSchema)
@@ -746,7 +828,6 @@ class FileHierarchyView(FilesystemBaseView):
 
 
 class FileListView(FilesystemBaseView):
-
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def post(self, params):
         """Endpoint to create a new file or to clone a file into a new one."""
@@ -824,7 +905,7 @@ class FileListView(FilesystemBaseView):
 
         # Create operation
         else:
-            buffer, url = self._get_content_from_params(params)
+            buffer, url = self.get_content_from_params(params)
 
             # Figure out file size
             size = buffer.size
@@ -1094,84 +1175,166 @@ class FileListView(FilesystemBaseView):
             missing=[],
         )))
 
-    def _get_content_from_params(self, params: dict) -> Tuple[FileContentBuffer, Optional[str]]:
-        url = params.get('content_url')
-        buffer = params.get('content_value')
 
-        # Fetch from URL
-        if url is not None:
+class FileBulkUploadView(FilesystemBaseView):
+    @use_args(BulkFileUploadRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
+    def post(self, params):
+        """Endpoint to upload many files at once."""
+
+        current_user = g.current_user
+        file_type_service = get_file_type_service()
+
+        results = {}
+        global_exclusions = get_global_exclusion_annotations()
+        for upload in params['files']:
+            current_app.logger.info(f'Processing file {upload.filename}...')
             try:
-                response_buffer = FileContentBuffer(max_size=self.file_max_size)
-                # Note that in the future, we may wish to upload files of many different types
-                # from URL. Limiting ourselves to merely PDFs is a little short-sighted, but for
-                # now it is the expectation.
-                if urllib.parse.urlparse(url).netloc == 'drive.google.com':
-                    buffer = gdown.download(url, response_buffer, fuzzy=True)
-                    if buffer is None:
-                        # currently gdown fails silently - wrote path for it
-                        # https://github.com/wkentaro/gdown/pull/244
-                        # if they do not accept we should consider ussing fork
-                        raise GDownException()
-                    file_type_service = get_file_type_service()
-                    if file_type_service.detect_mime_type(buffer) != FILE_MIME_TYPE_PDF:
-                        raise UnsupportedMediaTypeError()
-                else:
-                    buffer = read_url(
-                        url=url,
-                        headers={
-                            'User-Agent': self.url_fetch_user_agent,
-                            'Accept': FILE_MIME_TYPE_PDF,
-                        },
-                        buffer=response_buffer,
-                        max_length=self.file_max_size,
-                        prefer_direct_downloads=True,
-                        timeout=self.url_fetch_timeout
+                file = Files()
+                file.filename = upload.filename
+                file.user = current_user
+                file.creator = current_user
+                file.modifier = current_user
+                file.public = params.get('public', False)
+                file.upload_url = None
+                file.mime_type = 'application/pdf'
+
+                buffer = FileContentBuffer(stream=upload)
+
+                # ========================================
+                # Resolve parent
+                # ========================================
+
+                try:
+                    parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
+                    self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
+                except RecordNotFound as e:
+                    # Rewrite the error to make more sense
+                    raise ValidationError(
+                        "The requested parent object could not be found.",
+                        "parent_hash_id"
+                    ) from e
+
+                if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
+                    raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
+                                        f"not a folder. It is a file, and you cannot make files "
+                                        f"become a child of another file.", "parent_hash_id")
+
+                # TODO: Check max hierarchy depth
+
+                file.parent = parent
+
+                assert file.parent is not None
+
+                # ========================================
+                # Resolve file content
+                # ========================================
+
+                # Figure out file size
+                size = buffer.size
+
+                # Check max file size
+                if size > self.file_max_size:
+                    raise ValidationError(
+                        'Your file could not be processed because it is too large.')
+
+                # Get the provider based on what we know now
+                provider = file_type_service.get(file)
+
+                # Check if the user can even upload this type of file
+                if not provider.can_create():
+                    raise ValidationError(f"The provided file type is not accepted.")
+
+                # Validate the content
+                try:
+                    provider.validate_content(
+                        buffer,
+                        log_status_messages=True
                     )
-            except UnsupportedMediaTypeError as e:
-                # The server did not respect our request for a PDF and did not throw a 406, so
-                # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
-                raise FileUploadError(
-                    title='File Upload Error',
-                    message='Your file could not be uploaded. Please make sure your URL ends ' +
-                            'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
-                            'problem persists, please download the file to your computer from ' +
-                            'the original website and upload the file from your device.',
-                    code=e.code
-                ) from e
-            except (HTTPError, GDownException) as http_err:
-                # Should be raised because of the 'Accept' content type header above.
-                if http_err.code == 406:
-                    raise FileUploadError(
-                        title='File Upload Error',
-                        message='Your file could not be uploaded. Please make sure your URL ends ' +
-                                'with .pdf. For example, https://www.example.com/file.pdf. If ' +
-                                'the problem persists, please download the file to your ' +
-                                'computer from the original website and upload the file from ' +
-                                'your device.',
-                    ) from http_err
+                except ValueError as e:
+                    raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+                except HandledException:
+                    pass
                 else:
-                    # An error occurred that we were not expecting.
-                    raise FileUploadError(
-                        title='File Upload Error',
-                        message='Your file could not be uploaded due to an unexpected error, ' +
-                                'please try again. If the problem persists, please download the ' +
-                                'file to your computer from the original website and upload the ' +
-                                'file from your device.'
-                    ) from http_err
-            except (ContentTooLongError, OverflowError) as e:
-                raise FileUploadError(
-                    title='File Upload Error',
-                    message='Your file could not be uploaded. The requested file is too large. ' +
-                            'Please limit file uploads to less than 315MB.',
-                ) from e
+                    try:
+                        # Get the DOI only if content could be validated
+                        file.doi = provider.extract_doi(buffer)
+                    except Warning as w:
+                        warn(w)
 
-            return buffer, url
+                # Save the file content if there's any
+                if size:
+                    file.content_id = FileContent.get_or_create(buffer)
+                    try:
+                        buffer.close()
+                    except Exception:
+                        pass
 
-        # Fetch from upload
-        elif buffer is not None:
-            return FileContentBuffer(stream=buffer), None
-        else:
-            return FileContentBuffer(), None
+                # ========================================
+                # Annotation options
+                # ========================================
+
+                if params.get('fallback_organism', None):
+                    file.organism_name = params['fallback_organism']['organism_name']
+                    file.organism_synonym = params['fallback_organism']['synonym']
+                    file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+
+                if params.get('annotation_configs'):
+                    file.annotation_configs = params['annotation_configs']
+
+                # ========================================
+                # Commit and filename conflict resolution
+                # ========================================
+
+                # Filenames could conflict, so we may need to generate a new filename
+                # Trial 1: First attempt
+                # Trial 2: Try adding (N+1) to the filename and try again
+                # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
+                # Trial 4: Give up
+                # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
+                for trial in range(4):
+                    if 1 <= trial <= 2:  # Try adding (N+1)
+                        try:
+                            file.filename = file.generate_non_conflicting_filename()
+                        except ValueError as e:
+                            raise ValidationError(
+                                'Filename conflicts with an existing file in the same folder.',
+                                "filename"
+                            ) from e
+                    elif trial == 3:  # Give up
+                        raise ValidationError(
+                            'Filename conflicts with an existing file in the same folder.',
+                            "filename"
+                        )
+
+                    try:
+                        with db.session.begin_nested():
+                            db.session.add(file)
+                    except IntegrityError:
+                        # Warning: this could catch some other integrity error
+                        pass
+                    else:
+                        break
+
+                db.session.commit()
+                # rollback in case of error?
+            except Exception as e:
+                current_app.logger.error(f'File {upload.filename} could not be processed due to an error.')
+                results[upload.filename] = 'failed'
+            else:
+                current_app.logger.info(f'File {upload.filename} successfully processed.')
+                results[upload.filename] = 'succeeded'
+
+            # Once the file is safely stored in postgres, send an annotation request for it
+            send_pdf_annotation_request(
+                file.id,
+                global_exclusions,
+                [],
+                [],
+                file.organism_synonym,
+                file.organism_taxonomy_id,
+                file.annotation_configs,
+            )
+        return jsonify(results=results)
 
 
 class FileSearchView(FilesystemBaseView):
@@ -1860,6 +2023,7 @@ class FileStarUpdateView(FilesystemBaseView):
 
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('objects/bulk-upload', view_func=FileBulkUploadView.as_view('file_bulk_upload'))
 bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
 bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))

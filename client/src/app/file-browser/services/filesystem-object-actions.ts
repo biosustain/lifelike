@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { clone, first, values, chain } from 'lodash-es';
+import { clone, first } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -28,7 +28,7 @@ import { ObjectVersion } from '../models/object-version';
 import { ObjectExportDialogComponent, ObjectExportDialogValue, } from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
-import { ObjectCreationService, CreateResultMapping } from './object-creation.service';
+import { ObjectCreationService } from './object-creation.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
@@ -110,6 +110,16 @@ export class FilesystemObjectActions {
       title: 'Upload File',
       promptUpload: true,
     });
+  }
+
+  /**
+   * Open a dialog to bulk upload files.
+   * @param parent the folder to put the new file in
+   */
+  openBulkUploadDialog(parent: FilesystemObject): Promise<any> {
+    const object = new FilesystemObject();
+    object.parent = parent;
+    return this.objectCreationService.openBulkCreateDialog(object, 'Bulk Upload Files');
   }
 
   /**

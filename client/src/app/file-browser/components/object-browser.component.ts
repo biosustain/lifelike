@@ -163,6 +163,15 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     });
   }
 
+  openBulkUploadDialog(parent: FilesystemObject) {
+    return this.actions.openBulkUploadDialog(parent).then(() => {
+      this.snackBar.open(`Files successfully uploaded.`, 'Close', {
+        duration: 5000,
+      });
+      return this.refresh();
+    });
+  }
+
   reannotate(targets: FilesystemObject[]) {
     return this.actions.reannotate(targets).then(() => this.refresh());
   }

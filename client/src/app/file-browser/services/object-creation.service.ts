@@ -10,6 +10,7 @@ import {
   Subject,
   concat,
   EMPTY,
+  BehaviorSubject,
 } from 'rxjs';
 import {
   bufferWhen,
@@ -50,6 +51,7 @@ import {
   SingleResult,
   WarningResponse,
 } from 'app/shared/schemas/common';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
 import {
   Progress,
   ProgressArguments,
@@ -67,6 +69,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
+import { ObjectBulkUploadDialogComponent } from '../components/dialog/object-bulk-upload-dialog.component'
 
 interface CreationResult {
   result?: FilesystemObject;
@@ -514,6 +517,31 @@ export class ObjectCreationService {
     return dialogRef.result;
   }
 
+  /**
+   * Open a dialog to create a new file or folder.
+   * @param target the base object to start from
+   * @param options options for the dialog
+   */
+  openBulkCreateDialog(target: FilesystemObject, title: string): Promise<any> {
+    const dialogRef = this.modalService.open(ObjectBulkUploadDialogComponent);
+    dialogRef.componentInstance.title = title || 'Bulk Upload Files';
+    dialogRef.componentInstance.parentHashId = target.parent.hashId;
+    dialogRef.componentInstance.accept = ((dialogValue) => {
+      const formData = objectToMixedFormData({
+        public: dialogValue.public,
+        parentHashId: dialogValue.parentHashId,
+        fallbackOrganism: dialogValue.fallbackOrganism,
+        annotationConfigs: dialogValue.annotationConfigs,
+      });
+      dialogValue.files.forEach((file: File) => formData.append('files', file, file.name))
+      const progressDialogRef = this.progressDialog.display({
+        title: `Uploading files...`,
+        progressObservables: [new BehaviorSubject<Progress>(new Progress({}))],
+      });
+      return this.filesystemService.bulkCreate(formData).toPromise().then(() => progressDialogRef.close());
+    });
+    return dialogRef.result
+  }
 }
 
 export interface CreateDialogOptions {

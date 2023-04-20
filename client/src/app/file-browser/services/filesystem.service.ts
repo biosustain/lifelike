@@ -119,6 +119,18 @@ export class FilesystemService {
     };
   }
 
+  bulkCreate(data: FormData) {
+    return this.http.post<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/bulk-upload`,
+      data,
+      {
+        observe: 'events',
+        reportProgress: true,
+        responseType: 'json',
+      },
+    );
+  }
+
   /**
    * Access file metadata and record it as file opening action
    * @param hashId - file hash id

@@ -1,4 +1,3 @@
-import asyncio
 import csv
 import hashlib
 import io
@@ -57,6 +56,8 @@ from ..schemas.common import PaginatedRequestSchema
 from ..schemas.enrichment import EnrichmentTableSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
+from ..services.annotations.annotator_interface import send_pdf_annotation_request, send_et_annotation_request
+from ..services.annotations.globals_service import get_global_exclusion_annotations
 from ..services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
@@ -429,14 +430,8 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         results = {}
+        global_exclusions = get_global_exclusion_annotations()
         for file in files:
-            global_exclusions = [
-                d.annotation for d in db.session.query(
-                    GlobalList.annotation
-                ).filter(
-                    and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
-                )
-            ]
             local_exclusions = [
                 exc for exc in file.excluded_annotations
                 if not exc.get('meta', {}).get('excludeGlobally', False)
@@ -444,19 +439,14 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
             local_inclusions = file.custom_annotations
 
             try:
-                asyncio.run(
-                    send(
-                        body={
-                            'file_id': file.id,
-                            'global_exclusions': global_exclusions,
-                            'local_exclusions': local_exclusions,
-                            'local_inclusions': local_inclusions,
-                            'organism_synonym': override_organism.get('synonym', None),
-                            'organism_taxonomy_id': override_organism.get('tax_id', None),
-                            'annotation_configs': override_annotation_configs
-                        },
-                        queue=current_app.config.get('ANNOTATOR_QUEUE')
-                    )
+                send_pdf_annotation_request(
+                    file.id,
+                    global_exclusions,
+                    local_exclusions,
+                    local_inclusions,
+                    override_organism.get('synonym', None),
+                    override_organism.get('tax_id', None),
+                    override_annotation_configs
                 )
             except Exception as e:
                 results[file.hash_id] =  {
@@ -498,14 +488,8 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         results = {}
+        global_exclusions = get_global_exclusion_annotations()
         for file in files:
-            global_exclusions = [
-                d.annotation for d in db.session.query(
-                    GlobalList.annotation
-                ).filter(
-                    and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
-                )
-            ]
             local_exclusions = [
                 exc for exc in file.excluded_annotations
                 if not exc.get('meta', {}).get('excludeGlobally', False)
@@ -529,21 +513,16 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
             enrichment_mapping = enrich_service.create_annotation_mappings(raw_enrichment_data)
 
             try:
-                asyncio.run(
-                    send(
-                        body={
-                            'file_id': file.id,
-                            'enrichment_mapping': enrichment_mapping,
-                            'raw_enrichment_data': raw_enrichment_data,
-                            'global_exclusions': global_exclusions,
-                            'local_exclusions': local_exclusions,
-                            'local_inclusions': local_inclusions,
-                            'organism_synonym': override_organism.get('synonym', None),
-                            'organism_taxonomy_id': override_organism.get('tax_id', None),
-                            'annotation_configs': override_annotation_configs
-                        },
-                        queue=current_app.config.get('ANNOTATOR_QUEUE')
-                    )
+                send_et_annotation_request(
+                    file.id,
+                    enrichment_mapping,
+                    raw_enrichment_data,
+                    global_exclusions,
+                    local_exclusions,
+                    local_inclusions,
+                    override_organism.get('synonym', None),
+                    override_organism.get('tax_id', None),
+                    override_annotation_configs
                 )
             except Exception as e:
                 results[file.hash_id] =  {

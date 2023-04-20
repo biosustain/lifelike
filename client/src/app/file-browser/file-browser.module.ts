@@ -40,6 +40,7 @@ import { FilesystemObjectDataProvider } from './providers/filesystem-object-data
 import { ObjectViewerComponent } from './components/object-viewer.component';
 import { BrowserRecentListComponent } from './components/browser/browser-recent-list.component';
 import { ObjectUploadDialogComponent } from './components/dialog/object-upload-dialog.component';
+import { ObjectBulkUploadDialogComponent } from './components/dialog/object-bulk-upload-dialog.component';
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 import { StarredBrowserComponent } from './components/starred-browser.component';
@@ -77,6 +78,7 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectReannotateResultsDialogComponent,
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
+    ObjectBulkUploadDialogComponent,
     BrowserPinnedListComponent,
     ObjectTileDeckComponent
   ],
