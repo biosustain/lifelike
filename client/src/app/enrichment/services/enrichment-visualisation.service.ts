@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Observable, combineLatest } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { map, mergeMap, tap } from 'rxjs/operators';
 
 import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -11,6 +11,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
+import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
   'p-value': any;
@@ -93,6 +94,16 @@ export class EnrichmentVisualisationService {
       {geneNames, organism: `${taxID}/${organism}`, analysis},
     ).pipe(
       map((data: any) => data.map(addressPrecisionMistake))
+    );
+  }
+
+  enrichWithContext(term): Observable<string> {
+    const {organism} = this.enrichmentDocument;
+    return this.http.post<SingleResult<string>>(
+      `/api/enrichment-visualisation/enrich-with-context`,
+      {organism, term},
+    ).pipe(
+      map(({result}) => result)
     );
   }
 }
