@@ -49,7 +49,19 @@
       <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
         <td>{{ row.goId }}</td>
         <th scope="row">
-          <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight>
+              <ng-template #tooltipContent>
+                <ng-template #loading>
+                  <i class="fa fa-spinner fa-spin"></i>
+                </ng-template>
+                <ng-container
+                  *ngIf="getTermContextExplanation(row.goTerm) | async as termContextExplanation else loading">
+                  {{termContextExplanation}}
+                </ng-container>
+              </ng-template>
+              <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"
+                             [ngbTooltip]="tooltipContent"
+                             container="body"
+                             placement="top bottom right left"></ngb-highlight>
         </th>
         <td>
           <span [className]="'gene-list'">
