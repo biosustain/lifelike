@@ -13,6 +13,7 @@ import { ExplainService } from 'app/shared/services/explain.service';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
+import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
   goTerm: string;
@@ -102,5 +103,15 @@ export class EnrichmentVisualisationService {
   enrichWithContext(term): Observable<string> {
     const { organism } = this.enrichmentDocument;
     return this.explainService.relationship([organism, term]);
+  }
+
+  enrichWithContext(term): Observable<string> {
+    const {organism} = this.enrichmentDocument;
+    return this.http.post<SingleResult<string>>(
+      `/api/enrichment-visualisation/enrich-with-context`,
+      {organism, term},
+    ).pipe(
+      map(({result}) => result)
+    );
   }
 }
