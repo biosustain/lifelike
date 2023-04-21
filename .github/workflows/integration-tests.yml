@@ -44,9 +44,9 @@ jobs:
           ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver mypy .
           ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver pycodestyle .
 
-      - name: Bring up containers and wait for webserver to be ready
+      - name: Prepare containers
         timeout-minutes: 10
-        run: ${{ env.DOCKER_COMPOSE_CMD }} up dev-setup --wait --timestamps --quiet-pull
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run dev-setup --wait --timestamps --quiet-pull
 
       - name: Run PyTest
         run: ${{ env.DOCKER_COMPOSE_CMD }} run appserver pytest tests -p no:warnings
