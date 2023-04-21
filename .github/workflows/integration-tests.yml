@@ -46,10 +46,10 @@ jobs:
 
       - name: Prepare containers
         timeout-minutes: 10
-        run: ${{ env.DOCKER_COMPOSE_CMD }} run --timestamps --quiet-pull dev-setup
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run --quiet-pull dev-setup
 
       - name: Run PyTest
-        run: ${{ env.DOCKER_COMPOSE_CMD }} run --timestamps --quiet-pull appserver pytest tests -p no:warnings
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run --quiet-pull appserver pytest tests -p no:warnings
 
       - name: Show Docker logs
         if: ${{ failure() }}
