@@ -77,6 +77,7 @@ rq = "==1.10.1"
 python-arango = "==7.5.2"
 gdown = "==4.6.0"
 openai = "*"
+types-cachetools = "*"
 
 [requires]
 python_version = "3.9"
