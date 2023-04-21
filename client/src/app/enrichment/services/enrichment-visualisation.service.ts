@@ -12,11 +12,10 @@ import { SingleResult } from 'app/shared/schemas/common';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
-import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
-  goTerm: string;
-  goId: string;
+  'goTerm': string;
+  'goId': string;
   'p-value': any;
   goLabel: string[];
   geneNames: string[];
