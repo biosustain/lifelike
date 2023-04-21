@@ -10,7 +10,7 @@ import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
-import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
+import { ExtendedMap } from 'app/shared/utils/types';
 
 
 @Component({
@@ -39,7 +39,7 @@ export class TableCompleteComponent implements OnChanges {
 
   termContextExplanations = new ExtendedMap<string, Observable<string>>();
 
-  getTermContextExplanation(term) {
+  getTermContextExplanation(term: string) {
     return this.termContextExplanations.getSetLazily(
       term,
       key => this.enrichmentService.enrichWithContext(key).pipe(
