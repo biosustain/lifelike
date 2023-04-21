@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 import { DataService } from 'app/shared/services/table.service';
 import { SortableTableHeaderDirective, SortEvent, SortDirection } from 'app/shared/directives/table-sortable-header.directive';
@@ -9,8 +10,7 @@ import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
-import { ExtendedMap, ExtendedWeakMap } from '../../../../../shared/utils/types';
-import { shareReplay } from 'rxjs/operators';
+import { ExtendedMap } from 'app/shared/utils/types';
 
 
 @Component({
@@ -37,9 +37,9 @@ export class TableCompleteComponent implements OnChanges {
     this.total$ = service.total$;
   }
 
-  termContextExplanations = new ExtendedMap();
+  termContextExplanations = new ExtendedMap<string, Observable<string>>();
 
-  getTermContextExplanation(term) {
+  getTermContextExplanation(term: string) {
     return this.termContextExplanations.getSetLazily(
       term,
       key => this.enrichmentService.enrichWithContext(key).pipe(
