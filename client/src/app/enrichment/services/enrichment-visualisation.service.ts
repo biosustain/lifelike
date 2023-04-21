@@ -8,12 +8,14 @@ import { map, mergeMap, tap } from 'rxjs/operators';
 import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { SingleResult } from 'app/shared/schemas/common';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
-import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
+  'goTerm': string;
+  'goId': string;
   'p-value': any;
   goLabel: string[];
   geneNames: string[];
