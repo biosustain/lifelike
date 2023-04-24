@@ -1,5 +1,7 @@
 import marshmallow.validate
 import marshmallow_dataclass
+
+from enum import Enum
 from marshmallow import fields, validates_schema, ValidationError
 
 from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH
@@ -302,12 +304,19 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("More than one source of content cannot be specified.")
 
 
+class CopyBehavior(Enum):
+    Rename = 'Rename'
+    Skip = 'Skip'
+    Overwrite = 'Overwrite'
+
+
 class BulkFileUploadRequestSchema(CamelCaseSchema):
     annotation_configs = fields.Nested(AnnotationConfigurations)
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     files = fields.List(fields.Raw(type='file', required=False), required=False)
     parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     public = fields.Boolean(default=False)
+    copy_behavior = fields.Enum(enum=CopyBehavior, default=CopyBehavior.Rename)
 
 
 class FileExportRequestSchema(CamelCaseSchema):

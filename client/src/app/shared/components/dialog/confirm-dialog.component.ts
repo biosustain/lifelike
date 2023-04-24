@@ -10,6 +10,7 @@ import { CommonDialogComponent } from './common-dialog.component';
   templateUrl: './confirm-dialog.component.html',
 })
 export class ConfirmDialogComponent extends CommonDialogComponent<boolean> {
+  @Input() title = 'Confirm';
   @Input() message: string;
   value: boolean;
 

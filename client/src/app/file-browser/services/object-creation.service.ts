@@ -529,6 +529,7 @@ export class ObjectCreationService {
     dialogRef.componentInstance.accept = ((dialogValue) => {
       const formData = objectToMixedFormData({
         public: dialogValue.public,
+        copyBehavior: dialogValue.copyBehavior,
         parentHashId: dialogValue.parentHashId,
         fallbackOrganism: dialogValue.fallbackOrganism,
         annotationConfigs: dialogValue.annotationConfigs,
@@ -538,7 +539,11 @@ export class ObjectCreationService {
         title: `Uploading files...`,
         progressObservables: [new BehaviorSubject<Progress>(new Progress({}))],
       });
-      return this.filesystemService.bulkCreate(formData).toPromise().then(() => progressDialogRef.close());
+      return this.filesystemService.bulkCreate(formData).toPromise().then(
+        () => progressDialogRef.close(),
+        // Just close the dialog for now if the promise is rejected
+        () => progressDialogRef.close(),
+      );
     });
     return dialogRef.result
   }

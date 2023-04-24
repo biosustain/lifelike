@@ -73,6 +73,7 @@ from neo4japp.schemas.filesystem import (
     BulkFileRequestSchema,
     BulkFileUpdateRequestSchema,
     BulkFileUploadRequestSchema,
+    CopyBehavior,
     FileBackupCreateRequestSchema,
     FileCreateRequestSchema,
     FileExportRequestSchema,
@@ -1225,6 +1226,56 @@ class FileBulkUploadView(FilesystemBaseView):
 
                 assert file.parent is not None
 
+
+                # ========================================
+                # Filename conflict resolution
+                # ========================================
+
+                # We do this after finding the parent so we can compare with existing files without extra work
+
+                copy_behavior = params.get('copy_behavior', CopyBehavior.Rename)
+
+                if copy_behavior == CopyBehavior.Rename:
+                    # Filenames could conflict, so we may need to generate a new filename
+                    # Trial 1: First attempt
+                    # Trial 2: Try adding (N+1) to the filename and try again
+                    # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
+                    # Trial 4: Give up
+                    # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
+                    for trial in range(4):
+                        if 1 <= trial <= 2:  # Try adding (N+1)
+                            try:
+                                file.filename = file.generate_non_conflicting_filename()
+                                current_app.logger.info(f'New file had conflicting name, using {file.filename} instead.')
+                                break
+                            except ValueError as e:
+                                raise ValidationError(
+                                    'Filename conflicts with an existing file in the same folder.',
+                                    "filename"
+                                ) from e
+                        elif trial == 3:  # Give up
+                            raise ValidationError(
+                                'Filename conflicts with an existing file in the same folder.',
+                                "filename"
+                            )
+                else:
+                    existing_file: Files = db.session.query(
+                        Files
+                    ).filter(
+                        and_(
+                            Files.parent_id == file.parent.id,
+                            Files.filename == file.filename
+                        )
+                    ).one_or_none()
+                    if copy_behavior == CopyBehavior.Skip and existing_file is not None:
+                        # If the filename already exists in this folder, skip to the next file
+                        # without committing this one
+                        current_app.logger.info(f'File with name "{file.filename}" already exists in folder with id {file.parent.id}. Skipping.')
+                        continue
+                    elif copy_behavior == CopyBehavior.Overwrite and existing_file is not None:
+                        current_app.logger.info(f'File with name "{file.filename}" already exists in folder with id {file.parent.id}. Overwriting.')
+                        existing_file.delete()
+
                 # ========================================
                 # Resolve file content
                 # ========================================
@@ -1282,58 +1333,29 @@ class FileBulkUploadView(FilesystemBaseView):
                     file.annotation_configs = params['annotation_configs']
 
                 # ========================================
-                # Commit and filename conflict resolution
+                # Commit
                 # ========================================
 
-                # Filenames could conflict, so we may need to generate a new filename
-                # Trial 1: First attempt
-                # Trial 2: Try adding (N+1) to the filename and try again
-                # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
-                # Trial 4: Give up
-                # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-                for trial in range(4):
-                    if 1 <= trial <= 2:  # Try adding (N+1)
-                        try:
-                            file.filename = file.generate_non_conflicting_filename()
-                        except ValueError as e:
-                            raise ValidationError(
-                                'Filename conflicts with an existing file in the same folder.',
-                                "filename"
-                            ) from e
-                    elif trial == 3:  # Give up
-                        raise ValidationError(
-                            'Filename conflicts with an existing file in the same folder.',
-                            "filename"
-                        )
-
-                    try:
-                        with db.session.begin_nested():
-                            db.session.add(file)
-                    except IntegrityError:
-                        # Warning: this could catch some other integrity error
-                        pass
-                    else:
-                        break
-
+                db.session.add(file)
                 db.session.commit()
                 # rollback in case of error?
             except Exception as e:
-                current_app.logger.error(f'File {upload.filename} could not be processed due to an error.')
-                results[upload.filename] = 'failed'
+                current_app.logger.error(f'File {file.filename} could not be processed due to an error.')
+                results[file.filename] = 'failed'
             else:
-                current_app.logger.info(f'File {upload.filename} successfully processed.')
-                results[upload.filename] = 'succeeded'
+                current_app.logger.info(f'File {file.filename} successfully processed.')
+                results[file.filename] = 'succeeded'
 
-            # Once the file is safely stored in postgres, send an annotation request for it
-            send_pdf_annotation_request(
-                file.id,
-                global_exclusions,
-                [],
-                [],
-                file.organism_synonym,
-                file.organism_taxonomy_id,
-                file.annotation_configs,
-            )
+                # Once the file is safely stored in postgres, send an annotation request for it
+                send_pdf_annotation_request(
+                    file.id,
+                    global_exclusions,
+                    [],
+                    [],
+                    file.organism_synonym,
+                    file.organism_taxonomy_id,
+                    file.annotation_configs,
+                )
         return jsonify(results=results)
 
 

@@ -11,6 +11,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AnnotationConfigurations } from 'app/file-browser/schema';
 import { OrganismAutocomplete } from 'app/interfaces';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 
@@ -27,6 +28,20 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
 
   fileList: File[] = [];
 
+  readonly copyBehaviors: CopyBehavior[] = [
+    {
+      name: CopyBehaviorName.RENAME,
+      description: 'New files with a conflicting name will have a number appended to them, e.g. "MyFile.pdf (1)"'
+    },
+    {
+      name: CopyBehaviorName.SKIP,
+      description: 'New files with a conflicting name will be discarded, leaving the original intact.'
+    },
+    {
+      name: CopyBehaviorName.OVERWRITE,
+      description: 'Old files with a conflicting name will be overwritten.'
+    }
+  ]
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
   readonly defaultAnnotationMethods = this.annotationModels.reduce(
@@ -46,6 +61,7 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
         annotationMethods: new FormGroup(this.defaultAnnotationMethods),
       }, [Validators.required]),
     organism: new FormControl(null),
+    copyBehavior: new FormControl('Rename')
   });
 
   constructor(modal: NgbActiveModal,
@@ -61,10 +77,27 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
     return this.fileList.map(file => file.name).join('; ')
   }
 
+  submit() {
+    if (this.form.get('copyBehavior').value === CopyBehaviorName.OVERWRITE) {
+      const dialogRef = this.modalService.open(ConfirmDialogComponent);
+      dialogRef.componentInstance.title = 'Confirm Overwriting Existing Files'
+      dialogRef.componentInstance.message = 'You have chosen to replace existing files when there is a filename conflict. Are you sure you wish to proceed?';
+      return dialogRef.result.then((proceed: boolean) => {
+        if (proceed) {
+          super.submit();
+        }
+      });
+    }
+    else {
+      super.submit();
+    }
+  }
+
   getValue(): ObjectBulkUploadDialogValue {
     const formValue = this.form.value;
     return {
       public: formValue.public,
+      copyBehavior: formValue.copyBehavior,
       parentHashId: this.parentHashId,
       fallbackOrganism: formValue.organism,
       annotationConfigs: formValue.annotationConfigs     ,
@@ -91,8 +124,19 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
   }
 }
 
+enum CopyBehaviorName {
+  RENAME = 'Rename',
+  SKIP = 'Skip',
+  OVERWRITE = 'Overwrite'
+}
+interface CopyBehavior {
+  name: CopyBehaviorName;
+  description: string;
+}
+
 export interface ObjectBulkUploadDialogValue {
   public: boolean;
+  copyBehavior: CopyBehaviorName;
   parentHashId: string;
   annotationConfigs: AnnotationConfigurations;
   fallbackOrganism: OrganismAutocomplete;
