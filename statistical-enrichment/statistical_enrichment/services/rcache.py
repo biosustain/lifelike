@@ -7,6 +7,7 @@ REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
 
+DISABLE_CACHE = os.environ.get('DISABLE_CACHE', 'false').lower() == 'true'
 DEFAULT_CACHE_SETTINGS = {'ex': 3600 * 24}
 
 connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
@@ -36,15 +37,22 @@ def redis_cached(
     load=None,
     dump=None,
 ):
-    if cache_setting is None:
-        cache_setting = DEFAULT_CACHE_SETTINGS
-    cached_result = redis_server.get(uid)
-    if cached_result:
-        return load(cached_result) if load else cached_result
+    if not DISABLE_CACHE:
+        if cache_setting is None:
+            cache_setting = DEFAULT_CACHE_SETTINGS
+        cached_result = redis_server.get(uid)
+        if cached_result:
+            return load(cached_result) if load else cached_result
+        else:
+            result = result_provider()
+            dumped_result = dump(result) if dump else result
+            redis_server.set(uid, dumped_result, **cache_setting)
+            if load is None:
+                return dumped_result
+            return result
     else:
         result = result_provider()
         dumped_result = dump(result) if dump else result
-        redis_server.set(uid, dumped_result, **cache_setting)
         if load is None:
             return dumped_result
         return result
