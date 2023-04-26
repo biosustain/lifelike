@@ -42,7 +42,6 @@ from neo4japp.models import AppUser
 from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
@@ -1130,23 +1129,3 @@ def fix_broken_map_links():
     except Exception:
         db.session.rollback()
         raise
-
-
-@app.cli.command('log_failed_jobs')
-@click.option('--queue', '-q', required=True, type=str)
-def log_failed_rq_jobs(queue: str):
-    """
-    Logs all failed jobs registered by the redis queue service.
-    """
-    rq_service = RedisQueueService()
-    rq_service.log_failed_jobs(queue)
-
-
-@app.cli.command('retry_failed_jobs')
-@click.option('--queue', '-q', required=True, type=str)
-def retry_failed_rq_jobs(queue: str):
-    """
-    Requeues all failed jobs registered by the redis queue service.
-    """
-    rq_service = RedisQueueService()
-    rq_service.retry_failed_jobs(queue)
