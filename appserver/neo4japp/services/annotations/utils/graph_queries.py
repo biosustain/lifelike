@@ -1,6 +1,5 @@
 from neo4japp.exceptions import InvalidArgument
-
-from ..constants import EntityType
+from neo4japp.services.annotations.constants import EntityType
 
 
 collection_labels = {

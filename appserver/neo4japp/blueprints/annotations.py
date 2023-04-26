@@ -56,7 +56,10 @@ from ..schemas.common import PaginatedRequestSchema
 from ..schemas.enrichment import EnrichmentTableSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
-from ..services.annotations.annotator_interface import send_pdf_annotation_request, send_et_annotation_request
+from ..services.annotations.annotator_interface import (
+    send_pdf_annotation_request,
+    send_et_annotation_request
+)
 from ..services.annotations.globals_service import get_global_exclusion_annotations
 from ..services.annotations.constants import (
     EntityType,
@@ -449,19 +452,23 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
                     override_annotation_configs
                 )
             except Exception as e:
-                results[file.hash_id] =  {
+                results[file.hash_id] = {
                     'attempted': True,
                     'success': False,
                     'error': ''
                 }
-                current_app.logger.error(f'Could not annotate file: {file.hash_id}, {file.filename}, {e}',)
+                current_app.logger.error(
+                    f'Could not annotate file: {file.hash_id}, {file.filename}, {e}'
+                )
             else:
-                results[file.hash_id] =  {
+                results[file.hash_id] = {
                     'attempted': True,
                     'success': True,
                     'error': ''
                 }
-                current_app.logger.info(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
+                current_app.logger.info(
+                    f'File annotation request successfully sent: {file.hash_id}, {file.filename}'
+                )
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
             'mapping': results,
@@ -525,19 +532,23 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                     override_annotation_configs
                 )
             except Exception as e:
-                results[file.hash_id] =  {
+                results[file.hash_id] = {
                     'attempted': True,
                     'success': False,
                     'error': ''
                 }
-                current_app.logger.error(f'Could not annotate file: {file.hash_id}, {file.filename}, {e}',)
+                current_app.logger.error(
+                    f'Could not annotate file: {file.hash_id}, {file.filename}, {e}'
+                )
             else:
-                results[file.hash_id] =  {
+                results[file.hash_id] = {
                     'attempted': True,
                     'success': True,
                     'error': ''
                 }
-                current_app.logger.info(f'File annotation request successfully sent: {file.hash_id}, {file.filename}')
+                current_app.logger.info(
+                    f'File annotation request successfully sent: {file.hash_id}, {file.filename}'
+                )
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
             'mapping': results,
@@ -913,7 +924,10 @@ filesystem_bp.add_url_rule(
     view_func=FilePDFAnnotationsGenerationView.as_view('file_pdf_annotation_generation'))
 filesystem_bp.add_url_rule(
     'annotations/generate/enrichment-table',
-    view_func=FileEnrichmentTableAnnotationsGenerationView.as_view('file_enrichment_table_annotation_generation'))
+    view_func=FileEnrichmentTableAnnotationsGenerationView.as_view(
+        'file_enrichment_table_annotation_generation'
+    )
+)
 filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh

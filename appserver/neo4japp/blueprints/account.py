@@ -48,6 +48,7 @@ from neo4japp.schemas.account import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.services.file_types.providers import MapTypeProvider
+from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -170,7 +171,7 @@ class AccountView(MethodView):
                     content_path = INITIAL_PROJECT_PATH / file_metadata['path']
                     file.filename = file.filename or content_path.stem
                     with open(content_path, "rb") as file_content:
-                        file.content_id = FileContent().get_or_create(file_content)
+                        file.content_id = FileContent().get_or_create(FileContentBuffer(file_content))
 
                     file.user_id = user.id
                     file.parent = project.***ARANGO_USERNAME***

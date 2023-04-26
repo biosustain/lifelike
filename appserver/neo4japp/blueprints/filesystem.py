@@ -662,8 +662,10 @@ class FilesystemBaseView(MethodView):
                 missing.add(hash_id)
         return missing
 
-
-    def get_content_from_params(self, params: dict) -> Tuple[FileContentBuffer, Optional[str]]:
+    def get_content_from_params(
+        self,
+        params: dict
+    ) -> Tuple[FileContentBuffer, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
@@ -1206,19 +1208,28 @@ class FileBulkUploadView(FilesystemBaseView):
                 # ========================================
 
                 try:
-                    parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
-                    self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
+                    parent = self.get_nondeleted_recycled_file(
+                        Files.hash_id == params['parent_hash_id']
+                    )
+                    self.check_file_permissions(
+                        [parent],
+                        current_user,
+                        ['writable'],
+                        permit_recycled=False
+                    )
                 except RecordNotFound as e:
                     # Rewrite the error to make more sense
                     raise ValidationError(
-                        "The requested parent object could not be found.",
-                        "parent_hash_id"
+                        'The requested parent object could not be found.',
+                        'parent_hash_id'
                     ) from e
 
                 if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
-                    raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
-                                        f"not a folder. It is a file, and you cannot make files "
-                                        f"become a child of another file.", "parent_hash_id")
+                    raise ValidationError(
+                        f'The specified parent ({params["parent_hash_id"]}) is '
+                        f'not a folder. It is a file, and you cannot make files '
+                        f'become a child of another file.', 'parent_hash_id'
+                    )
 
                 # TODO: Check max hierarchy depth
 
@@ -1226,12 +1237,12 @@ class FileBulkUploadView(FilesystemBaseView):
 
                 assert file.parent is not None
 
-
                 # ========================================
                 # Filename conflict resolution
                 # ========================================
 
-                # We do this after finding the parent so we can compare with existing files without extra work
+                # We do this after finding the parent so we can compare with existing files
+                # without extra work
 
                 copy_behavior = params.get('copy_behavior', CopyBehavior.Rename)
 
@@ -1239,14 +1250,17 @@ class FileBulkUploadView(FilesystemBaseView):
                     # Filenames could conflict, so we may need to generate a new filename
                     # Trial 1: First attempt
                     # Trial 2: Try adding (N+1) to the filename and try again
-                    # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
+                    # Trial 3: Try Trial 2 again (in case of a race condition)
+                    # - Only does something if the transaction mode is in READ COMMITTED or
+                    #  worse (!)
                     # Trial 4: Give up
-                    # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
                     for trial in range(4):
                         if 1 <= trial <= 2:  # Try adding (N+1)
                             try:
                                 file.filename = file.generate_non_conflicting_filename()
-                                current_app.logger.info(f'New file had conflicting name, using {file.filename} instead.')
+                                current_app.logger.info(
+                                    f'New file had conflicting name, using {file.filename} instead.'
+                                )
                                 break
                             except ValueError as e:
                                 raise ValidationError(
@@ -1270,10 +1284,16 @@ class FileBulkUploadView(FilesystemBaseView):
                     if copy_behavior == CopyBehavior.Skip and existing_file is not None:
                         # If the filename already exists in this folder, skip to the next file
                         # without committing this one
-                        current_app.logger.info(f'File with name "{file.filename}" already exists in folder with id {file.parent.id}. Skipping.')
+                        current_app.logger.info(
+                            f'File with name "{file.filename}" already exists in folder with id ' +
+                            f'{file.parent.id}. Skipping.'
+                        )
                         continue
                     elif copy_behavior == CopyBehavior.Overwrite and existing_file is not None:
-                        current_app.logger.info(f'File with name "{file.filename}" already exists in folder with id {file.parent.id}. Overwriting.')
+                        current_app.logger.info(
+                            f'File with name "{file.filename}" already exists in folder with id ' +
+                            '{file.parent.id}. Overwriting.'
+                        )
                         existing_file.delete()
 
                 # ========================================
@@ -1340,7 +1360,9 @@ class FileBulkUploadView(FilesystemBaseView):
                 db.session.commit()
                 # rollback in case of error?
             except Exception as e:
-                current_app.logger.error(f'File {file.filename} could not be processed due to an error.')
+                current_app.logger.error(
+                    f'File {file.filename} could not be processed due to an error.'
+                )
                 results[file.filename] = 'failed'
             else:
                 current_app.logger.info(f'File {file.filename} successfully processed.')

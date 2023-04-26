@@ -535,7 +535,11 @@ def _get_file_data(file: Files, file_content: FileContent):
         if file_content:
             content = file_content.raw_file
             file_type_service = get_file_type_service()
-            indexable_content = file_type_service.get(file).to_indexable_content(FileContentBuffer(content))
+            indexable_content = file_type_service.get(
+                file
+            ).to_indexable_content(
+                FileContentBuffer(content)
+            )
         else:
             indexable_content = FileContentBuffer()
     except Exception as e:
@@ -687,10 +691,11 @@ def _after_file_update(target: Files, changes: dict):
                 changes['deletion_date'][1] is not None
         ):
             current_app.logger.info(
-                f'Attempting to delete files in elastic with hash_ids: {list(updated_files.keys())}',
+                f'Attempting to delete files in elastic with hash_ids: ' +
+                f'{list(updated_files.keys())}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
-            send_bulk_delete_file_request(updated_files.keys())
+            send_bulk_delete_file_request(list(updated_files.keys()))
             # TODO: Should we handle the case where a document's deleted state goes from
             # "deleted" to "not deleted"? What would that mean for folders? Re-index all
             # children as well?
@@ -709,7 +714,8 @@ def _after_file_update(target: Files, changes: dict):
                 updated_files.pop(target.hash_id)
 
             current_app.logger.info(
-                f'Attempting to update files in elastic with hash_ids: {list(updated_files.keys())}',
+                f'Attempting to update files in elastic with hash_ids: ' +
+                f'{list(updated_files.keys())}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
 
@@ -720,7 +726,9 @@ def _after_file_update(target: Files, changes: dict):
                 # TODO: Only need to update children if the folder name changes (is this true? any
                 # other cases where we would do this? Maybe safer to just always update file path
                 # any time the parent changes...)
-                send_bulk_update_file_request(_get_bulk_update_request(target, changes, updated_files))
+                send_bulk_update_file_request(
+                    _get_bulk_update_request(target, changes, updated_files)
+                )
     except Exception as e:
         current_app.logger.error(
             f'Elastic update failed for files with hash_ids: {list(updated_files.keys())}',

@@ -2,6 +2,7 @@ import attr
 
 from typing import List
 
+
 @attr.s(slots=True)
 class PDFWord():
     keyword: str = attr.ib()

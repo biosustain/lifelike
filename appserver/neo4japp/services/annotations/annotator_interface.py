@@ -25,6 +25,7 @@ def send_pdf_annotation_request(
         override_annotation_config=override_annotation_configs
     )
 
+
 def send_et_annotation_request(
     file_id: int,
     enrichment_mapping: dict,

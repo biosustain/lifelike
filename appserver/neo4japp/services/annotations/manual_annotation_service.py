@@ -604,12 +604,6 @@ class ManualAnnotationService:
                     'hyperlinks': hyperlinks,
                 }
 
-
-
-
-
-
-
                 queries = {
                     EntityType.ANATOMY.value: (get_create_mesh_global_inclusion_query, mesh_params),
                     EntityType.DISEASE.value: (get_create_mesh_global_inclusion_query, mesh_params),
@@ -741,13 +735,16 @@ class ManualAnnotationService:
             EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, other_params)
         }
 
-        query_fn, params = queries.get(entity_type, (None, None))
+        if entity_type not in queries:
+            return {'node_exist': False}
+
+        query_fn, params = queries[entity_type]
         try:
             check = execute_arango_query(
                 db=get_db(self.arango_client),
                 query=query_fn(),
                 **params
-            )[0] if query_fn else {'node_exist': False}
+            )[0]
         except BrokenPipeError:
             raise
         except Exception as e:

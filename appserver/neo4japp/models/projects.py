@@ -252,7 +252,6 @@ def after_project_insert(mapper: Mapper, connection: Connection, target: Project
         ) from e
 
 
-
 def _after_project_update(target: Projects):
     from neo4japp.models.files import Files
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query

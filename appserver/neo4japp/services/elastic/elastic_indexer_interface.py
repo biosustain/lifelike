@@ -1,7 +1,7 @@
 import asyncio
 
 from flask import current_app
-from typing import Dict
+from typing import Dict, List
 
 from neo4japp.services.rabbitmq import send
 
@@ -24,7 +24,7 @@ def send_bulk_update_file_request(updates: Dict[str, dict]):
     })
 
 
-def send_bulk_delete_file_request(file_hash_ids: str):
+def send_bulk_delete_file_request(file_hash_ids: List[str]):
     _send_elastic_indexer_request({
         'op_type': BULK_DELETE_OP,
         'file_hash_ids': file_hash_ids

@@ -223,7 +223,6 @@ class ElasticService(ElasticConnection):
         for file, project in batch:
             yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-
     def _get_index_obj(self, file: Files, project: Projects, index_id) -> dict:
         """
         Generate an index operation object from the given file and project
