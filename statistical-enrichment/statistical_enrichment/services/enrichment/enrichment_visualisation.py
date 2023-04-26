@@ -38,12 +38,16 @@ class EnrichmentVisualisationService:
                     // Get cluster aware eid
                     CALL {
                         WITH g
-                        MATCH p=(g)-[:IS*0..2]-()
-                        UNWIND nodes(p) as gene
+                        CALL apoc.path.spanningTree(g, {
+                            relationshipFilter: "IS",
+                            labelFilter: "+Gene"
+                        })
+                        YIELD path
+                        UNWIND nodes(path) as gene
                         WITH gene.eid as gene_eid ORDER BY gene_eid
-                        RETURN apoc.text.join(collect(DISTINCT gene_eid), ',') as geneId
+                        RETURN apoc.text.join(collect(DISTINCT gene_eid), '|') as geneId
                     }
-                    RETURN geneId
+                    RETURN DISTINCT geneId
                     """,
                     taxId=organism_id,
                     gene_names=gene_names
@@ -70,10 +74,10 @@ class EnrichmentVisualisationService:
                     UNION
                         // Fetch GO relations defined in BioCyc
                         WITH g
-                        // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
                         MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
                         WITH DISTINCT go
-                        MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(bgene:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
+                        // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
+                        MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
                         RETURN go, go_gene
                     }
                     WITH
@@ -83,10 +87,14 @@ class EnrichmentVisualisationService:
                     CALL {
                         WITH go_genes
                         UNWIND go_genes as go_gene
-                        MATCH p=(go_gene)-[:IS*0..2]-()
-                        UNWIND nodes(p) as gene
+                        CALL apoc.path.spanningTree(go_gene, {
+                            relationshipFilter: "IS",
+                            labelFilter: "+Gene"
+                        })
+                        YIELD path
+                        UNWIND nodes(path) as gene
                         WITH go_gene, gene.eid as gene_eid ORDER BY gene_eid
-                        WITH go_gene, apoc.text.join(collect(DISTINCT gene_eid), ',') as go_genes_eid
+                        WITH go_gene, apoc.text.join(collect(DISTINCT gene_eid), '|') as go_genes_eid
                         RETURN collect(DISTINCT go_genes_eid) as go_genes_eids
                     }
                     RETURN
