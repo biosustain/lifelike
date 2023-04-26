@@ -181,43 +181,6 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         get_organisms_from_gene_ids_result,
     )
 
-
-@pytest.fixture(scope='function')
-def mock_index_files(monkeypatch):
-    def index_files(*args, **kwargs):
-        return None
-
-    monkeypatch.setattr(
-        ElasticService,
-        'index_files',
-        index_files,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_index_maps(monkeypatch):
-    def index_maps(*args, **kwargs):
-        return None
-
-    monkeypatch.setattr(
-        ElasticService,
-        'index_maps',
-        index_maps,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_delete_elastic_documents(monkeypatch):
-    def delete_documents_with_index(*args, **kwargs):
-        return None
-
-    monkeypatch.setattr(
-        ElasticService,
-        'delete_documents_with_index',
-        delete_documents_with_index,
-    )
-
-
 ####################
 # End service mocks
 ####################

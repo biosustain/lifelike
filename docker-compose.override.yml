@@ -30,6 +30,7 @@ x-appserver: &appserver
     - RMQ_MESSENGER_USERNAME=messenger
     - RMQ_MESSENGER_PASSWORD=password
     - ANNOTATOR_QUEUE=annotator
+    - ELASTIC_INDEXER_QUEUE=elastic_indexer
     # Redis
     - REDIS_HOST=redis
     - REDIS_PORT=6379
@@ -102,6 +103,27 @@ x-post-annotator: &post-annotator
     - backend
     - rabbitmq
 
+x-elastic-indexer: &elastic-indexer
+  build: ./elastic-indexer
+  environment:
+    - LOG_LEVEL=INFO
+    # RabbitMQ
+    - RMQ_MESSENGER_USERNAME=messenger
+    - RMQ_MESSENGER_PASSWORD=password
+    - ELASTIC_INDEXER_QUEUE=elastic_indexer
+    # ElasticSearch
+    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    - ELASTIC_FILE_INDEX_ID=file_dev
+  volumes:
+    - ./elastic-indexer:/home/user
+  depends_on:
+    - elasticsearch
+    - rabbitmq
+  networks:
+    - backend
+    - rabbitmq
+
+
 services:
   appserver:
     <<: *appserver
@@ -127,6 +149,10 @@ services:
   post-annotator:
     <<: *post-annotator
     container_name: post-annotator
+
+  elastic-indexer:
+    <<: *elastic-indexer
+    container_name: elastic-indexer
 
   webserver:
     container_name: client
@@ -281,6 +307,7 @@ services:
     environment:
       - ANNOTATOR_QUEUE=annotator
       - POST_ANNOTATOR_QUEUE=post_annotator
+      - ELASTIC_INDEXER_QUEUE=elastic_indexer
       - RMQ_ADMIN_USERNAME=admin
       - RMQ_ADMIN_PASSWORD=password
       - RMQ_MESSENGER_USERNAME=messenger

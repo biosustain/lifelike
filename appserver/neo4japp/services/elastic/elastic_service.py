@@ -1,7 +1,7 @@
 import base64
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
-from elasticsearch.helpers import parallel_bulk, streaming_bulk
+from elasticsearch.helpers import streaming_bulk
 from flask import current_app
 import json
 
@@ -43,7 +43,6 @@ from neo4japp.services.elastic.query_parser_helpers import (
     BoolShould
 )
 from neo4japp.utils import EventLog
-from app import app
 from neo4japp.utils import FileContentBuffer
 
 ParserElement.enablePackrat()
@@ -98,7 +97,7 @@ class ElasticService(ElasticConnection):
         # If we trash the index we also need to re-index all the documents that used it.
         # Currently we take the safe route and simply re-index ALL documents, regardless of
         # which index was actually re-created.
-        self.reindex_all_documents()
+        self.index_all_files()
 
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
         """Creates a pipeline with the given pipeline id and definition file. If the pipeline
@@ -132,20 +131,7 @@ class ElasticService(ElasticConnection):
             self.update_or_create_index(index_id, index_mapping_file)
         return 'done'
 
-    def reindex_all_documents(self):
-        self.index_files()
-
-    def update_files(self, hash_ids: List[str] = None):
-        raise NotImplementedError()
-
-    def delete_files(self, hash_ids: List[str]):
-        self._streaming_bulk_documents([
-            self._get_delete_obj(hash_id, FILE_INDEX_ID)
-            for hash_id in hash_ids
-        ])
-        self.elastic_client.indices.refresh(FILE_INDEX_ID)
-
-    def index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+    def index_all_files(self, hash_ids: List[str] = None, batch_size: int = 100):
         """
         Adds the files with the given ids to Elastic. If no IDs are given,
         all non-deleted files will be indexed.
@@ -227,20 +213,6 @@ class ElasticService(ElasticConnection):
         else:
             return FileContentBuffer()
 
-    def _lazy_create_index_docs_for_parallel_bulk(self, batch):
-        """
-        Creates a generator out of the elastic document creation
-        process to prevent loading everything into memory.
-        :param batch: iterable of file/project pairs
-        :return: indexable object in generator form
-        """
-
-        # Preserve context that is lost from threading when used
-        # with the elasticsearch parallel_bulk
-        with app.app_context():
-            for file, project in batch:
-                yield self._get_index_obj(file, project, FILE_INDEX_ID)
-
     def _lazy_create_index_docs_for_streaming_bulk(self, batch):
         """
         Creates a generator out of the elastic document creation
@@ -251,35 +223,6 @@ class ElasticService(ElasticConnection):
         for file, project in batch:
             yield self._get_index_obj(file, project, FILE_INDEX_ID)
 
-    def _get_update_action_obj(self, file_hash_id: str, index_id: str, changes: dict = {}) -> dict:
-        # 'filename': file.filename,
-        # 'description': file.description,
-        # 'uploaded_date': file.creation_date,
-        # 'data': base64.b64encode(indexable_content).decode('utf-8'),
-        # 'user_id': file.user_id,
-        # 'username': file.user.username,
-        # 'project_id': project.id,
-        # 'project_hash_id': project.hash_id,
-        # 'project_name': project.name,
-        # 'doi': file.doi,
-        # 'public': file.public,
-        # 'id': file.id,
-        # 'hash_id': file.hash_id,
-        # 'mime_type': file.mime_type,
-        # 'data_ok': data_ok,
-        return {
-            '_op_type': 'update',
-            '_index': index_id,
-            '_id': file_hash_id,
-            'doc': changes,
-        }
-
-    def _get_delete_obj(self, file_hash_id: str, index_id: str) -> dict:
-        return {
-            '_op_type': 'delete',
-            '_index': index_id,
-            '_id': file_hash_id
-        }
 
     def _get_index_obj(self, file: Files, project: Projects, index_id) -> dict:
         """
@@ -333,35 +276,6 @@ class ElasticService(ElasticConnection):
                 'data_ok': bool(data)
             }
         }
-
-    def _parallel_bulk_documents(self, documents):
-        """
-        Performs a series of bulk operations in elastic, determined by the `documents` input.
-        These operations are executed in parallel, on 4 threads by default.
-        """
-        # `raise_on_exception` set to False so that we don't error out if one of the documents
-        # fails to index
-        results = parallel_bulk(
-            self.elastic_client,
-            documents,
-            raise_on_error=False,
-            raise_on_exception=False
-        )
-
-        for success, info in results:
-            # TODO: Evaluate the data egress size. When seeding the staging database
-            # locally, this could output ~1gb of data. Question: Should we conditionally
-            # turn this off?
-            if success:
-                current_app.logger.info(
-                    f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-            else:
-                current_app.logger.warning(
-                    f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-                )
 
     def _streaming_bulk_documents(self, documents):
         """

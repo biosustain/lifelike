@@ -39,7 +39,7 @@ from neo4japp.constants import (
     UPDATE_DATE_MODIFIED_COLUMNS,
     UPDATE_ELASTIC_DOC_COLUMNS,
 )
-from neo4japp.database import db, get_elastic_service
+from neo4japp.database import db, get_file_type_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.projects import Projects
 from neo4japp.models.common import (
@@ -346,7 +346,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             ).one()
         except NoResultFound as e:
             current_app.logger.error(
-                f'Could not find project of file with id: {self.id}',
+                f'Could not find project of file with id {self.id} and path {self.path}.',
                 exc_info=e,
                 extra=EventLog(event_type=LogEventType.SYSTEM.value).to_dict()
             )
@@ -530,6 +530,88 @@ def _update_path_of_file_and_descendants(connection: Connection, target: Files) 
     return target
 
 
+def _get_file_data(file: Files, file_content: FileContent):
+    try:
+        if file_content:
+            content = file_content.raw_file
+            file_type_service = get_file_type_service()
+            indexable_content = file_type_service.get(file).to_indexable_content(FileContentBuffer(content))
+        else:
+            indexable_content = FileContentBuffer()
+    except Exception as e:
+        # We should still index the file even if we can't transform it for
+        # indexing because the file won't ever appear otherwise and it will be
+        # harder to track down the bug
+        data = ''
+        current_app.logger.error(
+            f'Failed to generate indexable data for file '
+            f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+    else:
+        data = base64.b64encode(indexable_content.getvalue()).decode('utf-8')
+    return data
+
+
+def _get_doc_source_for_file(file: Files) -> dict:
+    from neo4japp.models.auth import AppUser
+
+    # Root files cannot have a project until after they are inserted in the current schema. So,
+    # we have to check if this file is a ***ARANGO_USERNAME*** project and temporarily set the project
+    # properties in it's elastic document to null.
+    project = None if file.parent_id is None else file.project
+    user = db.session.query(
+        AppUser
+    ).filter(
+        AppUser.id == file.user_id
+    ).one()
+    file_content = db.session.query(
+        FileContent
+    ).filter(
+        FileContent.id == file.content_id
+    ).one_or_none()
+
+    return {
+        'filename': file.filename,
+        'path': file.path,
+        'description': file.description,
+        'uploaded_date': file.creation_date.isoformat(),
+        'data': _get_file_data(file, file_content),
+        'user_id': user.id,
+        'username': user.username,
+        'project_id': None if project is None else project.id,
+        'project_hash_id': None if project is None else project.hash_id,
+        'project_name': None if project is None else project.name,
+        'doi': file.doi,
+        'public': file.public,
+        'id': file.id,
+        'hash_id': file.hash_id,
+        'mime_type': file.mime_type,
+    }
+
+
+def _get_bulk_update_request(parent_file: Files, changes: dict, updated_files: dict):
+    # These values are very cheap to update, so just include them for simplicity.
+    if parent_file.hash_id in updated_files:
+        updated_files[parent_file.hash_id]['filename'] = parent_file.filename,
+        updated_files[parent_file.hash_id]['path'] = parent_file.path,
+        updated_files[parent_file.hash_id]['description'] = parent_file.description,
+        updated_files[parent_file.hash_id]['public'] = parent_file.public,
+
+    # If the file was moved, update the project data since that may have changed as well.
+    if 'parent_id' in changes:
+        project = parent_file.project
+
+        # Also, make sure all children (if any) receieve the same update.
+        for file_hash_id in updated_files:
+            updated_files[file_hash_id]['project_id'] = project.id
+            updated_files[file_hash_id]['project_hash_id'] = project.hash_id
+            updated_files[file_hash_id]['project_name'] = project.name
+
+    return updated_files
+
+
 @event.listens_for(Files, 'before_insert')
 def before_file_insert(mapper: Mapper, connection: Connection, target: Files):
     # Only automatically update the path if it was not manually added. This should only be false
@@ -543,38 +625,16 @@ def before_file_insert(mapper: Mapper, connection: Connection, target: Files):
             target = _update_path_of_file(connection, target)
 
 
-def _after_file_insert(target: Files):
-    from app import app
-
-    # This will be called by the Redis queue service outside of the normal flask app context, so
-    # here we manually ensure there is a context.
-    with app.app_context():
-        try:
-            elastic_service = get_elastic_service()
-            current_app.logger.info(
-                f'Attempting to index newly created file with hash_id: {target.hash_id}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-            )
-            elastic_service.index_files([target.hash_id])
-        except Exception as e:
-            current_app.logger.error(
-                f'Elastic index failed for file with hash_id: {target.hash_id}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-            )
-            raise
-
-
 @event.listens_for(Files, 'after_insert')
 def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     """
     Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
     file insert will be rolled back.
     """
+    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_index_file_request
+
     try:
-        from neo4japp.services.redis.redis_queue_service import RedisQueueService
-        rq_service = RedisQueueService()
-        rq_service.enqueue(_after_file_insert, target)
+        send_bulk_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
     except Exception as e:
         raise ServerException(
             title='Failed to Create File',
@@ -600,59 +660,74 @@ def before_file_update(mapper: Mapper, connection: Connection, target: Files):
 
 def _after_file_update(target: Files, changes: dict):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
-    from app import app
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
     from neo4japp.services.file_types.providers import DirectoryTypeProvider
+    from neo4japp.services.elastic.elastic_indexer_interface import (
+        send_bulk_delete_file_request,
+        send_bulk_index_file_request,
+        send_bulk_update_file_request
+    )
 
-    # This will be called by the Redis queue service outside of the normal flask app context, so
-    # here we manually ensure there is a context.
-    with app.app_context():
-        try:
-            elastic_service = get_elastic_service()
-            files_to_update = [target.hash_id]
-            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(
-                        Files.recycling_date.is_(None)
-                    ),
-                    lazy_load_content=True
-                ).all()
-                files_to_update = [member.hash_id for member in family]
+    try:
+        updated_files = {target.hash_id: {'path': target.path}}
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            family = get_nondeleted_recycled_children_query(
+                Files.id == target.id,
+                children_filter=and_(
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
+            ).all()
+            updated_files = {member.hash_id: {'path': member.path} for member in family}
 
-            # Only delete a file when it changes from "not-deleted" to "deleted"
-            if (
-                    'deletion_date' in changes and
-                    changes['deletion_date'][0] is None and
-                    changes['deletion_date'][1] is not None
-            ):
+        # Only delete a file when it changes from "not-deleted" to "deleted"
+        if (
+                'deletion_date' in changes and
+                changes['deletion_date'][0] is None and
+                changes['deletion_date'][1] is not None
+        ):
+            current_app.logger.info(
+                f'Attempting to delete files in elastic with hash_ids: {list(updated_files.keys())}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+            send_bulk_delete_file_request(updated_files.keys())
+            # TODO: Should we handle the case where a document's deleted state goes from
+            # "deleted" to "not deleted"? What would that mean for folders? Re-index all
+            # children as well?
+        else:
+            # File was not deleted, so update it -- and possibly its children if it has any --
+            # instead
+            if 'content_id' in changes:
                 current_app.logger.info(
-                    f'Attempting to delete files in elastic with hash_ids: {files_to_update}',
+                    f'Attempting to re-index file in elastic with hash_id: {target.hash_id}',
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
-                elastic_service.delete_files(files_to_update)
-                # TODO: Should we handle the case where a document's deleted state goes from
-                # "deleted" to "not deleted"? What would that mean for folders? Re-index all
-                # children as well?
-            else:
-                # File was not deleted, so update it -- and possibly its children if it has any --
-                # instead
-                current_app.logger.info(
-                    f'Attempting to update files in elastic with hash_ids: {files_to_update}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-                )
-                # TODO: Change this to an update operation, and only update what has changed
+                # If content changes, we *MUST* reindex, we cannot simply update.
+                send_bulk_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
+
+                # Don't need to update the target file, since we're re-indexing it entirely anyway.
+                updated_files.pop(target.hash_id)
+
+            current_app.logger.info(
+                f'Attempting to update files in elastic with hash_ids: {list(updated_files.keys())}',
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            )
+
+            # If there are no files to update, don't send a request! This can happen if target is
+            # not a folder and its content changed. In this case, we've just sent a re-index
+            # request anyway.
+            if len(updated_files):
                 # TODO: Only need to update children if the folder name changes (is this true? any
                 # other cases where we would do this? Maybe safer to just always update file path
                 # any time the parent changes...)
-                elastic_service.index_files(files_to_update)
-        except Exception as e:
-            current_app.logger.error(
-                f'Elastic update failed for files with hash_ids: {files_to_update}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-            )
-            raise
+                send_bulk_update_file_request(_get_bulk_update_request(target, changes, updated_files))
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic update failed for files with hash_ids: {list(updated_files.keys())}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise
 
 
 @event.listens_for(Files, 'after_update')
@@ -664,9 +739,7 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
     try:
         # Only do re-indexing if any of the specified columns changed
         if _did_columns_update(target, UPDATE_ELASTIC_DOC_COLUMNS):
-            from neo4japp.services.redis.redis_queue_service import RedisQueueService
-            rq_service = RedisQueueService()
-            rq_service.enqueue(_after_file_update, target, get_model_changes(target))
+            _after_file_update(target, get_model_changes(target))
     except Exception as e:
         raise ServerException(
                 title='Failed to Update File',
@@ -677,37 +750,33 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
 
 def _after_file_delete(target: Files):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
-    from app import app
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
     from neo4japp.services.file_types.providers import DirectoryTypeProvider
+    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_delete_file_request
 
-    # This will be called by the Redis queue service outside of the normal flask app context, so
-    # here we manually ensure there is a context.
-    with app.app_context():
-        try:
-            elastic_service = get_elastic_service()
-            files_to_delete = [target.hash_id]
-            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(
-                        Files.recycling_date.is_(None)
-                    ),
-                    lazy_load_content=True
-                ).all()
-                files_to_delete = [member.hash_id for member in family]
-            current_app.logger.info(
-                f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-            )
-            elastic_service.delete_files(files_to_delete)
-        except Exception as e:
-            current_app.logger.error(
-                f'Elastic search delete failed for file with hash_id: {target.hash_id}',
-                exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
-            )
-            raise
+    try:
+        files_to_delete = [target.hash_id]
+        if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
+            family = get_nondeleted_recycled_children_query(
+                Files.id == target.id,
+                children_filter=and_(
+                    Files.recycling_date.is_(None)
+                ),
+                lazy_load_content=True
+            ).all()
+            files_to_delete = [member.hash_id for member in family]
+        current_app.logger.info(
+            f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
+        send_bulk_delete_file_request(files_to_delete)
+    except Exception as e:
+        current_app.logger.error(
+            f'Elastic search delete failed for file with hash_id: {target.hash_id}',
+            exc_info=e,
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+        )
+        raise
 
 
 @event.listens_for(Files, 'after_delete')
@@ -719,9 +788,7 @@ def after_file_delete(mapper: Mapper, connection: Connection, target: Files):
     # NOTE: This event is rarely triggered, because we're currently flagging files for deletion
     # rather than removing them outright. See the `after_update` event for Files.
     try:
-        from neo4japp.services.redis.redis_queue_service import RedisQueueService
-        rq_service = RedisQueueService()
-        rq_service.enqueue(_after_file_delete, target)
+        _after_file_delete(target)
     except Exception as e:
         raise ServerException(
             title='Failed to Delete File',

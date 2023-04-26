@@ -43,7 +43,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
     this.form.patchValue({
       name: value.name || '',
       description: value.description || '',
-      public: value.public || '',
+      public: value.public || false,
     });
   }
 
