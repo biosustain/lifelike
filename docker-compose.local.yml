@@ -13,6 +13,47 @@ x-slow-start-healthcheck: &slow-start-healthcheck
   start_period: 60s
   retries: 24
 
+# Postgres
+x-postgres: &postgres
+  POSTGRES_HOST: pgdatabase
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+
+# Neo4j
+x-neo4j: &neo4j
+  NEO4J_SCHEME: bolt
+  NEO4J_HOST: graphdatabase
+  NEO4J_AUTH: neo4j/password
+  NEO4J_PORT: 7687
+
+# Arango
+x-arango: &arango
+  ARANGO_HOST: http://arangodb:8529
+  ARANGO_USERNAME: ***ARANGO_USERNAME***
+  ARANGO_PASSWORD: password
+  ARANGO_DB_NAME: ***ARANGO_DB_NAME***
+
+# Redis
+x-redis: &redis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_USERNAME: default
+  REDIS_PASSWORD: password
+  REDIS_SSL: false
+
+# ElasticSearch
+x-elasticsearch: &elasticsearch
+  ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  ELASTIC_FILE_INDEX_ID: file_dev
+
+# StatisticalEnrichment
+x-statisticalenrichment: &statisticalenrichment
+  SE_HOST: statistical-enrichment
+  SE_PORT: 5010
+
+
 x-appserver: &appserver
   extends:
     file: docker-compose.prod.yml
@@ -20,54 +61,33 @@ x-appserver: &appserver
   build: ./appserver
   environment:
     # Log Services
-    - FORMAT_AS_JSON=false
+    FORMAT_AS_JSON: false
     # Flask
-    - FLASK_APP=app
-    - FLASK_APP_CONFIG=Development
-    - FLASK_DEBUG=1
-    - FLASK_ENV=development
-    # Postgres
-    - POSTGRES_HOST=pgdatabase
-    - POSTGRES_PORT=5432
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_DB=postgres
-    # ElasticSearch
-    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    - ELASTIC_FILE_INDEX_ID=file_dev
-    # Neo4j
-    - NEO4J_SCHEME=bolt
-    - NEO4J_HOST=graphdatabase
-    - NEO4J_AUTH=neo4j/password
-    - NEO4J_PORT=7687
-    # Arango
-    - ARANGO_HOST=http://arangodb:8529
-    - ARANGO_USERNAME=***ARANGO_USERNAME***
-    - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
-    # Redis
-    - REDIS_HOST=redis
-    - REDIS_PORT=6379
-    - REDIS_USERNAME=default
-    - REDIS_PASSWORD=password
-    - REDIS_SSL=false
-    # StatisticalEnrichment
-    - SE_HOST=statistical-enrichment
-    - SE_PORT=5010
+    FLASK_APP: app
+    FLASK_APP_CONFIG: Development
+    FLASK_DEBUG: 1
+    FLASK_ENV: development
+    # Services
+    <<: *postgres
+    <<: *elasticsearch
+    <<: *neo4j
+    <<: *arango
+    <<: *redis
+    <<: *statisticalenrichment
     # Other
-    - DOMAIN=http://localhost:4200
-    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-    - ASSETS_FOLDER=/home/n4j/assets/
-    # - OPENAI_API_KEY="<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
+    DOMAIN: http://localhost:4200
+    LMDB_HOME_FOLDER: /home/n4j/neo4japp/services/annotations/lmdb/
+    ASSETS_FOLDER: /home/n4j/assets/
+    # OPENAI_API_KEY: "<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
   volumes:
     - ./appserver:/home/n4j
     # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
+    pgdatabase:
+      condition: service_healthy
     elasticsearch:
       condition: service_healthy
     graphdatabase:
-      condition: service_healthy
-    pgdatabase:
       condition: service_healthy
     redis:
       condition: service_healthy
@@ -82,6 +102,8 @@ services:
     healthcheck:
       # test: in dockerfile
       <<: *snappy-healthcheck
+    healthcheck:
+      test: curl -f http://localhost:5000/meta/ || exit 1
     depends_on:
       worker:
           condition: service_started
@@ -111,9 +133,11 @@ services:
       - ./client:/app
       # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
       # Helps not overwrite the node_modules with host
-      - /app/node_modules
+      - node_modules:/app/node_modules
     networks:
       - frontend
+    healthcheck:
+      test: curl -f http://localhost:4200 || exit 1
     depends_on:
       appserver:
         condition: service_started
@@ -125,26 +149,19 @@ services:
     build: ./statistical-enrichment
     environment:
       # Flask
-      - FLASK_APP=statistical_enrichment
-      - FLASK_APP_CONFIG=Development
-      - FLASK_DEBUG=1
-      - FLASK_ENV=development
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
-      # Redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=password
-      - REDIS_SSL=false
+      FLASK_APP: statistical_enrichment
+      FLASK_APP_CONFIG: Development
+      FLASK_DEBUG: 1
+      FLASK_ENV: development
+      # Services
+      <<: *neo4j
+      <<: *redis
     volumes:
       - ./statistical-enrichment:/home/user
     networks:
       - backend
     healthcheck:
-      # test: in dockerfile
+      test: curl -f http://localhost:5010/healthz || exit 1
       <<: *snappy-healthcheck
     depends_on:
       graphdatabase:
@@ -158,17 +175,10 @@ services:
       service: cache-invalidator
     build: ./cache-invalidator
     environment:
-      - LOG_LEVEL=debug
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
-      # Redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=password
-      - REDIS_SSL=false
+      LOG_LEVEL: debug
+      # Services
+      <<: *neo4j
+      <<: *redis
     volumes:
       - ./cache-invalidator:/app
     networks:
@@ -194,9 +204,10 @@ services:
 
   pgdatabase:
     image: postgres:11
+    user: postgres
     command: postgres -c max_wal_size=2GB -c log_statement='all'
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: postgres
     healthcheck:
       test: pg_isready
       <<: *snappy-healthcheck
@@ -204,10 +215,10 @@ services:
       - backend
 
   graphdatabase:
-    image: neo4j:4.4-community
+    image: neo4j:4.4.19-community
     environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+      NEO4J_AUTH: neo4j/password
+      NEO4JLABS_PLUGINS: "[\"apoc\", \"n10s\"]"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1
       <<: *slow-start-healthcheck
@@ -248,12 +259,12 @@ services:
       context: elasticsearch
     restart: on-failure:3
     environment:
-      - discovery.type=single-node
-      - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
-      - bootstrap.memory_lock=true
-      - xpack.graph.enabled=false
-      - xpack.watcher.enabled=false
-      - xpack.license.self_generated.type=basic
+      discovery.type: single-node
+      http.max_content_length: 200mb #allow 200mb of content to be sent for indexing
+      bootstrap.memory_lock: true
+      xpack.graph.enabled: false
+      xpack.watcher.enabled: false
+      xpack.license.self_generated.type: basic
     ulimits:
       memlock:
         soft: -1
@@ -287,7 +298,7 @@ services:
     networks:
       - elastic
     healthcheck:
-      # test: in dockerfile
+      test: curl -f -XGET 'http://localhost:9600/?pretty' || exit 1
       <<: *slow-start-healthcheck
     depends_on:
       elasticsearch:
@@ -296,10 +307,10 @@ services:
   metricbeat:
     user: ***ARANGO_USERNAME***
     environment:
-      - MB_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - MB_ELASTICSEARCH_USERNAME=elastic
-      - MB_ELASTICSEARCH_PASSWORD=changeme
-      - MB_KIBANA_HOST=http://kibana:5601
+      MB_ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      MB_ELASTICSEARCH_USERNAME: elastic
+      MB_ELASTICSEARCH_PASSWORD: changeme
+      MB_KIBANA_HOST: http://kibana:5601
     build:
       context: metricbeat/
     volumes:
@@ -314,8 +325,8 @@ services:
       kibana:
         condition: service_healthy
     healthcheck:
-      # test: in dockerfile
-      <<: *snappy-healthcheck
+     test: metricbeat test output
+     <<: *snappy-healthcheck
     networks:
       - elastic
 
@@ -331,10 +342,10 @@ services:
       # This is needed for filebeat to load container log path as specified in filebeat.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     environment:
-      - ELASTICSEARCH_HOST="http://elasticsearch:9200"
-      - KIBANA_HOST="http://kibana:5601"
-      - ELASTICSEARCH_USERNAME="elastic"
-      - ELASTICSEARCH_PASSWORD="changeme"
+      ELASTICSEARCH_HOST: "http://elasticsearch:9200"
+      KIBANA_HOST: "http://kibana:5601"
+      ELASTICSEARCH_USERNAME: "elastic"
+      ELASTICSEARCH_PASSWORD: "changeme"
     command: ["--strict.perms=false"]
     depends_on:
       elasticsearch:
@@ -344,8 +355,8 @@ services:
       kibana:
         condition: service_healthy
     healthcheck:
-      # test: in dockerfile
-      <<: *snappy-healthcheck
+     test: ps aux | grep '[f]ilebeat' || exit 1
+     <<: *snappy-healthcheck
     networks:
       - frontend
       - backend
@@ -353,6 +364,7 @@ services:
 
 
 volumes:
+  node_modules:
   lmdb:
 
 networks:
