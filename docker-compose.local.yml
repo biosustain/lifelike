@@ -266,7 +266,7 @@ services:
         soft: -1
         hard: -1
     healthcheck:
-      # test: in dockerfile
+      test: curl -f http://localhost:9200 || exit 1
       <<: *slow-start-healthcheck
     networks:
       - backend
