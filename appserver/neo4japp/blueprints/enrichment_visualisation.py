@@ -86,6 +86,7 @@ def forward_request():
 def enrich_go():
     return forward_request()
 
+
 @bp.route('/enrich-with-context', methods=['POST'])
 def enrich_context():
     data = request.get_json()
