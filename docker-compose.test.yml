@@ -75,8 +75,6 @@ services:
       file: docker-compose.local.yml
       service: elasticsearch
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
-    healthcheck: # since we use different image than in dev/prod we need to redefined healthcheck
-      test: curl -f http://localhost:9200 || exit 1
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
