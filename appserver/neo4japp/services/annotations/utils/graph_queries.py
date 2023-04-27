@@ -35,7 +35,7 @@ node_labels = {
 
 
 def query_builder(parts):
-    return compose_lines(parts)
+    return compose_lines(*parts)
 
 
 def get_organisms_from_gene_ids_query():

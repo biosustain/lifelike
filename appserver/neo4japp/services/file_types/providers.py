@@ -447,13 +447,14 @@ def substitute_svg_images(map_content: FileContentBuffer, images: list, zip_file
     :returns: a modified svg file containing embedded images
     """
     icon_data = get_icons_data()
-    text_content = map_content.read().decode(BYTE_ENCODING)
-    text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
-    for image in images:
-        text_content = text_content.replace(
-            folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
-                zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
-    return FileContentBuffer(bytes(text_content, BYTE_ENCODING))
+    with map_content as bufferView:
+        text_content = bufferView.read().decode(BYTE_ENCODING)
+        text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+        for image in images:
+            text_content = text_content.replace(
+                folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+                    zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
+        return FileContentBuffer(bytes(text_content, BYTE_ENCODING))
 
 
 def get_fitting_lines(text, style, data):
@@ -544,7 +545,7 @@ def create_group_node(group: dict):
         (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     label_params = {
         'name': group['hash'] + '_label',
-        'label': escape(compose_lines(label_lines)),
+        'label': escape(compose_lines(*label_lines)),
         'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
@@ -574,7 +575,7 @@ def create_default_node(node: dict):
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': escape(compose_lines(label_lines)),
+        'label': escape(compose_lines(*label_lines)),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
             f"{data['x'] / SCALING_FACTOR},"
@@ -616,7 +617,7 @@ def create_image_label(node: dict):
     label_offset = -height / 2.0 - LABEL_OFFSET - \
         (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     return {
-        'label': escape(compose_lines(label_lines)),
+        'label': escape(compose_lines(*label_lines)),
         'pos': (
             f"{data['x'] / SCALING_FACTOR},"
             f"{(-data['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
@@ -1104,8 +1105,9 @@ class MapTypeProvider(BaseFileTypeProvider):
         folder = tempfile.TemporaryDirectory()
 
         try:
-            zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
-            json_graph = json.loads(zip_file.read('graph.json'))
+            with FileContentBuffer(file.content.raw_file) as bufferView:
+                zip_file = zipfile.ZipFile(bufferView)
+                json_graph = json.loads(zip_file.read('graph.json'))
         except KeyError as e:
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
@@ -1140,7 +1142,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
         if format == 'png':
-            graph.attr(dpi=100)
+            graph.attr(dpi="100")
 
         node_hash_type_dict = {}
         images = []
@@ -1257,12 +1259,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             content = substitute_svg_images(content, images, zip_file, folder.name)
 
         if format == 'pdf' and not self_contained_export:
-            reader = PdfFileReader(content, strict=False)
-            writer = PdfFileWriter()
-            writer.appendPagesFromReader(reader)
-            self.add_file_bookmark(writer, 0, file)
-            content = FileContentBuffer()
-            writer.write(content)
+            content = self._add_file_bookmark_to_pdf_content(content, file)
 
         return FileExport(
             content=content,
@@ -1325,7 +1322,10 @@ class MapTypeProvider(BaseFileTypeProvider):
         """
         final_bytes = FileContentBuffer()
         try:
-            images = [Image.open(self.get_file_export(file, 'png')) for file in files]
+            def openImage(image):
+                with image as bufferView:
+                    return Image.open(bufferView)
+            images = [openImage(self.get_file_export(file, 'png')) for file in files]
         except Image.DecompressionBombError as e:
             raise SystemError('One of the files exceeds the maximum size - it cannot be exported'
                               'as part of the linked export')
@@ -1342,10 +1342,12 @@ class MapTypeProvider(BaseFileTypeProvider):
             x_offset = int((max_width - im.size[0]) / 2)
             new_im.paste(im, (x_offset, y_offset))
             y_offset += im.size[1]
-        new_im.save(final_bytes, format='PNG')
+        with final_bytes as bufferView:
+            new_im.save(bufferView, format='PNG')
         return final_bytes
 
-    def add_file_bookmark(self, writer, page_number, file):
+    @staticmethod
+    def _add_file_bookmark(writer, page_number, file):
         file_bookmark = writer.addBookmark(file.path, page_number, bold=True)
         for line in (
             f'Description:\t{file.description}',
@@ -1355,6 +1357,18 @@ class MapTypeProvider(BaseFileTypeProvider):
             writer.addBookmark(
                 line, page_number, file_bookmark
             )
+
+    @classmethod
+    def _add_file_bookmark_to_pdf_content(cls, content: FileContentBuffer, file: Files):
+        with content as bufferView:
+            reader = PdfFileReader(bufferView, strict=False)
+            writer = PdfFileWriter()
+            writer.appendPagesFromReader(reader)
+            cls._add_file_bookmark(writer, 0, file)
+            new_content = FileContentBuffer()
+            with new_content as newBufferView:
+                writer.write(newBufferView)
+            return new_content
 
     def merge_pdfs(self, files: List[Files], link_to_page_map=None):
         """ Merge pdfs and add links to map.
@@ -1368,31 +1382,32 @@ class MapTypeProvider(BaseFileTypeProvider):
         links = []
         for origin_page, file in enumerate(files):
             out_file = self.get_file_export(file, 'pdf')
-            reader = PdfFileReader(out_file, strict=False)
-            # region Find internal links in pdf
-            for page in map(reader.getPage, range(reader.getNumPages())):
-                for annot in filter(
-                    lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
-                    map(
-                        lambda o: reader.getObject(o),
-                        page.get('/Annots', [])
-                    )
-                ):
-                    annotation = annot.get('/A')
-                    if annotation:
-                        uri = annotation.get('/URI')
-                        rect = annot.get('/Rect')
-                        destination_page = link_to_page_map.get(uri)
-                        if destination_page is not None:
-                            links.append(dict(
-                                pagenum=origin_page,
-                                pagedest=destination_page,
-                                rect=rect
-                            ))
-            # endregion
-            num_of_pages = writer.getNumPages()  # index of first attached page since this point
-            writer.appendPagesFromReader(reader)
-            self.add_file_bookmark(writer, num_of_pages, file)
+            with out_file as bufferView:
+                reader = PdfFileReader(bufferView, strict=False)
+                # region Find internal links in pdf
+                for page in map(reader.getPage, range(reader.getNumPages())):
+                    for annot in filter(
+                        lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
+                        map(
+                            lambda o: reader.getObject(o),
+                            page.get('/Annots', [])
+                        )
+                    ):
+                        annotation = annot.get('/A')
+                        if annotation:
+                            uri = annotation.get('/URI')
+                            rect = annot.get('/Rect')
+                            destination_page = link_to_page_map.get(uri)
+                            if destination_page is not None:
+                                links.append(dict(
+                                    pagenum=origin_page,
+                                    pagedest=destination_page,
+                                    rect=rect
+                                ))
+                # endregion
+                num_of_pages = writer.getNumPages()  # index of first attached page since this point
+                writer.appendPagesFromReader(reader)
+                self._add_file_bookmark(writer, num_of_pages, file)
 
         # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:
@@ -1427,31 +1442,37 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_images = params.get('new_images') or []
 
         new_content = FileContentBuffer()
-        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False)
+        with new_content as bufferView:
+            new_zip = zipfile.ZipFile(
+                bufferView,
+                'w',
+                zipfile.ZIP_DEFLATED,
+                strict_timestamps=False
+            )
 
-        # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
-        # to make sure that the graph.json is not copied as well.
-        images_to_delete.append('graph')
-        files_to_copy = [hash_id for hash_id in zip_file.namelist() if
-                         os.path.basename(hash_id).split('.')[0] not in images_to_delete]
-        for filename in files_to_copy:
-            new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
+            # Weirdly, zipfile will store both files rather than override on duplicate name,
+            # so we need to make sure that the graph.json is not copied as well.
+            images_to_delete.append('graph')
+            files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                             os.path.basename(hash_id).split('.')[0] not in images_to_delete]
+            for filename in files_to_copy:
+                new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
 
-        for image in new_images:
-            new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
-        if params.get('content_value') is not None:
-            new_graph = params['content_value'].read()
-        else:
-            graph_json = json.loads(zip_file.read('graph.json'))
-            new_graph_json = updater(graph_json)
-            validate_map(new_graph_json)
-            new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
+            for image in new_images:
+                new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
+            if params.get('content_value') is not None:
+                new_graph = params['content_value'].read()
+            else:
+                graph_json = json.loads(zip_file.read('graph.json'))
+                new_graph_json = updater(graph_json)
+                validate_map(new_graph_json)
+                new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
 
-        # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata! If
-        # the timestamp is included, otherwise identical zips will have different checksums. This
-        # is true for the two `writestr` calls above as well.
-        new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
-        new_zip.close()
+            # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata!
+            # If the timestamp is included, otherwise identical zips will have different checksums.
+            # This is true for the two `writestr` calls above as well.
+            new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
+            new_zip.close()
 
         return new_content
 
