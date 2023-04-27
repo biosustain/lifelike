@@ -4,8 +4,8 @@ from typing import Optional, Tuple
 
 from pipenv.vendor.ruamel import yaml
 
-from neo4japp.utils.transaction import get_transaction_id
 from neo4japp.utils.string import indent_lines, compose_lines
+from neo4japp.utils.transaction_id import transaction_id
 
 
 @dataclass(repr=False, eq=False, frozen=True)
@@ -24,7 +24,7 @@ class BaseServerException(ABC):
 
     @property
     def transaction_id(self):
-        return get_transaction_id()
+        return transaction_id
 
     @property
     def type(self):
