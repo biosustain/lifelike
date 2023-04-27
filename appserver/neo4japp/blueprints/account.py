@@ -331,8 +331,8 @@ class AccountSearchView(MethodView):
         on the project collaborators dialog.
         """
         current_user = g.current_user
-        query = re.sub("[%_]", "\\\\0", params['query'].strip())
-        like_query = f"%{query}%"
+        query_string = re.sub("[%_]", "\\\\0", params['query'].strip())
+        like_query = f"%{query_string}%"
 
         private_data_access = get_authorization_service().has_role(
             current_user, 'private-data-access'
@@ -345,8 +345,8 @@ class AccountSearchView(MethodView):
             .filter(or_(AppUser.first_name.ilike(like_query),
                         AppUser.last_name.ilike(like_query),
                         AppUser.username.ilike(like_query),
-                        AppUser.email == query,
-                        AppUser.hash_id == query))
+                        AppUser.email == query_string,
+                        AppUser.hash_id == query_string))
 
         # On the project collaborators dialog, we exclude ourselves because you can't
         # (as of writing) change your own permission level, but if you have the private-data-access
