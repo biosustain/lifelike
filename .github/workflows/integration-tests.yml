@@ -35,6 +35,9 @@ jobs:
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
+      - name: Check version
+        run: ${{ env.DOCKER_COMPOSE_CMD }} version
+
       - name: Migration Integrity Check
         run: ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver bin/migration-integrity-check
 
