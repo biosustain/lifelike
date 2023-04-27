@@ -68,12 +68,7 @@ x-appserver: &appserver
     FLASK_DEBUG: 1
     FLASK_ENV: development
     # Services
-    <<: *postgres
-    <<: *elasticsearch
-    <<: *neo4j
-    <<: *arango
-    <<: *redis
-    <<: *statisticalenrichment
+    <<: [*postgres, *elasticsearch, *neo4j, *arango, *redis, *statisticalenrichment]
     # Other
     DOMAIN: http://localhost:4200
     LMDB_HOME_FOLDER: /home/n4j/neo4japp/services/annotations/lmdb/
@@ -154,8 +149,7 @@ services:
       FLASK_DEBUG: 1
       FLASK_ENV: development
       # Services
-      <<: *neo4j
-      <<: *redis
+      <<: [*neo4j, *redis]
     volumes:
       - ./statistical-enrichment:/home/user
     networks:
@@ -177,8 +171,7 @@ services:
     environment:
       LOG_LEVEL: debug
       # Services
-      <<: *neo4j
-      <<: *redis
+      <<: [*neo4j, *redis]
     volumes:
       - ./cache-invalidator:/app
     networks:
