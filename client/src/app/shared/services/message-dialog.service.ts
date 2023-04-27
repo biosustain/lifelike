@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { assign as _assign } from 'lodash/fp';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
@@ -25,7 +24,7 @@ export class MessageDialog {
     const modalRef = this.modalService.open(MessageDialogComponent, {
       size: error.stacktrace ? 'lg' : 'md',
     });
-    _assign(modalRef.componentInstance, {type, error});
+    Object.assign(modalRef.componentInstance, {type, error});
     return modalRef.result;
   }
 }
