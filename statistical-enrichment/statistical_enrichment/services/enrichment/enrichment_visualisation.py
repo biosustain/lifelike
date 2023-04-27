@@ -36,7 +36,7 @@ class EnrichmentVisualisationService:
                     MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
                     WHERE g.name=geneName
                     // Get cluster aware eid
-                    RETURN DISTINCT g.meta_id
+                    RETURN DISTINCT g.meta_id as geneId
                     """,
                     taxId=organism_id,
                     gene_names=gene_names
