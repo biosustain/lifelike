@@ -13,6 +13,8 @@ x-slow-start-healthcheck: &slow-start-healthcheck
   start_period: 60s
   retries: 24
 
+#region Services
+
 # Postgres
 x-postgres: &postgres
   POSTGRES_HOST: pgdatabase
@@ -53,6 +55,7 @@ x-statisticalenrichment: &statisticalenrichment
   SE_HOST: statistical-enrichment
   SE_PORT: 5010
 
+#endregion
 
 x-appserver: &appserver
   extends:
