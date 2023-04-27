@@ -6,7 +6,6 @@ verify_ssl = true
 [dev-packages]
 pytest = "==5.3.5"
 pycodestyle = "==2.7.0"
-mypy = "==0.910"
 types-paramiko = "==2.7.0"
 types-redis = "==3.5.8"
 types-requests = "==2.25.8"
@@ -77,6 +76,7 @@ python-arango = "==7.5.2"
 gdown = "==4.6.0"
 openai = "*"
 types-cachetools = "*"
+mypy = "==0.981"
 
 [requires]
 python_version = "3.9"
