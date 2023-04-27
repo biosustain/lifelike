@@ -19,6 +19,18 @@ services:
     networks:
       - backend
 
+  seed:
+    extends:
+      file: docker-compose.local.yml
+      service: appserver
+    <<: *appserver
+    entrypoint: flask seed "fixtures/seed.json"
+    depends_on:
+      dev-setup:
+        condition: service_completed_successfully
+    networks:
+      - backend
+
   appserver:
     extends:
       file: docker-compose.local.yml
@@ -133,6 +145,7 @@ services:
 
 
 volumes:
+  node_modules:
   lmdb:
 
 networks:
