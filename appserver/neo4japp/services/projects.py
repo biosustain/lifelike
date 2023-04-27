@@ -149,7 +149,6 @@ class ProjectsService(RDBMSBaseDao):
         self,
         master_file: Files,
         content_id: int,
-        project: Projects,
         parent_id: int,
         user: AppUser,
         hash_id_map: Dict[str, str],
@@ -255,7 +254,6 @@ class ProjectsService(RDBMSBaseDao):
         self._add_generic_file(
             master_map,
             map_content_id,
-            project,
             parent_id,
             user,
             hash_id_map,
@@ -348,7 +346,6 @@ class ProjectsService(RDBMSBaseDao):
                 new_file = self._add_generic_file(
                     master_file,
                     master_file.content_id,
-                    new_project,
                     new_folder_stack[-1],
                     user,
                     file_hash_id_map,
