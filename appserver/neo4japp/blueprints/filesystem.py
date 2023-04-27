@@ -1502,7 +1502,7 @@ class FileExportView(FilesystemBaseView):
             try:
                 json_graph = json.loads(zip_file.read('graph.json'))
             except KeyError as e:
-                raise ValidationError(str(e)) from e
+                raise ValidationError('Graph file is corrupted') from e
             for node in chain(
                 json_graph['nodes'],
                 flatten(
