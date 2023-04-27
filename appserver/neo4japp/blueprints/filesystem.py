@@ -491,7 +491,7 @@ class FilesystemBaseView(MethodView):
                     if file.id == parent_file.id:
                         raise ValidationError(
                             f'A file or folder ({file.filename}) cannot be '
-                                              f'set as the parent of itself.',
+                            f'set as the parent of itself.',
                             "parentHashId"
                         ,
                         )
