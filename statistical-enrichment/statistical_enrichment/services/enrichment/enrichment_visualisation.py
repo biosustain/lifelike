@@ -36,14 +36,7 @@ class EnrichmentVisualisationService:
                     MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
                     WHERE g.name=geneName
                     // Get cluster aware eid
-                    CALL {
-                        WITH g
-                        MATCH p=(g)-[:IS*0..2]-()
-                        UNWIND nodes(p) as gene
-                        WITH gene.eid as gene_eid ORDER BY gene_eid
-                        RETURN apoc.text.join(collect(DISTINCT gene_eid), ',') as geneId
-                    }
-                    RETURN geneId
+                    RETURN DISTINCT g.meta_id
                     """,
                     taxId=organism_id,
                     gene_names=gene_names
@@ -83,10 +76,7 @@ class EnrichmentVisualisationService:
                     CALL {
                         WITH go_genes
                         UNWIND go_genes as go_gene
-                        MATCH p=(go_gene)-[:IS*0..2]-()
-                        UNWIND nodes(p) as gene
-                        WITH go_gene, gene.eid as gene_eid ORDER BY gene_eid
-                        WITH go_gene, apoc.text.join(collect(DISTINCT gene_eid), ',') as go_genes_eid
+                        WITH go_gene, go_gene.meta_id as go_genes_eid
                         RETURN collect(DISTINCT go_genes_eid) as go_genes_eids
                     }
                     RETURN

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="LL-5014 Create meta_id property for cross db gene clustering" author="dommas">
+    <comment>LL-5014 Create meta_id property for cross db gene clustering, created on 04/27/2023</comment>
+    <sql>
+      CALL apoc.periodic.iterate(
+        "MATCH (g:Gene) RETURN g",
+        "
+        CALL apoc.path.spanningTree(g, {
+            relationshipFilter: "IS",
+            labelFilter: "+Gene"
+        })
+        YIELD path
+        UNWIND nodes(path) as gene
+        WITH gene.eid as gene_eid ORDER BY gene_eid
+        SET g.meta_id = apoc.text.join(collect(DISTINCT gene_eid), '|')
+        ",
+        {batchSize:5000, params: {rows: $rows}}
+      );
+    </sql>
+  </changeSet>
+</databaseChangeLog>
