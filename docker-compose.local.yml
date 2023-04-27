@@ -98,10 +98,8 @@ services:
   appserver:
     <<: *appserver
     healthcheck:
-      # test: in dockerfile
-      <<: *snappy-healthcheck
-    healthcheck:
       test: curl -f http://localhost:5000/meta/ || exit 1
+      <<: *snappy-healthcheck
     depends_on:
       worker:
           condition: service_started
