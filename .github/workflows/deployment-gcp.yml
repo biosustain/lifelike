@@ -67,6 +67,8 @@ jobs:
             path: ./annotator
           - image: post-annotator
             path: ./post-annotator
+          - image: elastic-indexer
+            path: ./elastic-indexer
           - image: rabbitmq
             path: ./rabbitmq
 
