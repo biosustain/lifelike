@@ -111,7 +111,7 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
     this.fileList = [];
 
     // Add new files
-    for (let file of Array.from(event.target.files)) {
+    for (const file of Array.from(event.target.files)) {
       this.fileList.push(file);
     }
   }

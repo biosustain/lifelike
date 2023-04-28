@@ -606,7 +606,10 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
-                    file.filename = Files.generate_non_conflicting_filename(file.filename, file.parent.id)
+                    file.filename = Files.generate_non_conflicting_filename(
+                        file.filename,
+                        file.parent.id
+                    )
                 except ValueError:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',

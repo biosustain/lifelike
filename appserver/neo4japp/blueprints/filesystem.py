@@ -1017,7 +1017,10 @@ class FileListView(FilesystemBaseView):
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
-                    file.filename = Files.generate_non_conflicting_filename(file.filename, file.parent.id)
+                    file.filename = Files.generate_non_conflicting_filename(
+                        file.filename,
+                        file.parent.id
+                    )
                 except ValueError as e:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
@@ -1318,15 +1321,15 @@ class FileBulkUploadView(FilesystemBaseView):
                 # Annotation options
                 # ========================================
 
-                fallback_organism = {
+                fb_organism = {
                     'organism_name': None,
                     'organism_synonym': None,
                     'organism_taxonomy_id': None
                 }
                 if params.get('fallback_organism', None):
-                    fallback_organism['organism_name'] = params['fallback_organism']['organism_name']
-                    fallback_organism['organism_synonym'] = params['fallback_organism']['synonym']
-                    fallback_organism['organism_taxonomy_id'] = params['fallback_organism']['tax_id']
+                    fb_organism['organism_name'] = params['fallback_organism']['organism_name']
+                    fb_organism['organism_synonym'] = params['fallback_organism']['synonym']
+                    fb_organism['organism_taxonomy_id'] = params['fallback_organism']['tax_id']
 
                 # ========================================
                 # Commit
@@ -1346,9 +1349,9 @@ class FileBulkUploadView(FilesystemBaseView):
                 file.doi = doi
                 file.filename = filename
                 file.parent = parent
-                file.organism_name = fallback_organism['organism_name']
-                file.organism_synonym = fallback_organism['organism_synonym']
-                file.organism_taxonomy_id = fallback_organism['organism_taxonomy_id']
+                file.organism_name = fb_organism['organism_name']
+                file.organism_synonym = fb_organism['organism_synonym']
+                file.organism_taxonomy_id = fb_organism['organism_taxonomy_id']
                 file.annotation_configs = params.get('annotation_configs', None)
 
                 db.session.add(file)
