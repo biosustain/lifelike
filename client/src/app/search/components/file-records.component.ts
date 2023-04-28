@@ -10,6 +10,7 @@ import { PDFResult } from 'app/interfaces';
   encapsulation: ViewEncapsulation.None
 })
 export class FileRecordsComponent implements OnInit {
+  encodeURIComponent = encodeURIComponent;
 
   @Input() results: PDFResult;
 

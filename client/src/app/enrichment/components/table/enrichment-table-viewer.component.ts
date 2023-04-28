@@ -436,4 +436,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       }
     }
   }
+
+    protected readonly encodeURIComponent = encodeURIComponent;
 }

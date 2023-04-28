@@ -79,6 +79,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   sourceData$ = defer(() => of(this.map?.getGraphEntitySources()));
 
+  get mapEditLink() {
+    return ['/projects', encodeURIComponent(this.map?.project.name), 'maps', this.map?.hashId, 'edit'];
+  }
 
   get shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();

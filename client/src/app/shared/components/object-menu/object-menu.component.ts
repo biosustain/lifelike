@@ -20,6 +20,7 @@ import { ObjectTypeService } from 'app/file-types/services/object-type.service';
   templateUrl: './object-menu.component.html',
 })
 export class ObjectMenuComponent implements AfterViewInit, OnChanges {
+  encodeURIComponent = encodeURIComponent
 
   @Input() object: FilesystemObject;
   @Input() forEditing = true;
