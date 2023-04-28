@@ -14,8 +14,7 @@ from sqlalchemy.sql import select
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import login_exempt
-from neo4japp.exceptions import RecordNotFound, CannotCreateNewUser, FailedToUpdateUser, \
-    AuthenticationError
+from neo4japp.exceptions import RecordNotFound
 from neo4japp.constants import (
     MAX_ALLOWED_LOGIN_FAILURES,
     MAX_TEMP_PASS_LENGTH,
@@ -358,6 +357,7 @@ def unlock_user(hash_id):
             db.session.rollback()
             raise
     return jsonify(dict(result='')), 204
+
 
 class AccountSearchView(MethodView):
 

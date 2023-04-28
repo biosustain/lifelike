@@ -69,7 +69,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
-import { ObjectBulkUploadDialogComponent } from '../components/dialog/object-bulk-upload-dialog.component'
+import { ObjectBulkUploadDialogComponent } from '../components/dialog/object-bulk-upload-dialog.component';
 
 interface CreationResult {
   result?: FilesystemObject;
@@ -534,7 +534,7 @@ export class ObjectCreationService {
         fallbackOrganism: dialogValue.fallbackOrganism,
         annotationConfigs: dialogValue.annotationConfigs,
       });
-      dialogValue.files.forEach((file: File) => formData.append('files', file, file.name))
+      dialogValue.files.forEach((file: File) => formData.append('files', file, file.name));
       const progressDialogRef = this.progressDialog.display({
         title: `Uploading files...`,
         progressObservables: [new BehaviorSubject<Progress>(new Progress({}))],
@@ -545,7 +545,7 @@ export class ObjectCreationService {
         () => progressDialogRef.close(),
       );
     });
-    return dialogRef.result
+    return dialogRef.result;
   }
 }
 

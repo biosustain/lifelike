@@ -4,7 +4,8 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { filter, map, publish, refCount } from 'rxjs/operators';
 
-import { ResultList, ResultMapping, SingleResult } from 'app/shared/schemas/common';
+import { MimeTypes } from 'app/shared/constants';
+import { ResultList, ResultMapping } from 'app/shared/schemas/common';
 import { Annotation } from 'app/pdf-viewer/annotation-type';
 import {
   SortingAlgorithmId
@@ -18,8 +19,6 @@ import {
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest, HttpObservableResponse,
 } from '../schema';
-import { FilesystemObject } from '../models/filesystem-object';
-import { MimeTypes } from 'app/shared/constants';
 
 @Injectable()
 export class AnnotationsService {
@@ -51,9 +50,9 @@ export class AnnotationsService {
   generateAnnotations(hashIds: string[], mimeType: string, request: PDFAnnotationGenerationRequest = {}):
     HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>> {
     let requestUrl: string;
-    if (mimeType == MimeTypes.Pdf) {
+    if (mimeType === MimeTypes.Pdf) {
       requestUrl = '/api/filesystem/annotations/generate/pdf';
-    } else if (mimeType == MimeTypes.EnrichmentTable) {
+    } else if (mimeType === MimeTypes.EnrichmentTable) {
       requestUrl = '/api/filesystem/annotations/generate/enrichment-table';
     }
     const progress$ =  this.http.post<ResultMapping<AnnotationGenerationResultData>>(
