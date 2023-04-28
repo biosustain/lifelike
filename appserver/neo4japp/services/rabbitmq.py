@@ -24,4 +24,4 @@ async def send(body: dict, queue: str) -> None:
             routing_key=queue,
         )
 
-        current_app.logger.info(f' [x] Sent {message!r}')
+        current_app.logger.info(f' [x] Sent {queue} {message!r}')

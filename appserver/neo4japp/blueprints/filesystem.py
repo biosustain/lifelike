@@ -93,7 +93,11 @@ from neo4japp.schemas.filesystem import (
 from neo4japp.services.annotations.annotator_interface import send_pdf_annotation_request
 from neo4japp.services.annotations.globals_service import get_global_exclusion_annotations
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.providers import BiocTypeProvider, DirectoryTypeProvider
+from neo4japp.services.file_types.providers import (
+    BiocTypeProvider,
+    DirectoryTypeProvider,
+    PDFTypeProvider
+)
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
 from neo4japp.utils.collections import window, find_index
@@ -1013,7 +1017,7 @@ class FileListView(FilesystemBaseView):
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
-                    file.filename = file.generate_non_conflicting_filename()
+                    file.filename = Files.generate_non_conflicting_filename(file.filename, file.parent.id)
                 except ValueError as e:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
@@ -1185,22 +1189,12 @@ class FileBulkUploadView(FilesystemBaseView):
         """Endpoint to upload many files at once."""
 
         current_user = g.current_user
-        file_type_service = get_file_type_service()
 
         results = {}
         global_exclusions = get_global_exclusion_annotations()
         for upload in params['files']:
             current_app.logger.info(f'Processing file {upload.filename}...')
             try:
-                file = Files()
-                file.filename = upload.filename
-                file.user = current_user
-                file.creator = current_user
-                file.modifier = current_user
-                file.public = params.get('public', False)
-                file.upload_url = None
-                file.mime_type = 'application/pdf'
-
                 buffer = FileContentBuffer(stream=upload)
 
                 # ========================================
@@ -1233,9 +1227,7 @@ class FileBulkUploadView(FilesystemBaseView):
 
                 # TODO: Check max hierarchy depth
 
-                file.parent = parent
-
-                assert file.parent is not None
+                assert parent is not None
 
                 # ========================================
                 # Filename conflict resolution
@@ -1245,54 +1237,35 @@ class FileBulkUploadView(FilesystemBaseView):
                 # without extra work
 
                 copy_behavior = params.get('copy_behavior', CopyBehavior.Rename)
+                filename = upload.filename
 
                 if copy_behavior == CopyBehavior.Rename:
-                    # Filenames could conflict, so we may need to generate a new filename
-                    # Trial 1: First attempt
-                    # Trial 2: Try adding (N+1) to the filename and try again
-                    # Trial 3: Try Trial 2 again (in case of a race condition)
-                    # - Only does something if the transaction mode is in READ COMMITTED or
-                    #  worse (!)
-                    # Trial 4: Give up
-                    for trial in range(4):
-                        if 1 <= trial <= 2:  # Try adding (N+1)
-                            try:
-                                file.filename = file.generate_non_conflicting_filename()
-                                current_app.logger.info(
-                                    f'New file had conflicting name, using {file.filename} instead.'
-                                )
-                                break
-                            except ValueError as e:
-                                raise ValidationError(
-                                    'Filename conflicts with an existing file in the same folder.',
-                                    "filename"
-                                ) from e
-                        elif trial == 3:  # Give up
-                            raise ValidationError(
-                                'Filename conflicts with an existing file in the same folder.',
-                                "filename"
-                            )
+                    filename = Files.generate_non_conflicting_filename(filename, parent.id)
+                    if filename != upload.filename:
+                        current_app.logger.info(
+                            f'New file had conflicting name, using {filename} instead.'
+                        )
                 else:
                     existing_file: Files = db.session.query(
                         Files
                     ).filter(
                         and_(
-                            Files.parent_id == file.parent.id,
-                            Files.filename == file.filename
+                            Files.parent_id == parent.id,
+                            Files.filename == filename
                         )
                     ).one_or_none()
                     if copy_behavior == CopyBehavior.Skip and existing_file is not None:
                         # If the filename already exists in this folder, skip to the next file
                         # without committing this one
                         current_app.logger.info(
-                            f'File with name "{file.filename}" already exists in folder with id ' +
-                            f'{file.parent.id}. Skipping.'
+                            f'File with name "{filename}" already exists in folder with id ' +
+                            f'{parent.id}. Skipping.'
                         )
                         continue
                     elif copy_behavior == CopyBehavior.Overwrite and existing_file is not None:
                         current_app.logger.info(
-                            f'File with name "{file.filename}" already exists in folder with id ' +
-                            '{file.parent.id}. Overwriting.'
+                            f'File with name "{filename}" already exists in folder with id ' +
+                            f'{parent.id}. Overwriting.'
                         )
                         existing_file.delete()
 
@@ -1308,14 +1281,14 @@ class FileBulkUploadView(FilesystemBaseView):
                     raise ValidationError(
                         'Your file could not be processed because it is too large.')
 
-                # Get the provider based on what we know now
-                provider = file_type_service.get(file)
+                provider = PDFTypeProvider()
 
                 # Check if the user can even upload this type of file
                 if not provider.can_create():
                     raise ValidationError(f"The provided file type is not accepted.")
 
                 # Validate the content
+                doi = None
                 try:
                     provider.validate_content(
                         buffer,
@@ -1328,13 +1301,14 @@ class FileBulkUploadView(FilesystemBaseView):
                 else:
                     try:
                         # Get the DOI only if content could be validated
-                        file.doi = provider.extract_doi(buffer)
+                        doi = provider.extract_doi(buffer)
                     except Warning as w:
                         warn(w)
 
                 # Save the file content if there's any
+                content_id = None
                 if size:
-                    file.content_id = FileContent.get_or_create(buffer)
+                    content_id = FileContent.get_or_create(buffer)
                     try:
                         buffer.close()
                     except Exception:
@@ -1344,17 +1318,38 @@ class FileBulkUploadView(FilesystemBaseView):
                 # Annotation options
                 # ========================================
 
+                fallback_organism = {
+                    'organism_name': None,
+                    'organism_synonym': None,
+                    'organism_taxonomy_id': None
+                }
                 if params.get('fallback_organism', None):
-                    file.organism_name = params['fallback_organism']['organism_name']
-                    file.organism_synonym = params['fallback_organism']['synonym']
-                    file.organism_taxonomy_id = params['fallback_organism']['tax_id']
-
-                if params.get('annotation_configs'):
-                    file.annotation_configs = params['annotation_configs']
+                    fallback_organism['organism_name'] = params['fallback_organism']['organism_name']
+                    fallback_organism['organism_synonym'] = params['fallback_organism']['synonym']
+                    fallback_organism['organism_taxonomy_id'] = params['fallback_organism']['tax_id']
 
                 # ========================================
                 # Commit
                 # ========================================
+
+                # Create the file object AFTER calculating properties so we can avoid unnecessary
+                # update events.
+                file = Files()
+                file.filename = upload.filename
+                file.user = current_user
+                file.creator = current_user
+                file.modifier = current_user
+                file.public = params.get('public', False)
+                file.upload_url = None
+                file.mime_type = 'application/pdf'
+                file.content_id = content_id
+                file.doi = doi
+                file.filename = filename
+                file.parent = parent
+                file.organism_name = fallback_organism['organism_name']
+                file.organism_synonym = fallback_organism['organism_synonym']
+                file.organism_taxonomy_id = fallback_organism['organism_taxonomy_id']
+                file.annotation_configs = params.get('annotation_configs', None)
 
                 db.session.add(file)
                 db.session.commit()

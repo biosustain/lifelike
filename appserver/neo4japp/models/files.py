@@ -29,7 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm import Mapper, column_property
+from sqlalchemy.orm import Mapper, column_property, object_session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import Optional, List, Dict
@@ -365,7 +365,8 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def extension(self):
         return Path(self.filename).suffix
 
-    def generate_non_conflicting_filename(self):
+    @classmethod
+    def generate_non_conflicting_filename(cls, filename, parent_id):
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
 
@@ -376,8 +377,21 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         :raises:
             ValueError: if a new (reasonable) filename cannot be found
         """
+        # First, check if there even is another file with the same name
+        matching_files = db.session.query(
+            Files
+        ).filter(
+            and_(
+                Files.filename == filename,
+                Files.parent_id == parent_id
+            )
+        ).all()
 
-        file_name, file_ext = os.path.splitext(self.filename)
+        if len(matching_files) == 0:
+            # The given filename is acceptable, so return it without calculating a new one
+            return filename
+
+        file_name, file_ext = os.path.splitext(filename)
         file_ext_len = len(file_ext)
 
         # Remove the file extension from the filename column in the table
@@ -397,7 +411,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         q_used_indices = db.session.query(
             sqlalchemy.cast(c_name_index, sqlalchemy.Integer).label('index')) \
             .select_from(Files) \
-            .filter(Files.parent_id == self.parent_id,
+            .filter(Files.parent_id == parent_id,
                     Files.filename.op('~')(
                         f'^{re.escape(file_name)} \\(([0-9]+)\\){re.escape(file_ext)}$'),
                     Files.recycling_date.is_(None),
@@ -416,7 +430,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         new_filename = f"{file_name} ({next_index}){file_ext}"
 
         # Check that the new filename doesn't exceed the length of the column
-        if len(self.filename) > Files.filename.property.columns[0].type.length:
+        if len(filename) > Files.filename.property.columns[0].type.length:
             raise ValueError('new filename would exceed the length of the column')
 
         return new_filename
@@ -638,6 +652,10 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_index_file_request
 
     try:
+        current_app.logger.info(
+            f'Attempting to index file in elastic with hash_id: {target.hash_id}',
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+        )
         send_bulk_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
     except Exception as e:
         raise ServerException(
@@ -713,16 +731,16 @@ def _after_file_update(target: Files, changes: dict):
                 # Don't need to update the target file, since we're re-indexing it entirely anyway.
                 updated_files.pop(target.hash_id)
 
-            current_app.logger.info(
-                f'Attempting to update files in elastic with hash_ids: ' +
-                f'{list(updated_files.keys())}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
-            )
-
             # If there are no files to update, don't send a request! This can happen if target is
             # not a folder and its content changed. In this case, we've just sent a re-index
             # request anyway.
             if len(updated_files):
+                current_app.logger.info(
+                    f'Attempting to update files in elastic with hash_ids: ' +
+                    f'{list(updated_files.keys())}',
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                )
+
                 # TODO: Only need to update children if the folder name changes (is this true? any
                 # other cases where we would do this? Maybe safer to just always update file path
                 # any time the parent changes...)
