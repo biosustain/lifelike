@@ -14,7 +14,6 @@ services:
       file: docker-compose.local.yml
       service: appserver
     <<: *appserver
-    restart: on-failure:3 # elastic is sometimes down during start
     entrypoint: ./bin/dev-db-setup
     networks:
       - backend

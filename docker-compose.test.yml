@@ -4,14 +4,13 @@ name: '***ARANGO_DB_NAME***-testing'
 
 x-appserver: &appserver
   environment:
-    - ELASTIC_FILE_INDEX_ID=file_ci
+    ELASTIC_FILE_INDEX_ID: file_ci
 
 services:
   dev-setup:
     extends:
       file: docker-compose.local.yml
       service: appserver
-    restart: on-failure:3 # elastic is sometimes down during start
     entrypoint: ./bin/dev-db-setup
     networks:
       - backend
@@ -42,7 +41,7 @@ services:
       service: pgdatabase
     restart: on-failure
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: postgres
 
   graphdatabase:
     extends:
@@ -51,8 +50,8 @@ services:
     image: neo4j:4.4-community
     restart: on-failure
     environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+      NEO4J_AUTH: neo4j/password
+      NEO4JLABS_PLUGINS: "[\"apoc\", \"n10s\"]"
 
   arangodb:
     extends:
@@ -76,8 +75,8 @@ services:
       service: elasticsearch
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
     environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
+      discovery.type: single-node
+      bootstrap.memory_lock: true
 
 volumes:
   lmdb:
