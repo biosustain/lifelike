@@ -1,4 +1,3 @@
-# CI Test
 version: "3.9"
 name: '***ARANGO_DB_NAME***-testing'
 
@@ -11,6 +10,8 @@ services:
     extends:
       file: docker-compose.local.yml
       service: appserver
+    healthcheck:
+      test: exit 0
     entrypoint: ./bin/dev-db-setup
     networks:
       - backend
