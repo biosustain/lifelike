@@ -1,5 +1,7 @@
 version: "3.9"
 name: '***ARANGO_DB_NAME***-development'
+# This configuration includes port mapping to interact with ***ARANGO_DB_NAME*** running locally
+# + utility to reset local dbs
 
 x-appserver: &appserver
   env_file:

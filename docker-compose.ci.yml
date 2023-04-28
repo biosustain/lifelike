@@ -1,6 +1,6 @@
 version: "3.9"
-name: '***ARANGO_DB_NAME***-testing'
-# This configuration allows to sping local testing enviroment
+name: '***ARANGO_DB_NAME***-ci'
+# This is configuration aids running ***ARANGO_DB_NAME*** instance in CI enviroment (without writting to disk)
 
 x-appserver: &appserver
   environment:
@@ -9,7 +9,7 @@ x-appserver: &appserver
 services:
   dev-setup:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: appserver
     healthcheck:
       test: exit 0
@@ -19,7 +19,7 @@ services:
 
   appserver:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: appserver
     <<: *appserver
     depends_on:
@@ -28,18 +28,18 @@ services:
 
   worker:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: worker
     <<: *appserver
 
   pdfparser:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: pdfparser
 
   pgdatabase:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: pgdatabase
     restart: on-failure
     environment:
@@ -47,7 +47,7 @@ services:
 
   graphdatabase:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: graphdatabase
     image: neo4j:4.4-community
     restart: on-failure
@@ -57,7 +57,7 @@ services:
 
   arangodb:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: arangodb
     image: arangodb:3.9
     environment:
@@ -66,14 +66,14 @@ services:
 
   redis:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: redis
     image: redis:7-alpine
     command: redis-server --requirepass password
 
   elasticsearch:
     extends:
-      file: docker-compose.local.yml
+      file: docker-compose.yml
       service: elasticsearch
     image: ghcr.io/sbrg/***ARANGO_DB_NAME***-elasticsearch:latest
     environment:

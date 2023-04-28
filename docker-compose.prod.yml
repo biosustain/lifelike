@@ -1,5 +1,6 @@
 version: '3.9'
 name: '***ARANGO_DB_NAME***'
+# This configuration reference to precomputed services images
 
 services:
     appserver:
