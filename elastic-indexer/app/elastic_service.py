@@ -1,7 +1,7 @@
 import os
 
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import streaming_bulk
+from elasticsearch import AsyncElasticsearch
+from elasticsearch.helpers import async_streaming_bulk
 from typing import Dict, List
 
 from .constants import ATTACHMENT_PIPELINE_ID, FILE_INDEX_ID
@@ -12,7 +12,7 @@ logger = get_logger()
 
 def _get_elasticsearch_conxn():
     logger.info('Acquiring Elasticsearch connection...')
-    conxn = Elasticsearch(
+    conxn = AsyncElasticsearch(
         timeout=180,
         hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
@@ -20,10 +20,10 @@ def _get_elasticsearch_conxn():
     return conxn
 
 
-def streaming_bulk_update_files(updates: Dict[str, dict]):
+async def streaming_bulk_update_files(updates: Dict[str, dict]):
     elastic_client = _get_elasticsearch_conxn()
 
-    _streaming_bulk_documents(
+    await _streaming_bulk_documents(
         elastic_client,
         [
             _get_update_action_obj(hash_id, update, FILE_INDEX_ID)
@@ -34,10 +34,10 @@ def streaming_bulk_update_files(updates: Dict[str, dict]):
     elastic_client.indices.refresh(FILE_INDEX_ID)
 
 
-def streaming_bulk_delete_files(file_hash_ids: List[str]):
+async def streaming_bulk_delete_files(file_hash_ids: List[str]):
     elastic_client = _get_elasticsearch_conxn()
 
-    _streaming_bulk_documents(
+    await _streaming_bulk_documents(
         elastic_client,
         [_get_delete_obj(hash_id, FILE_INDEX_ID) for hash_id in file_hash_ids]
     )
@@ -45,10 +45,10 @@ def streaming_bulk_delete_files(file_hash_ids: List[str]):
     elastic_client.indices.refresh(FILE_INDEX_ID)
 
 
-def streaming_bulk_index_files(sources: Dict[str, dict]):
+async def streaming_bulk_index_files(sources: Dict[str, dict]):
     elastic_client = _get_elasticsearch_conxn()
 
-    _streaming_bulk_documents(
+    await _streaming_bulk_documents(
         elastic_client,
         [_get_index_obj(hash_id, source, FILE_INDEX_ID) for hash_id, source in sources.items()]
     )
@@ -88,24 +88,25 @@ def _get_delete_obj(file_hash_id: str, index_id: str) -> dict:
         '_id': file_hash_id
     }
 
-
-def _streaming_bulk_documents(elastic_client: Elasticsearch, documents):
+async def _streaming_bulk_documents(elastic_client: AsyncElasticsearch, documents):
     """
     Performs a series of bulk operations in elastic, determined by the `documents` input.
     These operations are done in series.
     """
+    async def gendata():
+        for doc in documents:
+            yield doc
+
     # `raise_on_exception` set to False so that we don't error out if one of the documents
     # fails to index
-    results = streaming_bulk(
+    async for success, info in async_streaming_bulk(
         client=elastic_client,
-        actions=documents,
+        actions=gendata(),
         max_retries=5,
         raise_on_error=False,
         raise_on_exception=False
-    )
-
-    for success, info in results:
+    ):
         if success:
-            logger.info(f'Elastic search bulk operation succeeded: {info}')
+            logger.info(f'Elasticsearch bulk operation succeeded: {info}')
         else:
-            logger.warning(f'Elastic search bulk operation failed: {info}')
+            logger.warning(f'Elasticsearch bulk operation failed: {info}')

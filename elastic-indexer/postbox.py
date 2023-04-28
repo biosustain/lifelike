@@ -25,31 +25,31 @@ RABBITMQ_CONNECTION_URL = f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSW
 logger = get_logger()
 
 
-def _handle_bulk_index_op(request: dict):
+async def _handle_bulk_index_op(request: dict):
     logger.info('Bulk index operation requested.')
-    streaming_bulk_index_files(request['sources'])
+    await streaming_bulk_index_files(request['sources'])
 
 
-def _handle_bulk_update_op(request: dict):
+async def _handle_bulk_update_op(request: dict):
     logger.info('Bulk update operation requested.')
-    streaming_bulk_update_files(request['updates'])
+    await streaming_bulk_update_files(request['updates'])
 
 
-def _handle_bulk_delete_op(request: dict):
+async def _handle_bulk_delete_op(request: dict):
     logger.info('Bulk delete operation requested.')
-    streaming_bulk_delete_files(request['hash_ids'])
+    await streaming_bulk_delete_files(request['file_hash_ids'])
 
 
-def _handle_request(request):
+async def _handle_request(request):
     try:
         op_type = request['op_type']
 
         if op_type == BULK_INDEX_OP:
-            _handle_bulk_index_op(request)
+            await _handle_bulk_index_op(request)
         if op_type == BULK_UPDATE_OP:
-            _handle_bulk_update_op(request)
+            await _handle_bulk_update_op(request)
         if op_type == BULK_DELETE_OP:
-            _handle_bulk_delete_op(request)
+            await _handle_bulk_delete_op(request)
 
     except KeyError as e:
         logger.error(e, exc_info=True)
@@ -64,7 +64,7 @@ async def on_message(message: AbstractIncomingMessage) -> None:
             request = json.loads(message.body)
             logger.debug(json.dumps(request, indent=4))
 
-            _handle_request(request)
+            await _handle_request(request)
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
             logger.error(f'Elasticsearch operation failed. Request contained malformed JSON body:')

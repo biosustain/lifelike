@@ -9,7 +9,7 @@ pycodestyle = "==2.5.0"
 
 [packages]
 aio-pika = "==9.0.5"
-elasticsearch = "==7.6.0"
+elasticsearch = {version = "==7.8.0", extras = ["async"]}
 
 [requires]
 python_version = "3.8.2"

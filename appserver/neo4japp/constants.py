@@ -576,7 +576,8 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'excluded_annotations',
     'organism_name',
     'organism_synonym',
-    'organism_taxonomy_id'
+    'organism_taxonomy_id',
+    'deletion_date'
 ]
 
 SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
