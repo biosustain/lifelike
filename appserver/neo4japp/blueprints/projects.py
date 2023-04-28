@@ -322,16 +322,12 @@ class ProjectListView(ProjectBaseView):
         project.creator = current_user
 
         try:
-            project_service.create_project_uncommitted(current_user, project)
-            db.session.commit()
+            with db.session.begin_nested():
+                project_service.create_project_uncommitted(current_user, project)
         except IntegrityError as e:
-            db.session.rollback()
             raise ValidationError(
                 'The project name already is already taken.', 'name'
             ) from e
-
-        db.session.commit()
-        # rollback in case of error?
 
         return self.get_project_response(project.hash_id, current_user)
 
