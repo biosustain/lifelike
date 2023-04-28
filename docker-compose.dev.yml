@@ -146,6 +146,10 @@ services:
 volumes:
   node_modules:
   lmdb:
+    driver_opts:
+      type: none
+      device: ${PWD}/appserver/neo4japp/services/annotations/lmdb
+      o: bind
 
 networks:
   frontend:

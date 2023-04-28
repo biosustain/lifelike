@@ -79,7 +79,7 @@ x-appserver: &appserver
     # OPENAI_API_KEY: "<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
   volumes:
     - ./appserver:/home/n4j
-    # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+    - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
     pgdatabase:
       condition: service_healthy
