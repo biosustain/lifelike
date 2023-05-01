@@ -15,8 +15,6 @@ from app.elastic_service import (
 from app.logs import get_logger
 
 
-
-
 # Get RabbitMQ vars
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
@@ -54,8 +52,9 @@ async def _handle_request(request):
 
     except KeyError as e:
         logger.error(e, exc_info=True)
-        logger.error(f'Elasticsearch operation failed. Unknown operation type.')
+        logger.error('Elasticsearch operation failed. Unknown operation type.')
         raise
+
 
 async def on_message(message: AbstractIncomingMessage) -> None:
     logger.info(f' [x] Received message {message!r}')
@@ -68,12 +67,12 @@ async def on_message(message: AbstractIncomingMessage) -> None:
             await _handle_request(request)
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
-            logger.error(f'Elasticsearch operation failed. Request contained malformed JSON body:')
+            logger.error('Elasticsearch operation failed. Request contained malformed JSON body:')
             logger.error(message.body)
             raise
     except Exception as e:
         logger.error(e, exc_info=True)
-        logger.error(f'Elasticsearch operation failed. Unhandled exception occurred. Request object:')
+        logger.error('Elasticsearch operation failed. Unhandled error occurred. Request object:')
         logger.error(json.dumps(request, indent=4))
         await message.reject(requeue=False)
     else:

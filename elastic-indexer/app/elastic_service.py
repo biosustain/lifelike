@@ -81,12 +81,14 @@ def _get_update_action_obj(file_hash_id: str, changes: dict, index_id: str) -> d
         'doc': changes,
     }
 
+
 def _get_delete_obj(file_hash_id: str, index_id: str) -> dict:
     return {
         '_op_type': 'delete',
         '_index': index_id,
         '_id': file_hash_id
     }
+
 
 async def _streaming_bulk_documents(elastic_client: AsyncElasticsearch, documents):
     """
