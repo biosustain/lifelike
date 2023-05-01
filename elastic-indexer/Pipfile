@@ -10,6 +10,7 @@ pycodestyle = "==2.5.0"
 [packages]
 aio-pika = "==9.0.5"
 elasticsearch = {version = "==7.8.0", extras = ["async"]}
+flake8 = "==6.0.0"
 
 [requires]
-python_version = "3.8.2"
+python_version = "3.9"

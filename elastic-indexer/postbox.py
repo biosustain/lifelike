@@ -16,6 +16,7 @@ from app.logs import get_logger
 
 
 
+
 # Get RabbitMQ vars
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Runs linting on only files that are staged
+staged_files=$(getStaged elastic-indexer '\.(py)$')
+
+# Turn debugging on by the flag
+if [[ -n $DEBUG_HOOKS ]];
+then
+  echo "> 🐛 flake8 version:"
+  docker exec elastic-indexer flake8 --version
+  echo "> 🐛 mypy version:"
+  docker exec elastic-indexer mypy --version
+  echo "> 🐛 pycodestyle version:"
+  docker exec elastic-indexer pycodestyle --version
+fi
+
+# shellcheck disable=SC2236
+if [[ -n $staged_files ]];
+then
+  (
+    echo "> 🌽 Running flake8..."
+    echo ${staged_files} | xargs docker exec elastic-indexer flake8
+  ) && (
+    echo "> 🥧 Running mypy..."
+    echo ${staged_files} | xargs docker exec elastic-indexer mypy
+  ) && (
+    echo "> 🐍 Running pycodestyle..."
+    echo ${staged_files} | xargs docker exec elastic-indexer pycodestyle
+  )
+else
+  echo "> Skipping..."
+fi
