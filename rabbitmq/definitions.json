@@ -3,8 +3,8 @@
         {"name": "/"}
     ],
     "users": [
-        { "name": "__RMQ_ADMIN_USERNAME__", "password": "__RMQ_ADMIN_PASSWORD__", "tags": "administrator" },
-        { "name": "__RMQ_MESSENGER_USERNAME__", "password": "__RMQ_MESSENGER_PASSWORD__", "tags": "" }
+        { "name": "$RMQ_ADMIN_USERNAME", "password": "$RMQ_ADMIN_PASSWORD", "tags": "administrator" },
+        { "name": "$RMQ_MESSENGER_USERNAME", "password": "$RMQ_MESSENGER_PASSWORD", "tags": "" }
     ],
     "permissions":[
         { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
@@ -21,7 +21,7 @@
             }
         },
         {
-            "name": "__ANNOTATOR_QUEUE__",
+            "name": "$ANNOTATOR_QUEUE",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -33,7 +33,7 @@
             }
         },
         {
-            "name": "__POST_ANNOTATOR_QUEUE__",
+            "name": "$POST_ANNOTATOR_QUEUE",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,
@@ -45,7 +45,7 @@
             }
         },
         {
-            "name": "__ELASTIC_INDEXER_QUEUE__",
+            "name": "$ELASTIC_INDEXER_QUEUE",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,

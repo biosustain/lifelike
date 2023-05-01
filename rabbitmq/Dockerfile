@@ -1,5 +1,7 @@
 FROM rabbitmq:3.11-management AS base
 
+RUN apt-get update && apt-get install -y gettext-base && apt-get clean
+
 ADD ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 ADD ./definitions.json /etc/rabbitmq/definitions.json
 
