@@ -37,6 +37,26 @@ x-appserver: &appserver
     - redis
     - arangodb
 
+x-annotator: &annotator
+  image: ***ARANGO_DB_NAME***.azurecr.io/annotator:${GITHUB_HASH}
+  environment:
+    - LOG_LEVEL=INFO
+    # RabbitMQ
+    - RMQ_MESSENGER_USERNAME=messenger
+    - RMQ_MESSENGER_PASSWORD=password
+    - ANNOTATOR_QUEUE=annotator
+    - POST_ANNOTATOR_QUEUE=post_annotator
+    # Arango
+    - ARANGO_HOST=http://arangodb:8529
+    - ARANGO_USERNAME=***ARANGO_USERNAME***
+    - ARANGO_PASSWORD=password
+    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+    # Other
+    - LMDB_HOME_FOLDER=/home/user/app/services/lmdb/
+  depends_on:
+    - arangodb
+    - rabbitmq
+
 services:
   appserver:
     <<: *appserver
@@ -45,6 +65,10 @@ services:
   worker:
     <<: *appserver
     command: rq worker -c rq_config --with-scheduler
+
+  annotator:
+    <<: *annotator
+    container_name: annotator
 
   postgres:
     image: postgres:13
@@ -77,3 +101,21 @@ services:
     environment:
       ARANGO_ROOT_PASSWORD: password
       LIFELIKE_DB_NAME: ***ARANGO_DB_NAME***
+
+  rabbitmq:
+    image: ${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/rabbitmq:${GITHUB_HASH:-latest}
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
+    container_name: rabbitmq
+    environment:
+      - ANNOTATOR_QUEUE=annotator
+      - POST_ANNOTATOR_QUEUE=post_annotator
+      - ELASTIC_INDEXER_QUEUE=elastic_indexer
+      - RMQ_ADMIN_USERNAME=admin
+      - RMQ_ADMIN_PASSWORD=password
+      - RMQ_MESSENGER_USERNAME=messenger
+      - RMQ_MESSENGER_PASSWORD=password
+    ports:
+      - 5672:5672
+      - 15672:15672

@@ -57,6 +57,53 @@ jobs:
         if: ${{ failure() }}
         run: ${{ env.DOCKER_COMPOSE_CMD }} logs --timestamps
 
+  annotator:
+    name: Annotator Testing
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_COMPOSE_CMD: docker-compose -f docker-compose.ci-test.yml
+
+    steps:
+      - name: Cancel Previous Runs
+        if: github.event_name != 'workflow_dispatch'
+        uses: styfle/cancel-workflow-action@0.10.0
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v3
+
+      - name: Build annotator image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: annotator
+          image_tag: ${{ github.sha }}
+          context: ./annotator
+          dockerfile: ./Dockerfile
+
+      - name: Create environment variable to pass in GitHub hash for Docker Compose
+        run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
+
+      - name: Linting and code style
+        run: |-
+          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps annotator mypy .
+          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps annotator pycodestyle .
+
+      - name: Bring up containers and wait for webserver to be ready
+        timeout-minutes: 10
+        run: |-
+          ${{ env.DOCKER_COMPOSE_CMD }} up -d
+
+      - name: Run PyTest
+        run: ${{ env.DOCKER_COMPOSE_CMD }} exec -T annotator pytest tests -p no:warnings
+
+      - name: Show Docker logs
+        if: ${{ failure() }}
+        run: ${{ env.DOCKER_COMPOSE_CMD }} logs --timestamps
+
   client:
     name: Client Linting and Testing
     runs-on: ubuntu-latest
