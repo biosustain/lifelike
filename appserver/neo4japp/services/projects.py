@@ -69,7 +69,7 @@ class ProjectsService(RDBMSBaseDao):
 
         return query.all()
 
-    def create_project_uncommitted(self, user: AppUser, projects: Projects) -> Projects:
+    def create_project(self, user: AppUser, projects: Projects) -> Projects:
         db.session.add(projects)
 
         ***ARANGO_USERNAME*** = Files()
@@ -91,10 +91,7 @@ class ProjectsService(RDBMSBaseDao):
         return projects
 
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
-        projects = self.create_project_uncommitted(user, projects)
-        db.session.commit()
-        # rollback in case of error?
-        return projects
+        return self.create_project(user, projects)
 
     def has_role(self, user: AppUser, projects: Projects) -> Optional[AppRole]:
         user_role = Projects.query_project_roles(user.id, projects.id).one_or_none()
@@ -129,16 +126,15 @@ class ProjectsService(RDBMSBaseDao):
         )
 
     def add_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
-        self.add_collaborator_uncommitted(user, role, projects)
-        self.session.commit()
+        return self.add_collaborator_uncommitted(user, role, projects)
 
     def edit_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
         self.remove_collaborator(user, projects)
-        self.add_collaborator(user, role, projects)
+        return self.add_collaborator(user, role, projects)
 
     def remove_collaborator(self, user: AppUser, projects: Projects):
         """Removes a collaborator"""
-        self.session.execute(
+        return self.session.execute(
             projects_collaborator_role.delete().where(
                 and_(
                     projects_collaborator_role.c.appuser_id == user.id,
@@ -147,11 +143,9 @@ class ProjectsService(RDBMSBaseDao):
             )
         )
 
-        self.session.commit()
-
     def _remove_role(self, user: AppUser, role: AppRole, projects: Projects):
         """Remove a role"""
-        self.session.execute(
+        return self.session.execute(
             projects_collaborator_role.delete().where(
                 and_(
                     projects_collaborator_role.c.appuser_id == user.id,
@@ -160,12 +154,11 @@ class ProjectsService(RDBMSBaseDao):
                 )
             )
         )
-        self.session.commit()
 
     def _copy_generic_file(
         self,
         master_file: Files,
-        content_id: int,
+        content: int,
         parent: Files,
         hash_id_map: Dict[str, str],
     ) -> Files:
@@ -183,7 +176,7 @@ class ProjectsService(RDBMSBaseDao):
             ),
             hash_id=hash_id_map[master_file.hash_id],
             parent=parent,
-            content_id=content_id,
+            content=content,
             public=False,
             pinned=False,
         )
@@ -249,10 +242,10 @@ class ProjectsService(RDBMSBaseDao):
         updated_map_content = mapTypeProvider.update_map(
             {}, map_content, update_map_links
         )
-        map_content_id = FileContent().get_or_create(updated_map_content)
+        map_content = FileContent().get_or_create(updated_map_content)
         return self._copy_generic_file(
             master_map,
-            map_content_id,
+            map_content,
             parent,
             hash_id_map,
         )
@@ -263,7 +256,7 @@ class ProjectsService(RDBMSBaseDao):
         project.description = f'Initial project for {user.username}'
         try:
             with db.session.begin_nested():
-                self.create_project_uncommitted(user, project)
+                self.create_project(user, project)
         except IntegrityError as e:
             current_app.logger.warning(
                 f'Failed to create initial project with default name {project.name} for user '
@@ -273,7 +266,7 @@ class ProjectsService(RDBMSBaseDao):
             project.name += '-' + uuid4().hex[:8]
             try:
                 with db.session.begin_nested():
-                    self.create_project_uncommitted(user, project)
+                    self.create_project(user, project)
             except IntegrityError as e:
                 current_app.logger.error(
                     f'Failed to create initial project for user {user.username} with modified '
@@ -344,7 +337,7 @@ class ProjectsService(RDBMSBaseDao):
             else:
                 new_file = self._copy_generic_file(
                     file,
-                    file.content_id,
+                    file.content,
                     parent,
                     file_hash_id_map,
                 )

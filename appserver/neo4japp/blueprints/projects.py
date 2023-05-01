@@ -256,6 +256,8 @@ class ProjectBaseView(MethodView):
     def update_projects(self, hash_ids: List[str], params: Dict, user: AppUser):
         changed_fields = set()
 
+        # https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#using-savepoint
+        update_transaction = db.session.begin_nested()
         projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids))
         self.check_project_permissions(projects, user, ['readable'])
         missing_hash_ids = get_missing_hash_ids(hash_ids, projects)
@@ -272,10 +274,11 @@ class ProjectBaseView(MethodView):
 
         if len(changed_fields):
             try:
-                db.session.commit()
+                update_transaction.commit()
             except IntegrityError as e:
-                db.session.rollback()
                 raise ValidationError("The project name is already taken.") from e
+        else:
+            update_transaction.rollback()
 
         return missing_hash_ids
 
@@ -323,11 +326,13 @@ class ProjectListView(ProjectBaseView):
 
         try:
             with db.session.begin_nested():
-                project_service.create_project_uncommitted(current_user, project)
+                project_service.create_project(current_user, project)
         except IntegrityError as e:
             raise ValidationError(
                 'The project name already is already taken.', 'name'
             ) from e
+
+        db.session.commit()
 
         return self.get_project_response(project.hash_id, current_user)
 
@@ -551,6 +556,8 @@ class ProjectCollaboratorsListView(ProjectBaseView):
 
         for user_hash_id in params['remove_user_hash_ids']:
             proj_service.remove_collaborator(user_map[user_hash_id], project)
+
+        db.session.commit()
 
         return self.get_bulk_collaborator_response(hash_id, Pagination(1, 100))
 

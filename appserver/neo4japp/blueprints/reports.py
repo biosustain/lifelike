@@ -42,35 +42,29 @@ class CopyrightInfringementReportView(MethodView):
             )
             db.session.add(copyright_infringement_report)
 
-        message = Mail(
-            from_email=MESSAGE_SENDER_IDENTITY,
-            to_emails=params['email'],
-            subject=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
-            html_content=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT.format(
-                url=params['url'],
-                description=params['description'],
-                name=params['name'],
-                company=params['company'],
-                address=params['address'],
-                country=params['country'],
-                city=params['city'],
-                province=params['province'],
-                zip=params['zip'],
-                phone=params['phone'],
-                fax=params['fax'],
-                email=params['email'],
-            ),
-        )
-        message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
-        try:
-            get_send_grid_service().send(message)
-        except Exception as e:
-            with db.session.begin_nested():
-                # If for some reason we cannot send a confirmation email, delete the row we just
-                # created and re-raise the error.
-                db.session.delete(copyright_infringement_report)
-                # rollback in case of error?
-            raise
+            message = Mail(
+                from_email=MESSAGE_SENDER_IDENTITY,
+                to_emails=params['email'],
+                subject=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
+                html_content=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT.format(
+                    url=params['url'],
+                    description=params['description'],
+                    name=params['name'],
+                    company=params['company'],
+                    address=params['address'],
+                    country=params['country'],
+                    city=params['city'],
+                    province=params['province'],
+                    zip=params['zip'],
+                    phone=params['phone'],
+                    fax=params['fax'],
+                    email=params['email'],
+                ),
+            )
+            message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
+            SEND_GRID_API_CLIENT.send(message)
+            # If for some reason we cannot send a confirmation email, the row we just
+            # created will be rolled back.
 
         return jsonify(dict(result=copyright_infringement_report.to_dict()))
 

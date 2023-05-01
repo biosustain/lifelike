@@ -222,19 +222,18 @@ class ManualAnnotationService:
             )
 
         try:
-            version = FileAnnotationsVersion()
-            version.cause = AnnotationChangeCause.USER
-            version.file = file
-            version.custom_annotations = file.custom_annotations
-            version.excluded_annotations = file.excluded_annotations
-            version.user_id = user.id
-            db.session.add(version)
+            with db.session.begin_nested():
+                version = FileAnnotationsVersion()
+                version.cause = AnnotationChangeCause.USER
+                version.file = file
+                version.custom_annotations = file.custom_annotations
+                version.excluded_annotations = file.excluded_annotations
+                version.user_id = user.id
+                db.session.add(version)
 
-            file.custom_annotations = [*inclusions, *file.custom_annotations]
+                file.custom_annotations = [*inclusions, *file.custom_annotations]
 
-            db.session.commit()
         except Exception as e:
-            db.session.rollback()
             raise ServerException(
                 message='A system error occurred while creating the annotation, '
                 'we are working on a solution. Please try again later.'
@@ -272,23 +271,22 @@ class ManualAnnotationService:
             removed_annotation_uuids = [uuid]
 
         try:
-            version = FileAnnotationsVersion()
-            version.cause = AnnotationChangeCause.USER
-            version.file = file
-            version.custom_annotations = file.custom_annotations
-            version.excluded_annotations = file.excluded_annotations
-            version.user_id = user.id
-            db.session.add(version)
+            with db.session.begin_nested():
+                version = FileAnnotationsVersion()
+                version.cause = AnnotationChangeCause.USER
+                version.file = file
+                version.custom_annotations = file.custom_annotations
+                version.excluded_annotations = file.excluded_annotations
+                version.user_id = user.id
+                db.session.add(version)
 
-            file.custom_annotations = [
+                file.custom_annotations = [
                 ann
                 for ann in file.custom_annotations
                 if ann['uuid'] not in removed_annotation_uuids
-            ]
+                ]
 
-            db.session.commit()
         except Exception as e:
-            db.session.rollback()
             raise ServerException(
                 message='A system error occurred while creating the annotation, '
                 'we are working on a solution. Please try again later.'
@@ -439,18 +437,17 @@ class ManualAnnotationService:
             )
 
         try:
-            version = FileAnnotationsVersion()
-            version.cause = AnnotationChangeCause.USER
-            version.file = file
-            version.custom_annotations = file.custom_annotations
-            version.excluded_annotations = file.excluded_annotations
-            version.user_id = user.id
-            db.session.add(version)
+            with db.session.begin_nested():
+                version = FileAnnotationsVersion()
+                version.cause = AnnotationChangeCause.USER
+                version.file = file
+                version.custom_annotations = file.custom_annotations
+                version.excluded_annotations = file.excluded_annotations
+                version.user_id = user.id
+                db.session.add(version)
 
-            file.excluded_annotations = updated_exclusions
-            db.session.commit()
+                file.excluded_annotations = updated_exclusions
         except Exception as e:
-            db.session.rollback()
             raise ServerException(
                 message='A system error occurred while creating the annotation, '
                 'we are working on a solution. Please try again later.',
@@ -632,10 +629,9 @@ class ManualAnnotationService:
                 )
 
                 try:
-                    db.session.add(global_list_annotation)
-                    db.session.commit()
+                    with db.session.begin_nested():
+                        db.session.add(global_list_annotation)
                 except Exception as e:
-                    db.session.rollback()
                     raise ServerException(
                         message='A system error occurred while creating the annotation, '
                         'we are working on a solution. Please try again later.',

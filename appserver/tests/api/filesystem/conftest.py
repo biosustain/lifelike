@@ -244,7 +244,7 @@ def map_file_in_project(
             ).encode('utf-8')
             zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
 
-    file_content_id = FileContent.get_or_create(content_buffer)
+    file_content = FileContent.get_or_create(content_buffer)
 
     if hasattr(request, 'param'):
         param: ParameterizedFile = request.param
@@ -256,7 +256,7 @@ def map_file_in_project(
         filename='a sankey',
         description='desc',
         user=project_owner_user,
-        content_id=file_content_id,
+        content=file_content,
         parent=project.***ARANGO_USERNAME***,
         public=param.public,
     )

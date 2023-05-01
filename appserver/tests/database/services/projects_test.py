@@ -50,6 +50,7 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     session.add(projects)
     session.flush()
     new_project = proj_service.create_projects(test_user, projects)
+    session.commit()
 
     user_role = Projects.query_project_roles(test_user.id, new_project.id).one_or_none()
 

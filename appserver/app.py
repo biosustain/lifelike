@@ -364,33 +364,31 @@ def validate_email(email):
 @click.argument("name", nargs=1)
 @click.argument("email", nargs=1, callback=validate_email)
 def create_user(name, email):
-    user = AppUser(
-        username=name,
-        first_name=name,
-        last_name=name,
-        email=email,
-        subject=email,
-    )
-    # set default role
-    account_service = get_account_service()
-    get_role = account_service.get_or_create_role('user')
-    user.roles.extend([get_role])
-    user.set_password('password')
-    db.session.add(user)
-    db.session.commit()
-    # rollback in case of error?
+    with db.session.begin():
+        user = AppUser(
+            username=name,
+            first_name=name,
+            last_name=name,
+            email=email,
+            subject=email,
+        )
+        # set default role
+        account_service = get_account_service()
+        get_role = account_service.get_or_create_role('user')
+        user.roles.extend([get_role])
+        user.set_password('password')
+        db.session.add(user)
 
 
 @app.cli.command("set-role")
 @click.argument("email", nargs=1)
 @click.argument("role", nargs=1)
 def set_role(email, role):
-    account_service = get_account_service()
-    user = AppUser.query.filter_by(email=email).one()
-    get_role = account_service.get_or_create_role(role)
-    user.roles.extend([get_role])
-    db.session.commit()
-    # rollback in case of error?
+    with db.session.begin():
+        account_service = get_account_service()
+        user = AppUser.query.filter_by(email=email).one()
+        get_role = account_service.get_or_create_role(role)
+        user.roles.extend([get_role])
 
 
 @app.cli.command('reset-elastic')
@@ -661,7 +659,7 @@ def add_file(
 
     # Save the file content if there's any
     if size:
-        file.content_id = FileContent.get_or_create(buffer)
+        file.content = FileContent.get_or_create(buffer)
 
     # ========================================
     # Commit and filename conflict resolution
@@ -673,27 +671,27 @@ def add_file(
     # Trial 3: Try adding (N+1) to the filename and try again (in case of a race condition)
     # Trial 4: Give up
     # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
-    with db.session.begin_nested():
-        for trial in range(4):
-            if 1 <= trial <= 2:  # Try adding (N+1)
-                try:
-                    file.filename = file.generate_non_conflicting_filename()
-                except ValueError:
-                    raise ValidationError(
-                        'Filename conflicts with an existing file in the same folder.',
-                        "filename",
-                    )
-            elif trial == 3:  # Give up
+    for trial in range(4):
+        if 1 <= trial <= 2:  # Try adding (N+1)
+            try:
+                file.filename = file.generate_non_conflicting_filename()
+            except ValueError:
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
-                    "filename",
+                        "filename",
+                    )
+        elif trial == 3:  # Give up
+            raise ValidationError(
+                'Filename conflicts with an existing file in the same folder.',
+                "filename",
                 )
+        try:
             with db.session.begin_nested():
-                db.session.add(file)
-                break
-
-    db.session.commit()
-    # rollback in case of error?
+                 db.session.add(file)
+        except Exception:
+            pass
+        else:
+            break
 
 
 @app.cli.command('merge-maps')
@@ -888,24 +886,25 @@ def merge_maps(user_id, filename, description, parent_id, maps):
 
         return {'nodes': nodes, 'edges': edges}
 
-    raw_map_data = [
-        [json.loads(raw_data[0]), raw_data[1]]
+    with db.session.begin():
+        raw_map_data = [
+            [json.loads(raw_data[0]), raw_data[1]]
         for raw_data in db.session.query(FileContent.raw_file, Files.filename)
         .join(Files, and_(Files.content_id == FileContent.id, Files.id.in_(maps)))
         .all()
-    ]
-    map_data = [
+        ]
+        map_data = [
         {'name': filename, 'nodes': file_data['nodes'], 'edges': file_data['edges']}
         for file_data, filename in raw_map_data
-    ]
+        ]
 
-    add_file(
-        filename,
-        description,
-        user_id,
-        parent_id,
+        add_file(
+            filename,
+            description,
+            user_id,
+            parent_id,
         json.dumps(merge_maps(map_data)).encode('utf-8'),
-    )
+        )
 
 
 @app.cli.command('generate-plotly-sankey-from-***ARANGO_DB_NAME***')
@@ -928,89 +927,89 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
 
         parent-id -- ID of the folder the new map should be added to
     """
-
-    sankey_file = (
+    with db.session.begin():
+        sankey_file = (
         db.session.query(
             FileContent.raw_file,
         )
         .join(
             Files, and_(Files.content_id == FileContent.id, Files.id == sankey_file_id)
-        )
+            )
         .one()
     )
 
-    sankey_data = json.loads(sankey_file[0].decode('utf-8'))
+        sankey_data = json.loads(sankey_file[0].decode('utf-8'))
 
-    traces = set()
-    node_ids_in_traces = {}
-    link_idx_in_traces = {}
-    for tn in sankey_data['graph']['trace_networks']:
-        tn_name = tn.get('description', tn.get('name', 'Unknown'))
-        traces.add(tn_name)
-        node_ids_in_traces[tn_name] = set()
-        link_idx_in_traces[tn_name] = set()
-        for trace in tn['traces']:
-            for path in trace['node_paths']:
-                node_ids_in_traces[tn_name].update(node_id for node_id in path)
-            link_idx_in_traces[tn_name].update(trace['edges'])
+        traces = set()
+        node_ids_in_traces = {}
+        link_idx_in_traces = {}
+        for tn in sankey_data['graph']['trace_networks']:
+            tn_name = tn.get('description', tn.get('name', 'Unknown'))
+            traces.add(tn_name)
+            node_ids_in_traces[tn_name] = set()
+            link_idx_in_traces[tn_name] = set()
+            for trace in tn['traces']:
+                for path in trace['node_paths']:
+                    node_ids_in_traces[tn_name].update(node_id for node_id in path)
+                link_idx_in_traces[tn_name].update(trace['edges'])
 
-    nodes_in_traces = {}
-    for node in sankey_data['nodes']:
-        db_label = node.get('type', 'Unknown')
-        color = ANNOTATION_STYLES_DICT.get(db_label.lower(), '#000000')['color']
-        plotly_node = {
-            'id': node['id'],
-            'label': node.get('label', node.get('displayName', 'Unknown')),
-            'databaseLabel': db_label,
-            'font': {
-                'color': color,
-            },
-            'color': {
-                'background': '#FFFFFF',
-                'border': color,
-                'hover': {
+        nodes_in_traces = {}
+        for node in sankey_data['nodes']:
+            db_label = node.get('type', 'Unknown')
+            color = ANNOTATION_STYLES_DICT.get(db_label.lower(), '#000000')['color']
+            plotly_node = {
+                'id': node['id'],
+                'label': node.get('label', node.get('displayName', 'Unknown')),
+                'databaseLabel': db_label,
+                'font': {
+                    'color': color,
+                },
+                'color': {
                     'background': '#FFFFFF',
                     'border': color,
-                },
-                'highlight': {
-                    'background': '#FFFFFF',
-                    'border': color,
+                    'hover': {
+                        'background': '#FFFFFF',
+                        'border': color,
+                    },
+                    'highlight': {
+                        'background': '#FFFFFF',
+                        'border': color,
                 },
             },
-        }
-        for trace, nodes_in_trace in node_ids_in_traces.items():
-            if node['id'] in nodes_in_trace:
-                if trace in nodes_in_traces:
-                    nodes_in_traces[trace].append(plotly_node)
-                else:
-                    nodes_in_traces[trace] = [plotly_node]
+            }
+            for trace, nodes_in_trace in node_ids_in_traces.items():
+                if node['id'] in nodes_in_trace:
+                    if trace in nodes_in_traces:
+                        nodes_in_traces[trace].append(plotly_node)
+                    else:
+                        nodes_in_traces[trace] = [plotly_node]
 
-    links_in_traces = {}
-    for trace, link_indexes in link_idx_in_traces.items():
-        links_in_traces[trace] = []
-        for idx in link_indexes:
-            link = sankey_data['links'][idx]
-            plotly_link = {
-                'id': str(uuid.uuid4()),
-                'from': link['source'],
-                'to': link['target'],
-                'label': link.get('label', link.get('description', 'Unknown')),
+        links_in_traces = {}
+        for trace, link_indexes in link_idx_in_traces.items():
+            links_in_traces[trace] = []
+            for idx in link_indexes:
+                link = sankey_data['links'][idx]
+                plotly_link = {
+                    'id': str(uuid.uuid4()),
+                    'from': link['source'],
+                    'to': link['target'],
+                    'label': link.get('label', link.get('description', 'Unknown')),
                 'color': {'color': '#0c8caa'},
                 'arrows': 'to',
-            }
-            links_in_traces[trace].append(plotly_link)
+                }
+                links_in_traces[trace].append(plotly_link)
 
-    for trace in traces:
-        nodes = nodes_in_traces[trace]
-        links = links_in_traces[trace]
+        for trace in traces:
+            nodes = nodes_in_traces[trace]
+            links = links_in_traces[trace]
 
-        add_file(
-            f"{'_'.join(trace.replace('/', '').split(' '))}.json",
-            '',
-            user_id,
-            parent_id,
+            add_file(
+                f"{'_'.join(trace.replace('/', '').split(' '))}.json",
+                '',
+                user_id,
+                parent_id,
             json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8'),
-        )
+            )
 
 
 @app.cli.command('find-broken-map-links')

@@ -602,7 +602,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
         db.session.bulk_update_mappings(Files, updated_files)
         db.session.commit()
-        # rollback in case of error?
 
         return jsonify(
             MultipleAnnotationGenerationResponseSchema().dump(
@@ -872,7 +871,7 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
             updated_files.append(update)
         db.session.bulk_update_mappings(Files, updated_files)
         db.session.commit()
-        # rollback in case of error?
+
         return jsonify({'results': 'Success'})
 
 
@@ -1136,6 +1135,8 @@ class GlobalAnnotationListView(MethodView):
                 raise ServerException(
                     message='A database error occurred when deleting the global inclusion(s).',
                 ) from e
+
+        db.session.commit()
 
         yield jsonify(dict(result='success'))
 

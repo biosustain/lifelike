@@ -119,109 +119,111 @@ class FilesystemBaseView(MethodView):
         :param params: the parameters
         :param user: the user that is making the change
         """
-        # ========================================
-        # Check
-        # ========================================
+        try:
+            with db.session.begin_nested():
+                # ========================================
+                # Check
+                # ========================================
         files_to_check = target_files[
             :
         ]  # Makes a copy of target_files so we don't mutate it
-        if parent_file is not None:
-            # Prevent recursive parent hash IDs
-            if parent_file.hash_id in [file.hash_id for file in target_files]:
-                raise ValidationError(
+                if parent_file is not None:
+                    # Prevent recursive parent hash IDs
+                    if parent_file.hash_id in [file.hash_id for file in target_files]:
+                        raise ValidationError(
                     f'An object cannot be set as the parent of itself.', 'parentHashId'
-                )
+                        )
 
-            # Check the specified parent to see if it can even be a parent
-            if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
-                raise ValidationError(
-                    f'The specified parent ({parent_file.hash_id}) is '
-                    f'not a folder. It is a file, and you cannot make files '
+                    # Check the specified parent to see if it can even be a parent
+                    if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
+                        raise ValidationError(
+                            f'The specified parent ({parent_file.hash_id}) is '
+                            f'not a folder. It is a file, and you cannot make files '
                     f'become a child of another file.',
                     'parentHashId',
-                )
-            files_to_check.append(parent_file)
+                        )
+                    files_to_check.append(parent_file)
 
         Filesystem.check_file_permissions(
             files_to_check, user, ['writable'], permit_recycled=False
         )
 
-        if 'content_value' in params and len(target_files) > 1:
-            # We don't allow multiple files to be changed due to a potential deadlock
-            # in FileContent.get_or_create(), and also because it's a weird use case
-            raise NotImplementedError(
+                if 'content_value' in params and len(target_files) > 1:
+                    # We don't allow multiple files to be changed due to a potential deadlock
+                    # in FileContent.get_or_create(), and also because it's a weird use case
+                    raise NotImplementedError(
                 "Cannot update the content of multiple files with this method"
             )
 
-        # ========================================
-        # Apply
-        # ========================================
-        file_type_service = get_file_type_service()
+                # ========================================
+                # Apply
+                # ========================================
+                file_type_service = get_file_type_service()
         update_modified_date = any(
             [param in UPDATE_DATE_MODIFIED_COLUMNS for param in params]
         )
 
-        for file in target_files:
-            assert file.calculated_project is not None
+                for file in target_files:
+                    assert file.calculated_project is not None
             is_***ARANGO_USERNAME***_dir = file.calculated_project.***ARANGO_USERNAME***_id == file.id
 
-            if 'description' in params:
-                if file.description != params['description']:
-                    file.description = params['description']
+                    if 'description' in params:
+                        if file.description != params['description']:
+                            file.description = params['description']
 
-            # Some changes cannot be applied to ***ARANGO_USERNAME*** directories
-            if not is_***ARANGO_USERNAME***_dir:
-                if parent_file is not None:
-                    # Re-check referential parent
-                    if file.id == parent_file.id:
+                    # Some changes cannot be applied to ***ARANGO_USERNAME*** directories
+                    if not is_***ARANGO_USERNAME***_dir:
+                        if parent_file is not None:
+                            # Re-check referential parent
+                            if file.id == parent_file.id:
                         raise ValidationError(
                             f'A file or folder ({file.filename}) cannot be '
                             f'set as the parent of itself.',
                             "parentHashId",
                         )
 
-                    # TODO: Check max hierarchy depth
+                            # TODO: Check max hierarchy depth
 
-                    # Check for circular inheritance
-                    current_parent = parent_file.parent
-                    while current_parent:
-                        if current_parent.hash_id == file.hash_id:
-                            raise ValidationError(
-                                f"If the parent of '{file.filename}' was set to "
-                                f"'{parent_file.filename}', it would result in circular"
+                            # Check for circular inheritance
+                            current_parent = parent_file.parent
+                            while current_parent:
+                                if current_parent.hash_id == file.hash_id:
+                                    raise ValidationError(
+                                        f"If the parent of '{file.filename}' was set to "
+                                        f"'{parent_file.filename}', it would result in circular"
                                 f"inheritance.",
                                 "parent_hash_id",
                             )
-                        current_parent = current_parent.parent
+                                current_parent = current_parent.parent
 
-                    file.parent_id = parent_file.id
+                            file.parent_id = parent_file.id
 
-                if 'filename' in params:
-                    file.filename = params['filename']
+                        if 'filename' in params:
+                            file.filename = params['filename']
 
-                if 'public' in params:
-                    # Directories can't be public because it doesn't work right in all
-                    # places yet (namely not all API endpoints that query for public files will
-                    # pick up files within a public directory)
+                        if 'public' in params:
+                            # Directories can't be public because it doesn't work right in all
+                            # places yet (namely not all API endpoints that query for public files will
+                            # pick up files within a public directory)
                     if (
                         file.mime_type != DirectoryTypeProvider.MIME_TYPE
                         and file.public != params['public']
                     ):
-                        file.public = params['public']
+                                file.public = params['public']
 
-                if 'pinned' in params:
-                    file.pinned = params['pinned']
+                        if 'pinned' in params:
+                            file.pinned = params['pinned']
 
                 if 'contexts' in params:
                     file.contexts = params['contexts']
 
-                if 'fallback_organism' in params:
-                    if params['fallback_organism'] is None:
-                        file.organism_name = None
-                        file.organism_synonym = None
-                        file.organism_taxonomy_id = None
-                    else:
-                        try:
+                        if 'fallback_organism' in params:
+                            if params['fallback_organism'] is None:
+                                file.organism_name = None
+                                file.organism_synonym = None
+                                file.organism_taxonomy_id = None
+                            else:
+                                try:
                             file.organism_name = params['fallback_organism'][
                                 'organism_name'
                             ]
@@ -231,64 +233,61 @@ class FilesystemBaseView(MethodView):
                             file.organism_taxonomy_id = params['fallback_organism'][
                                 'tax_id'
                             ]
-                        except KeyError as e:
-                            raise InvalidArgument(
+                                except KeyError as e:
+                                    raise InvalidArgument(
                                 message='You must provide the following properties for a '
                                 + 'fallback organism: "organism_name", "synonym", "tax_id".',
-                            ) from e
+                                    ) from e
 
-                if 'annotation_configs' in params:
-                    file.annotation_configs = params['annotation_configs']
+                        if 'annotation_configs' in params:
+                            file.annotation_configs = params['annotation_configs']
 
-                if 'content_value' in params:
-                    buffer = FileContentBuffer(stream=params['content_value'].stream)
+                        if 'content_value' in params:
+                            buffer = FileContentBuffer(stream=params['content_value'].stream)
 
-                    # Get file size
-                    size = buffer.size
+                            # Get file size
+                            size = buffer.size
 
-                    if size > Filesystem.file_max_size:
-                        raise ValidationError(
-                            'Your file could not be processed because it is too large.',
+                            if size > Filesystem.file_max_size:
+                                raise ValidationError(
+                                    'Your file could not be processed because it is too large.',
                             "content_value",
                         )
 
-                    # Get the provider
-                    provider = file_type_service.get(file.mime_type)
-                    buffer = provider.prepare_content(buffer, params, file)
-                    try:
-                        provider.validate_content(buffer, log_status_messages=True)
-                    except ValueError as e:
-                        raise ValidationError(
-                            f"The provided file may be corrupt for files of type "
-                            f"'{file.mime_type}' (which '{file.hash_id}' is of).",
+                            # Get the provider
+                            provider = file_type_service.get(file.mime_type)
+                            buffer = provider.prepare_content(buffer, params, file)
+                            try:
+                                provider.validate_content(buffer, log_status_messages=True)
+                            except ValueError as e:
+                                raise ValidationError(
+                                    f"The provided file may be corrupt for files of type "
+                                    f"'{file.mime_type}' (which '{file.hash_id}' is of).",
                             "contentValue",
-                        ) from e
-                    except HandledException:
-                        pass
+                                ) from e
+                            except HandledException:
+                                pass
 
-                    new_content_id = FileContent.get_or_create(buffer)
+                            new_content = FileContent.get_or_create(buffer)
 
-                    # Only make a file version if the content actually changed
-                    if file.content_id != new_content_id:
-                        # Create file version
-                        version = FileVersion()
-                        version.file = file
-                        version.content_id = file.content_id
-                        version.user = user
-                        db.session.add(version)
+                            # Only make a file version if the content actually changed
+                            if file.content != new_content:
+                                # Create file version
+                                version = FileVersion()
+                                version.file = file
+                                version.content_id = file.content_id
+                                version.user = user
+                                db.session.add(version)
 
-                        file.content_id = new_content_id
-                        provider.handle_content_update(file)
-            file.modifier = user
-            if update_modified_date:
-                # TODO: Ideally, we would let the ORM handle this. However, our tests need to be
-                # updated with proper transaction management first.
-                file.modified_date = datetime.now()
+                                file.content = new_content
+                                provider.handle_content_update(file)
+                    file.modifier = user
+                    if update_modified_date:
+                        # TODO: Ideally, we would let the ORM handle this. However, our tests need to be
+                        # updated with proper transaction management first.
+                        file.modified_date = datetime.now()
 
-        try:
-            db.session.commit()
         except IntegrityError as e:
-            db.session.rollback()
             raise ValidationError(
                 "No two items (folder or file) can share the same name.", "filename"
             ) from e
@@ -423,7 +422,6 @@ class FileListView(FilesystemBaseView):
         file = Filesystem.create_file(parent=parent, **params)
 
         db.session.commit()
-        # rollback in case of error?
 
         # ========================================
         # Return new file
@@ -512,6 +510,8 @@ class FileListView(FilesystemBaseView):
             db.session.rollback()
             raise
 
+        db.session.commit()
+
         return Filesystem.get_bulk_file_response(
             target_hash_ids, current_user, missing_hash_ids
         )
@@ -564,7 +564,6 @@ class FileListView(FilesystemBaseView):
             file.delete()
 
         db.session.commit()
-        # rollback in case of error?
 
         # ========================================
         # Return changed files
@@ -889,7 +888,6 @@ class FileBackupView(FilesystemBaseView):
         backup.user = current_user
         db.session.add(backup)
         db.session.commit()
-        # rollback in case of error?
 
         return jsonify({})
 
@@ -916,7 +914,6 @@ class FileBackupView(FilesystemBaseView):
             )
         )
         db.session.commit()
-        # rollback in case of error?
 
         return jsonify({})
 
@@ -1115,7 +1112,6 @@ class FileLockListView(FileLockBaseView):
         result = db.session.execute(stmt)
         lock_acquired = bool(len(list(result)))
         db.session.commit()
-        # rollback in case of error?
 
         if lock_acquired:
             return self.get_locks_response(hash_id)
@@ -1141,7 +1137,6 @@ class FileLockListView(FileLockBaseView):
             )
         )
         db.session.commit()
-        # rollback in case of error?
 
         return self.get_locks_response(hash_id)
 
@@ -1317,15 +1312,9 @@ class FileStarUpdateView(FilesystemBaseView):
             ).delete()
             result.calculated_starred = None
 
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise
+        db.session.commit()
 
-        return jsonify(
-            FileResponseSchema(
-                context={
+        return jsonify(FileResponseSchema(context={
                     'user_privilege_filter': user.id,
                 },
                 exclude=(

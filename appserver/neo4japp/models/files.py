@@ -156,7 +156,7 @@ class FileContent(RDBMSBase):
     @classmethod
     def get_or_create(
         cls, file: FileContentBuffer, checksum_sha256: bytes = None
-    ) -> int:
+    ):
         """Get the existing FileContent row for the given file or create a new row
         if needed.
 
@@ -169,7 +169,7 @@ class FileContent(RDBMSBase):
 
         :param file: a file-like object
         :param checksum_sha256: the checksum of the file (computed if not provided)
-        :return: the ID of the file
+        :return: the file
         """
         if checksum_sha256 is None:
             with file as bufferView:
@@ -203,23 +203,20 @@ class FileContent(RDBMSBase):
         )
 
         try:
-            return (
-                db.session.query(FileContent.id)
-                .filter(FileContent.checksum_sha256 == checksum_sha256)
-                .one()[0]
-            )
+            return db.session.query(FileContent) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
         except NoResultFound:
             if content is None:
                 content = file.read()
 
-            row = FileContent()
-            row.checksum_sha256 = checksum_sha256
-            row.raw_file = content
-            db.session.add(row)
-            db.session.flush()
+            with db.session.begin_nested():
+                row = FileContent()
+                row.checksum_sha256 = checksum_sha256
+                row.raw_file = content
+                db.session.add(row)
 
-            assert row.id is not None
-            return row.id
+                return row
 
 
 @dataclass
