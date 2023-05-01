@@ -148,58 +148,60 @@ class AccountView(MethodView):
     @use_args(UserCreateSchema)
     @wrap_exceptions(ServerException, title='Cannot Create New User')
     def post(self, params: dict):
-        admin_or_private_access = g.current_user.has_role(
-            'admin'
-        ) or g.current_user.has_role('private-data-access')
-        if not admin_or_private_access:
-            raise NotAuthorized()
-        if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-            raise ServerException(
-                message=f'E-mail {params["email"]} already taken.',
-                code=HTTPStatus.CONFLICT,
-            )
-        elif db.session.query(
-            AppUser.query_by_username(params["username"]).exists()
-        ).scalar():
-            raise ServerException(
-                message=f'Username {params["username"]} already taken.',
-                code=HTTPStatus.CONFLICT,
-            )
+        user_dict = None
+        with db.session.begin_nested():
+            admin_or_private_access = g.current_user.has_role(
+                'admin'
+            ) or g.current_user.has_role('private-data-access')
+            if not admin_or_private_access:
+                raise NotAuthorized()
+            if db.session.query(
+                AppUser.query_by_email(params['email']).exists()
+            ).scalar():
+                raise ServerException(
+                    message=f'E-mail {params["email"]} already taken.'
+                )
+            elif db.session.query(
+                AppUser.query_by_username(params["username"]).exists()
+            ).scalar():
+                raise ServerException(
+                    message=f'Username {params["username"]} already taken.'
+                )
 
-        user = AppUser(
-            username=params['username'],
-            email=params['email'],
-            first_name=params['first_name'],
-            last_name=params['last_name'],
-            subject=params['email'],
-            forced_password_reset=params['created_by_admin'],
-        )
-        user.set_password(params['password'])
-        if not params.get('roles'):
-            # Add default role
-            user.roles.append(self.get_or_create_role('user'))
-        else:
-            for role in params['roles']:
-                user.roles.append(self.get_or_create_role(role))
-
-        try:
-            get_account_service().create_user(user)
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            raise ServerException(
-                title='Unexpected Database Transaction Error',
-                message='Something unexpected occurred while adding the user to the database.',
-                fields={
-                    'user_id': user.id if user.id is not None else 'N/A',
-                    'username': user.username,
-                    'user_email': user.email,
-                },
+            app_user = AppUser(
+                username=params['username'],
+                email=params['email'],
+                first_name=params['first_name'],
+                last_name=params['last_name'],
+                subject=params['email'],
+                forced_password_reset=params['created_by_admin'],
             )
-        except ServerException:
-            db.session.rollback()
-            raise
-        return jsonify(dict(result=user.to_dict()))
+            app_user.set_password(params['password'])
+            if not params.get('roles'):
+                # Add default role
+                app_user.roles.append(self.get_or_create_role('user'))
+            else:
+                for role in params['roles']:
+                    app_user.roles.append(self.get_or_create_role(role))
+
+            projects_service = get_projects_service()
+            try:
+                with db.session.begin_nested():
+                    db.session.add(app_user)
+                    projects_service.create_initial_project(app_user)
+            except SQLAlchemyError as e:
+                raise ServerException(
+                    title='Unexpected Database Transaction Error',
+                    message='Something unexpected occurred while adding the user to the database.',
+                    fields={
+                        'user_id': app_user.id if app_user.id is not None else 'N/A',
+                        'username': app_user.username,
+                        'user_email': app_user.email,
+                    },
+                ) from e
+            user_dict = app_user.to_dict()
+        db.session.commit()
+        return jsonify(dict(result=user_dict))
 
     @use_args(UserUpdateSchema)
     @wrap_exceptions(FailedToUpdateUser)

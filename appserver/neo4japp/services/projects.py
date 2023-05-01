@@ -297,7 +297,7 @@ class ProjectsService(RDBMSBaseDao):
             .one()
         )
 
-    def _get_folder_flatten_hierarchy(self, folder: Files) -> List[Files]:
+    def _get_folder_flattern_hierarchy(self, folder: Files) -> List[Files]:
         return (
             db.session.query(Files)
             .filter(
