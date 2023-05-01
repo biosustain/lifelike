@@ -14,11 +14,11 @@ from .constants import TIMEZONE
 from .logs import get_logger
 
 # Get Postgres vars
-PG_HOST=os.environ.get('POSTGRES_HOST', 'pgdatabase')
-PG_PORT=os.environ.get('POSTGRES_PORT', '5432')
-PG_USER=os.environ.get('POSTGRES_USER', 'postgres')
-PG_PASSWORD=os.environ.get('POSTGRES_PASSWORD', 'postgres')
-PG_DB=os.environ.get('POSTGRES_DB', 'postgres')
+PG_HOST = os.environ.get('POSTGRES_HOST', 'pgdatabase')
+PG_PORT = os.environ.get('POSTGRES_PORT', '5432')
+PG_USER = os.environ.get('POSTGRES_USER', 'postgres')
+PG_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'postgres')
+PG_DB = os.environ.get('POSTGRES_DB', 'postgres')
 POSTGRES_CONNECTION_URL = f'postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}/{PG_DB}'
 
 logger = get_logger()
@@ -34,6 +34,7 @@ class AnnotationChangeCause(enum.Enum):
 def _generate_hash_id():
     # Roughly-ordered identifier with an extremely low chance of collision
     return timeflake.random().base62
+
 
 t_files = Table(
     'files',
@@ -125,7 +126,7 @@ def update_tables(body: dict) -> Tuple[str, str]:
         logger.error(e, exc_info=True)
         logger.error('Rolling back database changes...')
         session.rollback()
-        return
+        raise e
 
     session.close()
     return file_hash_id, file_annotations_version_hash_id

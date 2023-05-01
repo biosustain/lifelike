@@ -10,7 +10,6 @@ from app.handle_message import update_tables
 from app.logs import get_logger
 
 
-
 # Get RabbitMQ vars
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
@@ -29,13 +28,19 @@ async def on_message(message: AbstractIncomingMessage) -> None:
             logger.debug(json.dumps(request, indent=4))
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
-            logger.error(f'File Annotation Post Processing Failed. Request contained malformed JSON body:')
+            logger.error(
+                'File Annotation Post Processing Failed. ' +
+                'Request contained malformed JSON body:'
+            )
             logger.error(message.body)
             raise
         file_hash_id, file_annotations_version_hash_id = update_tables(request)
     except Exception as e:
         logger.error(e, exc_info=True)
-        logger.error(f'File Annotation Post Processing Failed. Unhandled exception occurred. Request object:')
+        logger.error(
+            'File Annotation Post Processing Failed. Unhandled exception occurred. ' +
+            'Request object:'
+        )
         logger.error(json.dumps(request, indent=4))
         await message.reject(requeue=False)
     else:
