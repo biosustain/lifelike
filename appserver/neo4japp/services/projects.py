@@ -238,11 +238,11 @@ class ProjectsService(RDBMSBaseDao):
 
         # Create initial map for this user
         mapTypeProvider = MapTypeProvider()
-        map_content = FileContentBuffer(master_map.content.raw_file)
-        updated_map_content = mapTypeProvider.update_map(
-            {}, map_content, update_map_links
+        map_content_buffer = FileContentBuffer(master_map.content.raw_file)
+        updated_map_content_buffer = mapTypeProvider.update_map(
+            {}, map_content_buffer, update_map_links
         )
-        map_content = FileContent().get_or_create(updated_map_content)
+        map_content = FileContent().get_or_create(updated_map_content_buffer)
         return self._copy_generic_file(
             master_map,
             map_content,
