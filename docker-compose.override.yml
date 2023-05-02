@@ -48,12 +48,18 @@ x-appserver: &appserver
     - ./appserver:/home/n4j
     # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
   depends_on:
-    - elasticsearch
-    - pgdatabase
-    - redis
-    - pdfparser
-    - arangodb
-    - rabbitmq
+    elasticsearch:
+      condition: service_started
+    pgdatabase:
+      condition: service_started
+    redis:
+      condition: service_started
+    pdfparser:
+      condition: service_started
+    arangodb:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
 
 x-annotator: &annotator
   build: ./annotator
@@ -74,8 +80,10 @@ x-annotator: &annotator
   volumes:
     - ./annotator:/home/user
   depends_on:
-    - arangodb
-    - rabbitmq
+    arangodb:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
   networks:
     - backend
     - rabbitmq
@@ -97,8 +105,10 @@ x-post-annotator: &post-annotator
   volumes:
     - ./post-annotator:/home/user
   depends_on:
-    - pgdatabase
-    - rabbitmq
+    pgdatabase:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
   networks:
     - backend
     - rabbitmq
@@ -117,8 +127,10 @@ x-elastic-indexer: &elastic-indexer
   volumes:
     - ./elastic-indexer:/home/user
   depends_on:
-    - elasticsearch
-    - rabbitmq
+    elasticsearch:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
   networks:
     - backend
     - rabbitmq

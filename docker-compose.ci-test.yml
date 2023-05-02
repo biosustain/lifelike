@@ -54,8 +54,10 @@ x-annotator: &annotator
     # Other
     - LMDB_HOME_FOLDER=/home/user/app/services/lmdb/
   depends_on:
-    - arangodb
-    - rabbitmq
+    arangodb:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
 
 services:
   appserver:
