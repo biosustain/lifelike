@@ -65,7 +65,7 @@
     {{ object.pinned ? 'Unpin' : 'Pin' }}
   </button>
   <ng-container *ngIf="object.isNavigable">
-    <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
+    <button ngbDropdownItem [appLink]="['/file-navigator', encodeURIComponent(object.project.name), object.hashId]"
             [parentAddress]="router.url"
             [newTab]="true" [forceWorkbench]="true" [sideBySide]="true" [openParentFirst]="true">
       Open file navigator

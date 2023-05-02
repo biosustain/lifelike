@@ -9,6 +9,7 @@ import { ProjectActions } from 'app/file-browser/services/project-actions';
   templateUrl: './project-menu.component.html',
 })
 export class ProjectMenuComponent {
+  encodeURIComponent = encodeURIComponent;
 
   @Input() project: ProjectImpl;
   @Input() nameEntity = false;

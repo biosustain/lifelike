@@ -54,6 +54,7 @@ interface AnnotationData {
   providers: [EnrichmentService, ModuleContext]
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
+  encodeURIComponent = encodeURIComponent;
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly worksheetViewerService: EnrichmentTableService,
