@@ -8,7 +8,7 @@ ADD ./definitions.json /etc/rabbitmq/definitions.json
 COPY custom-entrypoint.sh /custom-entrypoint.sh
 RUN chmod +x /custom-entrypoint.sh
 
-HEALTHCHECK --interval=5s --timeout=30s --start-period=5s --retries=6 CMD curl -f http://rabbitmq:15672 || exit 1
+HEALTHCHECK --interval=10s --timeout=30s --start-period=5s --retries=10 CMD curl -f http://rabbitmq:15672 || exit 1
 
 ENTRYPOINT ["/custom-entrypoint.sh"]
 
