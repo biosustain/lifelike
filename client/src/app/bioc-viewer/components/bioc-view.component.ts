@@ -465,7 +465,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
+    const url = `/file-navigator/${encodeURIComponent(this.object.project.name)}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
   }
 

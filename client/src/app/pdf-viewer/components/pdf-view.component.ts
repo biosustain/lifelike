@@ -58,6 +58,7 @@ type ReadonlyEntityTypeVisibilityMap = ReadonlyMap<string, boolean>;
   ],
 })
 export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent {
+  encodeURIComponent = encodeURIComponent;
 
   constructor(
     protected readonly filesystemService: FilesystemService,

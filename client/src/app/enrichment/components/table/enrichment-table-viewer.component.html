@@ -55,12 +55,12 @@
                 <button class="btn btn-secondary"
                         [appLink]="[
                             '/enrichment-visualisation',
-                            result.object.value.project.name,
+                            encodeURIComponent(result.object.value.project.name),
                             result.object.value.hashId
                         ]"
                       [parentAddress]="[
                             '/projects',
-                            result.object.value.project.name,
+                            encodeURIComponent(result.object.value.project.name),
                             'enrichment-table',
                             result.object.value.hashId
                       ]"
@@ -70,12 +70,12 @@
               <button class="btn btn-secondary"
                       [appLink]="[
                             '/file-navigator',
-                            result.object.value.project.name,
+                            encodeURIComponent(result.object.value.project.name),
                             result.object.value.hashId
                         ]"
                       [parentAddress]="[
                             '/projects',
-                            result.object.value.project.name,
+                            encodeURIComponent(result.object.value.project.name),
                             'enrichment-table',
                             result.object.value.hashId
                       ]"
