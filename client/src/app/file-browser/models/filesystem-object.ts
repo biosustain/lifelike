@@ -446,7 +446,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   getCommands(forEditing = true): any[] {
     // TODO: Move this method to ObjectTypeProvider
-    const projectName = this.project ? this.project.name : 'default';
+    const projectName = encodeURIComponent(this.project ? this.project.name : 'default');
     switch (this.mimeType) {
       case MimeTypes.Directory:
         return ['/projects', projectName, 'folders', this.hashId];

@@ -8,15 +8,15 @@ export function getObjectCommands(object: DirectoryObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID
-      return ['/projects', object.project.projectName, 'folders', object.hashId];
+      return ['/projects', encodeURIComponent(object.project.projectName), 'folders', object.hashId];
     case 'file':
       if (object.filename.slice(object.filename.length - 11) === '.enrichment') {
-        return ['/projects', object.project.projectName, 'enrichment-table', object.hashId];
+        return ['/projects', encodeURIComponent(object.project.projectName), 'enrichment-table', object.hashId];
       } else {
-        return ['/projects', object.project.projectName, 'files', object.hashId];
+        return ['/projects', encodeURIComponent(object.project.projectName), 'files', object.hashId];
       }
     case 'map':
-      return ['/projects', object.project.projectName, 'maps', object.hashId];
+      return ['/projects', encodeURIComponent(object.project.projectName), 'maps', object.hashId];
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }
