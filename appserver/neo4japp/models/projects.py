@@ -226,7 +226,7 @@ def before_project_update(mapper: Mapper, connection: Connection, target: Projec
 def after_project_insert(mapper: Mapper, connection: Connection, target: Projects):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.models.files import Files
-    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_update_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import send_update_file_request
 
     try:
         file_hash_id = db.session.query(
@@ -235,7 +235,7 @@ def after_project_insert(mapper: Mapper, connection: Connection, target: Project
             Files.id == target.***ARANGO_USERNAME***_id
         ).scalar()
 
-        send_bulk_update_file_request(
+        send_update_file_request(
             {
                 file_hash_id: {
                     'project_id': target.id,
@@ -255,7 +255,7 @@ def after_project_insert(mapper: Mapper, connection: Connection, target: Project
 def _after_project_update(target: Projects):
     from neo4japp.models.files import Files
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_update_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import send_update_file_request
     # This will be called by the Redis queue service outside of the normal flask app context, so
     # here we manually ensure there is a context.
     try:
@@ -284,7 +284,7 @@ def _after_project_update(target: Projects):
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
 
-        send_bulk_update_file_request(files_to_update)
+        send_update_file_request(files_to_update)
     except Exception as e:
         current_app.logger.error(
             f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',

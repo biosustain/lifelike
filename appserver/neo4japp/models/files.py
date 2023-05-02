@@ -649,14 +649,14 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
     file insert will be rolled back.
     """
-    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_index_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import send_index_file_request
 
     try:
         current_app.logger.info(
             f'Attempting to index file in elastic with hash_id: {target.hash_id}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        send_bulk_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
+        send_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
     except Exception as e:
         raise ServerException(
             title='Failed to Create File',
@@ -685,9 +685,9 @@ def _after_file_update(target: Files, changes: dict):
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
     from neo4japp.services.file_types.providers import DirectoryTypeProvider
     from neo4japp.services.elastic.elastic_indexer_interface import (
-        send_bulk_delete_file_request,
-        send_bulk_index_file_request,
-        send_bulk_update_file_request
+        send_delete_file_request,
+        send_index_file_request,
+        send_update_file_request
     )
 
     try:
@@ -713,7 +713,7 @@ def _after_file_update(target: Files, changes: dict):
                 f'{list(updated_files.keys())}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
-            send_bulk_delete_file_request(list(updated_files.keys()))
+            send_delete_file_request(list(updated_files.keys()))
             # TODO: Should we handle the case where a document's deleted state goes from
             # "deleted" to "not deleted"? What would that mean for folders? Re-index all
             # children as well?
@@ -726,7 +726,7 @@ def _after_file_update(target: Files, changes: dict):
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
                 # If content changes, we *MUST* reindex, we cannot simply update.
-                send_bulk_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
+                send_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
 
                 # Don't need to update the target file, since we're re-indexing it entirely anyway.
                 updated_files.pop(target.hash_id)
@@ -744,7 +744,7 @@ def _after_file_update(target: Files, changes: dict):
                 # TODO: Only need to update children if the folder name changes (is this true? any
                 # other cases where we would do this? Maybe safer to just always update file path
                 # any time the parent changes...)
-                send_bulk_update_file_request(
+                send_update_file_request(
                     _get_bulk_update_request(target, changes, updated_files)
                 )
     except Exception as e:
@@ -778,7 +778,7 @@ def _after_file_delete(target: Files):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
     from neo4japp.services.file_types.providers import DirectoryTypeProvider
-    from neo4japp.services.elastic.elastic_indexer_interface import send_bulk_delete_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import send_delete_file_request
 
     try:
         files_to_delete = [target.hash_id]
@@ -795,7 +795,7 @@ def _after_file_delete(target: Files):
             f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
-        send_bulk_delete_file_request(files_to_delete)
+        send_delete_file_request(files_to_delete)
     except Exception as e:
         current_app.logger.error(
             f'Elastic search delete failed for file with hash_id: {target.hash_id}',

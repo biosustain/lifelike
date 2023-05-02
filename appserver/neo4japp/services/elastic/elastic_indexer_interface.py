@@ -10,21 +10,21 @@ BULK_UPDATE_OP = 'BULK_UPDATE'
 BULK_DELETE_OP = 'BULK_DELETE'
 
 
-def send_bulk_index_file_request(sources: Dict[str, dict]):
+def send_index_file_request(sources: Dict[str, dict]):
     _send_elastic_indexer_request({
         'op_type': BULK_INDEX_OP,
         'sources': sources
     })
 
 
-def send_bulk_update_file_request(updates: Dict[str, dict]):
+def send_update_file_request(updates: Dict[str, dict]):
     _send_elastic_indexer_request({
         'op_type': BULK_UPDATE_OP,
         'updates': updates
     })
 
 
-def send_bulk_delete_file_request(file_hash_ids: List[str]):
+def send_delete_file_request(file_hash_ids: List[str]):
     _send_elastic_indexer_request({
         'op_type': BULK_DELETE_OP,
         'file_hash_ids': file_hash_ids
