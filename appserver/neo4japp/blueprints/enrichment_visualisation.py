@@ -1,7 +1,7 @@
 import json
 import os
-import requests
 
+import requests
 from flask import Blueprint, Response, current_app, request
 
 from neo4japp.exceptions import StatisticalEnrichmentError
@@ -85,7 +85,7 @@ def enrich_context():
       model="text-davinci-003",
       prompt=f'What is the ralationship between ${organism} and ${term}?',
       temperature=0,
-      max_tokens=200
+      max_tokens=500
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}
