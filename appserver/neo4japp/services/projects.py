@@ -158,7 +158,7 @@ class ProjectsService(RDBMSBaseDao):
     def _copy_generic_file(
         self,
         master_file: Files,
-        content: int,
+        content: FileContent,
         parent: Files,
         hash_id_map: Dict[str, str],
     ) -> Files:
