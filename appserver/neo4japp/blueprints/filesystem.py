@@ -124,7 +124,8 @@ class FilesystemBaseView(MethodView):
                 # ========================================
                 # Check
                 # ========================================
-        files_to_check = target_files[
+        files_to_check = \
+                    target_files[
             :
         ]  # Makes a copy of target_files so we don't mutate it
                 if parent_file is not None:
@@ -144,9 +145,12 @@ class FilesystemBaseView(MethodView):
                         )
                     files_to_check.append(parent_file)
 
-        Filesystem.check_file_permissions(
-            files_to_check, user, ['writable'], permit_recycled=False
-        )
+                Filesystem.check_file_permissions(
+                    files_to_check,
+                    user,
+                    ['writable'],
+                    permit_recycled=False
+                )
 
                 if 'content_value' in params and len(target_files) > 1:
                     # We don't allow multiple files to be changed due to a potential deadlock
@@ -159,9 +163,9 @@ class FilesystemBaseView(MethodView):
                 # Apply
                 # ========================================
                 file_type_service = get_file_type_service()
-        update_modified_date = any(
-            [param in UPDATE_DATE_MODIFIED_COLUMNS for param in params]
-        )
+                update_modified_date = any(
+                    [param in UPDATE_DATE_MODIFIED_COLUMNS for param in params]
+                )
 
                 for file in target_files:
                     assert file.calculated_project is not None
@@ -176,10 +180,10 @@ class FilesystemBaseView(MethodView):
                         if parent_file is not None:
                             # Re-check referential parent
                             if file.id == parent_file.id:
-                        raise ValidationError(
-                            f'A file or folder ({file.filename}) cannot be '
-                            f'set as the parent of itself.',
-                            "parentHashId",
+                                raise ValidationError(
+                                    f'A file or folder ({file.filename}) cannot be '
+                                    f'set as the parent of itself.', "parentHashId"
+                                ,
                         )
 
                             # TODO: Check max hierarchy depth
@@ -203,8 +207,8 @@ class FilesystemBaseView(MethodView):
 
                         if 'public' in params:
                             # Directories can't be public because it doesn't work right in all
-                            # places yet (namely not all API endpoints that query for public files will
-                            # pick up files within a public directory)
+                            # places yet (namely not all API endpoints that query for public files
+                            # will pick up files within a public directory)
                     if (
                         file.mime_type != DirectoryTypeProvider.MIME_TYPE
                         and file.public != params['public']
@@ -224,19 +228,25 @@ class FilesystemBaseView(MethodView):
                                 file.organism_taxonomy_id = None
                             else:
                                 try:
-                            file.organism_name = params['fallback_organism'][
+                            file.organism_name = \
+                                        params['fallback_organism'][
                                 'organism_name'
                             ]
-                            file.organism_synonym = params['fallback_organism'][
+                            file.organism_synonym = \
+                                        params['fallback_organism'][
                                 'synonym'
                             ]
-                            file.organism_taxonomy_id = params['fallback_organism'][
+                            file.organism_taxonomy_id = \
+                                        params['fallback_organism'][
                                 'tax_id'
                             ]
                                 except KeyError as e:
                                     raise InvalidArgument(
-                                message='You must provide the following properties for a '
-                                + 'fallback organism: "organism_name", "synonym", "tax_id".',
+                                message=(
+                                            'You must provide the following properties for a '
+                                           + 'fallback organism: '
+                                            '"organism_name", "synonym", "tax_id".'
+                                        )
                                     ) from e
 
                         if 'annotation_configs' in params:
@@ -283,8 +293,9 @@ class FilesystemBaseView(MethodView):
                                 provider.handle_content_update(file)
                     file.modifier = user
                     if update_modified_date:
-                        # TODO: Ideally, we would let the ORM handle this. However, our tests need to be
-                        # updated with proper transaction management first.
+                        # TODO: Ideally, we would let the ORM handle this.
+                        #  However, our tests need to be updated with
+                        #  proper transaction management first.
                         file.modified_date = datetime.now()
 
         except IntegrityError as e:

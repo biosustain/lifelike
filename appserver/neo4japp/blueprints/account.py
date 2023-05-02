@@ -382,7 +382,6 @@ def unlock_user(hash_id):
 
         db.session.commit()
 
-
     return jsonify(dict(result='')), 204
 
 

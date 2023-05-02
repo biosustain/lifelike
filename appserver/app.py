@@ -687,7 +687,7 @@ def add_file(
                 )
         try:
             with db.session.begin_nested():
-                 db.session.add(file)
+                db.session.add(file)
         except Exception:
             pass
         else:
