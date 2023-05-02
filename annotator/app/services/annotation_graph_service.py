@@ -8,7 +8,7 @@ from ..utils import normalize_str
 from .arangodb import execute_arango_query, get_db
 
 from .constants import EntityType
-from .data_transfer_objects import GlobalInclusions, GeneOrProteinToOrganism
+from .data_transfer_objects.dto import GlobalInclusions, GeneOrProteinToOrganism
 from .utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,

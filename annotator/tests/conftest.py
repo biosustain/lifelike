@@ -22,9 +22,8 @@ from app.services.constants import (
     PROTEINS_LMDB,
     SPECIES_LMDB
 )
-from app.services.data_transfer_objects import GeneOrProteinToOrganism
+from app.services.data_transfer_objects.dto import GeneOrProteinToOrganism
 from app.services.lmdb_service import LMDBService
-from app.services.pipeline import Pipeline
 from app.services.utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
@@ -49,7 +48,6 @@ directory = path.realpath(path.dirname(__file__))
 def _create_empty_lmdb(path_to_folder: str, db_name: str):
     map_size = 1099511627776
     env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
-    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
     env.close()
 
 
@@ -110,7 +108,7 @@ def system_db(arango_client: ArangoClient):
 
 @pytest.fixture(scope="function")
 def test_arango_db(arango_client: ArangoClient, system_db: StandardDatabase):
-    test_db_name = os.environ.get('ARANGO_DB_NAME')
+    test_db_name = os.environ.get('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')
     create_db(system_db, test_db_name)
 
     test_db = get_db(

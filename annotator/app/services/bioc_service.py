@@ -10,7 +10,7 @@ from bioc import (
     BioCPassage,
 )
 
-from .data_transfer_objects import Annotation
+from .data_transfer_objects.dto import Annotation
 
 
 class BiocDocumentService:

@@ -1,18 +1,15 @@
 from typing import Tuple
 
-from app.services import (
-    EntityRecognitionService,
-    LMDBService,
-    Tokenizer
-)
-from app.services.data_transfer_objects import (
+from app.services.entity_recognition import EntityRecognitionService, LMDBService
+from app.services.tokenizer import Tokenizer
+from app.services.data_transfer_objects.dto import (
     Annotation,
     GeneAnnotation,
     NLPResults,
     SpecifiedOrganismStrain
 )
 from app.services.constants import EntityType, OrganismCategory
-from app.services.data_transfer_objects import GlobalExclusions, GlobalInclusions
+from app.services.data_transfer_objects.dto import GlobalExclusions, GlobalInclusions
 
 
 class MockTokenizer(Tokenizer):

@@ -11,15 +11,16 @@ from ..logs import get_annotator_extras_obj, get_logger
 from .annotation_service import AnnotationService
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .constants import EntityType
-from .data_transfer_objects import (
+from .data_transfer_objects.dto import (
     Annotation,
-    CreateAnnotationObjParams,
     RecognizedEntities,
     LMDBMatch,
     SpecifiedOrganismStrain
 )
+from .data_transfer_objects.dto_func_params import CreateAnnotationObjParams
 
 logger = get_logger()
+
 
 class EnrichmentAnnotationService(AnnotationService):
     def __init__(

@@ -4,7 +4,7 @@ import requests
 from http import HTTPStatus
 from typing import Dict, Set
 
-from  ...exceptions import ServerException
+from ...exceptions import ServerException
 
 from ..constants import (
     NLP_SERVICE_ENDPOINT,
@@ -12,7 +12,7 @@ from ..constants import (
     REQUEST_TIMEOUT,
     EntityType
 )
-from ..data_transfer_objects import NLPResults
+from ..data_transfer_objects.dto import NLPResults
 
 
 def _call_nlp_service(model: str, text: str) -> dict:

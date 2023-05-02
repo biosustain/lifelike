@@ -21,10 +21,9 @@ from .constants import (
     ORGANISM_DISTANCE_THRESHOLD,
     SEARCH_LINKS,
 )
-from .data_transfer_objects import (
+from .data_transfer_objects.dto import (
     Annotation,
     BestOrganismMatch,
-    CreateAnnotationObjParams,
     RecognizedEntities,
     GeneAnnotation,
     LMDBMatch,
@@ -32,6 +31,7 @@ from .data_transfer_objects import (
     PDFWord,
     SpecifiedOrganismStrain
 )
+from .data_transfer_objects.dto_func_params import CreateAnnotationObjParams
 from .exceptions import AnnotationError
 from .utils.common import has_center_point
 

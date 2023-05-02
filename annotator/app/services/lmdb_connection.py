@@ -10,6 +10,7 @@ from .exceptions import LMDBError
 
 logger = get_logger()
 
+
 class TransactionContext(metaclass=abc.ABCMeta):
     """Both __enter__ and __exit__ allows the class to be
     used with a `with` block.
@@ -116,7 +117,8 @@ class LMDBConnection(DatabaseConnection):
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message='Encountered unexpected error connecting to LMDB.'
+            )
 
         try:
             """
@@ -143,4 +145,5 @@ class LMDBConnection(DatabaseConnection):
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message=f'Encountered unexpected error connecting to LMDB.')
+                message='Encountered unexpected error connecting to LMDB.'
+            )

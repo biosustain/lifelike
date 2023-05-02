@@ -131,7 +131,6 @@ def compact(d):
     raise NotImplementedError
 
 
-
 def encode_to_str(obj):
     """Converts different types into a string representation. """
     if isinstance(obj, str):

@@ -17,7 +17,7 @@ from .constants import (
     MAX_GENE_WORD_LENGTH,
     MAX_FOOD_WORD_LENGTH
 )
-from .data_transfer_objects import (
+from .data_transfer_objects.dto import (
     RecognizedEntities,
     LMDBMatch,
     NLPResults,

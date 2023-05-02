@@ -51,7 +51,7 @@ async def _handle_text_annotation(req: dict):
             req.get('annotation_configs', None),
         )
     except KeyError:
-        logger.error(f'File annotation request missing required information:')
+        logger.error('File annotation request missing required information:')
         logger.error(f'\t\tFile ID: {req.get("file_id", "Missing")}')
         logger.error(f'\t\tEnrichment Mappings: {req.get("enrichment_mapping", "Missing")}')
         logger.error(f'\t\tEnrichment Data: {req.get("raw_enrichment_data", "Missing")}')
@@ -97,7 +97,7 @@ async def main():
                             logger.debug(json.dumps(request, indent=4))
                         except json.JSONDecodeError as e:
                             logger.error(e, exc_info=True)
-                            logger.error(f'File Annotation Failed. Request contained malformed JSON body:')
+                            logger.error('Annotation Failed. Request contained invalid JSON body:')
                             logger.error(message.body)
                             raise
                         try:
@@ -108,12 +108,15 @@ async def main():
                             logger.debug(result)
                         except KeyError as e:
                             logger.error(e, exc_info=True)
-                            logger.error(f'File Annotation Failed. Request contained invalid JSON body:')
+                            logger.error('Annotation Failed. Request contained invalid JSON body:')
                             logger.error(json.dumps(request, indent=4))
                             raise
                         except Exception as e:
                             logger.error(e, exc_info=True)
-                            logger.error(f'File Annotation Failed: Unhandled exception occurred. Request object:')
+                            logger.error(
+                                'File Annotation Failed. ' +
+                                'Unhandled exception occurred. Request object:'
+                            )
                             logger.error(json.dumps(request, indent=4))
                             raise
                     except Exception as e:

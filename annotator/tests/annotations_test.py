@@ -5,7 +5,7 @@ from os import path
 
 from app.services.annotation_graph_service import get_entity_inclusions
 from app.services.constants import EntityType
-from app.services.data_transfer_objects import (
+from app.services.data_transfer_objects.dto import (
     SpecifiedOrganismStrain,
     GlobalInclusions
 )

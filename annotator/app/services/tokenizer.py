@@ -7,7 +7,7 @@ from .constants import (
     MAX_ENTITY_WORD_LENGTH,
     PDF_NEW_LINE_THRESHOLD, WORD_CHECK_REGEX, MIN_ENTITY_LENGTH
 )
-from .data_transfer_objects import PDFWord
+from .data_transfer_objects.dto import PDFWord
 
 
 class Tokenizer:

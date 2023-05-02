@@ -218,7 +218,7 @@ class LMDBService(LMDBConnection):
                     for line in reader:
                         # synonyms already have their own line in dataset
                         #
-                        protein_id = line[1]
+                        # protein_id = line[1]
                         protein_name = line[2]
                         # changed protein_id to protein_name for now (JIRA LL-671)
                         # will eventually change back to protein_id
@@ -377,7 +377,7 @@ class LMDBService(LMDBConnection):
                 reader = csv.reader(f, delimiter='\t', quotechar='"')
                 # skip headers
                 # MeshID	Name	Synonym
-                headers = next(reader)
+                next(reader)  # Omit headers
                 for line in reader:
                     foods_id = line[0]
                     foods_name = line[1]

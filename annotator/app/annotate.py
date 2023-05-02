@@ -20,7 +20,8 @@ from app.services.pipeline import Pipeline
 logger = get_logger()
 
 
-# TODO: Need to make the annotation pipeline calls async so the event loop can cede control while annotation tasks are working
+# TODO: Need to make the annotation pipeline calls async so the event loop
+# can cede control while annotation tasks are working
 async def annotate_file(
     file_id: int,
     global_exclusions: Optional[List[dict]] = None,
@@ -35,7 +36,7 @@ async def annotate_file(
     try:
         text, parsed = Pipeline.parse_file(
             file_id=file_id,
-            exclude_references=effective_annotation_configs['exclude_references']
+            exclude_references=effective_annotation_configs['exclude_references']  # type: ignore
         )
 
         pipeline = Pipeline(
@@ -71,7 +72,8 @@ async def annotate_file(
     }
 
 
-# TODO: Need to make the annotation pipeline calls async so the event loop can cede control while annotation tasks are working
+# TODO: Need to make the annotation pipeline calls async so the event loop can cede control while
+# annotation tasks are working
 async def annotate_text(
     file_id: int,
     enrichment_mapping: dict,
@@ -197,8 +199,8 @@ def _highlight_annotations(original_text: str, annotations: List[dict]):
         hi_location_offset = annotation['hiLocationOffset']
 
         text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
-                f'{term}' \
-                f'</annotation>'
+               f'{term}' \
+               f'</annotation>'
 
         if lo_location_offset == 0:
             prev_ending_index = hi_location_offset

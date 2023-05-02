@@ -11,9 +11,10 @@ from ..constants import (
     PARSER_RESOURCE_PULL_ENDPOINT,
     REQUEST_TIMEOUT
 )
-from ..data_transfer_objects import PDFWord
+from ..data_transfer_objects.dto import PDFWord
 
 logger = get_logger()
+
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []

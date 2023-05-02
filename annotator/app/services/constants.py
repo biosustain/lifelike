@@ -190,7 +190,6 @@ DEFAULT_ANNOTATION_CONFIGS = {
 WORD_CHECK_REGEX = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
 
-
 class AnnotationChangeCause(Enum):
     USER = 'user'
     USER_REANNOTATION = 'user_reannotation'

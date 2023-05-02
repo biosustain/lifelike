@@ -2,7 +2,7 @@ import json
 
 from os import path
 
-from app.services.data_transfer_objects import NLPResults
+from app.services.data_transfer_objects.dto import NLPResults
 from app.services.utils.parsing import process_parsed_content
 
 from .util import get_annotation_tokenizer, get_recognition_service

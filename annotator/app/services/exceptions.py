@@ -4,7 +4,6 @@ from typing import Optional
 from ..exceptions import ServerException
 
 
-
 @dataclass
 class AnnotationError(ServerException):
     term: Optional[str] = None

@@ -10,7 +10,7 @@ from ..utils import normalize_str
 from .annotation_graph_service import get_entity_inclusions
 from .arangodb import create_arango_client
 from .constants import PARSER_PDF_ENDPOINT, PARSER_TEXT_ENDPOINT, SPECIES_LMDB, EntityType
-from .data_transfer_objects import (
+from .data_transfer_objects.dto import (
     GlobalExclusions,
     GlobalInclusions,
     PDFWord,
@@ -52,7 +52,7 @@ class Pipeline:
         self.text = text
         self.parsed = parsed
         self.entities = None
-        self.global_exclusions = None
+        self.global_exclusions: Optional[GlobalExclusions] = None
         self.global_inclusions: Optional[GlobalInclusions] = None
 
     # TODO: May be better to squash this and the `parse_text` method below, revisit this once we
@@ -71,7 +71,6 @@ class Pipeline:
             url=PARSER_PDF_ENDPOINT,
             data=get_parser_args_for_file(file_id, exclude_references)
         )
-
 
     @classmethod
     def parse_text(self, text: str) -> Tuple[str, List[PDFWord]]:
@@ -153,7 +152,6 @@ class Pipeline:
             excluded_lab_strains=exclusion_sets[EntityType.LAB_STRAIN],
             excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE]
         )
-
 
     def get_globals(
         self,
