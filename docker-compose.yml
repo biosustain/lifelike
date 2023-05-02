@@ -1,5 +1,5 @@
 version: "3.9"
-name: '***ARANGO_DB_NAME***
+name: "***ARANGO_DB_NAME***"
 # This is core configuration on how to run ***ARANGO_DB_NAME*** ussing docker compose
 
 x-snappy-healthcheck: &snappy-healthcheck
