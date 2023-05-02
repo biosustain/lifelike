@@ -59,7 +59,8 @@
                 </ng-container>
               </ng-template>
               <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"
-                             [ngbTooltip]="tooltipContent"
+                             [ngbPopover]="tooltipContent"
+                             autoClose="outside"
                              container="body"
                              placement="top bottom right left"></ngb-highlight>
         </th>
