@@ -3,9 +3,8 @@ import time
 
 from typing import Dict, List, Optional, Tuple
 
-from ..logs import get_annotator_extras_obj, get_logger
-from ..utils import normalize_str
-
+from app.logs import get_annotator_extras_obj, get_logger
+from app.utils import normalize_str
 
 from .annotation_graph_service import get_entity_inclusions
 from .arangodb import create_arango_client

@@ -4,7 +4,7 @@ import json
 
 from os import path
 
-from ..utils import normalize_str
+from app.utils import normalize_str
 
 from .constants import (
     CHEMICALS_LMDB,

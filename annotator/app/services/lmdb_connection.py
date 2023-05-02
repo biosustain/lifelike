@@ -4,7 +4,7 @@ import lmdb
 from os import path
 from typing import Any, Dict
 
-from ..logs import get_annotator_extras_obj, get_logger
+from app.logs import get_annotator_extras_obj, get_logger
 
 from .exceptions import LMDBError
 

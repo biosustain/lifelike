@@ -8,6 +8,9 @@ from typing import cast, Dict, List, Set, Tuple
 from urllib.parse import quote as uri_encode
 from uuid import uuid4
 
+from app.logs import get_annotator_extras_obj, get_logger
+from app.utils import equal_number_of_words, normalize_str
+
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
 from .constants import (
@@ -34,9 +37,6 @@ from .data_transfer_objects.dto import (
 from .data_transfer_objects.dto_func_params import CreateAnnotationObjParams
 from .exceptions import AnnotationError
 from .utils.common import has_center_point
-
-from ..logs import get_annotator_extras_obj, get_logger
-from ..utils import equal_number_of_words, normalize_str
 
 logger = get_logger()
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from ..exceptions import ServerException
+from app.exceptions import ServerException
 
 
 @dataclass

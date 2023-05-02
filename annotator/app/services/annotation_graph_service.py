@@ -2,8 +2,8 @@ from arango.client import ArangoClient
 from collections import defaultdict
 from typing import Dict, List
 
-from ..logs import get_annotator_extras_obj, get_logger
-from ..utils import normalize_str
+from app.logs import get_annotator_extras_obj, get_logger
+from app.utils import normalize_str
 
 from .arangodb import execute_arango_query, get_db
 
