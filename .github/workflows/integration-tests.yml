@@ -89,7 +89,7 @@ jobs:
 
       - name: Linting and code style
         run: |-
-          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver flake8 .
+          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps annotator flake8 .
           ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps annotator mypy .
           ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps annotator pycodestyle .
 
