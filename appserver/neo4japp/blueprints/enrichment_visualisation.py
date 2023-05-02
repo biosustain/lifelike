@@ -1,4 +1,6 @@
 import json
+import os
+
 from http import HTTPStatus
 import requests
 from flask import Blueprint, Response, current_app, request
