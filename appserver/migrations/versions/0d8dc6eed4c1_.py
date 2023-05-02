@@ -53,7 +53,8 @@ def data_upgrades():
     stop_words_file = path.join(
         directory,
         '../',
-        'upgrade_data/annotation_stop_words.txt')
+        'upgrade_data/annotation_stop_words.txt'
+    )
 
     session = Session(op.get_bind())
 

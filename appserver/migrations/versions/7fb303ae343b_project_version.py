@@ -1,7 +1,7 @@
 """Add project version attribute columns and creation date to project.
 
 Revision ID: 7fb303ae343b
-Revises: 77f77a070e03
+Revises: ad845c5f4821
 Create Date: 2020-08-10 19:08:24.679959
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
 revision = '7fb303ae343b'
-down_revision = '77f77a070e03'
+down_revision = 'ad845c5f4821'
 branch_labels = None
 depends_on = None
 
