@@ -4,15 +4,14 @@ import requests
 from http import HTTPStatus
 from typing import Dict, Set
 
-from ...exceptions import ServerException
-
-from ..constants import (
+from app.exceptions import ServerException
+from app.services.constants import (
     NLP_SERVICE_ENDPOINT,
     NLP_SERVICE_SECRET,
     REQUEST_TIMEOUT,
     EntityType
 )
-from ..data_transfer_objects.dto import NLPResults
+from app.services.data_transfer_objects.dto import NLPResults
 
 
 def _call_nlp_service(model: str, text: str) -> dict:

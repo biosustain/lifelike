@@ -3,15 +3,14 @@ import requests
 from string import punctuation
 from typing import List, Tuple
 
-from ...exceptions import ServerException
-from ...logs import get_logger
-
-from ..constants import (
+from app.exceptions import ServerException
+from app.logs import get_logger
+from app.services.constants import (
     MAX_ABBREVIATION_WORD_LENGTH,
     PARSER_RESOURCE_PULL_ENDPOINT,
     REQUEST_TIMEOUT
 )
-from ..data_transfer_objects.dto import PDFWord
+from app.services.data_transfer_objects.dto import PDFWord
 
 logger = get_logger()
 
