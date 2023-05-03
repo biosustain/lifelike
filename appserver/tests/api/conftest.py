@@ -228,20 +228,17 @@ def mock_delete_elastic_documents(monkeypatch):
 
 @pytest.fixture(scope='function')
 def fix_admin_role(session, account_service: AccountService) -> AppRole:
-    with session.begin():
-        return account_service.get_or_create_role('admin')
+    return account_service.get_or_create_role('admin')
 
 
 @pytest.fixture(scope='function')
 def fix_superuser_role(session, account_service: AccountService) -> AppRole:
-    with session.begin():
-        return account_service.get_or_create_role('private-data-access')
+    return account_service.get_or_create_role('private-data-access')
 
 
 @pytest.fixture(scope='function')
 def fix_user_role(session, account_service: AccountService) -> AppRole:
-    with session.begin():
-        return account_service.get_or_create_role('user')
+    return account_service.get_or_create_role('user')
 
 
 @pytest.fixture(scope='function')
