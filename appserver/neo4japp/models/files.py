@@ -544,7 +544,7 @@ def _update_path_of_file_and_descendants(connection: Connection, target: Files) 
     return target
 
 
-def _get_file_data(file: Files, file_content: FileContent):
+def _get_file_indexable_content(file: Files, file_content: FileContent):
     try:
         if file_content:
             content = file_content.raw_file
@@ -595,7 +595,7 @@ def _get_doc_source_for_file(file: Files) -> dict:
         'path': file.path,
         'description': file.description,
         'uploaded_date': file.creation_date.isoformat(),
-        'data': _get_file_data(file, file_content),
+        'data': _get_file_indexable_content(file, file_content),
         'user_id': user.id,
         'username': user.username,
         'project_id': None if project is None else project.id,

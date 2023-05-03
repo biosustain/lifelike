@@ -56,9 +56,12 @@ class AccountView(MethodView):
             try:
                 db.session.add(retval)
                 db.session.commit()
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 db.session.rollback()
-                raise
+                raise ServerException(
+                    title='Cannot Create New Role',
+                    message=f'Role {rolename} already exists.',
+                ) from e
         return retval
 
     def get(self, hash_id):
@@ -210,9 +213,11 @@ class AccountView(MethodView):
             try:
                 db.session.add(target)
                 db.session.commit()
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 db.session.rollback()
-                raise
+                raise ServerException(
+                    title='Unexpected Database Transaction Error Occurred'
+                ) from e
         return jsonify(dict(result='')), 204
 
     def delete(self):
@@ -328,16 +333,16 @@ def reset_password(email: str):
     try:
         SEND_GRID_API_CLIENT.send(message)
     except Exception as e:
-        raise
+        raise ServerException(title='SendGrid API Raised Unexpected Error') from e
 
     target.set_password(new_password)
     target.forced_password_reset = True
     try:
         db.session.add(target)
         db.session.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        raise
+        raise ServerException(title='Unexpected Database Transaction Error') from e
     return jsonify(dict(result='')), 204
 
 
@@ -353,9 +358,9 @@ def unlock_user(hash_id):
         try:
             db.session.add(target)
             db.session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            raise
+            raise ServerException(title='Unexpected Database Transaction Error') from e
     return jsonify(dict(result='')), 204
 
 
