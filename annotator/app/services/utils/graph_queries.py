@@ -1,4 +1,4 @@
-from app.constants import EntityType
+from app.services.constants import EntityType
 
 
 collection_labels = {

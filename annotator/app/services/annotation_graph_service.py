@@ -6,8 +6,7 @@ from app.logs import get_annotator_extras_obj, get_logger
 from app.utils import normalize_str
 
 from .arangodb import execute_arango_query, get_db
-
-from .constants import EntityType
+from .constants import EntityIdStr, EntityType
 from .data_transfer_objects.dto import GlobalInclusions, GeneOrProteinToOrganism
 from .utils.lmdb import (
     create_ner_type_anatomy,
@@ -24,7 +23,6 @@ from .utils.lmdb import (
     create_ner_type_entity,
     create_ner_type_lab_sample,
     create_ner_type_lab_strain,
-    EntityIdStr
 )
 from .utils.graph_queries import (
     collection_labels,

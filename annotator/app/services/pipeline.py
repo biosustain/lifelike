@@ -41,7 +41,8 @@ class Pipeline:
         if not all(k in ['aers', 'tkner', 'as', 'bs'] for k in steps):
             raise AnnotationError(
                 'Unable to Annotate',
-                'Configurations for the annotation pipeline is incorrect, please try again later.')
+                'Configurations for the annotation pipeline is incorrect, please try again later.'
+            )
         if not text:
             text = ''
         if not parsed:
