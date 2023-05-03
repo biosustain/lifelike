@@ -19,8 +19,8 @@
   </button>
   <ng-container *ngIf="project.***ARANGO_USERNAME***">
     <div class="dropdown-divider"></div>
-    <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.***ARANGO_USERNAME***.hashId]"
-            [parentAddress]="['/projects', project.name]"
+    <button ngbDropdownItem [appLink]="['/file-navigator', encodeURIComponent(project.name), project.***ARANGO_USERNAME***.hashId]"
+            [parentAddress]="['/projects', encodeURIComponent(project.name)]"
             [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
       Open file navigator
     </button>

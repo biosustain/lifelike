@@ -133,12 +133,12 @@
                     [disabled]="!ready"
                      [appLink]="[
                             '/file-navigator',
-                            this.object.project.name,
+                            encodeURIComponent(this.object.project.name),
                             this.object.hashId
                         ]"
                       [parentAddress]="[
                             '/projects',
-                            this.object.project.name,
+                            encodeURIComponent(this.object.project.name),
                             'files',
                             this.object.hashId
                       ]"
