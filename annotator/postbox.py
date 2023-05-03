@@ -6,9 +6,10 @@ import time
 from aio_pika import Channel, DeliveryMode, Message, connect_robust
 from aio_pika.pool import Pool
 
+from app.exceptions import ServerException
+from app.annotate import annotate_file, annotate_text
 from app.logs import get_logger
 
-from app.annotate import annotate_file, annotate_text
 
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
@@ -30,10 +31,11 @@ async def _handle_file_annotation(req: dict):
             req.get('organism_taxonomy_id', None),
             req.get('annotation_configs', None),
         )
-    except KeyError:
-        logger.error('File annotation request missing required information:')
-        logger.error(f'\t\tFile ID: {req.get("file_id", None)}')
-        raise
+    except KeyError as e:
+        raise ServerException(
+            title='File Annotation Request Missing Required Information',
+            message=f'File ID: {req.get("file_id", None)}'
+        ) from e
     return result
 
 
@@ -50,12 +52,13 @@ async def _handle_text_annotation(req: dict):
             req.get('organism_taxonomy_id', None),
             req.get('annotation_configs', None),
         )
-    except KeyError:
-        logger.error('File annotation request missing required information:')
-        logger.error(f'\t\tFile ID: {req.get("file_id", "Missing")}')
-        logger.error(f'\t\tEnrichment Mappings: {req.get("enrichment_mapping", "Missing")}')
-        logger.error(f'\t\tEnrichment Data: {req.get("raw_enrichment_data", "Missing")}')
-        raise
+    except KeyError as e:
+        raise ServerException(
+            title='File Annotation Request Missing Required Information',
+            message=f'\t\tFile ID: {req.get("file_id", "Missing")}' +
+                    f'\t\tEnrichment Mappings: {req.get("enrichment_mapping", "Missing")}' +
+                    f'\t\tEnrichment Data: {req.get("raw_enrichment_data", "Missing")}'
+        ) from e
     return result
 
 
@@ -96,10 +99,10 @@ async def main():
                             request = json.loads(message.body)
                             logger.debug(json.dumps(request, indent=4))
                         except json.JSONDecodeError as e:
-                            logger.error(e, exc_info=True)
-                            logger.error('Annotation Failed. Request contained invalid JSON body:')
-                            logger.error(message.body)
-                            raise
+                            raise ServerException(
+                                title='Annotation Failed. Request Contained Invalid JSON Body:',
+                                message=message.body
+                            ) from e
                         try:
                             if 'enrichment_mapping' in request:
                                 result = await _handle_text_annotation(request)
@@ -107,18 +110,16 @@ async def main():
                                 result = await _handle_file_annotation(request)
                             logger.debug(result)
                         except KeyError as e:
-                            logger.error(e, exc_info=True)
-                            logger.error('Annotation Failed. Request contained invalid JSON body:')
-                            logger.error(json.dumps(request, indent=4))
-                            raise
+                            raise ServerException(
+                                title='Annotation Failed. Request Contained Invalid JSON Body:',
+                                message=json.dumps(request, indent=4)
+                            ) from e
                         except Exception as e:
-                            logger.error(e, exc_info=True)
-                            logger.error(
-                                'File Annotation Failed. ' +
-                                'Unhandled exception occurred. Request object:'
-                            )
-                            logger.error(json.dumps(request, indent=4))
-                            raise
+                            raise ServerException(
+                                title='File Annotation Failed. Unhandled Exception Occurred. ' +
+                                      'Request Object:',
+                                message=json.dumps(request, indent=4)
+                            ) from e
                     except Exception as e:
                         logger.error(e, exc_info=True)
                         logger.error('Message could not be processed. Rejecting.')
