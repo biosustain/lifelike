@@ -21,39 +21,39 @@
               <input type="file" id="content-value" (change)="fileChanged($event)"
                      class="d-none" multiple #fileInput>
             </app-form-row>
-              <table class="table" style="table-layout: fixed" *ngIf="fileList.length">
-                <caption class="pa2-l" *ngIf="fileList.length > 1">
-                  Click on the row to inspect and edit properties.
-                </caption>
-                <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
-                   You can only upload {{maxFileCount}} files at once.
-                </caption>
-                <colgroup>
-                  <col style="width: 50%">
-                </colgroup>
-                <thead>
-                <tr>
-                <tr>
-                  <th class="d-none d-lg-table-cell">Filename</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr *ngFor="let file of fileList; let index=index"
-                        (appTabSelectable)="changeSelectedFile(index)"
-                        [class.bg-highlight]="index === selectedFileIndex">
-                  <td class="align-middle text-truncate mw-100">
-                     {{ file.filename }}
-                  </td>
-                  <td>
-                    <i class="fa fa-lg fa-exclamation-circle alert-danger"
-                    ngbTooltip="Invalid input(s)!" *ngIf="file.hasErrors"></i>
-                  </td>
-                  <td class="text-right">
-                      <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
+            <table class="table" style="table-layout: fixed" *ngIf="fileList.length">
+              <caption class="pa2-l" *ngIf="fileList.length > 1">
+                Click on the row to inspect and edit properties.
+              </caption>
+              <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
+                  You can only upload {{maxFileCount}} files at once.
+              </caption>
+              <colgroup>
+                <col style="width: 50%">
+              </colgroup>
+              <thead>
+              <tr>
+              <tr>
+                <th class="d-none d-lg-table-cell">Filename</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let file of fileList; let index=index"
+                      (appTabSelectable)="changeSelectedFile(index)"
+                      [class.bg-highlight]="index === selectedFileIndex">
+                <td class="align-middle text-truncate mw-100">
+                    {{ file.filename }}
+                </td>
+                <td>
+                  <i class="fa fa-lg fa-exclamation-circle alert-danger"
+                  ngbTooltip="Invalid input(s)!" *ngIf="file.hasErrors"></i>
+                </td>
+                <td class="text-right">
+                    <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
+                </td>
+              </tr>
+              </tbody>
+            </table>
           </ng-template>
         </li>
         <li ngbNavItem="contentUrl">
@@ -138,4 +138,3 @@
     <button type="submit" class="btn btn-primary" [disabled]="form.invalid || invalidInputs" >Save</button>
   </app-modal-footer>
 </form>
-

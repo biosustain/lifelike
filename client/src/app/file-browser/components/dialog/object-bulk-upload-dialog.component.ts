@@ -73,10 +73,6 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
     super(modal, messageDialog);
   }
 
-  get fileNameList() {
-    return this.fileList.map(file => file.name).join('; ');
-  }
-
   submit() {
     if (this.form.get('copyBehavior').value === CopyBehaviorName.OVERWRITE) {
       const dialogRef = this.modalService.open(ConfirmDialogComponent);
@@ -114,6 +110,10 @@ export class ObjectBulkUploadDialogComponent extends CommonFormDialogComponent<O
     for (const file of Array.from(event.target.files)) {
       this.fileList.push(file);
     }
+  }
+
+  handleDelete(index: number) {
+    this.fileList.splice(index, 1);
   }
 
   organismChanged(organism: OrganismAutocomplete | null) {
