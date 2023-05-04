@@ -1,4 +1,4 @@
-import { HttpEventType } from '@angular/common/http';
+import { HttpEventType, HttpUploadProgressEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,7 +10,8 @@ import {
   Subject,
   concat,
   EMPTY,
-  BehaviorSubject,
+  iif,
+  interval,
 } from 'rxjs';
 import {
   bufferWhen,
@@ -26,6 +27,8 @@ import {
   scan,
   shareReplay,
   finalize,
+  delay,
+  first,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -51,7 +54,9 @@ import {
   SingleResult,
   WarningResponse,
 } from 'app/shared/schemas/common';
+import { TransactionService } from 'app/shared/services/transactions.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
+import { createTransactionId } from 'app/shared/utils/identifiers';
 import {
   Progress,
   ProgressArguments,
@@ -130,8 +135,9 @@ export class ObjectCreationService {
               protected readonly route: ActivatedRoute,
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService) {
-  }
+              protected readonly filesystemService: FilesystemService,
+              protected readonly transactionService: TransactionService
+  ) {}
 
 
   private composeCreationTask(request: ObjectCreateRequest): Task<SingleResult<FilesystemObject>> {
@@ -213,6 +219,104 @@ export class ObjectCreationService {
         shareReplay({bufferSize: 1, refCount: true}),
       ),
     } as Task<SingleResult<FilesystemObject>>;
+  }
+
+  private composeBulkCreationTask(data: FormData, numFiles: number) {
+    const transactionId = createTransactionId()
+    return this.filesystemService.bulkCreate(data, transactionId).pipe(
+      switchMap(event => iif(
+        () => event.type === HttpEventType.UploadProgress,
+        of(event).pipe(
+          mergeMap((event: HttpUploadProgressEvent) => {
+            const progress = Math.floor(event.loaded / event.total);
+            if (progress === 1) {
+              return interval(10000).pipe(
+                mergeMap(() => this.transactionService.getRemainingTasksCount(transactionId).pipe(
+                  map((resp) => {
+                  return {
+                    mode: ProgressMode.Determinate,
+                    status: 'Files transmitted, processing...',
+                    value: (numFiles - resp.total) / numFiles
+                  }
+                })
+              )));
+            } else {
+              return of({
+                mode: ProgressMode.Determinate,
+                status: 'Transmitting files...',
+                value: event.loaded / event.total,
+              });
+            }
+
+          })
+        ),
+        of(event).pipe(
+          map(event => {
+            switch (event.type) {
+              /**
+               * The request was sent out over the wire.
+               */
+              case HttpEventType.Sent:
+                return {
+                  mode: ProgressMode.Determinate,
+                  status: 'Sending upload headers for files...',
+                };
+              /**
+               * The response status code and headers were received.
+               */
+              case HttpEventType.ResponseHeader:
+                return {
+                  mode: ProgressMode.Indeterminate,
+                  status: 'Files transmitted; saving...',
+                };
+              /**
+               * A download progress event was received.
+               */
+              case HttpEventType.DownloadProgress:
+                return {
+                  mode: ProgressMode.Determinate,
+                  status: 'Downloading server response...',
+                  value: event.loaded / event.total,
+                };
+              /**
+               * The full response including the body was received.
+               */
+              case HttpEventType.Response:
+                return {
+                  mode: ProgressMode.Determinate,
+                  status: 'Done uploading files...',
+                  value: 1,
+                  warnings: event.body?.warnings,
+                  info: event.body?.info,
+                };
+              /**
+               * A custom event from an interceptor or a backend.
+               */
+              case HttpEventType.User:
+              default:
+            }
+          })
+        )
+      )),
+      startWith({
+        mode: ProgressMode.Indeterminate,
+        status: `Preparing files...`,
+      }),
+      catchError(error =>
+        of({
+          mode: ProgressMode.Determinate,
+          status: `Error occurred during upload/parsing of files!`,
+          value: 0,
+          errors: [error],
+        }),
+      ),
+      endWith({
+        mode: ProgressMode.Determinate,
+        status: `Done with files.`,
+        value: 1,
+      }),
+      shareReplay({bufferSize: 1, refCount: true}),
+    );
   }
 
   private composeAnnotationTask(
@@ -484,6 +588,19 @@ export class ObjectCreationService {
     );
   }
 
+  executeBulkWithProgressDialog(data: FormData, numFiles: number): Observable<any> {
+    const bulkTask = this.composeBulkCreationTask(data, numFiles);
+    const progressDialogRef = this.progressDialog.display({
+      title: `Creating Files`,
+      progressObservables: [bulkTask.pipe(
+          map(args => new Progress(args)),
+        )],
+    });
+    return bulkTask.pipe(
+      finalize(() => progressDialogRef.componentInstance?.close())
+    );
+  }
+
   /**
    * Open a dialog to create a new file or folder.
    * @param target the base object to start from
@@ -535,15 +652,7 @@ export class ObjectCreationService {
         annotationConfigs: dialogValue.annotationConfigs,
       });
       dialogValue.files.forEach((file: File) => formData.append('files', file, file.name));
-      const progressDialogRef = this.progressDialog.display({
-        title: `Uploading files...`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({}))],
-      });
-      return this.filesystemService.bulkCreate(formData).toPromise().then(
-        () => progressDialogRef.close(),
-        // Just close the dialog for now if the promise is rejected
-        () => progressDialogRef.close(),
-      );
+      return this.executeBulkWithProgressDialog(formData, dialogValue.files.length).toPromise();
     });
     return dialogRef.result;
   }

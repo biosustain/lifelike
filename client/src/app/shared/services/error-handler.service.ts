@@ -4,7 +4,7 @@ import { AbstractControl } from '@angular/forms';
 
 import { isNil, compact, defaults } from 'lodash-es';
 import { EMPTY, Observable, of, pipe, throwError, from } from 'rxjs';
-import { catchError, first, map, mergeMap, switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { UnaryFunction } from 'rxjs/internal/types';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
@@ -13,7 +13,8 @@ import { MessageDialog } from './message-dialog.service';
 import { isOfflineError, UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
-import { mapBlobToBuffer, mapBufferToJson, bufferToJson } from '../utils/files';
+import { bufferToJson } from '../utils/files';
+import { createTransactionId } from '../utils/identifiers'
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -30,10 +31,6 @@ export class ErrorHandler {
       'followed a broken link or the page may have been removed.',
     413: 'The server could not process your upload because it was too large.',
   };
-
-  createTransactionId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
 
   getErrorResponse(error: any): ErrorResponse | Promise<ErrorResponse> {
     if (error instanceof HttpErrorResponse) {
@@ -58,7 +55,7 @@ export class ErrorHandler {
       additionalMsgs: [],
       stacktrace: null,
       // A transaction id for log audits with Sentry (Sentry.io)
-      transactionId: options.transactionId != null ? options.transactionId : 'L-' + this.createTransactionId(),
+      transactionId: options.transactionId != null ? options.transactionId : 'L-' + createTransactionId(),
     };
     if (error instanceof HttpErrorResponse) {
       return Promise.resolve(this.getErrorResponse(error))

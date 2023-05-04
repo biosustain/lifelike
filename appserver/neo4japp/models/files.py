@@ -29,7 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm import Mapper, column_property, object_session
+from sqlalchemy.orm import Mapper, column_property
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 from typing import Optional, List, Dict

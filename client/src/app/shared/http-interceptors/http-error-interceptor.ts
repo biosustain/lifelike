@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 
+import { isNull } from 'lodash';
+import { Store } from '@ngrx/store';
 import { catchError } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
-import { Store } from '@ngrx/store';
 
 import { State } from 'app/***ARANGO_USERNAME***-store/state';
 import { SnackbarActions } from 'app/shared/store';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { createTransactionId } from 'app/shared/utils/identifiers';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response
@@ -48,7 +50,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   }
 
   addLogHeader(request: HttpRequest<any>) {
-    const transactionId = this.errorHandler.createTransactionId();
-    return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
+    // Don't reset the transaction id for the request if it was explicitly added.
+    if (isNull(request.headers.get('X-Transaction-ID'))) {
+      const transactionId = createTransactionId();
+      return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
+    }
+    return request
   }
 }
