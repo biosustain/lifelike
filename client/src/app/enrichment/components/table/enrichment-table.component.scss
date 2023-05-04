@@ -2,6 +2,7 @@
 
 :host {
   overflow: auto;
+  position: relative; // so the highlight attach properly
 
   .table-container {
     display: inline-block;
