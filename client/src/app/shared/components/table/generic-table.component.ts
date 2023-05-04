@@ -6,7 +6,8 @@ import {
   OnDestroy,
   OnInit,
   OnChanges,
-  SimpleChanges, ViewChildren, QueryList, ViewChild, TemplateRef,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 
 import { Subscription } from 'rxjs';

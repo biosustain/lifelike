@@ -18,3 +18,10 @@
   margin-right:0;
   margin-bottom: 1rem;
 }
+
+.top-button {
+  position: absolute;
+  bottom: $window-spacer;
+  right: $window-spacer;
+  z-index: 100;
+}

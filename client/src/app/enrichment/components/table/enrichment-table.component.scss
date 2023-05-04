@@ -2,14 +2,6 @@
 
 :host {
   overflow: auto;
-  position: relative;
-
-  .top-button {
-    position: fixed;
-    bottom: $window-spacer;
-    right: $window-spacer;
-    z-index: 100;
-  }
 
   .table-container {
     display: inline-block;

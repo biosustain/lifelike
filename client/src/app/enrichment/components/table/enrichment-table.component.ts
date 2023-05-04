@@ -72,6 +72,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
     return elem.scrollTo({
       top: 0,
       left: elem.scrollLeft,
+      behaviour: 'smooth'
     });
   }
 
