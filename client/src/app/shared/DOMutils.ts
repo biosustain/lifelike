@@ -1,3 +1,5 @@
+import { assignInWith as _assignInWith } from 'lodash/fp';
+
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 import { getClientOS } from './utils';
@@ -83,6 +85,15 @@ export const closePopups = (target: EventTarget = document, options?: MouseEvent
     &&
     target.dispatchEvent(new MouseEvent('mouseup', options))
   );
+
+const relativeRect = _assignInWith((fromProp, toProp) => toProp - fromProp);
+export const relativePosition = (from: Element) => {
+  const fromRect = from.getBoundingClientRect();
+  return (to: Element) => {
+    const toRect = to.getBoundingClientRect();
+    return relativeRect(fromRect, toRect);
+  };
+};
 
 export const isScrollable = (element: Element) =>
   element.scrollHeight > element.clientHeight;

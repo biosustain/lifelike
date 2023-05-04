@@ -1,0 +1,19 @@
+@import 'src/scss/variables';
+
+:host {
+  overflow: auto;
+  position: relative;
+
+  .top-button {
+    position: fixed;
+    bottom: $window-spacer;
+    right: $window-spacer;
+    z-index: 100;
+  }
+
+  .table-container {
+    display: inline-block;
+    min-width: calc(100% - 2 * #{module-body-padding-x});
+    margin: $module-body-padding-x;
+  }
+}

@@ -1,5 +1,5 @@
 <table class="table table-hover">
-  <thead *ngIf="HEADER">
+  <thead *ngIf="HEADER" #head>
     <ng-container>
       <tr class="table-secondary" *ngFor="let row of HEADER">
         <th
@@ -15,7 +15,7 @@
   </thead>
 
   <!-- Make it relative so tooltips are aligned correctly when header is sticky -->
-  <tbody *ngIf="entries" [style.position]="'relative'">
+  <tbody *ngIf="entries" [style.position]="'relative'" #body>
     <ng-container>
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">

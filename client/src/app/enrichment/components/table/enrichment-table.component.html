@@ -1,0 +1,10 @@
+<div class="table-container" #findTarget>
+  <app-generic-table [header]="data.tableHeader"
+                     [entries]="data.tableCells"
+                     [object]="object">
+  </app-generic-table>
+</div>
+
+<button class="btn btn-secondary top-button" (click)="scrollTop()">
+  <i class="fa fa-arrow-up"></i> Top
+</button>

@@ -1,10 +1,9 @@
 import { escapeRegExp, isNil } from 'lodash-es';
-
+import { ReplaySubject } from 'rxjs';
 
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
-  scrollRectIntoView,
   walkParentElements,
 } from '../dom';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
@@ -26,7 +25,8 @@ export class AsyncElementFind implements AsyncFindController {
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
-  protected index = -1;
+  protected index = 0;
+  public current$ = new ReplaySubject<NodeTextRange>(1);
 
   constructor(
     target: Element = null,
@@ -163,8 +163,9 @@ export class AsyncElementFind implements AsyncFindController {
    * Highlight the current findindex.
    */
   private visitResult() {
-    scrollRectIntoView(this.results[this.index].startNode.parentElement, undefined);
-    this.highlighter.focus(this.results[this.index]);
+    const result = this.results[this.index];
+    this.current$.next(result);
+    this.highlighter.focus(result);
   }
 
   getResultIndex(): number {

@@ -6,7 +6,7 @@
       tooltipClass="tooltip"
       [draggable]="true"
       [style.background]="backgroundColor"
-      [attr.data-annotation-meta]="parsedMeta"
+      [attr.data-annotation-meta]="parsedMeta | json"
 ><ng-content></ng-content></span>
 
 <ng-template #tooltipContent>
