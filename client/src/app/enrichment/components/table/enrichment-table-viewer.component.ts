@@ -10,7 +10,7 @@ import {
   QueryList,
   ViewChild,
   ViewChildren,
-  NgZone, InjectionToken, Inject,
+  NgZone
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -58,6 +58,7 @@ import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-o
 import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { EnrichmentService } from '../../services/enrichment.service';
 import { FindControlerService } from '../../services/find-controler.service';
+import { EnrichmentTableComponent } from './enrichment-table.component';
 
 // TODO: Is there an existing interface we could use here?
 interface AnnotationData {
@@ -87,10 +88,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     protected readonly errorHandler: ErrorHandler,
     protected readonly enrichmentService: EnrichmentService,
     protected readonly progressDialog: ProgressDialog,
-    protected readonly changeDetectorRef: ChangeDetectorRef,
-    protected readonly elementRef: ElementRef,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
-    private readonly ngZone: NgZone,
     private readonly findControlerService: FindControlerService,
   ) {
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -101,7 +99,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  @ViewChild('findTarget') findTarget: ElementRef;
+  @ViewChild(EnrichmentTableComponent) enrichmentTable: EnrichmentTableComponent;
 
   annotation: AnnotationData;
   private destroy$ = new Subject<any>();
@@ -121,6 +119,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   dragTitleData$ = defer(() => this.object$.pipe(
     map(object => object.getTransferData())
   ));
+
+  scrollTop() {
+    this.enrichmentTable.scrollTop();
+  }
 
   ngOnInit() {
     this.load();

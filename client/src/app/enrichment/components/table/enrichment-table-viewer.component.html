@@ -124,12 +124,16 @@
             Loading data...
         </app-module-progress>
 
-        <app-enrichment-table
-          #findTarget
-          class="flex-fill"
-          *ngIf="result.table.value"
-          [data]="result.table.value"
-          [object]="result.object.value"
-        ></app-enrichment-table>
+        <ng-container *ngIf="result.table.value">
+          <app-enrichment-table
+            class="flex-fill"
+            [data]="result.table.value"
+            [object]="result.object.value"
+          ></app-enrichment-table>
+
+          <button class="btn btn-secondary top-button" (click)="scrollTop()">
+            <i class="fa fa-arrow-up"></i> Top
+          </button>
+        </ng-container>
     </ng-container>
 </div>
