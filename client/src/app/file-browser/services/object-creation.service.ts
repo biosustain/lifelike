@@ -221,7 +221,7 @@ export class ObjectCreationService {
     } as Task<SingleResult<FilesystemObject>>;
   }
 
-  private composeBulkCreationTask(data: FormData, numFiles: number) {
+  private composeBulkCreationTask(data: FormData) {
     const transactionId = createTransactionId()
     return this.filesystemService.bulkCreate(data, transactionId).pipe(
       switchMap(event => iif(
@@ -589,8 +589,8 @@ export class ObjectCreationService {
     );
   }
 
-  executeBulkWithProgressDialog(data: FormData, numFiles: number): Observable<any> {
-    const bulkTask = this.composeBulkCreationTask(data, numFiles);
+  executeBulkWithProgressDialog(data: FormData): Observable<any> {
+    const bulkTask = this.composeBulkCreationTask(data);
     const progressDialogRef = this.progressDialog.display({
       title: `Creating Files`,
       progressObservables: [bulkTask.pipe(
@@ -653,7 +653,7 @@ export class ObjectCreationService {
         annotationConfigs: dialogValue.annotationConfigs,
       });
       dialogValue.files.forEach((file: File) => formData.append('files', file, file.name));
-      return this.executeBulkWithProgressDialog(formData, dialogValue.files.length).toPromise();
+      return this.executeBulkWithProgressDialog(formData).toPromise();
     });
     return dialogRef.result;
   }
