@@ -1191,18 +1191,23 @@ class FileBulkUploadView(FilesystemBaseView):
     @use_args(BulkFileUploadRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def post(self, params):
         """Endpoint to upload many files at once."""
-
         current_user = g.current_user
 
-        upload_tasks = []
-        for upload in params['files']:
-            try:
-                transaction_task = TransactionTask()
-                transaction_task.transaction_id = g.transaction_id
-                transaction_task.detail = 'Bulk upload file processing.'
+        transaction_task = TransactionTask()
+        transaction_task.transaction_id = g.transaction_id
+        results = {}
+        global_exclusions = get_global_exclusion_annotations()
+        for file_num, upload  in enumerate(params['files']):
+            current_app.logger.info(f'Processing file {upload.filename}...')
 
-                # It's ok to commit here, since we always commit at the end of each loop. I.e.
-                # this task should be the only thing being committed.
+            # Update the transaction task at the start of each loop
+            try:
+                transaction_task.detail = {
+                    'current': upload.filename,
+                    'processed': file_num,
+                    'total': len(params['files'])
+                }
+
                 db.session.add(transaction_task)
                 db.session.commit()
             except SQLAlchemyError:
@@ -1212,12 +1217,7 @@ class FileBulkUploadView(FilesystemBaseView):
                     'Could not add task to TransactionTasks table for upload ' +
                     f'{upload.filename}.'
                 )
-            upload_tasks.append([transaction_task, upload])
 
-        results = {}
-        global_exclusions = get_global_exclusion_annotations()
-        for task, upload in upload_tasks:
-            current_app.logger.info(f'Processing file {upload.filename}...')
             try:
                 buffer = FileContentBuffer(stream=upload)
 
@@ -1396,18 +1396,6 @@ class FileBulkUploadView(FilesystemBaseView):
                     file.organism_synonym,
                     file.organism_taxonomy_id,
                     file.annotation_configs,
-                )
-
-            try:
-                # Now that the task is done, remove it from the table.
-                db.session.delete(task)
-                db.session.commit()
-            except SQLAlchemyError:
-                # There's not really any reason why this would throw, and the worst that will
-                # happen is the dialog in the client UI will have the wrong progress value.
-                current_app.logger.error(
-                    'Could not remove task from TransactionTasks table for upload ' +
-                    f'{upload.filename}.'
                 )
 
         return jsonify(results=results)

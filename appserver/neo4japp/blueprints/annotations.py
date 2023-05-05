@@ -79,7 +79,6 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.arangodb import convert_datetime, execute_arango_query, get_db
-from ..services.rabbitmq import send
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 

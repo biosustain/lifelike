@@ -230,13 +230,14 @@ export class ObjectCreationService {
           mergeMap((event: HttpUploadProgressEvent) => {
             const progress = Math.floor(event.loaded / event.total);
             if (progress === 1) {
-              return interval(10000).pipe(
-                mergeMap(() => this.transactionService.getRemainingTasksCount(transactionId).pipe(
+              return interval(1000).pipe(
+                mergeMap(() => this.transactionService.getTransactionTask<BulkCreateTransactionDetail>(transactionId).pipe(
                   map((resp) => {
+                    const percentCompleted = Math.floor((resp.detail.processed / resp.detail.total) * 100);
                   return {
                     mode: ProgressMode.Determinate,
-                    status: 'Files transmitted, processing...',
-                    value: (numFiles - resp.total) / numFiles
+                    status: `Currently processing ${resp.detail.current}...${percentCompleted}% of all files completed.`,
+                    value: percentCompleted / 100
                   }
                 })
               )));
@@ -665,4 +666,10 @@ export interface CreateDialogOptions {
   promptParent?: boolean;
   parentLabel?: string;
   request?: Partial<ObjectCreateRequest>;
+}
+
+interface BulkCreateTransactionDetail {
+  current: string;
+  processed: number;
+  total: number;
 }

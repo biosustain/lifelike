@@ -9,13 +9,15 @@ export class TransactionService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getRemainingTasksCount(transactionId: string): Observable<TransactionTasksCountResponse> {
-    return this.http.get<TransactionTasksCountResponse>(
-      `${this.baseUrl}/list/${transactionId}`
+  getTransactionTask<T>(transactionId: string): Observable<GetTransactionTaskResponse<T>> {
+    return this.http.get<GetTransactionTaskResponse<T>>(
+      `${this.baseUrl}/${transactionId}`
     );
   }
 }
 
-interface TransactionTasksCountResponse {
-  total: number;
+interface GetTransactionTaskResponse<T> {
+  id: number;
+  taxId: string;
+  detail: T;
 }
