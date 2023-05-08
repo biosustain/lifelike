@@ -46,7 +46,7 @@ def setup_before_request_callbacks(app: Flask):
     @app.before_request
     def init_exceptions_handling():
         g.warnings = list()
-        neo4japp.utils.transaction_id.transaction_id = 'test'
+        g.transaction_id = 'test'
 
     @app.before_request
     def default_login_required():

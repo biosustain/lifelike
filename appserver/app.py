@@ -59,9 +59,9 @@ def init_exceptions_handling():
     g.info = set()
     g.warnings = set()
 
-    neo4japp.utils.transaction_id.transaction_id = request.headers.get('X-Transaction-Id')
-    if not neo4japp.utils.transaction_id.transaction_id:
-        neo4japp.utils.transaction_id.transaction_id = generate_hash_id()
+    g.transaction_id = request.headers.get('X-Transaction-Id')
+    if not g.transaction_id:
+        g.transaction_id = generate_hash_id()
         warn(
             ServerWarning('Request did not contain required "X-Transaction-Id" header')
         )
