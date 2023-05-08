@@ -186,6 +186,7 @@ class AccountView(MethodView):
             with db.session.begin_nested():
                 db.session.add(app_user)
                 projects_service.create_initial_project(app_user)
+            db.session.commit()
         except SQLAlchemyError as e:
             raise ServerException(
                 title='Unexpected Database Transaction Error',
@@ -196,7 +197,6 @@ class AccountView(MethodView):
                         'user_email': app_user.email,
                     },
             ) from e
-        db.session.commit()
         return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)

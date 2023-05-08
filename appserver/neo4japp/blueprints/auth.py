@@ -187,21 +187,22 @@ def verify_token(token):
         user_role = AppRole.query.filter_by(name='user').one()
         user.roles.append(user_role)
 
-        # Finally, add the new user to the DB
-        try:
-            get_account_service().create_user(user)
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            raise ServerException(
-                title='Unexpected Database Transaction Error',
-                message='Something unexpected occurred while adding the user to the database.',
-                fields={
-                    'user_id': user.id if user.id is not None else 'N/A',
-                    'username': user.username,
-                    'user_email': user.email,
-                },
-            ) from e
+            # Finally, add the new user to the DB
+            try:
+                with db.session.begin_nested():
+                    db.session.add(user)
+                    projects_service.create_initial_project(user)
+                db.session.commit()
+            except SQLAlchemyError as e:
+                raise ServerException(
+                    title='Unexpected Database Transaction Error',
+                    message='Something unexpected occurred while adding the user to the database.',
+                    fields={
+                        'user_id': user.id if user.id is not None else 'N/A',
+                        'username': user.username,
+                        'user_email': user.email,
+                    },
+                ) from e
 
     g.current_user = user
     return True
