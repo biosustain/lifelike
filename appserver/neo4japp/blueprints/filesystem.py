@@ -717,6 +717,7 @@ class FileDetailView(FilesystemBaseView):
                 parent_file = file
 
         self.update_files(target_files, parent_file, params, current_user)
+        db.session.commit()
         return self.get(hash_id)
 
 
