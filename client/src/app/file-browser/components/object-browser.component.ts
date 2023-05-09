@@ -197,6 +197,20 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     });
   }
 
+  openDownloadDialog(targets: FilesystemObject[]) {
+    if (!this.selectionExists(targets)) {
+      return;
+    }
+
+    return this.actions.openDownloadDialog(targets).then(() => {
+      this.snackBar.open(`Download successful.`, 'Close', {
+        duration: 5000,
+      });
+      this.refresh();
+    }, () => {
+    });
+  }
+
   openObject(target: FilesystemObject) {
     this.workspaceManager.navigate(target.getCommands(), {
       queryParams: this.getObjectQueryParams(target),

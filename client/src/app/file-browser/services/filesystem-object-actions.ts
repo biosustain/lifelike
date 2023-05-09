@@ -191,6 +191,19 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
+  openDownloadDialog(targets: FilesystemObject[]): Promise<void> {
+    const progressDialogRef = this.createProgressDialog(`Downloading ${getObjectLabel(targets)}...`);
+    return this.filesystemService.download(targets.map(target => target.hashId).join(';'))
+      .pipe(
+        map(blob => {
+          const filename = '***ARANGO_DB_NAME***-download.zip';
+          return openDownloadForBlob(new File([blob], filename), filename);
+        }),
+        finalize(() => progressDialogRef.close()),
+          this.errorHandler.create({label: 'Download object'}),
+      ).toPromise();
+  }
+
   openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<void> {
     const dialogRef = this.modalService.open(FileAnnotationHistoryDialogComponent, {
       size: 'lg',

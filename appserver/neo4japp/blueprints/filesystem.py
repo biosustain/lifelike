@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import gdown
 import hashlib
 import itertools
@@ -16,18 +14,20 @@ from flask.views import MethodView
 from itertools import chain
 from marshmallow import ValidationError
 from more_itertools import flatten
+from pathlib import Path
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union, cast
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
 from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
+    FILE_MIME_TYPE_ENRICHMENT_TABLE,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
     MAX_FILE_SIZE,
@@ -72,6 +72,7 @@ from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import (
     BulkFileRequestSchema,
     BulkFileUpdateRequestSchema,
+    DownloadContentSchema,
     FileBackupCreateRequestSchema,
     FileCreateRequestSchema,
     FileExportRequestSchema,
@@ -1317,6 +1318,75 @@ class FileContentView(FilesystemBaseView):
         )
 
 
+class DownloadContentView(FilesystemBaseView):
+    @use_args(DownloadContentSchema)
+    def get(self, params: dict):
+        """Fetch a single file's content."""
+        current_user = g.current_user
+
+        hash_ids = params['hash_ids'].split(';')
+        zip_bytes = FileContentBuffer()
+        with zipfile.ZipFile(zip_bytes, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***'
+            for hash_id in hash_ids:
+                original_file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+                self.check_file_permissions([original_file], current_user, ['readable'], permit_recycled=True)
+
+                files_to_zip = []
+                if original_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
+                    non_folder_descendants = db.session.query(
+                        Files
+                    ).filter(
+                        and_(
+                            Files.hash_id != hash_id,
+                            Files.mime_type != FILE_MIME_TYPE_DIRECTORY,
+                            Files.path.startswith(f'{original_file.path}/')
+                        ),
+                    ).all()
+                    files_to_zip.extend(non_folder_descendants)
+                else:
+                    files_to_zip.append(original_file)
+
+                for file_to_zip in files_to_zip:
+                    # Lazy loaded
+                    if file_to_zip.content:
+                        content = file_to_zip.content.raw_file
+                    else:
+                        content = b''
+
+                    # If the file is one of those originally selected, put it in the ***ARANGO_USERNAME*** of the
+                    # zip folder. Otherwise (i.e., it's the child of a selected folder), use the
+                    # path of the file STARTING from the PARENT.
+                    if file_to_zip == original_file:
+                        zip_filepath =  f'{zip_***ARANGO_USERNAME***_dir}/{file_to_zip.filename}'
+                    else:
+                        # Root folders have special names because our project/folder schema is bad.
+                        if original_file.filename == '/':
+                            length_to_trim = 0
+                        else:
+                            length_to_trim = len(original_file.path) - len(f'/{original_file.filename}')
+                        zip_filepath =  f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
+
+                    # Maps and enrichment tables have special extensions which for whatever reason
+                    # aren't added when they are created, but ARE required to re-upload.
+                    if file_to_zip.mime_type == FILE_MIME_TYPE_MAP:
+                        zip_filepath = f'{zip_filepath}.map'
+                    elif file_to_zip.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE:
+                        zip_filepath = f'{zip_filepath}.llenrichmenttable.json'
+
+                    zip_file.writestr(zip_filepath, content)
+
+        etag = hashlib.sha256(zip_bytes.getvalue()).digest()
+
+        return make_cacheable_file_response(
+            request,
+            zip_bytes.getvalue(),
+            etag=etag,
+            filename='***ARANGO_DB_NAME***.zip',
+            mime_type='application/zip'
+        )
+
+
 class MapContentView(FilesystemBaseView):
 
     def get(self, hash_id: str):
@@ -1869,6 +1939,7 @@ bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
                 view_func=FileContentView.as_view('file_content'))
+bp.add_url_rule('objects/download',view_func=DownloadContentView.as_view('file_download'))
 bp.add_url_rule('objects/<string:hash_id>/map-content',
                 view_func=MapContentView.as_view('map_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))

@@ -424,3 +424,13 @@ class StarredSchema(CamelCaseSchema):
 # ----------------------------------------
 class FileStarUpdateRequest(CamelCaseSchema):
     starred = fields.Boolean(required=True)
+
+
+# ========================================
+# Downloads
+# ========================================
+
+# Requests
+# ----------------------------------------
+class DownloadContentSchema(CamelCaseSchema):
+    hash_ids = fields.String(required=True)

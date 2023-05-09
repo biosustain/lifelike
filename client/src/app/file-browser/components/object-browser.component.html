@@ -77,6 +77,11 @@
                                 <i class="fa fa-fw fa-upload"></i> Upload
                             </button>
 
+                            <button class="btn btn-primary ml-2"
+                                    (click)="openDownloadDialog([result.value])">
+                                <i class="fa fa-fw fa-download"></i> Download Folder
+                            </button>
+
                             <ng-container *ngIf="result.value?.children.selection$ | async as selection">
                                 <div ngbDropdown class="d-inline-block ml-2" container="body"
                                      *ngIf="selection.length &&
@@ -99,6 +104,10 @@
                                                 (click)="openDeleteDialog(selection)"
                                                 [disabled]="!isSelectionDeletable(selection)">
                                             Delete...
+                                        </button>
+                                        <button ngbDropdownItem
+                                                (click)="openDownloadDialog(selection)">
+                                            Download...
                                         </button>
                                     </div>
                                 </div>

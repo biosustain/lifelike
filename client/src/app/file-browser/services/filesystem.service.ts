@@ -159,6 +159,17 @@ export class FilesystemService {
     );
   }
 
+  download(hashIds: string): Observable<Blob> {
+    return this.http.get(
+      `/api/filesystem/objects/download`, {
+        params: {
+          hashIds,
+        },
+        responseType: 'blob',
+      },
+    );
+  }
+
   /**
    * Gets the 'graph.json' file from the zipped map - without the images. Since the unzipping
    * produces a promise, getting a file and unzipping it in client produces a promise that is
