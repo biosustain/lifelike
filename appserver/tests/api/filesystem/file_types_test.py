@@ -1,4 +1,5 @@
 import importlib.resources as pkg_resources
+from http import HTTPStatus
 from io import BytesIO
 from typing import Tuple
 from urllib.parse import quote
