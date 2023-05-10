@@ -79,6 +79,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   sourceData$ = defer(() => of(this.map?.getGraphEntitySources()));
 
+  encodeURIComponent = encodeURIComponent;
 
   get shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();

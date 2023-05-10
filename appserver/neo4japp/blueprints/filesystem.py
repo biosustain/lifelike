@@ -1331,8 +1331,9 @@ class MapContentView(FilesystemBaseView):
                                   f'{file.mime_type}')
 
         try:
-            zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
-            json_graph = zip_file.read('graph.json')
+            with FileContentBuffer(file.content.raw_file) as bufferView:
+                zip_file = zipfile.ZipFile(bufferView)
+                json_graph = zip_file.read('graph.json')
         except (KeyError, zipfile.BadZipFile):
             raise ValidationError(
                 'Cannot retrieve contents of the file - it might be corrupted')
@@ -1393,60 +1394,61 @@ class FileExportView(FilesystemBaseView):
         link_to_page_map: Dict[str, int]
     ) -> List[Files]:
         current_user = g.current_user
-        zip_file = zipfile.ZipFile(FileContentBuffer(file.content.raw_file))
-        try:
-            json_graph = json.loads(zip_file.read('graph.json'))
-        except KeyError as e:
-            raise ValidationError from e
-        for node in chain(
-                json_graph['nodes'],
-                flatten(
-                    map(
-                        lambda group: group.get('members', []),
-                        json_graph.get('groups', [])
+        with FileContentBuffer(file.content.raw_file) as bufferView:
+            zip_file = zipfile.ZipFile(bufferView)
+            try:
+                json_graph = json.loads(zip_file.read('graph.json'))
+            except KeyError as e:
+                raise ValidationError from e
+            for node in chain(
+                    json_graph['nodes'],
+                    flatten(
+                        map(
+                            lambda group: group.get('members', []),
+                            json_graph.get('groups', [])
+                        )
                     )
-                )
-        ):
-            data = node['data']
-            for link in data.get('sources', []) + data.get('hyperlinks', []):
-                url = link.get('url', "").lstrip()
-                match = MAPS_RE.match(url)
-                if match:
-                    map_hash = match.group('hash_id')
-                    # Fetch linked maps and check permissions, before we start to export them
-                    if map_hash not in map_hash_set:
-                        try:
-                            map_hash_set.add(map_hash)
-                            child_file = self.get_nondeleted_recycled_file(
-                                Files.hash_id == map_hash,
-                                lazy_load_content=True
-                            )
-                            self.check_file_permissions(
-                                [child_file], current_user, ['readable'],
-                                permit_recycled=True
-                            )
-                            files.append(child_file)
+            ):
+                data = node['data']
+                for link in data.get('sources', []) + data.get('hyperlinks', []):
+                    url = link.get('url', "").lstrip()
+                    match = MAPS_RE.match(url)
+                    if match:
+                        map_hash = match.group('hash_id')
+                        # Fetch linked maps and check permissions, before we start to export them
+                        if map_hash not in map_hash_set:
+                            try:
+                                map_hash_set.add(map_hash)
+                                child_file = self.get_nondeleted_recycled_file(
+                                    Files.hash_id == map_hash,
+                                    lazy_load_content=True
+                                )
+                                self.check_file_permissions(
+                                    [child_file], current_user, ['readable'],
+                                    permit_recycled=True
+                                )
+                                files.append(child_file)
 
-                            files = self.get_all_linked_maps(
-                                child_file, map_hash_set, files, link_to_page_map
-                            )
+                                files = self.get_all_linked_maps(
+                                    child_file, map_hash_set, files, link_to_page_map
+                                )
 
-                        except RecordNotFound as e:
-                            current_app.logger.info(
-                                f'Map file: {map_hash} requested for linked '
-                                f'export does not exist.',
-                                extra=UserEventLog(
-                                    username=current_user.username,
-                                    event_type=LogEventType.FILESYSTEM.value).to_dict()
-                            )
-                            # TODO: warning
-                    destination_page = find_index(
-                        lambda f: f.hash_id == map_hash,
-                        files
-                    )
-                    if destination_page is not None:
-                        link_to_page_map[(LIFELIKE_DOMAIN or '') + url] = destination_page
-        return files
+                            except RecordNotFound as e:
+                                current_app.logger.info(
+                                    f'Map file: {map_hash} requested for linked '
+                                    f'export does not exist.',
+                                    extra=UserEventLog(
+                                        username=current_user.username,
+                                        event_type=LogEventType.FILESYSTEM.value).to_dict()
+                                )
+                                # TODO: warning
+                        destination_page = find_index(
+                            lambda f: f.hash_id == map_hash,
+                            files
+                        )
+                        if destination_page is not None:
+                            link_to_page_map[(LIFELIKE_DOMAIN or '') + url] = destination_page
+            return files
 
 
 class FileBackupView(FilesystemBaseView):
@@ -1469,20 +1471,22 @@ class FileBackupView(FilesystemBaseView):
         # Alternatively, we can zip those on the client side - but the JZip was working really slow
         if params['content_value'].content_type == FILE_MIME_TYPE_MAP:
             new_content = FileContentBuffer()
-            zip_content = zipfile.ZipFile(
-                new_content,
-                'w',
-                zipfile.ZIP_DEFLATED,
-                strict_timestamps=False
-            )
-            # NOTE: The trick here is that when we unpack zip on the client-side, we are not
-            # resetting the image manager memory - we are only appending new stuff to it. This is
-            # why we do not need to store all images within the backup - just the unsaved ones.
-            zip_content.writestr('graph.json', params['content_value'].read())
-            new_images = params.get('new_images') or []
-            for image in new_images:
-                zip_content.writestr('images/' + image.filename + '.png', image.read())
-            zip_content.close()
+            with new_content as bufferView:
+                zip_content = zipfile.ZipFile(
+                    bufferView,
+                    'w',
+                    zipfile.ZIP_DEFLATED,
+                    strict_timestamps=False
+                )
+                # NOTE: The trick here is that when we unpack zip on the client-side, we are not
+                # resetting the image manager memory - we are only appending new stuff to it.
+                # This is why we do not need to store all images within the backup -
+                # - just the unsaved ones.
+                zip_content.writestr('graph.json', params['content_value'].read())
+                new_images = params.get('new_images') or []
+                for image in new_images:
+                    zip_content.writestr('images/' + image.filename + '.png', image.read())
+                zip_content.close()
             with new_content as bufferView:
                 backup.raw_value = bufferView.read()
         else:

@@ -111,7 +111,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.map = mapFile;
 
       if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
-        this.workspaceManager.navigate(['/projects', this.map.project.name, 'maps', this.map.hashId, 'edit']);
+        this.workspaceManager.navigate(['/projects', encodeURIComponent(this.map.project.name), 'maps', this.map.hashId, 'edit']);
       }
 
       this.contentValue = mapBlob;
