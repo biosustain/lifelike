@@ -83,18 +83,3 @@ def forward_request():
 @wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()
-
-
-@bp.route('/enrich-with-context', methods=['POST'])
-def enrich_context():
-    data = request.get_json()
-    organism = data.get('organism', '')
-    term = data.get('term', '')
-    response = ChatGPT.Completion.create(
-      model="text-davinci-003",
-      prompt=f'What is the ralationship between ${organism} and ${term}?',
-      temperature=0,
-      max_tokens=500
-    )
-    for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}

@@ -52,6 +52,20 @@
         </div>
 
         <ng-container *ngIf="overflow" [ngTemplateOutlet]="delete"></ng-container>
+
+        <ng-content></ng-content>
+      </ng-template>
+    </li>
+    <li ngbNavItem="explanation">
+      <a ngbNavLink>Explanation</a>
+      <ng-template ngbNavContent>
+          <div *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
+               class="flex-fill overflow-auto">
+            {{possibleExplanation}}
+          </div>
+          <ng-template #loading>
+            <i class="fa fa-spinner fa-spin"></i>
+          </ng-template>
       </ng-template>
     </li>
     <li ngbNavItem="style">

@@ -31,6 +31,22 @@
               maxlength="5000"
             ></textarea>
           </div>
+
+          <ng-content></ng-content>
+        </div>
+      </ng-template>
+    </li>
+    <li ngbNavItem="explanation">
+      <a ngbNavLink>Explanation</a>
+      <ng-template ngbNavContent>
+        <div class="module-body">
+          <div *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
+               class="flex-fill overflow-auto">
+            {{possibleExplanation}}
+          </div>
+          <ng-template #loading>
+            <i class="fa fa-spinner fa-spin"></i>
+          </ng-template>
         </div>
 
         <div class="mb-4">

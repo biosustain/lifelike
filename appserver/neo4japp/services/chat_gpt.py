@@ -1,5 +1,6 @@
 import openai
 from cachetools import Cache, cached
+from flask import current_app
 
 from neo4japp.services.rcache import RedisCache
 

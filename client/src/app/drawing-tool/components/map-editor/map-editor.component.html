@@ -146,30 +146,23 @@
       </as-split-area>
       <as-split-area size="256" [order]="1" #infoPanelSidebar>
         <ng-container
-          *ngIf="graphCanvas?.selection.changeObservable | async as selected; else graphInfo"
-        >
-          <div class="info-panel" *ngIf="selected[0].length === 1; else graphInfo">
-            <app-info-panel
-              [infoPanel]="infoPanel"
-              [selected]="selected[0][0]"
-              (actionCreated)="graphCanvas.execute($event)"
-            >
+          *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else graphInfo">
+          <div class="info-panel" *ngIf="selected[0].length; else graphInfo">
+            <app-info-panel [infoPanel]="infoPanel" [selected]="selected[0]"
+                            [graphView]="graphCanvas"
+                            (actionCreated)="graphCanvas.execute($event)">
+              <button *ngIf="canCreateGroupFromSelection()"
+                      class="btn btn-light center mt-3"
+                      (click)="createGroup()">
+                Create Group
+              </button>
+              <button *ngIf="canExtendsGroupFromSelection()"
+                      class="btn btn-light center mt-3"
+                      (click)="addToGroup()">
+                Add To Group
+              </button>
             </app-info-panel>
           </div>
-          <button
-            *ngIf="canCreateGroupFromSelection()"
-            class="btn btn-light center mt-2 ml-2"
-            (click)="createGroup()"
-          >
-            Create Group
-          </button>
-          <button
-            *ngIf="canExtendsGroupFromSelection()"
-            class="btn btn-light center mt-2 ml-2"
-            (click)="addToGroup()"
-          >
-            Add To Group
-          </button>
         </ng-container>
 
         <ng-template #graphInfo>
