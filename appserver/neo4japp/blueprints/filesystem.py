@@ -1329,23 +1329,31 @@ class DownloadContentView(FilesystemBaseView):
         with zipfile.ZipFile(zip_bytes, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***'
             for hash_id in hash_ids:
-                original_file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-                self.check_file_permissions([original_file], current_user, ['readable'], permit_recycled=True)
+                file = self.get_nondeleted_recycled_file(
+                    Files.hash_id == hash_id,
+                    lazy_load_content=True
+                )
+                self.check_file_permissions(
+                    [file],
+                    current_user,
+                    ['readable'],
+                    permit_recycled=True
+                )
 
                 files_to_zip = []
-                if original_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
+                if file.mime_type == FILE_MIME_TYPE_DIRECTORY:
                     non_folder_descendants = db.session.query(
                         Files
                     ).filter(
                         and_(
                             Files.hash_id != hash_id,
                             Files.mime_type != FILE_MIME_TYPE_DIRECTORY,
-                            Files.path.startswith(f'{original_file.path}/')
+                            Files.path.startswith(f'{file.path}/')
                         ),
                     ).all()
                     files_to_zip.extend(non_folder_descendants)
                 else:
-                    files_to_zip.append(original_file)
+                    files_to_zip.append(file)
 
                 for file_to_zip in files_to_zip:
                     # Lazy loaded
@@ -1357,15 +1365,15 @@ class DownloadContentView(FilesystemBaseView):
                     # If the file is one of those originally selected, put it in the ***ARANGO_USERNAME*** of the
                     # zip folder. Otherwise (i.e., it's the child of a selected folder), use the
                     # path of the file STARTING from the PARENT.
-                    if file_to_zip == original_file:
-                        zip_filepath =  f'{zip_***ARANGO_USERNAME***_dir}/{file_to_zip.filename}'
+                    if file_to_zip == file:
+                        zip_filepath = f'{zip_***ARANGO_USERNAME***_dir}/{file_to_zip.filename}'
                     else:
                         # Root folders have special names because our project/folder schema is bad.
-                        if original_file.filename == '/':
+                        if file.filename == '/':
                             length_to_trim = 0
                         else:
-                            length_to_trim = len(original_file.path) - len(f'/{original_file.filename}')
-                        zip_filepath =  f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
+                            length_to_trim = len(file.path) - len(f'/{file.filename}')
+                        zip_filepath = f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
 
                     # Maps and enrichment tables have special extensions which for whatever reason
                     # aren't added when they are created, but ARE required to re-upload.
@@ -1376,12 +1384,10 @@ class DownloadContentView(FilesystemBaseView):
 
                     zip_file.writestr(zip_filepath, content)
 
-        etag = hashlib.sha256(zip_bytes.getvalue()).digest()
-
         return make_cacheable_file_response(
             request,
             zip_bytes.getvalue(),
-            etag=etag,
+            etag=hashlib.sha256(zip_bytes.getvalue()).hexdigest(),
             filename='***ARANGO_DB_NAME***.zip',
             mime_type='application/zip'
         )
@@ -1928,7 +1934,7 @@ class FileStarUpdateView(FilesystemBaseView):
             'result.parent',
             'result.children',  # We aren't loading sub-children
         )).dump({
-            'result': result,
+            'result': result
         }))
 
 
@@ -1939,7 +1945,7 @@ bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
                 view_func=FileContentView.as_view('file_content'))
-bp.add_url_rule('objects/download',view_func=DownloadContentView.as_view('file_download'))
+bp.add_url_rule('objects/download', view_func=DownloadContentView.as_view('file_download'))
 bp.add_url_rule('objects/<string:hash_id>/map-content',
                 view_func=MapContentView.as_view('map_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))
