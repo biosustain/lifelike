@@ -2,7 +2,7 @@ from arango.client import ArangoClient
 from datetime import datetime
 from flask import current_app
 from http import HTTPStatus
-from typing import List, Tuple
+from typing import Callable, Dict, List, Tuple
 import uuid
 
 from neo4japp.constants import TIMEZONE, LogEventType
@@ -700,7 +700,7 @@ class ManualAnnotationService:
             'entity_id': values['entity_id'],
             'synonym': values['synonym'],
         }
-        queries = {
+        queries: Dict[str, Tuple[Callable, dict]] = {
             EntityType.ANATOMY.value: (get_mesh_global_inclusion_exist_query, mesh_params),
             EntityType.DISEASE.value: (get_mesh_global_inclusion_exist_query, mesh_params),
             EntityType.FOOD.value: (get_mesh_global_inclusion_exist_query, mesh_params),
@@ -714,22 +714,25 @@ class ManualAnnotationService:
             EntityType.PATHWAY.value: (get_pathway_global_inclusion_exist_query, other_params)
         }
 
-        query_fn, params = queries.get(entity_type, (None, None))
-        try:
-            check = execute_arango_query(
-                db=get_db(self.arango_client),
-                query=query_fn(),
-                **params
-            )[0] if query_fn else {'node_exist': False}
-        except BrokenPipeError:
-            raise
-        except Exception as e:
-            current_app.logger.error(
-                f'Failed to create global inclusion, '
-                f'knowledge graph failed with query: {query_fn()}.',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
-            )
-            raise
+        if entity_type in queries:
+            try:
+                query_fn, params = queries[entity_type]
+                check = execute_arango_query(
+                    db=get_db(self.arango_client),
+                    query=query_fn(),
+                    **params
+                )[0]
+            except BrokenPipeError:
+                raise
+            except Exception as e:
+                current_app.logger.error(
+                    f'Failed to create global inclusion, '
+                    f'knowledge graph failed with query: {query_fn()}.',
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                )
+                raise
+        else:
+            check = {'node_exist': False}
 
         if check['node_exist']:
             return check

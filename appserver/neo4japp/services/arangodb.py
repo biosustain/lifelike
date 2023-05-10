@@ -23,7 +23,6 @@ def convert_datetime(date_val: str) -> datetime:
     raise ValueError(f'time data {date_val} does not match any of the accepted formats.')
 
 
-
 def get_version(client: ArangoClient):
     return client.version
 
