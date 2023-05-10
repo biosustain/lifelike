@@ -44,6 +44,8 @@ class Base:
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')
 
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
         POSTGRES_PASSWORD,
