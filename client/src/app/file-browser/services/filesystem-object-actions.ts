@@ -5,18 +5,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { clone, first, values, chain } from 'lodash-es';
+import { clone, first } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { openDownloadForBlob } from 'app/shared/utils/files';
-import { ResultMapping } from 'app/shared/schemas/common';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { ResultMapping } from 'app/shared/schemas/common';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { openDownloadForBlob } from 'app/shared/utils/files';
+import { getFilenameFromContentDisposition } from 'app/shared/utils/http';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -28,7 +29,7 @@ import { ObjectVersion } from '../models/object-version';
 import { ObjectExportDialogComponent, ObjectExportDialogValue, } from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
-import { ObjectCreationService, CreateResultMapping } from './object-creation.service';
+import { ObjectCreationService } from './object-creation.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
@@ -191,13 +192,13 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openDownloadDialog(targets: FilesystemObject[]): Promise<void> {
+  openDownloadProgressDialog(targets: FilesystemObject[]): Promise<void> {
     const progressDialogRef = this.createProgressDialog(`Downloading ${getObjectLabel(targets)}...`);
     return this.filesystemService.download(targets.map(target => target.hashId).join(';'))
       .pipe(
-        map(blob => {
-          const filename = '***ARANGO_DB_NAME***-download.zip';
-          return openDownloadForBlob(new File([blob], filename), filename);
+        map((resp) => {
+          const filename = getFilenameFromContentDisposition(resp.headers.get('Content-Disposition'));
+          return openDownloadForBlob(new File([resp.body], filename), filename);
         }),
         finalize(() => progressDialogRef.close()),
           this.errorHandler.create({label: 'Download object'}),

@@ -159,13 +159,14 @@ export class FilesystemService {
     );
   }
 
-  download(hashIds: string): Observable<Blob> {
+  download(hashIds: string): Observable<HttpResponse<Blob>> {
     return this.http.get(
       `/api/filesystem/objects/download`, {
         params: {
           hashIds,
         },
         responseType: 'blob',
+        observe: 'response'
       },
     );
   }

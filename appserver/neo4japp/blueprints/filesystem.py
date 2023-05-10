@@ -1321,13 +1321,13 @@ class FileContentView(FilesystemBaseView):
 class DownloadContentView(FilesystemBaseView):
     @use_args(DownloadContentSchema)
     def get(self, params: dict):
-        """Fetch a single file's content."""
+        """Fetch a zipfile of the list of input files."""
         current_user = g.current_user
 
         hash_ids = params['hash_ids'].split(';')
         zip_bytes = FileContentBuffer()
         with zipfile.ZipFile(zip_bytes, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***'
+            zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***-download'
             for hash_id in hash_ids:
                 file = self.get_nondeleted_recycled_file(
                     Files.hash_id == hash_id,
@@ -1342,15 +1342,20 @@ class DownloadContentView(FilesystemBaseView):
 
                 files_to_zip = []
                 if file.mime_type == FILE_MIME_TYPE_DIRECTORY:
-                    non_folder_descendants = db.session.query(
-                        Files
-                    ).filter(
+                    non_folder_descendants = self.get_nondeleted_recycled_files(
                         and_(
                             Files.hash_id != hash_id,
                             Files.mime_type != FILE_MIME_TYPE_DIRECTORY,
                             Files.path.startswith(f'{file.path}/')
                         ),
-                    ).all()
+                        lazy_load_content=True
+                    )
+                    self.check_file_permissions(
+                        non_folder_descendants,
+                        current_user,
+                        ['readable'],
+                        permit_recycled=True
+                    )
                     files_to_zip.extend(non_folder_descendants)
                 else:
                     files_to_zip.append(file)
@@ -1388,7 +1393,7 @@ class DownloadContentView(FilesystemBaseView):
             request,
             zip_bytes.getvalue(),
             etag=hashlib.sha256(zip_bytes.getvalue()).hexdigest(),
-            filename='***ARANGO_DB_NAME***.zip',
+            filename='***ARANGO_DB_NAME***-download.zip',
             mime_type='application/zip'
         )
 

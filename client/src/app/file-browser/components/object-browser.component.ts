@@ -197,12 +197,12 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     });
   }
 
-  openDownloadDialog(targets: FilesystemObject[]) {
+  downloadSelection(targets: FilesystemObject[]) {
     if (!this.selectionExists(targets)) {
       return;
     }
 
-    return this.actions.openDownloadDialog(targets).then(() => {
+    return this.actions.openDownloadProgressDialog(targets).then(() => {
       this.snackBar.open(`Download successful.`, 'Close', {
         duration: 5000,
       });

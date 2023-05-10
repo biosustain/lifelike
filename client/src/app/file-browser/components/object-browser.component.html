@@ -78,7 +78,7 @@
                             </button>
 
                             <button class="btn btn-primary ml-2"
-                                    (click)="openDownloadDialog([result.value])">
+                                    (click)="downloadSelection([result.value])">
                                 <i class="fa fa-fw fa-download"></i> Download Folder
                             </button>
 
@@ -106,7 +106,7 @@
                                             Delete...
                                         </button>
                                         <button ngbDropdownItem
-                                                (click)="openDownloadDialog(selection)">
+                                                (click)="downloadSelection(selection)">
                                             Download...
                                         </button>
                                     </div>
