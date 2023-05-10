@@ -23,6 +23,7 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
+import { MultiselectFormComponent } from './components/map-editor/forms/multiselect-form.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     LinkEditDialogComponent,
     GroupFormComponent,
     GraphViewDirective,
+    MultiselectFormComponent,
   ],
   entryComponents: [
     ConfirmDialogComponent,

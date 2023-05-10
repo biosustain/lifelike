@@ -9,6 +9,7 @@ import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SingleResult } from 'app/shared/schemas/common';
+import { ExplainService } from 'app/shared/services/explain.service';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
@@ -35,8 +36,10 @@ export class EnrichmentVisualisationService {
     protected readonly http: HttpClient,
     protected readonly errorHandler: ErrorHandler,
     protected readonly snackBar: MatSnackBar,
-    protected readonly enrichmentService: EnrichmentService
-  ) {}
+    protected readonly enrichmentService: EnrichmentService,
+    protected readonly explainService: ExplainService,
+  ) {
+  }
 
   private currentFileId: string;
   object: FilesystemObject;
@@ -109,11 +112,6 @@ export class EnrichmentVisualisationService {
 
   enrichWithContext(term): Observable<string> {
     const {organism} = this.enrichmentDocument;
-    return this.http.post<SingleResult<string>>(
-      `/api/enrichment-visualisation/enrich-with-context`,
-      {organism, term},
-    ).pipe(
-      map(({result}) => result)
-    );
+    return this.explainService.relationship([organism, term]);
   }
 }
