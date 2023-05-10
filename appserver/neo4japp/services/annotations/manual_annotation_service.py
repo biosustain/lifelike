@@ -4,8 +4,7 @@ from arango.client import ArangoClient
 from datetime import datetime
 from flask import current_app
 from http import HTTPStatus
-from typing import List, Tuple
-
+from typing import Callable, Dict, List, Tuple
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -721,7 +720,7 @@ class ManualAnnotationService:
             'entity_id': values['entity_id'],
             'synonym': values['synonym'],
         }
-        queries = {
+        queries: Dict[str, Tuple[Callable, dict]] = {
             EntityType.ANATOMY.value: (get_mesh_global_inclusion_exist_query, mesh_params),
             EntityType.DISEASE.value: (get_mesh_global_inclusion_exist_query, mesh_params),
             EntityType.FOOD.value: (get_mesh_global_inclusion_exist_query, mesh_params),
