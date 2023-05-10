@@ -3,6 +3,7 @@ import hashlib
 import html
 import io
 import json
+from http import HTTPStatus
 
 import sqlalchemy as sa
 import time
@@ -869,7 +870,7 @@ class GlobalAnnotationExportInclusions(MethodView):
         ]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
         response.headers['Content-Disposition'] = \
             f'attachment; filename={exporter.get_filename("global_inclusions")}'
@@ -931,7 +932,7 @@ class GlobalAnnotationExportExclusions(MethodView):
         data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
         response.headers['Content-Disposition'] = \
             f'attachment; filename={exporter.get_filename("global_exclusions")}'

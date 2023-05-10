@@ -35,10 +35,10 @@ def get_batch():
     try:
         decoded_query = bytearray.fromhex(data_query).decode()
     except ValueError:
-        return SuccessResponse(result='No results found', status_code=200)
+        return SuccessResponse(result='No results found', status_code=HTTPStatus.OK)
     result = visualizer_service.query_batch(decoded_query)
     # This response might contain warnings to avoid breaking changes the status code remains 200
-    return SuccessResponse(result=result, status_code=200)
+    return SuccessResponse(result=result, status_code=HTTPStatus.OK)
 
 
 @bp.route('/expand', methods=['POST'])
@@ -46,7 +46,7 @@ def get_batch():
 def expand_graph_node(req: ExpandNodeRequest):
     visualizer = get_visualizer_service()
     node = visualizer.expand_graph(req.node_id, req.filter_labels)
-    return SuccessResponse(result=node, status_code=200)
+    return SuccessResponse(result=node, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-reference-table-data', methods=['POST'])
@@ -56,7 +56,7 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
     reference_table_data = visualizer.get_reference_table_data(
         req.node_edge_pairs,
     )
-    return SuccessResponse(reference_table_data, status_code=200)
+    return SuccessResponse(reference_table_data, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-snippets-for-edge', methods=['POST'])
@@ -78,7 +78,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
         limit=req.limit,
         edge=req.edge,
     )
-    return SuccessResponse(edge_snippets_result, status_code=200)
+    return SuccessResponse(edge_snippets_result, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-snippets-for-cluster', methods=['POST'])
@@ -100,13 +100,13 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
         limit=req.limit,
         edges=req.edges,
     )
-    return SuccessResponse(cluster_snippets_result, status_code=200)
+    return SuccessResponse(cluster_snippets_result, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-annotation-legend', methods=['GET'])
 @jsonify_with_class()
 def get_annotation_legend():
-    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
+    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-associated-type-snippet-count', methods=['POST'])

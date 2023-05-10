@@ -1,9 +1,8 @@
 import json
-import re
+from http import HTTPStatus
 from types import SimpleNamespace
 
 import pytest
-import responses
 
 from neo4japp.models import AppUser
 from tests.helpers.api import generate_jwt_headers
@@ -60,7 +59,7 @@ def test_admin_can_create_user(client, fix_admin_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_nonadmin_cannot_create_user(client, test_user):
@@ -81,7 +80,7 @@ def test_nonadmin_cannot_create_user(client, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 403
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
@@ -93,7 +92,7 @@ def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
         headers=headers,
         content_type='application/json')
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     result = response.get_json()
     # Add 2 to include the current user AND the assumed to be present ***ARANGO_DB_NAME*** superuser
     assert int(result['total']) == len(mock_users) + 2
@@ -109,7 +108,7 @@ def test_admin_can_get_any_user(client, mock_users, fix_admin_user):
         headers=headers,
         content_type='application/json'
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     result = response.get_json()
     assert int(result['total']) == 1
 
@@ -123,7 +122,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         headers=headers,
         content_type='application/json')
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     result = response.get_json()
     assert int(result['total']) == 1
     assert result['results'][0]['email'] == test_user.email
@@ -134,7 +133,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     result = response.get_json()
     assert int(result['total']) == 1
     assert result['results'][0]['email'] == test_user.email
@@ -145,7 +144,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 403
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize('attribute, value, is_editable', [
@@ -164,7 +163,7 @@ def test_can_update_only_allowed_attributes(client, test_user, attribute, value,
         content_type='application/json'
     )
 
-    assert response.status_code == 204
+    assert response.status_code == HTTPStatus.NO_CONTENT
 
     response = client.get(
         f'/accounts/{test_user.hash_id}', headers=headers, content_type='application/json')
@@ -187,7 +186,7 @@ def test_can_update_password(client, test_user):
         content_type='application/json'
     )
 
-    assert response.status_code == 204
+    assert response.status_code == HTTPStatus.NO_CONTENT
     login_resp = client.login_as_user(test_user.email, 'new_password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
     assert headers
@@ -204,7 +203,7 @@ def test_can_filter_users(client, mock_users, auth_token_header, username):
         f'/accounts/?fields=username&filters={username}',
         headers=auth_token_header,
         content_type='application/json')
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     response = response.get_json()
     users = response['result']
     assert len(users) == 1

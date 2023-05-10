@@ -1,5 +1,7 @@
 import json
 import os
+from http import HTTPStatus
+
 import requests
 
 from flask import Blueprint, Response, current_app, request
@@ -42,7 +44,7 @@ def forward_request():
         ) from e
 
     # 500 should contain message from service so we try to include it
-    if resp.status_code == 500:
+    if resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         try:
             decoded_error_message = json.loads(resp.content)['message']
         except Exception as e:

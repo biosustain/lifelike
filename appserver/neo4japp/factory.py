@@ -34,7 +34,6 @@ from neo4japp.database import (
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
-from neo4japp.utils import transaction_id
 from neo4japp.utils.logger import ErrorLog, WarningLog
 from neo4japp.utils.globals import current_user
 from neo4japp.warnings import ServerWarning
@@ -200,7 +199,7 @@ def handle_error(ex):
             expected=True,
             event_type=LogEventType.HANDLED.value,
             transaction_id=transaction_id,
-            username=current_user,
+            username=current_username,
         ).to_dict()
     )
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
@@ -214,7 +213,7 @@ def handle_warning(warn):
             warning_name=f'{type(warn)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-            username=current_user,
+            username=current_username
         ).to_dict()
     )
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
@@ -232,7 +231,7 @@ def handle_generic_error(code: int, ex: Exception):
             expected=True,
             event_type=LogEventType.UNHANDLED.value,
             transaction_id=transaction_id,
-            username=current_user,
+                username=current_username,
         ).to_dict()
     )
 
@@ -253,7 +252,7 @@ def handle_generic_warning(code: int, ex: Warning):
             warning_name=f'{type(ex)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-            username=current_user,
+                username=current_username,
         ).to_dict()
     )
 

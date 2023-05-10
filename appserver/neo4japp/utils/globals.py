@@ -3,7 +3,9 @@ from flask import g, current_app
 from werkzeug.local import LocalProxy
 from neo4japp.info import ServerInfo
 
-current_user = LocalProxy(lambda: g.current_user.username if g.get('current_user') else 'anonymous')
+current_username = LocalProxy(
+    lambda: g.current_user.username if g.get('current_user') else 'anonymous'
+)
 
 warnings = LocalProxy(lambda: tuple(g.warnings) if hasattr(g, 'warnings') else tuple())
 

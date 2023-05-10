@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint
 
 from neo4japp.services.rcache import redis_server
@@ -12,5 +14,5 @@ bp = Blueprint('kg-statistics-api', __name__, url_prefix='/kg-statistics')
 def get_knowledge_graph_statistics():
     statistics = redis_server.get('kg_statistics')
     if statistics:
-        return statistics, 200
+        return statistics, HTTPStatus.OK
     raise ServerException(message='Knowledge Graph Statistics Not Available.')

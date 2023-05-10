@@ -468,7 +468,7 @@ def reannotate_files(user, password):
             }),
             headers={'Content-type': 'application/json', 'Authorization': f'Bearer {token}'})
         print(f'Got response back for files {hash_ids}, status code is {resp.status_code}')
-        # if resp.status_code != 200:
+        # if resp.status_code != HTTPStatus.OK:
         #     raise AnnotationError(resp.text)
         resp.close()
 

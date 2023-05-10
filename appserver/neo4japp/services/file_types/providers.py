@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import bioc
 import graphviz
 import io
@@ -121,7 +123,7 @@ def is_valid_doi(doi):
                 "(KHTML, like Gecko) Chrome/51.0.2704.103 "
                 "Safari/537.36"
             },
-        ).status_code not in [400, 404]
+        ).status_code not in [HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND]
     except Exception as e:
         current_app.logger.error(
             f'An unexpected error occurred while requesting DOI: {doi}',

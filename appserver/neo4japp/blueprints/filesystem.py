@@ -123,7 +123,7 @@ def get_all_enrichment_tables():
         Files.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
     )
     results = [hash_id[0] for hash_id in query.all()]
-    return jsonify(dict(result=results)), 200
+    return jsonify(dict(result=results)), HTTPStatus.OK
 
 
 class FilesystemBaseView(MethodView):
