@@ -17,7 +17,7 @@ export const createNode =
   <N extends Partial<UniversalGraphNodeTemplate>>(partialNode: N) =>
     merge(
       NODE_DEFAULTS_FACTORY(),
-      cloneDeep(partialNode),
+      partialNode,
       {hash: uuidv4()},
     ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & N & Pick<UniversalGraphNode, 'hash'>;
 
@@ -26,12 +26,15 @@ export const createNode =
  * @param partialGroup - object to be transformed into group node (it will mutate)
  */
 export const createGroupNode =
-  <G extends Partial<UniversalGraphGroupTemplate>>(partialGroup: G) =>
-    createNode(
-      merge(
-        GROUP_DEFAULTS_FACTORY(),
-        partialGroup,
+  <G extends Partial<UniversalGraphGroupTemplate>>({members = [], ...partialGroupRest}: G) =>
+    assign(
+      createNode(
+        merge(
+          GROUP_DEFAULTS_FACTORY(),
+          partialGroupRest,
+        ),
       ),
+      {members},  // Members are passed by reference (cannot be cloned)
     ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & ReturnType<typeof GROUP_DEFAULTS_FACTORY> & G & Pick<UniversalGraphNode, 'hash'>;
 
 /**
