@@ -17,7 +17,7 @@ export const createNode =
   <N extends Partial<UniversalGraphNodeTemplate>>(partialNode: N) =>
     merge(
       NODE_DEFAULTS_FACTORY(),
-      partialNode,
+      cloneDeep(partialNode),
       {hash: uuidv4()},
     ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & N & Pick<UniversalGraphNode, 'hash'>;
 
