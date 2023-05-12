@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { FormArray, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { compact as _compact, isNil as _isNil, has as _has } from 'lodash/fp';
@@ -51,6 +51,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
+    this.form.addControl('contexts', new FormArray([]));
     this.form.get('fallbackOrganism').setValidators([Validators.required]);
   }
 
@@ -86,6 +87,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         .join('\n')
     );
     this.setDomains();
+    this.setContexts(value.contexts);
   }
 
   applyValue(value: ObjectEditDialogValue) {}
@@ -93,6 +95,11 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
+  }
+
+  private setContexts(contexts) {
+    const formArray: FormArray = this.form.get('contexts') as FormArray;
+    contexts.forEach(context => formArray.push(this.contextFormControlFactory(context)));
   }
 
   getValue(): EnrichmentTableEditDialogValue {
@@ -129,6 +136,9 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     if (_has('fileId')(objectChanges) || _has('fileId')(this)) {
       documentChanges.fileId = objectChanges.fileId || this.fileId;
     }
+    if (_has('contexts')(objectChanges)) {
+      documentChanges.contexts = objectChanges.contexts;
+    }
 
     return {
       ...parentValue,
@@ -158,6 +168,25 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         i++;
       });
     }
+  }
+
+  get contexts() {
+    return this.form.get('contexts') as FormArray;
+  }
+
+  contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
+
+  removeControl(controlList: FormArray, control: AbstractControl) {
+    const index = controlList.controls.indexOf(control);
+    return index >= 0 && controlList.removeAt(index);
+  }
+
+  addControl(controlList: FormArray, control: AbstractControl) {
+    controlList.push(control);
+  }
+
+  setValueFromEvent(control, $event) {
+    return control.setValue($event.target.value);
   }
 }
 

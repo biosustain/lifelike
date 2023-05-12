@@ -36,6 +36,7 @@ export class BaseEnrichmentDocument {
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
   fileId = '';
+  contexts: string[] = [];
   markForRegeneration = false;
 
   private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {

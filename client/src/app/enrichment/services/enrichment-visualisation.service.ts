@@ -80,11 +80,7 @@ export class EnrichmentVisualisationService {
    * @param analysis - analysis ID to be used
    */
   enrichWithGOTerms(analysis = 'fisher'): Observable<EnrichWithGOTermsResult[]> {
-    const {
-      result: { genes },
-      taxID,
-      organism,
-    } = this.enrichmentDocument;
+    const {result: {genes}, taxID, organism, contexts} = this.enrichmentDocument;
     const geneNames = genes.reduce((o, { matched }) => {
       if (matched) {
         o.push(matched);
