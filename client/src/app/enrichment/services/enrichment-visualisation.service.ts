@@ -116,7 +116,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
       .post<{ result: [] }>(`/api/enrichment-visualisation/enrich-with-go-terms`, {
         geneNames,
         organism: `${taxID}/${organism}`,
-        analysis: 'fisher',
+        analysis,
       })
       .pipe(map((data: any) => data.map(addressPrecisionMistake)));
   }
