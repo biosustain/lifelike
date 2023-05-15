@@ -58,8 +58,6 @@ x-appserver: &appserver
       condition: service_started
     arangodb:
       condition: service_started
-    worker:
-      condition: service_started
     rabbitmq:
       condition: service_healthy
 
@@ -144,6 +142,9 @@ services:
     container_name: appserver
     ports:
       - "5000:5000"
+    depends_on:
+      worker:
+        condition: service_started
     networks:
       - backend
       - rabbitmq

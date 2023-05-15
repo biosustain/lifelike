@@ -36,7 +36,6 @@ x-appserver: &appserver
     - neo4j
     - redis
     - arangodb
-    - worker
 
 x-annotator: &annotator
   image: ***ARANGO_DB_NAME***.azurecr.io/annotator:${GITHUB_HASH}
@@ -64,6 +63,8 @@ services:
   appserver:
     <<: *appserver
     container_name: appserver
+    depends_on:
+      - worker
 
   worker:
     <<: *appserver
