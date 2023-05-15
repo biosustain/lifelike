@@ -27,8 +27,6 @@ import {
   scan,
   shareReplay,
   finalize,
-  delay,
-  first,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -222,38 +220,38 @@ export class ObjectCreationService {
   }
 
   private composeBulkCreationTask(data: FormData) {
-    const transactionId = createTransactionId()
+    const transactionId = createTransactionId();
     return this.filesystemService.bulkCreate(data, transactionId).pipe(
       switchMap(event => iif(
         () => event.type === HttpEventType.UploadProgress,
         of(event).pipe(
-          mergeMap((event: HttpUploadProgressEvent) => {
-            const progress = Math.floor(event.loaded / event.total);
+          mergeMap((uploadEvent: HttpUploadProgressEvent) => {
+            const progress = Math.floor(uploadEvent.loaded / uploadEvent.total);
             if (progress === 1) {
               return interval(1000).pipe(
                 mergeMap(() => this.transactionService.getTransactionTask<BulkCreateTransactionDetail>(transactionId).pipe(
                   map((resp) => {
                     const percentCompleted = Math.floor((resp.detail.processed / resp.detail.total) * 100);
-                  return {
-                    mode: ProgressMode.Determinate,
-                    status: `Currently processing ${resp.detail.current}...${percentCompleted}% of all files completed.`,
-                    value: percentCompleted / 100
-                  }
+                    return {
+                      mode: ProgressMode.Determinate,
+                      status: `Currently processing ${resp.detail.current}...${percentCompleted}% of all files completed.`,
+                      value: percentCompleted / 100
+                    };
                 })
               )));
             } else {
               return of({
                 mode: ProgressMode.Determinate,
                 status: 'Transmitting files...',
-                value: event.loaded / event.total,
+                value: uploadEvent.loaded / uploadEvent.total,
               });
             }
 
           })
         ),
         of(event).pipe(
-          map(event => {
-            switch (event.type) {
+          map(mappedEvent => {
+            switch (mappedEvent.type) {
               /**
                * The request was sent out over the wire.
                */
@@ -277,7 +275,7 @@ export class ObjectCreationService {
                 return {
                   mode: ProgressMode.Determinate,
                   status: 'Downloading server response...',
-                  value: event.loaded / event.total,
+                  value: mappedEvent.loaded / mappedEvent.total,
                 };
               /**
                * The full response including the body was received.
@@ -287,8 +285,8 @@ export class ObjectCreationService {
                   mode: ProgressMode.Determinate,
                   status: 'Done uploading files...',
                   value: 1,
-                  warnings: event.body?.warnings,
-                  info: event.body?.info,
+                  warnings: mappedEvent.body?.warnings,
+                  info: mappedEvent.body?.info,
                 };
               /**
                * A custom event from an interceptor or a backend.

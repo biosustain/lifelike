@@ -55,6 +55,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       const transactionId = createTransactionId();
       return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
     }
-    return request
+    return request;
   }
 }

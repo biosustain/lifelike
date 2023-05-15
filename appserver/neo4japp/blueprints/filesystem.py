@@ -1197,7 +1197,7 @@ class FileBulkUploadView(FilesystemBaseView):
         transaction_task.transaction_id = g.transaction_id
         results = {}
         global_exclusions = get_global_exclusion_annotations()
-        for file_num, upload  in enumerate(params['files']):
+        for file_num, upload in enumerate(params['files']):
             current_app.logger.info(f'Processing file {upload.filename}...')
 
             # Update the transaction task at the start of each loop

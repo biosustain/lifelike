@@ -14,7 +14,7 @@ import { isOfflineError, UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
 import { bufferToJson } from '../utils/files';
-import { createTransactionId } from '../utils/identifiers'
+import { createTransactionId } from '../utils/identifiers';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',

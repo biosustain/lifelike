@@ -131,7 +131,7 @@ export class FilesystemService {
           'X-Transaction-ID': transactionId
         }
       },
-    ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>
+    ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>;
   }
 
   /**

@@ -6,7 +6,6 @@ from neo4japp.exceptions import RecordNotFound
 from neo4japp.models.transactions import TransactionTask
 
 
-
 bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 
@@ -33,7 +32,6 @@ class GetTransactionTask(MethodView):
             taxId=txn_task.transaction_id,
             detail=txn_task.detail
         )
-
 
 
 bp.add_url_rule('<string:txn_id>', view_func=GetTransactionTask.as_view('get_txn_task'))
