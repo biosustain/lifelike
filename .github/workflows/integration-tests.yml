@@ -47,7 +47,7 @@ jobs:
       - name: Bring up containers and wait for webserver to be ready
         timeout-minutes: 10
         run: |-
-          ${{ env.DOCKER_COMPOSE_CMD }} up -d
+          ${{ env.DOCKER_COMPOSE_CMD }} up appserver -d
           ${{ env.DOCKER_COMPOSE_CMD }} exec -T appserver bin/wait-for-flask
 
       - name: Run PyTest
@@ -96,7 +96,7 @@ jobs:
       - name: Bring up containers and wait for webserver to be ready
         timeout-minutes: 10
         run: |-
-          ${{ env.DOCKER_COMPOSE_CMD }} up -d
+          ${{ env.DOCKER_COMPOSE_CMD }} up annotator -d
 
       - name: Run PyTest
         run: ${{ env.DOCKER_COMPOSE_CMD }} exec -T annotator pytest tests -p no:warnings
