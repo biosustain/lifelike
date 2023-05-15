@@ -242,8 +242,16 @@ export const isNotEmpty = (obj) => !isEmpty(obj);
  * @param mapping - the mapping function
  * @param mappedObjectConstructor - contructor
  */
-export const mapIterable = <O, R>(itrable, mapping, mappedObjectConstructor?) =>
-  new (mappedObjectConstructor ?? itrable.constructor)(Array.from(itrable, mapping));
+export const mapIterable = <
+  Value,
+  Result,
+  MappedType extends new(iter: Result[]) => Iterable<Result> = new(iter: Result[]) => Iterable<Result>
+>(
+  itrable: Iterable<Value>,
+  mapping: (v: Value) => Result,
+  mappedObjectConstructor?: MappedType
+) =>
+  new (mappedObjectConstructor ?? (itrable.constructor as MappedType))(Array.from(itrable, mapping));
 
 /** Unique Symbol to be used as defualt value of parameter.
  * We want to use it so we are not running into issue of differentiate between

@@ -1,41 +1,62 @@
 <div class="module" *ngIf="loadTask.status$ | async as status">
-  <app-module-error *ngIf="status.error" [error]="status.error"> </app-module-error>
+  <app-module-error *ngIf="status.error" [error]="status.error"></app-module-error>
   <app-module-progress *ngIf="status.running">
     Loading Statistical Enrichment... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
   </app-module-progress>
-  <ng-template #tabTitle> {{ object.filename }} - Statistical Enrichment</ng-template>
   <ng-container *ngIf="status.resultsShown">
     <app-module-header
-      *ngIf="object"
+      *ngIf="object$ | async as object"
       [object]="object"
       [titleTemplate]="tabTitle"
       [showObjectMenu]="false"
     >
-    </app-module-header>
-    <div class="module-body flex-fill overflow-auto">
-      <div class="space-cards">
-        <app-group
-          *ngFor="let d of data | keyvalue : originalOrder; let i = index"
-          [title]="groups[i]"
-          [data]="d.value"
-        >
-        </app-group>
-        <div class="card">
-          <div class="card-header">Significance legend</div>
-          <dl class="card-body legend">
-            <dt>' '</dt>
-            <dd><i>q-value</i> <= 1</dd>
-            <dt>.</dt>
-            <dd><i>q-value</i> <= 0.1</dd>
-            <dt>*</dt>
-            <dd><i>q-value</i> <= 0.05</dd>
-            <dt>**</dt>
-            <dd><i>q-value</i> <= 0.01</dd>
-            <dt>***</dt>
-            <dd><i>q-value</i> <= 0.001</dd>
-          </dl>
+      <ng-template #tabTitle> {{object.filename}} - Statistical Enrichment</ng-template>
+      <div ngbDropdown class="d-inline-block"
+           *ngIf="enrichmentService.enrichmentDocument.contexts as contexts">
+        <button class="btn btn-primary" ngbDropdownToggle>
+          Context: {{ currentContext }}
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem *ngFor="let context of contexts">{{ context }}</button>
         </div>
       </div>
+    </app-module-header>
+    <div class="module-body flex-fill overflow-auto">
+      <as-split unit="pixel"
+                direction="horizontal"
+                [gutterSize]="2">
+        <as-split-area [order]="0" class="overflow-hidden">
+          <div class="space-cards">
+            <app-group
+              *ngFor="let d of data$ | async | keyvalue: originalOrder; let i = index"
+              [title]="groups[i]"
+              [data]="d.value"
+            >
+            </app-group>
+            <div class="card">
+              <div class="card-header">Significance legend</div>
+              <dl class="card-body legend">
+                <dt>' '</dt>
+                <dd><i>q-value</i> <= 1</dd>
+                <dt>.</dt>
+                <dd><i>q-value</i> <= 0.1</dd>
+                <dt>*</dt>
+                <dd><i>q-value</i> <= 0.05</dd>
+                <dt>**</dt>
+                <dd><i>q-value</i> <= 0.01</dd>
+                <dt>***</dt>
+                <dd><i>q-value</i> <= 0.001</dd>
+              </dl>
+            </div>
+          </div>
+        </as-split-area>
+        <as-split-area size="256" [order]="1" #explainPanelSidebar>
+          Context select:
+
+          Chat GPT exlanation:
+
+        </as-split-area>
+      </as-split>
     </div>
   </ng-container>
 </div>

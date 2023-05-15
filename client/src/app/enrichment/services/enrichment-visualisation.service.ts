@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 
-import { Observable, combineLatest } from 'rxjs';
-import { map, mergeMap, tap } from 'rxjs/operators';
+import { Observable, combineLatest, ReplaySubject } from 'rxjs';
+import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
 
 import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -13,7 +14,6 @@ import { ExplainService } from 'app/shared/services/explain.service';
 
 import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
-import { ExplainService } from '../../shared/services/explain.service';
 
 export interface EnrichWithGOTermsResult {
   goTerm: string;
@@ -36,6 +36,7 @@ export class EnrichmentVisualisationService {
   constructor(
     protected readonly http: HttpClient,
     protected readonly errorHandler: ErrorHandler,
+    protected readonly route: ActivatedRoute,
     protected readonly snackBar: MatSnackBar,
     protected readonly enrichmentService: EnrichmentService,
     protected readonly explainService: ExplainService
@@ -43,32 +44,41 @@ export class EnrichmentVisualisationService {
 
   private currentFileId: string;
   object: FilesystemObject;
-  loadTask: BackgroundTask<null, EnrichmentParsedData>;
-  loadTaskMetaData: BackgroundTask<null, FilesystemObject>;
+  private loadTask: BackgroundTask<string, EnrichmentParsedData> = new BackgroundTask(
+      fileId => this.enrichmentService.getContent(
+        fileId,
+      ).pipe(
+        this.errorHandler.create({label: 'Load Statistical Enrichment'}),
+        switchMap(this.enrichmentDocument.load)
+      )
+  );
+  enrichmentDocument$ = this.loadTask.results$.pipe(
+    map(({result}) => result)
+  );
+  private loadTaskMetaData: BackgroundTask<string, FilesystemObject> = new BackgroundTask(
+    fileId => this.enrichmentService.get(fileId).pipe(
+      this.errorHandler.create({label: 'Load Statistical Enrichment'})
+    )
+  );
   load: Observable<[TaskResult<null, FilesystemObject>, TaskResult<null, EnrichmentParsedData>]>;
   loaded = false;
-  enrichmentDocument: BaseEnrichmentDocument;
+  private enrichmentDocument: BaseEnrichmentDocument = new BaseEnrichmentDocument();
+  context$: Observable<string>;
+  fileId$ = this.route.params.pipe(
+    map(({fileId}) => fileId)
+  );
+  object$: Observable<FilesystemObject> = this.fileId$.pipe(
+    tap(this.loadTaskMetaData.update),
+    switchMap(() => this.loadTaskMetaData.results$),
+    map(({result}) => result)
+  );
 
   set fileId(fileId: string) {
-    const enrichmentDocument = (this.enrichmentDocument = new BaseEnrichmentDocument());
     this.currentFileId = fileId;
-    this.loadTaskMetaData = new BackgroundTask(() =>
-      this.enrichmentService.get(this.fileId).pipe(
-        this.errorHandler.create({ label: 'Load Statistical Enrichment' }),
-        map((value: FilesystemObject, _) => (this.object = value))
-      )
-    );
-    this.loadTask = new BackgroundTask(() =>
-      this.enrichmentService.getContent(this.fileId).pipe(
-        this.errorHandler.create({ label: 'Load Statistical Enrichment' }),
-        mergeMap((blob: Blob) => enrichmentDocument.load(blob))
-      )
-    );
 
     this.load = combineLatest(this.loadTaskMetaData.results$, this.loadTask.results$);
 
-    this.loadTaskMetaData.update();
-    this.loadTask.update();
+    this.fileId$.next(fileId);
   }
 
   get fileId(): string {
@@ -80,25 +90,25 @@ export class EnrichmentVisualisationService {
    * @param analysis - analysis ID to be used
    */
   enrichWithGOTerms(analysis = 'fisher'): Observable<EnrichWithGOTermsResult[]> {
-    const {result: {genes}, taxID, organism, contexts} = this.enrichmentDocument;
-    const geneNames = genes.reduce((o, { matched }) => {
-      if (matched) {
-        o.push(matched);
-      }
-      return o;
-    }, []);
-    return this.http
-      .post<{ result: [] }>(`/api/enrichment-visualisation/enrich-with-go-terms`, {
-        geneNames,
+    return this.enrichmentDocument$.pipe(
+      map(({result: {genes}, taxID, organism, contexts}) => ({
+        geneNames: genes.reduce((o, {matched}) => {
+          if (matched) {
+            o.push(matched);
+          }
+          return o;
+        }, []),
         organism: `${taxID}/${organism}`,
-        analysis,
-      })
-      .pipe(map((data: any) => data.map(addressPrecisionMistake)));
-  }
-
-  enrichWithContext(term): Observable<string> {
-    const { organism } = this.enrichmentDocument;
-    return this.explainService.relationship([organism, term]);
+      })),
+      switchMap(({geneNames, organism}) =>
+        this.http.post<{ result: [] }>(
+          `/api/enrichment-visualisation/enrich-with-go-terms`,
+          {geneNames, organism, analysis},
+        ).pipe(
+          map((data: any) => data.map(addressPrecisionMistake)),
+        ),
+      ),
+    );
   }
 
   enrichWithContext(term): Observable<string> {
