@@ -2,10 +2,10 @@
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
     <div class="row-spacer"></div>
     <div class="custom-control custom-checkbox">
-      <input type="checkbox" class="custom-control-input" [id]="node.data.hashId + '-checkbox'"
+      <input type="checkbox" class="custom-control-input" #projectCheckbox="uid" appUid
              [checked]="checklistSelection.isSelected(node)"
              (change)="itemSelectionToggle(node)">
-      <label class="custom-control-label" [for]="node.data.hashId + '-checkbox'">
+      <label class="custom-control-label" [for]="projectCheckbox.uid">
         <!-- For top-level nodes, show a project icon instead of a folder icon -->
         {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + (node.level === 0 ? 'fas fa-layer-group' : node.data.fontAwesomeIcon)"></i>
       </label>
@@ -19,10 +19,10 @@
     </button>
 
     <div class="custom-control custom-checkbox">
-      <input type="checkbox" class="custom-control-input" [id]="node.data.hashId + '-checkbox'"
+      <input type="checkbox" class="custom-control-input" #folderCheckbox="uid" appUid
              [checked]="checklistSelection.isSelected(node)"
              (change)="itemSelectionToggle(node)">
-      <label class="custom-control-label" [for]="node.data.hashId + '-checkbox'">
+      <label class="custom-control-label" [for]="folderCheckbox.uid">
         {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + (node.level === 0 ? 'fas fa-layer-group' : node.data.fontAwesomeIcon)"></i>
       </label>
     </div>
