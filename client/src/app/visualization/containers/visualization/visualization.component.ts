@@ -209,14 +209,16 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * @param query string to search for
    */
   search(query: string) {
+    const url = `/search?q=${query}`;
+
     this.tracking.register({
       category: TRACKING_CATEGORIES.visualiser,
       action: TRACKING_ACTIONS.search,
       label: query,
-      url: this.tracking.toString()
+      url
     });
 
-    this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
+    this.workspaceManager.navigateByUrl({url});
   }
 
   openNoResultsFromExpandDialog() {
@@ -318,8 +320,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       category: TRACKING_CATEGORIES.visualiser,
       action: TRACKING_ACTIONS.expandNode,
       label: 'nodeId',
-      value: nodeId,
-      url: this.tracking.toString()
+      value: nodeId
     });
 
     if (filterLabels.length === 0) {

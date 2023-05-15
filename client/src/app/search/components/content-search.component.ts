@@ -127,8 +127,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     this.tracking.register({
       category: TRACKING_CATEGORIES.search,
       action: TRACKING_ACTIONS.search,
-      label: JSON.stringify(serialisedParams),
-      url: this.route.toString()
+      label: JSON.stringify(serialisedParams)
     });
     return this.contentSearchService.search(serialisedParams).pipe(
       this.errorHandler.create({label: 'Content search'}),
