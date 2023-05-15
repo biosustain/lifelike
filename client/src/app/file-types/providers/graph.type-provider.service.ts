@@ -36,15 +36,6 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([{
-      name: 'Graph',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          map(blob => {
-            return new File([blob], object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph');
-          }),
-        );
-      },
-    }]);
+    return of([]);
   }
 }

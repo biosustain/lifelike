@@ -276,15 +276,6 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             return new File([blob], object.filename + '_for_graph_analysis.csv');
           }),
         )
-    }, {
-      name: 'Lifelike Enrichment Table File',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          map(blob => {
-            return new File([blob], object.filename + '.llenrichmenttable.json');
-          }),
-        );
-      },
     }]);
   }
 

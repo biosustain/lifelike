@@ -194,7 +194,7 @@ export class FilesystemObjectActions {
 
   openDownloadProgressDialog(targets: FilesystemObject[]): Promise<void> {
     const progressDialogRef = this.createProgressDialog(`Downloading ${getObjectLabel(targets)}...`);
-    return this.filesystemService.download(targets.map(target => target.hashId).join(';'))
+    return this.filesystemService.download(targets.map(target => target.hashId))
       .pipe(
         map((resp) => {
           const filename = getFilenameFromContentDisposition(resp.headers.get('Content-Disposition'));

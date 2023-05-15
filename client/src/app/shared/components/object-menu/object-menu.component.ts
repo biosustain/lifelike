@@ -110,6 +110,16 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
       .then(() => this.refreshRequest.emit());
   }
 
+  downloadSelection(targets: FilesystemObject[]) {
+    return this.actions.openDownloadProgressDialog(targets)
+      .then(() =>
+        this.snackBar.open(
+          `Download successful.`,
+          'Close', { duration: 5000 })
+      )
+      .then(() => this.refreshRequest.emit());
+  }
+
   reannotate(targets: FilesystemObject[]) {
     return this.actions.reannotate(targets)
       .then(() => this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {duration: 5000}))

@@ -152,19 +152,22 @@ export class FilesystemService {
   }
 
   getContent(hashId: string): Observable<Blob> {
-    return this.http.get(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
+    return this.http.post(
+      `/api/filesystem/objects/content`,
+      {
+        hashIds: [hashId]
+      },
+      {
         responseType: 'blob',
       },
     );
   }
 
-  download(hashIds: string): Observable<HttpResponse<Blob>> {
-    return this.http.get(
-      `/api/filesystem/objects/download`, {
-        params: {
-          hashIds,
-        },
+  download(hashIds: string[]): Observable<HttpResponse<Blob>> {
+    return this.http.post(
+      `/api/filesystem/objects/content`,
+      { hashIds },
+      {
         responseType: 'blob',
         observe: 'response'
       },

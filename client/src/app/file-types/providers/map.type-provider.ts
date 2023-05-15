@@ -124,16 +124,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           );
         },
       }))
-    ), {
-      name: 'Lifelike Map File',
-      export: () => {
-        return this.filesystemService.getContent(object.hashId).pipe(
-          map(blob => {
-            return new File([blob], object.filename + '.map');
-          }),
-        );
-      },
-    },  ...(['Gene', 'Chemical'].map(type => ({
+    ),  ...(['Gene', 'Chemical'].map(type => ({
       name: `${type} List`,
       export: () => {
         return this.filesystemService.getMapContent(object.hashId).pipe(

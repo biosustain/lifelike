@@ -203,12 +203,12 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     }
 
     return this.actions.openDownloadProgressDialog(targets).then(() => {
-      this.snackBar.open(`Download successful.`, 'Close', {
-        duration: 5000,
-      });
-      this.refresh();
-    }, () => {
-    });
+        this.snackBar.open(`Download successful.`, 'Close', {
+          duration: 5000,
+        });
+        this.refresh();
+      },
+    );
   }
 
   openObject(target: FilesystemObject) {

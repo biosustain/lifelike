@@ -433,4 +433,4 @@ class FileStarUpdateRequest(CamelCaseSchema):
 # Requests
 # ----------------------------------------
 class DownloadContentSchema(CamelCaseSchema):
-    hash_ids = fields.String(required=True)
+    hash_ids = fields.List(fields.String, required=True)

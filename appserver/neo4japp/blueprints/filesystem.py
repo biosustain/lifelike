@@ -26,8 +26,10 @@ from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
+    FILE_MIME_TYPE_BIOC,
     FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
+    FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_MAP,
     FILE_MIME_TYPE_PDF,
     MAX_FILE_SIZE,
@@ -48,7 +50,8 @@ from neo4japp.exceptions import (
     NotAuthorized,
     UnsupportedMediaTypeError,
     GDownException,
-    HandledException
+    HandledException,
+    ServerException
 )
 from neo4japp.models import (
     Projects,
@@ -1293,40 +1296,64 @@ class FileDetailView(FilesystemBaseView):
 
 
 class FileContentView(FilesystemBaseView):
-
-    def get(self, hash_id: str):
-        """Fetch a single file's content."""
-        current_user = g.current_user
-
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-
-        # Lazy loaded
-        if file.content:
-            content = file.content.raw_file
-            etag = file.content.checksum_sha256.hex()
+    def _get_special_filename(self, filename: str, mime_type: str):
+        # Some file types have special extensions required for properly re-uploading.
+        if mime_type == FILE_MIME_TYPE_MAP:
+            return filename if filename.endswith('.map') else f'{filename}.map'
+        elif mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE:
+            if filename.endswith('.llenrichmenttable.json'):
+                return filename
+            else:
+                return f'{filename}.llenrichmenttable.json'
+        elif mime_type == FILE_MIME_TYPE_BIOC:
+            return filename if filename.endswith('.json') else f'{filename}.json'
+        elif mime_type == FILE_MIME_TYPE_GRAPH:
+            return filename if filename.endswith('.graph') else f'{filename}.graph'
         else:
-            content = b''
-            etag = hashlib.sha256(content).digest()
+            return filename
 
-        return make_cacheable_file_response(
-            request,
-            content,
-            etag=etag,
-            filename=file.filename,
-            mime_type=file.mime_type
-        )
-
-
-class DownloadContentView(FilesystemBaseView):
     @use_args(DownloadContentSchema)
-    def get(self, params: dict):
-        """Fetch a zipfile of the list of input files."""
+    def post(self, params: dict):
+        """
+        Fetch the provided list of files. If multiple files are specified, response is a
+        zipfile. Otherwise, it is the raw file.
+        """
         current_user = g.current_user
 
-        hash_ids = params['hash_ids'].split(';')
-        zip_bytes = FileContentBuffer()
-        with zipfile.ZipFile(zip_bytes, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        hash_ids = params['hash_ids']
+
+        if len(hash_ids) == 0:
+            raise ServerException(
+                    title='Download Content Error',
+                    message='Content download request contained no file IDs.',
+                )
+        elif len(hash_ids) == 1:
+            hash_id = params['hash_ids'][0]
+            file = self.get_nondeleted_recycled_file(
+                Files.hash_id == hash_id,
+                lazy_load_content=True
+            )
+            self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+            # If the given file is NOT a directory, we can just return its raw value immediately.
+            # Otherwise, we fetch the children and zip them up in the below block.
+            if file.mime_type != FILE_MIME_TYPE_DIRECTORY:
+                # Lazy loaded
+                if file.content:
+                    content = FileContentBuffer(file.content.raw_file)
+                else:
+                    content = FileContentBuffer(b'')
+                return make_cacheable_file_response(
+                    request,
+                    content.getvalue(),
+                    etag=hashlib.sha256(content.getvalue()).hexdigest(),
+                    filename=self._get_special_filename(file.filename, file.mime_type),
+                    mime_type=file.mime_type
+                )
+
+        # If we reach this block, then there were either many hash ids, or a single folder hash id.
+        response_data = FileContentBuffer()
+        with zipfile.ZipFile(response_data, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***-download'
             for hash_id in hash_ids:
                 file = self.get_nondeleted_recycled_file(
@@ -1363,9 +1390,9 @@ class DownloadContentView(FilesystemBaseView):
                 for file_to_zip in files_to_zip:
                     # Lazy loaded
                     if file_to_zip.content:
-                        content = file_to_zip.content.raw_file
+                        content = FileContentBuffer(file_to_zip.content.raw_file)
                     else:
-                        content = b''
+                        content = FileContentBuffer(b'')
 
                     # If the file is one of those originally selected, put it in the ***ARANGO_USERNAME*** of the
                     # zip folder. Otherwise (i.e., it's the child of a selected folder), use the
@@ -1380,21 +1407,16 @@ class DownloadContentView(FilesystemBaseView):
                             length_to_trim = len(file.path) - len(f'/{file.filename}')
                         zip_filepath = f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
 
-                    # Maps and enrichment tables have special extensions which for whatever reason
-                    # aren't added when they are created, but ARE required to re-upload.
-                    if file_to_zip.mime_type == FILE_MIME_TYPE_MAP:
-                        zip_filepath = f'{zip_filepath}.map'
-                    elif file_to_zip.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE:
-                        zip_filepath = f'{zip_filepath}.llenrichmenttable.json'
+                    zip_filepath = self._get_special_filename(zip_filepath, file.mime_type)
 
-                    zip_file.writestr(zip_filepath, content)
+                    zip_file.writestr(zip_filepath, content.getvalue())
 
         return make_cacheable_file_response(
             request,
-            zip_bytes.getvalue(),
-            etag=hashlib.sha256(zip_bytes.getvalue()).hexdigest(),
-            filename='***ARANGO_DB_NAME***-download.zip',
-            mime_type='application/zip'
+            response_data.getvalue(),
+            etag=hashlib.sha256(response_data.getvalue()).hexdigest(),
+            filename='***ARANGO_DB_NAME***.zip',
+            mime_type='application.zip'
         )
 
 
@@ -1948,9 +1970,7 @@ bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
 bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
 bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
-bp.add_url_rule('objects/<string:hash_id>/content',
-                view_func=FileContentView.as_view('file_content'))
-bp.add_url_rule('objects/download', view_func=DownloadContentView.as_view('file_download'))
+bp.add_url_rule('objects/content', view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule('objects/<string:hash_id>/map-content',
                 view_func=MapContentView.as_view('map_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))
