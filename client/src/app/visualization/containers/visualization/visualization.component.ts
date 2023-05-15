@@ -31,6 +31,7 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import { GraphSearchParameters } from 'app/search/graph-search';
 import { TrackingService } from 'app/shared/services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { getURLFromSnapshot } from 'app/shared/utils/router';
 
 import { VisualizationService } from '../../services/visualization.service';
 
@@ -320,7 +321,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       category: TRACKING_CATEGORIES.visualiser,
       action: TRACKING_ACTIONS.expandNode,
       label: 'nodeId',
-      value: nodeId
+      value: nodeId,
+      // Stringified ActivatedRoute is object definition, not the actual URL
+      // url: this.route.toString()
+      url: getURLFromSnapshot(this.route.snapshot).toString()
     });
 
     if (filterLabels.length === 0) {
