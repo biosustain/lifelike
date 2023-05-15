@@ -1,7 +1,16 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { defer, of, Subscription } from 'rxjs';
+import { defer, Observable, of, Subscription } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import {
+  flow as _flow,
+  thru as _thru,
+  sortBy as _sortBy,
+  fromPairs as _fromPairs,
+  map as _map,
+  values as _values,
+} from 'lodash/fp';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -11,6 +20,7 @@ import {
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { mapIterable } from 'app/shared/utils';
 
 import { EnrichmentService } from '../../services/enrichment.service';
 
@@ -27,62 +37,51 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
     private readonly moduleContext: ModuleContext
   ) {
     moduleContext.register(this);
-    this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
-    this.loadingData = true;
   }
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  currentContext: string;
 
-  object: FilesystemObject;
-  groups = ['Biological Process', 'Molecular Function', 'Cellular Component'];
-  data = new Map<string, undefined | EnrichWithGOTermsResult[]>([
-    ['BiologicalProcess', undefined],
-    ['MolecularFunction', undefined],
-    ['CellularComponent', undefined],
-  ]);
+  object$: Observable<FilesystemObject> = this.enrichmentService.object$;
+  @Output() modulePropertiesChange = this.object$.pipe(
+    map(object => ({
+      title: object?.filename ?? 'Statistical Enrichment',
+      fontAwesomeIcon: 'chart-bar',
+    }))
+  );
 
-  loadingData: boolean;
+  loadTask: BackgroundTask<string, EnrichWithGOTermsResult[]> = new BackgroundTask(
+    () => this.enrichmentService.enrichWithGOTerms('fisher')
+  );
+  readonly grouping = {
+    'Biological Process': 'BiologicalProcess',
+    'Molecular Function': 'MolecularFunction',
+    'Cellular Component': 'CellularComponent'
+  };
+  data$ = this.loadTask.results$.pipe(
+      map(
+        _flow(
+          _thru(({result}) => result),
+          _sortBy<EnrichWithGOTermsResult>('p-value'),
+          _thru(result =>
+            _flow(
+              _values,
+              _map(goLabel => [goLabel, result.filter(({goLabel: labels}) => labels.includes(goLabel))]),
+              _fromPairs
+            )(this.grouping)
+          )
+        )
+      )
+  );
+  contextIdx: number;
 
-  loadTask: BackgroundTask<string, EnrichWithGOTermsResult[]>;
 
-  loadSubscription: Subscription;
-
-  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = this.object$.pipe(
+    map(object => object.getGraphEntitySources())
+  );
 
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {
     return 0;
-  }
-
-  ngOnInit() {
-    this.enrichmentService.loadTaskMetaData.results$.subscribe(({ result }) => {
-      this.object = result;
-      this.emitModuleProperties();
-    });
-    this.loadTask = new BackgroundTask((analysis) =>
-      this.enrichmentService.enrichWithGOTerms(analysis)
-    );
-
-    this.loadSubscription = this.loadTask.results$.subscribe(({ result }) => {
-      const data = result.sort((a, b) => a['p-value'] - b['p-value']);
-      this.data.forEach((value, key, map) =>
-        map.set(
-          key,
-          data.filter(({ goLabel }) => goLabel.includes(key)) as EnrichWithGOTermsResult[]
-        )
-      );
-      this.loadingData = false;
-    });
-    this.enrichmentService.load.subscribe((data) => {
-      this.loadTask.update('fisher');
-    });
-  }
-
-  // End of changing enrichment params section.
-  emitModuleProperties() {
-    this.modulePropertiesChange.emit({
-      title: this.object?.filename ?? 'Statistical Enrichment',
-      fontAwesomeIcon: 'chart-bar',
-    });
   }
 }
