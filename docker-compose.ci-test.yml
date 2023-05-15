@@ -31,11 +31,20 @@ x-appserver: &appserver
     - ARANGO_PASSWORD=password
     - ARANGO_DB_NAME=***ARANGO_DB_NAME***
   depends_on:
-    - postgres
-    - elasticsearch
-    - neo4j
-    - redis
-    - arangodb
+    elasticsearch:
+      condition: service_started
+    pgdatabase:
+      condition: service_started
+    redis:
+      condition: service_started
+    pdfparser:
+      condition: service_started
+    neo4j:
+      condition: service_started
+    arangodb:
+      condition: service_started
+    rabbitmq:
+      condition: service_healthy
 
 x-annotator: &annotator
   image: ***ARANGO_DB_NAME***.azurecr.io/annotator:${GITHUB_HASH}
