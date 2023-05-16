@@ -98,7 +98,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
       for (const item of sortBy(items, 'confidence')) {
         if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
-          uriData.unshift(...(item.data as URIData[]));
+          uriData.push(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
           text = item.data as string;
         }
