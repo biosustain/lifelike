@@ -33,11 +33,9 @@ x-appserver: &appserver
   depends_on:
     elasticsearch:
       condition: service_started
-    pgdatabase:
+    postgres:
       condition: service_started
     redis:
-      condition: service_started
-    pdfparser:
       condition: service_started
     neo4j:
       condition: service_started
@@ -129,6 +127,3 @@ services:
       - RMQ_ADMIN_PASSWORD=password
       - RMQ_MESSENGER_USERNAME=messenger
       - RMQ_MESSENGER_PASSWORD=password
-    ports:
-      - 5672:5672
-      - 15672:15672
