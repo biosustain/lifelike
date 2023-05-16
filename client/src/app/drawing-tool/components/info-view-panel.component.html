@@ -100,7 +100,7 @@
 
       <div class="mt-4 card" style="white-space: pre-line"
            *ngIf="possibleExplanation$ | async as possibleExplanation; else loading">
-        <div class="card-body p-3 bg-light">
+        <div class="card-body p-3 bg-light" style="white-space: pre-wrap;">
           {{possibleExplanation}}
         </div>
       </div>

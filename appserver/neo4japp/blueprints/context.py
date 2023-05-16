@@ -18,7 +18,7 @@ def relationship(params):
                 'What is the relationship between ' +
                 ', '.join(entities) +
                 (f' in {_in}' if _in else '') +
-                '?'
+                '?\nPlease provide URL sources for your answer.'
         ),
         temperature=0,
         max_tokens=500
