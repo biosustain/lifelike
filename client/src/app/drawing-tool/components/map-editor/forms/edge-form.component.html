@@ -41,7 +41,7 @@
       <ng-template ngbNavContent>
         <div class="module-body">
           <div *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
-               class="flex-fill overflow-auto">
+               class="flex-fill overflow-auto" style="white-space: pre-wrap;">
             {{possibleExplanation}}
           </div>
           <ng-template #loading>

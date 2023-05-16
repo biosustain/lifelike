@@ -57,14 +57,14 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
     )),
     switchMap(() =>
       this.explainService.relationship(
-        new Set<string>(
+        new Set<string>([
           getTermsFromEdge.call(
             // We might run into situation when only one of them is beeing changed
             // therefore it is safe to address them this way
             this.graphView,
             this.edge
           )
-        )
+        ])
       )
     )
   );
