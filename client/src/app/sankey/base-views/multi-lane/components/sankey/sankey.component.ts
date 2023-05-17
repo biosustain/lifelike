@@ -1,18 +1,18 @@
 import {
   AfterViewInit,
   Component,
-  OnDestroy,
-  ViewEncapsulation,
-  OnInit,
-  NgZone,
   ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq, mapValues, isEmpty, assign } from 'lodash-es';
+import { assign, flatMap, groupBy, isEmpty, mapValues, uniq } from 'lodash-es';
 import { combineLatest, forkJoin } from 'rxjs';
-import { switchMap, map, tap, takeUntil, publish, first } from 'rxjs/operators';
+import { first, map, publish, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
 import { SelectionType } from 'app/sankey/interfaces/selection';
@@ -44,8 +44,7 @@ import { getTraces } from '../../utils';
 })
 export class SankeyMultiLaneComponent
   extends SankeyAbstractComponent<Base>
-  implements OnInit, AfterViewInit, OnDestroy
-{
+  implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     protected readonly clipboard: ClipboardService,
     protected readonly snackBar: MatSnackBar,
@@ -54,7 +53,7 @@ export class SankeyMultiLaneComponent
     protected readonly zone: NgZone,
     protected readonly selection: SankeySelectionService,
     protected readonly search: SankeySearchService,
-    protected readonly updateController: EditService
+    protected readonly updateController: EditService,
   ) {
     super(clipboard, snackBar, sankey, wrapper, zone, selection, search, updateController);
     selection.multiselect = true;
@@ -71,14 +70,14 @@ export class SankeyMultiLaneComponent
       this.sankey.graph$.pipe(
         first(),
         // map graph file link to sankey link
-        map(({ links }) =>
+        map(({links}) =>
           searchFocus?.type === EntityType.Link
             ? (links as Base['link'][]).filter(
-                // allow string == number match interpolation ("58" == 58 -> true)
-                // tslint:disable-next-line:triple-equals
-                ({ originLinkId }) => originLinkId == searchFocus?.id
-              )
-            : []
+              // allow string == number match interpolation ("58" == 58 -> true)
+              // tslint:disable-next-line:triple-equals
+              ({originLinkId}) => originLinkId == searchFocus?.id,
+            )
+            : [],
         ),
         tap((current) => isNotEmpty(current) && this.panToLinks(current)),
         switchMap((current) =>
@@ -92,11 +91,11 @@ export class SankeyMultiLaneComponent
                   .filter((d) => current.includes(d))
                   .raise();
               }
-            })
-          )
-        )
-      )
-    )
+            }),
+          ),
+        ),
+      ),
+    ),
   );
 
   // focusedTrace$ = this.sankey.baseView.common.networkTrace$.pipe(
@@ -126,14 +125,14 @@ export class SankeyMultiLaneComponent
   selectionUpdate$ = this.selection.selection$.pipe(
     map((selection) =>
       assign(
-        mapValues(groupBy(selection, 'type'), (group) => group.map(({ entity }) => entity)),
-        { empty: isEmpty(selection) }
-      )
+        mapValues(groupBy(selection, 'type'), (group) => group.map(({entity}) => entity)),
+        {empty: isEmpty(selection)},
+      ),
     ),
     publish((selection$) =>
       combineLatest([
         selection$.pipe(
-          switchMap(({ [SelectionType.node]: selection = [], empty }) =>
+          switchMap(({[SelectionType.node]: selection = [], empty}) =>
             this.renderedNodes$.pipe(
               tap((renderedNodes) => {
                 if (empty) {
@@ -144,12 +143,12 @@ export class SankeyMultiLaneComponent
                     .filter((d) => selection.includes(d))
                     .raise();
                 }
-              })
-            )
-          )
+              }),
+            ),
+          ),
         ),
         selection$.pipe(
-          switchMap(({ [SelectionType.link]: selection = [], empty }) =>
+          switchMap(({[SelectionType.link]: selection = [], empty}) =>
             this.renderedLinks$.pipe(
               tap((renderedLinks) => {
                 if (empty) {
@@ -160,17 +159,17 @@ export class SankeyMultiLaneComponent
                     .filter((d) => selection.includes(d))
                     .raise();
                 }
-              })
-            )
-          )
+              }),
+            ),
+          ),
         ),
         selection$.pipe(
           map(
             ({
-              [SelectionType.trace]: traces = [],
-              [SelectionType.link]: links = [],
-              [SelectionType.node]: nodes = [],
-            }) => getTraces({ nodes, links }).concat(traces)
+               [SelectionType.trace]: traces = [],
+               [SelectionType.link]: links = [],
+               [SelectionType.node]: nodes = [],
+             }) => getTraces({nodes, links}).concat(traces),
           ),
           publish((traces$) =>
             combineLatest([
@@ -183,13 +182,13 @@ export class SankeyMultiLaneComponent
                         renderedNodes.attr('transitively-selected', undefined);
                       } else {
                         renderedNodes
-                          .attr('transitively-selected', ({ id }) => selection.includes(id))
-                          .filter(({ id }) => selection.includes(id))
+                          .attr('transitively-selected', ({id}) => selection.includes(id))
+                          .filter(({id}) => selection.includes(id))
                           .raise();
                       }
-                    })
-                  )
-                )
+                    }),
+                  ),
+                ),
               ),
               traces$.pipe(
                 switchMap((traces) =>
@@ -199,25 +198,25 @@ export class SankeyMultiLaneComponent
                         renderedLinks.attr('transitively-selected', undefined);
                       } else {
                         renderedLinks
-                          .attr('transitively-selected', ({ trace }) => traces.includes(trace))
-                          .filter(({ trace }) => traces.includes(trace))
+                          .attr('transitively-selected', ({trace}) => traces.includes(trace))
+                          .filter(({trace}) => traces.includes(trace))
                           .raise();
                       }
-                    })
-                  )
-                )
+                    }),
+                  ),
+                ),
               ),
-            ])
-          )
+            ]),
+          ),
         ),
-      ])
-    )
+      ]),
+    ),
   );
 
   panToLinks(links) {
     const [sumX, sumY] = links.reduce(
-      ([x, y], { source: { x1 }, target: { x0 }, y0, y1 }) => [x + x0 + x1, y + y0 + y1],
-      [0, 0]
+      ([x, y], {source: {x1}, target: {x0}, y0, y1}) => [x + x0 + x1, y + y0 + y1],
+      [0, 0],
     );
     this.zoom.translateTo(
       // average x
@@ -225,7 +224,7 @@ export class SankeyMultiLaneComponent
       // average y
       sumY / (2 * links.length),
       undefined,
-      true
+      true,
     );
   }
 
@@ -236,7 +235,7 @@ export class SankeyMultiLaneComponent
   initFocus() {
     forkJoin(
       this.focusedLinks$,
-      this.focusedNode$
+      this.focusedNode$,
       // this.focusedTrace$
     )
       .pipe(takeUntil(this.destroyed$))
@@ -249,7 +248,7 @@ export class SankeyMultiLaneComponent
 
   initStateUpdate() {
     const {
-      sankey: { linkBorder },
+      sankey: {linkBorder},
     } = this;
 
     this.sankey.baseView.traceGroupColorMapping$
@@ -264,23 +263,23 @@ export class SankeyMultiLaneComponent
 
               nodesSelection
                 .select('rect')
-                .style('fill', ({ sourceLinks, targetLinks, color }: Base['node']) => {
+                .style('fill', ({sourceLinks, targetLinks, color}: Base['node']) => {
                   // check if any trace is finishing or starting here
                   const difference = symmetricDifference(
                     sourceLinks,
                     targetLinks,
-                    (link) => link.trace
+                    (link) => link.trace,
                   );
                   // if there is only one trace start/end then color node with its color
                   if (difference.size === 1) {
                     return traceColorPaletteMap.get(difference.values().next().value.trace.group);
                   } else {
-                    return color;
+                    return String(color);
                   }
                 });
-            })
-          )
-        )
+            }),
+          ),
+        ),
       )
       .subscribe();
   }

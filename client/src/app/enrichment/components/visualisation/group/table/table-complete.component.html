@@ -4,7 +4,7 @@
     class="form-group form-inline d-flex justify-content-between align-items-stretch"
   >
     <span class="flex-grow-0"
-      >Search:
+    >Search:
       <input
         class="form-control ml-2"
         type="text"
@@ -30,85 +30,87 @@
       </dl>
     </ng-template>
     <thead>
-      <tr>
-        <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
-        <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
-        <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
-        <!--            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>-->
-        <th scope="col" appSortable="q-value" (sort)="onSort($event)" [style.paddingRight]="0">
-          q-value
-        </th>
-        <th scope="col" [ngbTooltip]="legend" placement="bottom-right top-right" openDelay="500">
-          <!--#tooltipRef="ngbTooltip"-->
-          <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
-          <span class="hidden-text">Significance marker</span>
-        </th>
-      </tr>
+    <tr>
+      <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
+      <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
+      <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
+      <!--            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>-->
+      <th scope="col" appSortable="q-value" (sort)="onSort($event)" [style.paddingRight]="0">
+        q-value
+      </th>
+      <th scope="col" [ngbTooltip]="legend" placement="bottom-right top-right" openDelay="500">
+        <!--#tooltipRef="ngbTooltip"-->
+        <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
+        <span class="hidden-text">Significance marker</span>
+      </th>
+    </tr>
     </thead>
     <tbody [ngClass]="{ 'line-clamp': !service.searchTerm }">
-      <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
-        <td>{{ row.goId }}</td>
-        <th scope="row">
-          <ng-template #tooltipContent>
-            <ng-template #loading>
-              <i class="fa fa-spinner fa-spin"></i>
-            </ng-template>
-            <ng-container
-              *ngIf="
+    <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
+      <td>{{ row.goId }}</td>
+      <th scope="row">
+        <ng-template #tooltipContent>
+          <ng-template #loading>
+            <i class="fa fa-spinner fa-spin"></i>
+          </ng-template>
+          <ng-container
+            *ngIf="
                 getTermContextExplanation(row.goTerm) | async as termContextExplanation;
                 else loading
               "
-            >
-              {{ termContextExplanation }}
-            </ng-container>
-          </ng-template>
-          <ngb-highlight
-            [result]="row.goTerm"
-            [term]="service.searchTerm"
-            [ngbPopover]="tooltipContent"
-            autoClose="outside"
-            container="body"
-            placement="top bottom right left"
-          ></ngb-highlight>
-        </th>
-        <td>
+          >
+            {{ termContextExplanation }}
+          </ng-container>
+        </ng-template>
+        <ngb-highlight
+          [result]="row.goTerm"
+          [term]="service.searchTerm"
+          [ngbPopover]="tooltipContent"
+          (contextmenu)="selectGoTerm(row.goTerm)"
+          autoClose="outside"
+          container="body"
+          placement="top bottom right left"
+        ></ngb-highlight>
+      </th>
+      <td>
           <span [className]="'gene-list'">
             <ng-container *ngFor="let gene of row['geneNames']; let last = last">
               <ngb-highlight
                 [appSELink]="gene"
                 [result]="gene"
+                (contextmenu)="selectGoTermAndGeneName(row.goTerm, gene)"
                 [term]="service.searchTerm"
               ></ngb-highlight>
               <ng-container *ngIf="!last">, </ng-container>
             </ng-container>
           </span>
-        </td>
-        <!--            <td>-->
-        <!--                <ngb-highlight [result]="row['p-value'].toExponential(2)"-->
-        <!--                               [style.whiteSpace]="'pre'"-->
-        <!--                               [term]="service.searchTerm"></ngb-highlight>-->
-        <!--            </td>-->
-        <td [style.paddingRight]="0">
-          <ngb-highlight
-            [result]="row['q-value'].toExponential(2)"
-            [style.whiteSpace]="'pre'"
-            [term]="service.searchTerm"
-          ></ngb-highlight>
-        </td>
-        <td
-          [style.paddingLeft]="0"
-          [ngbTooltip]="legend"
-          placement="top-right bottom-right"
-          openDelay="1000"
-        >
-          <!--#tooltipRef="ngbTooltip"-->
-          <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
-          <ngb-highlight
-            [result]="significanceIndicator(row['q-value'])"
-            [term]="service.searchTerm"
-          ></ngb-highlight>
-        </td>
-      </tr>
+      </td>
+      <!--            <td>-->
+      <!--                <ngb-highlight [result]="row['p-value'].toExponential(2)"-->
+      <!--                               [style.whiteSpace]="'pre'"-->
+      <!--                               [term]="service.searchTerm"></ngb-highlight>-->
+      <!--            </td>-->
+      <td [style.paddingRight]="0">
+        <ngb-highlight
+          [result]="row['q-value'].toExponential(2)"
+          [style.whiteSpace]="'pre'"
+          [term]="service.searchTerm"
+        ></ngb-highlight>
+      </td>
+      <td
+        [style.paddingLeft]="0"
+        [ngbTooltip]="legend"
+        placement="top-right bottom-right"
+        openDelay="1000"
+      >
+        <!--#tooltipRef="ngbTooltip"-->
+        <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
+        <ngb-highlight
+          [result]="significanceIndicator(row['q-value'])"
+          [term]="service.searchTerm"
+        ></ngb-highlight>
+      </td>
+    </tr>
     </tbody>
   </table>
 

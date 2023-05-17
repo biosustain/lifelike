@@ -1,5 +1,5 @@
 import { Observable, of } from 'rxjs';
-import { map, mergeMap, tap } from 'rxjs/operators';
+import { map, mergeMap, tap, shareReplay } from 'rxjs/operators';
 import {
   compact as _compact,
   has as _has,
