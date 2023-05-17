@@ -379,6 +379,13 @@ def reset_elastic():
     elastic_service.recreate_indices_and_pipelines()
 
 
+@app.cli.command('reindex-files')
+def reset_elastic():
+    """Re-indexes all documents used by this environment without recreating indexes."""
+    elastic_service = get_elastic_service()
+    elastic_service.reindex_all_documents()
+
+
 @app.cli.command('recreate-elastic-index')
 @click.argument('index_id', nargs=1)
 @click.argument('index_mapping_file', nargs=1)
