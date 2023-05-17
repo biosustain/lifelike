@@ -210,12 +210,13 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(Warning, partial(handle_generic_warning, 199))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
 
+    # NOTE: Disabling this since we don't seem to be actively using it anymore.
     # Initialize Elastic APM if configured
-    if os.getenv('ELASTIC_APM_SERVER_URL'):
-        apm.init_app(
-            app,
-            service_name='lifelike-appserver',
-            environment=os.getenv('FLASK_APP_CONFIG'))
+    # if os.getenv('ELASTIC_APM_SERVER_URL'):
+    #     apm.init_app(
+    #         app,
+    #         service_name='lifelike-appserver',
+    #         environment=os.getenv('FLASK_APP_CONFIG'))
 
     return app
 
