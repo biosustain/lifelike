@@ -123,7 +123,6 @@ x-elastic-indexer: &elastic-indexer
     - ELASTIC_INDEXER_QUEUE=elastic_indexer
     # ElasticSearch
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    - ELASTIC_FILE_INDEX_ID=file_dev
   volumes:
     - ./elastic-indexer:/home/user
   depends_on:

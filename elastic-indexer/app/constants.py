@@ -1,6 +1,5 @@
 import os
 
-FILE_INDEX_ID = os.environ.get('ELASTIC_FILE_INDEX_ID')
 ELASTICSEARCH_HOSTS = os.environ.get('ELASTICSEARCH_HOSTS')
 ATTACHMENT_PIPELINE_ID = 'attachment'
 

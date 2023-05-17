@@ -26,17 +26,17 @@ logger = get_logger()
 
 async def _handle_bulk_index_op(request: dict):
     logger.info('Bulk index operation requested.')
-    await streaming_bulk_index_files(request['sources'])
+    await streaming_bulk_index_files(request['sources'], request['index_id'])
 
 
 async def _handle_bulk_update_op(request: dict):
     logger.info('Bulk update operation requested.')
-    await streaming_bulk_update_files(request['updates'])
+    await streaming_bulk_update_files(request['updates'], request['index_id'])
 
 
 async def _handle_bulk_delete_op(request: dict):
     logger.info('Bulk delete operation requested.')
-    await streaming_bulk_delete_files(request['file_hash_ids'])
+    await streaming_bulk_delete_files(request['file_hash_ids'], request['index_id'])
 
 
 async def _handle_request(request):
