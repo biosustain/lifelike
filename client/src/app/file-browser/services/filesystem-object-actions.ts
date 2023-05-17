@@ -117,9 +117,7 @@ export class FilesystemObjectActions {
    * @param parent the folder to put the new file in
    */
   openBulkUploadDialog(parent: FilesystemObject): Promise<any> {
-    const object = new FilesystemObject();
-    object.parent = parent;
-    return this.objectCreationService.openBulkCreateDialog(object, 'Bulk Upload Files');
+    return this.objectCreationService.openBulkCreateDialog(parent.hashId, 'Bulk Upload Files');
   }
 
   /**

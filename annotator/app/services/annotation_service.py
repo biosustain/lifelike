@@ -150,16 +150,13 @@ class AnnotationService:
             # global inclusions will have id_hyperlinks property
             if not param.entity_hyperlinks:
                 if 'NULL' not in param.entity_id and param.entity_datasource:
-                    try:
-                        entity_datasource_hyperlinks = cast(
-                            dict, ENTITY_HYPERLINKS[param.entity_datasource]
-                        )
-                        if param.entity_datasource == DatabaseType.BIOCYC.value:
-                            hyperlink = entity_datasource_hyperlinks[param.token_type]
-                        else:
-                            hyperlink = entity_datasource_hyperlinks
-                    except KeyError:
-                        raise
+                    entity_datasource_hyperlinks = cast(
+                        dict, ENTITY_HYPERLINKS[param.entity_datasource]
+                    )
+                    if param.entity_datasource == DatabaseType.BIOCYC.value:
+                        hyperlink = entity_datasource_hyperlinks[param.token_type]
+                    else:
+                        hyperlink = entity_datasource_hyperlinks
 
                     if (
                             param.entity_datasource == DatabaseType.MESH.value and

@@ -365,8 +365,8 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def extension(self):
         return Path(self.filename).suffix
 
-    @classmethod
-    def generate_non_conflicting_filename(cls, filename, parent_id):
+    @staticmethod
+    def generate_non_conflicting_filename(filename, parent_id):
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
 

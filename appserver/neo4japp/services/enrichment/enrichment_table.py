@@ -98,6 +98,7 @@ class EnrichmentTableService():
                     f'Missing key when creating enrichment table text row/column mapping.',
                     extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
                 )
+                # TODO warning
                 continue
 
         for text in cell_texts:

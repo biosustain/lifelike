@@ -635,13 +635,13 @@ export class ObjectCreationService {
 
   /**
    * Open a dialog to create a new file or folder.
-   * @param target the base object to start from
+   * @param parentHashId the base object to upload the files into
    * @param options options for the dialog
    */
-  openBulkCreateDialog(target: FilesystemObject, title: string): Promise<any> {
+  openBulkCreateDialog(parentHashId: string, title: string): Promise<any> {
     const dialogRef = this.modalService.open(ObjectBulkUploadDialogComponent);
     dialogRef.componentInstance.title = title || 'Bulk Upload Files';
-    dialogRef.componentInstance.parentHashId = target.parent.hashId;
+    dialogRef.componentInstance.parentHashId = parentHashId;
     dialogRef.componentInstance.accept = ((dialogValue) => {
       const formData = objectToMixedFormData({
         public: dialogValue.public,
