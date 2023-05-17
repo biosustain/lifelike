@@ -73,6 +73,7 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
   data$ = this.enrichmentService.enrichedWithGOTerms$.pipe(
     map(
       _flow(
+        _flow(
         _sortBy<EnrichWithGOTermsResult>('p-value'),
         _thru((result) =>
           _flow(

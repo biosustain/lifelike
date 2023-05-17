@@ -10,6 +10,7 @@
       [titleTemplate]="tabTitle"
       [showObjectMenu]="false"
     >
+      <ng-template #tabTitle> {{object.filename}} - Statistical Enrichment</ng-template>
       <ng-template #tabTitle> {{ object.filename }} - Statistical Enrichment</ng-template>
     </app-module-header>
     <as-split unit="pixel" direction="horizontal" [gutterSize]="2">
@@ -45,5 +46,6 @@
         </app-enrichment-explanation-panel>
       </as-split-area>
     </as-split>
+      </as-split>
   </ng-container>
 </div>
