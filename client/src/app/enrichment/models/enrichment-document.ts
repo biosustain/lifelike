@@ -1,5 +1,5 @@
 import { Observable, of } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { map, mergeMap, shareReplay } from 'rxjs/operators';
 import { compact, omitBy, isEmpty } from 'lodash-es';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
