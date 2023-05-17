@@ -1,0 +1,55 @@
+<div ngbDropdown
+     class="d-block"
+     placement="end"
+     *ngIf="contextsController$ | async as controller"
+>
+  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
+          [disabled]="!controller.entities.length">
+    Context
+    <ng-container *ngIf="controller.current$ | async as current">
+      : {{ current }}
+    </ng-container>
+  </button>
+  <div ngbDropdownMenu class="w-100">
+    <button ngbDropdownItem class="text-truncate"
+            *ngFor="let context of controller.entities; let i = index"
+            (click)="controller.currentIdx$.next(i)">{{ context }}</button>
+  </div>
+</div>
+<div ngbDropdown
+     class="d-block mt-1"
+     placement="end"
+     *ngIf="goTermController$ | async as controller"
+>
+  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
+          [disabled]="!controller.entities.length">
+    GO Term
+    <ng-container *ngIf="controller.current$ | async as current">
+      : {{ current }}
+    </ng-container>
+  </button>
+  <div ngbDropdownMenu class="w-100">
+    <button ngbDropdownItem class="text-truncate"
+            *ngFor="let entity of controller.entities; let i = index"
+            (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
+  </div>
+</div>
+<div ngbDropdown
+     class="d-block mt-1"
+     placement="end"
+     *ngIf="geneNameController$ | async as controller"
+>
+  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
+          [disabled]="!controller.entities.length">
+    Gene
+    <ng-container *ngIf="controller.current$ | async as current">
+      : {{ current }}
+    </ng-container>
+  </button>
+  <div ngbDropdownMenu class="w-100">
+    <button ngbDropdownItem class="text-truncate"
+            *ngFor="let entity of controller.entities; let i = index"
+            (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
+  </div>
+</div>
+Chat GPT exlanation:

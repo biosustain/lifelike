@@ -1,17 +1,17 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { Observable, combineLatest, ReplaySubject } from 'rxjs';
-import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
+import { combineLatest, ConnectableObservable, Observable, Subject } from 'rxjs';
+import { filter, map, publishReplay, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 
-import { BackgroundTask, TaskResult } from 'app/shared/rxjs/background-task';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { BackgroundTask, mergeStatuses, MultiTaskStatus } from 'app/shared/rxjs/background-task';
 import { SingleResult } from 'app/shared/schemas/common';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichment-document';
+import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 
 export interface EnrichWithGOTermsResult {
@@ -31,94 +31,127 @@ const addressPrecisionMistake = d => {
 };
 
 @Injectable()
-export class EnrichmentVisualisationService {
+export class EnrichmentVisualisationService implements OnDestroy {
 
   constructor(protected readonly http: HttpClient,
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly snackBar: MatSnackBar,
               protected readonly enrichmentService: EnrichmentService) {
+    this.enrichmentDocument$.connect();
+    this.enrichedWithGOTerms$.connect();
+    this.object$.connect();
+    this.fileId$.subscribe(fileId => {
+      this.loadFileMetaDataTask.update(fileId);
+      this.loadEnrichmentDocumentTask.update(fileId);
+    });
+    this.enrichmentDocument$.subscribe(enrichmentDocument => {
+      this.enrichWithGOTermsTask.update(enrichmentDocument);
+    });
   }
 
-  private currentFileId: string;
-  object: FilesystemObject;
-  private loadTask: BackgroundTask<string, EnrichmentParsedData> = new BackgroundTask(
-      fileId => this.enrichmentService.getContent(
-        fileId,
-      ).pipe(
-        this.errorHandler.create({label: 'Load Statistical Enrichment'}),
-        switchMap(this.enrichmentDocument.load)
-      )
+  private destroy$ = new Subject<void>();
+
+  private fileId$: Observable<string> = this.route.params.pipe(
+    map(({file_id}) => file_id),
+    filter(fileId => Boolean(fileId)),
+    shareReplay({bufferSize: 1, refCount: true}),
   );
-  enrichmentDocument$ = this.loadTask.results$.pipe(
-    map(({result}) => result)
-  );
-  private loadTaskMetaData: BackgroundTask<string, FilesystemObject> = new BackgroundTask(
+  private loadFileMetaDataTask: BackgroundTask<string, FilesystemObject> = new BackgroundTask(
     fileId => this.enrichmentService.get(fileId).pipe(
-      this.errorHandler.create({label: 'Load Statistical Enrichment'})
-    )
+      this.errorHandler.create({label: 'Load Statistical Enrichment'}),
+    ),
   );
-  load: Observable<[TaskResult<null, FilesystemObject>, TaskResult<null, EnrichmentParsedData>]>;
-  loaded = false;
-  private enrichmentDocument: BaseEnrichmentDocument = new BaseEnrichmentDocument();
-  context$: Observable<string>;
-  fileId$ = this.route.params.pipe(
-    map(({fileId}) => fileId)
+  private loadEnrichmentDocumentTask: BackgroundTask<string, BaseEnrichmentDocument> = new BackgroundTask(
+    fileId => this.enrichmentService.getContent(
+      fileId,
+    ).pipe(
+      this.errorHandler.create({label: 'Load Statistical Enrichment Content'}),
+      switchMap(data => {
+        const enrichmentDocument = new BaseEnrichmentDocument();
+        return enrichmentDocument.load(data).pipe(
+          map(() => enrichmentDocument),
+        );
+      }),
+      shareReplay({bufferSize: 1, refCount: true}),
+    ),
   );
-  object$: Observable<FilesystemObject> = this.fileId$.pipe(
-    tap(this.loadTaskMetaData.update),
-    switchMap(() => this.loadTaskMetaData.results$),
-    map(({result}) => result)
+  private enrichWithGOTermsTask: BackgroundTask<BaseEnrichmentDocument, EnrichWithGOTermsResult[]> = new BackgroundTask(
+    enrichmentDocument => this._enrichWithGOTerms(enrichmentDocument).pipe(
+      this.errorHandler.create({label: 'Enrich with GO Terms'}),
+    ),
   );
-
-  set fileId(fileId: string) {
-    this.currentFileId = fileId;
-
-    this.load = combineLatest(
-      this.loadTaskMetaData.results$,
-      this.loadTask.results$
+  public readonly status$: Observable<MultiTaskStatus> = combineLatest([
+    this.loadFileMetaDataTask.status$,
+    this.loadEnrichmentDocumentTask.status$,
+    this.enrichWithGOTermsTask.status$,
+  ]).pipe(
+    map(mergeStatuses),
+  );
+  public readonly enrichmentDocument$: ConnectableObservable<BaseEnrichmentDocument> =
+    this.loadEnrichmentDocumentTask.results$.pipe(
+      map(({result}) => result),
+      takeUntil(this.destroy$),
+      publishReplay(1), // tasks executes eagerly
     );
-
-    this.fileId$.next(fileId);
-  }
-
-  get fileId(): string {
-    return this.currentFileId;
-  }
+  public readonly enrichedWithGOTerms$: ConnectableObservable<EnrichWithGOTermsResult[]> =
+    this.enrichWithGOTermsTask.results$.pipe(
+      map(({result}) => result),
+      takeUntil(this.destroy$),
+      publishReplay(1), // tasks executes eagerly
+    );
+  public readonly object$: ConnectableObservable<FilesystemObject> =
+    this.loadFileMetaDataTask.results$.pipe(
+      map(({result}) => result),
+      takeUntil(this.destroy$),
+      publishReplay(1), // tasks executes eagerly
+    );
+  public readonly contexts$ = this.enrichmentDocument$.pipe(
+    map(({contexts}) => contexts),
+  );
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
    * @param analysis - analysis ID to be used
    */
-  enrichWithGOTerms(analysis = 'fisher'): Observable<EnrichWithGOTermsResult[]> {
+  private _enrichWithGOTerms(
+    {
+      result: {genes},
+      taxID,
+      organism,
+      contexts,
+    }: BaseEnrichmentDocument,
+    analysis = 'fisher',
+  ): Observable<EnrichWithGOTermsResult[]> {
+    const geneNames = genes.reduce((o, {matched}) => {
+      if (matched) {
+        o.push(matched);
+      }
+      return o;
+    }, []);
+    return this.http.post<{ result: [] }>(
+      `/api/enrichment-visualisation/enrich-with-go-terms`,
+      {geneNames, organism: `${taxID}/${organism}`, analysis: 'fisher'},
+    ).pipe(
+      map((data: any) => data.map(addressPrecisionMistake)),
+    );
+  }
+
+  public enrichTermWithContext(term): Observable<string> {
     return this.enrichmentDocument$.pipe(
-      map(({result: {genes}, taxID, organism, contexts}) => ({
-        geneNames: genes.reduce((o, {matched}) => {
-          if (matched) {
-            o.push(matched);
-          }
-          return o;
-        }, []),
-        organism: `${taxID}/${organism}`,
-      })),
-      switchMap(({geneNames, organism}) =>
-        this.http.post<{ result: [] }>(
-          `/api/enrichment-visualisation/enrich-with-go-terms`,
-          {geneNames, organism, analysis},
+      switchMap(({organism, contexts}) =>
+        this.http.post<SingleResult<string>>(
+          `/api/enrichment-visualisation/enrich-with-context`,
+          {organism, term},
         ).pipe(
-          map((data: any) => data.map(addressPrecisionMistake)),
+          map(({result}) => result),
         ),
       ),
     );
   }
 
-  enrichWithContext(term): Observable<string> {
-    const {organism, contexts} = this.enrichmentDocument;
-    return this.http.post<SingleResult<string>>(
-      `/api/enrichment-visualisation/enrich-with-context`,
-      {organism, term},
-    ).pipe(
-      map(({result}) => result)
-    );
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

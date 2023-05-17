@@ -48,6 +48,49 @@ export interface TaskStatus {
   error: any;
 }
 
+export interface MultiTaskStatus {
+  states: TaskState[];
+  running: boolean;
+  delayedRunning: boolean;
+  loaded: boolean;
+  placeholdersShown: boolean;
+  progressShown: boolean;
+  emptyResultsShown: boolean;
+  retryInProgressShown: boolean;
+  failedErrorShown: boolean;
+  resultsShown: boolean;
+  errors: any[];
+}
+
+export const mergeStatuses = (statuses: TaskStatus[]) => statuses.reduce(
+  (acc, s) => ({
+    states: [...acc.states, s.state],
+    running: acc.running || s.running,
+    delayedRunning: acc.delayedRunning || s.delayedRunning,
+    loaded: acc.loaded && s.loaded,
+    placeholdersShown: acc.placeholdersShown || s.placeholdersShown,
+    progressShown: acc.progressShown || s.progressShown,
+    emptyResultsShown: acc.emptyResultsShown || s.emptyResultsShown,
+    retryInProgressShown: acc.retryInProgressShown || s.retryInProgressShown,
+    failedErrorShown: acc.failedErrorShown || s.failedErrorShown,
+    resultsShown: acc.resultsShown && s.resultsShown,
+    errors: s.error ? [...acc.errors, s.error] : acc.errors
+  }),
+  {
+    states: [],
+    running: false,
+    delayedRunning: false,
+    loaded: true,
+    placeholdersShown: false,
+    progressShown: false,
+    emptyResultsShown: false,
+    retryInProgressShown: false,
+    failedErrorShown: false,
+    resultsShown: true,
+    errors: []
+  } as MultiTaskStatus
+);
+
 /**
  * Manages calls to a one-shot subscription.
  */

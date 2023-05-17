@@ -11,6 +11,7 @@ import {
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ExtendedMap } from 'app/shared/utils/types';
+import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
 
 
 @Component({
@@ -32,6 +33,7 @@ export class TableCompleteComponent implements OnChanges {
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     public service: DataService,
+    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService
   ) {
     this.data$ = service.data$;
     this.total$ = service.total$;
@@ -39,10 +41,19 @@ export class TableCompleteComponent implements OnChanges {
 
   termContextExplanations = new ExtendedMap<string, Observable<string>>();
 
+  selectGoTerm(goTerm: string) {
+    this.enrichmentVisualisationSelectService.goTerm$.next(goTerm);
+  }
+
+  selectGoTermAndGeneName(goTerm: string, geneName: string) {
+    this.enrichmentVisualisationSelectService.goTerm$.next(goTerm);
+    this.enrichmentVisualisationSelectService.geneName$.next(geneName);
+  }
+
   getTermContextExplanation(term: string) {
     return this.termContextExplanations.getSetLazily(
       term,
-      key => this.enrichmentService.enrichWithContext(key).pipe(
+      key => this.enrichmentService.enrichTermWithContext(key).pipe(
         shareReplay(1)
       )
     );

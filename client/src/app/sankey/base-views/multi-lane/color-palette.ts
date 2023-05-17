@@ -6,6 +6,7 @@ import { mapIterable } from 'app/shared/utils';
 
 import { ErrorMessages } from '../../constants/error';
 import { Palette } from '../single-lane/interfaces';
+import { CubehelixColor } from 'd3';
 
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;
@@ -139,5 +140,5 @@ export const linkPalettes: LINK_PALETTES = {
 export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
   const uniq = arr instanceof Set ? arr : new Set(arr);
   const palette = generator(uniq.size, params);
-  return mapIterable(uniq, (v, i) => [v, palette(i)], Map);
+  return mapIterable(uniq, (v, i) => [v, palette(i)], Map) as Map<any, string>;
 };

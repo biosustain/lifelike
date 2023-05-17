@@ -86,7 +86,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   private setContexts(contexts) {
     const formArray: FormArray = this.form.get('contexts') as FormArray;
-    contexts.forEach(context => formArray.push(this.contextFormControlFactory(context)));
+    contexts?.forEach(context => formArray.push(this.contextFormControlFactory(context)));
   }
 
   getValue(): EnrichmentTableEditDialogValue {

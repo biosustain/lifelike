@@ -254,7 +254,7 @@ export class SankeyMultiLaneComponent
                 if (difference.size === 1) {
                   return traceColorPaletteMap.get(difference.values().next().value.trace.group);
                 } else {
-                  return color;
+                  return String(color);
                 }
               });
           }),
