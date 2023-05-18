@@ -75,15 +75,26 @@ def forward_request():
 def enrich_go():
     return forward_request()
 
+def composePrompt(organism, term, context, geneName):
+    if organism and term and context and geneName:
+        return f'For {organism}, what function does {geneName} have in {term}, in context of {context}?'
+    elif organism and term and context:
+        return f'For {organism}, what is the relationship between {term} and {context}?'
+    elif organism and term:
+        return f'What is the ralationship between {organism} and {term}?'
+    else:
+        return f'What is the ralationship between {", ".join(filter(lambda a: a, (context, organism, term, geneName)))}?'
 
 @bp.route('/enrich-with-context', methods=['POST'])
 def enrich_context():
     data = request.get_json()
     organism = data.get('organism', '')
     term = data.get('term', '')
+    context = data.get('context', '')
+    geneName = data.get('geneName', '')
     response = ChatGPT.Completion.create(
       model="text-davinci-003",
-      prompt=f'What is the ralationship between ${organism} and ${term}?',
+      prompt=composePrompt(organism, term, context, geneName),
       temperature=0,
       max_tokens=500
     )
