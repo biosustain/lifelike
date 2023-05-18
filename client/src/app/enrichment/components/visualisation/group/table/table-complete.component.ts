@@ -15,6 +15,7 @@ import {
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ExtendedMap } from 'app/shared/utils/types';
+
 import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
 
 @Component({
