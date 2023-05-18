@@ -18,13 +18,14 @@ import {
   map as _map,
   uniq as _uniq,
 } from 'lodash/fp';
-import { BehaviorSubject, defer, EMPTY, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, defer, EMPTY, Observable, Subject } from 'rxjs';
 
 import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
+import { ExtendedMap } from '../../../../../shared/utils/types';
 
 interface DropdownController<T> {
   entities: ReadonlyArray<T>;
@@ -40,7 +41,7 @@ const dropdownControllerFactory = <T>(entities: T[]): DropdownController<T> => {
       current$: EMPTY,
     };
   }
-  const currentIdx$ = new BehaviorSubject(0);
+  const currentIdx$ = new BehaviorSubject(-1);
   return ({
     entities,
     currentIdx$,
@@ -85,7 +86,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     switchMap(entities => this.goTermController$.pipe(
         switchMap(goTermController => goTermController.current$),
         map(goTerm => _flow(
-            _filter((r: EnrichWithGOTermsResult) => r.goTerm === goTerm),
+            _filter(goTerm ? ((r: EnrichWithGOTermsResult) => r.goTerm === goTerm) : () => true),
             _flatMap('geneNames'),
             _uniq,
           )(entities),
@@ -100,5 +101,26 @@ export class EnrichmentVisualisationExplanationPanelComponent {
       return controller;
     }),
     shareReplay({bufferSize: 1, refCount: true}),
+  );
+
+  explanation$: Observable<string> = combineLatest([
+    this.contextsController$.pipe(
+      switchMap(({current$}) => current$),
+      startWith(undefined),
+    ),
+    this.goTermController$.pipe(
+      switchMap(({current$}) => current$),
+      startWith(undefined),
+    ),
+    this.geneNameController$.pipe(
+      switchMap(({current$}) => current$),
+      startWith(undefined),
+    )
+  ]).pipe(
+    switchMap(([context, goTerm, geneName]) =>
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(
+        startWith('Loading...')
+      )
+    ),
   );
 }

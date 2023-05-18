@@ -12,6 +12,8 @@
   </button>
   <div ngbDropdownMenu class="w-100">
     <button ngbDropdownItem class="text-truncate"
+            (click)="controller.currentIdx$.next(-1)">Empty</button>
+    <button ngbDropdownItem class="text-truncate"
             *ngFor="let context of controller.entities; let i = index"
             (click)="controller.currentIdx$.next(i)">{{ context }}</button>
   </div>
@@ -29,6 +31,8 @@
     </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
+    <button ngbDropdownItem class="text-truncate"
+            (click)="controller.currentIdx$.next(-1)">Empty</button>
     <button ngbDropdownItem class="text-truncate"
             *ngFor="let entity of controller.entities; let i = index"
             (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
@@ -48,8 +52,18 @@
   </button>
   <div ngbDropdownMenu class="w-100">
     <button ngbDropdownItem class="text-truncate"
+            (click)="controller.currentIdx$.next(-1)">Empty</button>
+    <button ngbDropdownItem class="text-truncate"
             *ngFor="let entity of controller.entities; let i = index"
             (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
   </div>
 </div>
-Chat GPT exlanation:
+<br>
+<ng-template #loading>
+  <i class="fa fa-spinner fa-spin"></i>
+</ng-template>
+<ng-container *ngIf="explanation$ | async as explanation else loading">
+  <ng-container *ngIf="explanation !== 'Loading...' else loading">
+    {{explanation}}
+  </ng-container>
+</ng-container>

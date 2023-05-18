@@ -96,19 +96,19 @@ export class EnrichmentVisualisationService implements OnDestroy {
       map(({result}) => result),
       takeUntil(this.destroy$),
       publishReplay(1), // tasks executes eagerly
-    );
+    ) as ConnectableObservable<BaseEnrichmentDocument>;
   public readonly enrichedWithGOTerms$: ConnectableObservable<EnrichWithGOTermsResult[]> =
     this.enrichWithGOTermsTask.results$.pipe(
       map(({result}) => result),
       takeUntil(this.destroy$),
       publishReplay(1), // tasks executes eagerly
-    );
+    ) as ConnectableObservable<EnrichWithGOTermsResult[]>;
   public readonly object$: ConnectableObservable<FilesystemObject> =
     this.loadFileMetaDataTask.results$.pipe(
       map(({result}) => result),
       takeUntil(this.destroy$),
       publishReplay(1), // tasks executes eagerly
-    );
+    ) as ConnectableObservable<FilesystemObject>;
   public readonly contexts$ = this.enrichmentDocument$.pipe(
     map(({contexts}) => contexts),
   );
@@ -140,11 +140,15 @@ export class EnrichmentVisualisationService implements OnDestroy {
     );
   }
 
-  enrichWithContext(term): Observable<string> {
+  public enrichTermWithContext(term, context?, geneName?): Observable<string> {
     return this.enrichmentDocument$.pipe(
-      switchMap(({organism, contexts}) =>
-        this.explainService.relationship([organism, term]),
-      ),
+      switchMap(({organism}) =>
+        this.http.post<SingleResult<string>>(
+          `/api/enrichment-visualisation/enrich-with-context`,
+          {organism, term, context, geneName},
+        ).pipe(
+          map(({result}) => result),
+        ),
     );
   }
 
