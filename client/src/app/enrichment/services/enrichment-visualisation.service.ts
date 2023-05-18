@@ -149,6 +149,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
         ).pipe(
           map(({result}) => result),
         ),
+      ),
     );
   }
 
