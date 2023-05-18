@@ -126,7 +126,7 @@ export class FilesystemService {
       {
         observe: 'events',
         reportProgress: true,
-        responseType: 'json',
+        responseType: 'text',
         headers: {
           'X-Transaction-ID': transactionId
         }

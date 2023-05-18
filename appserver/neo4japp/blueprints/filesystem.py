@@ -11,7 +11,8 @@ import zipfile
 from collections import defaultdict
 from datetime import datetime, timedelta
 from deepdiff import DeepDiff
-from flask import Blueprint, current_app, g, jsonify, make_response, request
+from flask import Blueprint, current_app, g, jsonify, make_response, request, stream_with_context, \
+    Response
 from flask.views import MethodView
 from itertools import chain
 from marshmallow import ValidationError
@@ -1195,210 +1196,201 @@ class FileBulkUploadView(FilesystemBaseView):
 
         transaction_task = TransactionTask()
         transaction_task.transaction_id = g.transaction_id
-        results = {}
         global_exclusions = get_global_exclusion_annotations()
-        for file_num, upload in enumerate(params['files']):
-            current_app.logger.info(f'Processing file {upload.filename}...')
 
-            # Update the transaction task at the start of each loop
-            try:
-                transaction_task.detail = {
-                    'current': upload.filename,
-                    'processed': file_num,
-                    'total': len(params['files'])
-                }
+        def process_files(files):
+            yield json.dumps(dict(total=len(files))) + '\n'
+            processed = 0
+            for upload in files:
+                current_app.logger.info(f'Processing file {upload.filename}...')
 
-                db.session.add(transaction_task)
-                db.session.commit()
-            except SQLAlchemyError:
-                # There's not really any reason why this would throw, and the worst that will
-                # happen is the dialog in the client UI will have the wrong progress value.
-                current_app.logger.error(
-                    'Could not add task to TransactionTasks table for upload ' +
-                    f'{upload.filename}.'
-                )
-
-            try:
-                buffer = FileContentBuffer(stream=upload)
-
-                # ========================================
-                # Resolve parent
-                # ========================================
+                # Update the transaction task at the start of each loop
+                yield json.dumps(dict(current=upload.filename)) + '\n'
 
                 try:
-                    parent = self.get_nondeleted_recycled_file(
-                        Files.hash_id == params['parent_hash_id']
-                    )
-                    self.check_file_permissions(
-                        [parent],
-                        current_user,
-                        ['writable'],
-                        permit_recycled=False
-                    )
-                except RecordNotFound as e:
-                    # Rewrite the error to make more sense
-                    raise ValidationError(
-                        'The requested parent object could not be found.',
-                        'parent_hash_id'
-                    ) from e
+                    buffer = FileContentBuffer(stream=upload)
 
-                if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
-                    raise ValidationError(
-                        f'The specified parent ({params["parent_hash_id"]}) is '
-                        f'not a folder. It is a file, and you cannot make files '
-                        f'become a child of another file.', 'parent_hash_id'
-                    )
+                    # ========================================
+                    # Resolve parent
+                    # ========================================
 
-                # TODO: Check max hierarchy depth
-
-                assert parent is not None
-
-                # ========================================
-                # Filename conflict resolution
-                # ========================================
-
-                # We do this after finding the parent so we can compare with existing files
-                # without extra work
-
-                copy_behavior = params.get('copy_behavior', CopyBehavior.Rename)
-                filename = upload.filename
-
-                if copy_behavior == CopyBehavior.Rename:
-                    filename = Files.generate_non_conflicting_filename(filename, parent.id)
-                    if filename != upload.filename:
-                        current_app.logger.info(
-                            f'New file had conflicting name, using {filename} instead.'
-                        )
-                else:
-                    existing_file: Files = db.session.query(
-                        Files
-                    ).filter(
-                        and_(
-                            Files.parent_id == parent.id,
-                            Files.filename == filename
-                        )
-                    ).one_or_none()
-                    if copy_behavior == CopyBehavior.Skip and existing_file is not None:
-                        # If the filename already exists in this folder, skip to the next file
-                        # without committing this one
-                        current_app.logger.info(
-                            f'File with name "{filename}" already exists in folder with id ' +
-                            f'{parent.id}. Skipping.'
-                        )
-                        continue
-                    elif copy_behavior == CopyBehavior.Overwrite and existing_file is not None:
-                        current_app.logger.info(
-                            f'File with name "{filename}" already exists in folder with id ' +
-                            f'{parent.id}. Overwriting.'
-                        )
-                        existing_file.delete()
-
-                # ========================================
-                # Resolve file content
-                # ========================================
-
-                # Figure out file size
-                size = buffer.size
-
-                # Check max file size
-                if size > self.file_max_size:
-                    raise ValidationError(
-                        'Your file could not be processed because it is too large.')
-
-                provider = PDFTypeProvider()
-
-                # Check if the user can even upload this type of file
-                if not provider.can_create():
-                    raise ValidationError(f"The provided file type is not accepted.")
-
-                # Validate the content
-                doi = None
-                try:
-                    provider.validate_content(
-                        buffer,
-                        log_status_messages=True
-                    )
-                except ValueError as e:
-                    raise ValidationError(f"The provided file may be corrupt: {str(e)}")
-                except HandledException:
-                    pass
-                else:
                     try:
-                        # Get the DOI only if content could be validated
-                        doi = provider.extract_doi(buffer)
-                    except Warning as w:
-                        warn(w)
+                        parent = self.get_nondeleted_recycled_file(
+                            Files.hash_id == params['parent_hash_id']
+                        )
+                        self.check_file_permissions(
+                            [parent],
+                            current_user,
+                            ['writable'],
+                            permit_recycled=False
+                        )
+                    except RecordNotFound as e:
+                        # Rewrite the error to make more sense
+                        raise ValidationError(
+                            'The requested parent object could not be found.',
+                            'parent_hash_id'
+                        ) from e
 
-                # Save the file content if there's any
-                content_id = None
-                if size:
-                    content_id = FileContent.get_or_create(buffer)
+                    if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
+                        raise ValidationError(
+                            f'The specified parent ({params["parent_hash_id"]}) is '
+                            f'not a folder. It is a file, and you cannot make files '
+                            f'become a child of another file.', 'parent_hash_id'
+                        )
+
+                    # TODO: Check max hierarchy depth
+
+                    assert parent is not None
+
+                    # ========================================
+                    # Filename conflict resolution
+                    # ========================================
+
+                    # We do this after finding the parent so we can compare with existing files
+                    # without extra work
+
+                    copy_behavior = params.get('copy_behavior', CopyBehavior.Rename)
+                    filename = upload.filename
+
+                    if copy_behavior == CopyBehavior.Rename:
+                        filename = Files.generate_non_conflicting_filename(filename, parent.id)
+                        if filename != upload.filename:
+                            current_app.logger.info(
+                                f'New file had conflicting name, using {filename} instead.'
+                            )
+                    else:
+                        existing_file: Files = db.session.query(
+                            Files
+                        ).filter(
+                            and_(
+                                Files.parent_id == parent.id,
+                                Files.filename == filename
+                            )
+                        ).one_or_none()
+                        if copy_behavior == CopyBehavior.Skip and existing_file is not None:
+                            # If the filename already exists in this folder, skip to the next file
+                            # without committing this one
+                            current_app.logger.info(
+                                f'File with name "{filename}" already exists in folder with id ' +
+                                f'{parent.id}. Skipping.'
+                            )
+                            continue
+                        elif copy_behavior == CopyBehavior.Overwrite and existing_file is not None:
+                            current_app.logger.info(
+                                f'File with name "{filename}" already exists in folder with id ' +
+                                f'{parent.id}. Overwriting.'
+                            )
+                            existing_file.delete()
+
+                    # ========================================
+                    # Resolve file content
+                    # ========================================
+
+                    # Figure out file size
+                    size = buffer.size
+
+                    # Check max file size
+                    if size > self.file_max_size:
+                        raise ValidationError(
+                            'Your file could not be processed because it is too large.')
+
+                    provider = PDFTypeProvider()
+
+                    # Check if the user can even upload this type of file
+                    if not provider.can_create():
+                        raise ValidationError(f"The provided file type is not accepted.")
+
+                    # Validate the content
+                    doi = None
                     try:
-                        buffer.close()
-                    except Exception:
+                        provider.validate_content(
+                            buffer,
+                            log_status_messages=True
+                        )
+                    except ValueError as e:
+                        raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+                    except HandledException:
                         pass
+                    else:
+                        try:
+                            # Get the DOI only if content could be validated
+                            doi = provider.extract_doi(buffer)
+                        except Warning as w:
+                            warn(w)
 
-                # ========================================
-                # Annotation options
-                # ========================================
+                    # Save the file content if there's any
+                    content_id = None
+                    if size:
+                        content_id = FileContent.get_or_create(buffer)
+                        try:
+                            buffer.close()
+                        except Exception:
+                            pass
 
-                fb_organism = {
-                    'organism_name': None,
-                    'organism_synonym': None,
-                    'organism_taxonomy_id': None
-                }
-                if params.get('fallback_organism', None):
-                    fb_organism['organism_name'] = params['fallback_organism']['organism_name']
-                    fb_organism['organism_synonym'] = params['fallback_organism']['synonym']
-                    fb_organism['organism_taxonomy_id'] = params['fallback_organism']['tax_id']
+                    # ========================================
+                    # Annotation options
+                    # ========================================
 
-                # ========================================
-                # Commit
-                # ========================================
+                    fb_organism = {
+                        'organism_name': None,
+                        'organism_synonym': None,
+                        'organism_taxonomy_id': None
+                    }
+                    if params.get('fallback_organism', None):
+                        fb_organism['organism_name'] = params['fallback_organism']['organism_name']
+                        fb_organism['organism_synonym'] = params['fallback_organism']['synonym']
+                        fb_organism['organism_taxonomy_id'] = params['fallback_organism']['tax_id']
 
-                # Create the file object AFTER calculating properties so we can avoid unnecessary
-                # update events.
-                file = Files()
-                file.filename = upload.filename
-                file.user = current_user
-                file.creator = current_user
-                file.modifier = current_user
-                file.public = params.get('public', False)
-                file.upload_url = None
-                file.mime_type = 'application/pdf'
-                file.content_id = content_id
-                file.doi = doi
-                file.filename = filename
-                file.parent = parent
-                file.organism_name = fb_organism['organism_name']
-                file.organism_synonym = fb_organism['organism_synonym']
-                file.organism_taxonomy_id = fb_organism['organism_taxonomy_id']
-                file.annotation_configs = params.get('annotation_configs', None)
+                    # ========================================
+                    # Commit
+                    # ========================================
 
-                db.session.add(file)
-                db.session.commit()
-                # rollback in case of error?
-            except Exception as e:
-                current_app.logger.error(
-                    f'File {file.filename} could not be processed due to an error.'
-                )
-                results[file.filename] = 'failed'
-            else:
-                current_app.logger.info(f'File {file.filename} successfully processed.')
-                results[file.filename] = 'succeeded'
+                    # Create the file object AFTER calculating properties so we can avoid unnecessary
+                    # update events.
+                    file = Files()
+                    file.filename = upload.filename
+                    file.user = current_user
+                    file.creator = current_user
+                    file.modifier = current_user
+                    file.public = params.get('public', False)
+                    file.upload_url = None
+                    file.mime_type = 'application/pdf'
+                    file.content_id = content_id
+                    file.doi = doi
+                    file.filename = filename
+                    file.parent = parent
+                    file.organism_name = fb_organism['organism_name']
+                    file.organism_synonym = fb_organism['organism_synonym']
+                    file.organism_taxonomy_id = fb_organism['organism_taxonomy_id']
+                    file.annotation_configs = params.get('annotation_configs', None)
 
-                # Once the file is safely stored in postgres, send an annotation request for it
-                send_pdf_annotation_request(
-                    file.id,
-                    global_exclusions,
-                    [],
-                    [],
-                    file.organism_synonym,
-                    file.organism_taxonomy_id,
-                    file.annotation_configs,
-                )
+                    db.session.add(file)
+                    db.session.commit()
+                    # rollback in case of error?
+                except Exception as e:
+                    current_app.logger.error(
+                        f'File {upload.filename} could not be processed due to an error.'
+                    )
+                    yield json.dumps(dict(result={upload.filename: 'failed', 'error': str(e)})) + '\n'
+                else:
+                    current_app.logger.info(f'File {upload.filename} successfully processed.')
+                    yield json.dumps(dict(result={upload.filename: 'succeeded'})) + '\n'
 
-        return jsonify(results=results)
+                    # Once the file is safely stored in postgres, send an annotation request for it
+                    send_pdf_annotation_request(
+                        file.id,
+                        global_exclusions,
+                        [],
+                        [],
+                        file.organism_synonym,
+                        file.organism_taxonomy_id,
+                        file.annotation_configs,
+                    )
+
+                processed += 1
+                yield json.dumps(dict(processed=processed)) + '\n'
+
+        return Response(stream_with_context(process_files(params['files'])), mimetype='text/csv')
 
 
 class FileSearchView(FilesystemBaseView):

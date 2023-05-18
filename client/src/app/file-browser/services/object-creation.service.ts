@@ -1,4 +1,4 @@
-import { HttpEventType, HttpUploadProgressEvent } from '@angular/common/http';
+import { HttpEvent, HttpEventType, HttpUploadProgressEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -40,6 +40,7 @@ import {
   some,
   uniqWith,
   zip,
+  merge, last,
 } from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -222,81 +223,72 @@ export class ObjectCreationService {
   private composeBulkCreationTask(data: FormData) {
     const transactionId = createTransactionId();
     return this.filesystemService.bulkCreate(data, transactionId).pipe(
-      switchMap(event => iif(
-        () => event.type === HttpEventType.UploadProgress,
-        of(event).pipe(
-          mergeMap((uploadEvent: HttpUploadProgressEvent) => {
-            const progress = Math.floor(uploadEvent.loaded / uploadEvent.total);
-            if (progress === 1) {
-              return interval(1000).pipe(
-                mergeMap(() => this.transactionService.getTransactionTask<BulkCreateTransactionDetail>(transactionId).pipe(
-                  map((resp) => {
-                    const percentCompleted = Math.floor((resp.detail.processed / resp.detail.total) * 100);
-                    return {
-                      mode: ProgressMode.Determinate,
-                      status: `Currently processing ${resp.detail.current}...${percentCompleted}% of all files completed.`,
-                      value: percentCompleted / 100
-                    };
-                })
-              )));
-            } else {
-              return of({
-                mode: ProgressMode.Determinate,
-                status: 'Transmitting files...',
-                value: uploadEvent.loaded / uploadEvent.total,
-              });
-            }
-
-          })
-        ),
-        of(event).pipe(
-          map(mappedEvent => {
-            switch (mappedEvent.type) {
-              /**
-               * The request was sent out over the wire.
-               */
-              case HttpEventType.Sent:
-                return {
-                  mode: ProgressMode.Determinate,
-                  status: 'Sending upload headers for files...',
-                };
-              /**
-               * The response status code and headers were received.
-               */
-              case HttpEventType.ResponseHeader:
-                return {
-                  mode: ProgressMode.Indeterminate,
-                  status: 'Files transmitted; saving...',
-                };
-              /**
-               * A download progress event was received.
-               */
-              case HttpEventType.DownloadProgress:
-                return {
-                  mode: ProgressMode.Determinate,
-                  status: 'Downloading server response...',
-                  value: mappedEvent.loaded / mappedEvent.total,
-                };
-              /**
-               * The full response including the body was received.
-               */
-              case HttpEventType.Response:
-                return {
-                  mode: ProgressMode.Determinate,
-                  status: 'Done uploading files...',
-                  value: 1,
-                  warnings: mappedEvent.body?.warnings,
-                  info: mappedEvent.body?.info,
-                };
-              /**
-               * A custom event from an interceptor or a backend.
-               */
-              case HttpEventType.User:
-              default:
-            }
-          })
-        )
-      )),
+      map(event => {
+        switch (event.type) {
+          /**
+           * The request was sent out over the wire.
+           */
+          case HttpEventType.Sent:
+            return {
+              mode: ProgressMode.Determinate,
+              status: 'Sending upload headers for files...',
+            };
+          /**
+           * The response status code and headers were received.
+           */
+          case HttpEventType.ResponseHeader:
+            return {
+              mode: ProgressMode.Indeterminate,
+              status: 'Files transmitted; saving...',
+            };
+          /**
+           * A download progress event was received.
+           */
+          case HttpEventType.UploadProgress:
+            return {
+              mode: ProgressMode.Determinate,
+              status: 'Transmitting files...',
+              value: event.loaded / event.total,
+            };
+          case HttpEventType.DownloadProgress:
+            const status = (event as any).partialText?.split('\n').filter(Boolean).reduce(
+              (acc, line) => merge(acc, JSON.parse(line)),
+              {
+                total: null,
+                processed: null,
+                current: null,
+                result: {},
+              },
+            ) ?? {
+              total: null,
+              processed: null,
+              current: null,
+              result: {},
+            };
+            const percentCompleted = Math.floor((status.processed / status.total) * 100);
+            return {
+              mode: ProgressMode.Determinate,
+              status: `Currently processing ${status.current}...${percentCompleted}% of all files completed.`,
+              value: percentCompleted / 100,
+            };
+          /**
+           * The full response including the body was received.
+           */
+          case HttpEventType.Response:
+            return {
+              mode: ProgressMode.Determinate,
+              status: 'Done uploading files...',
+              value: 1,
+              warnings: event.body?.warnings,
+              info: event.body?.info,
+            };
+          /**
+           * A custom event from an interceptor or a backend.
+           */
+          case HttpEventType.User:
+          default:
+        }
+      }),
       startWith({
         mode: ProgressMode.Indeterminate,
         status: `Preparing files...`,
