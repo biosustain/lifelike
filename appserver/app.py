@@ -380,7 +380,7 @@ def reset_elastic():
 
 
 @app.cli.command('reindex-files')
-def reset_elastic():
+def reindex_files():
     """Re-indexes all documents used by this environment without recreating indexes."""
     elastic_service = get_elastic_service()
     elastic_service.reindex_all_documents()
