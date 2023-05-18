@@ -145,7 +145,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         ])
         self.elastic_client.indices.refresh(FILE_INDEX_ID)
 
-    def index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+    def index_files(self, hash_ids: List[str] = None, batch_size: int = 50):
         """
         Adds the files with the given ids to Elastic. If no IDs are given,
         all non-deleted files will be indexed.
@@ -373,6 +373,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         results = streaming_bulk(
             client=self.elastic_client,
             actions=documents,
+            chunk_size=50,
             max_retries=5,
             raise_on_error=False,
             raise_on_exception=False
