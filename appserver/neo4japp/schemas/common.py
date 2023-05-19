@@ -121,6 +121,12 @@ class InformationResponseSchema(BaseResponseSchema):
     pass
 
 
+class ErrorSchema(CamelCaseSchema):
+    errors = fields.List(
+        fields.Nested(ErrorResponseSchema)
+    )
+
+
 class WarningSchema(CamelCaseSchema):
     warnings = fields.Method('get_warnings')
 

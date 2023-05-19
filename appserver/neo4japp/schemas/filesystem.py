@@ -1,8 +1,9 @@
-import marshmallow.validate
+import typing
+
 import marshmallow_dataclass
 
 from enum import Enum
-from marshmallow import fields, validates_schema, ValidationError
+from marshmallow import fields, validates_schema, ValidationError, validate
 
 from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH
 from neo4japp.models import Files, Projects
@@ -21,10 +22,10 @@ from neo4japp.schemas.common import (
     RankedItemSchema,
     WarningSchema,
     InformationSchema,
+    ErrorSchema
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-
 
 # ========================================
 # Projects
@@ -99,18 +100,18 @@ class ProjectCreateSchema(CamelCaseSchema):
     name = fields.String(
         required=True,
         validators=[
-            marshmallow.validate.Regexp('^[A-Za-z0-9-]+$'),
-            marshmallow.validate.Length(min=1, max=50),
+            validate.Regexp('^[A-Za-z0-9-]+$'),
+            validate.Length(min=1, max=50),
         ],
     )
-    description = fields.String(validate=marshmallow.validate.Length(max=1024 * 500))
+    description = fields.String(validate=validate.Length(max=1024 * 500))
 
 
 class BulkProjectRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(
-        fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
+        fields.String(validate=validate.Length(min=1, max=200)),
         required=True,
-        validate=marshmallow.validate.Length(min=1, max=100),
+        validate=validate.Length(min=1, max=100),
     )
     reqursive = fields.Boolean(missing=False)
 
@@ -121,10 +122,10 @@ class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
 
 class BulkProjectUpdateRequestSchema(CamelCaseSchema):
     name = fields.String(
-        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+        required=True, validate=validate.Length(min=1, max=200)
     )
     description = fields.String(
-        validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
+        validate=validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
     )
     public = fields.Boolean()
 
@@ -256,20 +257,20 @@ class RankedFileSchema(RankedItemSchema):
 
 class BulkFileRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(
-        fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
+        fields.String(validate=validate.Length(min=1, max=200)),
         required=True,
-        validate=marshmallow.validate.Length(min=1, max=100),
+        validate=validate.Length(min=1, max=100),
     )
 
 
 class FileSearchRequestSchema(CamelCaseSchema):
     type = fields.String(
         required=True,
-        validate=marshmallow.validate.OneOf(['public', 'linked', 'pinned']),
+        validate=validate.OneOf(['public', 'linked', 'pinned']),
     )
-    linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    linked_hash_id = fields.String(validate=validate.Length(min=1, max=36))
     mime_types = fields.List(
-        fields.String(), validate=marshmallow.validate.Length(min=1)
+        fields.String(), validate=validate.Length(min=1)
     )
     sort = SortField(
         columns={
@@ -287,12 +288,12 @@ class FileSearchRequestSchema(CamelCaseSchema):
 
 
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
-    filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    filename = NiceFilenameString(validate=validate.Length(min=1, max=200))
+    parent_hash_id = fields.String(validate=validate.Length(min=1, max=36))
     description = fields.String(
-        validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
+        validate=validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
     )
-    upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    upload_url = fields.String(validate=validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)
     contexts = ContextsSchema
@@ -310,13 +311,13 @@ class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
 
 class FileCreateRequestSchema(FileUpdateRequestSchema):
     filename = NiceFilenameString(
-        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+        required=True, validate=validate.Length(min=1, max=200)
     )
     parent_hash_id = fields.String(
-        required=True, validate=marshmallow.validate.Length(min=1, max=36)
+        required=True, validate=validate.Length(min=1, max=36)
     )
-    mime_type = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
-    content_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    mime_type = fields.String(validate=validate.Length(min=1, max=2048))
+    content_hash_id = fields.String(validate=validate.Length(min=1, max=36))
     content_url = fields.URL()
     content_value = FileUploadField(required=False)
 
@@ -351,9 +352,34 @@ class BulkFileUploadRequestSchema(CamelCaseSchema):
     annotation_configs = fields.Nested(AnnotationConfigurations)
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     files = fields.List(fields.Raw(type='file', required=False), required=False)
-    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    parent_hash_id = fields.String(validate=validate.Length(min=1, max=36))
     public = fields.Boolean(default=False)
     copy_behavior = fields.Enum(enum=CopyBehavior, default=CopyBehavior.Rename)
+
+
+class StreamedJSONLines(CamelCaseSchema):
+    def dumps(self, obj: typing.Any, *args, many: typing.Union[bool, None] = None, **kwargs):
+        return super().dumps(obj, *args, many=many, **kwargs) + '\n'
+
+
+class UploadResult(Enum):
+    Succeeded = 'succeeded'
+    Failed = 'failed'
+    Skipped = 'skipped'
+
+
+class BulkFileResponseSchema(SingleResultSchema, ErrorSchema, WarningSchema, InformationSchema):
+    result = fields.Enum(UploadResult, required=True)
+
+
+class BulkFileUploadStreamedRespondSchema(StreamedJSONLines, CamelCaseSchema):
+    total = fields.Integer(validate=validate.Range(min=0))
+    processed = fields.Integer(validate=validate.Range(min=0))
+    current = fields.String()
+    result = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(BulkFileResponseSchema)
+    )
 
 
 class FileExportRequestSchema(CamelCaseSchema):
@@ -461,11 +487,11 @@ class FileLockSchema(CamelCaseSchema):
 
 
 class FileLockCreateRequest(CamelCaseSchema):
-    own = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+    own = fields.Boolean(required=True, validate=validate.OneOf([True]))
 
 
 class FileLockDeleteRequest(CamelCaseSchema):
-    own = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+    own = fields.Boolean(required=True, validate=validate.OneOf([True]))
 
 
 # Responses

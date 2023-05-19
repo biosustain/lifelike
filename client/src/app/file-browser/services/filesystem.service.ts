@@ -127,6 +127,7 @@ export class FilesystemService {
       {
         observe: 'events',
         reportProgress: true,
+        // @ts-ignore
         responseType: 'text',
         headers: {
           'X-Transaction-ID': transactionId

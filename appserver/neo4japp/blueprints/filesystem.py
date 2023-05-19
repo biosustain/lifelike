@@ -86,7 +86,6 @@ from neo4japp.models.files_queries import (
     add_file_size_column,
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
-from neo4japp.models.transactions import TransactionTask
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
 from neo4japp.schemas.common import PaginatedRequestSchema, WarningSchema
 from neo4japp.schemas.filesystem import (
@@ -109,9 +108,12 @@ from neo4japp.schemas.filesystem import (
     FileUpdateRequestSchema,
     FileVersionHistorySchema,
     MultipleFileResponseSchema,
+    MultipleFileResponseSchema,
+    BulkFileUploadStreamedRespondSchema,
+    UploadResult
 )
 from neo4japp.services.annotations.annotator_interface import (
-    send_pdf_annotation_request,
+    send_pdf_annotation_request
 )
 from neo4japp.services.annotations.globals_service import (
     get_global_exclusion_annotations,
@@ -129,6 +131,7 @@ from neo4japp.utils.collections import window, find_index
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
+from neo4japp.warnings import ServerWarning
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -1281,19 +1284,23 @@ class FileBulkUploadView(FilesystemBaseView):
     def post(self, params):
         """Endpoint to upload many files at once."""
         current_user = g.current_user
-
-        transaction_task = TransactionTask()
-        transaction_task.transaction_id = g.transaction_id
         global_exclusions = get_global_exclusion_annotations()
 
         def process_files(files):
-            yield json.dumps(dict(total=len(files))) + '\n'
+            yield BulkFileUploadStreamedRespondSchema().dumps(dict(
+                total=len(files)
+            ))
             processed = 0
             for upload in files:
                 current_app.logger.info(f'Processing file {upload.filename}...')
 
+                def result_factory(**kwargs):
+                    return dict(result={upload.filename: kwargs})
+
                 # Update the transaction task at the start of each loop
-                yield json.dumps(dict(current=upload.filename)) + '\n'
+                yield BulkFileUploadStreamedRespondSchema().dumps(dict(
+                    current=upload.filename
+                ))
 
                 try:
                     buffer = FileContentBuffer(stream=upload)
@@ -1367,14 +1374,25 @@ class FileBulkUploadView(FilesystemBaseView):
                                 f'File with name "{filename}" already exists in folder with id '
                                 + f'{parent.id}. Skipping.'
                             )
+                            yield BulkFileUploadStreamedRespondSchema().dumps(
+                                result_factory(
+                                    result=UploadResult.Skipped
+                                )
+                            )
                             continue
                         elif (
                             copy_behavior == CopyBehavior.Overwrite
                             and existing_file is not None
                         ):
-                            current_app.logger.info(
+                            message = (
                                 f'File with name "{filename}" already exists in folder with id '
                                 + f'{parent.id}. Overwriting.'
+                            )
+                            current_app.logger.info(message)
+                            yield BulkFileUploadStreamedRespondSchema().dumps(
+                                result_factory(
+                                    warnings=[ServerWarning(message=message)]
+                                )
                             )
                             existing_file.delete()
 
@@ -1472,17 +1490,24 @@ class FileBulkUploadView(FilesystemBaseView):
                     db.session.commit()
                     # rollback in case of error?
                 except Exception as e:
-                    current_app.logger.error(
-                        f'File {upload.filename} could not be processed due to an error.'
-                    )
-                    yield json.dumps(
-                        dict(result={upload.filename: 'failed', 'error': str(e)})
-                    ) + '\n'
+                    message = f'File {upload.filename} could not be processed due to an error: {e}'
+                    current_app.logger.error(message)
+                    try:
+                        raise ServerException(message=message) from e
+                    except ServerException as e:
+                        yield BulkFileUploadStreamedRespondSchema().dumps(
+                            result_factory(
+                                result=UploadResult.Failed,
+                                errors=[e]
+                            )
+                        )
                 else:
-                    current_app.logger.info(
-                        f'File {file.filename} successfully processed.'
+                    current_app.logger.info(f'File {upload.filename} successfully processed.')
+                    yield BulkFileUploadStreamedRespondSchema().dumps(
+                        result_factory(
+                            result=UploadResult.Succeeded
+                        )
                     )
-                    yield json.dumps(dict(result={file.filename: 'succeeded'})) + '\n'
 
                     # Once the file is safely stored in postgres, send an annotation request for it
                     send_pdf_annotation_request(
@@ -1496,7 +1521,9 @@ class FileBulkUploadView(FilesystemBaseView):
                     )
 
                 processed += 1
-                yield json.dumps(dict(processed=processed)) + '\n'
+                yield BulkFileUploadStreamedRespondSchema().dumps(dict(
+                    processed=processed
+                ))
 
         return Response(
             stream_with_context(process_files(params['files'])), mimetype='text/csv'

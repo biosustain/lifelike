@@ -14,17 +14,17 @@ import {
 import {
   bufferWhen,
   catchError,
+  concatMap,
+  endWith,
+  finalize,
   map,
   mergeMap,
   reduce,
-  concatMap,
-  tap,
-  switchMap,
-  startWith,
-  endWith,
   scan,
   shareReplay,
-  finalize,
+  startWith,
+  switchMap,
+  tap,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -33,13 +33,25 @@ import {
   forEach,
   groupBy,
   isEqual,
-  partition,
+  isNil,
   omit,
+  partition,
   some,
   uniqWith,
   zip,
   merge,
 } from 'lodash-es';
+import {
+  defaultTo as _defaultTo,
+  filter as _filter,
+  flow as _flow,
+  map as _map,
+mergeWith as _mergeWith,
+  reduce as _reduce,
+  thru as _thru,
+  isArray as _isArray,
+  flatMap as _flatMap,
+} from 'lodash/fp';
 
 import {
   Progress,
@@ -55,16 +67,15 @@ import {
   SingleResult,
   StatusSchema,
 } from 'app/shared/schemas/common';
-import { TransactionService } from 'app/shared/services/transactions.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { uuidv4 } from 'app/shared/utils/identifiers';
 import { idle } from 'app/shared/rxjs/idle-observable';
 
 import {
-  ObjectCreateRequest,
-  PDFAnnotationGenerationRequest,
   AnnotationGenerationResultData,
   HttpObservableResponse,
+  ObjectCreateRequest,
+  PDFAnnotationGenerationRequest,
 } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
@@ -72,9 +83,14 @@ import { FilesystemService } from './filesystem.service';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
 import { ObjectBulkUploadDialogComponent } from '../components/dialog/object-bulk-upload-dialog.component';
 
-interface CreationResult extends StatusSchema {
-  result?: FilesystemObject;
+interface ResultWithMessages<Result> {
+  result: Result;
+  info?: InformationResponse[];
+  warnings?: WarningResponse[];
+  errors?: ErrorResponse[];
 }
+
+type CreationResult = ResultWithMessages<FilesystemObject|undefined>;
 
 type AnnotationResult = AnnotationGenerationResultData & {
   error: ErrorResponse;
@@ -115,22 +131,49 @@ interface AnnotationResultStep extends CreateToAnnotateStep {
 
 export type CreateResultMapping = Map<ObjectCreateRequest, CreationAnnotationResult>;
 
+enum BulkUploadFileStatus {
+  Succeeded = 'succeeded',
+  Failed = 'failed',
+  Skipped = 'skipped'
+}
+
+type BulkUploadFileResult = ResultWithMessages<BulkUploadFileStatus>;
+
+interface BulkUploadStatus {
+  total?: number;
+  processed?: number;
+  current?: string;
+  result: Record<string, BulkUploadFileResult>;
+}
+
 @Injectable()
 export class ObjectCreationService {
-  private readonly MAX_PARALLEL_CREATIONS = 3;
-  private readonly MAX_PARALLEL_ANNOTATIONS = 1;
 
-  constructor(
-    protected readonly annotationsService: AnnotationsService,
+  constructor(protected readonly annotationsService: AnnotationsService,
     protected readonly snackBar: MatSnackBar,
     protected readonly modalService: NgbModal,
     protected readonly progressDialog: ProgressDialog,
     protected readonly route: ActivatedRoute,
     protected readonly messageDialog: MessageDialog,
     protected readonly errorHandler: ErrorHandler,
-    protected readonly filesystemService: FilesystemService,
-    protected readonly transactionService: TransactionService
+              protected readonly filesystemService: FilesystemService
   ) {}
+
+  static readonly parseBulkUploadStatus: (partialText: string|undefined) => BulkUploadStatus = _flow(
+    _defaultTo(''),
+    _thru((partialText: string) => partialText.split('\n')),
+    _filter(Boolean),
+    _map((json: string) => JSON.parse(json)),
+    _reduce(
+      _mergeWith(
+        (objValue, srcValue) => _isArray(objValue) ? objValue.concat(srcValue) : undefined
+      ),
+      {result: {}} as BulkUploadStatus
+    ),
+  );
+
+  private readonly MAX_PARALLEL_CREATIONS = 3;
+  private readonly MAX_PARALLEL_ANNOTATIONS = 1;
 
   private composeCreationTask(request: ObjectCreateRequest): Task<SingleResult<FilesystemObject>> {
     const { progress$, body$ } = this.filesystemService.create(request);
@@ -244,26 +287,23 @@ export class ObjectCreationService {
               value: event.loaded / event.total,
             };
           case HttpEventType.DownloadProgress:
-            const status = (event as any).partialText?.split('\n').filter(Boolean).reduce(
-              (acc, line) => merge(acc, JSON.parse(line)),
-              {
-                total: null,
-                processed: null,
-                current: null,
-                result: {},
-              },
-            ) ?? {
-              total: null,
-              processed: null,
-              current: null,
-              result: {},
+            const status = ObjectCreationService.parseBulkUploadStatus((event as any).partialText);
+            const progressStatus: ProgressArguments = {
+              mode: isNil(status.total) ? ProgressMode.Indeterminate : ProgressMode.Determinate,
+              status: ''
             };
-            const percentCompleted = Math.floor((status.processed / status.total) * 100);
-            return {
-              mode: ProgressMode.Determinate,
-              status: `Currently processing ${status.current}...${percentCompleted}% of all files completed.`,
-              value: percentCompleted / 100,
-            };
+            if (status.current) {
+              progressStatus.status += `Currently processing ${status.current}...`;
+            }
+            if (status.processed && status.total) {
+              progressStatus.value = status.processed / status.total;
+              progressStatus.status += `${Math.floor(progressStatus.value * 100)}% of all files completed.`;
+            }
+            const results = Object.values(status.result);
+            progressStatus.errors = _flatMap(({errors}) => errors ?? [])(results);
+            progressStatus.warnings = _flatMap(({warnings}) => warnings ?? [])(results);
+            progressStatus.info = _flatMap(({info}) => info ?? [])(results);
+            return progressStatus;
           /**
            * The full response including the body was received.
            */
