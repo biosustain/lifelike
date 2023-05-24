@@ -1380,9 +1380,9 @@ class FileBulkUploadView(FilesystemBaseView):
                 # rollback in case of error?
             except Exception as e:
                 current_app.logger.error(
-                    f'File {file.filename} could not be processed due to an error.'
+                    f'File {upload.filename} could not be processed due to an error.'
                 )
-                results[file.filename] = 'failed'
+                results[upload.filename] = 'failed'
             else:
                 current_app.logger.info(f'File {file.filename} successfully processed.')
                 results[file.filename] = 'succeeded'
