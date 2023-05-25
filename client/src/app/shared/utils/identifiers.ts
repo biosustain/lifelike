@@ -26,8 +26,3 @@ export function makeid(length = 3) {
   }
   return result;
 }
-
-
-export function createTransactionId(): string {
-  return Math.random().toString(36).substr(2, 9);
-}

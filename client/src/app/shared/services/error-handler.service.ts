@@ -14,7 +14,7 @@ import { isOfflineError, UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
 import { bufferToJson } from '../utils/files';
-import { createTransactionId } from '../utils/identifiers';
+import { uuidv4 } from '../utils/identifiers';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -55,7 +55,7 @@ export class ErrorHandler {
       additionalMsgs: [],
       stacktrace: null,
       // A transaction id for log audits with Sentry (Sentry.io)
-      transactionId: options.transactionId != null ? options.transactionId : 'L-' + createTransactionId(),
+      transactionId: options.transactionId != null ? options.transactionId : 'L-' + uuidv4(),
     };
     if (error instanceof HttpErrorResponse) {
       return Promise.resolve(this.getErrorResponse(error))

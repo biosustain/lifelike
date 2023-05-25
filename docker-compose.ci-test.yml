@@ -127,3 +127,9 @@ services:
       - RMQ_ADMIN_PASSWORD=password
       - RMQ_MESSENGER_USERNAME=messenger
       - RMQ_MESSENGER_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://rabbitmq:15672"]
+      interval: 30s
+      timeout: 60s
+      retries: 10
+      start_period: 5s

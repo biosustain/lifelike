@@ -1373,8 +1373,8 @@ class FileBulkUploadView(FilesystemBaseView):
                     )
                     yield json.dumps(dict(result={upload.filename: 'failed', 'error': str(e)})) + '\n'
                 else:
-                    current_app.logger.info(f'File {upload.filename} successfully processed.')
-                    yield json.dumps(dict(result={upload.filename: 'succeeded'})) + '\n'
+                    current_app.logger.info(f'File {file.filename} successfully processed.')
+                    yield json.dumps(dict(result={file.filename: 'succeeded'})) + '\n'
 
                     # Once the file is safely stored in postgres, send an annotation request for it
                     send_pdf_annotation_request(

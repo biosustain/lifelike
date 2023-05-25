@@ -55,7 +55,7 @@ import {
 } from 'app/shared/schemas/common';
 import { TransactionService } from 'app/shared/services/transactions.service';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
-import { createTransactionId } from 'app/shared/utils/identifiers';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 import {
   Progress,
   ProgressArguments,
@@ -221,7 +221,7 @@ export class ObjectCreationService {
   }
 
   private composeBulkCreationTask(data: FormData) {
-    const transactionId = createTransactionId();
+    const transactionId = uuidv4();
     return this.filesystemService.bulkCreate(data, transactionId).pipe(
       map(event => {
         switch (event.type) {

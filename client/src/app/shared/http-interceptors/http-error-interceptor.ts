@@ -9,7 +9,7 @@ import { Observable, throwError } from 'rxjs';
 import { State } from 'app/***ARANGO_USERNAME***-store/state';
 import { SnackbarActions } from 'app/shared/store';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { createTransactionId } from 'app/shared/utils/identifiers';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response
@@ -52,7 +52,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   addLogHeader(request: HttpRequest<any>) {
     // Don't reset the transaction id for the request if it was explicitly added.
     if (isNull(request.headers.get('X-Transaction-ID'))) {
-      const transactionId = createTransactionId();
+      const transactionId = uuidv4();
       return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
     }
     return request;
