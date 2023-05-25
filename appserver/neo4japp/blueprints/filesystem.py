@@ -1345,8 +1345,8 @@ class FileBulkUploadView(FilesystemBaseView):
                     # Commit
                     # ========================================
 
-                    # Create the file object AFTER calculating properties so we can avoid unnecessary
-                    # update events.
+                    # Create the file object AFTER calculating properties so we can avoid
+                    # unnecessary update events.
                     file = Files()
                     file.filename = upload.filename
                     file.user = current_user
@@ -1371,7 +1371,9 @@ class FileBulkUploadView(FilesystemBaseView):
                     current_app.logger.error(
                         f'File {upload.filename} could not be processed due to an error.'
                     )
-                    yield json.dumps(dict(result={upload.filename: 'failed', 'error': str(e)})) + '\n'
+                    yield json.dumps(dict(
+                        result={upload.filename: 'failed', 'error': str(e)})
+                    ) + '\n'
                 else:
                     current_app.logger.info(f'File {file.filename} successfully processed.')
                     yield json.dumps(dict(result={file.filename: 'succeeded'})) + '\n'
