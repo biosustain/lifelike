@@ -279,8 +279,6 @@ export class ObjectCreationService {
               mode: ProgressMode.Determinate,
               status: 'Done uploading files...',
               value: 1,
-              warnings: event.body?.warnings,
-              info: event.body?.info,
             };
           /**
            * A custom event from an interceptor or a backend.

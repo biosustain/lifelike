@@ -119,8 +119,8 @@ export class FilesystemService {
     };
   }
 
-  bulkCreate(data: FormData, transactionId: string): ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>> {
-    return this.http.post<SingleResult<FilesystemObjectData>>(
+  bulkCreate(data: FormData, transactionId: string): ConnectableObservable<HttpEvent<string>> {
+    return this.http.post(
       `/api/filesystem/objects/bulk-upload`,
       data,
       {
@@ -131,7 +131,7 @@ export class FilesystemService {
           'X-Transaction-ID': transactionId
         }
       },
-    ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>;
+    ) as ConnectableObservable<HttpEvent<string>>;
   }
 
   /**
