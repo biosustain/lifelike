@@ -18,7 +18,7 @@ from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
@@ -1016,7 +1016,7 @@ class FileListView(FilesystemBaseView):
         )
         linked_files_id = list(map(lambda f: f.id, linked_files))
 
-        with db.session.begin_nested():
+        try:
             if map_target_files_id:
                 db.session.query(
                     MapLinks
@@ -1038,6 +1038,10 @@ class FileListView(FilesystemBaseView):
                         constraint='uq_map_id_linked_id'
                     )
                 )
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
 
         return self.get_bulk_file_response(target_hash_ids, current_user, missing_hash_ids)
 
@@ -1833,24 +1837,29 @@ class FileStarUpdateView(FilesystemBaseView):
         # If the user doesn't have permission to read the file they want to star, we throw
         self.check_file_permissions([result], user, ['readable'], permit_recycled=False)
 
-        with db.session.begin_nested():
-            if starred:
-                # Don't need to update if the file is already starred by this user
-                if result.calculated_starred is None:
-                    starred_file = StarredFile(
-                        user_id=user.id,
-                        file_id=result.id
-                    )
-                    db.session.add(starred_file)
-                    result.calculated_starred = starred_file
-            # Delete the row only if it exists
-            elif result.calculated_starred is not None:
-                db.session.query(
-                    StarredFile
-                ).filter(
-                    StarredFile.id == result.calculated_starred['id']
-                ).delete()
-                result.calculated_starred = None
+        if starred:
+            # Don't need to update if the file is already starred by this user
+            if result.calculated_starred is None:
+                starred_file = StarredFile(
+                    user_id=user.id,
+                    file_id=result.id
+                )
+                db.session.add(starred_file)
+                result.calculated_starred = starred_file
+        # Delete the row only if it exists
+        elif result.calculated_starred is not None:
+            db.session.query(
+                StarredFile
+            ).filter(
+                StarredFile.id == result.calculated_starred['id']
+            ).delete()
+            result.calculated_starred = None
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
 
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': user.id,
