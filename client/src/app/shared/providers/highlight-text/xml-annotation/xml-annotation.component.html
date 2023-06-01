@@ -5,6 +5,7 @@
       autoClose="outside"
       tooltipClass="tooltip"
       [draggable]="true"
+      (dragstart)="dragStart($event)"
       [style.background]="backgroundColor"
       [attr.data-annotation-meta]="parsedMeta"
 ><ng-content></ng-content></span>

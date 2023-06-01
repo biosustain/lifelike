@@ -1,23 +1,16 @@
 import {
   Component,
-  HostBinding,
-  HostListener,
-  Injectable,
   Input,
   OnChanges,
-  RendererFactory2,
   ViewChild,
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { Router, UrlTree } from '@angular/router';
 
-import { escape, uniqueId, isString } from 'lodash-es';
+import { isString } from 'lodash-es';
 import Color from 'color';
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import {
   Hyperlink,
   Reference,
@@ -28,14 +21,10 @@ import {
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 
-import { DropdownController } from '../../../utils/dom/dropdown-controller';
-import { GenericDataProvider } from '../../data-transfer-data/generic-data.provider';
 import { SEARCH_LINKS } from '../../../links';
 import { annotationTypesMap } from '../../../annotation-styles';
 import { HighlightTextService, XMLTag } from '../../../services/highlight-text.service';
-import { InternalSearchService } from '../../../services/internal-search.service';
-import { isCtrlOrMetaPressed } from '../../../DOMutils';
-import { composeInternalLink, WorkspaceManager } from '../../../workspace-manager';
+import { WorkspaceManager } from '../../../workspace-manager';
 
 @Component({
   selector: 'app-xml-annotation',
@@ -101,25 +90,24 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
     return this.annotation?.nativeElement?.textContent;
   }
 
-  @HostListener('dragStart', ['$event'])
   dragStart(event: DragEvent) {
-    const {meta} = this;
-    const text = meta.type === 'Link' ? 'Link' : meta.allText ?? this.textContent;
+    const {parsedMeta} = this;
+    const text = parsedMeta.type === 'Link' ? 'Link' : parsedMeta.allText ?? this.textContent;
 
     let search;
 
-    const sources: Source[] = this.highlightTextService.getSources(meta);
+    const sources: Source[] = this.highlightTextService.getSources(parsedMeta);
     const references: Reference[] = [];
     const hyperlinks: Hyperlink[] = [];
 
-    search = Object.keys(meta.links || []).map(k => {
+    search = Object.keys(parsedMeta.links || []).map(k => {
       return {
         domain: k,
-        url: meta.links[k],
+        url: parsedMeta.links[k],
       };
     });
 
-    const hyperlink = meta.idHyperlinks || [];
+    const hyperlink = parsedMeta.idHyperlinks || [];
 
     for (const link of hyperlink) {
       const {label, url} = JSON.parse(link);
@@ -136,17 +124,17 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
 
     const copiedNode: UniversalGraphNodeTemplate = {
       display_name: text,
-      label: meta.type.toLowerCase(),
+      label: parsedMeta.type.toLowerCase(),
       sub_labels: [],
       data: {
         sources,
         search,
         references,
         hyperlinks,
-        detail: meta.type === 'Link' ? text : '',
+        detail: parsedMeta.type === 'Link' ? text : '',
       },
       style: {
-        showDetail: meta.type === 'Link',
+        showDetail: parsedMeta.type === 'Link',
       },
     };
 
