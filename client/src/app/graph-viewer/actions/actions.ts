@@ -69,13 +69,6 @@ export interface GraphActionReceiver {
   addToGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
 
   removeFromGroup(newMembers: UniversalGraphNode[], group: UniversalGraphGroup): void;
-
-
-  /**
-   * Focus the selected entity (aka focus on the related sidebar for the selection).
-   */
-  focusEditorPanel(): void;
-
 }
 
 /**

@@ -9,8 +9,7 @@ export class NodeCreation implements GraphAction {
   constructor(
     public readonly description: string,
     public readonly node: UniversalGraphNode,
-    public readonly select = false,
-    public readonly focus = false,
+    public readonly select = false
   ) {
   }
 
@@ -21,9 +20,6 @@ export class NodeCreation implements GraphAction {
         type: GraphEntityType.Node,
         entity: this.node,
       }]);
-    }
-    if (this.focus) {
-      component.focusEditorPanel();
     }
   }
 
