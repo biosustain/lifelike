@@ -764,10 +764,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.canvas.focus();
   }
 
-  focusEditorPanel() {
-    this.editorPanelFocus$.next();
-  }
-
   protected testAssetsLoaded() {
     const dummyText = '\uf279\uf1c1';
     const ctx = this.canvas.getContext('2d');
