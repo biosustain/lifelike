@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { combineLatest, iif, of } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
-import { merge, isNil, omitBy, flatMap, unary, isEmpty } from 'lodash-es';
+import { map, switchMap } from 'rxjs/operators';
+import { merge, isNil, omitBy, isEmpty } from 'lodash-es';
 
 import { uuidv4 } from 'app/shared/utils/identifiers';
-import { IMAGE_DEFAULT_SIZE, IMAGE_LABEL } from 'app/shared/constants';
+import { IMAGE_DEFAULT_SIZE } from 'app/shared/constants';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { DataTransferData } from 'app/shared/services/data-transfer-data.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -14,7 +14,7 @@ import { Point } from 'app/graph-viewer/utils/canvas/shared';
 import { EdgeCreation } from 'app/graph-viewer/actions/edges';
 import { AppURL, isInternalUri } from 'app/shared/utils/url';
 import { GroupCreation } from 'app/graph-viewer/actions/groups';
-import { createImageNode, createNode } from 'app/graph-viewer/utils/objects';
+import { createImageNode } from 'app/graph-viewer/utils/objects';
 
 import { MapImageProviderService } from './map-image-provider.service';
 import { IMAGE_TOKEN, ImageTransferData } from '../providers/image-entity-data.provider';
@@ -120,24 +120,23 @@ export class GraphActionsService {
     }
 
     entities = this.normalizeGraphEntities(entities, origin);
-    const isSingularEntity = entities.length === 1;
 
     // Create nodes and edges
     for (const {type, entity} of entities) {
       if (type === GraphEntityType.Node) {
         const node = entity as UniversalGraphNode;
         actions.push(
-          new NodeCreation(`Create ${node.display_name} node`, node, true, isSingularEntity),
+          new NodeCreation(`Create ${node.display_name} node`, node, true),
         );
       } else if (type === GraphEntityType.Edge) {
         const edge = entity as UniversalGraphEdge;
         actions.push(
-          new EdgeCreation(`Create edge`, edge, true, isSingularEntity),
+          new EdgeCreation(`Create edge`, edge, true),
         );
       } else if (type === GraphEntityType.Group) {
         const group = this.mapInternalLinks(entity as UniversalGraphGroup);
         actions.push(new GroupCreation(
-          `Create group`, group, true, isSingularEntity,
+          `Create group`, group, true,
         ));
       }
     }

@@ -12,12 +12,10 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { cloneDeep } from 'lodash-es';
-import { forkJoin, from, Observable, of, Subscription, throwError } from 'rxjs';
+import { forkJoin, from, Observable, of, Subscription } from 'rxjs';
 import {
   auditTime,
-  catchError,
   defaultIfEmpty,
-  finalize,
   map,
   switchMap,
   tap,
@@ -27,15 +25,13 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
 import {
-  CompoundAction,
   GraphAction,
   GraphActionReceiver,
 } from 'app/graph-viewer/actions/actions';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
-import { LockError, FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { ObjectLock } from 'app/file-browser/models/object-lock';
-import { GROUP_LABEL, MimeTypes } from 'app/shared/constants';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { MimeTypes } from 'app/shared/constants';
 import { DeleteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
 import { PasteKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
 import { HistoryKeyboardShortcutsBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
@@ -47,7 +43,6 @@ import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 import { ImageBlob } from 'app/shared/utils/forms';
-import { isNotEmpty } from 'app/shared/utils';
 import { createGroupNode } from 'app/graph-viewer/utils/objects';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -68,8 +63,6 @@ import {
 import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
-import { GRAPH_ENTITY_TOKEN } from '../../providers/graph-entity-data.provider';
-import { GraphViewDirective } from '../../directives/graph-view.directive';
 import { LockService } from './lock.service';
 
 @Component({
@@ -167,10 +160,6 @@ export class MapEditorComponent
 
     this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
       this.unsavedChanges$.next(true);
-    }));
-
-    this.subscriptions.add(this.graphCanvas.editorPanelFocus$.subscribe(() => {
-      this.focusSidebar();
     }));
   }
 
@@ -311,18 +300,6 @@ export class MapEditorComponent
     });
   }
 
-
-  private focusSidebar() {
-    // Focus the input on the sidebar
-    setTimeout(() => {
-      const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector('.map-editor-initial-focus');
-      if (initialFocusElement) {
-        initialFocusElement.focus();
-        initialFocusElement.select();
-      }
-    }, 100);
-  }
-
   reload() {
     const doReload = () => {
       this.lockService.clearLockInterval();
@@ -368,7 +345,6 @@ export class MapEditorComponent
           createGroupNode({
             members,
           }),
-          true,
           true,
         ),
       );
