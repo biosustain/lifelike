@@ -26,6 +26,7 @@ export abstract class EntityForm implements AfterViewInit {
   @Output() sourceOpen = new EventEmitter<string>();
 
   overflow = false;
+  viewInited = false;
 
   protected constructor(
     protected readonly workspaceManager: WorkspaceManager,
@@ -62,6 +63,9 @@ export abstract class EntityForm implements AfterViewInit {
 
   ngAfterViewInit() {
     setTimeout(() => this.onResize(), 0);
+
+    this.focus();
+    this.viewInited = true;
   }
 
   /**
@@ -78,8 +82,6 @@ export abstract class EntityForm implements AfterViewInit {
     openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
   }
 
-
-
   /**
    * Bring user to original source of entity information
    */
@@ -91,7 +93,6 @@ export abstract class EntityForm implements AfterViewInit {
     if (this.displayNameRef != null) {
       const element = this.displayNameRef.nativeElement;
       element.focus();
-      element.select();
     }
   }
 }
