@@ -1,40 +1,27 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { cloneDeep, isNil } from 'lodash-es';
 
-import { RecursivePartial } from 'app/shared/utils/types';
-import { openPotentialExternalLink } from 'app/shared/utils/browser';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
 import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
-import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
-import { PALETTE_COLORS } from 'app/drawing-tool/services/palette';
-import { InfoPanel } from 'app/drawing-tool/models/info-panel';
+import { RecursivePartial } from 'app/shared/utils/types';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { InternalSearchService } from 'app/shared/services/internal-search.service';
+
+import { EntityForm } from './entity-form';
 
 @Component({
   selector: 'app-edge-form',
+  styleUrls: ['./entity-form.component.scss'],
   templateUrl: './edge-form.component.html',
 })
-export class EdgeFormComponent implements AfterViewInit {
-
-  @Input() infoPanel: InfoPanel;
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
-
-  lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
-    ...LINE_TYPES.entries(),
-  ];
-
+export class EdgeFormComponent extends EntityForm {
   lineHeadTypeChoices = [
     [null, {
       name: '(Default)',
     }],
     ...LINE_HEAD_TYPES.entries(),
   ];
-
-  paletteChoices = [...PALETTE_COLORS];
 
   originalEdge: UniversalGraphEdge;
   updatedEdge: UniversalGraphEdge;
@@ -43,15 +30,11 @@ export class EdgeFormComponent implements AfterViewInit {
     originalData: RecursivePartial<UniversalGraphEdge>,
     updatedData: RecursivePartial<UniversalGraphEdge>
   }>();
-  @Output() delete = new EventEmitter<object>();
-  @Output() sourceOpen = new EventEmitter<string>();
 
-  constructor(protected readonly workspaceManager: WorkspaceManager) {
+  constructor(protected readonly workspaceManager: WorkspaceManager,
+              protected readonly internalSearch: InternalSearchService) {
+    super(workspaceManager);
   }
-
-  ngAfterViewInit() {
-  }
-
 
   get hyperlinks() {
     return isNil(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
@@ -72,6 +55,11 @@ export class EdgeFormComponent implements AfterViewInit {
     this.updatedEdge.data.sources = this.updatedEdge.data.sources || [];
     this.updatedEdge.data.hyperlinks = this.updatedEdge.data.hyperlinks || [];
     this.updatedEdge.style = this.updatedEdge.style || {};
+
+    // Anytime the view is changed (i.e. when a new edge is selected) re-focus the label field.
+    if (this.viewInited) {
+      this.focus();
+    }
   }
 
   doSave() {
@@ -112,17 +100,6 @@ export class EdgeFormComponent implements AfterViewInit {
     this.originalEdge = cloneDeep(this.updatedEdge);
   }
 
-  doDelete(): void {
-    this.delete.next();
-  }
-
-  /**
-   * Allow user to navigate to a link in a new tab
-   */
-  goToLink(hyperlink) {
-    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
-  }
-
   /**
    * Create a blank hyperlink template to add to model
    */
@@ -142,20 +119,5 @@ export class EdgeFormComponent implements AfterViewInit {
   removeHyperlink(i) {
     this.edge.data.hyperlinks.splice(i, 1);
     this.doSave();
-  }
-
-  /**
-   * Bring user to original source of node information
-   */
-  goToSource(url): void {
-    this.sourceOpen.next(url);
-  }
-
-  focus() {
-    if (this.displayNameRef != null) {
-      const element = this.displayNameRef.nativeElement;
-      element.focus();
-      element.select();
-    }
   }
 }
