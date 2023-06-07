@@ -9,8 +9,7 @@ export class EdgeCreation implements GraphAction {
   constructor(
     public description: string,
     public edge: UniversalGraphEdge,
-    public readonly select = false,
-    public readonly focus = false
+    public readonly select = false
   ) {
   }
 
@@ -21,9 +20,6 @@ export class EdgeCreation implements GraphAction {
         type: GraphEntityType.Edge,
         entity: this.edge,
       }]);
-    }
-    if (this.focus) {
-      component.focusEditorPanel();
     }
   }
 

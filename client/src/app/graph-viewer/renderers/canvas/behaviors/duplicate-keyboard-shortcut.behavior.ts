@@ -1,4 +1,4 @@
-import { partition, groupBy, mapValues, map, uniq, uniqBy } from 'lodash-es';
+import { groupBy, mapValues, map } from 'lodash-es';
 
 import {
   GraphEntityType,
@@ -40,9 +40,6 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
       } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
       const hashMap = new Map<string, string>();
-      const isSingularNode = nodes.length === 1;
-      const isSingularEdge = edges.length === 1;
-      const isSingularGroup = groups.length === 1;
       this.graphView.selection.replace([]);
 
       const cloneNode = ({hash, data, ...rest}: UniversalGraphNodeTemplate, select) => {
@@ -56,7 +53,7 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         });
         hashMap.set(hash, newNode.hash);
         actions.push(
-          new NodeCreation('Duplicate node', newNode, select, isSingularNode)
+          new NodeCreation('Duplicate node', newNode, select)
         );
         return newNode;
       };
@@ -74,7 +71,7 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
         // This works also for groups, as those inherit from the node
         hashMap.set(hash, newGroup.hash);
         actions.push(
-          new GroupCreation('Duplicate group', newGroup, true, isSingularGroup)
+          new GroupCreation('Duplicate group', newGroup, true)
         );
       }
       for (const node of nodes) {
@@ -90,7 +87,6 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
               'Duplicate edge',
               {...rest, to: hashMap.get(to), from: hashMap.get(from)} as UniversalGraphEdge,
               true,
-              isSingularEdge
             )
           );
         }

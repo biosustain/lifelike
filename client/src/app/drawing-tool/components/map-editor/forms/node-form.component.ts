@@ -69,6 +69,11 @@ export class NodeFormComponent extends EntityForm {
     this.updatedNode.data.sources = this.updatedNode.data.sources || [];
     this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
     this.updatedNode.style = this.updatedNode.style || {};
+
+    // Anytime the view is changed (i.e. when a new node is selected) re-focus the label field.
+    if (this.viewInited) {
+      this.focus();
+    }
   }
 
   // TODO: Inspect and possibly clean this mess.

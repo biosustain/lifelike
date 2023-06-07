@@ -44,7 +44,6 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
             },
           }),
           true,
-          true,
       ));
     }
 
