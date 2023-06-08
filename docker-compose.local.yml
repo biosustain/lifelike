@@ -2,20 +2,23 @@ version: "3.9"
 name: '***ARANGO_DB_NAME***-local'
 # This configuration includes two way volume binding for working with locally modified source code
 
-x-appserver: &appserver
-  extends:
-    file: docker-compose.yml
-    service: appserver
+x-appserver-mounts: &appserver-mounts
   volumes:
     - ./appserver:/home/n4j
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
 
 services:
   appserver:
-    <<: *appserver
+    <<: *appserver-mounts
+    extends:
+      file: docker-compose.yml
+      service: appserver
 
   worker:
-    <<: *appserver
+    <<: *appserver-mounts
+    extends:
+      file: docker-compose.yml
+      service: worker
 
   webserver:
     extends:
