@@ -205,23 +205,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     this.getSnippetsSubscription.unsubscribe();
   }
 
-  /**
-   * Redirects to the visualizer search page with the new query term as a URL parameter.
-   * @param query string to search for
-   */
-  search(query: string) {
-    const url = `/search?q=${query}`;
-
-    this.tracking.register({
-      category: TRACKING_CATEGORIES.visualiser,
-      action: TRACKING_ACTIONS.search,
-      label: query,
-      url
-    });
-
-    this.workspaceManager.navigateByUrl({url});
-  }
-
   openNoResultsFromExpandDialog() {
     this.messageDialog.display({
       title: 'No Relationships',
