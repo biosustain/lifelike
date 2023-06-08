@@ -24,7 +24,7 @@ import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 
 @Injectable()
-export class FindControlerService implements OnDestroy {
+export class FindControllerService implements OnDestroy {
   constructor() {
     this.query$.pipe(
       withLatestFrom(this.elementFind$), // changing elementFind$ should not rerun query

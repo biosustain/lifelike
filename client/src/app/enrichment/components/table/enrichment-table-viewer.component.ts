@@ -57,7 +57,7 @@ import { EnrichmentTableService } from '../../services/enrichment-table.service'
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue, } from './dialog/enrichment-table-edit-dialog.component';
 import { EnrichmentService } from '../../services/enrichment.service';
-import { FindControlerService } from '../../services/find-controler.service';
+import { FindControllerService } from '../../services/find-controller.service';
 import { EnrichmentTableComponent } from './enrichment-table.component';
 
 // TODO: Is there an existing interface we could use here?
@@ -74,7 +74,7 @@ interface AnnotationData {
   providers: [
     EnrichmentService,
     ModuleContext,
-    FindControlerService
+    FindControllerService
   ]
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
@@ -89,13 +89,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     protected readonly enrichmentService: EnrichmentService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
-    private readonly findControlerService: FindControlerService,
+    private readonly findControllerService: FindControllerService,
   ) {
     this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
-    this.findControlerService.type$.next(this.annotation.id.length ? 'annotation' : 'text');
-    this.findControlerService.query$.next(this.annotation.id.length ? this.annotation.id : this.annotation.text);
+    this.findControllerService.type$.next(this.annotation.id.length ? 'annotation' : 'text');
+    this.findControllerService.query$.next(this.annotation.id.length ? this.annotation.id : this.annotation.text);
   }
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -108,7 +108,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   object$: Observable<FilesystemObject>;
   document$: Observable<EnrichmentDocument>;
   table$: Observable<EnrichmentTable>;
-  findController$: Observable<AsyncElementFind> = this.findControlerService.elementFind$;
+  findController$: Observable<AsyncElementFind> = this.findControllerService.elementFind$;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -303,21 +303,21 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   switchToTextFind() {
     this.annotation = {id: '', text: '', color: ''};
-    this.findControlerService.type$.next('text');
+    this.findControllerService.type$.next('text');
   }
 
   switchToAnnotationFind(id: string, text: string, color: string) {
     this.annotation = {id, text, color};
-    this.findControlerService.type$.next('annotation');
+    this.findControllerService.type$.next('annotation');
   }
 
   startAnnotationFind(annotationId: string, annotationText: string, annotationColor: string) {
     this.switchToAnnotationFind(annotationId, annotationText, annotationColor);
-    this.findControlerService.query$.next(annotationId);
+    this.findControllerService.query$.next(annotationId);
   }
 
   startTextFind(text: string) {
     this.switchToTextFind();
-    this.findControlerService.query$.next(text);
+    this.findControllerService.query$.next(text);
   }
 }
