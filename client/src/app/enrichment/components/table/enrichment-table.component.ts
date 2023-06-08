@@ -9,7 +9,7 @@ import { closePopups, relativePosition } from 'app/shared/DOMutils';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 
 import { EnrichmentTable } from '../../models/enrichment-table';
-import { FindControlerService } from '../../services/find-controler.service';
+import { FindControllerService } from '../../services/find-controller.service';
 
 
 @Component({
@@ -19,7 +19,7 @@ import { FindControlerService } from '../../services/find-controler.service';
 })
 export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
   constructor(
-    private readonly findControlerService: FindControlerService,
+    private readonly findControllerService: FindControllerService,
     private readonly element: ElementRef,
   ) {
   }
@@ -32,7 +32,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
   @Input() object: FilesystemObject;
 
   ngAfterViewInit() {
-    this.findControlerService.focusElement$.pipe(
+    this.findControllerService.focusElement$.pipe(
       withLatestFrom(
         // Possibly changing margin which is dependednt on table headers
         createResizeObservable(
@@ -62,7 +62,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
           behaviour: 'smooth'
       });
     });
-    this.findControlerService.target$.next(
+    this.findControllerService.target$.next(
       this.findTarget.nativeElement
     );
   }
