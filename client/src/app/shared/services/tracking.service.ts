@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -21,11 +21,13 @@ export class TrackingService {
       event
     ).pipe(
       catchError(err => {
-          this.snackBar.open(
-            `Failed to register event: ${err.message}`,
-            'Dismiss',
-            {duration: 2000},
-          );
+          if (isDevMode()) {
+            this.snackBar.open(
+              `Failed to register event: ${err.message}`,
+              'Dismiss',
+              {duration: 2000},
+            );
+          }
           throw err;
         },
       ),
