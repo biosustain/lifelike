@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from pathlib import Path
 
 import gdown
@@ -14,6 +15,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from itertools import chain
+
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
@@ -101,7 +103,7 @@ from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
 from neo4japp.exceptions import wrap_exceptions
-from neo4japp.warnings import ServerWarning
+from neo4japp.exceptions import ServerWarning
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -406,7 +408,8 @@ class FilesystemBaseView(MethodView):
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
                     f"The file or directory '{file.filename}' has been trashed and "
-                    "must be restored first.")
+                    "must be restored first."
+                )
 
     def update_files(
         self,
@@ -1402,7 +1405,7 @@ class FileExportView(FilesystemBaseView):
             try:
                 json_graph = json.loads(zip_file.read('graph.json'))
             except KeyError as e:
-                raise ValidationError from e
+                raise ValidationError(str(e)) from e
             for node in chain(
                     json_graph['nodes'],
                     flatten(

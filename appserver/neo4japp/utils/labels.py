@@ -4,9 +4,9 @@ from flask import current_app
 from neo4j.graph import Node as N4jDriverNode
 
 from neo4japp.constants import LogEventType, DISPLAY_NAME_MAP, DOMAIN_LABELS
+from neo4japp.exceptions import ServerWarning
 from neo4japp.utils import EventLog
 from neo4japp.utils.globals import warn
-from neo4japp.warnings import ServerWarning
 
 
 def get_first_known_label_from_node(node: N4jDriverNode):

@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
-from neo4japp.exceptions import AnnotationError, ServerException, wrap_exceptions
+from neo4japp.exceptions import AnnotationError, ServerException, wrap_exceptions, ServerWarning
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.util import standardize_str
@@ -30,7 +30,6 @@ from .utils.common import has_center_point
 from .utils.parsing import parse_content
 from .utils.graph_queries import *
 from ...utils.globals import warn
-from ...warnings import ServerWarning
 
 
 class ManualAnnotationService:

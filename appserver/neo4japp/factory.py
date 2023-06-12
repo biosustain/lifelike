@@ -32,11 +32,11 @@ from neo4japp.database import (
     migrate
 )
 from neo4japp.encoders import CustomJSONEncoder
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerException, ServerWarning
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
+from neo4japp.utils.globals import current_username
 from neo4japp.utils.logger import ErrorLog, WarningLog
-from neo4japp.utils.globals import current_user
-from neo4japp.warnings import ServerWarning
+from neo4japp.utils.transaction_id import transaction_id
 
 apm = ElasticAPM()
 
@@ -252,7 +252,7 @@ def handle_generic_warning(code: int, ex: Warning):
             warning_name=f'{type(ex)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-                username=current_username,
+            username=current_username,
         ).to_dict()
     )
 

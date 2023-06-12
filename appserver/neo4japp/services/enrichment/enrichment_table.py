@@ -14,7 +14,7 @@ from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTex
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarning
+from neo4japp.exceptions import ServerWarning
 
 
 class EnrichmentTableService(KgService):

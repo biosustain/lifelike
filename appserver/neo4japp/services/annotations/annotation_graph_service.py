@@ -38,8 +38,8 @@ from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 from neo4japp.services.arangodb import execute_arango_query, get_db
+from ...exceptions import ServerWarning
 from ...utils.globals import warn
-from ...warnings import ServerWarning
 
 
 class AnnotationGraphService(GraphConnection):

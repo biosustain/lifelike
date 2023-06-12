@@ -351,8 +351,8 @@ class AccountSearchView(MethodView):
         on the project collaborators dialog.
         """
         current_user = g.current_user
-        query = re.sub("[%_]", "\\\\0", params['query'].strip())
-        like_query = f"%{query}%"
+        query_str = re.sub("[%_]", "\\\\0", params['query'].strip())
+        like_query = f"%{query_str}%"
 
         private_data_access = get_authorization_service().has_role(
             current_user, 'private-data-access'
@@ -367,8 +367,8 @@ class AccountSearchView(MethodView):
                 AppUser.first_name.ilike(like_query),
                 AppUser.last_name.ilike(like_query),
                 AppUser.username.ilike(like_query),
-                AppUser.email == query,
-                AppUser.hash_id == query
+                AppUser.email == query_str,
+                AppUser.hash_id == query_str
                 )
             )
 

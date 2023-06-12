@@ -91,10 +91,8 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
-from ..utils.globals import warn
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
-from ..warnings import ServerWarning
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 

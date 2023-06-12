@@ -1,6 +1,7 @@
-from neo4japp.warnings import ServerWarning
 from flask import g, current_app
 from werkzeug.local import LocalProxy
+
+from neo4japp.exceptions import ServerWarning
 from neo4japp.info import ServerInfo
 
 current_username = LocalProxy(

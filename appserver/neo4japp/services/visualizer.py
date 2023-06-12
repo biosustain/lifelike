@@ -32,7 +32,7 @@ from neo4japp.util import snake_to_camel_dict
 from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarning
+from neo4japp.exceptions import ServerWarning
 
 
 class VisualizerService(KgService):
