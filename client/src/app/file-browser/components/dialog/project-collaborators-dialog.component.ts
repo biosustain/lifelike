@@ -15,6 +15,9 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { appUserLoadingMock, collaboratorLoadingMock } from 'app/shared/mocks/loading/user';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
@@ -30,6 +33,9 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
 
   private _project: ProjectImpl;
   collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
+  collaboratorsWithStatus$ = this.collaborators$.pipe(
+    addStatus(new ModelList(mockArrayOf(collaboratorLoadingMock)))
+  );
   readonly addForm: FormGroup = new FormGroup({
     roleName: new FormControl('project-read', Validators.required),
     users: new FormControl([], nonEmptyList),

@@ -39,42 +39,6 @@
     </div>
   </div>
 
-  <div *ngIf="loading">
-    <div>
-      <p>
-        To add the terms in the "synonyms" column to your search query, select any number of rows and click submit. Duplicates will be removed.
-      </p>
-    </div>
-
-    <div class="synonym-table">
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="col-1" scope="col">
-              <div class="custom-control custom-checkbox">
-                <input [id]="id + '-loading-checklist-header'" type="checkbox" class="custom-control-input" disabled>
-                <label class="custom-control-label" [for]="id + '-loading-checklist-header'"></label>
-              </div>
-            </th>
-            <th class="text-nowrap col-1" scope="col">Type</th>
-            <th class="text-nowrap col-3" scope="col">Name</th>
-            <th class="text-nowrap col-2" scope="col">Taxonomy</th>
-            <th class="text-nowrap col-3" scope="col">Synonyms</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row"><span class="placeholder-box">Loading</span></th>
-            <td><span class="placeholder-box">Loading</span></td>
-            <td><span class="placeholder-box">Loading</span></td>
-            <td><span class="placeholder-box">Loading</span></td>
-            <td><span class="placeholder-box">Loading</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <div *ngIf="errorMsg">
     <div>
       <p>
@@ -84,7 +48,7 @@
     </div>
   </div>
 
-  <div *ngIf="!loading && !errorMsg && synonymData">
+  <div *ngIf="!errorMsg && synonymData" [appShowPlaceholders]="loading">
     <div>
       <p>
         To add the terms in the "synonyms" column to your search query, select any number of rows and click submit. Duplicates will be removed.
@@ -119,15 +83,21 @@
                         type="checkbox"
                         class="custom-control-input"
                         [checked]="entityChecklistSelection.isSelected(entity)"
-                        (change)="toggleEntitySelection(entity)">
+                        (change)="toggleEntitySelection(entity)"
+                        appHasPlaceholder
+                >
                 <label class="custom-control-label" [for]="id + '-synonym-row-' + i"></label>
               </div>
             </th>
-            <td class="col-1">{{ entity.type }}</td>
-            <td class="col-3">{{ entity.name }}</td>
-            <td class="col-2">{{ entity.organism }}</td>
+            <td class="col-1"><app-with-placeholder>{{ entity.type }}</app-with-placeholder></td>
+            <td class="col-3"><app-with-placeholder>{{ entity.name }}</app-with-placeholder></td>
+            <td class="col-2"><app-with-placeholder>{{ entity.organism }}</app-with-placeholder></td>
             <td class="col-3">
-              <div *ngFor="let a of entity.synonyms; let j = index" class="mr-2" style="display: inline-block;">
+              <div *ngFor="let a of entity.synonyms; let j = index"
+                   class="mr-2"
+                   style="display: inline-block;"
+                   appHasPlaceholder
+              >
                 {{a + (j < entity.synonyms.length - 1 ? ';' : '')}}
               </div>
             </td>
@@ -147,7 +117,7 @@
       </table>
       <ng-container *ngIf="!synonymData.length">
         <div>
-          <p class="font-weight-bold">
+          <p class="font-weight-bold" appHasPlaceholder>
             No synonyms were found for the term "{{ mostRecentSearchTerm }}".
           </p>
         </div>

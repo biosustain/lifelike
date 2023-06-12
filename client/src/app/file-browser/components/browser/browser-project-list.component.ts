@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
+import { mergeMap, shareReplay, startWith, switchMap, map } from 'rxjs/operators';
 import { select } from '@ngrx/store';
 import { isNil } from 'lodash-es';
 
@@ -11,6 +11,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PaginatedRequestOptions } from 'app/shared/schemas/common';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { AuthSelectors } from 'app/auth/store';
+import { projectImplLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ProjectsService } from '../../services/projects.service';
 import { ProjectActions } from '../../services/project-actions';
@@ -29,7 +31,10 @@ export class BrowserProjectListComponent {
     sort: 'name',
   });
   readonly projectList$: Observable<PipeStatus<ProjectList>> = this.paging$.pipe(
-    switchMap(options => addStatus(this.projectService.list(options))),
+    switchMap(options => this.projectService.list(options)),
+    addStatus(
+      new ProjectList(mockArrayOf(projectImplLoadingMock))
+    ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

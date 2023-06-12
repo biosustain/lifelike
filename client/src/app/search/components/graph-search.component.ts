@@ -9,6 +9,8 @@ import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { fTSQueryRecordLoadingMock } from 'app/shared/mocks/loading/graph-search';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { GraphSearchService } from '../services/graph-search.service';
 import { createGraphSearchParamsFromQuery, getGraphQueryParams, GraphQueryParameters } from '../utils/search';
@@ -36,7 +38,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
 
   params: GraphSearchParameters | undefined;
   collectionSize = 0;
-  results: FTSQueryRecord[] = [];
+  results: FTSQueryRecord[] = mockArrayOf(fTSQueryRecordLoadingMock);
 
   legend: Map<string, string> = new Map();
 

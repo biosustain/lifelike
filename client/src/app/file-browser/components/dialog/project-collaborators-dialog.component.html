@@ -3,7 +3,7 @@
 </app-modal-header>
 
 <app-modal-body>
-  <ng-container *ngIf="(collaborators$ | addStatus | async) as result">
+  <ng-container *ngIf="(collaboratorsWithStatus$ | async) as result">
     <ng-template [ngIf]="result.error">
       <app-module-error [error]="result.error">
       </app-module-error>
@@ -33,48 +33,7 @@
       </div>
     </form>
 
-    <div class="mt-4">
-      <ng-template [ngIf]="result.loading">
-        <table class="table m-0">
-          <colgroup>
-            <col>
-            <col style="width: 1%">
-          </colgroup>
-          <thead>
-          <tr>
-            <th>Name</th>
-            <th class="text-right">Permissions</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td class="align-middle">
-              <span class="placeholder-box">Loading loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap">
-              <div class="d-flex align-items-center justify-content-end">
-                <div class="d-inline-block ml-1">
-                  <span class="placeholder-box">Loading loading</span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td class="align-middle">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap">
-              <div class="d-flex align-items-center justify-content-end">
-                <div class="d-inline-block ml-1">
-                  <span class="placeholder-box">Loading loading</span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </ng-template>
-
+    <div class="mt-4" [appShowPlaceholders]="result.loading">
       <ng-template [ngIf]="result.value">
         <table class="table m-0">
           <colgroup>
@@ -96,8 +55,12 @@
               <div class="d-flex align-items-center justify-content-end">
                 <div ngbDropdown class="d-inline-block ml-1" container="body"
                      placement="bottom-right top-right">
-                  <a href="#" (click)="$event.preventDefault()" ngbDropdownToggle
-                     class="d-inline-block my-2">
+                  <a href="#"
+                     (click)="$event.preventDefault()"
+                     ngbDropdownToggle
+                     class="d-inline-block my-2"
+                     appHasPlaceholder
+                  >
                     {{ collaborator.roleDescription }}
                   </a>
                   <div ngbDropdownMenu>
