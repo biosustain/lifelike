@@ -97,13 +97,14 @@ class LogEventType(Enum):
     LAST_ACTIVE = 'last_active'
     MAP_EXPORT_FAILURE = 'map-export-failure'
     RESET_PASSWORD = 'reset_password'
-    SENTRY_HANDLED = 'handled_exception'
-    SENTRY_WARNINIG = 'handled_warning'
-    SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
     VISUALIZER = 'visualizer'
     VISUALIZER_SEARCH = 'visualizer_search'
     REDIS = 'redis'
+
+    HANDLED = 'handled_exception'
+    WARNINIG = 'handled_warning'
+    UNHANDLED = 'unhandled_exception'
 
 
 DOMAIN_LABELS = [

@@ -32,9 +32,6 @@ def client_logging(args):
     )
     current_app.logger.error(
         args.get('detail', 'No further details'),
-        extra={
-            **err.to_dict(),
-            **{'to_sentry': False}
-        }
+        extra=err.to_dict()
     )
     return jsonify(dict(result='success')), 200
