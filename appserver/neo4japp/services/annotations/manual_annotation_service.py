@@ -29,6 +29,8 @@ from .data_transfer_objects.dto import PDFWord
 from .utils.common import has_center_point
 from .utils.parsing import parse_content
 from .utils.graph_queries import *
+from ...utils.globals import warn
+from ...warnings import ServerWarning
 
 
 class ManualAnnotationService:
@@ -557,12 +559,15 @@ class ManualAnnotationService:
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
                 except Exception as e:
-                    current_app.logger.error(
+                    message = (
                         f'Failed to create global inclusion, '
-                        f'knowledge graph failed with query: {query}.',
+                        f'knowledge graph failed with query: {query}.'
+                    )
+                    current_app.logger.error(
+                        message,
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
-                    # TODO warning
+                    warn(ServerWarning(message=message), cause=e)
             elif not check['node_exist']:
                 try:
                     query = get_create_lifelike_global_inclusion_query(entity_type)
@@ -570,12 +575,18 @@ class ManualAnnotationService:
                 except (BrokenPipeError, ServiceUnavailable):
                     raise
                 except Exception as e:
-                    current_app.logger.info(
+                    message = (
                         f'Failed to create global inclusion, '
-                        f'knowledge graph failed with query: {query}.',
+                        f'knowledge graph failed with query: {query}.'
+                               )
+                    current_app.logger.info(
+                        message,
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
-                    # TODO warning
+                    warn(
+                        ServerWarning(message=message),
+                        cause=e
+                    )
         else:
             if not self._global_annotation_exists(annotation, inclusion_type):
                 # global exclusion
@@ -622,12 +633,15 @@ class ManualAnnotationService:
         except (BrokenPipeError, ServiceUnavailable):
             raise
         except Exception as e:
-            current_app.logger.error(
+            message = (
                 f'Failed to create global inclusion, '
-                f'knowledge graph failed with query: {query}.',
+                f'knowledge graph failed with query: {query}.'
+            )
+            current_app.logger.error(
+                message,
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            # TODO warning
+            warn(ServerWarning(message=message), cause=e)
 
         if check['node_exist']:
             return check
@@ -638,12 +652,15 @@ class ManualAnnotationService:
             except (BrokenPipeError, ServiceUnavailable):
                 raise
             except Exception as e:
-                current_app.logger.error(
+                message = (
                     f'Failed to create global inclusion, '
-                    f'knowledge graph failed with query: {query}.',
+                    f'knowledge graph failed with query: {query}.'
+                )
+                current_app.logger.error(
+                    message,
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
 
         return check
 

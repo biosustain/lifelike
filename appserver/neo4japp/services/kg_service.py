@@ -1,33 +1,35 @@
 import json
 import os
 import time
+from typing import List
 from urllib.parse import urlencode
 
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import List
 
-from neo4japp.constants import (
-    BIOCYC_ORG_ID_DICT, KGDomain,
-)
-from neo4japp.exceptions import ServerException
-from neo4japp.services.common import HybridDBDao
-from neo4japp.models import (
-    DomainURLsMap,
-    GraphNode,
-    GraphRelationship
-)
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
     LogEventType,
 )
-from neo4japp.util import (
-    snake_to_camel_dict, compact
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT, KGDomain,
 )
+from neo4japp.exceptions import ServerException
+from neo4japp.models import (
+    DomainURLsMap,
+    GraphNode,
+    GraphRelationship,
+)
+from neo4japp.services.common import HybridDBDao
+from neo4japp.util import (
+    snake_to_camel_dict, compact,
+)
+from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import get_first_known_label_from_node, get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarning
 
 
 class KgService(HybridDBDao):
@@ -35,9 +37,9 @@ class KgService(HybridDBDao):
         super().__init__(graph=graph, session=session)
 
     def _neo4j_objs_to_graph_objs(
-        self,
-        nodes: List[N4jDriverNode],
-        relationships: List[N4jDriverRelationship],
+            self,
+            nodes: List[N4jDriverNode],
+            relationships: List[N4jDriverRelationship],
     ):
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
@@ -52,13 +54,16 @@ class KgService(HybridDBDao):
                 label = get_first_known_label_from_node(node)
             except ValueError as e:
                 label = 'Unknown'
+                message = (
+                    f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}"
+                )
                 current_app.logger.warning(
-                    f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}",
+                    message,
                     extra=EventLog(
                         event_type=LogEventType.KNOWLEDGE_GRAPH.value
                     ).to_dict()
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
             graph_node = GraphNode(
                 id=node.id,
                 label=get_first_known_label_from_node(node),
@@ -159,7 +164,8 @@ class KgService(HybridDBDao):
         )
 
         domain = self.session.query(DomainURLsMap).filter(
-            DomainURLsMap.domain == 'uniprot').one_or_none()
+            DomainURLsMap.domain == 'uniprot'
+        ).one_or_none()
 
         if domain is None:
             raise ServerException(
@@ -311,13 +317,16 @@ class KgService(HybridDBDao):
                             # If label is unknown, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
+                            message = (
+                                f"Node had an unexpected list of labels: {node['labels']}"
+                            )
                             current_app.logger.warning(
-                                f"Node had an unexpected list of labels: {node['labels']}",
+                                message,
                                 extra=EventLog(
                                     event_type=LogEventType.KNOWLEDGE_GRAPH.value
                                 ).to_dict()
                             )
-                            # TODO warning
+                            warn(ServerWarning(message=message), cause=e)
                         except KeyError:
                             # If label does not exist in styles dict, then use fallbacks
                             node_label = 'Unknown'

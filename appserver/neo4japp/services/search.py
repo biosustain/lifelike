@@ -16,8 +16,10 @@ from neo4japp.util import (
     normalize_str,
     snake_to_camel_dict
 )
+from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import get_first_known_label_from_list, get_known_domain_labels_from_list
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarning
 
 
 class SearchService(GraphBaseDao):
@@ -67,12 +69,15 @@ class SearchService(GraphBaseDao):
             try:
                 entity_label = get_first_known_label_from_list(entity["labels"])
             except ValueError as e:
+                message = (
+                        f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
+                        f'{entity["labels"]}'
+                )
                 current_app.logger.warning(
-                    f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
-                    f'{entity["labels"]}',
+                    message,
                     extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
                 entity_label = 'Unknown'
 
             graph_node = GraphNode(
@@ -277,11 +282,12 @@ class SearchService(GraphBaseDao):
                 type = get_first_known_label_from_list(row['entity_labels'])
             except ValueError as e:
                 type = 'Unknown'
+                message = f"Node had an unexpected list of labels: {row['entity_labels']}"
                 current_app.logger.warning(
-                    f"Node had an unexpected list of labels: {row['entity_labels']}",
+                    message,
                     extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
 
             synonym_data.append({
                 'type': type,

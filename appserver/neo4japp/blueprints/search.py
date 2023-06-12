@@ -17,7 +17,7 @@ from neo4japp.database import (
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Files, Projects
-from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.common import PaginatedRequestSchema, SuccessResponse
 from neo4japp.schemas.search import (
     ContentSearchSchema,
     ContentSearchResponseSchema,
@@ -27,9 +27,9 @@ from neo4japp.schemas.search import (
     VizSearchSchema,
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
+from neo4japp.utils.jsonify import jsonify_with_class
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
