@@ -3,7 +3,7 @@
 * Docker
   * Potentially with increased memory and disk space limits if on Windows or Mac OS X
   * Windows users: Get Docker for Windows, not the older Docker Toolbox
-* docker-compose
+* docker compose
 * Git
 * Azure account with access to our files
 * [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
@@ -67,7 +67,7 @@ There are containers for the Python app server (`appserver`), the Angular app (`
 On initial start, the databases will empty, so you will need to seed them using the following command:
 
 ```sh
-docker-compose exec appserver flask seed fixtures/seed.json
+docker compose exec appserver flask seed fixtures/seed.json
 ```
 
 However, **boot up takes some time** and if you get an error about tables not existing, please try again in a few minutes. If you've waited a while and the error won't go away, something may have failed and the database schema may not have been installed (it gets installed and updated as part of the app server's startup). If that's the case, try inspecting the containers (described below) to identify the cause.
@@ -85,7 +85,7 @@ nlp/fetch-ai-models.sh
 You can view the logs of the containers using:
 
 ```sh
-docker-compose logs -f $container_name
+docker compose logs -f $container_name
 ```
 
 For `$container_name`, you have a choice of:
@@ -98,13 +98,13 @@ For `$container_name`, you have a choice of:
 ### PostgreSQL
 
 ```sh
-docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
+docker compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
 ```
 
 ### Neo4j
 
 ```sh
-docker-compose exec database cypher-shell -u neo4j
+docker compose exec database cypher-shell -u neo4j
 ```
 
 ### Generic
@@ -112,7 +112,7 @@ docker-compose exec database cypher-shell -u neo4j
 To open a shell in any container, use:
 
 ```sh
-docker-compose exec -u 0 -it $container_name bash
+docker compose exec -u 0 -it $container_name bash
 ```
 
 ## Making Changes and Testing Them
