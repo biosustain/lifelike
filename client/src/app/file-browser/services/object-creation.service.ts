@@ -55,6 +55,7 @@ import {
   InformationResponse,
   ResultMapping,
   SingleResult,
+  StatusSchema,
   WarningResponse,
 } from 'app/shared/schemas/common';
 import {
@@ -80,11 +81,8 @@ import { ObjectReannotateResultsDialogComponent } from '../components/dialog/obj
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
 import File = GraphNS.File;
 
-interface CreationResult {
+interface CreationResult extends StatusSchema {
   result?: FilesystemObject;
-  info?: InformationResponse[];
-  warnings?: WarningResponse[];
-  errors?: ErrorResponse[];
 }
 
 type AnnotationResult = AnnotationGenerationResultData & {

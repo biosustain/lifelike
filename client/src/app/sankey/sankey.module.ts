@@ -37,6 +37,7 @@ import {
   NetworktraceViewDropdownContentComponent
 } from './components/networktrace-view-dropdown-content/networktrace-view-dropdown-content.component';
 import { SankeyAbstractComponent } from './abstract/sankey.component';
+import { ValidationReportComponent } from './components/validation-report/validation-report.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { SankeyAbstractComponent } from './abstract/sankey.component';
     SankeyDetailsPanelDirective,
     SankeyAdvancedPanelDirective,
     PathReportComponent,
+    ValidationReportComponent,
     SankeyConfirmComponent,
     SankeyViewCreateComponent,
     SankeyAdvancedPanelComponent,
