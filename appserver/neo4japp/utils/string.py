@@ -4,6 +4,10 @@ import sys
 import unicodedata
 
 
+def sub_non_space_whitespace(text: str, sub="") -> str:
+    return re.sub(r"[^\S ]+", sub, text)
+
+
 def is_nice_word_boundary_char(ch):
     return not unicodedata.category(ch)[0] in ('C', 'Z')
 
