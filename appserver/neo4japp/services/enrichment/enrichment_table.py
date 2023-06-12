@@ -12,7 +12,9 @@ from neo4japp.models import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarning
 
 
 class EnrichmentTableService(KgService):
@@ -97,11 +99,12 @@ class EnrichmentTableService(KgService):
                                 'label': 'Function'
                             })
             except KeyError as e:
+                message = f'Missing key when creating enrichment table text row/column mapping.'
                 current_app.logger.error(
-                    f'Missing key when creating enrichment table text row/column mapping.',
+                    message,
                     extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
                 continue
 
         for text in cell_texts:

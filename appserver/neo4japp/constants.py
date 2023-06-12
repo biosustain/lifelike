@@ -7,7 +7,16 @@ from datetime import timezone
 from enum import Enum
 from sendgrid import SendGridAPIClient
 
-from neo4japp.util import Enumd
+
+class Enumd(Enum):
+    @classmethod
+    def get(cls, key, default=None):
+        # Non-throwing value accessor modeled to behave like dict.get()
+        try:
+            return cls(key)
+        except ValueError:
+            return default
+
 
 TIMEZONE = timezone.utc
 

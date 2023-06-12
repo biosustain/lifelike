@@ -4,7 +4,12 @@ from neo4japp.info import ServerInfo
 from neo4japp.warnings import ServerWarning
 
 
-def warn(w: ServerWarning):
+def warn(w: ServerWarning, *, cause: Exception = None):
+    if cause:
+        try:
+            raise w from cause
+        except ServerWarning as wwc:
+            w = wwc
     if hasattr(g, 'warnings'):
         g.warnings.append(w)
     else:

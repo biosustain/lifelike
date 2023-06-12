@@ -2,7 +2,8 @@ from flask import Blueprint, current_app
 
 from neo4japp.blueprints.auth import login_exempt
 from neo4japp.data_transfer_objects import BuildInformation
-from neo4japp.util import SuccessResponse, jsonify_with_class
+from neo4japp.utils.jsonify import jsonify_with_class
+from neo4japp.schemas.common import SuccessResponse
 
 bp = Blueprint('meta', __name__, url_prefix='/meta')
 
