@@ -19,14 +19,14 @@ First, remove the existing graph database. The pytests expect a clean graph, oth
 rm -rf ./db/data/databases/graph.db
 ```
 
-Then, build the app with docker-compose:
+Then, build the app with docker compose:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 To run `pytest` inside the appserver Docker container, run this command:
 
 ```bash
-docker-compose exec appserver pytest tests
+docker compose exec appserver pytest tests
 ```

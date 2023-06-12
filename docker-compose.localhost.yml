@@ -4,7 +4,7 @@
 # Nginx and accessible via localhost
 #
 # Run:
-#   docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.localhost.yml
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.localhost.yml
 
 version: "3.8"
 

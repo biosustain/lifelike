@@ -31,7 +31,7 @@ environmentInfo () {
   echo "OS:"
   cat /etc/os-release  2> /dev/null || systeminfo  2> /dev/null || sw_vers 2> /dev/null
   echo "Docker: $(docker --version)"
-  echo "Docker compose: $(docker-compose --version)"
+  echo "Docker compose: $(docker compose --version)"
 }
 
 # Provide debugging insight
