@@ -27,6 +27,9 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
 import { TrackingService } from 'app/shared/services/tracking.service';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { rankedItemLoadingMock } from 'app/shared/mocks/loading/common';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -56,7 +59,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   private readonly DEFAULT_LIMIT = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
 
-  results = new CollectionModel<RankedItem<FilesystemObject>>([], { multipleSelection: false });
+  results = new CollectionModel<RankedItem<FilesystemObject>>(
+    mockArrayOf(() => rankedItemLoadingMock(filesystemObjectLoadingMock())),
+    { multipleSelection: false }
+  );
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightTerms: string[] = [];
   highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};

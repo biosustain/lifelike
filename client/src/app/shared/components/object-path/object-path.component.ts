@@ -21,7 +21,7 @@ export class ObjectPathComponent implements OnChanges {
   }
 
   ngOnChanges({object}: SimpleChanges) {
-    if (object?.currentValue) {
+    if (object) {
       this.path = getPath(object.currentValue);
     }
   }

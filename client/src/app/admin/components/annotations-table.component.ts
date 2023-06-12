@@ -24,6 +24,8 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
 import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
+import { globalAnnotationListItemLoadingMock } from 'app/shared/mocks/loading/annotation';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 @Component({
     selector: 'app-annotations-table',
@@ -58,9 +60,10 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModel<GlobalAnnotationListItem>([], {
-        multipleSelection: true,
-    });
+    readonly results = new CollectionModel<GlobalAnnotationListItem>(
+      mockArrayOf(globalAnnotationListItemLoadingMock),
+      { multipleSelection: true }
+    );
 
     protected subscriptions = new Subscription();
 
