@@ -1,5 +1,4 @@
 import jwt
-import sentry_sdk
 
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, current_app, g, jsonify, request
@@ -188,8 +187,6 @@ def verify_token(token):
                 ) from e
 
     g.current_user = user
-    with sentry_sdk.configure_scope() as scope:
-        scope.set_tag('user_email', user.email)
     return True
 
 

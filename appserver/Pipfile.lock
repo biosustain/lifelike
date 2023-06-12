@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "25b86de0f7f5f059ac56dbdef561af9627c43b9904c6b5a79a7b10b1fada2ff6"
+            "sha256": "a28b855b09b10dd11435a71fe5ab4794e58955fb48ac52e8622c7c37d251a7ec"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1488,17 +1488,6 @@
             ],
             "index": "pypi",
             "version": "==6.7.0"
-        },
-        "sentry-sdk": {
-            "extras": [
-                "flask"
-            ],
-            "hashes": [
-                "sha256:23808d571d2461a4ce3784ec12bbee5bdb8c026c143fe79d36cef8a6d653e71f",
-                "sha256:bb90a4e19c7233a580715fc986cc44be2c48fc10b31e71580a2037e1c94b6950"
-            ],
-            "index": "pypi",
-            "version": "==0.14.3"
         },
         "setuptools": {
             "hashes": [

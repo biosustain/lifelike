@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import sentry_sdk
 import traceback
 
 from elasticapm.contrib.flask import ElasticAPM
@@ -20,10 +19,6 @@ from flask_caching import Cache
 from flask_cors import CORS
 from marshmallow import ValidationError, missing
 from pythonjsonlogger import jsonlogger
-from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.logging import ignore_logger
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
@@ -109,27 +104,6 @@ def load_mixed_form_json(request, name, field):
         return missing
 
 
-def filter_to_sentry(event, hint):
-    """ filter_to_sentry is used for filtering what
-    to return or manipulating the exception before sending
-    it off to Sentry (sentry.io)
-
-    The 'extra' keyword is part of the LogRecord
-    object's dictionary and is where the flag
-    for sending to Sentry is set.
-
-    Example use case:
-
-    current_app.logger.error(
-        err_formatted, exc_info=ex, extra={'to_sentry': True})
-    """
-    # By default, we send to sentry
-    to_sentry = event['extra'].get('to_sentry', True)
-    if to_sentry:
-        return event
-    return None
-
-
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     """ Adds meta data about the request when available """
 
@@ -149,21 +123,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app_logger.addHandler(log_handler)
 
     if config in ['config.Staging', 'config.Production']:
-        sentry_logging = LoggingIntegration(
-            level=logging.ERROR,
-            event_level=logging.ERROR,
-        )
-        sentry_sdk.init(
-            before_send=filter_to_sentry,
-            dsn=os.environ.get('SENTRY_KEY'),
-            integrations=[
-                sentry_logging,
-                FlaskIntegration(),
-                SqlalchemyIntegration(),
-            ],
-            send_default_pii=True,
-        )
-        ignore_logger('werkzeug')
         app_logger.setLevel(logging.INFO)
     else:
         # Set to 'true' for dev mode to have
@@ -236,16 +195,13 @@ def handle_error(ex):
     current_app.logger.error(
         f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
-        extra={
-            **{'to_sentry': False},
-            **ErrorLog(
-                error_name=f'{type(ex)}',
-                expected=True,
-                event_type=LogEventType.SENTRY_HANDLED.value,
-                transaction_id=ex.transaction_id,
-                username=current_user,
-            ).to_dict()
-        }
+        extra=ErrorLog(
+            error_name=f'{type(ex)}',
+            expected=True,
+            event_type=LogEventType.HANDLED.value,
+            transaction_id=ex.transaction_id,
+            username=current_user,
+        ).to_dict()
     )
 
     ex.version = GITHUB_HASH
@@ -264,14 +220,11 @@ def handle_warning(warn):
     current_app.logger.warning(
         f'Request returned a handled warning <{type(warn)}>',
         exc_info=warn,
-        extra={
-            **{'to_sentry': False},
-            **WarningLog(
-                warning_name=f'{type(warn)}',
-                event_type=LogEventType.SENTRY_WARNINIG.value,
-                username=current_user,
-            ).to_dict()
-        }
+        extra=WarningLog(
+            warning_name=f'{type(warn)}',
+            event_type=LogEventType.WARNINIG.value,
+            username=current_user,
+        ).to_dict()
     )
 
     warn.version = GITHUB_HASH
@@ -291,16 +244,13 @@ def handle_generic_error(code: int, ex: Exception):
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
-        extra={
-            **{'to_sentry': False},
-            **ErrorLog(
-                error_name=f'{type(ex)}',
-                expected=True,
-                event_type=LogEventType.SENTRY_UNHANDLED.value,
-                transaction_id=get_transaction_id(),
-                username=current_user,
-            ).to_dict()
-        }
+        extra=ErrorLog(
+            error_name=f'{type(ex)}',
+            expected=True,
+            event_type=LogEventType.UNHANDLED.value,
+            transaction_id=get_transaction_id(),
+            username=current_user,
+        ).to_dict()
     )
 
     newex.version = GITHUB_HASH
@@ -320,14 +270,11 @@ def handle_generic_warning(code: int, ex: Warning):
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
-        extra={
-            **{'to_sentry': False},
-            **WarningLog(
-                warning_name=f'{type(ex)}',
-                event_type=LogEventType.SENTRY_WARNINIG.value,
-                username=current_user,
-            ).to_dict()
-        }
+        extra=WarningLog(
+            warning_name=f'{type(ex)}',
+            event_type=LogEventType.WARNINIG.value,
+            username=current_user,
+        ).to_dict()
     )
 
     newex.version = GITHUB_HASH
