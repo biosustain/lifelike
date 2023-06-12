@@ -40,6 +40,14 @@ debug () {
   set -xv && echo $-
 }
 
+checkExitCode () {
+  exit_code=$1
+  if [ $exit_code != 0 ]; then
+    echo "❌ Linting check has failed. You may use git commit --no-verify to skip."
+    exit $exit_code
+  fi
+}
+
 # Recurse hooks
 #
 # How it works
@@ -68,12 +76,7 @@ recurseHook () {
       HEADER "🤖  Running hook ($hook_name) checks for $code_path"
       # Execute hook
       "$code_path/$hook_name"
-      exit_code=$?
-
-      if [ $exit_code != 0 ]; then
-        echo "❌ Linting check has failed. You may use git commit --no-verify to skip."
-        exit $exit_code
-      fi
+      checkExitCode $?
     fi
   done
 }
