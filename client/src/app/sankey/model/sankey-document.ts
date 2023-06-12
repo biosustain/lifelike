@@ -215,7 +215,8 @@ class SankeyGraph implements SankeyDocumentPartMixin<Graph.Graph> {
   sizing?: Graph.PredefinedSizing;
   log?: string | Array<string>;
 
-  constructor({trace_networks, sizing = {}, node_sets}, sankeyDocument) {
+  constructor({trace_networks, sizing = {}, node_sets, ...rest}, sankeyDocument) {
+    assign(this, rest);
     this.sankeyDocument = sankeyDocument;
     this.sizing = sizing;
     this.nodeSets = new NodeSets(node_sets, sankeyDocument);
