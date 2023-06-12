@@ -29,8 +29,10 @@ from neo4japp.models import GraphNode
 from neo4japp.models.entity_resources import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.util import snake_to_camel_dict
+from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
+from neo4japp.warnings import ServerWarning
 
 
 class VisualizerService(KgService):
@@ -88,15 +90,18 @@ class VisualizerService(KgService):
             elif label == TYPE_LITERATURE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError as e:
-            current_app.logger.warning(
-                f'url_map did not contain the expected key value for node with:\n' +
+            message = (
+                f'url_map did not contain the expected key value for node with:\n'
                 f'\tID: {id}\n'
-                f'\tLabel: {label}\n' +
+                f'\tLabel: {label}\n'
                 f'\tURI: {entity_id}\n'
-                'There may be something wrong in the database.',
+                'There may be something wrong in the database.'
+            )
+            current_app.logger.warning(
+                message,
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
-            # TODO warning
+            warn(ServerWarning(message=message), cause=e)
         finally:
             return url
 

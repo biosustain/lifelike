@@ -22,7 +22,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union, cast
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
 from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
@@ -99,6 +99,7 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
+from neo4japp.warnings import ServerWarning
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -1384,6 +1385,7 @@ class FileExportView(FilesystemBaseView):
 
         export_content = export.content.getvalue()
         checksum_sha256 = hashlib.sha256(export_content).digest()
+        # todo: this should support returning operation result status (not only file content)
         return make_cacheable_file_response(
             request,
             export_content,
@@ -1440,14 +1442,21 @@ class FileExportView(FilesystemBaseView):
                                 )
 
                             except RecordNotFound as e:
-                                current_app.logger.info(
+                                message = (
                                     f'Map file: {map_hash} requested for linked '
-                                    f'export does not exist.',
+                                    f'export does not exist.'
+                                )
+                                current_app.logger.info(
+                                    message,
                                     extra=UserEventLog(
                                         username=current_user.username,
-                                        event_type=LogEventType.FILESYSTEM.value).to_dict()
+                                        event_type=LogEventType.FILESYSTEM.value
+                                    ).to_dict()
                                 )
-                                # TODO: warning
+                                warn(
+                                    ServerWarning(message=message),
+                                    cause=e
+                                )
                         destination_page = find_index(
                             lambda f: f.hash_id == map_hash,
                             files

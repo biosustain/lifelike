@@ -14,7 +14,8 @@ from neo4japp.request_schemas.visualizer import (
     GetSnippetsForNodePairRequest,
     AssociatedTypeSnippetCountRequest,
 )
-from neo4japp.util import SuccessResponse, jsonify_with_class
+from neo4japp.utils.jsonify import jsonify_with_class
+from neo4japp.schemas.common import SuccessResponse
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
@@ -34,6 +35,7 @@ def get_batch():
     except ValueError:
         return SuccessResponse(result='No results found', status_code=200)
     result = visualizer_service.query_batch(decoded_query)
+    # This response might contain warnings to avoid breaking changes the status code remains 200
     return SuccessResponse(result=result, status_code=200)
 
 

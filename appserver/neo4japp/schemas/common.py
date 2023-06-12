@@ -1,8 +1,12 @@
+from typing import Any
+
+import attr
 import marshmallow.validate
 from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
+from neo4japp.util import CamelDictMixin
 from neo4japp.utils.globals import get_warnings, get_info
 from neo4japp.utils.request import Pagination
 
@@ -102,3 +106,10 @@ class InformationSchema(CamelCaseSchema):
 
     def get_info(self, obj):
         return [InformationResponseSchema().dump(i) for i in get_info()]
+
+
+@attr.s(frozen=True)
+class SuccessResponse(CamelDictMixin, WarningSchema):
+    # result: Union[ReconBase, CamelDictMixin, List[Union[ReconBase, CamelDictMixin]], str, bool]
+    result: Any = attr.ib()
+    status_code: int = attr.ib(validator=attr.validators.instance_of(int))

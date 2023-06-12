@@ -38,6 +38,8 @@ from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 from neo4japp.services.arangodb import execute_arango_query, get_db
+from ...utils.globals import warn
+from ...warnings import ServerWarning
 
 
 class AnnotationGraphService(GraphConnection):
@@ -150,12 +152,16 @@ class AnnotationGraphService(GraphConnection):
                 entity_id_type = local_inclusion['meta']['idType']
                 entity_id_hyperlinks = local_inclusion['meta']['idHyperlinks']
                 synonym = local_inclusion['meta']['allText']
-            except KeyError:
+            except KeyError as e:
+                message = f'Error creating local inclusion {local_inclusion} for {entity_type}'
                 current_app.logger.error(
-                    f'Error creating local inclusion {local_inclusion} for {entity_type}',
+                    message,
                     extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
-                # TODO Warning
+                warn(
+                    ServerWarning(message=message),
+                    cause=e
+                )
             else:
                 # entity_name could be empty strings
                 # probably a result of testing
