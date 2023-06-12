@@ -30,6 +30,7 @@ import { TrackingService } from 'app/shared/services/tracking.service';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { rankedItemLoadingMock } from 'app/shared/mocks/loading/common';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { getURLFromSnapshot } from 'app/shared/utils/router';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -134,7 +135,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       category: TRACKING_CATEGORIES.search,
       action: TRACKING_ACTIONS.search,
       label: JSON.stringify(serialisedParams),
-      url: this.route.toString()
+      url: getURLFromSnapshot(this.route.snapshot).toString()
     });
     return this.contentSearchService.search(serialisedParams).pipe(
       this.errorHandler.create({label: 'Content search'}),
