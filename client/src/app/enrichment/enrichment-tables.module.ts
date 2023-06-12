@@ -8,6 +8,7 @@ import { EnrichmentTableOrderDialogComponent } from './components/table/dialog/e
 import { EnrichmentTableViewerComponent } from './components/table/enrichment-table-viewer.component';
 import { EnrichmentTableService } from './services/enrichment-table.service';
 import { EnrichmentTablePreviewComponent } from './components/table/enrichment-table-preview.component';
+import { EnrichmentTableComponent } from './components/table/enrichment-table.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { EnrichmentTablePreviewComponent } from './components/table/enrichment-t
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
     EnrichmentTablePreviewComponent,
+    EnrichmentTableComponent
   ],
   imports: [
     SharedModule,
