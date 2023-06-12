@@ -68,7 +68,7 @@ from neo4japp.models.files_queries import (
 )
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
-from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.common import PaginatedRequestSchema, WarningSchema
 from neo4japp.schemas.filesystem import (
     BulkFileRequestSchema,
     BulkFileUpdateRequestSchema,
@@ -89,6 +89,8 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema
 )
 from neo4japp.services.file_types.exports import ExportFormatError
+from neo4japp.services.file_types.service import FileTypeService
+
 from neo4japp.utils import FileContentBuffer
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.globals import warn
@@ -1455,6 +1457,22 @@ class FileExportView(FilesystemBaseView):
             return files
 
 
+class FileValidateView(FilesystemBaseView):
+    def get(self, hash_id: str):
+        """Validate a file."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        file_type_service: FileTypeService = get_file_type_service()
+        file_type = file_type_service.get(file)
+
+        file_type.validate_content(FileContentBuffer(file.content.raw_file))
+
+        return WarningSchema().dump({})
+
+
 class FileBackupView(FilesystemBaseView):
     """Endpoint to manage 'backups' that are recorded for the user when they are editing a file
     so that they don't lose their work."""
@@ -1872,16 +1890,24 @@ class FileStarUpdateView(FilesystemBaseView):
 
 
 # Use /content for endpoints that return binary data
-bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
-bp.add_url_rule('objects/hierarchy', view_func=FileHierarchyView.as_view('file_hierarchy'))
-bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
-bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
+bp.add_url_rule('objects',
+                view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('objects/hierarchy',
+                view_func=FileHierarchyView.as_view('file_hierarchy'))
+bp.add_url_rule('search',
+                view_func=FileSearchView.as_view('file_search'))
+bp.add_url_rule('objects/<string:hash_id>',
+                view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content',
                 view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule('objects/<string:hash_id>/map-content',
                 view_func=MapContentView.as_view('map_content'))
-bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))
-bp.add_url_rule('objects/<string:hash_id>/backup', view_func=FileBackupView.as_view('file_backup'))
+bp.add_url_rule('objects/<string:hash_id>/export',
+                view_func=FileExportView.as_view('file_export'))
+bp.add_url_rule('objects/<string:hash_id>/validate',
+                view_func=FileValidateView.as_view('file_validate'))
+bp.add_url_rule('objects/<string:hash_id>/backup',
+                view_func=FileBackupView.as_view('file_backup'))
 bp.add_url_rule('objects/<string:hash_id>/backup/content',
                 view_func=FileBackupContentView.as_view('file_backup_content'))
 bp.add_url_rule('objects/<string:hash_id>/versions',

@@ -20,7 +20,7 @@ import {
   PaginatedRequestOptions,
   ResultList,
   ResultMapping,
-  SingleResult,
+  SingleResult, StatusSchema, WarningResponse,
 } from 'app/shared/schemas/common';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
@@ -157,6 +157,10 @@ export class FilesystemService {
         responseType: 'blob',
       },
     );
+  }
+
+  validate(hashId: string): Observable<StatusSchema> {
+    return this.http.get<StatusSchema>(`/api/filesystem/objects/${encodeURIComponent(hashId)}/validate`);
   }
 
   /**

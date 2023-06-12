@@ -86,6 +86,7 @@ import { SankeyViewCreateComponent } from './view/create/view-create.component';
 import { SankeyConfirmComponent } from './confirm.component';
 import { viewBaseToNameMapping } from '../constants/view-base';
 import { SankeyDocument } from '../model/sankey-document';
+import { ValidationReportComponent } from './validation-report/validation-report.component';
 
 interface BaseViewContext {
   moduleRef: NgModuleRef<any>;
@@ -697,6 +698,11 @@ export class SankeyViewComponent implements OnInit, ModuleAwareComponent, AfterV
     this.sankeyController.pathReports$.subscribe(pathReports => {
       modalRef.componentInstance.pathReport = pathReports;
     });
+  }
+
+  validationResults() {
+    const modalRef = this.open(ValidationReportComponent);
+    modalRef.componentInstance.hashId = this.currentFileId;
   }
 
   resetView() {
