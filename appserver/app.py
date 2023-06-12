@@ -3,14 +3,12 @@ import click
 import copy
 import hashlib
 import importlib
-import io
 import json
 import logging
 import math
 import os
 import re
 import requests
-import sentry_sdk
 import sys
 import timeflake
 import uuid
@@ -85,10 +83,7 @@ def check_version_header():
 
 @app.before_request
 def request_navigator_log():
-    with sentry_sdk.configure_scope() as scope:
-        scope.set_tag('transaction_id', request.headers.get('X-Transaction-Id'))
-    app.logger.info(
-        EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
+    app.logger.info(EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
 
 # `default_login_required` enforces login on all endpoints by default.

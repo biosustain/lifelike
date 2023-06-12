@@ -57,7 +57,6 @@ export class ErrorHandler {
       message: 'Looks like something went wrong on our end! Please try again in a moment.',
       additionalMsgs: [],
       stacktrace: null,
-      // A transaction id for log audits with Sentry (Sentry.io)
       transactionId: options.transactionId != null ? options.transactionId : 'L-' + this.createTransactionId(),
     };
     if (error instanceof HttpErrorResponse) {

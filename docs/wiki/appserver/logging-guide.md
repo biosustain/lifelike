@@ -13,7 +13,7 @@ docker logs -f appserver
 
 In staging and production, these logs are captured by Filebeat which sends the Docker logs to Logstash for processing. The ELK stack can currently be found at https://elk.prod.***ARANGO_DB_NAME***.bio.
 
-We're currently using ELK mainly for INFO logs (although its catching all types of levels) at the moment, and Sentry (sentry.io) for Flask logs for levels ERROR and above.
+We're currently using ELK mainly for logs at the moment.
 
 ## How do I add logging to my features?
 All logs of level `INFO` and higher will be sent to Logstash. To help Logstash parse the logs, we add a few convenience classes and functions to convert the log messages into a compatible format.
