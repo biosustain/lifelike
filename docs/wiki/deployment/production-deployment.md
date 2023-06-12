@@ -406,7 +406,7 @@ In short, GitHub actions helps ties our new code changes and the deploy process 
     1. installs Docker onto the virtual machine
     2. authorizes the virtual machine to pull from the Google Container registry
     3. pulls down the docker images that were built in **Step 4**
-    4. copies the docker-compose files to the server
+    4. copies the docker compose files to the server
     5. creates an environmental file needed to run the application
     6. stops any previous running docker containers
     7. starts the new docker containers

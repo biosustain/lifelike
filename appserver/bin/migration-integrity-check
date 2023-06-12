@@ -23,9 +23,9 @@ then
     echo "(or more) migration heads creating a 'merge migration.'"
     echo ""
     echo "To create a merge migration automatically:"
-    echo "$ docker-compose exec appserver flask db merge heads"
+    echo "$ docker compose exec appserver flask db merge heads"
     echo ""
     echo "To see a list of heads (there should be only one):"
-    echo "$ docker-compose exec appserver flask db heads"
+    echo "$ docker compose exec appserver flask db heads"
     exit 1
 fi
