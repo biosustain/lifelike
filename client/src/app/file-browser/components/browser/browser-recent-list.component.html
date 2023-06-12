@@ -13,18 +13,10 @@
       </ng-container>
 
       <ng-template #noError>
-        <!-- Placeholders -->
-        <ng-container *ngIf="status.placeholdersShown">
-          <div  *ngFor="let p of [0, 1]" class="mb-3">
-            <span class="placeholder-box">Loading loading loading loading</span>
-          </div>
-        </ng-container>
-
-        <!-- Content -->
-        <ng-container *ngIf="status.resultsShown">
+        <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
             <ng-container *ngIf="(list.results.view$ | async).length; else noResults">
-              <div class="flex-fill overflow-auto">
-                <app-object-list [objects]="status.placeholdersShown ? null : list.results"
+              <div class="flex-fill overflow-auto" [appShowPlaceholders]="status.placeholdersShown">
+                <app-object-list [objects]="list.results"
                                  [appLinks]="true"
                                  [forEditing]="false"
                                  [showStars]="false"

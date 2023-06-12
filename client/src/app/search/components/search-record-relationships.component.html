@@ -5,15 +5,16 @@
         href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
         [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
+        appHasPlaceholder
       >Snippet: {{ node.node.displayName }}</a>
     </h5>
 
-    <h6 class="mt-1 text-muted">ID: {{ node.node.data.eid }}</h6>
+    <h6 class="mt-1 text-muted">ID: <span appHasPlaceholder>{{ node.node.data.eid }}</span></h6>
   </div>
 
   <div class="search-results-item-body">
-    <div class="pub-snippet-title">{{ node.node.displayName }}</div>
-    <i *ngIf="node.chemical || node.disease">This snippet generated the following relationship</i>
+    <div class="pub-snippet-title" appHasPlaceholder>{{ node.node.displayName }}</div>
+    <i *ngIf="node.chemical || node.disease" appHasPlaceholder>This snippet generated the following relationship</i>
     <app-node-relationship
       [leftNodeName]="chemicalDisplayName"
       [leftNodeLabel]="chemicalLabel"

@@ -15,6 +15,8 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { AuthActions, AuthSelectors } from 'app/auth/store';
 import { State } from 'app/root-store';
+import { appUserLoadingMock } from 'app/shared/mocks/loading/user';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
@@ -28,7 +30,7 @@ import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 export class UserBrowserComponent implements OnInit, OnDestroy {
   currentUser: AppUser;
   users: AppUser[];
-  shownUsers: AppUser[] = [];
+  shownUsers: AppUser[] = mockArrayOf(appUserLoadingMock);
   filterQuery = '';
   loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(
     () => this.accountService.getUsers()
@@ -36,12 +38,14 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<AppUser>(true, []);
 
-  constructor(private readonly accountService: AccountService,
-              private readonly modalService: NgbModal,
-              private readonly progressDialog: ProgressDialog,
-              private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler,
-              private store: Store<State> ) {
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly modalService: NgbModal,
+    private readonly progressDialog: ProgressDialog,
+    private readonly snackBar: MatSnackBar,
+    private readonly errorHandler: ErrorHandler,
+    private store: Store<State>
+  ) {
   }
 
   ngOnInit() {
@@ -206,5 +210,4 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       }
     });
   }
-
 }

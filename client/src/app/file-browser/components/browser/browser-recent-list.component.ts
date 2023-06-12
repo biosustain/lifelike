@@ -5,6 +5,8 @@ import { map } from 'rxjs/operators';
 
 import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-list';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { RecentFilesService } from '../../services/recent-files.service';
 
@@ -24,7 +26,7 @@ export class BrowserRecentListComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   constructor(protected readonly recentFilesService: RecentFilesService) {}
 

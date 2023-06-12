@@ -3,6 +3,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
 import { FilesystemService } from '../../services/filesystem.service';
@@ -21,7 +23,7 @@ export class BrowserCommunityListComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   constructor(protected readonly filesystemService: FilesystemService) {
   }

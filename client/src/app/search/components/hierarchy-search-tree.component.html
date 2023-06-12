@@ -4,8 +4,12 @@
     <div class="custom-control custom-checkbox">
       <input type="checkbox" class="custom-control-input" #projectCheckbox="uid" appUid
              [checked]="checklistSelection.isSelected(node)"
-             (change)="itemSelectionToggle(node)">
-      <label class="custom-control-label" [for]="projectCheckbox.uid">
+             (change)="itemSelectionToggle(node)"
+             appHasPlaceholder
+      >
+      <label class="custom-control-label" [for]="projectCheckbox.uid"
+             appHasPlaceholder
+      >
         <!-- For top-level nodes, show a project icon instead of a folder icon -->
         {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + (node.level === 0 ? 'fas fa-layer-group' : node.data.fontAwesomeIcon)"></i>
       </label>
@@ -13,16 +17,23 @@
   </mat-tree-node>
 
   <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-    <button type="button" class="btn rounded-circle row-spacer" matTreeNodeToggle
-            [attr.aria-label]="'Toggle ' + node.data.trueFilename">
+    <button type="button"
+            class="btn rounded-circle row-spacer"
+            matTreeNodeToggle
+            [attr.aria-label]="'Toggle ' + node.data.trueFilename"
+    >
       <i [class]="'fas fa-' + (treeControl.isExpanded(node) ? 'chevron-down' : 'chevron-right')"></i>
     </button>
 
     <div class="custom-control custom-checkbox">
       <input type="checkbox" class="custom-control-input" #folderCheckbox="uid" appUid
              [checked]="checklistSelection.isSelected(node)"
-             (change)="itemSelectionToggle(node)">
-      <label class="custom-control-label" [for]="folderCheckbox.uid">
+             (change)="itemSelectionToggle(node)"
+             appHasPlaceholder
+      >
+      <label class="custom-control-label" [for]="folderCheckbox.uid"
+             appHasPlaceholder
+      >
         {{node.data.trueFilename}}<i [class]="'ml-1 tree-icon ' + (node.level === 0 ? 'fas fa-layer-group' : node.data.fontAwesomeIcon)"></i>
       </label>
     </div>

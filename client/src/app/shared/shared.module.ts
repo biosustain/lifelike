@@ -90,8 +90,10 @@ import { XMLHighlightComponent } from './providers/highlight-text/xml-highlight.
 import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotation/xml-annotation.component';
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
+import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
 
 const components = [
+  WithPlaceholderComponent,
   ResponseAlertComponent,
   VisJsNetworkComponent,
   SearchableDropdownMenuComponent,
