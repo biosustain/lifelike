@@ -4,7 +4,7 @@ import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import {
   Source,
-  UniversalGraphNode,
+  UniversalGraphNode, UniversalGraphNodeTemplate,
   UniversalGraphRelationship,
 } from 'app/drawing-tool/services/interfaces';
 import { AssociationSnippet } from 'app/interfaces';
@@ -48,12 +48,13 @@ export class NodeRelationshipComponent {
           hyperlinks: [
             {
               domain: parseURLToDomainName(databaseUrl),
-          url: databaseUrl,
-        }],
-        references: [{
-              type: 'DATABASE',
-              id: databaseUrl,
-            },
+              url: databaseUrl,
+            }],
+          references: [{
+            type: 'DATABASE',
+            id: databaseUrl,
+          }]
+        },
     } as Partial<UniversalGraphNodeTemplate>));
 
     // Prevents the edge dragStart event from overriding the node dragStart
