@@ -15,6 +15,7 @@ from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
+from neo4japp.utils.globals import config
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -85,8 +86,8 @@ class BaseCloudStorageProvider:
 class AzureStorageProvider(BaseCloudStorageProvider):
 
     def __init__(self):
-        account_name = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
-        account_key = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
+        account_name = config.get('AZURE_ACCOUNT_STORAGE_NAME')
+        account_key = config.get('AZURE_ACCOUNT_STORAGE_KEY')
         self.client = FileService(account_name=account_name, account_key=account_key)
         super().__init__()
 
@@ -221,11 +222,11 @@ class LMDBManager:
                 self.lmdb_versions = config_fi
 
     def init_db_connection(self):
-        POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-        POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-        POSTGRES_USER = os.environ.get('POSTGRES_USER')
-        POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-        POSTGRES_DB = os.environ.get('POSTGRES_DB')
+        POSTGRES_HOST = config.get('POSTGRES_HOST')
+        POSTGRES_PORT = config.get('POSTGRES_PORT')
+        POSTGRES_USER = config.get('POSTGRES_USER')
+        POSTGRES_PASSWORD = config.get('POSTGRES_PASSWORD')
+        POSTGRES_DB = config.get('POSTGRES_DB')
         engine = sqlalchemy.create_engine(
             sqlalchemy.engine.url.URL(
                         drivername='postgres+psycopg2',

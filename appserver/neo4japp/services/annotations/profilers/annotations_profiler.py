@@ -56,7 +56,7 @@ def cprofiled():
 
 
 def main():
-    app = create_app('Functional Test Flask App', config='config.Testing')
+    app = create_app('Functional Test Flask App', config_package='config.Testing')
     with app.app_context():
         req = requests.post(
             'http://localhost:5000/auth/login',

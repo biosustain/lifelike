@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from http import HTTPStatus
 
 from elasticapm.contrib.flask import ElasticAPM
@@ -53,9 +52,6 @@ module_logs = [
 
 for mod in module_logs:
     logging.getLogger(mod).setLevel(logging.WARNING)
-
-# Commit Hash (Version) of Application
-GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -113,7 +109,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             log_record['request_ip_addr'] = request.remote_addr
 
 
-def create_app(name='neo4japp', config='config.Development'):
+def create_app(name='neo4japp', config_package='config.Development'):
     app_logger = logging.getLogger(name)
     log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
     format_str = '%(message)%(levelname)%(asctime)%(module)'
@@ -121,22 +117,17 @@ def create_app(name='neo4japp', config='config.Development'):
     log_handler.setFormatter(formatter)
     app_logger.addHandler(log_handler)
 
-    if config in ['config.Staging', 'config.Production']:
-        app_logger.setLevel(logging.INFO)
-    else:
-        # Set to 'true' for dev mode to have
-        # the same format as staging.
-        if os.environ.get('FORMAT_AS_JSON', 'false') == 'false':
-            app_logger.removeHandler(log_handler)
-        app_logger.setLevel(logging.DEBUG)
-
     app = Flask(name)
-    app.config.from_object(config)
+    app.config.from_object(config_package)
     app.teardown_appcontext_funcs = [
         close_neo4j_db,
         close_redis_conn,
         close_arango_client
     ]
+
+    if not app.config.get('FORMAT_AS_JSON'):
+        app_logger.removeHandler(log_handler)
+    app_logger.setLevel(app.config.get('LOGGING_LEVEL', logging.INFO))
 
     cors.init_app(app)
     db.init_app(app)
@@ -174,11 +165,12 @@ def create_app(name='neo4japp', config='config.Development'):
 
     # NOTE: Disabling this since we don't seem to be actively using it anymore.
     # Initialize Elastic APM if configured
-    # if os.getenv('ELASTIC_APM_SERVER_URL'):
+    # if app.config.get('ELASTIC_APM_SERVER_URL'):
     #     apm.init_app(
     #         app,
     #         service_name='lifelike-appserver',
-    #         environment=os.getenv('FLASK_APP_CONFIG'))
+    #         environment=app.config.get('FLASK_APP_CONFIG')
+    #     )
 
     return app
 

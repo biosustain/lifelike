@@ -7,7 +7,7 @@ from typing import List, Optional
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.projects import ProjectBaseView
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
+from neo4japp.constants import FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
@@ -27,6 +27,7 @@ from neo4japp.schemas.search import (
     VizSearchSchema,
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.utils.globals import config
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
 from neo4japp.utils.jsonify import jsonify_with_class
@@ -238,7 +239,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
 
         elastic_service = get_elastic_service()
         elastic_result, search_phrases = elastic_service.search(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query=user_search_query,
             offset=offset,
             limit=pagination.limit,

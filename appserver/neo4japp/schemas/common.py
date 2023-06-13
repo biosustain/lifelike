@@ -90,7 +90,7 @@ class BaseResponseSchema(CamelCaseSchema):
     cause = fields.Method('get_cause')
 
     def get_cause(self, e):
-        if hasattr(e, '__cause__') and isinstance(e.__cause__, BaseResponseSchema):
+        if isinstance(e.__cause__, BaseResponseSchema):
             return BaseResponseSchema().dump(e.__cause__)
 
 

@@ -12,6 +12,8 @@ warnings = LocalProxy(lambda: tuple(g.warnings) if hasattr(g, 'warnings') else t
 
 info = LocalProxy(lambda: tuple(g.info) if hasattr(g, 'info') else tuple())
 
+config = LocalProxy(lambda: current_app.config)
+
 
 def warn(w: ServerWarning, *, cause: Exception = None):
     if cause:

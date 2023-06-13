@@ -31,13 +31,6 @@ MIN_ENTITY_LENGTH = 2
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
-NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT', 'https://nlp-api.lifelike.bio/v1/predict')
-NLP_SERVICE_SECRET = os.getenv('NLP_SERVICE_SECRET', '')
-REQUEST_TIMEOUT = int(os.getenv('SERVICE_REQUEST_TIMEOUT', '60'))
-PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
-PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
-PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
-
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
     'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',

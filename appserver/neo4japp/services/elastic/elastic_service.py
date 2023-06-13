@@ -24,7 +24,7 @@ from typing import (
     List,
 )
 
-from neo4japp.constants import FILE_INDEX_ID, LogEventType
+from neo4japp.constants import LogEventType
 from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
 from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.models import (
@@ -33,7 +33,6 @@ from neo4japp.models import (
 from neo4japp.models.files_queries import build_file_hierarchy_query
 from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
-    ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
 )
 from neo4japp.services.elastic.query_parser_helpers import (
@@ -45,6 +44,7 @@ from neo4japp.services.elastic.query_parser_helpers import (
 from neo4japp.utils import EventLog
 from app import app
 from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import config
 
 ParserElement.enablePackrat()
 
@@ -128,7 +128,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         for (pipeline_id, pipeline_definition_file) in ELASTIC_PIPELINE_SEED_PAIRS:
             self.update_or_create_pipeline(pipeline_id, pipeline_definition_file)
 
-        for (index_id, index_mapping_file) in ELASTIC_INDEX_SEED_PAIRS:
+        for (index_id, index_mapping_file) in config.get('ELASTIC_INDEX_SEED_PAIRS'):
             self.update_or_create_index(index_id, index_mapping_file)
         return 'done'
 
@@ -140,10 +140,10 @@ class ElasticService(ElasticConnection, GraphConnection):
 
     def delete_files(self, hash_ids: List[str]):
         self._streaming_bulk_documents([
-            self._get_delete_obj(hash_id, FILE_INDEX_ID)
+            self._get_delete_obj(hash_id, config.get('ELASTIC_FILE_INDEX_ID'))
             for hash_id in hash_ids
         ])
-        self.elastic_client.indices.refresh(FILE_INDEX_ID)
+        self.elastic_client.indices.refresh(config.get('ELASTIC_FILE_INDEX_ID'))
 
     def index_files(self, hash_ids: List[str] = None, batch_size: int = 50):
         """
@@ -239,7 +239,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         # with the elasticsearch parallel_bulk
         with app.app_context():
             for file, project in batch:
-                yield self._get_index_obj(file, project, FILE_INDEX_ID)
+                yield self._get_index_obj(file, project, config.get('ELASTIC_FILE_INDEX_ID'))
 
     def _lazy_create_index_docs_for_streaming_bulk(self, batch):
         """
@@ -249,7 +249,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         :return: indexable object in generator form
         """
         for file, project in batch:
-            yield self._get_index_obj(file, project, FILE_INDEX_ID)
+            yield self._get_index_obj(file, project, config.get('ELASTIC_FILE_INDEX_ID'))
 
     def _get_update_action_obj(self, file_hash_id: str, index_id: str, changes: dict = {}) -> dict:
         # 'filename': file.filename,

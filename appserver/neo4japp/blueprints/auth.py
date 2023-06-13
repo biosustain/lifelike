@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import get_projects_service, db, jwt_client
+from neo4japp.database import get_projects_service, db, get_jwt_client
 from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
 from neo4japp.exceptions import (
     AuthenticationError,
@@ -21,7 +21,7 @@ from neo4japp.exceptions import (
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.schemas.auth import LifelikeJWTTokenResponse
 from neo4japp.utils.logger import UserEventLog
-
+from neo4japp.utils.globals import config
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -86,10 +86,10 @@ class TokenService:
         }
 
     def _get_key(self, token: str):
-        if current_app.config['JWKS_URL'] is not None:
-            return jwt_client.get_signing_key_from_jwt(token).key
-        elif current_app.config['JWT_SECRET']:
-            return current_app.config['JWT_SECRET']
+        if config['JWKS_URL'] is not None:
+            return get_jwt_client().get_signing_key_from_jwt(token).key
+        elif config['JWT_SECRET']:
+            return config['JWT_SECRET']
         else:
             raise ValueError("Either JWKS_URL or JWT_SECRET must be set")
 
@@ -146,10 +146,10 @@ class TokenService:
 def verify_token(token):
     """ Verify JTW """
     token_service = TokenService(
-        current_app.config['JWT_SECRET'],
-        current_app.config['JWT_ALGORITHM']
+        config['JWT_SECRET'],
+        config['JWT_ALGORITHM']
     )
-    decoded = token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
+    decoded = token_service.decode_token(token, audience=config['JWT_AUDIENCE'])
 
     with db.session.begin_nested():
         try:
@@ -204,8 +204,8 @@ def refresh():
     data = request.get_json()
     token = data.get('jwt')
     token_service = TokenService(
-        current_app.config['JWT_SECRET'],
-        current_app.config['JWT_ALGORITHM']
+        config['JWT_SECRET'],
+        config['JWT_ALGORITHM']
     )
 
     decoded = token_service.decode_token(token)
@@ -270,8 +270,8 @@ def login():
                         username=user.username,
                         event_type=LogEventType.AUTHENTICATION.value).to_dict())
                 token_service = TokenService(
-                    current_app.config['JWT_SECRET'],
-                    current_app.config['JWT_ALGORITHM']
+                    config['JWT_SECRET'],
+                    config['JWT_ALGORITHM']
                 )
                 access_jwt = token_service.get_access_token(user.email)
                 refresh_jwt = token_service.get_refresh_token(user.email)

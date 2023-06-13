@@ -1,8 +1,9 @@
 import base64
 import pytest
 
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
+from neo4japp.constants import FRAGMENT_SIZE
 from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
+from neo4japp.utils.globals import config
 
 
 @pytest.fixture(scope='function')
@@ -58,7 +59,7 @@ def return_fields():
 @pytest.fixture(scope='function')
 def pdf_document(elastic_service):
     elastic_service.elastic_client.create(
-        index=FILE_INDEX_ID,
+        index=config.get('ELASTIC_FILE_INDEX_ID'),
         pipeline=ATTACHMENT_PIPELINE_ID,
         id='1',
         body={
@@ -83,7 +84,7 @@ def pdf_document(elastic_service):
 @pytest.fixture(scope='function')
 def map_document(elastic_service):
     elastic_service.elastic_client.create(
-        index=FILE_INDEX_ID,
+        index=config.get('ELASTIC_FILE_INDEX_ID'),
         pipeline=ATTACHMENT_PIPELINE_ID,
         id='2',
         body={
@@ -114,7 +115,7 @@ def test_should_not_get_results_from_empty_db(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BOLA3',
         offset=0,
         limit=1,
@@ -139,7 +140,7 @@ def test_can_get_results_from_pdf(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BOLA3',
         offset=0,
         limit=1,
@@ -165,7 +166,7 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BO*A3',
         offset=0,
         limit=1,
@@ -190,7 +191,7 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BO?A3',
         offset=0,
         limit=1,
@@ -215,7 +216,7 @@ def test_can_get_results_from_map(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='COVID',
         offset=0,
         limit=1,
@@ -240,7 +241,7 @@ def test_can_get_results_from_map_with_wildcard_phrase(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='CO*ID',
         offset=0,
         limit=1,
@@ -265,7 +266,7 @@ def test_can_get_results_with_quoted_phrase(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='"mock map document"',
         offset=0,
         limit=1,
@@ -290,7 +291,7 @@ def test_using_wildcard_in_phrase_does_not_work(
     return_fields
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='"BO*A3"',
         offset=0,
         limit=1,
