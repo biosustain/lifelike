@@ -25,7 +25,7 @@ bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 @bp.route('/batch', methods=['GET'])
 @jsonify_with_class()
 def get_batch():
-    """ Uses a home-brew query language
+    """Uses a home-brew query language
     to get a batch of nodes and their
     relationship
     TODO: Document query language
@@ -70,7 +70,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
         raise InvalidArgument(
             title='Failed to Get Edge Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=HTTPStatus.BAD_REQUEST
+            code=HTTPStatus.BAD_REQUEST,
         )
 
     edge_snippets_result = visualizer.get_snippets_for_edge(
@@ -92,7 +92,7 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
         raise InvalidArgument(
             title='Failed to Get Cluster Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=HTTPStatus.BAD_REQUEST
+            code=HTTPStatus.BAD_REQUEST,
         )
 
     cluster_snippets_result = visualizer.get_snippets_for_cluster(
@@ -118,9 +118,11 @@ def get_associated_type_snippet_count(source_node, associated_nodes):
         source_node,
         associated_nodes,
     )
-    return jsonify({
-        'result': associated_types_result.to_dict(),
-    })
+    return jsonify(
+        {
+            'result': associated_types_result.to_dict(),
+        }
+    )
 
 
 @bp.route('/get-snippets-for-node-pair', methods=['POST'])
@@ -129,12 +131,7 @@ def get_snippets_for_node_pair(node_1_id, node_2_id, page, limit):
     visualizer = get_visualizer_service()
 
     node_pair_snippet_result = visualizer.get_snippets_for_node_pair(
-        node_1_id,
-        node_2_id,
-        page,
-        limit
+        node_1_id, node_2_id, page, limit
     )
 
-    return jsonify({
-        'result': node_pair_snippet_result.to_dict()
-    })
+    return jsonify({'result': node_pair_snippet_result.to_dict()})

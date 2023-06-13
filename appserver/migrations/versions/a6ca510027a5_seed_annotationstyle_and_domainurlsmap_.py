@@ -78,10 +78,7 @@ def data_upgrades():
     domain_urls_map_data = []
     for row in domain_urls_map_json:
         domain_urls_map_data.append(
-            {
-                'domain': row['domain'],
-                'base_URL': row['base_URL']
-            }
+            {'domain': row['domain'], 'base_URL': row['base_URL']}
         )
     session.execute(t_domain_urls_map.insert(), domain_urls_map_data)
 

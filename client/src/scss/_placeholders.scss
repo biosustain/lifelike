@@ -33,7 +33,7 @@ $placeholder-border-radius: $border-radius;
     // If placeholder slot is empty it's most likely cause of missing value in loading mock
     // catch and handle gracefully
     &:empty:before {
-      content: "Loading Loading";
+      content: 'Loading Loading';
     }
 
     // icon within shown placeholder slot should not be visible

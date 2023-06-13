@@ -23,7 +23,7 @@ import { ButtonWithSelectableTextComponent } from '../../components/button-with-
   declarations: [
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,
-    ButtonWithSelectableTextComponent
+    ButtonWithSelectableTextComponent,
   ],
   imports: [
     CommonModule,
@@ -43,8 +43,7 @@ import { ButtonWithSelectableTextComponent } from '../../components/button-with-
   exports: [
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,
-    ButtonWithSelectableTextComponent
+    ButtonWithSelectableTextComponent,
   ],
 })
-export class SankeyDetailsPanelModule {
-}
+export class SankeyDetailsPanelModule {}

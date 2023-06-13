@@ -15,8 +15,7 @@ export class SankeyFileService {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly warningController: WarningControllerService
-  ) {
-  }
+  ) {}
 
   get(hashId: string) {
     return new SankeyFile(this.filesystemService, this.warningController, hashId);

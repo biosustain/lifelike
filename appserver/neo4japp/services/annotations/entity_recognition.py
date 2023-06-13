@@ -15,7 +15,7 @@ from .constants import (
     PROTEINS_LMDB,
     SPECIES_LMDB,
     MAX_GENE_WORD_LENGTH,
-    MAX_FOOD_WORD_LENGTH
+    MAX_FOOD_WORD_LENGTH,
 )
 from .data_transfer_objects import (
     RecognizedEntities,
@@ -23,7 +23,7 @@ from .data_transfer_objects import (
     NLPResults,
     PDFWord,
     GlobalExclusions,
-    GlobalInclusions
+    GlobalInclusions,
 )
 from .lmdb_service import LMDBService
 
@@ -33,7 +33,7 @@ class EntityRecognitionService:
         self,
         exclusions: GlobalExclusions,
         inclusions: GlobalInclusions,
-        lmdb: LMDBService
+        lmdb: LMDBService,
     ):
         self.lmdb = lmdb
         self.entity_exclusions = exclusions
@@ -44,13 +44,17 @@ class EntityRecognitionService:
 
         global_inclusion = self.entity_inclusions.included_genes
         global_exclusion = self.entity_exclusions.excluded_genes
-        global_exclusion_case_insensitive = self.entity_exclusions.excluded_genes_case_insensitive
+        global_exclusion_case_insensitive = (
+            self.entity_exclusions.excluded_genes_case_insensitive
+        )
 
         key_results: Dict[str, List[dict]] = {}
 
         with self.lmdb.begin(dbname=GENES_LMDB) as txn:
             cursor = txn.cursor()
-            matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+            matched_results = cursor.getmulti(
+                [k.encode('utf-8') for k in keys], dupdata=True
+            )
 
             for key, value in matched_results:
                 decoded_key = key.decode('utf-8')
@@ -77,8 +81,8 @@ class EntityRecognitionService:
                 results = key_results[token.normalized_keyword]
                 lowered = token.keyword.lower()
                 if (
-                        token.keyword in global_exclusion or
-                        lowered in global_exclusion_case_insensitive
+                    token.keyword in global_exclusion
+                    or lowered in global_exclusion_case_insensitive
                 ):
                     continue
 
@@ -87,8 +91,9 @@ class EntityRecognitionService:
                     continue
 
                 match = LMDBMatch(
-                    entities=[data for data in exact if data['synonym'] == data['name']] or exact,
-                    token=token
+                    entities=[data for data in exact if data['synonym'] == data['name']]
+                    or exact,
+                    token=token,
                 )
                 offset_key = (token.lo_location_offset, token.hi_location_offset)
                 # if an entity set in nlp_results is not empty
@@ -113,7 +118,9 @@ class EntityRecognitionService:
 
         with self.lmdb.begin(dbname=SPECIES_LMDB) as txn:
             cursor = txn.cursor()
-            matched_results = cursor.getmulti([k.encode('utf-8') for k in keys], dupdata=True)
+            matched_results = cursor.getmulti(
+                [k.encode('utf-8') for k in keys], dupdata=True
+            )
 
             for key, value in matched_results:
                 decoded_key = key.decode('utf-8')
@@ -145,9 +152,12 @@ class EntityRecognitionService:
                     lmdb_matches.append(
                         LMDBMatch(
                             entities=[
-                                data for data in results if data['synonym'] == data['name']
-                            ] or results,
-                            token=token
+                                data
+                                for data in results
+                                if data['synonym'] == data['name']
+                            ]
+                            or results,
+                            token=token,
                         )
                     )
                 elif token.normalized_keyword in key_results_local:
@@ -155,10 +165,12 @@ class EntityRecognitionService:
                     lmdb_matches_local.append(
                         LMDBMatch(
                             entities=[
-                                         data for data in results_local
-                                         if data['synonym'] == data['name']
-                                     ] or results_local,
-                            token=token
+                                data
+                                for data in results_local
+                                if data['synonym'] == data['name']
+                            ]
+                            or results_local,
+                            token=token,
                         )
                     )
         return lmdb_matches, lmdb_matches_local
@@ -200,14 +212,21 @@ class EntityRecognitionService:
                 dbname = FOODS_LMDB
                 global_inclusion = self.entity_inclusions.included_foods
                 global_exclusion = self.entity_exclusions.excluded_foods
-                keys = {token.normalized_keyword for token in tokens
-                        if len(token.keyword.split(' ')) <= MAX_FOOD_WORD_LENGTH}
+                keys = {
+                    token.normalized_keyword
+                    for token in tokens
+                    if len(token.keyword.split(' ')) <= MAX_FOOD_WORD_LENGTH
+                }
 
             elif entity_type == EntityType.GENE.value:
                 gene_matches = self._check_lmdb_genes(
                     nlp_results=nlp_results,
-                    tokens=[token for token in tokens if len(
-                        token.keyword.split(' ')) <= MAX_GENE_WORD_LENGTH])
+                    tokens=[
+                        token
+                        for token in tokens
+                        if len(token.keyword.split(' ')) <= MAX_GENE_WORD_LENGTH
+                    ],
+                )
                 results.recognized_genes = gene_matches
                 continue
 
@@ -225,12 +244,14 @@ class EntityRecognitionService:
                 dbname = PROTEINS_LMDB
                 global_inclusion = self.entity_inclusions.included_proteins
                 global_exclusion = self.entity_exclusions.excluded_proteins
-                global_exclusion_case_insensitive = \
+                global_exclusion_case_insensitive = (
                     self.entity_exclusions.excluded_proteins_case_insensitive
+                )
 
             elif entity_type == EntityType.SPECIES.value:
                 species_matches, species_matches_local = self._check_lmdb_species(
-                    tokens=tokens)
+                    tokens=tokens
+                )
                 results.recognized_species = species_matches
                 results.recognized_local_species = species_matches_local
                 continue
@@ -241,10 +262,12 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_companies
                 results.recognized_companies = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword],
-                        token=token
-                    ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                        entities=global_inclusion[token.normalized_keyword], token=token
+                    )
+                    for token in tokens
+                    if global_inclusion.get(token.normalized_keyword)
+                    and token.keyword.lower() not in global_exclusion
+                ]
                 continue
 
             # non lmdb lookups
@@ -253,10 +276,12 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_entities
                 results.recognized_entities = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword],
-                        token=token
-                    ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                        entities=global_inclusion[token.normalized_keyword], token=token
+                    )
+                    for token in tokens
+                    if global_inclusion.get(token.normalized_keyword)
+                    and token.keyword.lower() not in global_exclusion
+                ]
                 continue
 
             # non lmdb lookups
@@ -265,10 +290,12 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_lab_samples
                 results.recognized_lab_samples = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword],
-                        token=token
-                    ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                        entities=global_inclusion[token.normalized_keyword], token=token
+                    )
+                    for token in tokens
+                    if global_inclusion.get(token.normalized_keyword)
+                    and token.keyword.lower() not in global_exclusion
+                ]
                 continue
 
             # non lmdb lookups
@@ -277,20 +304,25 @@ class EntityRecognitionService:
                 global_exclusion = self.entity_exclusions.excluded_lab_strains
                 results.recognized_lab_strains = [
                     LMDBMatch(
-                        entities=global_inclusion[token.normalized_keyword],
-                        token=token
-                    ) for token in tokens if global_inclusion.get(
-                        token.normalized_keyword) and token.keyword.lower() not in global_exclusion]
+                        entities=global_inclusion[token.normalized_keyword], token=token
+                    )
+                    for token in tokens
+                    if global_inclusion.get(token.normalized_keyword)
+                    and token.keyword.lower() not in global_exclusion
+                ]
                 continue
 
-            if dbname is not None and global_inclusion is not None and global_exclusion is not None:
+            if (
+                dbname is not None
+                and global_inclusion is not None
+                and global_exclusion is not None
+            ):
                 key_results: Dict[str, List[dict]] = {}
 
                 with self.lmdb.begin(dbname=dbname) as txn:
                     cursor = txn.cursor()
                     matched_results = cursor.getmulti(
-                        [k.encode('utf-8') for k in keys],
-                        dupdata=True
+                        [k.encode('utf-8') for k in keys], dupdata=True
                     )
 
                     for key, value in matched_results:
@@ -312,8 +344,8 @@ class EntityRecognitionService:
                         lowered = token.keyword.lower()
                         if global_exclusion_case_insensitive:
                             if (
-                                    token.keyword in global_exclusion or
-                                    lowered in global_exclusion_case_insensitive
+                                token.keyword in global_exclusion
+                                or lowered in global_exclusion_case_insensitive
                             ):
                                 continue
                         else:
@@ -322,23 +354,37 @@ class EntityRecognitionService:
 
                         match = LMDBMatch(
                             entities=[
-                                         data for data in key_results[token.normalized_keyword]
-                                         if data['synonym'] == data['name']
-                                     ] or key_results[token.normalized_keyword],
-                            token=token
+                                data
+                                for data in key_results[token.normalized_keyword]
+                                if data['synonym'] == data['name']
+                            ]
+                            or key_results[token.normalized_keyword],
+                            token=token,
                         )
-                        offset_key = (token.lo_location_offset, token.hi_location_offset)
+                        offset_key = (
+                            token.lo_location_offset,
+                            token.hi_location_offset,
+                        )
                         # only a few entities currently have NLP
                         # if an entity set in nlp_results is not empty
                         # that means NLP was used
                         # NLP is veto, so if not found it vetos
-                        if entity_type == EntityType.CHEMICAL.value and nlp_results.chemicals:
+                        if (
+                            entity_type == EntityType.CHEMICAL.value
+                            and nlp_results.chemicals
+                        ):
                             if offset_key in nlp_results.chemicals:
                                 lmdb_matches.append(match)
-                        elif entity_type == EntityType.COMPOUND.value and nlp_results.compounds:
+                        elif (
+                            entity_type == EntityType.COMPOUND.value
+                            and nlp_results.compounds
+                        ):
                             if offset_key in nlp_results.compounds:
                                 lmdb_matches.append(match)
-                        elif entity_type == EntityType.DISEASE.value and nlp_results.diseases:
+                        elif (
+                            entity_type == EntityType.DISEASE.value
+                            and nlp_results.diseases
+                        ):
                             if offset_key in nlp_results.diseases:
                                 lmdb_matches.append(match)
                         else:
@@ -369,5 +415,7 @@ class EntityRecognitionService:
                     results.recognized_proteins = lmdb_matches
         return results
 
-    def identify(self, tokens: List[PDFWord], nlp_results: NLPResults) -> RecognizedEntities:
+    def identify(
+        self, tokens: List[PDFWord], nlp_results: NLPResults
+    ) -> RecognizedEntities:
         return self.check_lmdb(nlp_results=nlp_results, tokens=tokens)

@@ -7,6 +7,7 @@ from neo4japp.constants import MAX_FILE_SIZE
 
 class FileContentBufferBase(BinaryIO):
     """Wrapper around any buffer adding a size limit"""
+
     _max_size: int
     _stream: Union[io.BytesIO, SpooledTemporaryFile]
 
@@ -27,10 +28,12 @@ class FileContentBufferBase(BinaryIO):
         def check_and_forward(s):
             self._check_overflow(len(s))
             return s
+
         self._stream.writelines(
             # Wrap iterable steps to check for overflow
             map(check_and_forward, lines)
         )
+
     # endregion
 
     # region forward
@@ -96,6 +99,7 @@ class FileContentBufferBase(BinaryIO):
 
     def __exit__(self, type, value, traceback) -> None:
         self._stream.__exit__(type, value, traceback)
+
     # endregion
 
 
@@ -127,6 +131,7 @@ class FileContentBuffer(FileContentBufferBase):
     def getvalue(self):
         with self as bufferView:
             return getattr(bufferView, 'getvalue', bufferView.read)()
+
     # endregion
 
     # region diassallowed ussage
@@ -156,4 +161,5 @@ class FileContentBuffer(FileContentBufferBase):
     def seek(self, offset: int, whence: int = 0) -> int:
         self._not_allowed('seek')
         return self._stream.seek(offset, whence)
+
     # endregion

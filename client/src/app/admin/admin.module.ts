@@ -19,7 +19,7 @@ const components = [
   UserCreateDialogComponent,
   UserBrowserComponent,
   UserUpdateDialogComponent,
-  MissingRolesDialogComponent
+  MissingRolesDialogComponent,
 ];
 
 @NgModule({
@@ -28,15 +28,9 @@ const components = [
     UserUpdateDialogComponent,
     MissingRolesDialogComponent,
   ],
-  imports: [
-    SharedModule,
-  ],
+  imports: [SharedModule],
   declarations: components,
-  providers: [
-    AdminGuard,
-    AccountService,
-  ],
+  providers: [AdminGuard, AccountService],
   exports: components,
 })
-export class AdminModule {
-}
+export class AdminModule {}

@@ -6,11 +6,14 @@ current_directory = os.path.realpath(os.path.dirname(__file__))
 
 class Base:
     """Default values"""
+
     SITE_NAME = 'Lifelike Knowledge Search'
 
     # Optional for tracking the master branch for the build
     GITHUB_HASH = os.environ.get('GITHUB_HASH', '__VERSION__')
-    GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
+    GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get(
+        'GITHUB_COMMIT_TIMESTAMP', 'undefined'
+    )
     APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
     APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
     LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', logging.INFO)
@@ -46,7 +49,7 @@ class Base:
         POSTGRES_PASSWORD,
         POSTGRES_HOST,
         POSTGRES_PORT,
-        POSTGRES_DB
+        POSTGRES_DB,
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
@@ -58,8 +61,7 @@ class Base:
     ELASTICSEARCH_HOSTS = os.environ.get('ELASTICSEARCH_HOSTS')
     ELASTIC_FILE_INDEX_ID = os.environ.get('ELASTIC_FILE_INDEX_ID')
     FILE_INDEX_DEFINITION_PATH = os.path.join(
-        current_directory,
-        './neo4japp/services/elastic/mappings/document_idx.json'
+        current_directory, './neo4japp/services/elastic/mappings/document_idx.json'
     )
     ELASTIC_INDEX_SEED_PAIRS = [
         (ELASTIC_FILE_INDEX_ID, FILE_INDEX_DEFINITION_PATH),
@@ -75,8 +77,7 @@ class Base:
     SE_PORT = os.environ.get('SE_PORT', '5010')
 
     NLP_SERVICE_ENDPOINT = os.environ.get(
-        'NLP_SERVICE_ENDPOINT',
-        'https://nlp-api.lifelike.bio/v1/predict'
+        'NLP_SERVICE_ENDPOINT', 'https://nlp-api.lifelike.bio/v1/predict'
     )
     NLP_SERVICE_SECRET = os.environ.get('NLP_SERVICE_SECRET', '')
     REQUEST_TIMEOUT = int(os.environ.get('SERVICE_REQUEST_TIMEOUT', '60'))
@@ -97,7 +98,7 @@ class Base:
         host=os.environ.get('REDIS_HOST', 'localhost'),
         port=os.environ.get('REDIS_PORT', '6379'),
         password=os.environ.get('REDIS_PASSWORD', ''),
-        db=os.environ.get('REDIS_DB', '1')
+        db=os.environ.get('REDIS_DB', '1'),
     )
 
     FORWARD_STACKTRACE = False
@@ -111,6 +112,7 @@ class Base:
 
 class Development(Base):
     """Development configurations"""
+
     DOMAIN = 'http://localhost'
 
     LOGGING_LEVEL = logging.DEBUG
@@ -122,7 +124,8 @@ class Development(Base):
 
 
 class QA(Base):
-    """ QA configuration """
+    """QA configuration"""
+
     SITE_NAME = 'Lifelike Knowledge Search (QA)'
     DOMAIN = 'https://qa.lifelike.bio'
 
@@ -133,6 +136,7 @@ class QA(Base):
 
 class Staging(Base):
     """Staging configurations"""
+
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
     DOMAIN = 'https://test.lifelike.bio'
 
@@ -142,6 +146,7 @@ class Staging(Base):
 
 class Testing(Base):
     """Functional test configuration"""
+
     TESTING = True
     WTF_CSRF_ENABLED = False
 
@@ -156,7 +161,8 @@ class Testing(Base):
 
 
 class Production(Base):
-    """ Production configuration """
+    """Production configuration"""
+
     DOMAIN = 'https://kg.lifelike.bio'
     FORWARD_STACKTRACE = False
     SENTRY_ENABLED = True

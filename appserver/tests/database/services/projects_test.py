@@ -1,6 +1,7 @@
 from neo4japp.models import Files
 from neo4japp.models.auth import (
-    AppRole, AppUser,
+    AppRole,
+    AppUser,
 )
 from neo4japp.models.projects import (
     Projects,
@@ -50,8 +51,6 @@ def test_owner_gets_default_admin_permission(session, test_user: AppUser):
     session.flush()
     new_project = proj_service.create_projects(test_user, projects)
 
-    user_role = Projects.query_project_roles(
-        test_user.id, new_project.id
-    ).one_or_none()
+    user_role = Projects.query_project_roles(test_user.id, new_project.id).one_or_none()
 
     assert user_role.name == 'project-admin'

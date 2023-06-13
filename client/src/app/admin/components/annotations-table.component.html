@@ -13,28 +13,35 @@
         </div>
       </div>
       <div ngbDropdown class="d-inline-block" style="margin-left: 5px">
-                <button class="btn btn-primary"
-                        ngbDropdownToggle
-                        ngbTooltip="Select what global annotations to display"
-                        #tooltipRef="ngbTooltip"
-                        [appAutoCloseTooltipOutOfView]="tooltipRef"
-                >
+        <button
+          class="btn btn-primary"
+          ngbDropdownToggle
+          ngbTooltip="Select what global annotations to display"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="fa fa-fw fa-file-export"></i>
           Global Annotations To Display
         </button>
         <div ngbDropdownMenu>
-          <button ngbDropdownItem *ngFor="let choice of globalAnnotationTypeChoices"
-                  (click)="selectGlobalType(choice)">{{ choice }}</button>
+          <button
+            ngbDropdownItem
+            *ngFor="let choice of globalAnnotationTypeChoices"
+            (click)="selectGlobalType(choice)"
+          >
+            {{ choice }}
+          </button>
         </div>
       </div>
-      <button *ngIf="results.selection$ | async as selection"
-              [disabled]="selection.length === 0"
-              class="btn btn-danger ml-2"
-              (click)="deleteAnnotation(selection)"
-                    ngbTooltip="Delete annotation(s)"
-                    #tooltipRef="ngbTooltip"
-                    [appAutoCloseTooltipOutOfView]="tooltipRef"
-            >
+      <button
+        *ngIf="results.selection$ | async as selection"
+        [disabled]="selection.length === 0"
+        class="btn btn-danger ml-2"
+        (click)="deleteAnnotation(selection)"
+        ngbTooltip="Delete annotation(s)"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         Delete
       </button>
     </div>
@@ -43,46 +50,56 @@
   <!-- Table -->
   <table class="table module-body-table">
     <thead>
-    <tr>
-      <th>
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="select-all"
-                 [checked]="results.isAllSelected()"
-                 (change)="results.toggleAll()">
-          <label class="custom-control-label" for="select-all"></label>
-        </div>
-      </th>
-      <th *ngFor="let header of headers" scope="col">{{ header }}</th>
-    </tr>
+      <tr>
+        <th>
+          <div class="custom-control custom-checkbox">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="select-all"
+              [checked]="results.isAllSelected()"
+              (change)="results.toggleAll()"
+            />
+            <label class="custom-control-label" for="select-all"></label>
+          </div>
+        </th>
+        <th *ngFor="let header of headers" scope="col">{{ header }}</th>
+      </tr>
     </thead>
 
-    <tbody *ngIf="status.placeholdersShown || status.resultsShown" [appShowPlaceholders]="status.placeholdersShown">
-      <tr *ngFor="let object of results.view$ | async; index as objectIndex"
-        [class.active]="results.isSelected(object)">
+    <tbody
+      *ngIf="status.placeholdersShown || status.resultsShown"
+      [appShowPlaceholders]="status.placeholdersShown"
+    >
+      <tr
+        *ngFor="let object of results.view$ | async; index as objectIndex"
+        [class.active]="results.isSelected(object)"
+      >
         <td class="align-middle text-nowrap" (click)="results.toggle(object)">
           <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
-                   (change)="results.toggle(object)"
-                   [checked]="results.isSelected(object)">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="object-{{ objectIndex }}"
+              (change)="results.toggle(object)"
+              [checked]="results.isSelected(object)"
+            />
             <label class="custom-control-label d-block" for="object-{{ objectIndex }}"></label>
           </div>
         </td>
 
         <td *ngIf="!object.fileDeleted && object.fileUuid; else noSuchFile">
           <button class="btn btn-secondary" (click)="openNewWindow(object.fileUuid)">
-                    <i
-                      class="fas fa-external-link-alt"
-                      ngbTooltip="Open in new window"
-                      #tooltipRef="ngbTooltip"
-                      [appAutoCloseTooltipOutOfView]="tooltipRef"
-                    ></i>
+            <i
+              class="fas fa-external-link-alt"
+              ngbTooltip="Open in new window"
+              #tooltipRef="ngbTooltip"
+              [appAutoCloseTooltipOutOfView]="tooltipRef"
+            ></i>
           </button>
         </td>
         <ng-template #noSuchFile>
-          <td
-            class="align-middle text-nowrap"
-            appHasPlaceholder
-          >No longer available</td>
+          <td class="align-middle text-nowrap" appHasPlaceholder>No longer available</td>
         </ng-template>
         <td class="align-middle text-nowrap" appHasPlaceholder>{{ object.text }}</td>
         <td class="align-middle text-nowrap" appHasPlaceholder>{{ object.caseInsensitive }}</td>
@@ -97,18 +114,12 @@
           class="align-middle text-nowrap"
           appHasPlaceholder
         >
-          {{ object.comment | truncate:20 }}
+          {{ object.comment | truncate : 20 }}
         </td>
         <ng-template #noComment>
-          <td
-            class="align-middle text-nowrap"
-            appHasPlaceholder
-          >{{ object.comment }}</td>
+          <td class="align-middle text-nowrap" appHasPlaceholder>{{ object.comment }}</td>
         </ng-template>
-        <td
-          class="align-middle text-nowrap"
-          appHasPlaceholder
-        >{{ object.creationDate }}</td>
+        <td class="align-middle text-nowrap" appHasPlaceholder>{{ object.creationDate }}</td>
         <!-- <td class="align-middle text-nowrap">
           <button class="btn"
                       ngbTooltip="Download file" disabled

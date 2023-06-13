@@ -36,8 +36,9 @@ logger = logging.getLogger('alembic.env')
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 config.set_main_option(
-    'sqlalchemy.url', current_app.config.get(
-        'SQLALCHEMY_DATABASE_URI').replace('%', '%%'))
+    'sqlalchemy.url',
+    current_app.config.get('SQLALCHEMY_DATABASE_URI').replace('%', '%%'),
+)
 target_metadata = current_app.extensions['migrate'].db.metadata
 
 
@@ -46,8 +47,10 @@ target_metadata = current_app.extensions['migrate'].db.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 class MigrationValidator:
     logger = logging.getLogger('alembic.runtime.validation')
+
     class ValidationException(Exception):
         pass
 
@@ -61,19 +64,24 @@ class MigrationValidator:
         def receive_before_execute(_, clauseelement, multiparams, params):
             updated_file_content_ids = set()
             unidentified_update_to_file_contents = False
-            if isinstance(clauseelement, (Update, Insert)) and clauseelement.table.name == FileContent.__tablename__:
+            if (
+                isinstance(clauseelement, (Update, Insert))
+                and clauseelement.table.name == FileContent.__tablename__
+            ):
                 for params in multiparams:
                     if len(params) > 0:
                         for p in params:
-                                content_id = p.get('id')
-                                if content_id:
-                                    if p.get('raw_file'):
-                                        updated_file_content_ids.add(content_id)
-                                else:
-                                    unidentified_update_to_file_contents = True
+                            content_id = p.get('id')
+                            if content_id:
+                                if p.get('raw_file'):
+                                    updated_file_content_ids.add(content_id)
+                            else:
+                                unidentified_update_to_file_contents = True
                     else:
                         unidentified_update_to_file_contents = True
-                self.update_change_list(updated_file_content_ids, unidentified_update_to_file_contents)
+                self.update_change_list(
+                    updated_file_content_ids, unidentified_update_to_file_contents
+                )
 
         return receive_before_execute
 
@@ -85,9 +93,7 @@ class MigrationValidator:
     # Wrap notification with revision id - log unique messages
     def _per_revision_notify(self, *args, **kwargs):
         self._revision_notify(
-            context.get_context().get_current_revision(),
-            *args,
-            **kwargs
+            context.get_context().get_current_revision(), *args, **kwargs
         )
 
     def __enter__(self):
@@ -95,54 +101,59 @@ class MigrationValidator:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         event.remove(self.conn, 'before_execute', self.receive_before_execute_callback)
-        if exc_type is None: # if no error has been thrown
+        if exc_type is None:  # if no error has been thrown
             self.validate_file_contents()
 
-    def update_change_list(self, updated_file_content_ids, unidentified_update_to_file_contents):
+    def update_change_list(
+        self, updated_file_content_ids, unidentified_update_to_file_contents
+    ):
         if unidentified_update_to_file_contents:
             self._per_revision_notify(
                 'Unidentified file content update - '
                 'all files will be validated as final step of migrating database'
             )
-            self.unidentified_update_to_file_contents = unidentified_update_to_file_contents
+            self.unidentified_update_to_file_contents = (
+                unidentified_update_to_file_contents
+            )
         if len(updated_file_content_ids) > 0:
             self._per_revision_notify(
-                'Identified file contents update for ids: ' +
-                ', '.join(str(content_id) for content_id in updated_file_content_ids)
+                'Identified file contents update for ids: '
+                + ', '.join(str(content_id) for content_id in updated_file_content_ids)
             )
             self.updated_file_content_ids.update(updated_file_content_ids)
 
     def validate_file_contents(self):
-        if len(self.updated_file_content_ids) > 0 or self.unidentified_update_to_file_contents:
+        if (
+            len(self.updated_file_content_ids) > 0
+            or self.unidentified_update_to_file_contents
+        ):
             session = Session(self.conn)
             query = Query(Files).join(Files.content)
             if not self.unidentified_update_to_file_contents:
                 query = query.filter(FileContent.id.in_(self.updated_file_content_ids))
                 self._per_revision_notify(
-                    'Validating file contents of: ',
-                    self.updated_file_content_ids
+                    'Validating file contents of: ', self.updated_file_content_ids
                 )
             else:
                 self._per_revision_notify('Validating all files contents')
 
             file_type_service = get_file_type_service()
             for chunk in window_chunk(
-                    session.execute(
-                        query.with_entities(
-                            Files.mime_type.label('mime_type'),
-                            FileContent.raw_file.label('raw_file'),
-                            FileContent.id.label('id')
-                        )
-                    ),
-                    25
+                session.execute(
+                    query.with_entities(
+                        Files.mime_type.label('mime_type'),
+                        FileContent.raw_file.label('raw_file'),
+                        FileContent.id.label('id'),
+                    )
+                ),
+                25,
             ):
                 for entity in chunk:
                     exceptions = []
                     try:
                         provider = file_type_service.get(entity)
                         provider.validate_content(
-                            BytesIO(entity.raw_file),
-                            log_status_messages=False
+                            BytesIO(entity.raw_file), log_status_messages=False
                         )
                     except Exception as validation_exception:
                         # TODO after migrating to python 3.11: use .add_note
@@ -155,13 +166,15 @@ class MigrationValidator:
                             exceptions.append(validation_exception)
                     if len(exceptions) > 0:
                         raise self.ValidationException(
-                            '\n'.join((
-                                f'{len(exceptions)} file content are not passing current validation rules:',
-                                *map(lambda exception: f'\t{exception}', exceptions)
-                            ))
+                            '\n'.join(
+                                (
+                                    f'{len(exceptions)} file content are not passing current validation rules:',
+                                    *map(
+                                        lambda exception: f'\t{exception}', exceptions
+                                    ),
+                                )
+                            )
                         )
-
-
 
 
 def run_migrations_offline():
@@ -177,9 +190,7 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True
-    )
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -222,7 +233,7 @@ def run_migrations_online():
         # these determine how the query is broken up into batch
         # https://docs.sqlalchemy.org/en/13/dialects/postgresql.html#psycopg2-executemany-mode
         executemany_mode='values',
-        executemany_values_page_size=10000
+        executemany_values_page_size=10000,
     )
 
     with connectable.connect() as connection:
@@ -231,7 +242,7 @@ def run_migrations_online():
             target_metadata=target_metadata,
             process_revision_directives=process_revision_directives,
             render_item=render_item,
-            **current_app.extensions['migrate'].configure_args
+            **current_app.extensions['migrate'].configure_args,
         )
 
         with context.begin_transaction():

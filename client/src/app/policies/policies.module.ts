@@ -17,18 +17,10 @@ const components = [
   PrivacyPolicyComponent,
   TermsAndConditionsComponent,
 ];
-const directives = [
-  PolicyHostDirective
-];
+const directives = [PolicyHostDirective];
 
 @NgModule({
-  declarations: [
-    ...components,
-    ...directives,
-  ],
-  imports: [
-    CommonModule,
-    SharedModule
-  ]
+  declarations: [...components, ...directives],
+  imports: [CommonModule, SharedModule],
 })
-export class PoliciesModule { }
+export class PoliciesModule {}

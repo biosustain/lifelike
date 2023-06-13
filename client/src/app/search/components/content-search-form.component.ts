@@ -29,7 +29,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   }
 
   submit() {
-    this.form.patchValue({q: this.queryString});
+    this.form.patchValue({ q: this.queryString });
     super.submit();
   }
 }

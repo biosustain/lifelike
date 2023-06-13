@@ -12,11 +12,14 @@ from neo4japp.models.projects import (
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
-@pytest.mark.parametrize('name', [
-    ('!nva!d|'),
-    ('i3cr3e@m>i4cr4e@m'),
-    ('   style    '),
-])
+@pytest.mark.parametrize(
+    'name',
+    [
+        ('!nva!d|'),
+        ('i3cr3e@m>i4cr4e@m'),
+        ('   style    '),
+    ],
+)
 def test_flag_invalid_projects_name(session, name):
     with pytest.raises(ValueError):
         project = Projects(
@@ -25,13 +28,16 @@ def test_flag_invalid_projects_name(session, name):
         )
 
 
-@pytest.mark.parametrize('name', [
-    ('test-project'),
-    ('p r o j e c t 1'),
-    ('valid_underscore'),
-    ('ö-german'),
-    ('æØÅ_nordic#letters$are@valid')
-])
+@pytest.mark.parametrize(
+    'name',
+    [
+        ('test-project'),
+        ('p r o j e c t 1'),
+        ('valid_underscore'),
+        ('ö-german'),
+        ('æØÅ_nordic#letters$are@valid'),
+    ],
+)
 def test_can_add_projects(session, name, test_user):
     root_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
@@ -52,10 +58,13 @@ def test_can_add_projects(session, name, test_user):
     assert project.name == name
 
 
-@pytest.mark.parametrize('name, user_fks', [
-    ('test-project', [1, 2, 3]),
-    ('project1', [100, 200, 300]),
-])
+@pytest.mark.parametrize(
+    'name, user_fks',
+    [
+        ('test-project', [1, 2, 3]),
+        ('project1', [100, 200, 300]),
+    ],
+)
 def test_can_add_users_to_projects(session, name, user_fks, test_user: AppUser):
     root_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
@@ -81,13 +90,15 @@ def test_can_add_users_to_projects(session, name, user_fks, test_user: AppUser):
     assert len(proj.users) == len(user_fks)
 
 
-@pytest.mark.parametrize('role', [
-    'project-admin',
-    'project-read',
-    'project-write',
-])
+@pytest.mark.parametrize(
+    'role',
+    [
+        'project-admin',
+        'project-read',
+        'project-write',
+    ],
+)
 def test_can_set_user_role(session, role):
-
     test_user = AppUser(
         username='test',
         email='test@lifelike.bio',
@@ -123,11 +134,13 @@ def test_can_set_user_role(session, role):
 
     session.execute(
         projects_collaborator_role.insert(),
-        [{
-            'appuser_id': test_user.id,
-            'app_role_id': app_role.id,
-            'projects_id': new_projects.id,
-        }]
+        [
+            {
+                'appuser_id': test_user.id,
+                'app_role_id': app_role.id,
+                'projects_id': new_projects.id,
+            }
+        ],
     )
     session.flush()
 
@@ -139,7 +152,6 @@ def test_can_set_user_role(session, role):
 
 
 def test_projects_init_with_roles(session, test_user: AppUser):
-
     root_dir = Files(
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         filename='/',

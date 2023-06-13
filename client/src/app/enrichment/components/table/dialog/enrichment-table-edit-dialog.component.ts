@@ -6,7 +6,10 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { ObjectEditDialogComponent, ObjectEditDialogValue } from 'app/file-browser/components/dialog/object-edit-dialog.component';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from 'app/file-browser/components/dialog/object-edit-dialog.component';
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -34,15 +37,17 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     'String',
     'GO',
     'BioCyc',
-    environment.keggEnabled && 'KEGG'
+    environment.keggEnabled && 'KEGG',
   ]);
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly search: SharedSearchService,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly search: SharedSearchService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
@@ -60,19 +65,27 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     this.organismTaxId = value.taxID;
     this.domains = value.domains;
     // Note: This replaces the file's fallback organism
-    this.form.get('organism').setValue(value.organism ? {
-      organism_name: value.organism,
-      synonym: value.organism,
-      tax_id: value.taxID,
-    } : null);
-    this.form.get('entitiesList').setValue(value.importGenes.map(gene => {
-        const geneValue = value.values.get(gene);
-        let row = gene;
-        if (!isNil(geneValue) && geneValue.length) {
+    this.form.get('organism').setValue(
+      value.organism
+        ? {
+            organism_name: value.organism,
+            synonym: value.organism,
+            tax_id: value.taxID,
+          }
+        : null
+    );
+    this.form.get('entitiesList').setValue(
+      value.importGenes
+        .map((gene) => {
+          const geneValue = value.values.get(gene);
+          let row = gene;
+          if (!isNil(geneValue) && geneValue.length) {
             row += `\t${geneValue}`;
-        }
-        return row;
-    }).join('\n'));
+          }
+          return row;
+        })
+        .join('\n')
+    );
     this.setDomains();
   }
 
@@ -84,17 +97,17 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   getValue(): EnrichmentTableEditDialogValue {
     const parentValue: ObjectEditDialogValue = super.getValue();
     const value = this.form.value;
-    const geneRows =  (value.entitiesList as string).split(/[\/\n\r]/g);
+    const geneRows = (value.entitiesList as string).split(/[\/\n\r]/g);
     const values = new Map<string, string>();
-    const expectedRowLen =  2;
+    const expectedRowLen = 2;
 
-    const importGenes = geneRows.map(row => {
-        const cols = row.split('\t');
-        if (cols.length < expectedRowLen) {
-            cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
-        }
-        values.set(cols[0], cols[1]);
-        return cols[0];
+    const importGenes = geneRows.map((row) => {
+      const cols = row.split('\t');
+      if (cols.length < expectedRowLen) {
+        cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
+      }
+      values.set(cols[0], cols[1]);
+      return cols[0];
     });
 
     this.document.setParameters({

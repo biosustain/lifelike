@@ -4,5 +4,4 @@ import { Component } from '@angular/core';
   selector: 'app-modal-body',
   templateUrl: './modal-body.component.html',
 })
-export class ModalBodyComponent {
-}
+export class ModalBodyComponent {}

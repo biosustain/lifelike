@@ -4,7 +4,7 @@ import { makeid } from '../utils/identifiers';
 
 @Directive({
   selector: '[appUid]',
-  exportAs: 'uid'
+  exportAs: 'uid',
 })
 export class UidDirective {
   @HostBinding('id') uid = `uid-${makeid()}`;

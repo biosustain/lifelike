@@ -9,7 +9,8 @@ from neo4japp.models import Files
 
 
 @pytest.mark.parametrize(
-    'pair', [
+    'pair',
+    [
         ('vnd.lifelike.filesystem/directory', True),
         ('vnd.lifelike.document/map', True),
         ('vnd.lifelike.document/enrichment-table', True),
@@ -31,7 +32,8 @@ def test_file_type_can_create(pair):
 
 
 @pytest.mark.parametrize(
-    'pair', [
+    'pair',
+    [
         ('vnd.lifelike.filesystem/directory', False),
         ('vnd.lifelike.document/map', False),
         ('vnd.lifelike.document/enrichment-table', True),
@@ -53,7 +55,8 @@ def test_file_type_should_highlight_content_text_matches(pair):
 
 
 @pytest.mark.parametrize(
-    'pair', [
+    'pair',
+    [
         ('vnd.lifelike.filesystem/directory', BytesIO(), BytesIO()),
         ('application/pdf', BytesIO(b'raw data'), BytesIO(b'raw data')),
         ('image/png', BytesIO(b'data'), BytesIO()),
@@ -67,4 +70,7 @@ def test_file_type_to_indexable_content(pair: Tuple[str, BytesIO, BytesIO]):
 
     with app.app_context():
         service = get_file_type_service()
-        assert pair[2].getvalue() == service.get(file).to_indexable_content(pair[1]).getvalue()
+        assert (
+            pair[2].getvalue()
+            == service.get(file).to_indexable_content(pair[1]).getvalue()
+        )

@@ -5,7 +5,7 @@ from config.config import Config
 
 
 class BaseDataLoader:
-    def __init__(self, database:Database, data_dir_name, base_dir: str = None):
+    def __init__(self, database: Database, data_dir_name, base_dir: str = None):
         if not base_dir:
             base_dir = Config().data_dir
         self.base_dir = base_dir

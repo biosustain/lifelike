@@ -18,7 +18,6 @@ import { FilesystemObject } from '../models/filesystem-object';
   templateUrl: './object-annotation-history.component.html',
 })
 export class ObjectAnnotationHistoryComponent {
-
   _object: FilesystemObject;
   page = 1;
   @Input() limit = 20;
@@ -26,9 +25,10 @@ export class ObjectAnnotationHistoryComponent {
 
   protected subscriptions = new Subscription();
 
-  constructor(protected readonly filesystemService: FilesystemService,
-              protected readonly errorHandler: ErrorHandler) {
-  }
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly errorHandler: ErrorHandler
+  ) {}
 
   @Input()
   set object(value: FilesystemObject | undefined) {
@@ -41,13 +41,17 @@ export class ObjectAnnotationHistoryComponent {
   }
 
   refresh() {
-    this.logWithStatus$ = (this.object ? this.filesystemService.getAnnotationHistory(this.object.hashId, {
-      page: this.page,
-      limit: this.limit,
-    }).pipe(
-      this.errorHandler.create({label: 'Refresh file annotation history'}),
-    ) : from([])).pipe(
-      addStatus(new FileAnnotationHistory().update(fileAnnotationHistoryResponseLoadingMock())),
+    this.logWithStatus$ = (
+      this.object
+        ? this.filesystemService
+            .getAnnotationHistory(this.object.hashId, {
+              page: this.page,
+              limit: this.limit,
+            })
+            .pipe(this.errorHandler.create({ label: 'Refresh file annotation history' }))
+        : from([])
+    ).pipe(
+      addStatus(new FileAnnotationHistory().update(fileAnnotationHistoryResponseLoadingMock()))
     );
   }
 
@@ -55,5 +59,4 @@ export class ObjectAnnotationHistoryComponent {
     this.page = page;
     this.refresh();
   }
-
 }

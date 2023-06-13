@@ -43,26 +43,23 @@ def process_lmdb(env, db, entity_type):
         for i, (key, value) in enumerate(cursor.iternext()):
             data = json.loads(value.decode('utf-8'))
             yield {
-                '_id': i+1,
+                '_id': i + 1,
                 '_index': entity_type,
-                '_source': {
-                    'id': key.decode('utf-8'),
-                    'data': data
-                }
+                '_source': {'id': key.decode('utf-8'), 'data': data},
             }
 
 
 def add_exclusion_to_elastic(exclusions):
     # make sure there are exclusions before indexing
     if exclusions[0]:
-        for i, exclusion, in enumerate(exclusions):
+        for (
+            i,
+            exclusion,
+        ) in enumerate(exclusions):
             yield {
-                '_id': i+1,
+                '_id': i + 1,
                 '_index': 'annotation_exclusion',
-                '_source': {
-                    'id': i+1,
-                    'word': exclusion
-                }
+                '_source': {'id': i + 1, 'word': exclusion},
             }
 
 
@@ -121,11 +118,11 @@ def open_env(entity_type, parentdir):
 def seed_exclusions():
     app = create_app('Functional Test Flask App', config_package='config.Testing')
     with app.app_context():
-        exclusions = db.session.query(
-            GlobalList.annotation['text']
-        ).filter(
-            GlobalList.type == ManualAnnotationType.EXCLUSION.value
-        ).all()
+        exclusions = (
+            db.session.query(GlobalList.annotation['text'])
+            .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+            .all()
+        )
 
         es.indices.delete(index='annotation_exclusion', ignore=[HTTPStatus.NOT_FOUND])
         es.indices.create(index='annotation_exclusion')
@@ -166,7 +163,9 @@ def main(argv):
                     # first delete the index to clear the data
                     es.indices.delete(index=entity_type, ignore=[HTTPStatus.NOT_FOUND])
                     es.indices.create(index=entity_type)
-                    deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
+                    deque(
+                        parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0
+                    )
                     env.close()
         elif opt == '-e':
             seed_exclusions()

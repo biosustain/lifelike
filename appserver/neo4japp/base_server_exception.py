@@ -41,12 +41,26 @@ class BaseServerException(ABC):
             self.__repr__(),
             *indent_lines(
                 # Additional msgs wrapped with new lines, or just singular newline
-                *(('', *self.additional_msgs, '') if len(self.additional_msgs) else ('',)),
+                *(
+                    ('', *self.additional_msgs, '')
+                    if len(self.additional_msgs)
+                    else ('',)
+                ),
                 *yaml.dump(
-                    {k: v for k, v in self.to_dict().items() if v and k not in (
-                        # Already printed above
-                        'type', 'transaction_id', 'title', 'message', 'additional_msgs'
-                    )}
-                ).splitlines()
-            )
+                    {
+                        k: v
+                        for k, v in self.to_dict().items()
+                        if v
+                        and k
+                        not in (
+                            # Already printed above
+                            'type',
+                            'transaction_id',
+                            'title',
+                            'message',
+                            'additional_msgs',
+                        )
+                    }
+                ).splitlines(),
+            ),
         )

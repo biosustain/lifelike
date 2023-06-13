@@ -13,7 +13,7 @@ import { getTraces } from '../../utils';
   selector: 'app-sankey-multi-lane-details-panel',
   templateUrl: './details-panel.component.html',
   styleUrls: ['./details-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class SankeyMutiLaneDetailsPanelComponent extends SankeyAbstractDetailsPanelComponent {
   constructor(
@@ -25,15 +25,18 @@ export class SankeyMutiLaneDetailsPanelComponent extends SankeyAbstractDetailsPa
 
   details$ = this.details$.pipe(
     map((selection: SelectionEntity[]) => {
-      const {[SelectionType.node]: nodes, [SelectionType.link]: links} = mapValues(
+      const { [SelectionType.node]: nodes, [SelectionType.link]: links } = mapValues(
         groupBy(selection, 'type'),
-        selectionGroup => selectionGroup.map(({entity}) => entity)
+        (selectionGroup) => selectionGroup.map(({ entity }) => entity)
       );
       return [
         ...selection,
-        ...getTraces({nodes, links} as any).map(entity => ({type: SelectionType.trace, entity}))
+        ...getTraces({ nodes, links } as any).map((entity) => ({
+          type: SelectionType.trace,
+          entity,
+        })),
       ] as SelectionEntity[];
     }),
-    tap(selection => defer(() => this.cdr.detectChanges()))
+    tap((selection) => defer(() => this.cdr.detectChanges()))
   );
 }

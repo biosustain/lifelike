@@ -22,10 +22,7 @@ describe('PdfViewerLibComponent', () => {
         MatSnackBarModule,
         RootStoreModule,
       ],
-      providers: [
-        PDFAnnotationService,
-        PDFSearchService
-      ]
+      providers: [PDFAnnotationService, PDFSearchService],
     }).compileComponents();
   }));
   it('should create the app', async(() => {

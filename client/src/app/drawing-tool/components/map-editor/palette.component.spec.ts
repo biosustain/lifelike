@@ -8,25 +8,22 @@ import { DrawingToolModule } from '../../drawing-tool.module';
 import { PaletteComponent } from './palette.component';
 
 describe('PaletteComponent', () => {
-    let component: PaletteComponent;
-    let fixture: ComponentFixture<PaletteComponent>;
+  let component: PaletteComponent;
+  let fixture: ComponentFixture<PaletteComponent>;
 
-    configureTestSuite(() => {
-        TestBed.configureTestingModule({
-            imports: [
-              DrawingToolModule,
-              RootStoreModule
-            ]
-        });
+  configureTestSuite(() => {
+    TestBed.configureTestingModule({
+      imports: [DrawingToolModule, RootStoreModule],
     });
+  });
 
-    beforeEach(() => {
-        fixture = TestBed.createComponent(PaletteComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(PaletteComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

@@ -3,14 +3,17 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { escapeRegExp } from 'lodash-es';
 import {
   animationFrame,
-  animationFrameScheduler, asyncScheduler, BehaviorSubject,
+  animationFrameScheduler,
+  asyncScheduler,
+  BehaviorSubject,
   combineLatest,
   interval,
   ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
-  map, observeOn,
+  map,
+  observeOn,
   pairwise,
   share,
   shareReplay,
@@ -26,44 +29,48 @@ import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 @Injectable()
 export class FindControllerService implements OnDestroy {
   constructor() {
-    this.query$.pipe(
-      withLatestFrom(this.elementFind$), // changing elementFind$ should not rerun query
-      observeOn(asyncScheduler),
-      takeUntil(this.destroy$)
-    ).subscribe(([query, elementFind]) => {
-      elementFind.query = query;
-      elementFind.start();
-    });
-    this.elementFind$.pipe(
-      switchMap(elementFind =>
-        interval(0, animationFrameScheduler).pipe(
-          map(() => elementFind)
-        )
-      ),
-      takeUntil(this.destroy$)
-    ).subscribe(elementFind =>
-      elementFind.tick()
-    );
-    this.target$.pipe( // lazy init
-      takeUntil(this.destroy$),
-      withLatestFrom(this.elementFind$),
-    ).subscribe(([target, elementFind]) => {
-      elementFind.target = target;
-      elementFind.start();
-    });
+    this.query$
+      .pipe(
+        withLatestFrom(this.elementFind$), // changing elementFind$ should not rerun query
+        observeOn(asyncScheduler),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([query, elementFind]) => {
+        elementFind.query = query;
+        elementFind.start();
+      });
+    this.elementFind$
+      .pipe(
+        switchMap((elementFind) =>
+          interval(0, animationFrameScheduler).pipe(map(() => elementFind))
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((elementFind) => elementFind.tick());
+    this.target$
+      .pipe(
+        // lazy init
+        takeUntil(this.destroy$),
+        withLatestFrom(this.elementFind$)
+      )
+      .subscribe(([target, elementFind]) => {
+        elementFind.target = target;
+        elementFind.start();
+      });
   }
 
   destroy$ = new Subject<any>();
   type$ = new ReplaySubject<'text' | 'annotation'>(1);
   query$ = new ReplaySubject<string>(1);
-  target$ = new ReplaySubject<Element|null>(null);
+  target$ = new ReplaySubject<Element | null>(null);
   elementFind$ = this.type$.pipe(
     withLatestFrom(this.target$.pipe(startWith(null))), // lazy init
-    map(([type, target]) =>
-      new AsyncElementFind(
-        target,
-        type === 'annotation' ? this.generateAnnotationFindQueue : this.generateTextFindQueue,
-      ),
+    map(
+      ([type, target]) =>
+        new AsyncElementFind(
+          target,
+          type === 'annotation' ? this.generateAnnotationFindQueue : this.generateTextFindQueue
+        )
     ),
     startWith(null),
     pairwise(),
@@ -71,18 +78,18 @@ export class FindControllerService implements OnDestroy {
       prev?.stop();
       return next;
     }),
-    shareReplay({refCount: true, bufferSize: 1})
+    shareReplay({ refCount: true, bufferSize: 1 })
   );
-  focusElement$ = this.elementFind$.pipe(
-    switchMap(elementMap => elementMap.current$)
-  );
+  focusElement$ = this.elementFind$.pipe(switchMap((elementMap) => elementMap.current$));
 
   ngOnDestroy() {
     this.destroy$.next();
   }
 
-  private* generateAnnotationFindQueue(root: Node, query: string) {
-    const annotations = Array.from((root as Element).querySelectorAll('[data-annotation-meta]')) as HTMLElement[];
+  private *generateAnnotationFindQueue(root: Node, query: string) {
+    const annotations = Array.from(
+      (root as Element).querySelectorAll('[data-annotation-meta]')
+    ) as HTMLElement[];
     for (const annoEl of annotations) {
       const data = JSON.parse(annoEl.getAttribute('data-annotation-meta'));
 
@@ -98,10 +105,11 @@ export class FindControllerService implements OnDestroy {
     }
   }
 
-  private* generateTextFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [
-      root,
-    ];
+  private *generateTextFindQueue(
+    root: Node,
+    query: string
+  ): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [root];
 
     while (queue.length !== 0) {
       const node = queue.shift();

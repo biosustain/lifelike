@@ -16,17 +16,11 @@ describe('ShortestPathComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-      ],
+      imports: [RootStoreModule, SharedModule],
       declarations: [
         ShortestPathComponent,
-        MockComponents(
-          RouteBuilderComponent,
-          RouteDisplayComponent,
-      ),
-      ]
+        MockComponents(RouteBuilderComponent, RouteDisplayComponent),
+      ],
     });
   });
 

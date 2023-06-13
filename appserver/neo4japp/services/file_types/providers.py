@@ -77,7 +77,9 @@ from neo4japp.constants import (
 )
 from neo4japp.exceptions import (
     HandledException,
-    ContentValidationError, ContentValidationWarning, ServerWarning,
+    ContentValidationError,
+    ContentValidationWarning,
+    ServerWarning,
 )
 from neo4japp.exceptions.exceptions import FileUploadError
 from neo4japp.info import ContentValidationInfo
@@ -252,13 +254,13 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 try:
                     end_of_match_idx = match.end(0)
                     first_char_after_match = content[
-                        end_of_match_idx: end_of_match_idx + 1
+                        end_of_match_idx : end_of_match_idx + 1
                     ]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
                             # new input = match + 50 chars after new line
                             match.group()
-                            + content[end_of_match_idx + 1: end_of_match_idx + 1 + 50]
+                            + content[end_of_match_idx + 1 : end_of_match_idx + 1 + 50]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -469,7 +471,9 @@ def substitute_svg_images(
     icon_data = get_icons_data()
     with map_content as bufferView:
         text_content = bufferView.read().decode(BYTE_ENCODING)
-        text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+        text_content = IMAGES_RE.sub(
+            lambda match: icon_data[match.group(0)], text_content
+        )
         for image in images:
             text_content = text_content.replace(
                 folder_name + '/' + image,
@@ -1406,9 +1410,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         """
         final_bytes = FileContentBuffer()
         try:
+
             def openImage(image):
                 with image as bufferView:
                     return Image.open(bufferView)
+
             images = [openImage(self.get_file_export(file, 'png')) for file in files]
         except Image.DecompressionBombError as e:
             raise SystemError(
@@ -1536,10 +1542,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_content = FileContentBuffer()
         with new_content as bufferView:
             new_zip = zipfile.ZipFile(
-                bufferView,
-                'w',
-                zipfile.ZIP_DEFLATED,
-                strict_timestamps=False
+                bufferView, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
             )
 
             # Weirdly, zipfile will store both files rather than override on duplicate name,

@@ -29,7 +29,9 @@ class OrganismField(fields.Field):
         try:
             return Organism(*value.split('/'))
         except ValueError as error:
-            raise ValidationError("Organism field must be filled as taxID/name") from error
+            raise ValidationError(
+                "Organism field must be filled as taxID/name"
+            ) from error
 
 
 class GeneOrganismSchema(Schema):

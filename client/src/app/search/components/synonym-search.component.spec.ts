@@ -16,16 +16,9 @@ describe('SynonymSearchComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [ SynonymSearchComponent ],
-      providers: [
-        ContentSearchService,
-        NgbActiveModal,
-      ]
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [SynonymSearchComponent],
+      providers: [ContentSearchService, NgbActiveModal],
     });
   });
 

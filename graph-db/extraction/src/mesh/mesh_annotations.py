@@ -3,7 +3,8 @@ from common.database import *
 from common.utils import get_data_dir
 import logging
 
-def add_annotation_entity_labels(database:Database):
+
+def add_annotation_entity_labels(database: Database):
     """
     Add additional entity labels (e.g. Disease, Anatomy, Phenomonea, Food) to mesh topical description.
 

@@ -8,7 +8,9 @@ from flask import Blueprint, Response, current_app, request
 from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 from neo4japp.utils.globals import config
 
-bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
+bp = Blueprint(
+    'enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation'
+)
 
 
 def forward_request():
@@ -20,15 +22,23 @@ def forward_request():
         request_args = {
             'method': request.method,
             'url': url,
-            'headers': {key: value for (key, value) in request.headers if key != 'Host'},
+            'headers': {
+                key: value for (key, value) in request.headers if key != 'Host'
+            },
             'data': request.get_data(),
             'cookies': request.cookies,
-            'allow_redirects': False
+            'allow_redirects': False,
         }
         resp = requests.request(**request_args)
-        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        excluded_headers = [
+            'content-encoding',
+            'content-length',
+            'transfer-encoding',
+            'connection',
+        ]
         headers = [
-            (name, value) for (name, value) in resp.raw.headers.items()
+            (name, value)
+            for (name, value) in resp.raw.headers.items()
             if name.lower() not in excluded_headers
         ]
     except Exception as e:
@@ -39,7 +49,7 @@ def forward_request():
                 arg: request_args[arg]
                 for arg in request_args
                 if arg not in ['headers', 'cookies']
-            }
+            },
         ) from e
 
     # 500 should contain message from service so we try to include it
@@ -54,17 +64,17 @@ def forward_request():
             )
         else:
             raise StatisticalEnrichmentError(
-                    'Statistical enrichment error',
-                    decoded_error_message,
-                    code=resp.status_code
+                'Statistical enrichment error',
+                decoded_error_message,
+                code=resp.status_code,
             )
 
     # All errors including failure to parse internal error message
     if 400 <= resp.status_code < 600:
         raise StatisticalEnrichmentError(
-                'Unable to process request',
-                'An internal error of statistical enrichment service occurred.',
-                code=resp.status_code
+            'Unable to process request',
+            'An internal error of statistical enrichment service occurred.',
+            code=resp.status_code,
         )
 
     return Response(resp.content, resp.status_code, headers)

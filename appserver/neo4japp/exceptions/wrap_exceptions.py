@@ -4,12 +4,13 @@ from neo4japp.exceptions import ServerException
 
 
 def wrap_exceptions(
-        wrapping_exception,
-        wrapped_exceptions: Union[Type[Exception], Tuple[Type[Exception], ...]] = ServerException,
-        **exception_kwargs
+    wrapping_exception,
+    wrapped_exceptions: Union[
+        Type[Exception], Tuple[Type[Exception], ...]
+    ] = ServerException,
+    **exception_kwargs
 ):
-    """Decorator that reraises wrapping exception in case given exception occurs
-    """
+    """Decorator that reraises wrapping exception in case given exception occurs"""
 
     def decorator(func):
         @functools.wraps(func)
@@ -25,6 +26,4 @@ def wrap_exceptions(
     return decorator
 
 
-__all__ = [
-    "wrap_exceptions"
-]
+__all__ = ["wrap_exceptions"]

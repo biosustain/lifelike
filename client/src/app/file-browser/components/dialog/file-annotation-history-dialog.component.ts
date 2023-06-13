@@ -15,11 +15,9 @@ import { FilesystemObject } from '../../models/filesystem-object';
   templateUrl: './file-annotation-history-dialog.component.html',
 })
 export class FileAnnotationHistoryDialogComponent extends CommonDialogComponent<void> {
-
   @Input() object: FilesystemObject;
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog) {
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 

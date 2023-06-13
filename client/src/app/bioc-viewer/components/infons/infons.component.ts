@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 
-
 @Component({
   selector: 'app-bioc-infons',
   templateUrl: './infons.component.html',

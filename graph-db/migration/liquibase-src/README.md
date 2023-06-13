@@ -1,4 +1,5 @@
 ## Java Project Setup
+
 This is a JAVA maven project, so you will need some sort of IDE so the project can download the dependencies.
 
 IntelliJ: https://www.jetbrains.com/idea/ (Download community version)
@@ -6,10 +7,13 @@ IntelliJ: https://www.jetbrains.com/idea/ (Download community version)
 Once repo is cloned, open IntelliJ and go to File > Open (select **liquibase-src** folder)
 
 If you want to add new dependencies, you will need to update the `pom.xml` file, then right-click the file, go to Maven (bottom) > Reload Project.
-- To update the `pom.xml` file, go to the maven repository listing to find the dependencies you want: https://mvnrepository.com/
+
+-   To update the `pom.xml` file, go to the maven repository listing to find the dependencies you want: https://mvnrepository.com/
 
 ## Installation
+
 Before installing liquibase and maven, make sure you have the openjdk installed and added to your path in the `.bash_profile`.
+
 ```bash
 > brew install openjdk openjdk@11
 > vim ~/<path>/<to>/.bash_profile
@@ -22,17 +26,22 @@ export PATH="/usr/local/opt/openjdk/bin:$PATH"
 ```
 
 Migration uses Liquibase for Neo4j (https://neo4j.com/labs/liquibase/):
-- https://github.com/liquibase/liquibase-neo4j
+
+-   https://github.com/liquibase/liquibase-neo4j
 
 To get started, install the liquibase CLI based on your operating system: https://docs.liquibase.com/concepts/installation/home.html
-- For Mac OS, you can also install with `homebrew` (https://brew.sh/) with the command: `brew install liquibase`.
+
+-   For Mac OS, you can also install with `homebrew` (https://brew.sh/) with the command: `brew install liquibase`.
 
 Once installed, you need to set the `LIQUIBASE_HOME` path. If you used homebrew, it will tell you:
+
 ```bash
 You should set the environment variable LIQUIBASE_HOME to
   /usr/local/opt/liquibase/libexec
 ```
+
 So edit your `.bash_profile`:
+
 ```bash
 > vim ~/<path>/<to>/.bash_profile
 # then add the below to the file
@@ -46,6 +55,7 @@ export PATH="...:$LIQUIBASE_HOME"
 ```
 
 You will also need the Java JDK (version 8+). Again, if you're on Mac OS, you can use `brew install openjdk@<version>`. To see the available versions do `brew list`. Once installed, you can see a similar output:
+
 ```bash
 > java --version
 openjdk 16.0.1 2021-04-20
@@ -66,9 +76,9 @@ Run the command below to confirm the liquibase CLI is installed.
 ##  \_____/_|\__, |\__,_|_|_.__/ \__,_|___/\___|  ##
 ##              | |                               ##
 ##              |_|                               ##
-##                                                ## 
+##                                                ##
 ##  Get documentation at docs.liquibase.com       ##
-##  Get certified courses at learn.liquibase.com  ## 
+##  Get certified courses at learn.liquibase.com  ##
 ##  Free schema change activity reports at        ##
 ##      https://hub.liquibase.com                 ##
 ##                                                ##
@@ -81,9 +91,11 @@ Liquibase Community 4.4.1 by Datical
 ```
 
 ### JAR Files
+
 You will need two JAR (`.jar`) files for liquibase to work:
-- liquibase-neo4j: https://github.com/liquibase/liquibase-neo4j/releases
-- Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
+
+-   liquibase-neo4j: https://github.com/liquibase/liquibase-neo4j/releases
+-   Neo4j JDBC: https://github.com/neo4j-contrib/neo4j-jdbc/releases
 
 Download them based on the neo4j version, e.g 4.x for our neo4j. Put them in the `$LIQUIBASE_HOME/lib` folder location.
 
@@ -105,6 +117,7 @@ total 27112
 ```
 
 ### Custom Java Classes
+
 Some of our queries are advance queries or require some sort of data file parsing that liquibase does not have support for. To workaround this, we created `*Handler.java` Java classes (located in `migration/liquibase-src`) that need to be compiled into JAR files and also copied into the `$LIQUIBASE_HOME/lib` folder.
 
 NOTE: If you do not have `mvn` command, run `brew install maven`.
@@ -120,12 +133,14 @@ cp target/lifelike-liquibase-<version>-SNAPSHOT.jar /usr/local/opt/liquibase/lib
 To use these classes, check the comment docs in the source code.
 
 ### Useful Neo4j Java Documentation
+
 Useful documentations...
-- https://docs.liquibase.com/change-types/community/custom-change.html
-- https://github.com/liquibase/liquibase/tree/master/liquibase-core/src/test/java/liquibase/change/custom
-- https://github.com/neo4j/neo4j-java-driver
-- https://neo4j.com/docs/java-manual/current/session-api/
-- https://neo4j.com/docs/api/java-driver/current/
-- Naming convention: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
-- Azure SDK References: https://docs.microsoft.com/en-us/java/api/com.azure.storage.file.share?view=azure-java-stable
-- GCloud SDK References: https://cloud.google.com/storage/docs/apis & https://pypi.org/project/google-cloud-storage/
+
+-   https://docs.liquibase.com/change-types/community/custom-change.html
+-   https://github.com/liquibase/liquibase/tree/master/liquibase-core/src/test/java/liquibase/change/custom
+-   https://github.com/neo4j/neo4j-java-driver
+-   https://neo4j.com/docs/java-manual/current/session-api/
+-   https://neo4j.com/docs/api/java-driver/current/
+-   Naming convention: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+-   Azure SDK References: https://docs.microsoft.com/en-us/java/api/com.azure.storage.file.share?view=azure-java-stable
+-   GCloud SDK References: https://cloud.google.com/storage/docs/apis & https://pypi.org/project/google-cloud-storage/

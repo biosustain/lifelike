@@ -7,17 +7,14 @@ import { PDFResult } from 'app/interfaces';
   templateUrl: './file-records.component.html',
   styleUrls: ['./file-records.component.scss'],
   styles: ['.highlight {border: 2px solid red}'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class FileRecordsComponent implements OnInit {
   encodeURIComponent = encodeURIComponent;
 
   @Input() results: PDFResult;
 
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

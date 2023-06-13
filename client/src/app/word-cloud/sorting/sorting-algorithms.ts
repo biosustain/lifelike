@@ -2,7 +2,7 @@ export enum SortingAlgorithmId {
   frequency = 'frequency',
   sum_log_count = 'sum_log_count',
   mwu = 'mwu',
-  count_per_row = 'count_per_row'
+  count_per_row = 'count_per_row',
 }
 
 export interface SortingAlgorithm {
@@ -63,16 +63,15 @@ over similar counts collected from a single source.<br/>
         default: 0,
       },
       // mwu <Temporarily disabled>
-    ]
+    ],
   },
   'application/pdf': {
     default: frequency,
-    all: [
-      frequency
-    ]
+    all: [frequency],
   },
   'vnd.lifelike.document/enrichment-table': {
-    default: frequency, all: [
+    default: frequency,
+    all: [
       frequency,
       {
         id: SortingAlgorithmId.count_per_row,
@@ -83,17 +82,17 @@ over similar counts collected from a single source.<br/>
         step: 1,
         default: 1,
       },
-//       {
-//         ...mwu,
-//         description: `
-// Each word are weighted according to a one-sided MWU test that assesses whether a count
-// for that specific term tends to be larger than a count from any other term.<br/>
-// <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
-// Normally one would simply sum occurrences of the gene within the row, however,
-// since some columns might be highly correlated (duplicated text)
-// the number of maximum mentions per column is used as an sample for that row.
-//         `,
-//       }
-    ]
-  }
+      //       {
+      //         ...mwu,
+      //         description: `
+      // Each word are weighted according to a one-sided MWU test that assesses whether a count
+      // for that specific term tends to be larger than a count from any other term.<br/>
+      // <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
+      // Normally one would simply sum occurrences of the gene within the row, however,
+      // since some columns might be highly correlated (duplicated text)
+      // the number of maximum mentions per column is used as an sample for that row.
+      //         `,
+      //       }
+    ],
+  },
 };

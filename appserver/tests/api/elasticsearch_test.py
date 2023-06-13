@@ -69,10 +69,10 @@ def pdf_document(
             'public': True,
             'id': test_user_with_pdf.id,
             'mime_type': 'application/pdf',
-            'path': '/Lifelike/example3.pdf'
+            'path': '/Lifelike/example3.pdf',
         },
         # This option is MANDATORY! Otherwise the document won't be immediately visible to search.
-        refresh='true'
+        refresh='true',
     )
 
 
@@ -89,19 +89,13 @@ def test_user_can_search_content(
     headers = generate_headers(login_resp['accessToken']['token'])
 
     with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        ElasticService, 'search', return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
         resp = client.get(
             f'/search/content',
             headers=headers,
-            data={
-                'q': 'BOLA3',
-                'limit': 10,
-                'page': 1
-            },
-            content_type='multipart/form-data'
+            data={'q': 'BOLA3', 'limit': 10, 'page': 1},
+            content_type='multipart/form-data',
         )
 
         assert resp.status_code == HTTPStatus.OK
@@ -118,7 +112,7 @@ def test_user_can_search_content(
                     'bool': {
                         'should': [
                             {'terms': {'project_id': [fix_project.id]}},
-                            {'term': {'public': True}}
+                            {'term': {'public': True}},
                         ]
                     }
                 },
@@ -128,9 +122,9 @@ def test_user_can_search_content(
                             {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                         ]
                     }
-                }
+                },
             ],
-            highlight=highlight
+            highlight=highlight,
         )
 
 
@@ -147,11 +141,8 @@ def test_user_can_search_content_with_single_types(
     headers = generate_headers(login_resp['accessToken']['token'])
 
     with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        ElasticService, 'search', return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-
         resp = client.get(
             f'/search/content',
             headers=headers,
@@ -161,7 +152,7 @@ def test_user_can_search_content_with_single_types(
                 'page': 1,
                 'types': 'pdf',
             },
-            content_type='multipart/form-data'
+            content_type='multipart/form-data',
         )
 
         assert resp.status_code == HTTPStatus.OK
@@ -178,7 +169,7 @@ def test_user_can_search_content_with_single_types(
                     'bool': {
                         'should': [
                             {'terms': {'project_id': [fix_project.id]}},
-                            {'term': {'public': True}}
+                            {'term': {'public': True}},
                         ]
                     }
                 },
@@ -188,9 +179,9 @@ def test_user_can_search_content_with_single_types(
                             {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                         ]
                     }
-                }
+                },
             ],
-            highlight=highlight
+            highlight=highlight,
         )
 
 
@@ -207,11 +198,8 @@ def test_user_can_search_content_with_multiple_types(
     headers = generate_headers(login_resp['accessToken']['token'])
 
     with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        ElasticService, 'search', return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-
         resp = client.get(
             f'/search/content',
             headers=headers,
@@ -221,7 +209,7 @@ def test_user_can_search_content_with_multiple_types(
                 'page': 1,
                 'types': 'pdf;map',
             },
-            content_type='multipart/form-data'
+            content_type='multipart/form-data',
         )
 
         assert resp.status_code == HTTPStatus.OK
@@ -238,7 +226,7 @@ def test_user_can_search_content_with_multiple_types(
                     'bool': {
                         'should': [
                             {'terms': {'project_id': [fix_project.id]}},
-                            {'term': {'public': True}}
+                            {'term': {'public': True}},
                         ]
                     }
                 },
@@ -248,9 +236,9 @@ def test_user_can_search_content_with_multiple_types(
                             {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                         ]
                     }
-                }
+                },
             ],
-            highlight=highlight
+            highlight=highlight,
         )
 
 
@@ -267,18 +255,13 @@ def test_user_can_search_content_with_folder(
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
-    root_folder_hash_id = session.query(
-        Files.hash_id
-    ).filter(
-        Files.id == fix_project.root_id
-    ).scalar()
+    root_folder_hash_id = (
+        session.query(Files.hash_id).filter(Files.id == fix_project.root_id).scalar()
+    )
 
     with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        ElasticService, 'search', return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-
         resp = client.get(
             f'/search/content',
             headers=headers,
@@ -288,7 +271,7 @@ def test_user_can_search_content_with_folder(
                 'page': 1,
                 'folders': root_folder_hash_id,
             },
-            content_type='multipart/form-data'
+            content_type='multipart/form-data',
         )
 
         assert resp.status_code == HTTPStatus.OK
@@ -303,13 +286,7 @@ def test_user_can_search_content_with_folder(
             filter_=[
                 {
                     'bool': {
-                        'should': [
-                            {
-                                'terms': {
-                                    'path.tree': [f'/{fix_project.name}']
-                                }
-                            }
-                        ]
+                        'should': [{'terms': {'path.tree': [f'/{fix_project.name}']}}]
                     }
                 },
                 {
@@ -318,9 +295,9 @@ def test_user_can_search_content_with_folder(
                             {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                         ]
                     }
-                }
+                },
             ],
-            highlight=highlight
+            highlight=highlight,
         )
 
 
@@ -337,18 +314,13 @@ def test_user_can_search_content_type_and_folder(
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
-    root_folder_hash_id = session.query(
-        Files.hash_id
-    ).filter(
-        Files.id == fix_project.root_id
-    ).scalar()
+    root_folder_hash_id = (
+        session.query(Files.hash_id).filter(Files.id == fix_project.root_id).scalar()
+    )
 
     with patch.object(
-        ElasticService,
-        'search',
-        return_value=({'hits': {'hits': [], 'total': 0}}, [])
+        ElasticService, 'search', return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-
         resp = client.get(
             f'/search/content',
             headers=headers,
@@ -359,7 +331,7 @@ def test_user_can_search_content_type_and_folder(
                 'types': 'enrichment-table;map;pdf',
                 'folders': root_folder_hash_id,
             },
-            content_type='multipart/form-data'
+            content_type='multipart/form-data',
         )
 
         assert resp.status_code == HTTPStatus.OK
@@ -374,13 +346,7 @@ def test_user_can_search_content_type_and_folder(
             filter_=[
                 {
                     'bool': {
-                        'should': [
-                            {
-                                'terms': {
-                                    'path.tree': [f'/{fix_project.name}']
-                                }
-                            }
-                        ]
+                        'should': [{'terms': {'path.tree': [f'/{fix_project.name}']}}]
                     }
                 },
                 {
@@ -389,9 +355,9 @@ def test_user_can_search_content_type_and_folder(
                             {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                         ]
                     }
-                }
+                },
             ],
-            highlight=highlight
+            highlight=highlight,
         )
 
 
@@ -402,17 +368,15 @@ def test_search_service_returns_child_of_folder(
     test_user_with_pdf,
     fix_project,
     # Included here to make sure the pdf is immediately available in elastic
-    pdf_document
+    pdf_document,
 ):
     # Login as our test user
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
-    root_folder_hash_id = session.query(
-        Files.hash_id
-    ).filter(
-        Files.id == fix_project.root_id
-    ).scalar()
+    root_folder_hash_id = (
+        session.query(Files.hash_id).filter(Files.id == fix_project.root_id).scalar()
+    )
 
     resp = client.get(
         f'/search/content',
@@ -423,7 +387,7 @@ def test_search_service_returns_child_of_folder(
             'page': 1,
             'folders': root_folder_hash_id,
         },
-        content_type='multipart/form-data'
+        content_type='multipart/form-data',
     )
 
     assert resp.status_code == HTTPStatus.OK

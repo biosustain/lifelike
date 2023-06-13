@@ -9,5 +9,4 @@ export const TERMS_OF_SERVICE = {
   selector: 'app-terms-of-service-text',
   templateUrl: './terms-of-service-text.component.html',
 })
-export class TermsOfServiceTextComponent {
-}
+export class TermsOfServiceTextComponent {}

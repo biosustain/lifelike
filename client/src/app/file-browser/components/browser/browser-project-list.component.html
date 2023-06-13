@@ -1,64 +1,68 @@
 <div class="module-section">
-    <div class="module-section-header">
-        <h2 class="module-section-header-title">Your Projects</h2>
+  <div class="module-section-header">
+    <h2 class="module-section-header-title">Your Projects</h2>
+  </div>
+
+  <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
+    <div class="mb-3 d-flex align-items-center">
+      <div class="mr-2">
+        <button class="btn btn-primary" (click)="openCreateDialog()">
+          <i class="fa fa-fw fa-plus-circle"></i>
+          New Project
+        </button>
+      </div>
     </div>
 
-    <div class="module-section-body" appElementObserver #bodyObserver="appElementObserver">
-        <div class="mb-3 d-flex align-items-center">
-            <div class="mr-2">
-                <button class="btn btn-primary" (click)="openCreateDialog()">
-                    <i class="fa fa-fw fa-plus-circle"></i>
-                    New Project
+    <ng-container *ngIf="projectList$ | async as projectList">
+      <app-module-error *ngIf="projectList.error; else content" [error]="projectList.error">
+      </app-module-error>
+      <ng-template #content>
+        <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
+          <app-object-tile-deck
+            [objects]="projectList.value.results"
+            [showAuthor]="false"
+            [appShowPlaceholders]="projectList.loading"
+          >
+            <ng-template let-project #tileToolbar>
+              <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
+                <i class="fas fa-star text-warning"></i>
+              </button>
+              <button
+                *ngIf="project.public"
+                class="btn btn-sm"
+                ngbTooltip="This project is public and can be viewed by any logged-in user."
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
+                container="body"
+              >
+                <i class="fa fa-fw text-icon fa-globe"></i>
+              </button>
+              <div ngbDropdown class="d-inline-block ml-auto" container="body">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <i class="fas fa-cog fa-fw"></i>
                 </button>
-            </div>
-        </div>
-
-        <ng-container *ngIf="(projectList$ | async) as projectList">
-            <app-module-error *ngIf="projectList.error; else content" [error]="projectList.error">
-            </app-module-error>
-            <ng-template #content>
-              <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
-                <app-object-tile-deck
-                        [objects]="projectList.value.results"
-                        [showAuthor]="false"
-                        [appShowPlaceholders]="projectList.loading"
-                >
-                    <ng-template let-project #tileToolbar>
-                        <button *ngIf="project.starred" class="btn btn-sm" (click)="toggleStarred(project)">
-                            <i class="fas fa-star text-warning"></i>
-                        </button>
-                        <button *ngIf="project.public"
-                                class="btn btn-sm"
-                                ngbTooltip="This project is public and can be viewed by any logged-in user."
-                                    #tooltipRef="ngbTooltip"
-                                    [appAutoCloseTooltipOutOfView]="tooltipRef"
-                                    container="body"
-                            >
-                            <i class="fa fa-fw text-icon fa-globe"></i>
-                        </button>
-                        <div ngbDropdown class="d-inline-block ml-auto" container="body">
-                            <button class="btn btn-sm" ngbDropdownToggle>
-                                <i class="fas fa-cog fa-fw"></i>
-                            </button>
-                            <div ngbDropdownMenu>
-                                <app-project-menu [project]="project"></app-project-menu>
-                            </div>
-                        </div>
-                    </ng-template>
-                </app-object-tile-deck>
-
-                <div class="mt-4">
-                        <app-pagination [paging]="paging$.value" [collectionSize]="projectList.value.collectionSize"
-                                        (pageChange)="this.paging$.next($event)"></app-pagination>
-                    </div>
-              </ng-container>
-            </ng-template>
-            <ng-template #noProjectResults>
-                <div class="my-4">
-                    You have no projects. Create projects to store collections of
-                    documents and knowledge maps.
+                <div ngbDropdownMenu>
+                  <app-project-menu [project]="project"></app-project-menu>
                 </div>
+              </div>
             </ng-template>
+          </app-object-tile-deck>
+
+          <div class="mt-4">
+            <app-pagination
+              [paging]="paging$.value"
+              [collectionSize]="projectList.value.collectionSize"
+              (pageChange)="this.paging$.next($event)"
+            ></app-pagination>
+          </div>
         </ng-container>
-    </div>
+      </ng-template>
+      <ng-template #noProjectResults>
+        <div class="my-4">
+          You have no projects. Create projects to store collections of documents and knowledge
+          maps.
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
 </div>

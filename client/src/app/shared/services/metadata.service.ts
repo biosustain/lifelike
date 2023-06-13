@@ -6,17 +6,13 @@ import { map } from 'rxjs/operators';
 
 import { BuildInfo } from 'app/interfaces/metadata.interface';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class MetaDataService {
-    readonly baseUrl = '/api/meta';
+  readonly baseUrl = '/api/meta';
 
-    constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-    getBuildInfo(): Observable<BuildInfo> {
-        return this.http.get<{result: BuildInfo}>(
-            `${this.baseUrl}/`,
-        ).pipe(
-            map((res) => res.result)
-        );
-    }
+  getBuildInfo(): Observable<BuildInfo> {
+    return this.http.get<{ result: BuildInfo }>(`${this.baseUrl}/`).pipe(map((res) => res.result));
+  }
 }

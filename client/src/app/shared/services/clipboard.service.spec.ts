@@ -11,7 +11,7 @@ describe('ClipboardService', () => {
   configureTestSuite(() => {
     TestBed.configureTestingModule({
       imports: [MatSnackBarModule],
-      providers: [ClipboardService]
+      providers: [ClipboardService],
     });
   });
 

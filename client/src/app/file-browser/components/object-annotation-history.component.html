@@ -1,83 +1,91 @@
-<ng-container *ngIf="(logWithStatus$ | async) as logWithStatus">
+<ng-container *ngIf="logWithStatus$ | async as logWithStatus">
   <ng-container *ngIf="logWithStatus.value as log">
     <div *ngIf="!log.results.length" class="p-4 text-center">
       There is no history to show for this file.
     </div>
     <ng-container *ngIf="log.results.length">
-      <table class="table" style="table-layout: fixed" [appShowPlaceholders]="logWithStatus.loading">
+      <table
+        class="table"
+        style="table-layout: fixed"
+        [appShowPlaceholders]="logWithStatus.loading"
+      >
         <colgroup>
-          <col style="width: 140px">
-          <col style="width: 145px">
+          <col style="width: 140px" />
+          <col style="width: 145px" />
         </colgroup>
         <thead>
-        <tr>
-          <th>Date</th>
-          <th>User</th>
-          <th>Changes</th>
-        </tr>
+          <tr>
+            <th>Date</th>
+            <th>User</th>
+            <th>Changes</th>
+          </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let change of log.results.view$ | async">
-          <td class="text-truncate">
-            {{ change.date | date: 'short' }}
-          </td>
-          <td class="text-truncate">
-            <ng-container *ngIf="change.user; else noUser">
-              <app-user [user]="change.user"></app-user>
-            </ng-container>
-            <ng-template #noUser>
-              <em>System</em>
-            </ng-template>
-          </td>
-          <td>
-            <div class="mb-2" *ngIf="change.isReannotation">
-              <span class="badge badge-pill badge-secondary">Re-Annotation</span>
-            </div>
-            <div *ngIf="!change.inclusionChanges.length && !change.exclusionChanges.length"
-                 class="text-muted">
-              <em>No changes.</em>
-            </div>
-            <ul class="list-condensed overflow-auto" style="max-height: 200px">
-              <li *ngFor="let item of change.inclusionChanges">
-                <div
-                  [class.text-success]="item.action === 'added'"
-                  [class.text-danger]="item.action === 'removed'"
-                  [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-                  placement="top-left">
-                  {{ item.label }} annotation
-                  <strong>'{{ item.meta.allText }}'</strong>
-                  as <em>{{ item.meta.type }}</em>
-                  <div class="text-muted">
-                    <div *ngIf="item.meta.includeGlobally">
-                      <i class="fa fa-globe"></i> Added to global list
+          <tr *ngFor="let change of log.results.view$ | async">
+            <td class="text-truncate">
+              {{ change.date | date : 'short' }}
+            </td>
+            <td class="text-truncate">
+              <ng-container *ngIf="change.user; else noUser">
+                <app-user [user]="change.user"></app-user>
+              </ng-container>
+              <ng-template #noUser>
+                <em>System</em>
+              </ng-template>
+            </td>
+            <td>
+              <div class="mb-2" *ngIf="change.isReannotation">
+                <span class="badge badge-pill badge-secondary">Re-Annotation</span>
+              </div>
+              <div
+                *ngIf="!change.inclusionChanges.length && !change.exclusionChanges.length"
+                class="text-muted"
+              >
+                <em>No changes.</em>
+              </div>
+              <ul class="list-condensed overflow-auto" style="max-height: 200px">
+                <li *ngFor="let item of change.inclusionChanges">
+                  <div
+                    [class.text-success]="item.action === 'added'"
+                    [class.text-danger]="item.action === 'removed'"
+                    [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
+                    placement="top-left"
+                  >
+                    {{ item.label }} annotation
+                    <strong>'{{ item.meta.allText }}'</strong>
+                    as <em>{{ item.meta.type }}</em>
+                    <div class="text-muted">
+                      <div *ngIf="item.meta.includeGlobally">
+                        <i class="fa fa-globe"></i> Added to global list
+                      </div>
                     </div>
                   </div>
-                </div>
-              </li>
-              <li *ngFor="let item of change.exclusionChanges">
-                <div
-                  [class.text-success]="item.action === 'removed'"
-                  [class.text-danger]="item.action === 'added'"
-                  [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-                  placement="top-left">
-                  {{ item.label }} exclusion <strong>'{{ item.meta.text }}'</strong>
-                  as <em>{{ item.meta.type }}</em>
-                </div>
-                <div class="text-muted">
-                  <div *ngIf="item.meta.reason">Reason: {{ item.meta.reason }}</div>
-                  <div *ngIf="item.meta.comment">Comment: {{ item.meta.comment }}</div>
-                  <div *ngIf="item.meta.excludeGlobally">
-                    <i class="fa fa-globe"></i> Added to global exclusion list
+                </li>
+                <li *ngFor="let item of change.exclusionChanges">
+                  <div
+                    [class.text-success]="item.action === 'removed'"
+                    [class.text-danger]="item.action === 'added'"
+                    [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
+                    placement="top-left"
+                  >
+                    {{ item.label }} exclusion <strong>'{{ item.meta.text }}'</strong> as
+                    <em>{{ item.meta.type }}</em>
                   </div>
-                </div>
-              </li>
-            </ul>
-          </td>
-        </tr>
+                  <div class="text-muted">
+                    <div *ngIf="item.meta.reason">Reason: {{ item.meta.reason }}</div>
+                    <div *ngIf="item.meta.comment">Comment: {{ item.meta.comment }}</div>
+                    <div *ngIf="item.meta.excludeGlobally">
+                      <i class="fa fa-globe"></i> Added to global exclusion list
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </td>
+          </tr>
         </tbody>
       </table>
 
@@ -86,7 +94,8 @@
           [page]="page"
           [pageSize]="limit"
           [collectionSize]="log.collectionSize"
-          (pageChange)="goToPage($event)"></ngb-pagination>
+          (pageChange)="goToPage($event)"
+        ></ngb-pagination>
       </div>
     </ng-container>
   </ng-container>

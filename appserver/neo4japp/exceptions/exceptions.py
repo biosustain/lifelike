@@ -25,10 +25,12 @@ class CauseDefaultingDescriptor(Generic[T]):
         return self._prefix + self._name
 
     @overload
-    def __get__(self, instance: None, owner: Any) -> T: ...
+    def __get__(self, instance: None, owner: Any) -> T:
+        ...
 
     @overload
-    def __get__(self, instance: object, owner: Any) -> T: ...
+    def __get__(self, instance: object, owner: Any) -> T:
+        ...
 
     def __get__(self, instance: Any, owner: Any) -> T:
         # Dealing with frozen instances (once we read the value should be consider frozen)
@@ -57,9 +59,7 @@ class CauseDefaultingDescriptor(Generic[T]):
         return f'<{type(self).__name__} {self._name}>'
 
 
-def cause_field(
-        *, default=MISSING, default_factory=MISSING, **kwargs
-):
+def cause_field(*, default=MISSING, default_factory=MISSING, **kwargs):
     """
     Convinience function which inits dataclass field with defaults created based on
     exception __cause__
@@ -69,11 +69,13 @@ def cause_field(
     :return:
     """
     return field(
-        default=CauseDefaultingDescriptor(default) if default is not MISSING else MISSING,
-        default_factory=(lambda: CauseDefaultingDescriptor(
-            default_factory()
-        )) if default_factory is not MISSING else MISSING,
-        **kwargs
+        default=CauseDefaultingDescriptor(default)
+        if default is not MISSING
+        else MISSING,
+        default_factory=(lambda: CauseDefaultingDescriptor(default_factory()))
+        if default_factory is not MISSING
+        else MISSING,
+        **kwargs,
     )
 
 
@@ -92,6 +94,7 @@ class ServerException(Exception, BaseServerException):
     :param code: the error code
     :param fields:
     """
+
     title: str = cause_field(default="We're sorry!")
     message: Optional[str] = cause_field(default="Looks like something went wrong!")
     additional_msgs: Tuple[str, ...] = cause_field(default=tuple())
@@ -137,13 +140,15 @@ class AnnotationError(ServerException):
     title: str = 'Unable to Annotate'
     message = TemplateDescriptor(  # type: ignore
         default='There was a problem annotating "$term". '
-                'Please make sure the term is correct, '
-                'including correct spacing and no extra characters.'
+        'Please make sure the term is correct, '
+        'including correct spacing and no extra characters.'
     )
 
     def __post_init__(self):
         if self.message is None and not self.term:
-            raise NotImplementedError("To render default Annotation error, term must be given.")
+            raise NotImplementedError(
+                "To render default Annotation error, term must be given."
+            )
 
 
 @dataclass(repr=False, eq=False, frozen=True)
@@ -210,12 +215,14 @@ class InvalidArgument(ServerException):
 @dataclass(repr=False, eq=False, frozen=True)
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
+
     code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
+
     pass
 
 
@@ -223,24 +230,28 @@ class JWTAuthTokenException(JWTTokenException):
 class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
+
     pass
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class OutdatedVersionException(ServerException):
     """Signals that the client sent a request from a old version of the application."""
+
     code: HTTPStatus = HTTPStatus.NOT_ACCEPTABLE
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class UnsupportedMediaTypeError(ServerException):
     """Signals that the client sent a request for an unsupported media type."""
+
     code: HTTPStatus = HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class AuthenticationError(ServerException):
     """Signals that the client sent a request with invalid credentials."""
+
     title: str = 'Failed to Authenticate'
     code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
@@ -283,13 +294,14 @@ class AccessRequestRequiredError(ServerException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
+
     curr_access: Optional[str] = None
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
     message = TemplateDescriptor(  # type: ignore
         default='You have "$curr_access" access. Please request "$req_access" '
-                'access at minimum for this content.'
+        'access at minimum for this content.'
     )
     code: HTTPStatus = HTTPStatus.FORBIDDEN
 

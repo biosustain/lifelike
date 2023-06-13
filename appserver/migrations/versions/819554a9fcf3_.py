@@ -16,6 +16,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 
@@ -53,17 +54,17 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('enrichment_annotations', postgresql.JSONB),
-        column('mime_type', sa.String))
+        column('mime_type', sa.String),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.enrichment_annotations
-    ]).where(
-        sa.and_(
-            tableclause.c.mime_type == 'vnd.lifelike.document/enrichment-table',
-            tableclause.c.enrichment_annotations.isnot(None)
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.enrichment_annotations]).where(
+            sa.and_(
+                tableclause.c.mime_type == 'vnd.lifelike.document/enrichment-table',
+                tableclause.c.enrichment_annotations.isnot(None),
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         collected = []
@@ -77,14 +78,18 @@ def data_upgrades():
                     continue
 
                 if 'annotation' in gene['imported']:
-                    name = re.findall(r'<annotation.*?>(.*?)</annotation>', gene['imported'])[0]
+                    name = re.findall(
+                        r'<annotation.*?>(.*?)</annotation>', gene['imported']
+                    )[0]
                 else:
                     name = re.findall(r'<snippet>(.*?)</snippet>', gene['imported'])[0]
                 gene['annotated_imported'] = gene['imported']
                 gene['imported'] = name
 
                 if 'annotation' in gene['matched']:
-                    name = re.findall(r'<annotation.*?>(.*?)</annotation>', gene['matched'])[0]
+                    name = re.findall(
+                        r'<annotation.*?>(.*?)</annotation>', gene['matched']
+                    )[0]
                 else:
                     name = re.findall(r'<snippet>(.*?)</snippet>', gene['matched'])[0]
                 gene['annotated_matched'] = gene['matched']

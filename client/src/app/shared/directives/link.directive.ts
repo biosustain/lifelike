@@ -1,5 +1,12 @@
 import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, NavigationExtras, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  NavigationExtras,
+  QueryParamsHandling,
+  Router,
+  UrlTree,
+} from '@angular/router';
 import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
@@ -13,7 +20,7 @@ import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manage
  * routes in the current workspace.
  */
 @Directive({
-  selector: '[appAbstractLinkDirective]'
+  selector: '[appAbstractLinkDirective]',
 })
 export class AbstractLinkDirective {
   @HostBinding('attr.href') @Input() href: string;
@@ -38,10 +45,11 @@ export class AbstractLinkDirective {
   commands: any[] = [];
   parentCommands: any[] = [];
 
-  constructor(readonly workspaceManager: WorkspaceManager,
-              readonly router: Router,
-              readonly route: ActivatedRoute) {
-  }
+  constructor(
+    readonly workspaceManager: WorkspaceManager,
+    readonly router: Router,
+    readonly route: ActivatedRoute
+  ) {}
 
   @Input()
   set appLink(commands: any[] | string | null | undefined) {
@@ -77,36 +85,41 @@ export class AbstractLinkDirective {
 
     // Create an object with only the properties which are defined. Avoids including unused properties, which is particular useful when
     // expanding the object.
-    const extras: WorkspaceNavigationExtras = assignDefined({}, {
-      skipLocationChange: attrBoolValue(this.skipLocationChange),
-      replaceUrl: attrBoolValue(this.replaceUrl),
-      state: this.state,
-      newTab: attrBoolValue(this.newTab),
-      sideBySide: attrBoolValue(this.sideBySide),
-      keepFocus: attrBoolValue(this.keepFocus),
-      matchExistingTab: this.matchExistingTab,
-      forceWorkbench: attrBoolValue(this.forceWorkbench),
-      preferPane: this.preferPane,
-      preferStartupPane: this.preferStartupPane,
-      shouldReplaceTab: this.shouldReplaceTab,
-      openParentFirst: attrBoolValue(this.openParentFirst),
-      parentAddress: this.router.createUrlTree(this.parentCommands)
-    });
+    const extras: WorkspaceNavigationExtras = assignDefined(
+      {},
+      {
+        skipLocationChange: attrBoolValue(this.skipLocationChange),
+        replaceUrl: attrBoolValue(this.replaceUrl),
+        state: this.state,
+        newTab: attrBoolValue(this.newTab),
+        sideBySide: attrBoolValue(this.sideBySide),
+        keepFocus: attrBoolValue(this.keepFocus),
+        matchExistingTab: this.matchExistingTab,
+        forceWorkbench: attrBoolValue(this.forceWorkbench),
+        preferPane: this.preferPane,
+        preferStartupPane: this.preferStartupPane,
+        shouldReplaceTab: this.shouldReplaceTab,
+        openParentFirst: attrBoolValue(this.openParentFirst),
+        parentAddress: this.router.createUrlTree(this.parentCommands),
+      }
+    );
 
     openInternalLink(this.workspaceManager, toValidUrl(this.urlTree.toString()), extras);
     return false;
   }
 
-
   get urlTree(): UrlTree {
     // Only keep defined properties. For example, `this.fragment` is often undefined, and including it can produce undesired URLs.
-    const navExtras: NavigationExtras = assignDefined({}, {
-      relativeTo: this.route,
-      queryParams: this.queryParams,
-      queryParamsHandling: this.queryParamsHandling,
-      preserveFragment: attrBoolValue(this.preserveFragment),
-      fragment: this.fragment
-    });
+    const navExtras: NavigationExtras = assignDefined(
+      {},
+      {
+        relativeTo: this.route,
+        queryParams: this.queryParams,
+        queryParamsHandling: this.queryParamsHandling,
+        preserveFragment: attrBoolValue(this.preserveFragment),
+        fragment: this.fragment,
+      }
+    );
 
     return this.router.createUrlTree(this.commands, navExtras);
   }
@@ -129,12 +142,14 @@ export class LinkWithHrefDirective extends AbstractLinkDirective implements OnCh
 
   private subscription: Subscription;
 
-  constructor(workspaceManager: WorkspaceManager,
-              router: Router,
-              route: ActivatedRoute,
-              private locationStrategy: LocationStrategy) {
+  constructor(
+    workspaceManager: WorkspaceManager,
+    router: Router,
+    route: ActivatedRoute,
+    private locationStrategy: LocationStrategy
+  ) {
     super(workspaceManager, router, route);
-    this.subscription = router.events.subscribe(s => {
+    this.subscription = router.events.subscribe((s) => {
       if (s instanceof NavigationEnd) {
         this.updateTargetUrlAndHref();
       }

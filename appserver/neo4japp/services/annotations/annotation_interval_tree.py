@@ -17,6 +17,7 @@ class AnnotationIntervalTree(IntervalTree):
 
     Also, in some cases we just want a new list of annotations.
     """
+
     def __init__(self, intervals=None):
         super().__init__(intervals=intervals)
 
@@ -47,7 +48,9 @@ class AnnotationIntervalTree(IntervalTree):
             else:
                 current_reduced[0] = data_initializer.copy()
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
+                merged.append(
+                    AnnotationInterval(higher.begin, higher.end, current_reduced[0])
+                )
 
         for higher in sorted_intervals:
             if merged:  # series already begun
@@ -55,10 +58,14 @@ class AnnotationIntervalTree(IntervalTree):
                 if higher.range_matches(lower):  # should merge
                     upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
-                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                        current_reduced[0] = data_reducer(
+                            current_reduced[0], higher.data
+                        )
                     else:  # annihilate the data, since we don't know how to merge it
                         current_reduced[0] = None
-                    merged[-1] = AnnotationInterval(lower.begin, upper_bound, current_reduced[0])
+                    merged[-1] = AnnotationInterval(
+                        lower.begin, upper_bound, current_reduced[0]
+                    )
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
@@ -93,21 +100,26 @@ class AnnotationIntervalTree(IntervalTree):
             else:
                 current_reduced[0] = data_initializer.copy()
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
+                merged.append(
+                    AnnotationInterval(higher.begin, higher.end, current_reduced[0])
+                )
 
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
                 if (
-                        higher.begin < lower.end or
-                        not strict and higher.begin == lower.end
+                    higher.begin < lower.end or not strict and higher.begin == lower.end
                 ):  # should merge
                     upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
-                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                        current_reduced[0] = data_reducer(
+                            current_reduced[0], higher.data
+                        )
                     else:  # annihilate the data, since we don't know how to merge it
                         current_reduced[0] = None
-                    merged[-1] = AnnotationInterval(lower.begin, upper_bound, current_reduced[0])
+                    merged[-1] = AnnotationInterval(
+                        lower.begin, upper_bound, current_reduced[0]
+                    )
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge

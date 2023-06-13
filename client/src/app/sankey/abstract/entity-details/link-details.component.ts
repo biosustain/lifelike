@@ -5,8 +5,10 @@ import { SankeyEntityDetailsComponent } from './entity-details.component';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { TypeContext } from '../../interfaces';
 
-@Component({template: ''})
-export abstract class SankeyAbstractLinkDetailsComponent<Base extends TypeContext> extends SankeyEntityDetailsComponent {
+@Component({ template: '' })
+export abstract class SankeyAbstractLinkDetailsComponent<
+  Base extends TypeContext
+> extends SankeyEntityDetailsComponent {
   constructor(
     protected baseView: BaseControllerService<Base>,
     protected readonly route: ActivatedRoute
@@ -17,4 +19,3 @@ export abstract class SankeyAbstractLinkDetailsComponent<Base extends TypeContex
   linkValueAccessors$ = this.common.linkValueAccessors$;
   linkValueAccessor$ = this.baseView.linkValueAccessor$;
 }
-

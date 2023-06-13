@@ -14,12 +14,12 @@ function* getWidthFittedLines<Metrics extends Pick<TextMetrics, 'width'>>(
   tokens: string[],
   width: number,
   measureText: (string) => Metrics
-): IterableIterator<{ text: string, metrics: Metrics, remainingTokens: boolean }> {
+): IterableIterator<{ text: string; metrics: Metrics; remainingTokens: boolean }> {
   if (!tokens.length) {
     return;
   }
 
-  const lineStart = first(tokens).trimStart();  // line does not start with space
+  const lineStart = first(tokens).trimStart(); // line does not start with space
   let lineTokens = [lineStart];
   let text = lineStart;
   let metrics: Metrics = measureText(lineTokens.join(''));
@@ -38,7 +38,7 @@ function* getWidthFittedLines<Metrics extends Pick<TextMetrics, 'width'>>(
         remainingTokens: true,
       };
 
-      const lineStartToken = token.trimStart();  // line does not start with space
+      const lineStartToken = token.trimStart(); // line does not start with space
       lineTokens = [lineStartToken];
       text = lineStartToken;
       metrics = measureText(text);
@@ -64,7 +64,7 @@ export function* wrapText<Metrics extends Pick<TextMetrics, 'width'>>(
   width: number,
   measureText: (string) => Metrics,
   hyphenWidth?: number
-): Generator<{text: string, metrics: Metrics, horizontalOverflow: boolean}> {
+): Generator<{ text: string; metrics: Metrics; horizontalOverflow: boolean }> {
   hyphenWidth = hyphenWidth ?? measureText('-').width;
   for (const block of text.split(/\r?\n/g)) {
     // We break on whitespace, word endings and special chars `\.,_-`.
@@ -78,7 +78,11 @@ export function* wrapText<Metrics extends Pick<TextMetrics, 'width'>>(
         // If there is no match, return the entire string as array (will be marked as overflow)
         const sylabes = lineWrappedOnTextBreak.text.match(REGEX.BETWEEN_SYLABES);
         if (sylabes) {
-          for (const wordWrappedOnSylabes of getWidthFittedLines(sylabes, width - hyphenWidth, measureText)) {
+          for (const wordWrappedOnSylabes of getWidthFittedLines(
+            sylabes,
+            width - hyphenWidth,
+            measureText
+          )) {
             yield {
               // Since we break the words, add hyphen.
               text: wordWrappedOnSylabes.text + (wordWrappedOnSylabes.remainingTokens ? '-' : ''),

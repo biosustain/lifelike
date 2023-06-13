@@ -11,11 +11,11 @@ export function grouped(formatterClass) {
   return class Formatter extends formatterClass {
     protected sortFailures(failures: RuleFailure[]): RuleFailure[] {
       const groupedFailures: {
-        [ruleSeverity in RuleSeverity]: Lint.RuleFailure[]
+        [ruleSeverity in RuleSeverity]: Lint.RuleFailure[];
       } = {
         warning: [],
         error: [],
-        off: []
+        off: [],
       };
       for (const failure of failures) {
         groupedFailures[failure.getRuleSeverity()].push(failure);

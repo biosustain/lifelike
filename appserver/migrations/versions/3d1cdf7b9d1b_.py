@@ -31,7 +31,7 @@ t_app_role = Table(
     'app_role',
     MetaData(),
     Column('id', Integer, primary_key=True),
-    Column('name', String)
+    Column('name', String),
 )
 
 t_appuser = Table(
@@ -55,7 +55,7 @@ t_appuser_role = Table(
     'app_user_role',
     MetaData(),
     Column('appuser_id', Integer),
-    Column('app_role_id', Integer)
+    Column('app_role_id', Integer),
 )
 
 
@@ -77,11 +77,13 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
     conn = op.get_bind()
 
-    existing_superuser = conn.execute(select([
-        t_appuser.c.id,
-    ]).where(
-        t_appuser.c.email == LIFELIKE_SUPERUSER
-    )).scalar()
+    existing_superuser = conn.execute(
+        select(
+            [
+                t_appuser.c.id,
+            ]
+        ).where(t_appuser.c.email == LIFELIKE_SUPERUSER)
+    ).scalar()
 
     if existing_superuser is None:
         # Add root project system user
@@ -92,26 +94,27 @@ def data_upgrades():
                 email=LIFELIKE_SUPERUSER,
                 first_name='lifelike',
                 last_name='bot',
-                password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode('utf8'),
+                password_hash=b'$2b$12$XiwYHvQb/M0a1Z0iNxpOYehL4is8DOvITsgw537oD83hZZop/Z502'.decode(
+                    'utf8'
+                ),
                 failed_login_count=0,
                 forced_password_reset=False,
-                subject=LIFELIKE_SUPERUSER
+                subject=LIFELIKE_SUPERUSER,
             )
         ).inserted_primary_key[0]
 
         superuser_role_ids = conn.execute(
-            select([
-                t_app_role.c.id,
-            ]).where(
-                t_app_role.c.name.in_(['user']
-            ))
+            select(
+                [
+                    t_app_role.c.id,
+                ]
+            ).where(t_app_role.c.name.in_(['user']))
         ).fetchall()
 
-        for role_id, in superuser_role_ids:
+        for (role_id,) in superuser_role_ids:
             conn.execute(
                 t_appuser_role.insert().values(
-                    appuser_id=new_superuser_id,
-                    app_role_id=role_id
+                    appuser_id=new_superuser_id, app_role_id=role_id
                 )
             )
 
