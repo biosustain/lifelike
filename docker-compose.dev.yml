@@ -1,5 +1,5 @@
 version: "3.9"
-name: '***ARANGO_DB_NAME***-development'
+name: "***ARANGO_DB_NAME***-development"
 # This configuration includes port mapping to interact with ***ARANGO_DB_NAME*** running locally
 # + utility to reset local dbs
 
@@ -39,9 +39,9 @@ services:
     <<: *appserver
     ports:
       - "5000:5000"
-#    depends_on:
-#      dev-setup:
-#        condition: service_completed_successfully
+  #    depends_on:
+  #      dev-setup:
+  #        condition: service_completed_successfully
 
   worker:
     extends:
@@ -143,7 +143,6 @@ services:
     extends:
       file: docker-compose.local.yml
       service: filebeat
-
 
 volumes:
   node_modules:

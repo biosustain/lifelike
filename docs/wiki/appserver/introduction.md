@@ -255,4 +255,3 @@ docker compose -f docker-compose.test.yml run appserver pytest --disable-pytest-
 docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-lint -rm appserver pycodestyle .
 docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-lint -rm appserver mypy .
 ```
-
