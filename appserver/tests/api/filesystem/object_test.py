@@ -1,4 +1,5 @@
 import hashlib
+from http import HTTPStatus
 from io import BytesIO
 import json
 import pytest
@@ -184,7 +185,7 @@ def test_get_file(
 
     assert resp.status_code == status_code
 
-    if status_code == 200:
+    if status_code == HTTPStatus.OK:
         resp_data = resp.get_json()
         resp_file = resp_data['result']
         assert_file_response(resp_file, file_in_project)
@@ -228,7 +229,7 @@ def test_get_recycled_file(
     )
 
     # Recycled files still can be read
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     resp_data = resp.get_json()
     resp_file = resp_data['result']
@@ -273,7 +274,7 @@ def test_get_deleted_file(
 
     assert resp.status_code == status_code
 
-    if status_code == 200:
+    if status_code == HTTPStatus.OK:
         resp_data = resp.get_json()
         resp_file = resp_data['result']
         assert_file_response(resp_file, file_in_project)
@@ -300,7 +301,7 @@ def test_get_file_missing(
         content_type='application/json'
     )
 
-    assert resp.status_code == 404
+    assert resp.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.parametrize(
@@ -357,7 +358,7 @@ def test_patch_file_permitted(
     updated_filename = session.query(Files.filename) \
         .filter(Files.id == file_in_project.id) \
         .one()[0]
-    if status_code == 200:
+    if status_code == HTTPStatus.OK:
         assert updated_filename == new_filename
     else:
         assert updated_filename != new_filename
@@ -416,7 +417,7 @@ def assert_patch_file_results(session, file_in_project: Files,
         .one()
 
     if expect_success:
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
 
         resp_data = resp.get_json()
         resp_file = resp_file_getter(resp_data)
@@ -441,7 +442,7 @@ def assert_patch_file_results(session, file_in_project: Files,
         assert_project_response(resp_file['project'], project)
 
     else:
-        assert resp.status_code == 400
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
 
         resp_data = resp.get_json()
 
@@ -528,7 +529,7 @@ def test_patch_file_missing(
         },
     )
 
-    assert resp.status_code == 404
+    assert resp.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.parametrize(
@@ -587,7 +588,7 @@ def test_bulk_patch_files_permitted(
     updated_filename = session.query(Files.filename) \
         .filter(Files.id == file_in_project.id) \
         .one()[0]
-    if status_code == 200:
+    if status_code == HTTPStatus.OK:
         assert updated_filename == new_filename
     else:
         assert updated_filename != new_filename
@@ -677,7 +678,7 @@ def test_bulk_patch_files_missing(
         },
     )
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     resp_data = resp.get_json()
     assert resp_data['mapping'] == dict()
@@ -717,7 +718,7 @@ def test_update_file_starred(
 
     assert resp.status_code == status_code
 
-    if status_code == 200:
+    if status_code == HTTPStatus.OK:
         resp_data = resp.get_json()
         resp_file = resp_data['result']
 
@@ -745,7 +746,7 @@ def test_get_starred_file_list(
         content_type='application/json'
     )
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     resp_data = resp.get_json()
 
@@ -800,7 +801,7 @@ def test_duplicate_map_does_not_create_new_content(
 
     new_total_file_contents = session.query(FileContent).count()
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     # If the new content had an identical checksum to the old content, these will match
     assert prev_total_file_contents == new_total_file_contents

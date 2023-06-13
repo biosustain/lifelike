@@ -26,7 +26,7 @@ from typing import (
 
 from neo4japp.constants import FILE_INDEX_ID, LogEventType
 from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.models import (
     Files, Projects,
 )
@@ -520,22 +520,18 @@ class ElasticService(ElasticConnection, GraphConnection):
             elif curr.lower() == 'not':
                 if _next.lower() in unstackable_logical_ops:
                     raise ServerException(
-                        title='Content Search Error',
                         message='Your query appears malformed. A logical operator (AND/OR) was ' +
                                 'encountered immediately following a NOT operator, e.g. ' +
                                 '"dog not and cat." Please examine your query for possible ' +
-                                'errors and try again.',
-                        code=400
+                                'errors and try again.'
                     )
                 new_query += [curr]
             elif curr.lower() in unstackable_logical_ops:
                 if _next.lower() in unstackable_logical_ops:
                     raise ServerException(
-                        title='Content Search Error',
                         message='Your query appears malformed. Two logical operators (AND/OR) ' +
                                 'were encountered in succession, e.g. "dog and and cat." Please ' +
-                                'examine your query for possible errors and try again.',
-                        code=400
+                                'examine your query for possible errors and try again.'
                     )
                 new_query += [curr]
             elif _next.lower() not in unstackable_logical_ops + [')']:
@@ -624,6 +620,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_source': False,
         }, words_phrases_and_wildcards
 
+    @wrap_exceptions(ServerException, title='Content Search Error')
     def search(
             self,
             index_id: str,
@@ -655,10 +652,8 @@ class ElasticService(ElasticConnection, GraphConnection):
             )
         except ElasticRequestError as e:
             raise ServerException(
-                title='Content Search Error',
                 message='Something went wrong during content search. Please simplify your query ' +
-                        '(e.g. remove terms, filters, flags, etc.) and try again.',
-                code=400
+                        '(e.g. remove terms, filters, flags, etc.) and try again.'
             ) from e
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]

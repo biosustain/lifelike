@@ -6,7 +6,7 @@ from flask import current_app
 from lmdb import Environment
 
 from neo4japp.constants import LogEventType
-from neo4japp.exceptions import LMDBError
+from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.utils.logger import EventLog
 from ..common import DatabaseConnection, TransactionContext
 
@@ -29,6 +29,7 @@ class LMDBConnection(DatabaseConnection):
         def __exit__(self, exc_type, exc_val, exc_traceback):
             self.env.close()
 
+    @wrap_exceptions(ServerException, title='Cannot Connect to LMDB')
     def begin(self, **kwargs):
         dbname = kwargs.get('dbname', '')
         create = kwargs.get('create', False)
@@ -39,10 +40,7 @@ class LMDBConnection(DatabaseConnection):
                 f'LMDB database name is invalid, cannot connect to {dbname}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
-                message='Unable to connect to LMDB, database name is invalid.'
-            )
+            raise ServerException(message='Unable to connect to LMDB, database name is invalid.')
 
         dbpath = path.join(self.dirpath, self.configs[dbname])
         try:
@@ -52,8 +50,7 @@ class LMDBConnection(DatabaseConnection):
                 f'Failed to open LMDB environment in path {dbpath}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
+            raise ServerException(
                 message=f'Encountered unexpected error connecting to LMDB.'
             ) from e
 
@@ -80,7 +77,6 @@ class LMDBConnection(DatabaseConnection):
                 f'Failed to open LMDB database named {dbname}.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
+            raise ServerException(
                 message=f'Encountered unexpected error connecting to LMDB.'
             ) from e

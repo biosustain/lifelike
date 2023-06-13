@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import current_app, g, Blueprint, jsonify
 from webargs.flaskparser import use_args
 
@@ -34,4 +36,4 @@ def client_logging(args):
         args.get('detail', 'No further details'),
         extra=err.to_dict()
     )
-    return jsonify(dict(result='success')), 200
+    return jsonify(dict(result='success')), HTTPStatus.OK

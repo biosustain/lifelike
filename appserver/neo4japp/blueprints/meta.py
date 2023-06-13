@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, current_app
 
 from neo4japp.blueprints.auth import login_exempt
@@ -27,4 +29,4 @@ def build_version():
         app_build_number=app_build_number,
         app_version=app_version,
     )
-    return SuccessResponse(result=result, status_code=200)
+    return SuccessResponse(result=result, status_code=HTTPStatus.OK)

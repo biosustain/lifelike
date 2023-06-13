@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, request, jsonify
 from pandas import DataFrame
 
@@ -31,18 +33,18 @@ def get_ncbi_enrichment_domains():
     else:
         nodes = {}
 
-    return jsonify({'result': nodes}), 200
+    return jsonify({'result': nodes}), HTTPStatus.OK
 
 
 @bp.route('/shortest-path-query/<int:query_id>', methods=['GET'])
 def get_shortest_path_query_result(query_id):
     kg = get_kg_service()
     result = kg.get_shortest_path_data(query_id)
-    return jsonify({'result': result}), 200
+    return jsonify({'result': result}), HTTPStatus.OK
 
 
 @bp.route('/shortest-path-query-list', methods=['GET'])
 def get_shortest_path_query_list():
     kg = get_kg_service()
     result = kg.get_shortest_path_query_list()
-    return jsonify({'result': result}), 200
+    return jsonify({'result': result}), HTTPStatus.OK

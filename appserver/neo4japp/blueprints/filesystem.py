@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from pathlib import Path
 
 import gdown
@@ -14,6 +15,7 @@ from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from itertools import chain
+
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
@@ -42,13 +44,14 @@ from neo4japp.constants import (
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
     AccessRequestRequiredError,
-    FileUploadError,
     InvalidArgument,
     RecordNotFound,
     NotAuthorized,
     UnsupportedMediaTypeError,
     GDownException,
-    HandledException
+    HandledException,
+    ServerException,
+    FileNotFound
 )
 from neo4japp.models import (
     Projects,
@@ -99,7 +102,8 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import ContentTooLongError, read_url
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
-from neo4japp.warnings import ServerWarning
+from neo4japp.exceptions import wrap_exceptions
+from neo4japp.exceptions import ServerWarning
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -118,9 +122,10 @@ def get_all_enrichment_tables():
         raise NotAuthorized()
 
     query = db.session.query(Files.hash_id).filter(
-        Files.mime_type == 'vnd.lifelike.document/enrichment-table')
+        Files.mime_type == 'vnd.lifelike.document/enrichment-table'
+    )
     results = [hash_id[0] for hash_id in query.all()]
-    return jsonify(dict(result=results)), 200
+    return jsonify(dict(result=results)), HTTPStatus.OK
 
 
 class FilesystemBaseView(MethodView):
@@ -152,10 +157,7 @@ class FilesystemBaseView(MethodView):
         """
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content, attr_excl=attr_excl)
         if not len(files):
-            raise RecordNotFound(
-                title='File Not Found',
-                message='The requested file object could not be found.',
-                code=404)
+            raise FileNotFound()
         return files[0]
 
     def get_nondeleted_recycled_files(
@@ -277,10 +279,8 @@ class FilesystemBaseView(MethodView):
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
-                    title='File Not Found',
                     message=f"The request specified one or more file or directory "
-                            f"({', '.join(missing_hash_ids)}) that could not be found.",
-                    code=404
+                            f"({', '.join(missing_hash_ids)}) that could not be found."
                 )
 
         # In the end, we just return a list of Files instances!
@@ -408,7 +408,8 @@ class FilesystemBaseView(MethodView):
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
                     f"The file or directory '{file.filename}' has been trashed and "
-                    "must be restored first.")
+                    "must be restored first."
+                )
 
     def update_files(
         self,
@@ -515,7 +516,6 @@ class FilesystemBaseView(MethodView):
                             file.organism_taxonomy_id = params['fallback_organism']['tax_id']
                         except KeyError as e:
                             raise InvalidArgument(
-                                title='Failed to Update File',
                                 message='You must provide the following properties for a ' +
                                         'fallback organism: "organism_name", "synonym", "tax_id".',
                             ) from e
@@ -532,7 +532,8 @@ class FilesystemBaseView(MethodView):
                     if size > self.file_max_size:
                         raise ValidationError(
                             'Your file could not be processed because it is too large.',
-                            "content_value")
+                            "content_value"
+                        )
 
                     # Get the provider
                     provider = file_type_service.get(file)
@@ -751,6 +752,7 @@ class FileHierarchyView(FilesystemBaseView):
 class FileListView(FilesystemBaseView):
 
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
+    @wrap_exceptions(ServerException, title='File Upload Error')
     def post(self, params):
         """Endpoint to create a new file or to clone a file into a new one."""
 
@@ -1137,8 +1139,7 @@ class FileListView(FilesystemBaseView):
             except UnsupportedMediaTypeError as e:
                 # The server did not respect our request for a PDF and did not throw a 406, so
                 # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
-                raise FileUploadError(
-                    title='File Upload Error',
+                raise ServerException(
                     message='Your file could not be uploaded. Please make sure your URL ends ' +
                             'with .pdf. For example, https://www.example.com/file.pdf. If the ' +
                             'problem persists, please download the file to your computer from ' +
@@ -1148,8 +1149,7 @@ class FileListView(FilesystemBaseView):
             except (HTTPError, GDownException) as http_err:
                 # Should be raised because of the 'Accept' content type header above.
                 if http_err.code == 406:
-                    raise FileUploadError(
-                        title='File Upload Error',
+                    raise ServerException(
                         message='Your file could not be uploaded. Please make sure your URL ends ' +
                                 'with .pdf. For example, https://www.example.com/file.pdf. If ' +
                                 'the problem persists, please download the file to your ' +
@@ -1158,16 +1158,14 @@ class FileListView(FilesystemBaseView):
                     ) from http_err
                 else:
                     # An error occurred that we were not expecting.
-                    raise FileUploadError(
-                        title='File Upload Error',
+                    raise ServerException(
                         message='Your file could not be uploaded due to an unexpected error, ' +
                                 'please try again. If the problem persists, please download the ' +
                                 'file to your computer from the original website and upload the ' +
                                 'file from your device.'
                     ) from http_err
             except (ContentTooLongError, OverflowError) as e:
-                raise FileUploadError(
-                    title='File Upload Error',
+                raise ServerException(
                     message='Your file could not be uploaded. The requested file is too large. ' +
                             'Please limit file uploads to less than 315MB.',
                 ) from e
@@ -1407,7 +1405,7 @@ class FileExportView(FilesystemBaseView):
             try:
                 json_graph = json.loads(zip_file.read('graph.json'))
             except KeyError as e:
-                raise ValidationError from e
+                raise ValidationError(str(e)) from e
             for node in chain(
                     json_graph['nodes'],
                     flatten(
@@ -1572,8 +1570,7 @@ class FileBackupContentView(FilesystemBaseView):
         if backup is None:
             raise RecordNotFound(
                 title='Failed to Get File Backup',
-                message='No backup stored for this file.',
-                code=404
+                message='No backup stored for this file.'
             )
 
         content = backup.raw_value
@@ -1849,6 +1846,7 @@ class StarredFileListView(FilesystemBaseView):
 
 class FileStarUpdateView(FilesystemBaseView):
     @use_args(lambda request: FileStarUpdateRequest(partial=True))
+    @wrap_exceptions(ServerException, title='Failed to Update File')
     def patch(self, params: dict, hash_id: str):
         user = g.current_user
         starred = params['starred']
@@ -1857,7 +1855,6 @@ class FileStarUpdateView(FilesystemBaseView):
             result = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
         except NoResultFound as e:
             raise RecordNotFound(
-                title='Failed to Update File',
                 message=f'Could not identify file with hash id {hash_id}',
             ) from e
 
