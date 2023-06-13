@@ -57,7 +57,9 @@
     <div class="form-group">
         <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
             <div class="d-flex align-items-center mx-0">
-                <label [for]="fontSize.uid" class="my-0 mr-2" ngbTooltip="Font size" container="body">
+              <label [for]="fontSize.uid" class="my-0 mr-2" ngbTooltip="Font size" container="body"
+                     #tooltipRef="ngbTooltip"
+                     [appAutoCloseTooltipOutOfView]="tooltipRef">
                     Font Size
                 </label>
                 <app-percent-input

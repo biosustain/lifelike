@@ -16,6 +16,8 @@
                     (click)="fitToNetwork()"
                     ngbTooltip="Fit Canvas"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom right left top">
                 <i class="fas fa-fw fa-expand-arrows-alt"></i>
             </button>
@@ -23,6 +25,8 @@
                     (click)="zoomIn()"
                     ngbTooltip="Zoom In"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom right left top">
                 <i class="fa fa-fw fa-search-plus"></i>
             </button>
@@ -30,6 +34,8 @@
                     (click)="zoomOut()"
                     ngbTooltip="Zoom Out"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom right left top">
                 <i class="fa fa-fw fa-search-minus"></i>
             </button>

@@ -29,6 +29,8 @@
             <button class="btn btn-secondary ml-2"
                     ngbTooltip="Reload List"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom top left right"
                     (click)="refresh()">
                 <i class="fa fa-fw fa-sync"></i>

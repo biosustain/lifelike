@@ -43,6 +43,8 @@
                   [class.text-success]="item.action === 'added'"
                   [class.text-danger]="item.action === 'removed'"
                   [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
                   placement="top-left">
                   {{ item.label }} annotation
                   <strong>'{{ item.meta.allText }}'</strong>
@@ -59,6 +61,8 @@
                   [class.text-success]="item.action === 'removed'"
                   [class.text-danger]="item.action === 'added'"
                   [ngbTooltip]="'ID: ' + (item.meta.id != null ? item.meta.id : 'N/A')"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
                   placement="top-left">
                   {{ item.label }} exclusion <strong>'{{ item.meta.text }}'</strong>
                   as <em>{{ item.meta.type }}</em>

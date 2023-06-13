@@ -108,7 +108,9 @@
 <fieldset class="fieldset-properties mt-2">
   <legend placement="top left right"
           container="body"
-          ngbTooltip="Click a checkbox to filter annotations of that type">Legend
+          ngbTooltip="Click a checkbox to filter annotations of that type"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef">Legend
   </legend>
 
   <div *ngFor="let keyvalue of legend | keyvalue">
@@ -125,7 +127,10 @@
                [autoClose]="false"
                container="body"
                placement="right bottom top"
-               ngbTooltip="Entities of this type are not visible with the filters above.">
+               ngbTooltip="Entities of this type are not visible with the filters above."
+               #tooltipRef="ngbTooltip"
+               [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
           <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
         </label>

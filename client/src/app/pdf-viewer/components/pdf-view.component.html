@@ -30,11 +30,15 @@
                 </div>
                 <button type="button" class="btn btn-secondary"
                         [disabled]="!ready" (click)="zoomOut()" ngbTooltip="Zoom out"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         placement="bottom">
                     <i class="fa fa-fw fa-search-minus"></i>
                 </button>
                 <button type="button" class="btn btn-secondary"
                         [disabled]="!ready" (click)="zoomIn()" ngbTooltip="Zoom in"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         placement="bottom">
                     <i class="fa fa-fw fa-search-plus"></i>
                 </button>
@@ -142,8 +146,11 @@
                             'files',
                             this.object.hashId
                       ]"
-                      [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
-                    ngbTooltip="File Navigator" placement="bottom">
+                      [newTab]="true" [sideBySide]="true" [forceWorkbench]="true"
+                    [openParentFirst]="true"
+                    ngbTooltip="File Navigator" placement="bottom"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef">
               <i class="fas fa-fw fa-compass"></i>
             </button>
         <div class="flex-fill overflow-hidden position-relative d-flex h-100">

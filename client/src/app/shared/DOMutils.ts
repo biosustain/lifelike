@@ -95,8 +95,12 @@ export const relativePosition = (from: Element) => {
   };
 };
 
-export const isScrollable = (element: Element) =>
-  element.scrollHeight > element.clientHeight;
+export const isScrollable = (element: Element) => {
+ if (element.scrollHeight > element.clientHeight) {
+   const overflowProp = getComputedStyle(element).getPropertyValue('overflow-y');
+   return overflowProp === 'auto' || overflowProp === 'scroll';
+ }
+};
 
 export const enclosingScrollableView = (element: Element) => {
   if (!element) {

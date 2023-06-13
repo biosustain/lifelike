@@ -9,7 +9,9 @@
 
       <div class="module-toolbar mt-2">
         <button type="button" class="btn btn-secondary" (click)="this.refresh()"
-                ngbTooltip="Refresh the results">
+                ngbTooltip="Refresh the results"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef">
           <i class="fa fa-sync"></i> Refresh
         </button>
       </div>

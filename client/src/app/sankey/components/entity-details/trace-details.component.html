@@ -2,7 +2,10 @@
     <fieldset class="fieldset-properties mt-2">
         <legend container="body"
                 ngbTooltip="Click a checkbox to filter annotations of that type"
-                placement="top left right">Trace
+                placement="top left right"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >Trace
             Details:
         </legend>
         <ngb-accordion ngbAccordion activeIds="source target">

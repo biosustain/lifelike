@@ -20,7 +20,10 @@
           <h2 class="module-section-header-title mr-2">
             Associated Maps
             <span ngbTooltip="Maps that have a link to this file will appear here."
-                  container="body">
+                  container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+            >
               <i class="fa fa-question-circle text-muted"></i>
             </span>
           </h2>
@@ -33,6 +36,8 @@
             <button class="btn btn-secondary ml-2"
                     ngbTooltip="Reload List"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom top left right"
                     (click)="refresh()">
               <i class="fa fa-fw fa-sync"></i>
