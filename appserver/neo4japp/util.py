@@ -344,3 +344,13 @@ def compact(d):
 
 def equal_number_of_words(term_a: str, term_b: str) -> bool:
     return len(term_a.split(' ')) == len(term_b.split(' '))
+
+
+class Enumd(Enum):
+    @classmethod
+    def get(cls, key, default=None):
+        # Non-throwing value accessor modeled to behave like dict.get()
+        try:
+            return cls(key)
+        except ValueError:
+            return default

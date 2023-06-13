@@ -5,22 +5,18 @@ from typing import Dict, Set
 import requests
 
 from neo4japp.exceptions import ServerException
-from ..constants import (
-    NLP_SERVICE_ENDPOINT,
-    NLP_SERVICE_SECRET,
-    REQUEST_TIMEOUT,
-    EntityType
-)
+from neo4japp.utils.globals import config
+from ..constants import (EntityType)
 from ..data_transfer_objects import NLPResults
 
 
 def _call_nlp_service(model: str, text: str) -> dict:
     try:
         req = requests.post(
-            NLP_SERVICE_ENDPOINT,
+            config.get('NLP_SERVICE_ENDPOINT'),
             json={'model': model, 'sentence': text},
-            headers={'secret': NLP_SERVICE_SECRET},
-            timeout=REQUEST_TIMEOUT)
+            headers={'secret': config.get('NLP_SERVICE_SECRET')},
+            timeout=config.get('REQUEST_TIMEOUT'))
         req.raise_for_status()
         return req.json()
 

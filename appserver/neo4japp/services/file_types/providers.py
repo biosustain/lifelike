@@ -50,7 +50,6 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN,
     BYTE_ENCODING,
     LABEL_OFFSET,
     PDF_MARGIN,
@@ -99,6 +98,7 @@ from neo4japp.utils.logger import EventLog
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text, compose_lines
+from neo4japp.utils.globals import config
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -961,7 +961,7 @@ def get_node_href(node: dict):
             # And search again
             href = get_node_href(node)
         else:
-            href = (LIFELIKE_DOMAIN or '') + href
+            href = (config.get('DOMAIN') or '') + href
     # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
     return href.replace("'", '%27')
 

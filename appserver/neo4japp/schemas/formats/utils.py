@@ -1,7 +1,7 @@
 import itertools
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, List, Optional, Tuple, TypeVar, Callable, Iterable, Iterator, Union
+from typing import Generic, List, Tuple, TypeVar, Callable, Iterable, Iterator, Union
 
 from neo4japp.message import ServerMessage
 

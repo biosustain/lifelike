@@ -15,7 +15,7 @@ import uuid
 import zipfile
 
 from collections import namedtuple
-from flask import current_app, request, g
+from flask import request, g
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
@@ -48,9 +48,10 @@ from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
+from neo4japp.utils.globals import config
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
-app = create_app(config=f'config.{app_config}')
+app = create_app(config_package=f'config.{app_config}')
 logger = logging.getLogger(__name__)
 
 
@@ -74,7 +75,7 @@ def check_version_header():
     if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
     """
     requested_version = request.headers.get("Accept-Lifelike-Version")
-    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+    if requested_version and requested_version != config.get('GITHUB_HASH'):
         raise OutdatedVersionException(
             'A new version of Lifelike is available. Please refresh your browser to use the new ' +
             'changes'

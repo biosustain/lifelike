@@ -6,11 +6,10 @@ from flask import (
     make_response,
     request
 )
-from flask.globals import current_app
 from flask.views import MethodView
 
 from neo4japp.exceptions import ServerException, NotAuthorized
-
+from neo4japp.utils.globals import config
 
 bp = Blueprint('storage', __name__, url_prefix='/storage')
 
@@ -24,8 +23,8 @@ class UserManualAPI(MethodView):
 
     def get_blob_service(self):
         storage_client = BlobServiceClient(
-            current_app.config.get('AZURE_BLOB_STORAGE_URL'),
-            current_app.config.get('AZURE_ACCOUNT_STORAGE_KEY'))
+            config.get('AZURE_BLOB_STORAGE_URL'),
+            config.get('AZURE_ACCOUNT_STORAGE_KEY'))
         container_client = storage_client.get_container_client('lifelike-manual')
         blob_client = container_client.get_blob_client(f'{self.USER_MANUAL_FILENAME}.pdf')
         return blob_client

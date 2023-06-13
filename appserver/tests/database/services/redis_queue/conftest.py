@@ -10,7 +10,7 @@ from neo4japp.services.redis.redis_queue_service import RedisQueueService
 
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(config='config.Testing')
+    app = create_app(config_package='config.Testing')
     app.config.update({"TESTING": True})
 
     yield app

@@ -1,22 +1,14 @@
 import codecs
-import os
 import re
 import string
 
 from datetime import timezone
 from enum import Enum
-from sendgrid import SendGridAPIClient
 
+from werkzeug.local import LocalProxy
 
-class Enumd(Enum):
-    @classmethod
-    def get(cls, key, default=None):
-        # Non-throwing value accessor modeled to behave like dict.get()
-        try:
-            return cls(key)
-        except ValueError:
-            return default
-
+from neo4japp.util import Enumd
+from neo4japp.utils.globals import config
 
 TIMEZONE = timezone.utc
 
@@ -62,7 +54,7 @@ class SortDirection(Enum):
     DESC = 'desc'
 
 
-KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+KEGG_ENABLED = LocalProxy(lambda: config.get('KEGG_ENABLED', False))
 
 
 # enrichment labels
@@ -459,7 +451,7 @@ DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
 # This can be customized to disable login lockouts by setting the value to <= 0
-MAX_ALLOWED_LOGIN_FAILURES = int(os.getenv('MAX_ALLOWED_LOGIN_FAILURES', '6'))
+MAX_ALLOWED_LOGIN_FAILURES = LocalProxy(lambda: config.get('MAX_ALLOWED_LOGIN_FAILURES'))
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
@@ -468,7 +460,7 @@ RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string
 # Start email constants
 LIFELIKE_EMAIL_ACCOUNT = 'lifelike.science@gmail.com'
 MESSAGE_SENDER_IDENTITY = 'lifelike-account-service@lifelike.bio'
-MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
+MAILING_API_KEY = LocalProxy(lambda: config.get('SEND_GRID_EMAIL_API_KEY'))
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
 RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', 'r').read()
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = 'Lifelike: Copyright Infringement Report Confirmation'
@@ -476,14 +468,11 @@ COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
     r'/home/n4j/assets/copyright_report_confirmation.html',
     'r'
 ).read()
-SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
 # Start shared Elastic constants
-FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
-LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
+ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_FOLDER'))
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
@@ -491,7 +480,7 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
-IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+IMAGES_RE = LocalProxy(lambda: re.compile(f"{config.get('ASSETS_PATH')}.*.png"))
 BYTE_ENCODING = 'utf-8'
 
 # Start filesystem API constants

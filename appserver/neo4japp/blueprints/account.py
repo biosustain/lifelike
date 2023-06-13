@@ -23,8 +23,7 @@ from neo4japp.constants import (
     RESET_PASSWORD_ALPHABET,
     RESET_PASSWORD_EMAIL_TITLE,
     RESET_PASSWORD_SYMBOLS,
-    SEND_GRID_API_CLIENT,
-    LogEventType,
+    LogEventType
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import (FailedToUpdateUser, AuthenticationError, UserNotFound)
@@ -37,11 +36,11 @@ from neo4japp.schemas.account import (
     UserListSchema,
     UserProfileListSchema,
     UserProfileSchema,
-    UserSearchSchema,
-    UserUpdateSchema,
+    UserUpdateSchema, UserSearchSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.utils.logger import EventLog, UserEventLog
+from neo4japp.services.send_grid import get_send_grid_service
 from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
@@ -312,7 +311,7 @@ def reset_password(email: str):
                 )
         )
         try:
-            SEND_GRID_API_CLIENT.send(message)
+            get_send_grid_service().send(message)
         except Exception as e:
             raise
 

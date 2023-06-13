@@ -86,7 +86,7 @@ class FileContentBufferBase(BinaryIO):
         return self._stream.tell()
 
     def truncate(self, size: int = None) -> int:
-        return self._stream.truncate(size)
+        return self._stream.truncate(size)  # type: ignore
 
     def writable(self) -> bool:
         return self._stream.writable()
