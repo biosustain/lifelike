@@ -7,6 +7,8 @@
           <a href="#"
              ngbTooltip="Edit Folder Description"
              container="body"
+             #tooltipRef="ngbTooltip"
+             [appAutoCloseTooltipOutOfView]="tooltipRef"
              (click)="openParentEditDialog(); $event.preventDefault()">(edit)</a>
         </div>
       </div>
@@ -103,6 +105,8 @@
                 <div *ngIf="object.public"
                       class="d-inline-block ml-1"
                       ngbTooltip="This item is public and can be viewed by any logged-in user."
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef"
                       container="body">
                   <i class="fa fa-fw text-icon fa-globe"></i>
                 </div>
@@ -114,14 +118,20 @@
                 <div *ngIf="!object.privileges.writable && !object.privileges.commentable"
                       class="d-inline-block ml-1"
                       ngbTooltip="You do not have permission to edit this item."
-                      container="body">
+                      container="body"
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
                   <i class="fa fa-fw text-icon fa-lock"></i>
                 </div>
 
                 <div *ngIf="!object.privileges.writable && object.privileges.commentable"
                       class="d-inline-block ml-1"
                       ngbTooltip="You can make comments on this item, but you cannot edit it."
-                      container="body">
+                      container="body"
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
                   <i class="fa fa-fw text-icon fa-comment"></i>
                 </div>
               </div>

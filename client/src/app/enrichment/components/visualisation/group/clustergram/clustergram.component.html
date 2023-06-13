@@ -8,11 +8,16 @@
                   <ng-template #tooltip>
                       {{goTerm.goTerm}} ({{goTerm.goId}})
                   </ng-template>
-                  <span [ngbTooltip]="tooltip"
-                        container="body"
-                        tooltipClass="rotatedTooltip"
-                        placement="bottom-left bottom-right">
-                      {{goTerm.goTerm}}</span>
+                  <span
+                    [ngbTooltip]="tooltip"
+                    container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
+                    tooltipClass="rotatedTooltip"
+                    placement="bottom-left bottom-right"
+                  >
+                      {{goTerm.goTerm}}
+                  </span>
               </div>
           </th>
           <th scope="col" *ngIf="others" class="others">

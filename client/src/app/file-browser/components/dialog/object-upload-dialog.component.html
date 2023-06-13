@@ -46,7 +46,9 @@
                   </td>
                   <td>
                     <i class="fa fa-lg fa-exclamation-circle alert-danger"
-                    ngbTooltip="Invalid input(s)!" *ngIf="file.hasErrors"></i>
+                       ngbTooltip="Invalid input(s)!"
+                       #tooltipRef="ngbTooltip"
+                       [appAutoCloseTooltipOutOfView]="tooltipRef" *ngIf="file.hasErrors"></i>
                   </td>
                   <td class="text-right">
                       <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
@@ -108,6 +110,8 @@
           *ngIf="object.promptOrganism"
           label="Organism"
           ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
         >
           <app-organism-autocomplete
             formId="organism"

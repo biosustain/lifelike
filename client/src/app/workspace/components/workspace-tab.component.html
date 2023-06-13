@@ -16,7 +16,10 @@
       <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge != null && tab.badge !== '*'">
         {{ tab.badge }}
       </span>
-      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'" ngbTooltip="Has unsaved changes" container="body">
+      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'"
+            ngbTooltip="Has unsaved changes" container="body"
+            #tooltipRef="ngbTooltip"
+            [appAutoCloseTooltipOutOfView]="tooltipRef">
         <i class="fa fa-pencil-alt"></i>
       </span>
     </div>

@@ -13,8 +13,12 @@
         </div>
       </div>
       <div ngbDropdown class="d-inline-block" style="margin-left: 5px">
-        <button class="btn btn-primary" ngbDropdownToggle
-                ngbTooltip="Select what global annotations to display">
+                <button class="btn btn-primary"
+                        ngbDropdownToggle
+                        ngbTooltip="Select what global annotations to display"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
           <i class="fa fa-fw fa-file-export"></i>
           Global Annotations To Display
         </button>
@@ -27,7 +31,10 @@
               [disabled]="selection.length === 0"
               class="btn btn-danger ml-2"
               (click)="deleteAnnotation(selection)"
-              ngbTooltip="Delete annotation(s)">
+                    ngbTooltip="Delete annotation(s)"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
+            >
         Delete
       </button>
     </div>
@@ -63,7 +70,12 @@
 
         <td *ngIf="!object.fileDeleted && object.fileUuid; else noSuchFile">
           <button class="btn btn-secondary" (click)="openNewWindow(object.fileUuid)">
-            <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+                    <i
+                      class="fas fa-external-link-alt"
+                      ngbTooltip="Open in new window"
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef"
+                    ></i>
           </button>
         </td>
         <ng-template #noSuchFile>
@@ -99,7 +111,9 @@
         >{{ object.creationDate }}</td>
         <!-- <td class="align-middle text-nowrap">
           <button class="btn"
-                  ngbTooltip="Download file" disabled>
+                      ngbTooltip="Download file" disabled
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef">
           </button>
         </td> -->
       </tr>

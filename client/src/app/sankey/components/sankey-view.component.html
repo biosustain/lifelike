@@ -17,17 +17,25 @@
             </app-module-menu>
             <div *ngIf="pendingChanges$ | async">
             <span class="badge badge-danger badge-pill ml-1"
-                  ngbTooltip="Has unsaved changes" container="body">
+                  ngbTooltip="Has unsaved changes" container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef">
               <i class="fa fa-pencil-alt"></i>
             </span>
             </div>
             <div class="btn-group ml-1">
-                <button (click)="saveView()" [disabled]="!object?.isEditable" class="btn btn-secondary"
-                        container="body" ngbTooltip="Save View" placement="bottom" type="button">
+                <button (click)="saveView()" [disabled]="!object?.isEditable"
+                        class="btn btn-secondary"
+                        container="body" ngbTooltip="Save View" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef" type="button">
                     <i class="fa fa-fw fa-save"></i>
                 </button>
-                <button (click)="saveViewAs()" [disabled]="!object?.isEditable" class="btn btn-secondary"
-                        container="body" ngbTooltip="Save View As" placement="bottom" type="button">
+              <button (click)="saveViewAs()" [disabled]="!object?.isEditable"
+                      class="btn btn-secondary"
+                      container="body" ngbTooltip="Save View As" placement="bottom"
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef" type="button">
                     <i class="fak fa-floppy-disk-circle-arrow-right-solid"></i>
                 </button>
             </div>
@@ -115,6 +123,8 @@
             </ng-container>
             <button (click)="resetView()" class="btn btn-secondary" container="body"
                     ngbTooltip="Reset this view" placement="bottom"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     type="button">
                 <i class="fas fa-sync"></i>
             </button>
@@ -140,16 +150,22 @@
             <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
                 <button (click)="resetZoom()" class="btn btn-secondary" container="body"
                         ngbTooltip="Fit Map to Window" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-expand-arrows-alt"></i>
                 </button>
                 <button (click)="zoomIn()" class="btn btn-secondary" container="body"
                         ngbTooltip="Zoom In" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-search-plus"></i>
                 </button>
                 <button (click)="zoomOut()" class="btn btn-secondary" container="body"
                         ngbTooltip="Zoom Out" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-search-minus"></i>
                 </button>
@@ -158,11 +174,15 @@
             <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
                 <button (click)="horizontalStretch()" class="btn btn-secondary" container="body"
                         ngbTooltip="Horizontal stretch" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-expand-alt" [appRotate]="45"></i>
                 </button>
                 <button (click)="horizontalShrink()" class="btn btn-secondary" container="body"
                         ngbTooltip="Horizontal shrink" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-compress-alt" [appRotate]="45"></i>
                 </button>
@@ -170,11 +190,15 @@
             <div [ngClass.gt-sm]="'btn-group'" [ngStyle.lt-md]="'display: contents'" class="btn-group-toggle">
                 <button (click)="verticalStretch()" class="btn btn-secondary" container="body"
                         ngbTooltip="Vertical stretch" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-expand-alt" [appRotate]="135"></i>
                 </button>
                 <button (click)="verticalShrink()" class="btn btn-secondary" container="body"
                         ngbTooltip="Vartical shrink" placement="bottom"
+                        #tooltipRef="ngbTooltip"
+                        [appAutoCloseTooltipOutOfView]="tooltipRef"
                         type="button">
                     <i class="fas fa-compress-alt" [appRotate]="135"></i>
                 </button>

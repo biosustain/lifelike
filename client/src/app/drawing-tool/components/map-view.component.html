@@ -21,9 +21,16 @@
         </div>
         <div class="ml-auto d-flex">
             <div class="btn-group mr-2">
-                <button type="button" class="btn btn-secondary" container="body"
-                        ngbTooltip="Fit Map to Window" placement="bottom"
-                        (click)="zoomToFit()">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  container="body"
+                  ngbTooltip="Fit Map to Window"
+                  placement="bottom"
+                  (click)="zoomToFit()"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
                     <i class="fas fa-expand-arrows-alt"></i>
                 </button>
             </div>

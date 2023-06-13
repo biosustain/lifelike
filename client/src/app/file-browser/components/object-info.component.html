@@ -90,7 +90,10 @@
         <hr class="my-3">
         <div class="mt-2">
           <app-highlight-text [appInnerXML]="highlight"></app-highlight-text>
-          <a href="#" (click)="highlightClick.emit(highlight); $event.preventDefault()" ngbTooltip="Find in document">
+          <a href="#" (click)="highlightClick.emit(highlight); $event.preventDefault()"
+             ngbTooltip="Find in document"
+             #tooltipRef="ngbTooltip"
+             [appAutoCloseTooltipOutOfView]="tooltipRef">
             (open)
           </a>
         </div>
