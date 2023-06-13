@@ -231,7 +231,7 @@ def handle_generic_error(code: int, ex: Exception):
             expected=True,
             event_type=LogEventType.UNHANDLED.value,
             transaction_id=transaction_id,
-                username=current_username,
+            username=current_username
         ).to_dict()
     )
 
