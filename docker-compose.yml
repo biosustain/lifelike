@@ -2,14 +2,12 @@ version: "3.9"
 name: "***ARANGO_DB_NAME***"
 # This is core configuration on how to run ***ARANGO_DB_NAME*** ussing docker compose
 
-x-snappy-healthcheck: &snappy-healthcheck
-  # 3s + 18*5s ~= 1.5min (timeout)
+x-snappy-healthcheck: &snappy-healthcheck # 3s + 18*5s ~= 1.5min (timeout)
   interval: 5s
   start_period: 3s
   retries: 18
 
-x-slow-start-healthcheck: &slow-start-healthcheck
-  # 60s + 24*10s = 5min (timeout)
+x-slow-start-healthcheck: &slow-start-healthcheck # 60s + 24*10s = 5min (timeout)
   interval: 10s # Particurlalry slow start
   start_period: 60s
   retries: 24
@@ -99,7 +97,7 @@ services:
       <<: *snappy-healthcheck
     depends_on:
       worker:
-          condition: service_started
+        condition: service_started
     networks:
       - backend
       - frontend
@@ -200,7 +198,7 @@ services:
     image: neo4j:4.4.19-community
     environment:
       NEO4J_AUTH: neo4j/password
-      NEO4JLABS_PLUGINS: "[\"apoc\", \"n10s\"]"
+      NEO4JLABS_PLUGINS: '["apoc", "n10s"]'
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1
       <<: *slow-start-healthcheck
@@ -303,8 +301,8 @@ services:
       kibana:
         condition: service_healthy
     healthcheck:
-     test: metricbeat test output
-     <<: *snappy-healthcheck
+      test: metricbeat test output
+      <<: *snappy-healthcheck
     networks:
       - elastic
 
@@ -333,13 +331,12 @@ services:
       kibana:
         condition: service_healthy
     healthcheck:
-     test: ps aux | grep '[f]ilebeat' || exit 1
-     <<: *snappy-healthcheck
+      test: ps aux | grep '[f]ilebeat' || exit 1
+      <<: *snappy-healthcheck
     networks:
       - frontend
       - backend
       - elastic
-
 
 volumes:
   node_modules:

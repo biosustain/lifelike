@@ -1,5 +1,5 @@
 version: "3.9"
-name: '***ARANGO_DB_NAME***-local'
+name: "***ARANGO_DB_NAME***-local"
 # This configuration includes two way volume binding for working with locally modified source code
 
 x-appserver-mounts: &appserver-mounts
@@ -98,7 +98,6 @@ services:
     extends:
       file: docker-compose.yml
       service: filebeat
-
 
 volumes:
   node_modules:
