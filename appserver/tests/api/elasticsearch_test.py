@@ -1,4 +1,6 @@
 import base64
+from http import HTTPStatus
+
 import pytest
 from unittest.mock import patch
 
@@ -101,7 +103,7 @@ def test_user_can_search_content(
             content_type='multipart/form-data'
         )
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
             user_search_query='BOLA3',
@@ -161,7 +163,7 @@ def test_user_can_search_content_with_single_types(
             content_type='multipart/form-data'
         )
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
             user_search_query='BOLA3 (type:pdf)',
@@ -221,7 +223,7 @@ def test_user_can_search_content_with_multiple_types(
             content_type='multipart/form-data'
         )
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
             user_search_query='BOLA3 (type:pdf OR type:map)',
@@ -288,7 +290,7 @@ def test_user_can_search_content_with_folder(
             content_type='multipart/form-data'
         )
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
             user_search_query='BOLA3',
@@ -359,7 +361,7 @@ def test_user_can_search_content_type_and_folder(
             content_type='multipart/form-data'
         )
 
-        assert resp.status_code == 200
+        assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
             index_id=FILE_INDEX_ID,
             user_search_query='BOLA3 (type:enrichment-table OR type:map OR type:pdf)',
@@ -423,7 +425,7 @@ def test_search_service_returns_child_of_folder(
         content_type='multipart/form-data'
     )
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     data = resp.get_json()
 

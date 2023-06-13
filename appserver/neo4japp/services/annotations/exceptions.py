@@ -8,7 +8,7 @@ from .constants import \
     MAX_FOOD_WORD_LENGTH
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class AnnotationLimitationError(AnnotationError):
     code = HTTPStatus.BAD_REQUEST
     additional_msgs = (

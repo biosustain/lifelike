@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 import json
 
@@ -24,7 +26,7 @@ def test_logging_invalid_schemas(client, test_user, payload):
         headers=headers,
         content_type='application/json'
     )
-    assert resp.status_code == 400
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize('payload', (
@@ -45,4 +47,4 @@ def test_logging_valid_schemas(client, test_user, payload):
         headers=headers,
         content_type='application/json'
     )
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK

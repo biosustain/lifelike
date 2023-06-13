@@ -1,5 +1,7 @@
 import os
 import json
+from http import HTTPStatus
+
 import lmdb
 import sys
 
@@ -125,7 +127,7 @@ def seed_exclusions():
             GlobalList.type == ManualAnnotationType.EXCLUSION.value
         ).all()
 
-        es.indices.delete(index='annotation_exclusion', ignore=[404])
+        es.indices.delete(index='annotation_exclusion', ignore=[HTTPStatus.NOT_FOUND])
         es.indices.create(index='annotation_exclusion')
         deque(parallel_bulk(es, add_exclusion_to_elastic(exclusions)), maxlen=0)
 
@@ -149,7 +151,7 @@ def main(argv):
 
             print(f'Processing {parentdir}')
             # first delete the index to clear the data
-            es.indices.delete(index=entity_type, ignore=[404])
+            es.indices.delete(index=entity_type, ignore=[HTTPStatus.NOT_FOUND])
             es.indices.create(index=entity_type)
             deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
             env.close()
@@ -162,7 +164,7 @@ def main(argv):
                     env, db = open_env(entity_type, parentdir)
 
                     # first delete the index to clear the data
-                    es.indices.delete(index=entity_type, ignore=[404])
+                    es.indices.delete(index=entity_type, ignore=[HTTPStatus.NOT_FOUND])
                     es.indices.create(index=entity_type)
                     deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
                     env.close()

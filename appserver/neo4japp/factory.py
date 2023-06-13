@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-import traceback
+from http import HTTPStatus
 
 from elasticapm.contrib.flask import ElasticAPM
 from neo4j.exceptions import ServiceUnavailable
@@ -11,8 +11,7 @@ from flask import (
     Flask,
     jsonify,
     has_request_context,
-    request,
-    g,
+    request
 )
 from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
@@ -33,11 +32,11 @@ from neo4japp.database import (
     migrate
 )
 from neo4japp.encoders import CustomJSONEncoder
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerException, ServerWarning
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
+from neo4japp.utils.globals import current_username
 from neo4japp.utils.logger import ErrorLog, WarningLog
-from neo4japp.utils.transaction import get_transaction_id
-from neo4japp.warnings import ServerWarning
+from neo4japp.utils.transaction_id import transaction_id
 
 apm = ElasticAPM()
 
@@ -160,8 +159,12 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
-    app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
-    app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
+    app.register_error_handler(
+        ValidationError, partial(handle_validation_error, HTTPStatus.BAD_REQUEST)
+    )
+    app.register_error_handler(
+        UnprocessableEntity, partial(handle_webargs_error, HTTPStatus.BAD_REQUEST)
+    )
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(BrokenPipeError, handle_error)
     app.register_error_handler(ServiceUnavailable, handle_error)
@@ -188,10 +191,6 @@ def register_blueprints(app, pkgname):
 
 
 def handle_error(ex):
-    if isinstance(ex, BrokenPipeError) or isinstance(ex, ServiceUnavailable):
-        # hopefully these were caught at the query level
-        ex = ServerException(message=str(ex))
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     current_app.logger.error(
         f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
@@ -199,39 +198,24 @@ def handle_error(ex):
             error_name=f'{type(ex)}',
             expected=True,
             event_type=LogEventType.HANDLED.value,
-            transaction_id=ex.transaction_id,
-            username=current_user,
+            transaction_id=transaction_id,
+            username=current_username,
         ).to_dict()
     )
-
-    ex.version = GITHUB_HASH
-    if current_app.config.get('FORWARD_STACKTRACE'):
-        ex.stacktrace = ''.join(
-            traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__
-            )
-        )
-
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
 def handle_warning(warn):
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     current_app.logger.warning(
         f'Request returned a handled warning <{type(warn)}>',
         exc_info=warn,
         extra=WarningLog(
             warning_name=f'{type(warn)}',
             event_type=LogEventType.WARNINIG.value,
-            username=current_user,
+            transaction_id=transaction_id,
+            username=current_username
         ).to_dict()
     )
-
-    warn.version = GITHUB_HASH
-    if current_app.debug:
-        warn.stacktrace = ''.join(traceback.format_exception(
-            etype=type(warn), value=warn, tb=warn.__traceback__))
-
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
 
 
@@ -239,8 +223,6 @@ def handle_generic_error(code: int, ex: Exception):
     # create a default server error
     # display to user the default error message
     # but log with the real exception message below
-    newex = ServerException()
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
@@ -248,41 +230,36 @@ def handle_generic_error(code: int, ex: Exception):
             error_name=f'{type(ex)}',
             expected=True,
             event_type=LogEventType.UNHANDLED.value,
-            transaction_id=get_transaction_id(),
-            username=current_user,
+            transaction_id=transaction_id,
+            username=current_username
         ).to_dict()
     )
 
-    newex.version = GITHUB_HASH
-    if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
-
-    return jsonify(ErrorResponseSchema().dump(newex)), newex.code
+    try:
+        raise ServerException() from ex
+    except ServerException as newex:
+        return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
 def handle_generic_warning(code: int, ex: Warning):
     # create a default server warning
     # display to user the default warning message
     # but log with the real warning message below
-    newex = ServerWarning()
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     current_app.logger.error(
         f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
         extra=WarningLog(
             warning_name=f'{type(ex)}',
             event_type=LogEventType.WARNINIG.value,
-            username=current_user,
+            transaction_id=transaction_id,
+            username=current_username,
         ).to_dict()
     )
 
-    newex.version = GITHUB_HASH
-    if current_app.debug:
-        newex.stacktrace = ''.join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
-
-    return jsonify(WarningResponseSchema().dump(newex)), code
+    try:
+        raise ServerWarning() from ex
+    except ServerException as newex:
+        return jsonify(WarningResponseSchema().dump(newex)), newex.code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):
@@ -311,11 +288,10 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    ex = ServerException(message=message, code=code, fields=fields)
-    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-
-    ex.version = GITHUB_HASH
-    return jsonify(ErrorResponseSchema().dump(ex)), ex.code
+    try:
+        raise ServerException(message=message, code=code, fields=fields) from error
+    except ServerException as newex:
+        return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
 # Ensure that response includes all error messages produced from the parser

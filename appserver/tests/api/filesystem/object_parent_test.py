@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from urllib.parse import quote
 
 import pytest
@@ -78,7 +79,7 @@ def test_patch_file_parent_to_object(
         },
     )
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     resp_data = resp.get_json()
     resp_file = resp_data['result']
@@ -126,7 +127,7 @@ def test_patch_file_parent_to_self(
         },
     )
 
-    assert resp.status_code == 400
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
 
     resp_data = resp.get_json()
 
@@ -176,7 +177,7 @@ def test_patch_file_parent_recursively(
         },
     )
 
-    assert resp.status_code == 400
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
 
     updated_parent_folder: Files = session.query(Files) \
         .filter(Files.id == file_in_project.parent.id) \

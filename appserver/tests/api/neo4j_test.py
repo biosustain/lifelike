@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 import json
 
@@ -14,7 +16,7 @@ def test_expand(client, gas_gangrene):
         }), content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def generate_headers(jwt_token):
@@ -64,7 +66,7 @@ def test_get_reference_table_data(
         content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_snippets_for_edge(
@@ -90,7 +92,7 @@ def test_get_snippets_for_edge(
         content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_snippets_for_cluster(
@@ -120,4 +122,4 @@ def test_get_snippets_for_cluster(
         content_type='application/json'
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK

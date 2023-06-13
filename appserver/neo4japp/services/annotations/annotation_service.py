@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from flask import current_app
 
+from neo4japp.exceptions import wrap_exceptions, AnnotationError, ServerException
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import AnnotationGraphService
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
@@ -37,7 +38,6 @@ from .data_transfer_objects import (
 from .utils.common import has_center_point
 
 from neo4japp.constants import LogEventType
-from neo4japp.exceptions import AnnotationError
 from neo4japp.util import normalize_str, equal_number_of_words
 from neo4japp.utils.logger import EventLog
 
@@ -389,8 +389,7 @@ class AnnotationService:
                     curr_closest_organism = organism
 
         if curr_closest_organism is None:
-            raise AnnotationError(
-                title='Unable to Annotate',
+            raise ServerException(
                 message='Cannot get gene ID with no organisms.'
             )
 
@@ -976,6 +975,7 @@ class AnnotationService:
 
         return unified_annotations
 
+    @wrap_exceptions(AnnotationError)
     def create_annotations(
         self,
         custom_annotations: List[dict],

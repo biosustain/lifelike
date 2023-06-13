@@ -1,4 +1,5 @@
 import functools
+from http import HTTPStatus
 
 from neo4japp.database import (
     get_authorization_service,
@@ -19,7 +20,7 @@ def requires_role(role: str):
                     raise NotAuthorized(
                         title='Unable to Process Request',
                         message=f'{principal} does not have the required role: {role}',
-                        code=400
+                        code=HTTPStatus.BAD_REQUEST
                     )
                 retval = next(gen)
             finally:
