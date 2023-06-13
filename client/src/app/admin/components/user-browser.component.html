@@ -9,15 +9,27 @@
         <button class="btn btn-secondary ml-2" [disabled]="!isOneSelected()" (click)="displayUpdateDialog()" >
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
-        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+        <button
+          class="btn btn-secondary ml-2"
+          [disabled]="true"
+          ngbTooltip="Not yet implemented."
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="fa fa-fw fa-trash"></i>
         </button>
       </div>
       <button type="button" class="btn btn-warning ml-2" (click)="this.displayMissingRolesDialog()" [disabled]="!this.getRolelessUsers().length">
         Missing roles
       </button>
-      <button type="button" class="btn btn-secondary ml-2" (click)="this.refresh()"
-              ngbTooltip="Refresh the results">
+      <button
+        type="button"
+        class="btn btn-secondary ml-2"
+        (click)="this.refresh()"
+        ngbTooltip="Refresh the results"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         <i class="fa fa-sync"></i>
       </button>
     </div>

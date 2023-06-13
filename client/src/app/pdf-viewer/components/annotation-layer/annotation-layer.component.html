@@ -32,6 +32,8 @@
        #tooltip="ngbTooltip"
        placement="bottom top"
        container="body"
+       #tooltipRef="ngbTooltip"
+       [appAutoCloseTooltipOutOfView]="tooltipRef"
        tooltipClass="qtip-bootstrap-unify"
        [openDelay]="10"
        [closeDelay]="150"

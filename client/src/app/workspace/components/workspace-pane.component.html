@@ -24,7 +24,10 @@
         <div ngbDropdown container="body">
           <button type="button" class="btn btn-secondary btn-sm dropdown-no-arrow"
                   ngbDropdownToggle ngbTooltip="New Tab"
-                  container="body">
+                  container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+          >
             <i class="fa fa-fw fa-plus"></i>
           </button>
           <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">

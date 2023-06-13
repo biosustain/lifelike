@@ -6,7 +6,9 @@
       <div class="input-group" (click)="enableTextField()">
         <input formControlName="text" type="text" class="form-control" id="text" [readOnly]="!isTextEnabled">
         <div class="input-group-append">
-          <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction">
+          <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef">
             <i class="fas fa-edit" type="button"></i>
           </button>
         </div>
@@ -42,7 +44,10 @@
 
       <div class="form-group row row-cols-2">
         <label for="id" class="col-form-label col-sm-3">
-          <i class="fas fa-exclamation-circle" ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"></i>
+          <i class="fas fa-exclamation-circle"
+             ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"
+             #tooltipRef="ngbTooltip"
+             [appAutoCloseTooltipOutOfView]="tooltipRef"></i>
           Identifier:</label>
           <div class="col-sm d-flex flex-wrap" [style.gap]="'.5rem 15px'">
               <select formControlName="source" class="custom-select w-auto flex-grow-1" id="source">

@@ -2,6 +2,8 @@
     <fieldset class="fieldset-properties mt-2">
         <legend container="body"
                 ngbTooltip="Click a checkbox to filter annotations of that type"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
                 placement="top left right">Link Details</legend>
         <ngb-accordion ngbAccordion activeIds="l_desc">
             <ngb-panel id="l_desc" title="Description">

@@ -41,8 +41,11 @@
                 <ng-content select="[moduleMenuAdditions]"></ng-content>
             </div>
         </div>
-        <button class="btn btn-secondary ml-1" (click)="openNewWindow()" *ngIf="showNewWindowButton">
-            <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"></i>
+        <button class="btn btn-secondary ml-1" (click)="openNewWindow()"
+                *ngIf="showNewWindowButton">
+          <i class="fas fa-external-link-alt" ngbTooltip="Open in new window"
+             #tooltipRef="ngbTooltip"
+             [appAutoCloseTooltipOutOfView]="tooltipRef"></i>
         </button>
         <ng-content></ng-content>
     </div>

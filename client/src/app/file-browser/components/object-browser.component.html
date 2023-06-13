@@ -108,8 +108,11 @@
                                 </div>
                             </ng-container>
 
-                            <div ngbDropdown class="d-inline-block ml-2" container="body"
-                                 ngbTooltip="Entity Cloud">
+                          <div ngbDropdown class="d-inline-block ml-2" container="body"
+                               ngbTooltip="Entity Cloud"
+                               #tooltipRef="ngbTooltip"
+                               [appAutoCloseTooltipOutOfView]="tooltipRef"
+                          >
                                 <button class="btn btn-secondary" ngbDropdownToggle [disabled]="result.loading || !result.value">
                                     <i class="fa fa-fw fa-cloud"></i>
                                 </button>
@@ -148,6 +151,8 @@
                             <button class="btn btn-secondary ml-2"
                                     ngbTooltip="Reload List"
                                     container="body"
+                                    #tooltipRef="ngbTooltip"
+                                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                                     placement="bottom top left right"
                                     (click)="refresh()">
                                 <i class="fa fa-fw fa-sync"></i>

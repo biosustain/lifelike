@@ -1,5 +1,7 @@
 <span #annotation
       [ngbTooltip]="tooltipContent"
+      #tooltipRef="ngbTooltip"
+      [appAutoCloseTooltipOutOfView]="tooltipRef"
       placement="bottom-left bottom top-left top right left"
       triggers="click:blur"
       autoClose="outside"

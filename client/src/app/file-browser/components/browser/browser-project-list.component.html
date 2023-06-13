@@ -30,7 +30,10 @@
                         <button *ngIf="project.public"
                                 class="btn btn-sm"
                                 ngbTooltip="This project is public and can be viewed by any logged-in user."
-                                container="body">
+                                    #tooltipRef="ngbTooltip"
+                                    [appAutoCloseTooltipOutOfView]="tooltipRef"
+                                    container="body"
+                            >
                             <i class="fa fa-fw text-icon fa-globe"></i>
                         </button>
                         <div ngbDropdown class="d-inline-block ml-auto" container="body">

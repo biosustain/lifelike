@@ -57,6 +57,8 @@
         container="body"
         ngbTooltip="Fit all nodes on screen"
         placement="top"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
         (click)="fitToScreen()"
       >
         Fit to Screen

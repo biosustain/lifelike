@@ -25,8 +25,14 @@
       </ng-template>
 
       <div class="d-flex align-items-center">
-        <div class="text-truncate mr-2" placement="top" container="body"
-             [ngbTooltip]="link.url">
+        <div
+          class="text-truncate mr-2"
+          placement="top"
+          container="body"
+          [ngbTooltip]="link.url"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <a [href]="toValidUrl(link.url)" target="_blank" class="text-muted"
              (click)="linkClick($event, link)">
             <small><i class="{{ fontAwesomeIcon }} fa-fw"></i> {{ getUrlText(link.url) }}</small>

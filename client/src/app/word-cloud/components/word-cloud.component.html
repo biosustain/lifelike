@@ -28,18 +28,24 @@
             <button class="btn btn-secondary text-nowrap"
                     ngbTooltip="Copy Cloud to Clipboard"
                     placement="bottom top left right"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     (click)="copyWordCloudToClipboard()">
                 <i class="fas fa-fw fa-copy"></i>
             </button>
             <button class="btn btn-secondary text-nowrap"
                     ngbTooltip="Fit Cloud to Window"
                     placement="bottom top bottom-left top-left"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     (click)="fitCloudToWindow()">
                 <i class="fas fa-fw fa-expand-arrows-alt"></i>
             </button>
             <button class="btn btn-secondary"
                     ngbTooltip="Reload Annotations"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom top bottom-right bottom-left top-right top-left"
                     (click)="getAnnotations()">
                 <i class="fa fa-fw fa-sync"></i>
@@ -48,13 +54,18 @@
                     (click)="toggleFiltersPanel()"
                     ngbTooltip="Show Annotation Filters"
                     container="body"
+                    #tooltipRef="ngbTooltip"
+                    [appAutoCloseTooltipOutOfView]="tooltipRef"
                     placement="bottom top bottom-right top-right">
                 <i class="fa fa-fw fa-filter"></i>
             </button>
             <div *ngIf="sortingAlgorithms.length>1"
                  ngbDropdown container="body" class="btn-group" role="group"
                  ngbTooltip="Method for word size calculation"
-                 placement="bottom-right top-right">
+                 placement="bottom-right top-right"
+                 #tooltipRef="ngbTooltip"
+                 [appAutoCloseTooltipOutOfView]="tooltipRef"
+            >
                 <button class="btn btn-secondary" ngbDropdownToggle>
                     <i class="fas fa-sort-size-down"></i>
                     <span class="mx-2">{{sorting.name}}</span>

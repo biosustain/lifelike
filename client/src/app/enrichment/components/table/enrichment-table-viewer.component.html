@@ -17,17 +17,29 @@
                                    (objectUpdate)="objectUpdate()">
                   </app-module-menu>
             <div *ngIf="queuedChanges$.value">
-                <span class="badge badge-danger badge-pill ml-1"
-                      ngbTooltip="Has unsaved changes" container="body">
+                <span
+                  class="badge badge-danger badge-pill ml-1"
+                  ngbTooltip="Has unsaved changes"
+                  container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
                   <i class="fa fa-pencil-alt"></i>
                 </span>
             </div>
 
             <!-- Decided to remove this for now, may bring back in the future. -->
             <!-- <div class="btn-group ml-2">
-              <button type="button" class="btn btn-secondary"
-                      ngbTooltip="Save" placement="bottom" container="body" (click)="save()"
-                      [disabled]="!result.object.value.privileges.writable">
+              <button
+               type="button"
+               class="btn btn-secondary"
+               ngbTooltip="Save" placement="bottom"
+               container="body"
+               #tooltipRef="ngbTooltip"
+               [appAutoCloseTooltipOutOfView]="tooltipRef"
+               (click)="save()"
+               [disabled]="!result.object.value.privileges.writable"
+              >
                 <i class="fa fa-fw fa-save"></i>
               </button>
             </div> -->
@@ -67,20 +79,28 @@
                       [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true">
                 <i class="fas fa-fw fa-chart-bar"></i> Statistical Enrichment
               </button>
-              <button class="btn btn-secondary"
-                      [appLink]="[
+              <button
+                class="btn btn-secondary"
+                [appLink]="[
                             '/file-navigator',
                             encodeURIComponent(result.object.value.project.name),
                             result.object.value.hashId
                         ]"
-                      [parentAddress]="[
+                [parentAddress]="[
                             '/projects',
                             encodeURIComponent(result.object.value.project.name),
                             'enrichment-table',
                             result.object.value.hashId
                       ]"
-                        [newTab]="true" [sideBySide]="true" [forceWorkbench]="true" [openParentFirst]="true"
-                        ngbTooltip="File Navigator" placement="bottom">
+                [newTab]="true"
+                [sideBySide]="true"
+                [forceWorkbench]="true"
+                [openParentFirst]="true"
+                ngbTooltip="File Navigator"
+                placement="bottom"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
+              >
                     <i class="fas fa-fw fa-compass"></i>
                 </button>
             </div>

@@ -35,6 +35,8 @@
                 placement="bottom-right top-right"
                 openDelay="500"
             >
+                <!--#tooltipRef="ngbTooltip"-->
+                <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
                 <span class="hidden-text">Significance marker</span>
             </th>
         </tr>
@@ -71,6 +73,8 @@
                 placement="top-right bottom-right"
                 openDelay="1000"
             >
+                <!--#tooltipRef="ngbTooltip"-->
+                <!--[appAutoCloseTooltipOutOfView]="tooltipRef"-->
                 <ngb-highlight [result]="significanceIndicator(row['q-value'])"
                                [term]="service.searchTerm"></ngb-highlight>
             </td>

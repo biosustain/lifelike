@@ -1,6 +1,8 @@
 <span class="badge badge-warning badge-pill mx-1" *ngIf="(warnings | async).length"
       (click)="open(warningList)"
-      ngbTooltip="There have been warnings while rendering the file" container="body">
+      ngbTooltip="There have been warnings while rendering the file"
+      #tooltipRef="ngbTooltip"
+      [appAutoCloseTooltipOutOfView]="tooltipRef" container="body">
                         <i class="fas fa-exclamation-triangle"></i>
 </span>
 <ng-template #warningList let-modal>

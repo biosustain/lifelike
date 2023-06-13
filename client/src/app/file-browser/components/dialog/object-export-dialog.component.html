@@ -14,8 +14,13 @@
      <div class="custom-control custom-checkbox mt-2" [hidden]="!isLinkedExportSupported" >
       <input type="checkbox" class="custom-control-input" formControlName="exportLinked" id="exportLinked"
              [appFormInput]="form.get('exportLinked')">
-      <label class="custom-control-label d-flex align-items-center"
-             for="exportLinked" ngbTooltip="Include linked maps in the export">
+      <label
+        class="custom-control-label d-flex align-items-center"
+        for="exportLinked"
+        ngbTooltip="Include linked maps in the export"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         Export linked maps
       </label>
     </div>
