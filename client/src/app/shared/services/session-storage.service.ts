@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { uuidv4 } from '../utils';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SessionStorageService implements Storage {
   private readonly storage;

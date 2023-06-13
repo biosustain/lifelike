@@ -27,18 +27,18 @@ function attachDOMEventsToEventBus(eventBus: any) {
     event.initCustomEvent('documentload', true, true, {});
     window.dispatchEvent(event);
   });
-  eventBus.on('pagerendered', evt => {
+  eventBus.on('pagerendered', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('pagerendered', true, true, {
       pageNumber: evt.pageNumber,
-      cssTransform: evt.cssTransform
+      cssTransform: evt.cssTransform,
     });
     evt.source.div.dispatchEvent(event);
   });
-  eventBus.on('textlayerrendered', evt => {
+  eventBus.on('textlayerrendered', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('textlayerrendered', true, true, {
-      pageNumber: evt.pageNumber
+      pageNumber: evt.pageNumber,
     });
     evt.source.textLayerDiv.dispatchEvent(event);
   });
@@ -48,15 +48,15 @@ function attachDOMEventsToEventBus(eventBus: any) {
     event.pageNumber = evt.pageNumber;
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('pagesinit', evt => {
+  eventBus.on('pagesinit', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('pagesinit', true, true, null);
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('pagesloaded', evt => {
+  eventBus.on('pagesloaded', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('pagesloaded', true, true, {
-      pagesCount: evt.pagesCount
+      pagesCount: evt.pagesCount,
     });
     evt.source.container.dispatchEvent(event);
   });
@@ -73,7 +73,7 @@ function attachDOMEventsToEventBus(eventBus: any) {
     event.location = evt.location;
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('find', evt => {
+  eventBus.on('find', (evt) => {
     if (evt.source === window) {
       return; // event comes from FirefoxCom, no need to replicate
     }
@@ -83,50 +83,50 @@ function attachDOMEventsToEventBus(eventBus: any) {
       phraseSearch: evt.phraseSearch,
       caseSensitive: evt.caseSensitive,
       highlightAll: evt.highlightAll,
-      findPrevious: evt.findPrevious
+      findPrevious: evt.findPrevious,
     });
     window.dispatchEvent(event);
   });
-  eventBus.on('attachmentsloaded', evt => {
+  eventBus.on('attachmentsloaded', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('attachmentsloaded', true, true, {
-      attachmentsCount: evt.attachmentsCount
+      attachmentsCount: evt.attachmentsCount,
     });
     evt.source.container.dispatchEvent(event);
   });
-  eventBus.on('sidebarviewchanged', evt => {
+  eventBus.on('sidebarviewchanged', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('sidebarviewchanged', true, true, {
-      view: evt.view
+      view: evt.view,
     });
     evt.source.outerContainer.dispatchEvent(event);
   });
-  eventBus.on('pagemode', evt => {
+  eventBus.on('pagemode', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('pagemode', true, true, {
-      mode: evt.mode
+      mode: evt.mode,
     });
     evt.source.pdfViewer.container.dispatchEvent(event);
   });
-  eventBus.on('namedaction', evt => {
+  eventBus.on('namedaction', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('namedaction', true, true, {
-      action: evt.action
+      action: evt.action,
     });
     evt.source.pdfViewer.container.dispatchEvent(event);
   });
-  eventBus.on('presentationmodechanged', evt => {
+  eventBus.on('presentationmodechanged', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('presentationmodechanged', true, true, {
       active: evt.active,
-      switchInProgress: evt.switchInProgress
+      switchInProgress: evt.switchInProgress,
     });
     window.dispatchEvent(event);
   });
-  eventBus.on('outlineloaded', evt => {
+  eventBus.on('outlineloaded', (evt) => {
     const event = document.createEvent('CustomEvent');
     event.initCustomEvent('outlineloaded', true, true, {
-      outlineCount: evt.outlineCount
+      outlineCount: evt.outlineCount,
     });
     evt.source.container.dispatchEvent(event);
   });

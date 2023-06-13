@@ -12,7 +12,11 @@ from common.constants import *
 from common.database import get_database
 
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', handlers=[logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(message)s',
+    handlers=[logging.StreamHandler()],
+)
 
 NODE_ASSOCIATION = 'Association'
 ZENODO_CHEMICAL2DISEASE_FILE = 'Chemical2Disease_assoc_theme.tsv'
@@ -20,10 +24,40 @@ ZENODO_CHEMICAL2GENE_FILE = 'Chemical2Gene_assoc_theme.tsv'
 ZENODO_GENE2DISEASE_FILE = 'Gene2Disease_assoc_theme.tsv'
 ZENODO_GENE2GENE_FILE = 'Gene2Gene_assoc_theme.tsv'
 
-headers = ['pmid', 'sentence_num', 'entry_formatted', 'entry1Loc', 'entry2_formatted', 'entry2Loc',
-           'entry1_name', 'entry2_name', 'entry1_id', 'entry2_id', 'entry1_type', 'entry2_type', 'path', 'sentence']
-dependency_headers = ['snippet_id', 'entry1_id', 'entry2_id', 'entry1_name', 'entry2_name', 'path']
-columns = ['pmid', 'sentence_num', 'entry1_name', 'entry2_name', 'entry1_id', 'entry2_id', 'path', 'sentence']
+headers = [
+    'pmid',
+    'sentence_num',
+    'entry_formatted',
+    'entry1Loc',
+    'entry2_formatted',
+    'entry2Loc',
+    'entry1_name',
+    'entry2_name',
+    'entry1_id',
+    'entry2_id',
+    'entry1_type',
+    'entry2_type',
+    'path',
+    'sentence',
+]
+dependency_headers = [
+    'snippet_id',
+    'entry1_id',
+    'entry2_id',
+    'entry1_name',
+    'entry2_name',
+    'path',
+]
+columns = [
+    'pmid',
+    'sentence_num',
+    'entry1_name',
+    'entry2_name',
+    'entry1_id',
+    'entry2_id',
+    'path',
+    'sentence',
+]
 
 theme_map = {
     'A+': 'agonism, activation',
@@ -60,6 +94,7 @@ theme_map = {
     'Q': 'production by cell population',
 }
 
+
 class LiteratureDataParser(BaseParser):
     def __init__(self, prefix: str):
         BaseParser.__init__(self, prefix, 'literature')
@@ -73,15 +108,23 @@ class LiteratureDataParser(BaseParser):
     def get_datafile_name(self, entry1_type, entry2_type, with_theme=False):
         if with_theme:
             return os.path.join(
-                self.download_dir, f'part-ii-dependency-paths-{entry1_type.lower()}-{entry2_type.lower()}-sorted-with-themes.txt.gz')
+                self.download_dir,
+                f'part-ii-dependency-paths-{entry1_type.lower()}-{entry2_type.lower()}-sorted-with-themes.txt.gz',
+            )
         return os.path.join(
-            self.download_dir, f'part-ii-dependency-paths-{entry1_type.lower()}-{entry2_type.lower()}-sorted.txt.gz')
+            self.download_dir,
+            f'part-ii-dependency-paths-{entry1_type.lower()}-{entry2_type.lower()}-sorted.txt.gz',
+        )
 
     def get_path2theme_datafile_name(self, entry1_type, entry2_type):
         return os.path.join(
-            self.download_dir, f'part-i-{entry1_type.lower()}-{entry2_type.lower()}-path-theme-distributions.txt.gz')
+            self.download_dir,
+            f'part-i-{entry1_type.lower()}-{entry2_type.lower()}-path-theme-distributions.txt.gz',
+        )
 
-    def parse_dependency_file(self, entry1_type, entry2_type, snippet_file, with_theme=True):
+    def parse_dependency_file(
+        self, entry1_type, entry2_type, snippet_file, with_theme=True
+    ):
         """
         clean file, and write into a few cleaned file format into outfile folder 'parsed'. Update entities set,
         and write data to the following files in the parsed folder
@@ -94,9 +137,17 @@ class LiteratureDataParser(BaseParser):
         """
         file = self.get_datafile_name(entry1_type, entry2_type, with_theme)
         if with_theme:
-            outfile = open(os.path.join(self.parsed_dir, f'{entry1_type}2{entry2_type}_assoc_theme.tsv'), 'w')
+            outfile = open(
+                os.path.join(
+                    self.parsed_dir, f'{entry1_type}2{entry2_type}_assoc_theme.tsv'
+                ),
+                'w',
+            )
         else:
-            outfile = open(os.path.join(self.parsed_dir, f'{entry1_type}2{entry2_type}_assoc.tsv'), 'w')
+            outfile = open(
+                os.path.join(self.parsed_dir, f'{entry1_type}2{entry2_type}_assoc.tsv'),
+                'w',
+            )
 
         f = lambda x: str(x)
         converters = {'pmid': f, 'sentence_num': f, 'entry1_id': f, 'entry2_id': f}
@@ -104,12 +155,13 @@ class LiteratureDataParser(BaseParser):
         count = 0
         filerow_count = 0
         data_chunk = pd.read_csv(
-            file, sep='\t',
+            file,
+            sep='\t',
             names=headers,
             usecols=columns,
             converters=converters,
             chunksize=10000,
-            index_col=False
+            index_col=False,
         )
 
         for i, trunk in enumerate(data_chunk):
@@ -121,7 +173,10 @@ class LiteratureDataParser(BaseParser):
                 df.dropna(inplace=True)
                 df.drop_duplicates(inplace=True)
                 if entry1_type == entry2_type:
-                    df = df[(df['entry1_name'] != df['entry2_name']) & (df['entry1_id'] != df['entry2_id'])]
+                    df = df[
+                        (df['entry1_name'] != df['entry2_name'])
+                        & (df['entry1_id'] != df['entry2_id'])
+                    ]
                 if len(df) == 0:
                     continue
 
@@ -138,14 +193,20 @@ class LiteratureDataParser(BaseParser):
                 if entry2_type == NODE_DISEASE:
                     df = df[~df['entry2_id'].str.startswith('OMIM')]
                     df['entry2_id'] = df['entry2_id'].apply(
-                        lambda x: x if str(x).startswith('MESH') else 'MESH:' + str(x))
+                        lambda x: x if str(x).startswith('MESH') else 'MESH:' + str(x)
+                    )
 
                 if entry1_type == NODE_CHEMICAL:
                     df['entry1_id'] = df['entry1_id'].apply(
-                        lambda x: x if str(x).startswith('CHEBI') or str(x).startswith('MESH') else 'MESH:' + str(x)
+                        lambda x: x
+                        if str(x).startswith('CHEBI') or str(x).startswith('MESH')
+                        else 'MESH:' + str(x)
                     )
 
-                df['snippet_id'] = df.apply(lambda row: str(row['pmid']) + '-' + str(row['sentence_num']), axis=1)
+                df['snippet_id'] = df.apply(
+                    lambda row: str(row['pmid']) + '-' + str(row['sentence_num']),
+                    axis=1,
+                )
                 df_assoc = df[dependency_headers]
 
                 df_assoc.to_csv(outfile, index=False, mode='a', sep='\t')
@@ -168,7 +229,12 @@ class LiteratureDataParser(BaseParser):
                 traceback.print_exc()
                 print(f'Errored out at index {i}')
                 break
-        logging.info('file rows processed: ' + str(filerow_count) + ', cleaned file row:' + str(count))
+        logging.info(
+            'file rows processed: '
+            + str(filerow_count)
+            + ', cleaned file row:'
+            + str(count)
+        )
         outfile.close()
 
     def parse_dependency_files(self):
@@ -192,7 +258,9 @@ class LiteratureDataParser(BaseParser):
         literature chemicals:66178
         :return:
         """
-        snippet_file = open(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), 'w')
+        snippet_file = open(
+            os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), 'w'
+        )
         self.parse_dependency_file(NODE_CHEMICAL, NODE_DISEASE, snippet_file, True)
         self.parse_dependency_file(NODE_CHEMICAL, NODE_GENE, snippet_file, True)
         self.parse_dependency_file(NODE_GENE, NODE_DISEASE, snippet_file, True)
@@ -210,18 +278,23 @@ class LiteratureDataParser(BaseParser):
 
         db = get_database()
         print('Cleaning chemical...')
-        self.literature_chemicals = set(val for entry in self.literature_chemicals for val in entry.split('|'))
+        self.literature_chemicals = set(
+            val for entry in self.literature_chemicals for val in entry.split('|')
+        )
         chemical_ids_to_exclude = db.get_data(
             'MATCH (n:Chemical) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
-            {'zenodo_ids': list(self.literature_chemicals)})['exclude'].tolist()[0]
+            {'zenodo_ids': list(self.literature_chemicals)},
+        )['exclude'].tolist()[0]
         print('Cleaning disease...')
         disease_ids_to_exclude = db.get_data(
             'MATCH (n:Disease) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT split(entry, ":")[1] IN entity_ids] AS exclude',
-            {'zenodo_ids': list(self.literature_diseases)})['exclude'].tolist()[0]
+            {'zenodo_ids': list(self.literature_diseases)},
+        )['exclude'].tolist()[0]
         print('Cleaning gene...')
         gene_ids_to_exclude = db.get_data(
             'MATCH (n:Gene:db_NCBI) WITH collect(n.eid) AS entity_ids RETURN [entry in $zenodo_ids WHERE NOT entry IN entity_ids] AS exclude',
-            {'zenodo_ids': list(self.literature_genes)})['exclude'].tolist()[0]
+            {'zenodo_ids': list(self.literature_genes)},
+        )['exclude'].tolist()[0]
 
         # print('Cleaning chemical...')
         # with open(os.path.join(self.parsed_dir, self.file_prefix + 'chemical.tsv'), 'w') as f:
@@ -233,13 +306,25 @@ class LiteratureDataParser(BaseParser):
         # with open(os.path.join(self.parsed_dir, self.file_prefix + 'gene.tsv'), 'w') as f:
         #     f.writelines([s + '\n' for s in list(self.literature_genes - set(gene_ids_to_exclude))])
 
-        cleaned_chemical_ids = list(self.literature_chemicals - set(chemical_ids_to_exclude))
-        cleaned_disease_ids = list(self.literature_diseases - set(disease_ids_to_exclude))
+        cleaned_chemical_ids = list(
+            self.literature_chemicals - set(chemical_ids_to_exclude)
+        )
+        cleaned_disease_ids = list(
+            self.literature_diseases - set(disease_ids_to_exclude)
+        )
         cleaned_gene_ids = list(self.literature_genes - set(gene_ids_to_exclude))
-        self.clean_dependency_files(NODE_CHEMICAL, NODE_DISEASE, cleaned_chemical_ids, cleaned_disease_ids)
-        self.clean_dependency_files(NODE_CHEMICAL, NODE_GENE, cleaned_chemical_ids, cleaned_gene_ids)
-        self.clean_dependency_files(NODE_GENE, NODE_DISEASE, cleaned_gene_ids, cleaned_disease_ids)
-        self.clean_dependency_files(NODE_GENE, NODE_GENE, cleaned_gene_ids, cleaned_gene_ids)
+        self.clean_dependency_files(
+            NODE_CHEMICAL, NODE_DISEASE, cleaned_chemical_ids, cleaned_disease_ids
+        )
+        self.clean_dependency_files(
+            NODE_CHEMICAL, NODE_GENE, cleaned_chemical_ids, cleaned_gene_ids
+        )
+        self.clean_dependency_files(
+            NODE_GENE, NODE_DISEASE, cleaned_gene_ids, cleaned_disease_ids
+        )
+        self.clean_dependency_files(
+            NODE_GENE, NODE_GENE, cleaned_gene_ids, cleaned_gene_ids
+        )
 
     def clean_dependency_files(self, entry1_type, entry2_type, entry1_ids, entry2_ids):
         input_file = f'{entry1_type}2{entry2_type}_assoc_theme.tsv'
@@ -249,7 +334,13 @@ class LiteratureDataParser(BaseParser):
             f = lambda x: str(x)
             converters = {'entry1_id': f, 'entry2_id': f}
 
-        df = pd.read_csv(file_path, header=0, sep='\t', converters=converters, names=dependency_headers)
+        df = pd.read_csv(
+            file_path,
+            header=0,
+            sep='\t',
+            converters=converters,
+            names=dependency_headers,
+        )
         df.drop_duplicates(inplace=True)
         df.set_index('entry1_id', inplace=True)
         df = df[df.index.isin(entry1_ids)]
@@ -272,7 +363,13 @@ class LiteratureDataParser(BaseParser):
             df.loc[(df[c] < df['max']) & (df[c] / df['sum'] < 0.3), c] = np.nan
         df.reset_index(inplace=True)
         # melt columns - change matrix format to database table format
-        df_theme = pd.melt(df, id_vars=['path', 'sum'], value_vars=cols, var_name='theme', value_name='score')
+        df_theme = pd.melt(
+            df,
+            id_vars=['path', 'sum'],
+            value_vars=cols,
+            var_name='theme',
+            value_name='score',
+        )
         df_theme.dropna(inplace=True)
         df_theme['relscore'] = df_theme['score'] / df_theme['sum']
         df_theme.set_index('path', inplace=True)
@@ -281,9 +378,13 @@ class LiteratureDataParser(BaseParser):
         df_theme.reset_index(inplace=True)
         df_theme.set_index('theme', inplace=True)
         # add theme description column
-        themes = pd.DataFrame.from_dict(theme_map, orient='index', columns=['description'])
+        themes = pd.DataFrame.from_dict(
+            theme_map, orient='index', columns=['description']
+        )
         themes.index.name = 'theme'
-        df_path2theme = pd.merge(df_theme, themes, how='inner', left_index=True, right_index=True)
+        df_path2theme = pd.merge(
+            df_theme, themes, how='inner', left_index=True, right_index=True
+        )
         df_path2theme.reset_index(inplace=True)
         return df_path2theme
 
@@ -315,7 +416,7 @@ class LiteratureDataParser(BaseParser):
             f'Literature{entry2_type}',
             f'Literature{entry2_type}',
             entry1_type,
-            entry2_type
+            entry2_type,
         )
         return query
 
@@ -344,36 +445,64 @@ class LiteratureDataParser(BaseParser):
         :return: cleaned df
         """
         df[column_name].replace(r"\(Tax[:][0-9]*\)", '', regex=True, inplace=True)
-        new_df = df.set_index(df.columns.drop(column_name,1).tolist())[column_name].str.split(';', expand=True).stack()
-        new_df = new_df.reset_index().rename(columns={0:column_name}).loc[:, df.columns]
+        new_df = (
+            df.set_index(df.columns.drop(column_name, 1).tolist())[column_name]
+            .str.split(';', expand=True)
+            .stack()
+        )
+        new_df = (
+            new_df.reset_index().rename(columns={0: column_name}).loc[:, df.columns]
+        )
         return new_df
 
     def clean_snippets(self):
         """Remove duplicates"""
         logging.info('clean snippet.tsv')
-        df = pd.read_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), sep='\t', header=0,
-                            names=['id', 'pmid', 'sentence'])
+        df = pd.read_csv(
+            os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'),
+            sep='\t',
+            header=0,
+            names=['id', 'pmid', 'sentence'],
+        )
         logging.info('total rows:' + str(len(df)))
         df.drop_duplicates(subset=['id'], inplace=True)
         logging.info('unique rows: ' + str(len(df)))
-        translate = {'-LRB- ': '(', ' -RRB-': ')', '-LRB-': '(', '-RRB-': ')', '-LSB- ': '[', ' -RSB-': ']'}
+        translate = {
+            '-LRB- ': '(',
+            ' -RRB-': ')',
+            '-LRB-': '(',
+            '-RRB-': ')',
+            '-LSB- ': '[',
+            ' -RSB-': ']',
+        }
         for current, replace in translate.items():
             df.sentence = df.sentence.str.replace(current, replace)
-        df.to_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), index=False, sep='\t', chunksize=50000)
+        df.to_csv(
+            os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'),
+            index=False,
+            sep='\t',
+            chunksize=50000,
+        )
         logging.info('done')
 
     def parse_and_write_data_files(self):
-        df = pd.read_csv(os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), sep='\t')
+        df = pd.read_csv(
+            os.path.join(self.parsed_dir, self.file_prefix + 'snippet.tsv'), sep='\t'
+        )
 
         for filename, (entity1_type, entity2_type) in [
             (ZENODO_CHEMICAL2DISEASE_FILE, (NODE_CHEMICAL, NODE_DISEASE)),
             (ZENODO_CHEMICAL2GENE_FILE, (NODE_CHEMICAL, NODE_GENE)),
             (ZENODO_GENE2DISEASE_FILE, (NODE_GENE, NODE_DISEASE)),
-            (ZENODO_GENE2GENE_FILE, (NODE_GENE, NODE_GENE))
+            (ZENODO_GENE2GENE_FILE, (NODE_GENE, NODE_GENE)),
         ]:
             file_df = pd.read_csv(os.path.join(self.parsed_dir, filename), sep='\t')
-            file_df['sentence'] = file_df.snippet_id.map(df.set_index('id')['sentence'].to_dict())
-            file_df['pmid'] = file_df.snippet_id.map(df.set_index('id')['pmid'].to_dict())
+            file_df['sentence'] = file_df.snippet_id.map(
+                df.set_index('id')['sentence'].to_dict()
+            )
+            file_df['pmid'] = file_df.snippet_id.map(
+                df.set_index('id')['pmid'].to_dict()
+            )
             cols = list(file_df.columns.values)
             # put pmid column first
             cols = cols[-1:] + cols[:-1]
@@ -399,14 +528,21 @@ class LiteratureDataParser(BaseParser):
             reordered_df2['PATH'] = reordered_df2.path
             reordered_df2.path = reordered_df2.path.str.lower()
             # do a left-join
-            reordered_df3 = reordered_df2.merge(path_df, how='left', left_on='path', right_on='path')
+            reordered_df3 = reordered_df2.merge(
+                path_df, how='left', left_on='path', right_on='path'
+            )
             del reordered_df2
             # revert the path column back to original casing
             reordered_df3.drop(columns=['path'], inplace=True)
             reordered_df3.rename(columns={'PATH': 'path'}, inplace=True)
             reordered_df3.dropna(inplace=True)
             reordered_df3.drop_duplicates(inplace=True)
-            reordered_df3.to_csv(os.path.join(self.output_dir, self.file_prefix + filename), index=False, sep='\t', chunksize=50000)
+            reordered_df3.to_csv(
+                os.path.join(self.output_dir, self.file_prefix + filename),
+                index=False,
+                sep='\t',
+                chunksize=50000,
+            )
 
 
 def main(args):
@@ -415,7 +551,12 @@ def main(args):
     parser.clean_snippets()
     parser.parse_and_write_data_files()
 
-    for filename in [ZENODO_CHEMICAL2DISEASE_FILE, ZENODO_CHEMICAL2GENE_FILE, ZENODO_GENE2DISEASE_FILE, ZENODO_GENE2GENE_FILE]:
+    for filename in [
+        ZENODO_CHEMICAL2DISEASE_FILE,
+        ZENODO_CHEMICAL2GENE_FILE,
+        ZENODO_GENE2DISEASE_FILE,
+        ZENODO_GENE2GENE_FILE,
+    ]:
         parser.upload_azure_file(filename, args.prefix)
 
 

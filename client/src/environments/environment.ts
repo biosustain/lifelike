@@ -15,7 +15,9 @@ interface EnvironmentVars {
 // Read environment variables (set by env.js) from browser window
 const browserWindow = window || {};
 const envAccessor = '__env';
-const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}) as EnvironmentVars;
+const browserWindowEnv = (
+  browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}
+) as EnvironmentVars;
 
 export const environment = {
   production: browserWindowEnv.production || false,

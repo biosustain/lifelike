@@ -23,7 +23,9 @@ class AccountService(RDBMSBaseDao):
         user = AppUser.query.filter_by(username=username)
         if user and admin:
             if 'admin' not in [r.name for r in admin.roles]:
-                raise NotAuthorized(message='You do not have enough privileges to delete a user.')
+                raise NotAuthorized(
+                    message='You do not have enough privileges to delete a user.'
+                )
             elif user.id == admin.id:
                 raise ServerException(message='You cannot delete your own account.')
 

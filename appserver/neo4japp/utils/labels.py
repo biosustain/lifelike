@@ -13,10 +13,12 @@ def get_first_known_label_from_node(node: N4jDriverNode):
     try:
         return get_first_known_label_from_list(node.labels)
     except ValueError as e:
-        message = f'Node with ID {node.id} had an unexpected list of labels: {node.labels}'
+        message = (
+            f'Node with ID {node.id} had an unexpected list of labels: {node.labels}'
+        )
         current_app.logger.warning(
             message,
-            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
         )
         warn(ServerWarning(message=message), cause=e)
         return 'Unknown'

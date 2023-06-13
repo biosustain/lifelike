@@ -1,4 +1,4 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
+<ng-container *ngIf="loadTask.status$ | async as status">
   <div class="module-section">
     <div class="module-section-header">
       <h2 class="module-section-header-title">Pinned Files</h2>
@@ -15,18 +15,20 @@
       <ng-template #noError>
         <!-- Content -->
         <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
-            <ng-container *ngIf="(list.results.view$ | async).length; else noResults">
-              <div class="flex-fill overflow-auto" [appShowPlaceholders]="status.placeholdersShown">
-                <app-object-list [objects]="list.results"
-                                 [appLinks]="true"
-                                 [forEditing]="false"
-                                 [showStars]="false"
-                                 [objectControls]="false"
-                                 (refreshRequest)="refresh()">
-                </app-object-list>
-              </div>
-            </ng-container>
-            <ng-template #noResults>No pinned files or folders</ng-template>
+          <ng-container *ngIf="(list.results.view$ | async).length; else noResults">
+            <div class="flex-fill overflow-auto" [appShowPlaceholders]="status.placeholdersShown">
+              <app-object-list
+                [objects]="list.results"
+                [appLinks]="true"
+                [forEditing]="false"
+                [showStars]="false"
+                [objectControls]="false"
+                (refreshRequest)="refresh()"
+              >
+              </app-object-list>
+            </div>
+          </ng-container>
+          <ng-template #noResults>No pinned files or folders</ng-template>
         </ng-container>
       </ng-template>
     </div>

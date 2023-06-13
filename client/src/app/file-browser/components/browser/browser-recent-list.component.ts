@@ -15,13 +15,13 @@ import { RecentFilesService } from '../../services/recent-files.service';
   templateUrl: './browser-recent-list.component.html',
 })
 export class BrowserRecentListComponent implements OnInit, OnDestroy {
-  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
-    () => this.recentFilesService.list.pipe(
-      map(data => {
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(() =>
+    this.recentFilesService.list.pipe(
+      map((data) => {
         const list = new FilesystemObjectList();
         list.results.replace(data);
         return list;
-      }),
+      })
     )
   );
   private loadTaskSubscription: Subscription;
@@ -31,7 +31,7 @@ export class BrowserRecentListComponent implements OnInit, OnDestroy {
   constructor(protected readonly recentFilesService: RecentFilesService) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 

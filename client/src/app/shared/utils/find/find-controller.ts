@@ -57,7 +57,5 @@ export interface FindController {
  * An async find implementation.
  */
 export interface AsyncFindController extends FindController {
-
   tick(): void;
-
 }

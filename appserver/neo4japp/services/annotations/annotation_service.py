@@ -33,7 +33,7 @@ from .data_transfer_objects import (
     LMDBMatch,
     OrganismAnnotation,
     PDFWord,
-    SpecifiedOrganismStrain
+    SpecifiedOrganismStrain,
 )
 from .utils.common import has_center_point
 
@@ -70,73 +70,86 @@ class AnnotationService:
         company: bool = True,
         entity: bool = True,
         lab_sample: bool = True,
-        lab_strain: bool = True
+        lab_strain: bool = True,
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
 
         if anatomy:
             entity_type_and_id_pairs.append(
-                (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value))
+                (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value)
+            )
 
         if chemical:
             entity_type_and_id_pairs.append(
-                (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value))
+                (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value)
+            )
 
         if compound:
             entity_type_and_id_pairs.append(
-                (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value))
+                (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value)
+            )
 
         if disease:
             entity_type_and_id_pairs.append(
-                (EntityType.DISEASE.value, EntityIdStr.DISEASE.value))
+                (EntityType.DISEASE.value, EntityIdStr.DISEASE.value)
+            )
 
         if food:
             entity_type_and_id_pairs.append(
-                (EntityType.FOOD.value, EntityIdStr.FOOD.value))
+                (EntityType.FOOD.value, EntityIdStr.FOOD.value)
+            )
 
         if phenomena:
             entity_type_and_id_pairs.append(
-                (EntityType.PHENOMENA.value, EntityIdStr.PHENOMENA.value))
+                (EntityType.PHENOMENA.value, EntityIdStr.PHENOMENA.value)
+            )
 
         if phenotype:
             entity_type_and_id_pairs.append(
-                (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value))
+                (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value)
+            )
 
         if species:
             # Order is IMPORTANT here
             # Species should always be annotated before Genes and Proteins
             entity_type_and_id_pairs.append(
-                (EntityType.SPECIES.value, EntityIdStr.SPECIES.value))
+                (EntityType.SPECIES.value, EntityIdStr.SPECIES.value)
+            )
 
         if protein:
             entity_type_and_id_pairs.append(
-                (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value))
+                (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value)
+            )
 
         if gene:
             entity_type_and_id_pairs.append(
-                (EntityType.GENE.value, EntityIdStr.GENE.value))
+                (EntityType.GENE.value, EntityIdStr.GENE.value)
+            )
 
         if company:
             entity_type_and_id_pairs.append(
-                (EntityType.COMPANY.value, EntityIdStr.COMPANY.value))
+                (EntityType.COMPANY.value, EntityIdStr.COMPANY.value)
+            )
 
         if entity:
             entity_type_and_id_pairs.append(
-                (EntityType.ENTITY.value, EntityIdStr.ENTITY.value))
+                (EntityType.ENTITY.value, EntityIdStr.ENTITY.value)
+            )
 
         if lab_sample:
             entity_type_and_id_pairs.append(
-                (EntityType.LAB_SAMPLE.value, EntityIdStr.LAB_SAMPLE.value))
+                (EntityType.LAB_SAMPLE.value, EntityIdStr.LAB_SAMPLE.value)
+            )
 
         if lab_strain:
             entity_type_and_id_pairs.append(
-                (EntityType.LAB_STRAIN.value, EntityIdStr.LAB_STRAIN.value))
+                (EntityType.LAB_STRAIN.value, EntityIdStr.LAB_STRAIN.value)
+            )
 
         return entity_type_and_id_pairs
 
     def _create_annotation_object(
-        self,
-        params: List[CreateAnnotationObjParams]
+        self, params: List[CreateAnnotationObjParams]
     ) -> List[Annotation]:
         created_annotations: List[Annotation] = []
 
@@ -158,15 +171,16 @@ class AnnotationService:
                         hyperlink = entity_datasource_hyperlinks
 
                     if (
-                            param.entity_datasource == DatabaseType.MESH.value and
-                            DatabaseType.MESH.value.upper() in param.entity_id
+                        param.entity_datasource == DatabaseType.MESH.value
+                        and DatabaseType.MESH.value.upper() in param.entity_id
                     ):
                         hyperlink += uri_encode(param.entity_id[5:])
                     else:
                         hyperlink += uri_encode(param.entity_id)
 
-                    hyperlinks.append(json.dumps(
-                        {'label': param.entity_datasource, 'url': hyperlink}))
+                    hyperlinks.append(
+                        json.dumps({'label': param.entity_datasource, 'url': hyperlink})
+                    )
             else:
                 hyperlinks = param.entity_hyperlinks
 
@@ -183,7 +197,10 @@ class AnnotationService:
                     id_type=id_type,
                     id_hyperlinks=hyperlinks,
                     links=OrganismAnnotation.OrganismMeta.Links(
-                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                        **{
+                            domain: url + link_search_term
+                            for domain, url in SEARCH_LINKS.items()
+                        }
                     ),
                     all_text=synonym,
                 )
@@ -203,7 +220,7 @@ class AnnotationService:
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=organism_meta,
-                        uuid=str(uuid4())
+                        uuid=str(uuid4()),
                     )
                 )
             elif param.token_type == EntityType.GENE.value:
@@ -214,7 +231,10 @@ class AnnotationService:
                     id_type=id_type,
                     id_hyperlinks=hyperlinks,
                     links=GeneAnnotation.GeneMeta.Links(
-                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                        **{
+                            domain: url + link_search_term
+                            for domain, url in SEARCH_LINKS.items()
+                        }
                     ),
                     all_text=synonym,
                 )
@@ -230,7 +250,7 @@ class AnnotationService:
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=gene_meta,
-                        uuid=str(uuid4())
+                        uuid=str(uuid4()),
                     )
                 )
             else:
@@ -240,7 +260,10 @@ class AnnotationService:
                     id_type=id_type,
                     id_hyperlinks=hyperlinks,
                     links=Annotation.Meta.Links(
-                        **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
+                        **{
+                            domain: url + link_search_term
+                            for domain, url in SEARCH_LINKS.items()
+                        }
                     ),
                     all_text=synonym,
                 )
@@ -256,7 +279,7 @@ class AnnotationService:
                         lo_location_offset=keyword_starting_idx,
                         hi_location_offset=keyword_ending_idx,
                         meta=meta,
-                        uuid=str(uuid4())
+                        uuid=str(uuid4()),
                     )
                 )
         return created_annotations
@@ -267,7 +290,9 @@ class AnnotationService:
         token_type: str,
         id_str: str,
     ) -> List[Annotation]:
-        tokens_lowercased = set(match.token.normalized_keyword for match in matches_list)
+        tokens_lowercased = set(
+            match.token.normalized_keyword for match in matches_list
+        )
         synonym_common_names_dict: Dict[str, Set[str]] = {}
 
         entities_to_create: List[CreateAnnotationObjParams] = []
@@ -277,13 +302,19 @@ class AnnotationService:
                 entity_synonym = entity['synonym']
                 entity_common_name = entity['name']
                 if entity_synonym in synonym_common_names_dict:
-                    synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))
+                    synonym_common_names_dict[entity_synonym].add(
+                        normalize_str(entity_common_name)
+                    )
                 else:
-                    synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}
+                    synonym_common_names_dict[entity_synonym] = {
+                        normalize_str(entity_common_name)
+                    }
 
             for entity in match.entities:
                 entity_synonym = entity['synonym']
-                common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
+                common_names_referenced_by_synonym = synonym_common_names_dict[
+                    entity_synonym
+                ]
                 if len(common_names_referenced_by_synonym) > 1:
                     # synonym used by multiple different common names
                     #
@@ -292,7 +323,9 @@ class AnnotationService:
                     # or if more than one of those common names appear in the document
                     # do not annotate because cannot infer
                     common_names_in_document = [
-                        n for n in common_names_referenced_by_synonym if n in tokens_lowercased
+                        n
+                        for n in common_names_referenced_by_synonym
+                        if n in tokens_lowercased
                     ]
 
                     if len(common_names_in_document) != 1:
@@ -308,7 +341,7 @@ class AnnotationService:
                             entity_id=entity[id_str],
                             entity_datasource=entity['id_type'],
                             entity_hyperlinks=entity.get('id_hyperlinks', []),
-                            entity_category=entity.get('category', '')
+                            entity_category=entity.get('category', ''),
                         )
                     )
                 except KeyError:
@@ -319,7 +352,7 @@ class AnnotationService:
         self,
         entity: PDFWord,
         organism_matches: Dict[str, str],
-        above_only: bool = False
+        above_only: bool = False,
     ) -> Tuple[str, str, float]:
         """An entity name may match multiple organisms. To choose which organism to use,
         we first check for the closest one in the document. If two organisms are
@@ -345,13 +378,15 @@ class AnnotationService:
             if organism not in self.organism_locations:
                 current_app.logger.error(
                     f'Organism ID {organism} does not exist in {self.organism_locations}.',
-                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
                 )
                 continue
 
             positions_to_check = self.organism_locations[organism]
             if above_only:
-                cut_idx = bisect_left(positions_to_check, (entity_location_lo, entity_location_hi))
+                cut_idx = bisect_left(
+                    positions_to_check, (entity_location_lo, entity_location_hi)
+                )
                 positions_to_check = positions_to_check[:cut_idx]
 
             # Get the closest instance of this organism
@@ -376,7 +411,9 @@ class AnnotationService:
             elif min_organism_dist == closest_dist:
                 try:
                     organism_frequency = self.organism_frequency[organism]
-                    curr_closest_organism_frequency = self.organism_frequency[curr_closest_organism]
+                    curr_closest_organism_frequency = self.organism_frequency[
+                        curr_closest_organism
+                    ]
                     # If the frequency of this organism is greater, update
                     if organism_frequency > curr_closest_organism_frequency:
                         curr_closest_organism = organism
@@ -389,12 +426,14 @@ class AnnotationService:
                     curr_closest_organism = organism
 
         if curr_closest_organism is None:
-            raise ServerException(
-                message='Cannot get gene ID with no organisms.'
-            )
+            raise ServerException(message='Cannot get gene ID with no organisms.')
 
         # Return the gene id of the organism with the highest priority
-        return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
+        return (
+            organism_matches[curr_closest_organism],
+            curr_closest_organism,
+            closest_dist,
+        )
 
     def _find_best_organism_match(
         self,
@@ -402,7 +441,7 @@ class AnnotationService:
         entity_synonym,
         organisms_to_match,
         fallback_organism_matches,
-        entity_type
+        entity_type,
     ) -> BestOrganismMatch:
         """Finds the best entity/organism pair.
 
@@ -415,9 +454,12 @@ class AnnotationService:
         If none found, then use the most frequent organism in document if it is in the
         matched dict, otherwise do not annotate.
         """
-        entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-            entity=token,
-            organism_matches=organisms_to_match
+        (
+            entity_id,
+            organism_id,
+            closest_distance,
+        ) = self._get_closest_entity_organism_pair(
+            entity=token, organism_matches=organisms_to_match
         )
 
         specified_organism_id = None
@@ -430,7 +472,9 @@ class AnnotationService:
 
                 if entity_type == EntityType.PROTEIN.value:
                     try:
-                        fallback_organisms_to_match = fallback_organism_matches[entity_synonym]
+                        fallback_organisms_to_match = fallback_organism_matches[
+                            entity_synonym
+                        ]
                     except KeyError:
                         # pass here to let it be handled below
                         pass
@@ -438,49 +482,66 @@ class AnnotationService:
                     # for genes
                     try:
                         # prioritize common name that is same as synonym
-                        fallback_organisms_to_match = \
-                            fallback_organism_matches[entity_synonym][entity_synonym]
+                        fallback_organisms_to_match = fallback_organism_matches[
+                            entity_synonym
+                        ][entity_synonym]
                     except KeyError:
                         # an organism can have multiple different genes w/ same synonym
                         # since we don't know which to use, doing this is fine
-                        for d in list(fallback_organism_matches[entity_synonym].values()):
-                            fallback_organisms_to_match = {**fallback_organisms_to_match, **d}
+                        for d in list(
+                            fallback_organism_matches[entity_synonym].values()
+                        ):
+                            fallback_organisms_to_match = {
+                                **fallback_organisms_to_match,
+                                **d,
+                            }
 
                 # if matched in KG then set to fallback strain
-                if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):
-                    entity_id = fallback_organisms_to_match[self.specified_organism.organism_id]
+                if fallback_organisms_to_match.get(
+                    self.specified_organism.organism_id, None
+                ):
+                    entity_id = fallback_organisms_to_match[
+                        self.specified_organism.organism_id
+                    ]
                     specified_organism_id = self.specified_organism.organism_id
                     find_organism_above = False
 
             if find_organism_above:
                 # try to get organism above
-                entity_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-                    entity=token,
-                    organism_matches=organisms_to_match,
-                    above_only=True
+                (
+                    entity_id,
+                    organism_id,
+                    closest_distance,
+                ) = self._get_closest_entity_organism_pair(
+                    entity=token, organism_matches=organisms_to_match, above_only=True
                 )
                 # if distance is inf, then it means we didn't find an organism above
                 if isinf(closest_distance):
                     # try to use the most frequent organism
                     most_frequent = max(
                         self.organism_frequency.keys(),
-                        key=(lambda k: self.organism_frequency[k])
+                        key=(lambda k: self.organism_frequency[k]),
                     )
                     if most_frequent in organisms_to_match:
-                        entity_id, organism_id, closest_distance = \
-                            self._get_closest_entity_organism_pair(
-                                entity=token,
-                                organism_matches={most_frequent: organisms_to_match[most_frequent]}
-                            )
+                        (
+                            entity_id,
+                            organism_id,
+                            closest_distance,
+                        ) = self._get_closest_entity_organism_pair(
+                            entity=token,
+                            organism_matches={
+                                most_frequent: organisms_to_match[most_frequent]
+                            },
+                        )
         return BestOrganismMatch(
             entity_id=entity_id,
             organism_id=organism_id,
             closest_distance=closest_distance,
-            specified_organism_id=specified_organism_id)
+            specified_organism_id=specified_organism_id,
+        )
 
     def _annotate_type_gene(
-        self,
-        recognized_entities: RecognizedEntities
+        self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -511,15 +572,15 @@ class AnnotationService:
             entities_set = set()
             for entity in match.entities:
                 gene_names.add(entity['synonym'])
-                entities_set.add((
-                    entity['synonym'],
-                    entity['id_type'],
-                    entity.get('hyperlinks', '')
-                ))
+                entities_set.add(
+                    (entity['synonym'], entity['id_type'], entity.get('hyperlinks', ''))
+                )
             for synonym, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
-                entity_token_pairs.append((synonym, datasource, hyperlinks, match.token))
+                entity_token_pairs.append(
+                    (synonym, datasource, hyperlinks, match.token)
+                )
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
@@ -531,7 +592,7 @@ class AnnotationService:
         )
         current_app.logger.info(
             f'Gene organism KG query time {time.time() - gene_match_time}',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
         )
 
         gene_organism_matches = graph_results.matches
@@ -543,20 +604,24 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             gene_match_time = time.time()
-            fallback_graph_results = \
-                self.graph.get_genes_to_organisms(
-                    genes=gene_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = self.graph.get_genes_to_organisms(
+                genes=gene_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             current_app.logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
             )
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
             gene_primary_names.update(fallback_graph_results.primary_names)
 
-        for entity_synonym, entity_datasource, entity_hyperlinks, token in entity_token_pairs:
+        for (
+            entity_synonym,
+            entity_datasource,
+            entity_hyperlinks,
+            token,
+        ) in entity_token_pairs:
             gene_id = None
             category = None
 
@@ -564,7 +629,9 @@ class AnnotationService:
             if entity_synonym in gene_organism_matches:
                 try:
                     # prioritize common name that is same as synonym
-                    organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
+                    organisms_to_match = gene_organism_matches[entity_synonym][
+                        entity_synonym
+                    ]
                 except KeyError:
                     # an organism can have multiple different genes w/ same synonym
                     # since we don't know which to use, doing this is fine
@@ -576,7 +643,8 @@ class AnnotationService:
                     entity_synonym=entity_synonym,
                     organisms_to_match=organisms_to_match,
                     fallback_organism_matches=fallback_gene_organism_matches,
-                    entity_type=EntityType.GENE.value)
+                    entity_type=EntityType.GENE.value,
+                )
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -607,7 +675,10 @@ class AnnotationService:
                     continue
 
             if gene_id and category:
-                if entity_datasource != gene_data_sources[f'{entity_synonym}{organism_id}']:
+                if (
+                    entity_datasource
+                    != gene_data_sources[f'{entity_synonym}{organism_id}']
+                ):
                     continue
                 entities_to_create.append(
                     CreateAnnotationObjParams(
@@ -618,14 +689,13 @@ class AnnotationService:
                         entity_id=gene_id,
                         entity_datasource=entity_datasource,
                         entity_hyperlinks=entity_hyperlinks,
-                        entity_category=category
+                        entity_category=category,
                     )
                 )
         return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_protein(
-        self,
-        recognized_entities: RecognizedEntities
+        self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Nearly identical to `self._annotate_type_gene`. Return a list of
         protein annotations with the correct protein_id. If the protein
@@ -642,16 +712,20 @@ class AnnotationService:
             entities_set = set()
             for entity in match.entities:
                 protein_names.add(entity['synonym'])
-                entities_set.add((
-                    entity['synonym'],
-                    entity.get('category', ''),
-                    entity['id_type'],
-                    entity.get('hyperlinks', '')
-                ))
+                entities_set.add(
+                    (
+                        entity['synonym'],
+                        entity.get('category', ''),
+                        entity['id_type'],
+                        entity.get('hyperlinks', ''),
+                    )
+                )
             for synonym, category, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
-                entity_token_pairs.append((synonym, category, datasource, hyperlinks, match.token))
+                entity_token_pairs.append(
+                    (synonym, category, datasource, hyperlinks, match.token)
+                )
 
         protein_names_list = list(protein_names)
 
@@ -662,7 +736,7 @@ class AnnotationService:
         )
         current_app.logger.info(
             f'Protein organism KG query time {time.time() - protein_match_time}',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
         )
 
         protein_organism_matches = graph_results.matches
@@ -672,21 +746,25 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             protein_match_time = time.time()
-            fallback_graph_results = \
-                self.graph.get_proteins_to_organisms(
-                    proteins=protein_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = self.graph.get_proteins_to_organisms(
+                proteins=protein_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             current_app.logger.info(
                 f'Protein fallback organism KG query time {time.time() - protein_match_time}',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
             )
 
             fallback_protein_organism_matches = fallback_graph_results.matches
             protein_primary_names.update(fallback_graph_results.primary_names)
 
-        for entity_synonym, category, entity_datasource, entity_hyperlinks, token \
-                in entity_token_pairs:
+        for (
+            entity_synonym,
+            category,
+            entity_datasource,
+            entity_hyperlinks,
+            token,
+        ) in entity_token_pairs:
             # in LMDB we use the synonym as id and name, so do the same here
             protein_id = entity_synonym
 
@@ -696,7 +774,8 @@ class AnnotationService:
                     entity_synonym=entity_synonym,
                     organisms_to_match=protein_organism_matches[entity_synonym],
                     fallback_organism_matches=fallback_protein_organism_matches,
-                    entity_type=EntityType.PROTEIN.value)
+                    entity_type=EntityType.PROTEIN.value,
+                )
 
                 if isinf(best_match.closest_distance):
                     # didn't find a suitable organism in organisms_to_match
@@ -710,9 +789,13 @@ class AnnotationService:
                 else:
                     category = self.organism_categories[organism_id]
             elif entity_synonym in fallback_protein_organism_matches:
-                fallback_protein_organism = fallback_protein_organism_matches[entity_synonym]
+                fallback_protein_organism = fallback_protein_organism_matches[
+                    entity_synonym
+                ]
                 try:
-                    protein_id = fallback_protein_organism[self.specified_organism.organism_id]
+                    protein_id = fallback_protein_organism[
+                        self.specified_organism.organism_id
+                    ]
                     category = self.specified_organism.category
                 except KeyError:
                     continue
@@ -726,14 +809,13 @@ class AnnotationService:
                     entity_id=protein_id,
                     entity_datasource=entity_datasource,
                     entity_hyperlinks=entity_hyperlinks,
-                    entity_category=category
+                    entity_category=category,
                 )
             )
         return self._create_annotation_object(entities_to_create)
 
     def _annotate_local_species(
-        self,
-        recognized_entities: RecognizedEntities
+        self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         """Similar to self._get_annotation() but for creating
         annotations of custom species.
@@ -758,7 +840,7 @@ class AnnotationService:
                             entity_id=entity[EntityIdStr.SPECIES.value],
                             entity_datasource=entity['id_type'],
                             entity_hyperlinks=entity.get('id_hyperlinks', []),
-                            entity_category=entity.get('category', '')
+                            entity_category=entity.get('category', ''),
                         )
                     )
                 except KeyError:
@@ -769,12 +851,12 @@ class AnnotationService:
         self,
         entity_id_str: str,
         custom_annotations: List[dict],
-        recognized_entities: RecognizedEntities
+        recognized_entities: RecognizedEntities,
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             matches_list=recognized_entities.recognized_species,
             token_type=EntityType.SPECIES.value,
-            id_str=entity_id_str
+            id_str=entity_id_str,
         )
 
         local_species_annotations = self._annotate_local_species(recognized_entities)
@@ -786,9 +868,11 @@ class AnnotationService:
         # or could the same situation with gene/protein occur?
         # e.g case sensitive mean different things
         local_inclusions = [
-            custom for custom in custom_annotations if custom.get(
-                'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
-                    'meta', {}).get('includeGlobally')]
+            custom
+            for custom in custom_annotations
+            if custom.get('meta', {}).get('type') == EntityType.SPECIES.value
+            and not custom.get('meta', {}).get('includeGlobally')
+        ]
 
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
@@ -797,10 +881,14 @@ class AnnotationService:
 
         for custom in local_inclusions:
             for custom_anno in local_species_annotations:
-                if custom.get('rects') and len(custom['rects']) == len(custom_anno.rects):
+                if custom.get('rects') and len(custom['rects']) == len(
+                    custom_anno.rects
+                ):
                     # check if center point for each rect in custom_anno.rects
                     # is in the corresponding rectangle from custom annotations
-                    valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
+                    valid = all(
+                        list(map(has_center_point, custom['rects'], custom_anno.rects))
+                    )
 
                     # if center point is in custom annotation rectangle
                     # then add it to list
@@ -816,18 +904,19 @@ class AnnotationService:
         if local_inclusions:
             species_annotations_with_local += filtered_local_species_annotations
 
-        self.organism_frequency, self.organism_locations, self.organism_categories = \
-            self._get_entity_frequency_location_and_category(species_annotations_with_local)
+        (
+            self.organism_frequency,
+            self.organism_locations,
+            self.organism_categories,
+        ) = self._get_entity_frequency_location_and_category(
+            species_annotations_with_local
+        )
 
         return species_annotations
 
     def _get_entity_frequency_location_and_category(
-        self,
-        annotations
-    ) -> Tuple[
-            Dict[str, int],
-            Dict[str, List[Tuple[int, int]]],
-            Dict[str, str]]:
+        self, annotations
+    ) -> Tuple[Dict[str, int], Dict[str, List[Tuple[int, int]]], Dict[str, str]]:
         """Takes as input a list of annotation objects (intended to be of a single entity type).
 
         Returns the frequency of the annotation entities, and their locations within the document.
@@ -839,7 +928,10 @@ class AnnotationService:
         locations: Dict[str, Set[Tuple[int, int]]] = {}
         for annotation in annotations:
             entity_id = annotation.meta.id
-            offset_pairs = (annotation.lo_location_offset, annotation.hi_location_offset)
+            offset_pairs = (
+                annotation.lo_location_offset,
+                annotation.hi_location_offset,
+            )
 
             if entity_frequency.get(entity_id, None):
                 entity_frequency[entity_id] += 1
@@ -863,7 +955,9 @@ class AnnotationService:
                 else:
                     entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
 
-                entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
+                entity_categories[
+                    HOMO_SAPIENS_TAX_ID
+                ] = OrganismCategory.EUKARYOTA.value
 
             entity_categories[entity_id] = annotation.meta.category or ''
 
@@ -873,8 +967,7 @@ class AnnotationService:
         return entity_frequency, matched_entity_locations, entity_categories
 
     def _get_fixed_false_positive_unified_annotations(
-        self,
-        annotations_list: List[Annotation]
+        self, annotations_list: List[Annotation]
     ) -> List[Annotation]:
         """Removes any false positive annotations.
 
@@ -895,12 +988,9 @@ class AnnotationService:
 
             # TODO: Does the order of these checks matter?
 
-            if (
-                    isinstance(annotation, GeneAnnotation) or
-                    (
-                            annotation.meta.type == EntityType.PROTEIN.value and
-                            len(text_in_document) == 1
-                    )
+            if isinstance(annotation, GeneAnnotation) or (
+                annotation.meta.type == EntityType.PROTEIN.value
+                and len(text_in_document) == 1
             ):
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
@@ -924,7 +1014,7 @@ class AnnotationService:
         self,
         types_to_annotate: List[Tuple[str, str]],
         custom_annotations: List[dict],
-        recognized_entities: RecognizedEntities
+        recognized_entities: RecognizedEntities,
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -952,7 +1042,7 @@ class AnnotationService:
             EntityType.COMPANY.value: recognized_entities.recognized_companies,
             EntityType.ENTITY.value: recognized_entities.recognized_entities,
             EntityType.LAB_SAMPLE.value: recognized_entities.recognized_lab_samples,
-            EntityType.LAB_STRAIN.value: recognized_entities.recognized_lab_strains
+            EntityType.LAB_STRAIN.value: recognized_entities.recognized_lab_strains,
         }
 
         for entity_type, entity_id_str in types_to_annotate:
@@ -960,7 +1050,7 @@ class AnnotationService:
                 unified_annotations += self._annotate_type_species(
                     entity_id_str=entity_id_str,
                     custom_annotations=custom_annotations,
-                    recognized_entities=recognized_entities
+                    recognized_entities=recognized_entities,
                 )
             elif entity_type == EntityType.GENE.value:
                 unified_annotations += self._annotate_type_gene(recognized_entities)
@@ -970,7 +1060,7 @@ class AnnotationService:
                 unified_annotations += self._get_annotation(
                     matches_list=matched_data[entity_type],
                     token_type=entity_type,
-                    id_str=entity_id_str
+                    id_str=entity_id_str,
                 )
 
         return unified_annotations
@@ -982,14 +1072,14 @@ class AnnotationService:
         entity_results: RecognizedEntities,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
-        **kwargs
+        **kwargs,
     ) -> List[Annotation]:
         self.specified_organism = specified_organism
 
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
             custom_annotations=custom_annotations,
-            recognized_entities=entity_results
+            recognized_entities=entity_results,
         )
 
         start = time.time()
@@ -997,19 +1087,18 @@ class AnnotationService:
 
         current_app.logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
         )
         return cleaned
 
-    def _clean_annotations(
-        self,
-        annotations: List[Annotation]
-    ) -> List[Annotation]:
+    def _clean_annotations(self, annotations: List[Annotation]) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=annotations)
+            annotations_list=annotations
+        )
 
         fixed_unified_annotations = self.fix_conflicting_annotations(
-            unified_annotations=fixed_unified_annotations)
+            unified_annotations=fixed_unified_annotations
+        )
         return fixed_unified_annotations
 
     def fix_conflicting_annotations(
@@ -1039,10 +1128,9 @@ class AnnotationService:
         # intervals, rather than a tree with intervals and data
         # because the data are viewed as unique, so the tree is bigger
         tree = AnnotationIntervalTree(
-            AnnotationInterval(
-                begin=lo,
-                end=hi
-            ) for (lo, hi) in annotation_interval_dict)
+            AnnotationInterval(begin=lo, end=hi)
+            for (lo, hi) in annotation_interval_dict
+        )
 
         overlap_ranges = tree.merge_overlaps()
 
@@ -1053,7 +1141,8 @@ class AnnotationService:
 
             for overlap in overlaps:
                 annotations_to_fix += [
-                    anno for anno in annotation_interval_dict[(overlap.begin, overlap.end)]
+                    anno
+                    for anno in annotation_interval_dict[(overlap.begin, overlap.end)]
                 ]
 
             chosen_annotation = None
@@ -1061,7 +1150,8 @@ class AnnotationService:
             for annotation in annotations_to_fix:
                 if chosen_annotation:
                     chosen_annotation = self.determine_entity_precedence(
-                        anno1=chosen_annotation, anno2=annotation)
+                        anno1=chosen_annotation, anno2=annotation
+                    )
                 else:
                     chosen_annotation = annotation
             updated_unified_annotations.append(chosen_annotation)  # type: ignore
@@ -1069,9 +1159,7 @@ class AnnotationService:
         return updated_unified_annotations
 
     def determine_entity_precedence(
-        self,
-        anno1: Annotation,
-        anno2: Annotation
+        self, anno1: Annotation, anno2: Annotation
     ) -> Annotation:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
@@ -1080,12 +1168,20 @@ class AnnotationService:
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.type == EntityType.PROTEIN.value or
-                anno1.meta.type == EntityType.GENE.value) and
-            (anno2.meta.type == EntityType.PROTEIN.value or
-                anno2.meta.type == EntityType.GENE.value) and
-            (anno1.lo_location_offset == anno2.lo_location_offset and
-                anno1.hi_location_offset == anno2.hi_location_offset)):
+        if (
+            (
+                anno1.meta.type == EntityType.PROTEIN.value
+                or anno1.meta.type == EntityType.GENE.value
+            )
+            and (
+                anno2.meta.type == EntityType.PROTEIN.value
+                or anno2.meta.type == EntityType.GENE.value
+            )
+            and (
+                anno1.lo_location_offset == anno2.lo_location_offset
+                and anno1.hi_location_offset == anno2.hi_location_offset
+            )
+        ):
             if anno1.meta.type != anno2.meta.type:
                 # protein vs gene
                 # protein has capital first letter: CysB
@@ -1112,7 +1208,9 @@ class AnnotationService:
                     if gene_protein_precedence_result is None:
                         if equal_number_of_words(anno1.text_in_document, anno1.keyword):
                             gene_protein_precedence_result = anno1
-                        elif equal_number_of_words(anno2.text_in_document, anno2.keyword):
+                        elif equal_number_of_words(
+                            anno2.text_in_document, anno2.keyword
+                        ):
                             gene_protein_precedence_result = anno2
                 else:
                     if anno2.text_in_document == anno2.keyword:
@@ -1124,7 +1222,9 @@ class AnnotationService:
                     if gene_protein_precedence_result is None:
                         if equal_number_of_words(anno2.text_in_document, anno2.keyword):
                             gene_protein_precedence_result = anno2
-                        elif equal_number_of_words(anno1.text_in_document, anno1.keyword):
+                        elif equal_number_of_words(
+                            anno1.text_in_document, anno1.keyword
+                        ):
                             gene_protein_precedence_result = anno1
 
                 if gene_protein_precedence_result is not None:

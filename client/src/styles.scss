@@ -1,7 +1,7 @@
-@import "lifelike-theme.scss";
+@import 'lifelike-theme.scss';
 
-$blue: #3797DB;
-$dark-blue: #3177B8;
+$blue: #3797db;
+$dark-blue: #3177b8;
 
 @mixin no-select {
   -webkit-user-select: none; /* Chrome all / Safari all */
@@ -29,13 +29,14 @@ $dark-blue: #3177B8;
 }
 
 // Default rules from Angular Material. Do not modify.
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 // Content placed dynamically by the Angular Router (i.e. sibling of
@@ -58,7 +59,8 @@ router-outlet + * {
   float: right;
 }
 
-.tooltip-collapse-control.collapsed:after, .tooltip-collapse-control[aria-expanded='false']:after {
+.tooltip-collapse-control.collapsed:after,
+.tooltip-collapse-control[aria-expanded='false']:after {
   content: '\f078';
 }
 
@@ -79,7 +81,6 @@ router-outlet + * {
 .fas {
   transform-origin: 50% 43.75%;
 }
-
 
 .qtip-bootstrap-unify {
   opacity: 1 !important;
@@ -121,7 +122,7 @@ router-outlet + * {
 
   .arrow::after {
     position: absolute;
-    content: "";
+    content: '';
     border-color: transparent;
     border-style: solid;
   }
@@ -130,9 +131,9 @@ router-outlet + * {
     .arrow {
       &::after {
         top: 0;
-        border-width: $tooltip-arrow-height ($tooltip-arrow-width * .5) 0;
+        border-width: $tooltip-arrow-height ($tooltip-arrow-width * 0.5) 0;
         border-top-color: white;
-        transform: translateY(-.7px);
+        transform: translateY(-0.7px);
       }
     }
   }
@@ -141,9 +142,10 @@ router-outlet + * {
     .arrow {
       &::after {
         right: 0;
-        border-width: ($tooltip-arrow-width * .5) $tooltip-arrow-height ($tooltip-arrow-width * .5) 0;
+        border-width: ($tooltip-arrow-width * 0.5) $tooltip-arrow-height
+          ($tooltip-arrow-width * 0.5) 0;
         border-right-color: white;
-        transform: translateX(-.7px);
+        transform: translateX(-0.7px);
       }
     }
   }
@@ -152,9 +154,9 @@ router-outlet + * {
     .arrow {
       &::after {
         bottom: 0;
-        border-width: 0 ($tooltip-arrow-width * .5) $tooltip-arrow-height;
+        border-width: 0 ($tooltip-arrow-width * 0.5) $tooltip-arrow-height;
         border-bottom-color: white;
-        transform: translateY(.7px);
+        transform: translateY(0.7px);
       }
     }
   }
@@ -163,9 +165,10 @@ router-outlet + * {
     .arrow {
       &::after {
         left: 0;
-        border-width: ($tooltip-arrow-width * .5) 0 ($tooltip-arrow-width * .5) $tooltip-arrow-height;
+        border-width: ($tooltip-arrow-width * 0.5) 0 ($tooltip-arrow-width * 0.5)
+          $tooltip-arrow-height;
         border-left-color: white;
-        transform: translateX(.7px);
+        transform: translateX(0.7px);
       }
     }
   }

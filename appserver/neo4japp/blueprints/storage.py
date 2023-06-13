@@ -1,11 +1,5 @@
 from azure.storage.blob import BlobType, BlobServiceClient, ContentSettings
-from flask import (
-    Blueprint,
-    g,
-    jsonify,
-    make_response,
-    request
-)
+from flask import Blueprint, g, jsonify, make_response, request
 from flask.views import MethodView
 
 from neo4japp.exceptions import ServerException, NotAuthorized
@@ -19,21 +13,27 @@ class UserManualAPI(MethodView):
     Uploads a user manual for how to use Lifelike. This API is Azure Cloud
     platform specific.
     """
+
     USER_MANUAL_FILENAME = 'lifelike-user-manual'
 
     def get_blob_service(self):
         storage_client = BlobServiceClient(
             config.get('AZURE_BLOB_STORAGE_URL'),
-            config.get('AZURE_ACCOUNT_STORAGE_KEY'))
+            config.get('AZURE_ACCOUNT_STORAGE_KEY'),
+        )
         container_client = storage_client.get_container_client('lifelike-manual')
-        blob_client = container_client.get_blob_client(f'{self.USER_MANUAL_FILENAME}.pdf')
+        blob_client = container_client.get_blob_client(
+            f'{self.USER_MANUAL_FILENAME}.pdf'
+        )
         return blob_client
 
     def get(self):
         bc = self.get_blob_service()
         file_stream = bc.download_blob()
         resp = make_response(file_stream.readall())
-        resp.headers['Content-Disposition'] = f'attachment;filename={self.USER_MANUAL_FILENAME}.pdf'
+        resp.headers[
+            'Content-Disposition'
+        ] = f'attachment;filename={self.USER_MANUAL_FILENAME}.pdf'
         resp.headers['Content-Type'] = 'application/pdf'
         return resp
 
@@ -43,15 +43,15 @@ class UserManualAPI(MethodView):
                 file = request.files['file']
             except KeyError as e:
                 raise ServerException(
-                    title='Unable to Upload File',
-                    message='No file specified.'
+                    title='Unable to Upload File', message='No file specified.'
                 ) from e
             bc = self.get_blob_service()
             bc.upload_blob(
                 file.read(),
                 blob_type=BlobType.BlockBlob,
                 content_settings=ContentSettings(content_type='application/pdf'),
-                overwrite=True)
+                overwrite=True,
+            )
             return jsonify(dict(results='Manual successfully uploaded.'))
         raise NotAuthorized('You do not have sufficient privileges')
 

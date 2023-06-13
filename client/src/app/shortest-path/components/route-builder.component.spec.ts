@@ -13,11 +13,8 @@ describe('RouteBuilderComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule
-      ],
-      declarations: [ RouteBuilderComponent ]
+      imports: [RootStoreModule, SharedModule],
+      declarations: [RouteBuilderComponent],
     });
   });
 

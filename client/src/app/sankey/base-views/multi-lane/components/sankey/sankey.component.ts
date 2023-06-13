@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, OnDestroy, ViewEncapsulation, OnInit, NgZone, ElementRef } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  ViewEncapsulation,
+  OnInit,
+  NgZone,
+  ElementRef,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Selection as d3_Selection } from 'd3-selection';
@@ -31,12 +39,13 @@ import { getTraces } from '../../utils';
     {
       provide: LayoutService,
       useExisting: MultiLaneLayoutService,
-    }
-  ]
+    },
+  ],
 })
 export class SankeyMultiLaneComponent
   extends SankeyAbstractComponent<Base>
-  implements OnInit, AfterViewInit, OnDestroy {
+  implements OnInit, AfterViewInit, OnDestroy
+{
   constructor(
     protected readonly clipboard: ClipboardService,
     protected readonly snackBar: MatSnackBar,
@@ -58,29 +67,34 @@ export class SankeyMultiLaneComponent
   }
 
   focusedLinks$ = this.search.searchFocus$.pipe(
-    switchMap(searchFocus =>
+    switchMap((searchFocus) =>
       this.sankey.graph$.pipe(
         first(),
         // map graph file link to sankey link
-        map(({links}) =>
-          searchFocus?.type === EntityType.Link ?
-            // allow string == number match interpolation ("58" == 58 -> true)
-            // tslint:disable-next-line:triple-equals
-            (links as Base['link'][]).filter(({originLinkId}) => originLinkId == searchFocus?.id) : []
+        map(({ links }) =>
+          searchFocus?.type === EntityType.Link
+            ? (links as Base['link'][]).filter(
+                // allow string == number match interpolation ("58" == 58 -> true)
+                // tslint:disable-next-line:triple-equals
+                ({ originLinkId }) => originLinkId == searchFocus?.id
+              )
+            : []
         ),
-        tap(current => isNotEmpty(current) && this.panToLinks(current)),
-        switchMap(current => this.renderedLinks$.pipe(
-          tap(renderedLinks => {
-            if (isEmpty(current)) {
-              renderedLinks.attr('focused', undefined);
-            } else {
-              renderedLinks
-                .attr('focused', d => current.includes(d))
-                .filter(d => current.includes(d))
-                .raise();
-            }
-          })
-        ))
+        tap((current) => isNotEmpty(current) && this.panToLinks(current)),
+        switchMap((current) =>
+          this.renderedLinks$.pipe(
+            tap((renderedLinks) => {
+              if (isEmpty(current)) {
+                renderedLinks.attr('focused', undefined);
+              } else {
+                renderedLinks
+                  .attr('focused', (d) => current.includes(d))
+                  .filter((d) => current.includes(d))
+                  .raise();
+              }
+            })
+          )
+        )
       )
     )
   );
@@ -110,92 +124,101 @@ export class SankeyMultiLaneComponent
   // );
 
   selectionUpdate$ = this.selection.selection$.pipe(
-    map(selection =>
+    map((selection) =>
       assign(
-        mapValues(
-          groupBy(selection, 'type'),
-          group => group.map(({entity}) => entity)
-        ),
-        {empty: isEmpty(selection)}
+        mapValues(groupBy(selection, 'type'), (group) => group.map(({ entity }) => entity)),
+        { empty: isEmpty(selection) }
       )
     ),
-    publish(selection$ => combineLatest([
-      selection$.pipe(
-        switchMap(({[SelectionType.node]: selection = [], empty}) => this.renderedNodes$.pipe(
-          tap(renderedNodes => {
-            if (empty) {
-              renderedNodes.attr('selected', undefined);
-            } else {
-              renderedNodes
-                .attr('selected', d => selection.includes(d))
-                .filter(d => selection.includes(d))
-                .raise();
-            }
-          })
-        ))
-      ),
-      selection$.pipe(
-        switchMap(({[SelectionType.link]: selection = [], empty}) => this.renderedLinks$.pipe(
-          tap(renderedLinks => {
-            if (empty) {
-              renderedLinks.attr('selected', undefined);
-            } else {
-              renderedLinks
-                .attr('selected', d => selection.includes(d))
-                .filter(d => selection.includes(d))
-                .raise();
-            }
-          })
-        ))
-      ),
-      selection$.pipe(
-        map(({
-               [SelectionType.trace]: traces = [],
-               [SelectionType.link]: links = [],
-               [SelectionType.node]: nodes = []
-             }) => getTraces({nodes, links}).concat(traces),
-        ),
-        publish(traces$ => combineLatest([
-          traces$.pipe(
-            map(traces => this.calculateNodeGroupFromTraces(traces)),
-            switchMap(selection => this.renderedNodes$.pipe(
-              tap(renderedNodes => {
-                if (isEmpty(selection)) {
-                  renderedNodes.attr('transitively-selected', undefined);
+    publish((selection$) =>
+      combineLatest([
+        selection$.pipe(
+          switchMap(({ [SelectionType.node]: selection = [], empty }) =>
+            this.renderedNodes$.pipe(
+              tap((renderedNodes) => {
+                if (empty) {
+                  renderedNodes.attr('selected', undefined);
                 } else {
                   renderedNodes
-                    .attr('transitively-selected', ({id}) => selection.includes(id))
-                    .filter(({id}) => selection.includes(id))
+                    .attr('selected', (d) => selection.includes(d))
+                    .filter((d) => selection.includes(d))
                     .raise();
                 }
               })
-            ))
-          ),
-          traces$.pipe(
-            switchMap(traces => this.renderedLinks$.pipe(
-                tap(renderedLinks => {
-                  if (isEmpty(traces)) {
-                    renderedLinks.attr('transitively-selected', undefined);
-                  } else {
-                    renderedLinks
-                      .attr('transitively-selected', ({trace}) => traces.includes(trace))
-                      .filter(({trace}) => traces.includes(trace))
-                      .raise();
-                  }
-                })
-              )
             )
           )
-        ]))
-      )
-    ]))
+        ),
+        selection$.pipe(
+          switchMap(({ [SelectionType.link]: selection = [], empty }) =>
+            this.renderedLinks$.pipe(
+              tap((renderedLinks) => {
+                if (empty) {
+                  renderedLinks.attr('selected', undefined);
+                } else {
+                  renderedLinks
+                    .attr('selected', (d) => selection.includes(d))
+                    .filter((d) => selection.includes(d))
+                    .raise();
+                }
+              })
+            )
+          )
+        ),
+        selection$.pipe(
+          map(
+            ({
+              [SelectionType.trace]: traces = [],
+              [SelectionType.link]: links = [],
+              [SelectionType.node]: nodes = [],
+            }) => getTraces({ nodes, links }).concat(traces)
+          ),
+          publish((traces$) =>
+            combineLatest([
+              traces$.pipe(
+                map((traces) => this.calculateNodeGroupFromTraces(traces)),
+                switchMap((selection) =>
+                  this.renderedNodes$.pipe(
+                    tap((renderedNodes) => {
+                      if (isEmpty(selection)) {
+                        renderedNodes.attr('transitively-selected', undefined);
+                      } else {
+                        renderedNodes
+                          .attr('transitively-selected', ({ id }) => selection.includes(id))
+                          .filter(({ id }) => selection.includes(id))
+                          .raise();
+                      }
+                    })
+                  )
+                )
+              ),
+              traces$.pipe(
+                switchMap((traces) =>
+                  this.renderedLinks$.pipe(
+                    tap((renderedLinks) => {
+                      if (isEmpty(traces)) {
+                        renderedLinks.attr('transitively-selected', undefined);
+                      } else {
+                        renderedLinks
+                          .attr('transitively-selected', ({ trace }) => traces.includes(trace))
+                          .filter(({ trace }) => traces.includes(trace))
+                          .raise();
+                      }
+                    })
+                  )
+                )
+              ),
+            ])
+          )
+        ),
+      ])
+    )
   );
 
   panToLinks(links) {
-    const [sumX, sumY] = links.reduce(([x, y], {source: {x1}, target: {x0}, y0, y1}) => [
-      x + x0 + x1,
-      y + y0 + y1
-    ], [0, 0]);
+    const [sumX, sumY] = links.reduce(
+      ([x, y], { source: { x1 }, target: { x0 }, y0, y1 }) => [x + x0 + x1, y + y0 + y1],
+      [0, 0]
+    );
     this.zoom.translateTo(
       // average x
       sumX / (2 * links.length),
@@ -213,54 +236,53 @@ export class SankeyMultiLaneComponent
   initFocus() {
     forkJoin(
       this.focusedLinks$,
-      this.focusedNode$,
+      this.focusedNode$
       // this.focusedTrace$
-    ).pipe(
-      takeUntil(this.destroyed$)
-    ).subscribe();
+    )
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe();
   }
 
   initSelection() {
-    this.selectionUpdate$.pipe(
-      takeUntil(this.destroyed$)
-    ).subscribe();
+    this.selectionUpdate$.pipe(takeUntil(this.destroyed$)).subscribe();
   }
 
   initStateUpdate() {
     const {
-      sankey: {
-        linkBorder,
-      }
+      sankey: { linkBorder },
     } = this;
 
-    this.sankey.baseView.traceGroupColorMapping$.pipe(
-      takeUntil(this.destroyed$),
-      switchMap((traceColorPaletteMap) =>
-        combineLatest([
-          this.renderedLinks$,
-          this.renderedNodes$,
-        ]).pipe(
-          tap(([linksSelection, nodesSelection]) => {
-            linksSelection
-              .style('fill', (d: Base['link']) => traceColorPaletteMap.get(d.trace.group))
-              .style('stroke', linkBorder as any);
+    this.sankey.baseView.traceGroupColorMapping$
+      .pipe(
+        takeUntil(this.destroyed$),
+        switchMap((traceColorPaletteMap) =>
+          combineLatest([this.renderedLinks$, this.renderedNodes$]).pipe(
+            tap(([linksSelection, nodesSelection]) => {
+              linksSelection
+                .style('fill', (d: Base['link']) => traceColorPaletteMap.get(d.trace.group))
+                .style('stroke', linkBorder as any);
 
-            nodesSelection
-              .select('rect')
-              .style('fill', ({sourceLinks, targetLinks, color}: Base['node']) => {
-                // check if any trace is finishing or starting here
-                const difference = symmetricDifference(sourceLinks, targetLinks, link => link.trace);
-                // if there is only one trace start/end then color node with its color
-                if (difference.size === 1) {
-                  return traceColorPaletteMap.get(difference.values().next().value.trace.group);
-                } else {
-                  return color;
-                }
-              });
-          }),
+              nodesSelection
+                .select('rect')
+                .style('fill', ({ sourceLinks, targetLinks, color }: Base['node']) => {
+                  // check if any trace is finishing or starting here
+                  const difference = symmetricDifference(
+                    sourceLinks,
+                    targetLinks,
+                    (link) => link.trace
+                  );
+                  // if there is only one trace start/end then color node with its color
+                  if (difference.size === 1) {
+                    return traceColorPaletteMap.get(difference.values().next().value.trace.group);
+                  } else {
+                    return color;
+                  }
+                });
+            })
+          )
         )
       )
-    ).subscribe();
+      .subscribe();
   }
 
   // endregion
@@ -279,14 +301,7 @@ export class SankeyMultiLaneComponent
    * @returns a set of node ids representing all nodes in the given traces
    */
   calculateNodeGroupFromTraces(traces: Base['trace'][]) {
-    return uniq(
-      flatMap(
-        traces,
-        trace => flatMap(
-          trace.nodePaths
-        )
-      )
-    );
+    return uniq(flatMap(traces, (trace) => flatMap(trace.nodePaths)));
   }
 
   // endregion

@@ -20,8 +20,7 @@ export class InfoPanelComponent {
   @Input() selected: GraphEntity | undefined;
   @Output() actionCreated = new EventEmitter<GraphAction>();
 
-  constructor(private readonly workspaceManager: WorkspaceManager) {
-  }
+  constructor(private readonly workspaceManager: WorkspaceManager) {}
 
   isSelectionNode() {
     return this.selected && this.selected.type === GraphEntityType.Node;
@@ -35,9 +34,9 @@ export class InfoPanelComponent {
     return this.selected && this.selected.type === GraphEntityType.Group;
   }
 
-  save({originalData, updatedData}: { originalData: object, updatedData: object }) {
+  save({ originalData, updatedData }: { originalData: object; updatedData: object }) {
     this.actionCreated.emit(
-      new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData),
+      new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData)
     );
   }
 
@@ -57,6 +56,6 @@ export class InfoPanelComponent {
    * Bring user to original source of node information
    */
   openSource(source: string): void {
-    openPotentialExternalLink(this.workspaceManager, source, {newTab: true, sideBySide: true});
+    openPotentialExternalLink(this.workspaceManager, source, { newTab: true, sideBySide: true });
   }
 }

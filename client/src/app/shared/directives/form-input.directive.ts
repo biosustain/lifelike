@@ -1,9 +1,4 @@
-import {
-  AfterContentChecked,
-  Directive,
-  HostBinding,
-  Input,
-} from '@angular/core';
+import { AfterContentChecked, Directive, HostBinding, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 /**
@@ -18,8 +13,6 @@ export class FormInputDirective implements AfterContentChecked {
   @HostBinding('class.form-control') formControl = true;
 
   ngAfterContentChecked() {
-    this.invalid = this.appFormInput
-      && this.appFormInput.dirty
-      && this.appFormInput.invalid;
+    this.invalid = this.appFormInput && this.appFormInput.dirty && this.appFormInput.invalid;
   }
 }

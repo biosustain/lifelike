@@ -1,4 +1,13 @@
-import { Component, Input, EventEmitter, Output, TemplateRef, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  EventEmitter,
+  Output,
+  TemplateRef,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { get, isNil } from 'lodash-es';
@@ -16,7 +25,7 @@ import { CdkNativeDragItegration } from '../../utils/drag';
 
 @Component({
   selector: 'app-module-header',
-  templateUrl: './module-header.component.html'
+  templateUrl: './module-header.component.html',
 })
 export class ModuleHeaderComponent implements OnChanges {
   @Input() object!: FilesystemObject;
@@ -31,17 +40,17 @@ export class ModuleHeaderComponent implements OnChanges {
   constructor(
     // protected readonly filesystemService: FilesystemService,
     private tabUrlService: ModuleContext
-  ) {
-  }
+  ) {}
 
-  ngOnChanges({dragTitleData$}: SimpleChanges) {
+  ngOnChanges({ dragTitleData$ }: SimpleChanges) {
     if (dragTitleData$) {
-      this.drag = dragTitleData$.currentValue && new CdkNativeDragItegration(dragTitleData$.currentValue);
+      this.drag =
+        dragTitleData$.currentValue && new CdkNativeDragItegration(dragTitleData$.currentValue);
     }
   }
 
   openNewWindow() {
-    return this.tabUrlService.shareableLink.then(href => window.open(href));
+    return this.tabUrlService.shareableLink.then((href) => window.open(href));
   }
 
   toggleStarred() {

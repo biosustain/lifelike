@@ -1,8 +1,5 @@
 from flask import current_app
-from neo4j import (
-    Session as Neo4jSession,
-    Transaction as Neo4jTx
-)
+from neo4j import Session as Neo4jSession, Transaction as Neo4jTx
 from sqlalchemy.orm import Session as SQLAlchemySession
 from typing import List
 
@@ -28,7 +25,7 @@ class EnrichmentTableService(KgService):
         except Exception as e:
             raise ServerException(
                 message='Could not annotate enrichment table, '
-                        'there was a problem validating the format.'
+                'there was a problem validating the format.'
             ) from e
 
         # got here so passed validation
@@ -48,61 +45,78 @@ class EnrichmentTableService(KgService):
                 continue
 
             try:
-                cell_texts.append({
-                    'text': gene['imported'],
-                    'index': i,
-                    'domain': 'Imported',
-                    'label': 'Imported'
-                })
-                cell_texts.append({
-                    'text': gene['matched'],
-                    'index': i,
-                    'domain': 'Matched',
-                    'label': 'Matched'
-                })
-                cell_texts.append({
-                    'text': gene['fullName'],
-                    'index': i,
-                    'domain': 'Full Name',
-                    'label': 'Full Name'
-                })
+                cell_texts.append(
+                    {
+                        'text': gene['imported'],
+                        'index': i,
+                        'domain': 'Imported',
+                        'label': 'Imported',
+                    }
+                )
+                cell_texts.append(
+                    {
+                        'text': gene['matched'],
+                        'index': i,
+                        'domain': 'Matched',
+                        'label': 'Matched',
+                    }
+                )
+                cell_texts.append(
+                    {
+                        'text': gene['fullName'],
+                        'index': i,
+                        'domain': 'Full Name',
+                        'label': 'Full Name',
+                    }
+                )
 
                 if gene.get('domains'):
                     for k, v in gene['domains'].items():
                         if k == EnrichmentDomain.REGULON.value:
                             for k2, v2 in v.items():
-                                cell_texts.append({
-                                    'text': v2['text'],
+                                cell_texts.append(
+                                    {
+                                        'text': v2['text'],
+                                        'index': i,
+                                        'domain': k,
+                                        'label': k2,
+                                    }
+                                )
+                        elif k == EnrichmentDomain.BIOCYC.value:
+                            cell_texts.append(
+                                {
+                                    'text': v['Pathways']['text'],
                                     'index': i,
                                     'domain': k,
-                                    'label': k2
-                                })
-                        elif k == EnrichmentDomain.BIOCYC.value:
-                            cell_texts.append({
-                                'text': v['Pathways']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Pathways'
-                            })
-                        elif k == EnrichmentDomain.GO.value or k == EnrichmentDomain.STRING.value:
-                            cell_texts.append({
-                                'text': v['Annotation']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Annotation'
-                            })
+                                    'label': 'Pathways',
+                                }
+                            )
+                        elif (
+                            k == EnrichmentDomain.GO.value
+                            or k == EnrichmentDomain.STRING.value
+                        ):
+                            cell_texts.append(
+                                {
+                                    'text': v['Annotation']['text'],
+                                    'index': i,
+                                    'domain': k,
+                                    'label': 'Annotation',
+                                }
+                            )
                         elif k == EnrichmentDomain.UNIPROT.value:
-                            cell_texts.append({
-                                'text': v['Function']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Function'
-                            })
+                            cell_texts.append(
+                                {
+                                    'text': v['Function']['text'],
+                                    'index': i,
+                                    'domain': k,
+                                    'label': 'Function',
+                                }
+                            )
             except KeyError as e:
                 message = f'Missing key when creating enrichment table text row/column mapping.'
                 current_app.logger.error(
                     message,
-                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
                 )
                 warn(ServerWarning(message=message), cause=e)
                 continue
@@ -116,33 +130,46 @@ class EnrichmentTableService(KgService):
                 combined_text += ' '  # to separate prev text
 
         return EnrichmentCellTextMapping(
-            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
+            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts
+        )
 
     def match_ncbi_genes(self, gene_names: List[str], organism: str):
-        """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
-            ID of given organism. Input order is maintained in result.
+        """Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
+        ID of given organism. Input order is maintained in result.
         """
-        results = self.graph.read_transaction(self.match_ncbi_genes_query, gene_names, organism)
+        results = self.graph.read_transaction(
+            self.match_ncbi_genes_query, gene_names, organism
+        )
 
-        domain = self.session.query(DomainURLsMap).filter(
-            DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
+        domain = (
+            self.session.query(DomainURLsMap)
+            .filter(DomainURLsMap.domain == 'NCBI_Gene')
+            .one_or_none()
+        )
 
         if domain is None:
-            raise ServerException(message='There was a problem finding NCBI domain URLs.')
+            raise ServerException(
+                message='There was a problem finding NCBI domain URLs.'
+            )
 
-        return [{
-            'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},
-            'synonym': result['synonym'],
-            'geneNeo4jId': result['gene_neo4j_id'],
-            'synonymNeo4jId': result['syn_neo4j_id'],
-            'link': domain.base_URL.format(result['gene_id']) if result['gene_id'] else ''
-        } for result in results]
+        return [
+            {
+                'gene': {
+                    'name': result['gene_name'],
+                    'full_name': result['gene_full_name'],
+                },
+                'synonym': result['synonym'],
+                'geneNeo4jId': result['gene_neo4j_id'],
+                'synonymNeo4jId': result['syn_neo4j_id'],
+                'link': domain.base_URL.format(result['gene_id'])
+                if result['gene_id']
+                else '',
+            }
+            for result in results
+        ]
 
     def match_ncbi_genes_query(
-        self,
-        tx: Neo4jTx,
-        gene_names: List[str],
-        organism: str
+        self, tx: Neo4jTx, gene_names: List[str], organism: str
     ) -> List[dict]:
         """Need to collect synonyms because a gene node can have multiple
         synonyms. So it is possible to send duplicate internal node ids to
@@ -155,5 +182,6 @@ class EnrichmentTableService(KgService):
             RETURN s.name AS synonym, id(s) AS syn_neo4j_id, id(g) AS gene_neo4j_id,
                 g.eid AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
             """,
-            gene_names=gene_names, organism=organism
+            gene_names=gene_names,
+            organism=organism,
         ).data()

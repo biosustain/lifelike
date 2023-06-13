@@ -2,7 +2,6 @@ import { Component, EventEmitter, Output, Input, ViewEncapsulation } from '@angu
 
 import { SortingAlgorithm } from './sorting-algorithms';
 
-
 @Component({
   selector: 'app-sorting-algorithms',
   templateUrl: './sorting-algorithms.component.html',

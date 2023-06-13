@@ -16,23 +16,15 @@ import { EnrichmentTableComponent } from './components/table/enrichment-table.co
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
     EnrichmentTablePreviewComponent,
-    EnrichmentTableComponent
+    EnrichmentTableComponent,
   ],
-  imports: [
-    SharedModule,
-    FileBrowserModule,
-  ],
+  imports: [SharedModule, FileBrowserModule],
   entryComponents: [
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
     EnrichmentTablePreviewComponent,
   ],
-  exports: [
-    EnrichmentTablePreviewComponent,
-  ],
-  providers: [
-    EnrichmentTableService,
-  ],
+  exports: [EnrichmentTablePreviewComponent],
+  providers: [EnrichmentTableService],
 })
-export class EnrichmentTablesModule {
-}
+export class EnrichmentTablesModule {}

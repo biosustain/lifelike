@@ -3,14 +3,15 @@
     <ng-container *ngIf="promptRestore; else viewOnlyHeader">
       Restore Version of '{{ object.effectiveName }}'
     </ng-container>
-    <ng-template #viewOnlyHeader>
-      Version History for '{{ object.effectiveName }}'
-    </ng-template>
+    <ng-template #viewOnlyHeader> Version History for '{{ object.effectiveName }}' </ng-template>
   </app-modal-header>
 
   <app-modal-body>
-    <app-object-version-history [object]="object" formControlName="version"
-                                [showCheckboxes]="promptRestore"></app-object-version-history>
+    <app-object-version-history
+      [object]="object"
+      formControlName="version"
+      [showCheckboxes]="promptRestore"
+    ></app-object-version-history>
   </app-modal-body>
 
   <app-modal-footer class="text-truncate">

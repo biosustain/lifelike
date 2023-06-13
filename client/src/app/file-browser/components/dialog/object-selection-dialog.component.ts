@@ -17,14 +17,17 @@ import { ObjectSelectService } from '../../services/object-select.service';
   templateUrl: './object-selection-dialog.component.html',
   providers: [ObjectSelectService],
 })
-export class ObjectSelectionDialogComponent
-  extends CommonDialogComponent<readonly FilesystemObject[]> {
+export class ObjectSelectionDialogComponent extends CommonDialogComponent<
+  readonly FilesystemObject[]
+> {
   @Input() title = 'Select File';
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              readonly objectSelect: ObjectSelectService) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    readonly objectSelect: ObjectSelectService
+  ) {
     super(modal, messageDialog);
   }
 
@@ -48,27 +51,30 @@ export class ObjectSelectionDialogComponent
   }
 
   getValue(): Promise<readonly FilesystemObject[]> {
-    return this.objectSelect.object.children.selection$.pipe(
-      map(items => isEmpty(items) ? [this.objectSelect.object] : items)
-    ).pipe(
-      first()
-    ).toPromise();
+    return this.objectSelect.object.children.selection$
+      .pipe(map((items) => (isEmpty(items) ? [this.objectSelect.object] : items)))
+      .pipe(first())
+      .toPromise();
   }
 
   submit() {
-    return of(this.objectSelect.object).pipe(
-      switchMap((object: FilesystemObject) =>
-        iif(
-          () => object?.hashId != null,
-          of(super.submit()),
-          defer(() => this.messageDialog.display({
-            title: 'No Selection',
-            message: 'You need to select a project first.',
-            type: MessageType.Error,
-          } as MessageArguments))
-        )
-      ),
-      first()
-    ).toPromise();
+    return of(this.objectSelect.object)
+      .pipe(
+        switchMap((object: FilesystemObject) =>
+          iif(
+            () => object?.hashId != null,
+            of(super.submit()),
+            defer(() =>
+              this.messageDialog.display({
+                title: 'No Selection',
+                message: 'You need to select a project first.',
+                type: MessageType.Error,
+              } as MessageArguments)
+            )
+          )
+        ),
+        first()
+      )
+      .toPromise();
   }
 }

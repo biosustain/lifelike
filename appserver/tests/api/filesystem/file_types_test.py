@@ -12,32 +12,87 @@ from tests.helpers.api import generate_jwt_headers
 from . import sample_files
 
 blocked_file_exts = [
-    '.exe', '.pif', '.application', '.gadget', '.msi', '.msp', '.com', '.scr', '.hta',
-    '.cpl', '.msc', '.jar', '.bat', '.dll', '.cmd', '.vb', '.vbs', '.vbe', '.js', '.jse', '.ws',
-    '.wsf', '.wsc', '.wsh', '.ps1', '.ps1xml', '.ps2', '.ps2xml', '.psc1', '.psc2',
-    '.scf', '.lnk', '.inf', '.reg', '.sh', '.dmg', '.app', '.apk', '.ade', '.adp',
-    '.appx', '.appxbundle', '.cab', '.chm', '.ex', '.ex_', '.ins', '.isp', '.iso',
-    '.lib', '.mde', '.msix', '.msixbundle', '.mst', '.nsh', '.sct', '.shb', '.sys',
+    '.exe',
+    '.pif',
+    '.application',
+    '.gadget',
+    '.msi',
+    '.msp',
+    '.com',
+    '.scr',
+    '.hta',
+    '.cpl',
+    '.msc',
+    '.jar',
+    '.bat',
+    '.dll',
+    '.cmd',
+    '.vb',
+    '.vbs',
+    '.vbe',
+    '.js',
+    '.jse',
+    '.ws',
+    '.wsf',
+    '.wsc',
+    '.wsh',
+    '.ps1',
+    '.ps1xml',
+    '.ps2',
+    '.ps2xml',
+    '.psc1',
+    '.psc2',
+    '.scf',
+    '.lnk',
+    '.inf',
+    '.reg',
+    '.sh',
+    '.dmg',
+    '.app',
+    '.apk',
+    '.ade',
+    '.adp',
+    '.appx',
+    '.appxbundle',
+    '.cab',
+    '.chm',
+    '.ex',
+    '.ex_',
+    '.ins',
+    '.isp',
+    '.iso',
+    '.lib',
+    '.mde',
+    '.msix',
+    '.msixbundle',
+    '.mst',
+    '.nsh',
+    '.sct',
+    '.shb',
+    '.sys',
     '.vxd',
 ]
 
 
 @pytest.mark.parametrize(
-    'user_with_project_roles', [
+    'user_with_project_roles',
+    [
         ParameterizedAppUser([], ['project-write']),
     ],
     indirect=['user_with_project_roles'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'file_in_project', [
+    'file_in_project',
+    [
         ParameterizedFile(public=False),
     ],
     indirect=['file_in_project'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'file_data', [
+    'file_data',
+    [
         ('sample.txt', 'text/plain'),
         ('sample.pdf', 'application/pdf'),
         ('sample.png', 'image/png'),
@@ -49,13 +104,14 @@ blocked_file_exts = [
     ids=lambda x: x[1],
 )
 def test_upload_file_mime_type_detection(
-        request,
-        session,
-        client,
-        login_password: str,
-        user_with_project_roles: AppUser,
-        file_in_project: Files,
-        file_data: Tuple[str, str]):
+    request,
+    session,
+    client,
+    login_password: str,
+    user_with_project_roles: AppUser,
+    file_in_project: Files,
+    file_data: Tuple[str, str],
+):
     file_content = pkg_resources.read_binary(sample_files, file_data[0])
 
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
@@ -76,36 +132,43 @@ def test_upload_file_mime_type_detection(
 
     resp_data = resp.get_json()
 
-    assert file_data[1] == session.query(Files.mime_type) \
-        .filter(Files.hash_id == resp_data['result']['hashId']) \
+    assert (
+        file_data[1]
+        == session.query(Files.mime_type)
+        .filter(Files.hash_id == resp_data['result']['hashId'])
         .one()[0]
+    )
 
 
 @pytest.mark.parametrize(
-    'user_with_project_roles', [
+    'user_with_project_roles',
+    [
         ParameterizedAppUser([], ['project-write']),
     ],
     indirect=['user_with_project_roles'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'file_in_project', [
+    'file_in_project',
+    [
         ParameterizedFile(public=False),
     ],
     indirect=['file_in_project'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'ext', blocked_file_exts,
+    'ext',
+    blocked_file_exts,
 )
 def test_upload_file_with_blocked_ext(
-        request,
-        session,
-        client,
-        login_password: str,
-        user_with_project_roles: AppUser,
-        file_in_project: Files,
-        ext: str):
+    request,
+    session,
+    client,
+    login_password: str,
+    user_with_project_roles: AppUser,
+    file_in_project: Files,
+    ext: str,
+):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
@@ -124,30 +187,34 @@ def test_upload_file_with_blocked_ext(
 
 
 @pytest.mark.parametrize(
-    'user_with_project_roles', [
+    'user_with_project_roles',
+    [
         ParameterizedAppUser([], ['project-write']),
     ],
     indirect=['user_with_project_roles'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'file_in_project', [
+    'file_in_project',
+    [
         ParameterizedFile(public=False),
     ],
     indirect=['file_in_project'],
     ids='_',
 )
 @pytest.mark.parametrize(
-    'ext', blocked_file_exts,
+    'ext',
+    blocked_file_exts,
 )
 def test_rename_file_to_blocked_ext(
-        request,
-        session,
-        client,
-        login_password: str,
-        user_with_project_roles: AppUser,
-        file_in_project: Files,
-        ext: str):
+    request,
+    session,
+    client,
+    login_password: str,
+    user_with_project_roles: AppUser,
+    file_in_project: Files,
+    ext: str,
+):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 

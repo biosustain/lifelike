@@ -17,18 +17,16 @@ from neo4japp.utils.globals import config
 
 
 def trunc_long_constraint_name(name: str) -> str:
-    if (len(name) > 59):
-        truncated_name = name[:55] + '_' + \
-                         hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+    if len(name) > 59:
+        truncated_name = (
+            name[:55] + '_' + hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+        )
         return truncated_name
     return name
 
 
 def uq_trunc(unique_constraint: UniqueConstraint, table: Table):
-    tokens = [table.name] + [
-        column.name
-        for column in unique_constraint.columns
-    ]
+    tokens = [table.name] + [column.name for column in unique_constraint.columns]
     return trunc_long_constraint_name('_'.join(tokens))
 
 
@@ -38,7 +36,7 @@ convention = {
     'uq': "uq_%(uq_trunc)s",
     'ck': "ck_%(table_name)s_%(constraint_name)s",
     'fk': "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    'pk': "pk_%(table_name)s"
+    'pk': "pk_%(table_name)s",
 }
 
 ma = Marshmallow()
@@ -48,8 +46,8 @@ db = SQLAlchemy(
     metadata=metadata,
     engine_options={
         'executemany_mode': 'values',
-        'executemany_values_page_size': 10000
-    }
+        'executemany_values_page_size': 10000,
+    },
 )
 
 _jwt_client: PyJWKClient
@@ -109,10 +107,7 @@ def close_redis_conn(error):
 
 
 def _connect_to_elastic():
-    return Elasticsearch(
-        timeout=180,
-        hosts=[config.get('ELASTICSEARCH_HOSTS')]
-    )
+    return Elasticsearch(timeout=180, hosts=[config.get('ELASTICSEARCH_HOSTS')])
 
 
 def create_arango_client(hosts=None) -> ArangoClient:
@@ -169,6 +164,7 @@ not apply to the AnnotationServices (except manual and sorted).
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
+
         graph = get_neo4j_db()
         g.kg_service = KgService(
             graph=graph,
@@ -180,6 +176,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
+
         graph = get_neo4j_db()
         g.visualizer_service = VisualizerService(
             graph=graph,
@@ -197,10 +194,19 @@ def get_file_type_service():
 
     :return: the service
     """
-    from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
-    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        PDFTypeProvider, BiocTypeProvider, \
-        DirectoryTypeProvider, MapTypeProvider, GraphTypeProvider
+    from neo4japp.services.file_types.service import (
+        FileTypeService,
+        GenericFileTypeProvider,
+    )
+    from neo4japp.services.file_types.providers import (
+        EnrichmentTableTypeProvider,
+        PDFTypeProvider,
+        BiocTypeProvider,
+        DirectoryTypeProvider,
+        MapTypeProvider,
+        GraphTypeProvider,
+    )
+
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
@@ -215,6 +221,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
+
         graph = get_neo4j_db()
         g.enrichment_table_service = EnrichmentTableService(
             graph=graph,
@@ -226,6 +233,7 @@ def get_enrichment_table_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
+
         graph = get_neo4j_db()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
@@ -234,6 +242,7 @@ def get_search_service_dao():
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
+
         g.authorization_service = AuthService(session=db.session)
     return g.authorization_service
 
@@ -241,6 +250,7 @@ def get_authorization_service():
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
+
         g.account_service = AccountService(session=db.session)
     return g.account_service
 
@@ -248,6 +258,7 @@ def get_account_service():
 def get_projects_service():
     if 'projects_service' not in g:
         from neo4japp.services import ProjectsService
+
         g.projects_service = ProjectsService(session=db.session)
     return g.projects_service
 
@@ -255,12 +266,14 @@ def get_projects_service():
 def get_elastic_service():
     if 'elastic_service' not in g:
         from neo4japp.services.elastic import ElasticService
+
         g.elastic_service = ElasticService()
     return g.elastic_service
 
 
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
+
     return ExcelExportService()
 
 
@@ -271,7 +284,7 @@ def get_or_create_arango_client() -> ArangoClient:
 
 
 def reset_dao():
-    """ Cleans up DAO bound to flask request context
+    """Cleans up DAO bound to flask request context
 
     Used in functional test fixture, but may come in
     handy for production later.

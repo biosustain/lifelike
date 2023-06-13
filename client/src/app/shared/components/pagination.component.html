@@ -1,5 +1,7 @@
-<ngb-pagination *ngIf="alwaysShow || collectionSize > paging.limit"
-    [page]="paging.page"
-    [pageSize]="paging.limit"
-    [collectionSize]="collectionSize"
-    (pageChange)="goToPage($event)"></ngb-pagination>
+<ngb-pagination
+  *ngIf="alwaysShow || collectionSize > paging.limit"
+  [page]="paging.page"
+  [pageSize]="paging.limit"
+  [collectionSize]="collectionSize"
+  (pageChange)="goToPage($event)"
+></ngb-pagination>

@@ -17,7 +17,7 @@ import { SearchType } from '../shared';
 @Component({
   selector: 'app-advanced-search-dialog',
   templateUrl: './advanced-search-dialog.component.html',
-  styleUrls: ['./advanced-search-dialog.component.scss']
+  styleUrls: ['./advanced-search-dialog.component.scss'],
 })
 export class AdvancedSearchDialogComponent {
   @Input() set params(params: ContentSearchOptions) {
@@ -38,11 +38,15 @@ export class AdvancedSearchDialogComponent {
   try$ = new BehaviorSubject<any>(undefined);
   fileHierarchyTree$: Observable<TreeNode<FilesystemObject>[]> = this.try$.pipe(
     switchMap(() =>
-      this.filesystemService.getHierarchy(true).pipe(
-        map(({results}) => results.map(fileNodeObjectData => this.convertFODNodetoFONode(fileNodeObjectData))),
-      ),
+      this.filesystemService
+        .getHierarchy(true)
+        .pipe(
+          map(({ results }) =>
+            results.map((fileNodeObjectData) => this.convertFODNodetoFONode(fileNodeObjectData))
+          )
+        )
     ),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
   fileHierarchyTreeWithStatus$ = this.fileHierarchyTree$.pipe(
     addStatus([] as TreeNode<FilesystemObject>[])
@@ -55,7 +59,7 @@ export class AdvancedSearchDialogComponent {
   form = new FormGroup({
     q: new FormControl(''),
     types: new FormControl([]),
-    folders: new FormControl([])
+    folders: new FormControl([]),
     // synonyms: new FormControl(true),
     // phrase: new FormControl(''),
     // wildcards: new FormControl(''),
@@ -63,14 +67,14 @@ export class AdvancedSearchDialogComponent {
 
   constructor(
     private readonly modal: NgbActiveModal,
-    protected readonly filesystemService: FilesystemService,
+    protected readonly filesystemService: FilesystemService
   ) {}
 
   convertFODNodetoFONode(node: TreeNode<FilesystemObjectData>) {
     return {
       data: new FilesystemObject().update(node.data),
       level: node.level,
-      children: node.children.map(child => this.convertFODNodetoFONode(child))
+      children: node.children.map((child) => this.convertFODNodetoFONode(child)),
     } as TreeNode<FilesystemObject>;
   }
 
@@ -120,5 +124,6 @@ export class AdvancedSearchDialogComponent {
     this.form.get('folders').patchValue(folders);
   }
 
-  initiallyCheckedNodesFilterFn = (t: FlatNode<FilesystemObject>) => this.form.get('folders').value.includes(t.data.hashId);
+  initiallyCheckedNodesFilterFn = (t: FlatNode<FilesystemObject>) =>
+    this.form.get('folders').value.includes(t.data.hashId);
 }

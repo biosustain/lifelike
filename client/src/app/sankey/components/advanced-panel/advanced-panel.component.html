@@ -1,88 +1,107 @@
 <form [formGroup]="form">
-    <div *ngIf="maximumShortestPathPlusN$ | async as maximumShortestPathPlusN">
-        <label class="w-100 text-left m-0" ngbButtonLabel>
-            <div class="d-flex align-items-baseline flex-wrap w-100" [style.column-gap.rem]="1">
-                <label for="shortestPathPlusN" class="my-0 flex-shrink-0" [style.max-width.%]="100">
-                    Visible shortest path plus
-                </label>
-                <span class="flex-grow-1">
-                <input formControlName="shortestPathPlusN"
-                       id="shortestPathPlusN"
-                       min="0"
-                       [max]="maximumShortestPathPlusN | async"
-                       [style.min-width.%]="100"
-                       step="1"
-                       class="form-control"
-                       appAutoGrow
-                       ngbButton
-                       type="number">
-                <div class="invalid-feedback d-block"
-                     *ngIf="
-                form.get('shortestPathPlusN').hasError('step') ||
-                form.get('shortestPathPlusN').hasError('min')
+  <div *ngIf="maximumShortestPathPlusN$ | async as maximumShortestPathPlusN">
+    <label class="w-100 text-left m-0" ngbButtonLabel>
+      <div class="d-flex align-items-baseline flex-wrap w-100" [style.column-gap.rem]="1">
+        <label for="shortestPathPlusN" class="my-0 flex-shrink-0" [style.max-width.%]="100">
+          Visible shortest path plus
+        </label>
+        <span class="flex-grow-1">
+          <input
+            formControlName="shortestPathPlusN"
+            id="shortestPathPlusN"
+            min="0"
+            [max]="maximumShortestPathPlusN | async"
+            [style.min-width.%]="100"
+            step="1"
+            class="form-control"
+            appAutoGrow
+            ngbButton
+            type="number"
+          />
+          <div
+            class="invalid-feedback d-block"
+            *ngIf="
+              form.get('shortestPathPlusN').hasError('step') ||
+              form.get('shortestPathPlusN').hasError('min')
             "
-                >
-                    This filed accepts only positive integers.
-                </div>
-                <div class="invalid-feedback d-block"
-                     *ngIf="
-                form.get('shortestPathPlusN').hasError('max')
-            "
-                >
-                    There is only shortest path plus {{ form.get('shortestPathPlusN').getError('max').max }} defined in
-                    file, please select number within avaliable range.
-                </div>
-            </span>
-            </div>
-        </label>
+          >
+            This filed accepts only positive integers.
+          </div>
+          <div
+            class="invalid-feedback d-block"
+            *ngIf="form.get('shortestPathPlusN').hasError('max')"
+          >
+            There is only shortest path plus
+            {{ form.get('shortestPathPlusN').getError('max').max }} defined in file, please select
+            number within avaliable range.
+          </div>
+        </span>
+      </div>
+    </label>
+  </div>
+  <div>
+    <div ngbRadioGroup formControlName="alignId" title="Align">
+      <div class="mb-1">Align:</div>
+      <label
+        ngbButtonLabel
+        *ngFor="let align of aligns$ | async | keyvalue"
+        [title]="align.value.description"
+        class="mb-0"
+      >
+        <input ngbButton type="radio" [value]="align.key" /> {{ align.value.name }}
+      </label>
     </div>
-    <div>
-        <div ngbRadioGroup formControlName="alignId" title="Align">
-            <div class="mb-1">Align:</div>
-            <label ngbButtonLabel *ngFor="let align of aligns$ | async | keyvalue"
-                   [title]="align.value.description"
-                   class="mb-0">
-                <input ngbButton type="radio" [value]="align.key"> {{align.value.name}}
-            </label>
-        </div>
-    </div>
-    <div>
-        <label ngbButtonLabel>
-            <input formControlName="normalizeLinks"
-                   ngbButton
-                   type="checkbox">
-            Normalize links
+  </div>
+  <div>
+    <label ngbButtonLabel>
+      <input formControlName="normalizeLinks" ngbButton type="checkbox" />
+      Normalize links
+    </label>
+  </div>
+  <div class="form-group">
+    <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
+      <div class="d-flex align-items-center mx-0">
+        <label
+          [for]="fontSize.uid"
+          class="my-0 mr-2"
+          ngbTooltip="Font size"
+          container="body"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
+          Font Size
         </label>
-    </div>
-    <div class="form-group">
-        <label class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-            <div class="d-flex align-items-center mx-0">
-              <label [for]="fontSize.uid" class="my-0 mr-2" ngbTooltip="Font size" container="body"
-                     #tooltipRef="ngbTooltip"
-                     [appAutoCloseTooltipOutOfView]="tooltipRef">
-                    Font Size
-                </label>
-                <app-percent-input
-                        formControlName="fontSizeScale"
-                        #fontSize="uid" appUid
-                        [min]="20"
-                        [max]="1000"
-                        [step]="20"
-                        appAutoGrow
-                ></app-percent-input>
-            </div>
-        </label>
-        <label formGroupName="labelEllipsis" class="w-100 text-left m-0 scrollbar-with-value" ngbButtonLabel>
-            <input formControlName="enabled"
-                   (change)="disableGroup($event.target.checked, 'labelEllipsis')"
-                   ngbButton
-                   type="checkbox">
-            Max shown label characters
-            <input formControlName="value"
-                   [max]="maximumLabelLength$ | async" min="0"
-                   ngbButton
-                   type="range">
-            {{ form.get('labelEllipsis.value').value }}
-        </label>
-    </div>
+        <app-percent-input
+          formControlName="fontSizeScale"
+          #fontSize="uid"
+          appUid
+          [min]="20"
+          [max]="1000"
+          [step]="20"
+          appAutoGrow
+        ></app-percent-input>
+      </div>
+    </label>
+    <label
+      formGroupName="labelEllipsis"
+      class="w-100 text-left m-0 scrollbar-with-value"
+      ngbButtonLabel
+    >
+      <input
+        formControlName="enabled"
+        (change)="disableGroup($event.target.checked, 'labelEllipsis')"
+        ngbButton
+        type="checkbox"
+      />
+      Max shown label characters
+      <input
+        formControlName="value"
+        [max]="maximumLabelLength$ | async"
+        min="0"
+        ngbButton
+        type="range"
+      />
+      {{ form.get('labelEllipsis.value').value }}
+    </label>
+  </div>
 </form>

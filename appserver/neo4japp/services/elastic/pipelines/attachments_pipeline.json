@@ -6,9 +6,7 @@
         "field": "data",
         "target_field": "data",
         "indexed_chars": -1,
-        "properties": [
-          "content"
-        ]
+        "properties": ["content"]
       }
     }
   ]

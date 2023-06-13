@@ -3,8 +3,8 @@
 @import '../../../scss/variables';
 
 .annotation-filter-btns-container {
-    height: 1.5rem;
-    margin-bottom: .25rem;
+  height: 1.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .annotation-filter-close-btn {
@@ -15,7 +15,7 @@
   outline: none;
 }
 .annotation-filter-close-btn:hover {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: #dc3545;
   cursor: pointer;
 }
@@ -37,5 +37,5 @@
 }
 
 .word-cloud-title {
-    min-width: 2rem;
-  }
+  min-width: 2rem;
+}

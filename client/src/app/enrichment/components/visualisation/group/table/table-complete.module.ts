@@ -11,16 +11,9 @@ import { TableCompleteComponent } from './table-complete.component';
 import { LinkModule } from '../../components/link/link.module';
 
 @NgModule({
-  imports: [
-    BrowserModule,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    LinkModule,
-    NgbModule
-  ],
+  imports: [BrowserModule, CommonModule, FormsModule, ReactiveFormsModule, LinkModule, NgbModule],
   declarations: [TableCompleteComponent, SortableTableHeaderDirective],
   exports: [TableCompleteComponent],
-  bootstrap: [TableCompleteComponent]
+  bootstrap: [TableCompleteComponent],
 })
 export class TableCompleteComponentModule {}

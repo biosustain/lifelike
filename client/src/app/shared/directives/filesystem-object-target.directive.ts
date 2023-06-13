@@ -22,7 +22,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import {
   FILESYSTEM_OBJECT_TRANSFER_TYPE,
-  FilesystemObjectTransferData
+  FilesystemObjectTransferData,
 } from 'app/file-browser/providers/filesystem-object-data.provider';
 
 import { extractDescriptionFromFile } from '../utils/files';
@@ -31,20 +31,20 @@ import { extractDescriptionFromFile } from '../utils/files';
   selector: '[appFSObjectTarget]',
 })
 export class FilesystemObjectTargetDirective {
-
   @HostBinding('attr.data-filesystem-object-target-directive') _dataMarker = true;
   @HostBinding('class.drop-target') dropTargeted = false;
   @Input() appFSObjectTarget: FilesystemObject | undefined;
   @Output() refreshRequest = new EventEmitter<any>();
 
-  constructor(protected readonly progressDialog: ProgressDialog,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly elementRef: ElementRef,
-              protected readonly objectCreationService: ObjectCreationService,
-              protected readonly messageDialog: MessageDialog) {
-  }
+  constructor(
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly elementRef: ElementRef,
+    protected readonly objectCreationService: ObjectCreationService,
+    protected readonly messageDialog: MessageDialog
+  ) {}
 
   @HostListener('dragover', ['$event'])
   dragOver(event: DragEvent) {
@@ -91,34 +91,43 @@ export class FilesystemObjectTargetDirective {
         if (transferData.privileges.writable) {
           const progressDialogRef = this.progressDialog.display({
             title: 'File Move',
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
-              status: 'Moving to the new folder...',
-            }))],
+            progressObservables: [
+              new BehaviorSubject<Progress>(
+                new Progress({
+                  status: 'Moving to the new folder...',
+                })
+              ),
+            ],
           });
 
-          this.filesystemService.save([transferData.hashId], {
-            parentHashId: this.appFSObjectTarget.hashId,
-          }).pipe(
-            tap(() => {
-              const affectedHashIds = new Set([
-                transferData.hashId,
-                this.appFSObjectTarget.hashId,
-              ]);
-              for (const hashId of affectedHashIds) {
-                document.body.dispatchEvent(new CustomEvent('lifelikeobjectupdate', {
-                  detail: {
-                    hashId,
-                  },
-                }));
-              }
-            }),
-            finalize(() => progressDialogRef.close()),
-            this.errorHandler.create({label: 'Move object from drag and drop'}),
-          ).subscribe(() => {
-            this.snackBar.open(`Moved item to new folder.`, 'Close', {
-              duration: 5000,
+          this.filesystemService
+            .save([transferData.hashId], {
+              parentHashId: this.appFSObjectTarget.hashId,
+            })
+            .pipe(
+              tap(() => {
+                const affectedHashIds = new Set([
+                  transferData.hashId,
+                  this.appFSObjectTarget.hashId,
+                ]);
+                for (const hashId of affectedHashIds) {
+                  document.body.dispatchEvent(
+                    new CustomEvent('lifelikeobjectupdate', {
+                      detail: {
+                        hashId,
+                      },
+                    })
+                  );
+                }
+              }),
+              finalize(() => progressDialogRef.close()),
+              this.errorHandler.create({ label: 'Move object from drag and drop' })
+            )
+            .subscribe(() => {
+              this.snackBar.open(`Moved item to new folder.`, 'Close', {
+                duration: 5000,
+              });
             });
-          });
         } else {
           this.messageDialog.display({
             title: 'Cannot Move Here',
@@ -132,45 +141,46 @@ export class FilesystemObjectTargetDirective {
         object.filename = file.name;
         object.parent = this.appFSObjectTarget;
         object.description = await extractDescriptionFromFile(file);
-        return this.objectCreationService.openCreateDialog(object, {
-          title: 'Upload File',
-          promptUpload: false,
-          promptParent: true,
-          forceAnnotationOptions: true, // This is not correct (we should detect this value)
-          request: {
-            contentValue: file,
-          },
-        }).then(value => {
-          this.refreshRequest.emit();
-          return value;
-        });
+        return this.objectCreationService
+          .openCreateDialog(object, {
+            title: 'Upload File',
+            promptUpload: false,
+            promptParent: true,
+            forceAnnotationOptions: true, // This is not correct (we should detect this value)
+            request: {
+              contentValue: file,
+            },
+          })
+          .then((value) => {
+            this.refreshRequest.emit();
+            return value;
+          });
       }
     }
   }
 
-  isAffectedObject(hashId: string): Promise<boolean>|boolean {
+  isAffectedObject(hashId: string): Promise<boolean> | boolean {
     if (hashId === this.appFSObjectTarget.hashId) {
       return true;
     }
-    return this.appFSObjectTarget.children.items$.pipe(
-      first(),
-      map(items => items.some(item => item.hashId === hashId)),
-    ).toPromise();
+    return this.appFSObjectTarget.children.items$
+      .pipe(
+        first(),
+        map((items) => items.some((item) => item.hashId === hashId))
+      )
+      .toPromise();
   }
 
   canAcceptDrop(event: DragEvent): boolean {
-    return this.appFSObjectTarget != null
-      && this.appFSObjectTarget.privileges.writable
-      && ((
-          event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
-          && event.target instanceof Element
-          && (event.target === this.elementRef.nativeElement
-            || event.target.closest('[data-filesystem-object-target-directive]') === this.elementRef.nativeElement)
-        )
-        || (
-          event.dataTransfer.types
-          && event.dataTransfer.types.includes('Files')
-        ));
+    return (
+      this.appFSObjectTarget != null &&
+      this.appFSObjectTarget.privileges.writable &&
+      ((event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE) &&
+        event.target instanceof Element &&
+        (event.target === this.elementRef.nativeElement ||
+          event.target.closest('[data-filesystem-object-target-directive]') ===
+            this.elementRef.nativeElement)) ||
+        (event.dataTransfer.types && event.dataTransfer.types.includes('Files')))
+    );
   }
-
 }

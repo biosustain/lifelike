@@ -6,7 +6,8 @@
   color: $gray-600;
 
   a {
-    &:link, &:visited {
+    &:link,
+    &:visited {
       color: $gray-600;
     }
   }

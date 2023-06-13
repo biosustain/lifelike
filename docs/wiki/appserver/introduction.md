@@ -2,7 +2,7 @@
 
 ## Python Dependencies
 
-We manage dependencies through *pipenv*. Dependencies are stored in `Pipfile` but their specific versions are stored in an automatically-managed `Pipfile.lock`.
+We manage dependencies through _pipenv_. Dependencies are stored in `Pipfile` but their specific versions are stored in an automatically-managed `Pipfile.lock`.
 
 ### Making Changes
 
@@ -16,7 +16,7 @@ Note: The `--python` argument is only required if there is a mismatch between th
 
 ### Dealing with Pipfile Merge Conflicts
 
-If two people add dependencies on different branches, you will run into a merge conflict with `Pipfile`. 
+If two people add dependencies on different branches, you will run into a merge conflict with `Pipfile`.
 
 To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
 
@@ -46,6 +46,7 @@ docker compose run appserver flask db upgrade
 
 to run the migration without starting the flask application. Remember that this will create a single-use container that should be removed with `docker volume prune` or `make docker-stop`.
 Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` to be up as well.
+
 ### Importing Seed Data
 
 While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data (from the specified file), run:
@@ -58,15 +59,15 @@ docker compose exec appserver flask seed fixtures/seed.json
 
 Since seed files contain the content data of the example files, there are pretty cumbersome to modify manually. If you feel that there is a file that is lacking in the example data (e.g. new Lifelike file type), you can:
 
- - Import seed data from a specific file
- - Create/Upload the file(s) you want to include
- - Run `append_seed` CLI command, specifying seed file and list of filenames to append:
+-   Import seed data from a specific file
+-   Create/Upload the file(s) you want to include
+-   Run `append_seed` CLI command, specifying seed file and list of filenames to append:
 
 ```shell
 docker compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
 ```
 
-If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`. 
+If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`.
 
 ### Making Schema Changes
 
@@ -130,6 +131,7 @@ for chunk in window_chunk(users, 25):
         session.rollback()
         raise
 ```
+
 #### Misc
 
 Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
@@ -138,7 +140,7 @@ Before pushing, test the migrations by first **downgrading** and then **upgradin
 docker compose exec appserver flask db upgrade -x data_migrate=True
 ```
 
-When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the *restore from history* functionality will not work.
+When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the _restore from history_ functionality will not work.
 
 ### Merging Migration Conflicts
 
@@ -207,19 +209,24 @@ docker compose exec appserver pytest
 
 To run a specific test file you can:
 
- - Provide path to the file
+-   Provide path to the file
+
 ```sh
 docker compose exec appserver pytest tests/api/filesystem/object_test.py
 ```
- - Use `-k` flag with filename:
+
+-   Use `-k` flag with filename:
+
 ```sh
 docker compose exec appserver pytest  -k 'object_test.py'
 ```
+
 To run a specific test:
 
 ```sh
 docker compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
 ```
+
 or
 
 ```sh
@@ -228,11 +235,11 @@ docker compose exec appserver pytest -k 'test_patch_file'
 
 Some additional flags that may make tests easier to read include:
 
-* `--disable-pytest-warnings` to disable warning summaries
-* `--capture=no` to show stdout/stderr for all and not just failed tests
-* `--verbose` to show test names and not just '.'
-* `--tb=native` to show stack traces the normal Python way
-* `--ignore=tests/some/test.py` to ignore a specific test or folder
+-   `--disable-pytest-warnings` to disable warning summaries
+-   `--capture=no` to show stdout/stderr for all and not just failed tests
+-   `--verbose` to show test names and not just '.'
+-   `--tb=native` to show stack traces the normal Python way
+-   `--ignore=tests/some/test.py` to ignore a specific test or folder
 
 Together:
 

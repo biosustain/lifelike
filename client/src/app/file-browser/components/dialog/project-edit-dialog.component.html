@@ -5,18 +5,28 @@
 
   <app-modal-body>
     <app-form-row for="name" label="Name" [control]="form.get('name')">
-      <input type="text" formControlName="name" id="name" [appFormInput]="form.get('name')"
-             appAutoFocus [autoSelect]="true">
+      <input
+        type="text"
+        formControlName="name"
+        id="name"
+        [appFormInput]="form.get('name')"
+        appAutoFocus
+        [autoSelect]="true"
+      />
     </app-form-row>
 
     <app-form-row for="description" label="Description" [control]="form.get('description')">
-      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
-                rows="10"></textarea>
+      <textarea
+        formControlName="description"
+        id="description"
+        [appFormInput]="form.get('description')"
+        rows="10"
+      ></textarea>
     </app-form-row>
 
     <app-form-row [control]="form.get('public')">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
         <label class="custom-control-label" for="public">Publicly share with the community</label>
       </div>
     </app-form-row>

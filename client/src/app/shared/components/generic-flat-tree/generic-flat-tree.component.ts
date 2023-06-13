@@ -26,7 +26,12 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
 
   constructor() {
     this.treeControl = new FlatTreeControl<FlatNode<T>>(this.getLevel, this.isExpandable);
-    this.treeFlattener = new MatTreeFlattener(this._transformer, this.getLevel, this.isExpandable, this.getChildren);
+    this.treeFlattener = new MatTreeFlattener(
+      this._transformer,
+      this.getLevel,
+      this.isExpandable,
+      this.getChildren
+    );
     this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
     this._initDataSource();
 
@@ -49,7 +54,7 @@ export abstract class GenericFlatTreeComponent<T> implements OnDestroy {
       data: node.data,
       level,
     };
-  }
+  };
 
   getChildren = (node: TreeNode<T>): TreeNode<T>[] => node.children;
 

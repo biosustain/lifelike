@@ -14,22 +14,20 @@ import { FilesystemService } from '../../services/filesystem.service';
   templateUrl: './browser-community-list.component.html',
 })
 export class BrowserCommunityListComponent implements OnInit, OnDestroy {
-
-  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
-    () => this.filesystemService.search({
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(() =>
+    this.filesystemService.search({
       type: 'public',
       sort: '-creationDate',
-    }),
+    })
   );
   private loadTaskSubscription: Subscription;
 
   list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
-  constructor(protected readonly filesystemService: FilesystemService) {
-  }
+  constructor(protected readonly filesystemService: FilesystemService) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 

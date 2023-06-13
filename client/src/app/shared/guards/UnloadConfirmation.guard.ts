@@ -10,13 +10,12 @@ import { ModuleAwareComponent, ShouldConfirmUnload } from '../modules';
 })
 export class UnloadConfirmationGuard<T extends ShouldConfirmUnload> implements CanDeactivate<T> {
   canDeactivate(component: T): Promise<boolean> {
-    return Promise.resolve(component.shouldConfirmUnload)
-      .then(shouldConfirmUnload => {
-        if (shouldConfirmUnload) {
-          return confirm('Leave page? Changes you made may not be saved.');
-        } else {
-          return true;
-        }
-      });
+    return Promise.resolve(component.shouldConfirmUnload).then((shouldConfirmUnload) => {
+      if (shouldConfirmUnload) {
+        return confirm('Leave page? Changes you made may not be saved.');
+      } else {
+        return true;
+      }
+    });
   }
 }

@@ -27,7 +27,7 @@ import { FilesystemService } from '../services/filesystem.service';
 export class ObjectListComponent {
   id = uniqueId('FileListComponent-');
 
-  @Input() appLinks: boolean|WorkspaceNavigationExtras = false;
+  @Input() appLinks: boolean | WorkspaceNavigationExtras = false;
   @Input() forEditing = true;
   @Input() showStars = true;
   @Input() showDescription = false;
@@ -39,17 +39,18 @@ export class ObjectListComponent {
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   MAX_TOOLTIP_LENGTH = 800;
 
-  constructor(protected readonly router: Router,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly modalService: NgbModal,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly actions: FilesystemObjectActions,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly elementRef: ElementRef,
-              protected readonly progressDialog: ProgressDialog) {
-  }
+  constructor(
+    protected readonly router: Router,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly actions: FilesystemObjectActions,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly elementRef: ElementRef,
+    protected readonly progressDialog: ProgressDialog
+  ) {}
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
@@ -64,12 +65,14 @@ export class ObjectListComponent {
   }
 
   openParentEditDialog() {
-    return this.actions.openEditDialog(this.parent).then(() => {
-      this.snackBar.open(`Saved changes to ${getObjectLabel(this.parent)}.`, 'Close', {
-        duration: 5000,
-      });
-    }, () => {
-    });
+    return this.actions.openEditDialog(this.parent).then(
+      () => {
+        this.snackBar.open(`Saved changes to ${getObjectLabel(this.parent)}.`, 'Close', {
+          duration: 5000,
+        });
+      },
+      () => {}
+    );
   }
 
   openObject(target: FilesystemObject) {
@@ -83,28 +86,32 @@ export class ObjectListComponent {
         openInternalLink(
           this.workspaceManager,
           toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
-          merge(
-            {newTab: !target.isDirectory},
-            this.appLinks
-          )
+          merge({ newTab: !target.isDirectory }, this.appLinks)
         );
       } else {
         const progressDialogRef = this.progressDialog.display({
           title: `Download ${getObjectLabel(target)}`,
-          progressObservables: [new BehaviorSubject<Progress>(new Progress({
-            status: 'Generating download...',
-          }))],
+          progressObservables: [
+            new BehaviorSubject<Progress>(
+              new Progress({
+                status: 'Generating download...',
+              })
+            ),
+          ],
         });
-        this.filesystemService.getContent(target.hashId).pipe(
-          map(blob => {
-            return new File([blob], target.filename);
-          }),
-          tap(file => {
-            openDownloadForBlob(file, file.name);
-          }),
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.create({label: 'Download file'}),
-        ).subscribe();
+        this.filesystemService
+          .getContent(target.hashId)
+          .pipe(
+            map((blob) => {
+              return new File([blob], target.filename);
+            }),
+            tap((file) => {
+              openDownloadForBlob(file, file.name);
+            }),
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.create({ label: 'Download file' })
+          )
+          .subscribe();
       }
     }
   }
@@ -114,11 +121,12 @@ export class ObjectListComponent {
   }
 
   toggleStarred(object: FilesystemObject) {
-    this.filesystemService.updateStarred(object.hashId, isNil(object.starred))
-    .toPromise()
-    .then((result) => {
-      object.update(result);
-      this.updateView();
-    });
+    this.filesystemService
+      .updateStarred(object.hashId, isNil(object.starred))
+      .toPromise()
+      .then((result) => {
+        object.update(result);
+        this.updateView();
+      });
   }
 }

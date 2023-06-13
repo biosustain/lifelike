@@ -9,17 +9,14 @@ import { RouteBuilderComponent } from './components/route-builder.component';
 import { RouteDisplayComponent } from './components/route-display.component';
 
 const components = [
-    ShortestPathComponent,
-    RouteSearchComponent,
-    RouteBuilderComponent,
-    RouteDisplayComponent,
+  ShortestPathComponent,
+  RouteSearchComponent,
+  RouteBuilderComponent,
+  RouteDisplayComponent,
 ];
 
 @NgModule({
   declarations: [...components],
-  imports: [
-    CommonModule,
-    SharedModule,
-  ]
+  imports: [CommonModule, SharedModule],
 })
-export class ShortestPathModule { }
+export class ShortestPathModule {}

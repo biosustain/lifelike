@@ -10,7 +10,6 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MimeTypes } from 'app/shared/constants';
 
-
 import { FilesystemObject } from '../../models/filesystem-object';
 
 @Component({
@@ -22,17 +21,20 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
 
   exporters: Exporter[];
   isLinkedExportSupported: boolean;
-  private _linkedExporters  = ['PDF', 'PNG', 'SVG'];
+  private _linkedExporters = ['PDF', 'PNG', 'SVG'];
   private _target: FilesystemObject;
   private isMapExport = false;
 
   readonly form: FormGroup = new FormGroup({
     exporter: new FormControl(null, Validators.required),
-    exportLinked: new FormControl(false)
+    exportLinked: new FormControl(false),
   });
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog,
-              protected readonly objectTypeService: ObjectTypeService) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly objectTypeService: ObjectTypeService
+  ) {
     super(modal, messageDialog);
   }
 
@@ -40,19 +42,22 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
   set target(target: FilesystemObject) {
     this._target = target;
     this.isMapExport = target.mimeType === MimeTypes.Map;
-    this.objectTypeService.get(target).pipe(
-      mergeMap(typeProvider => typeProvider.getExporters(target)),
-      mergeMap(exporters => this.exporters = exporters)
-    ).subscribe(() => {
-      if (this.exporters) {
-        this.form.patchValue({
-          exporter: 0,
-        });
-        this.setLinkedExportSupported();
-      } else {
-        this.modal.dismiss(true);
-      }
-    });
+    this.objectTypeService
+      .get(target)
+      .pipe(
+        mergeMap((typeProvider) => typeProvider.getExporters(target)),
+        mergeMap((exporters) => (this.exporters = exporters))
+      )
+      .subscribe(() => {
+        if (this.exporters) {
+          this.form.patchValue({
+            exporter: 0,
+          });
+          this.setLinkedExportSupported();
+        } else {
+          this.modal.dismiss(true);
+        }
+      });
   }
 
   get target(): FilesystemObject {
@@ -62,16 +67,14 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
   getValue(): ObjectExportDialogValue {
     return {
       exporter: this.exporters[this.form.get('exporter').value],
-      exportLinked: this.isLinkedExportSupported && this.form.get('exportLinked').value
+      exportLinked: this.isLinkedExportSupported && this.form.get('exportLinked').value,
     };
   }
 
   setLinkedExportSupported() {
     this.isLinkedExportSupported =
       this.isMapExport &&
-      this._linkedExporters.includes(
-        this.exporters[this.form.get('exporter').value].name
-      );
+      this._linkedExporters.includes(this.exporters[this.form.get('exporter').value].name);
   }
 }
 

@@ -1,43 +1,51 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
+<ng-container *ngIf="loadTask.status$ | async as status">
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-title-bar">
-        <div class="module-title">
-          Knowledge Graph Statistics
-        </div>
+        <div class="module-title">Knowledge Graph Statistics</div>
       </div>
 
       <div class="module-toolbar mt-2">
-        <button type="button" class="btn btn-secondary" (click)="this.refresh()"
-                ngbTooltip="Refresh the results"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="this.refresh()"
+          ngbTooltip="Refresh the results"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="fa fa-sync"></i> Refresh
         </button>
       </div>
     </div>
     <div class="module-body flex-fill overflow-auto">
       <app-background-task-progress
-        [status]="status" (refresh)="this.refresh()" childClass="mb-4"></app-background-task-progress>
+        [status]="status"
+        (refresh)="this.refresh()"
+        childClass="mb-4"
+      ></app-background-task-progress>
 
       <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
         <div class="card" [appShowPlaceholders]="status.placeholdersShown">
           <div class="card-header">
             <span appHasPlaceholder>
-              Total Number of Nodes <span class="badge badge-pill badge-primary ml-1">{{totalCount | number}}</span>
+              Total Number of Nodes
+              <span class="badge badge-pill badge-primary ml-1">{{ totalCount | number }}</span>
             </span>
           </div>
           <div class="card-body">
             <div class="chart-container">
-              <canvas baseChart
-                      *ngIf="status.resultsShown"
-                      [datasets]="chartDataAllDomains"
-                      [labels]="chartLabelsDomains"
-                      [colors]="chartColorsDomains"
-                      [options]="chartOptions"
-                      [plugins]="chartPlugins"
-                      [legend]="false"
-                      chartType="horizontalBar">
+              <canvas
+                baseChart
+                *ngIf="status.resultsShown"
+                [datasets]="chartDataAllDomains"
+                [labels]="chartLabelsDomains"
+                [colors]="chartColorsDomains"
+                [options]="chartOptions"
+                [plugins]="chartPlugins"
+                [legend]="false"
+                chartType="horizontalBar"
+              >
               </canvas>
             </div>
           </div>
@@ -47,18 +55,20 @@
           <ng-container *ngFor="let data of chartDataEntitiesByDomain | keyvalue">
             <div class="card mt-4">
               <div class="card-header">
-                {{data.key}}
+                {{ data.key }}
               </div>
               <div class="card-body">
                 <div class="chart-container">
-                  <canvas baseChart
-                          [datasets]="data.value"
-                          [labels]="chartLabelsEntitiesByDomain[data.key]"
-                          [options]="chartOptions"
-                          [plugins]="chartPlugins"
-                          [colors]="chartColorsEntitiesByDomain[data.key]"
-                          [legend]="false"
-                          chartType="bar">
+                  <canvas
+                    baseChart
+                    [datasets]="data.value"
+                    [labels]="chartLabelsEntitiesByDomain[data.key]"
+                    [options]="chartOptions"
+                    [plugins]="chartPlugins"
+                    [colors]="chartColorsEntitiesByDomain[data.key]"
+                    [legend]="false"
+                    chartType="bar"
+                  >
                   </canvas>
                 </div>
               </div>

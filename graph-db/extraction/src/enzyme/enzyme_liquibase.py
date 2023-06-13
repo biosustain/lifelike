@@ -6,7 +6,9 @@ from zipfile import ZipFile
 
 class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author, zip_data_file: str, initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_ENZYME, NODE_EC_NUMBER, initial_load)
+        ChangeLogFileGenerator.__init__(
+            self, author, zip_data_file, DB_ENZYME, NODE_EC_NUMBER, initial_load
+        )
         self.index_quieries = []
         self.logger = logging.getLogger(__name__)
 
@@ -23,7 +25,9 @@ class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
             filename = "enzyme.tsv"
             with zip.open(filename) as f:
                 df = pd.read_csv(f, sep='\t')
-                node_changeset = self.get_node_changeset(df, filename, NODE_ENZYME, NODE_EC_NUMBER)
+                node_changeset = self.get_node_changeset(
+                    df, filename, NODE_ENZYME, NODE_EC_NUMBER
+                )
                 self.change_sets.append(node_changeset)
 
     def add_synonym_changesets(self):
@@ -40,16 +44,19 @@ class EnzymeChangeLogsGenerator(ChangeLogFileGenerator):
             if file in filenames:
                 with zip.open(file) as f:
                     df = pd.read_csv(f, sep='\t')
-                    changesets = self.get_relationships_changesets(df, file, NODE_ENZYME, NODE_ENZYME)
+                    changesets = self.get_relationships_changesets(
+                        df, file, NODE_ENZYME, NODE_ENZYME
+                    )
                     self.change_sets += changesets
 
 
 def main():
     task = EnzymeChangeLogsGenerator('rcai', "enzyme-data-05312022.zip")
     task.add_all_change_sets()
-    task.generate_changelog_file(f"enzyme_changelog_{task.date_tag.replace('/', '')}.xml")
+    task.generate_changelog_file(
+        f"enzyme_changelog_{task.date_tag.replace('/', '')}.xml"
+    )
 
 
 if __name__ == '__main__':
     main()
-
