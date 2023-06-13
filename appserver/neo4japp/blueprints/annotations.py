@@ -3,6 +3,7 @@ import hashlib
 import html
 import io
 import json
+from http import HTTPStatus
 
 import sqlalchemy as sa
 import time
@@ -24,6 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
 from webargs.flaskparser import use_args
 
+from neo4japp.exceptions import wrap_exceptions
 from .auth import login_exempt
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
@@ -35,7 +37,7 @@ from ..database import (
     get_enrichment_table_service,
     get_or_create_arango_client
 )
-from ..exceptions import AnnotationError, ServerException
+from neo4japp.exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
@@ -89,10 +91,8 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
-from ..utils.globals import warn
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
-from ..warnings import ServerWarning
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -868,7 +868,7 @@ class GlobalAnnotationExportInclusions(MethodView):
         ]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
         response.headers['Content-Disposition'] = \
             f'attachment; filename={exporter.get_filename("global_inclusions")}'
@@ -930,7 +930,7 @@ class GlobalAnnotationExportExclusions(MethodView):
         data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
         response.headers['Content-Disposition'] = \
             f'attachment; filename={exporter.get_filename("global_exclusions")}'
@@ -1037,6 +1037,7 @@ class GlobalAnnotationListView(MethodView):
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())
+    @wrap_exceptions(ServerException, title='Could not delete exclusion')
     def delete(self, params):
         yield g.current_user
 
@@ -1083,7 +1084,6 @@ class GlobalAnnotationListView(MethodView):
                             event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
                     raise ServerException(
-                        title='Could not delete inclusion',
                         message='A database error occurred when deleting the global inclusion(s).'
                     ) from e
 
@@ -1095,6 +1095,7 @@ class GlobalAnnotationListView(MethodView):
 # credentials when pinging this endpoint, or we should block this endpoint via nginx and whitelist
 # the pdfparser on that endpoint.
 @login_exempt
+@wrap_exceptions(AnnotationError)
 def get_pdf_to_annotate(file_id):
     """This endpoint is sent by the annotation pipeline to the
     pdfparse service, and acts as a resource pull.
@@ -1103,11 +1104,7 @@ def get_pdf_to_annotate(file_id):
     doc = Files.query.get(file_id)
 
     if not doc:
-        raise AnnotationError(
-            title='Failed to Annotate',
-            message=f'File with file id {file_id} not found.',
-            code=404
-        )
+        raise FileNotFoundError(message=f'File with file id {file_id} not found.')
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'

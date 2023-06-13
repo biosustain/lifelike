@@ -1,10 +1,12 @@
 import json
 import os
+from http import HTTPStatus
+
 import requests
 
 from flask import Blueprint, Response, current_app, request
 
-from neo4japp.exceptions import StatisticalEnrichmentError
+from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
@@ -42,7 +44,7 @@ def forward_request():
         ) from e
 
     # 500 should contain message from service so we try to include it
-    if resp.status_code == 500:
+    if resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         try:
             decoded_error_message = json.loads(resp.content)['message']
         except Exception as e:
@@ -70,5 +72,6 @@ def forward_request():
 
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
+@wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()

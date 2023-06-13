@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from arango.database import StandardDatabase
 import json
 import pytest
@@ -30,7 +32,7 @@ def test_user_can_get_gene_annotations_from_pdf(
         headers=headers,
         content_type='application/json',
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() == b'gene_id\tgene_name\torganism_id\torganism_name\t' \
                                   b'gene_annotation_count\r\n' + \
                                   b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
@@ -51,7 +53,7 @@ def test_user_can_get_all_annotations_from_pdf(
         headers=headers,
         content_type='application/json',
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() == b'entity_id\ttype\ttext\tprimary_name\tcount\r\n' + \
                                   b'59272\tGene\tace2\tACE2\t1\r\n' + \
                                   b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
@@ -72,7 +74,7 @@ def test_user_can_get_global_inclusions(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() is not None
 
 
@@ -91,7 +93,7 @@ def test_user_can_get_global_exclusions(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() is not None
 
 
@@ -111,7 +113,7 @@ def test_user_can_get_global_list(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
     data = json.loads(response.get_data().decode('utf-8'))
     assert data['total'] == 2

@@ -68,4 +68,4 @@ def test_can_authenticate_with_auth_token(client, session):
         headers=headers,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK

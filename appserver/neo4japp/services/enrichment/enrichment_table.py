@@ -7,26 +7,26 @@ from sqlalchemy.orm import Session as SQLAlchemySession
 from typing import List
 
 from neo4japp.constants import EnrichmentDomain, LogEventType
-from neo4japp.exceptions import AnnotationError, ServerException
+from neo4japp.exceptions import AnnotationError, ServerException, wrap_exceptions
 from neo4japp.models import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarning
+from neo4japp.exceptions import ServerWarning
 
 
 class EnrichmentTableService(KgService):
     def __init__(self, graph: Neo4jSession, session: SQLAlchemySession):
         super().__init__(graph=graph, session=session)
 
+    @wrap_exceptions(AnnotationError, title='Could not annotate enrichment table')
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
             validate_enrichment_table(enrichment)
         except Exception as e:
-            raise AnnotationError(
-                title='Could not annotate enrichment table',
+            raise ServerException(
                 message='Could not annotate enrichment table, '
                         'there was a problem validating the format.'
             ) from e
@@ -128,10 +128,7 @@ class EnrichmentTableService(KgService):
             DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
 
         if domain is None:
-            raise ServerException(
-                title='Could not create enrichment table',
-                message='There was a problem finding NCBI domain URLs.'
-            )
+            raise ServerException(message='There was a problem finding NCBI domain URLs.')
 
         return [{
             'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},

@@ -1,4 +1,5 @@
 import importlib.resources as pkg_resources
+from http import HTTPStatus
 from io import BytesIO
 from typing import Tuple
 from urllib.parse import quote
@@ -71,7 +72,7 @@ def test_upload_file_mime_type_detection(
         },
     )
 
-    assert resp.status_code == 200
+    assert resp.status_code == HTTPStatus.OK
 
     resp_data = resp.get_json()
 
@@ -119,7 +120,7 @@ def test_upload_file_with_blocked_ext(
         },
     )
 
-    assert resp.status_code == 400
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize(
@@ -158,4 +159,4 @@ def test_rename_file_to_blocked_ext(
         },
     )
 
-    assert resp.status_code == 400
+    assert resp.status_code == HTTPStatus.BAD_REQUEST

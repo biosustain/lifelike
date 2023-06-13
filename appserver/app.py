@@ -21,6 +21,7 @@ from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
 from typing import List
 
+import neo4japp.utils.transaction_id
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
@@ -34,7 +35,7 @@ from neo4japp.constants import (
     SEED_FILE_KEY_FILES
 )
 from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
-from neo4japp.exceptions import OutdatedVersionException
+from neo4japp.exceptions import OutdatedVersionException, ServerWarning
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
@@ -47,7 +48,6 @@ from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarning
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config=f'config.{app_config}')
@@ -56,8 +56,8 @@ logger = logging.getLogger(__name__)
 
 @app.before_request
 def init_exceptions_handling():
-    g.info = list()
-    g.warnings = list()
+    g.info = set()
+    g.warnings = set()
 
     g.transaction_id = request.headers.get('X-Transaction-Id')
     if not g.transaction_id:
@@ -370,8 +370,9 @@ def set_role(email, role):
 def reset_elastic():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
-    elastic_service = get_elastic_service()
-    elastic_service.recreate_indices_and_pipelines()
+    with app.app_context():
+        elastic_service = get_elastic_service()
+        elastic_service.recreate_indices_and_pipelines()
 
 
 @app.cli.command('reindex-files')
@@ -467,7 +468,7 @@ def reannotate_files(user, password):
             }),
             headers={'Content-type': 'application/json', 'Authorization': f'Bearer {token}'})
         print(f'Got response back for files {hash_ids}, status code is {resp.status_code}')
-        # if resp.status_code != 200:
+        # if resp.status_code != HTTPStatus.OK:
         #     raise AnnotationError(resp.text)
         resp.close()
 
