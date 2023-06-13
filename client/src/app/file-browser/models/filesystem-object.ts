@@ -118,10 +118,8 @@ export class ProjectImpl implements ObservableObject {
 
   getURL(): HttpURL {
     return new HttpURL({
-      pathSegments: this.getCommands().map(item =>
-          encodeURIComponent(item.replace(/^\//, ''))
-      ),
-      fragment: 'project'
+      pathSegments: this.getCommands().map((item) => encodeURIComponent(item.replace(/^\//, ''))),
+      fragment: 'project',
     });
   }
 
@@ -152,10 +150,10 @@ export class ProjectImpl implements ObservableObject {
           sources: [
             {
               domain: 'File Source',
-              url: this.getURL().toAbsolute()
-            }
-          ]
-        }
+              url: this.getURL().toAbsolute(),
+            },
+          ],
+        },
       };
 
     dataTransfer.effectAllowed = 'all';
@@ -495,7 +493,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   // TODO: Move this method to ObjectTypeProvider
   getURL(forEditing = true, meta?: Meta): HttpURL {
     const url = new HttpURL({
-      pathSegments: this.getCommands(forEditing).map(item =>
+      pathSegments: this.getCommands(forEditing).map((item) =>
         encodeURIComponent(item.replace(/^\//, ''))
       ),
       fragment: this.isProjectRoot ? 'project' : '',

@@ -52,7 +52,7 @@ export interface TableCell {
 }
 
 export interface TableLink {
-  link: string|AppURL;
+  link: string | AppURL;
   linkText: string;
 }
 

@@ -20,9 +20,12 @@ export const isInternalUri = (uri: AppURL): uri is HttpURL =>
 const internalURITypeMapping: Map<object, InternalURIType> = new Map([
   [['search', 'content'], InternalURIType.Search],
   [['search', 'graph'], InternalURIType.KgSearch],
-  [{pathSegments: ['folders'], fragment: 'project'}, InternalURIType.Project],
+  [{ pathSegments: ['folders'], fragment: 'project' }, InternalURIType.Project],
   [['folders'], InternalURIType.Directory],
-  [{pathSegments: {...['projects', , 'folders']}, fragment: 'project'}, InternalURIType.Project],
+  [
+    { pathSegments: { ...['projects', , 'folders'] }, fragment: 'project' },
+    InternalURIType.Project,
+  ],
   [['projects', , 'folders'], InternalURIType.Directory],
   [['projects', , 'bioc'], InternalURIType.BioC],
   [['projects', , 'enrichment-table'], InternalURIType.EnrichmentTable],
@@ -32,17 +35,14 @@ const internalURITypeMapping: Map<object, InternalURIType> = new Map([
   [['projects', , 'files'], InternalURIType.Pdf],
 ]);
 
-export const findURLMapping = <R>(uriTypeMapping: Map<object, R>) => (uri: AppURL) => findEntriesValue(
-  uriTypeMapping,
-  // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
-  expected =>
-    isMatch(
-      uri,
-      isArray(expected) ?
-        {pathSegments: expected} :
-        expected,
-    )
-);
+export const findURLMapping =
+  <R>(uriTypeMapping: Map<object, R>) =>
+  (uri: AppURL) =>
+    findEntriesValue(
+      uriTypeMapping,
+      // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
+      (expected) => isMatch(uri, isArray(expected) ? { pathSegments: expected } : expected)
+    );
 
 const internalURITypeMapper = findURLMapping(internalURITypeMapping);
 

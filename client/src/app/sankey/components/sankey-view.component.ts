@@ -407,7 +407,8 @@ export class SankeyViewComponent
               ],
             },
           } as Partial<UniversalGraphNodeTemplate>),
-          ...GenericDataProvider.getURIs([{
+          ...GenericDataProvider.getURIs([
+            {
               uri: object.getURL(false).toAbsolute(),
               title: object.filename,
             },

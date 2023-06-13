@@ -193,13 +193,21 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           sources: [
             {
               domain: this.object.filename,
-          url: new HttpURL({
-            pathSegments: ['projects', this.object.project.name, 'bioc', 'files', this.object.hashId]
-          })
-        }]
-      }
-    } as Partial<UniversalGraphNodeTemplate>),
-    ...GenericDataProvider.getURIs([{
+              url: new HttpURL({
+                pathSegments: [
+                  'projects',
+                  this.object.project.name,
+                  'bioc',
+                  'files',
+                  this.object.hashId,
+                ],
+              }),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNodeTemplate>),
+      ...GenericDataProvider.getURIs([
+        {
           uri: this.object.getURL(false).toAbsolute(),
           title: this.object.filename,
         },
@@ -245,14 +253,14 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     if (pmid) {
       return {
         domain: `PMID${pmid.infons['article-id_pmid']}`,
-        url: NCBI.pubmed(pmid.infons['article-id_pmid'])
+        url: NCBI.pubmed(pmid.infons['article-id_pmid']),
       };
     }
     const pmc = doc.passages.find((p) => p.infons['article-id_pmc']);
     if (pmc) {
       return {
         domain: `PMC${pmc.infons['article-id_pmc']}`,
-        url: NCBI.article(pmc.infons['article-id_pmc'])
+        url: NCBI.article(pmc.infons['article-id_pmc']),
       };
     }
 
@@ -580,7 +588,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const dataTransfer: DataTransfer = event.dataTransfer;
     const txt = (event.target as Element).innerHTML;
     const clazz = (event.target as Element).classList;
-    const type = this.reBindType((clazz && clazz.length > 1) ? clazz[1] : 'link');
+    const type = this.reBindType(clazz && clazz.length > 1 ? clazz[1] : 'link');
     const pmcid = this.pmid(first(this.biocData));
     if (!clazz || clazz.value === '') {
       const node = jQuery((event as any).path[1]);
@@ -589,11 +597,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
       const len = jQuery(node).attr('len');
       const source = new HttpURL({
         pathSegments: ['projects', this.object.project.name, 'bioc', this.object.hashId],
-        fragment: position ? new URLSearchParams({
-          offset: position,
-          start: startIndex,
-          len
-        }) : undefined
+        fragment: position
+          ? new URLSearchParams({
+              offset: position,
+              start: startIndex,
+              len,
+            })
+          : undefined,
       });
       const link = meta.idHyperlink || '';
       dataTransfer.setData('text/plain', this.selectedText);
@@ -603,10 +613,13 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           display_name: 'Link',
           label: 'link',
           data: {
-          sources: [{
-            domain: this.object.filename,
-            url: source
-          }, pmcid],
+            sources: [
+              {
+                domain: this.object.filename,
+                url: source,
+              },
+              pmcid,
+            ],
             detail: this.selectedText,
             references: [
               {
@@ -622,7 +635,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
           style: {
             showDetail: true,
           },
-      } as Partial<UniversalGraphNodeTemplate>));
+        } as Partial<UniversalGraphNodeTemplate>)
+      );
       return;
     }
     const id = ((event.target as Element).attributes[`identifier`] || {}).nodeValue;
@@ -639,7 +653,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     const hyperlink = meta.idHyperlink || '';
     const sourceUrl = new HttpURL({
       pathSegments: ['projects', this.object.project.name, 'bioc', this.object.hashId],
-      fragment: offset ? new URLSearchParams({offset}) : undefined
+      fragment: offset ? new URLSearchParams({ offset }) : undefined,
     });
     dataTransfer.setData('text/plain', txt);
     dataTransfer.setData(
@@ -673,7 +687,8 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
         style: {
           showDetail: meta.type === 'link',
         },
-    } as Partial<UniversalGraphNodeTemplate>));
+      } as Partial<UniversalGraphNodeTemplate>)
+    );
     event.stopPropagation();
   }
 

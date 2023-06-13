@@ -17,12 +17,12 @@ export const NCBI = Object.freeze({
   taxonomy: (id: string | number | boolean) =>
     new HttpURL(NCBI.url, {
       pathSegments: ['Taxonomy', 'Browser', 'wwwtax.cgi'],
-      search: {id: String(id)},
+      search: { id: String(id) },
     }),
   mesh: (term: string) =>
     new HttpURL(NCBI.url, {
       pathSegments: ['mesh'],
-      search: {term},
+      search: { term },
     }),
   pubtator: (id: string) =>
     new HttpURL(NCBI.url, {
@@ -31,7 +31,7 @@ export const NCBI = Object.freeze({
   pubtatorSearch: (searchTerm: string) =>
     new HttpURL(NCBI.url, {
       pathSegments: ['research', 'pubtator'],
-      search: {view: 'docsum', query: searchTerm},
+      search: { view: 'docsum', query: searchTerm },
     }),
 });
 
@@ -52,7 +52,7 @@ export const GO = Object.freeze({
   search: (q: string) =>
     new HttpURL(GO.url, {
       pathSegments: ['amigo', 'search', 'annotation'],
-      search: {q},
+      search: { q },
     }),
 });
 
@@ -61,17 +61,17 @@ export const BIOCYC = Object.freeze({
   id: (object: string) =>
     new HttpURL(BIOCYC.url, {
       pathSegments: ['ECOLI', 'NEW-IMAGE'],
-      search: {object},
+      search: { object },
     }),
   compound: (id: string) =>
     new HttpURL(BIOCYC.url, {
       pathSegments: ['compound'],
-      search: {orgid: 'META', id},
+      search: { orgid: 'META', id },
     }),
   gene: (id: string, orgid = 'PPUT160488') =>
     new HttpURL(BIOCYC.url, {
       pathSegments: ['gene'],
-      search: {orgid, id},
+      search: { orgid, id },
     }),
 });
 
@@ -96,12 +96,12 @@ export const CHEBI2 = Object.freeze({
   search: (chebiId: string) =>
     new HttpURL(CHEBI2.url, {
       pathSegments: ['chebi', 'searchId.do'],
-      search: {chebiId},
+      search: { chebiId },
     }),
   advancedSearch: (searchString: string) =>
     new HttpURL(CHEBI2.url, {
       pathSegments: ['chebi', 'advancedSearchFT.do'],
-      search: {searchString},
+      search: { searchString },
     }),
 });
 
@@ -110,7 +110,7 @@ export const MESHB = Object.freeze({
   id: (ui: string) =>
     new HttpURL(MESHB.url, {
       pathSegments: ['record', `ui`],
-      search: {ui},
+      search: { ui },
     }),
 });
 
@@ -118,7 +118,7 @@ export const PUBCHEM = Object.freeze({
   url: new HttpURL('https://pubchem.ncbi.nlm.nih.gov/').freeze(),
   search: (query: string) =>
     new HttpURL(PUBCHEM.url, {
-      fragment: new URLSearchParams({query}),
+      fragment: new URLSearchParams({ query }),
     }),
 });
 
@@ -126,10 +126,10 @@ export const GOOGLE = Object.freeze({
   url: new HttpURL('https://www.google.com/search').freeze(),
   search: (q: string) =>
     new HttpURL(GOOGLE.url, {
-      search: {q},
+      search: { q },
     }),
   searchWikipedia: (q: string) =>
     new HttpURL(GOOGLE.url, {
-      search: {q: 'site:+wikipedia.org+' + q},
+      search: { q: 'site:+wikipedia.org+' + q },
     }),
 });

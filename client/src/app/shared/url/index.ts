@@ -4,7 +4,6 @@ import { NotImplemented } from 'app/sankey/utils/error';
 
 import { isNotEmpty } from '../utils';
 
-
 /**
  * Working with JS URL class is nice however it's requirement for url to be absolute is sometimes hard to go around.
  * This class implements same interface but deals well with relative URLs and provides convininet property setters.
@@ -30,7 +29,9 @@ export class AppURL {
       case undefined: // if no schema it is relative http url
         return new HttpURL(url);
       default:
-        throw new NotImplemented(`Urls with scheme "${scheme}" are not supported within application.`);
+        throw new NotImplemented(
+          `Urls with scheme "${scheme}" are not supported within application.`
+        );
     }
   }
 }
@@ -51,9 +52,12 @@ type URLLike<T extends AppURLBase> = string | Partial<T>;
  * Commonly new AppURL(appURLInstance, { overwrites }) creates URL copy with applied overwrites.
  */
 function construct<T extends AppURLBase>(this: AppURL, ...urlLikes: Array<URLLike<T>>) {
-  assign(this, ...urlLikes.map(urlLike =>
-    isString(urlLike) ? this.matcher.exec(urlLike)?.groups ?? {} : urlLike,
-  ));
+  assign(
+    this,
+    ...urlLikes.map((urlLike) =>
+      isString(urlLike) ? this.matcher.exec(urlLike)?.groups ?? {} : urlLike
+    )
+  );
 }
 
 // tslint:disable-next-line:class-name
@@ -107,10 +111,12 @@ export class HttpURL implements AppURLBase, URL {
   }
 
   get pathname(): string {
-    return chain(this.pathSegments)
-      .map(segment => `/${encodeURIComponent(segment)}`)
-      .join('')
-      .value() ?? '';
+    return (
+      chain(this.pathSegments)
+        .map((segment) => `/${encodeURIComponent(segment)}`)
+        .join('')
+        .value() ?? ''
+    );
   }
 
   set search(value: any) {
@@ -169,7 +175,7 @@ export class HttpURL implements AppURLBase, URL {
   readonly matcher: RegExp = new RegExp(URL_REGEX.href);
   scheme: string;
 
-  fragment: string|URLSearchParams;
+  fragment: string | URLSearchParams;
   hostname: string;
   port: string;
   username: string;

@@ -17,7 +17,6 @@ import { GraphSearchParameters } from '../graph-search';
   styleUrls: ['./search-record-relationships.component.scss'],
 })
 export class SearchRecordRelationshipsComponent {
-
   readonly NCBI = NCBI;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or

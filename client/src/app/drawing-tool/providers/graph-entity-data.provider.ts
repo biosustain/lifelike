@@ -117,8 +117,8 @@ export class GraphEntityDataProvider
                   detail: text,
                   sources: uriData.map((item) => ({
                     domain: item.title,
-                  url: item.uri
-                }))
+                    url: item.uri,
+                  })),
                 },
                 style: {
                   showDetail: !isLink,

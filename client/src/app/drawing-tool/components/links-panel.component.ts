@@ -181,7 +181,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
-  linkClick(event: Event, link: (Source | Hyperlink)) {
+  linkClick(event: Event, link: Source | Hyperlink) {
     try {
       openPotentialExternalLink(this.workspaceManager, link.url.toString(), {
         newTab: true,

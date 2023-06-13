@@ -23,9 +23,7 @@ export class HighlightTextService {
 
   composeSearchInternalLinks(text) {
     const organism = this.object?.fallbackOrganism?.tax_id;
-    return this.internalSearch.composeSearchInternalLinks(
-      text, organism
-    );
+    return this.internalSearch.composeSearchInternalLinks(text, organism);
   }
 
   getSources(meta) {

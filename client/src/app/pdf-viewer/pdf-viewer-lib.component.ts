@@ -22,7 +22,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { defer, forEach, isEqual, uniqueId, kebabCase, first as _first, isEmpty, escape, isNil } from 'lodash-es';
+import {
+  defer,
+  forEach,
+  isEqual,
+  uniqueId,
+  kebabCase,
+  first as _first,
+  isEmpty,
+  escape,
+  isNil,
+} from 'lodash-es';
 import {
   BehaviorSubject,
   Observable,
@@ -43,7 +53,12 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType, ENTITY_TYPES } from 'app/shared/annotation-types';
+import {
+  DatabaseLink,
+  ENTITY_TYPE_MAP,
+  EntityType,
+  ENTITY_TYPES,
+} from 'app/shared/annotation-types';
 import { LINKS } from 'app/shared/links';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';

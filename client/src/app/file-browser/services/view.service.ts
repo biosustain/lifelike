@@ -45,7 +45,7 @@ export class ViewService {
 
   getShareableLink(componentInstance: ModuleAwareComponent, url: string): Observable<HttpURL> {
     return this.getAppLink(componentInstance, url).pipe(
-      map((appUrl: HttpURL) => appUrl.toAbsolute()),
+      map((appUrl: HttpURL) => appUrl.toAbsolute())
     );
   }
 }

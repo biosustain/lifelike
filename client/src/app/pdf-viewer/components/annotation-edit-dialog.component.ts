@@ -95,13 +95,13 @@ export class AnnotationEditDialogComponent
   );
 
   searchLinks$ = this.getFormFieldObservable('text').pipe(
-    map(text => text?.trim()),
-    map(text => Object.values(LINKS).map(link =>
-      ({
+    map((text) => text?.trim()),
+    map((text) =>
+      Object.values(LINKS).map((link) => ({
         domain: link.label,
-        link: link.search(text)
-      })
-    ))
+        link: link.search(text),
+      }))
+    )
   );
 
   databaseTypeChoices$ = this.entityType$.pipe(
@@ -176,7 +176,7 @@ export class AnnotationEditDialogComponent
       includeGlobally,
       isCaseInsensitive: !this.caseSensitiveTypes.has(entityType),
       type: entityType,
-      links: mapValues(LINKS, linkEntity => linkEntity.search(text))
+      links: mapValues(LINKS, (linkEntity) => linkEntity.search(text)),
     } as Meta;
     if (source) {
       meta.idType = source;

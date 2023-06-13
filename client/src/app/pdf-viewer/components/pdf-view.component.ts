@@ -5,18 +5,17 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { isEqual, uniqueId } from 'lodash-es';
+import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
 import {
   BehaviorSubject,
   combineLatest,
   defer,
   Observable,
+  iif,
   of,
   Subject,
   Subscription,
-  iif,
 } from 'rxjs';
-import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
-import { BehaviorSubject, combineLatest, defer, Observable, iif, of, Subject, Subscription } from 'rxjs';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -30,10 +29,7 @@ import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { SearchControlComponent } from 'app/shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
-import {
-  Source,
-  UniversalGraphNodeTemplate,
-} from 'app/drawing-tool/services/interfaces';
+import { Source, UniversalGraphNodeTemplate } from 'app/drawing-tool/services/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -158,12 +154,14 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
           references: [
             {
               type: 'PROJECT_OBJECT',
-            id: String(this.object.hashId),
-          }],
+              id: String(this.object.hashId),
+            },
+          ],
           sources,
         },
       } as Partial<UniversalGraphNodeTemplate>),
-      ...GenericDataProvider.getURIs([{
+      ...GenericDataProvider.getURIs([
+        {
           uri: this.object.getURL(false).toAbsolute(),
           title: this.object.filename,
         },
@@ -276,13 +274,12 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     const meta = event.meta;
 
     const source = new HttpURL({
-        pathSegments: ['projects', this.object.project.name, 'files', this.currentFileId],
-        fragment: new URLSearchParams({
-          page: String(loc.pageNumber),
-          coords: `${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`,
-        }),
-      },
-    );
+      pathSegments: ['projects', this.object.project.name, 'files', this.currentFileId],
+      fragment: new URLSearchParams({
+        page: String(loc.pageNumber),
+        coords: `${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`,
+      }),
+    });
 
     const sources: Source[] = [
       {
@@ -352,15 +349,17 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
               // assumes first link will be main database source link
               // tslint ignore cause other option is destructuring and that
               // also gets name shadowing error
-          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
-        }],
+              url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
+            },
+          ],
           hyperlinks,
           detail: meta.type === 'link' ? meta.allText : '',
         },
         style: {
           showDetail: meta.type === 'link',
         },
-    } as Partial<UniversalGraphNodeTemplate>));
+      } as Partial<UniversalGraphNodeTemplate>)
+    );
   }
 
   zoomIn() {

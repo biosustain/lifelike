@@ -282,7 +282,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             const geneDomainResult = gene?.domains?.BioCyc?.[label];
             if (geneDomainResult) {
               const link = HttpURL.from(geneDomainResult.link);
-              return {text: link.searchParamsObject.id ?? ''};
+              return { text: link.searchParamsObject.id ?? '' };
             } else {
               return { text: '' };
             }

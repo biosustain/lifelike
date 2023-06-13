@@ -23,10 +23,9 @@ export class ModuleContext {
   }
 
   get appLink(): Promise<HttpURL> {
-    return this.viewService.getAppLink(
-      this.componentInstance,
-      getURLFromSnapshot(this.route.snapshot, '').toString()
-    ).toPromise();
+    return this.viewService
+      .getAppLink(this.componentInstance, getURLFromSnapshot(this.route.snapshot, '').toString())
+      .toPromise();
   }
 
   get shareableLink() {

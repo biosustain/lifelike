@@ -86,7 +86,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
       this.loadTask.update(hash_id);
       this.sourceFileURL = new HttpURL({
         pathSegments: ['projects', 'xxx', 'sankey', hash_id],
-        search: {network_trace_idx, trace_idx}
+        search: { network_trace_idx, trace_idx },
       });
     });
   }
@@ -95,11 +95,10 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     of([
       {
         domain: 'Source File',
-        url: this.sourceFileURL
+        url: this.sourceFileURL,
       },
     ])
   );
-
 
   ngOnDestroy() {
     this.destroyed.next();

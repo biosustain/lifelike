@@ -153,7 +153,7 @@ describe('SnippetDisplayComponentComponent', () => {
 
     const link = pubmedLinks[0];
 
-        expect(link.getAttribute('href')).toEqual(NCBI.pubtator('123456').toString());
+    expect(link.getAttribute('href')).toEqual(NCBI.pubtator('123456').toString());
     expect(link.textContent).toEqual('123456');
   });
 

@@ -64,7 +64,7 @@ export class InternalSearchService {
   composeSearchInternalLinks(text, organism?) {
     return [
       {
-        navigate: this.getVisualizerArguments(text, {organism}),
+        navigate: this.getVisualizerArguments(text, { organism }),
         label: 'Knowledge Graph',
       },
       {
@@ -72,7 +72,7 @@ export class InternalSearchService {
         label: 'File Content',
       },
       {
-        navigate: this.getFileContentsArguments(text, {types: ['map']}),
+        navigate: this.getFileContentsArguments(text, { types: ['map'] }),
         label: 'Map Content',
       },
     ];

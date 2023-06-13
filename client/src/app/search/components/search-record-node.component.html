@@ -42,20 +42,16 @@
   <div class="search-results-item-body">
     <div [ngSwitch]="node.node.label">
       <div *ngSwitchCase="'BiologicalProcess'">
-        <span>ID:
-          <a
-            target="_blank"
-            [href]="DB.GO.id(node.node.data.eid)"
-          >GO:{{node.node.data.eid}}</a>
+        <span
+          >ID:
+          <a target="_blank" [href]="DB.GO.id(node.node.data.eid)">GO:{{ node.node.data.eid }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'CellularComponent'">
-        <span>ID:
-          <a
-            target="_blank"
-            [href]="DB.GO.id(node.node.data.eid)"
-          >GO:{{node.node.data.eid}}</a>
+        <span
+          >ID:
+          <a target="_blank" [href]="DB.GO.id(node.node.data.eid)">GO:{{ node.node.data.eid }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
@@ -63,77 +59,65 @@
         <div [ngSwitch]="node.node.data.dataSource">
           <span *ngSwitchCase="'ChEBI'">
             ID:
-            <a
-              target="_blank"
-              [href]="DB.CHEBI.id(node.node.data.eid)"
-            >CHEBI:{{ node.node.data.eid }}</a>
+            <a target="_blank" [href]="DB.CHEBI.id(node.node.data.eid)"
+              >CHEBI:{{ node.node.data.eid }}</a
+            >
           </span>
           <span *ngSwitchCase="'MeSH'">
             ID:
-            <a
-              target="_blank"
-              [href]="DB.MESHB.id(node.node.data.eid)"
-            >{{ node.node.data.eid }}</a></span>
+            <a target="_blank" [href]="DB.MESHB.id(node.node.data.eid)">{{
+              node.node.data.eid
+            }}</a></span
+          >
           <i class="link-icon fa fa-external-link"></i>
         </div>
       </div>
       <div *ngSwitchCase="'Disease'">
-          <span>
-            ID:
-            <a
-              target="_blank"
-              [href]="DB.MESHB.id(node.node.data.eid)"
-            >{{ node.node.data.eid }}</a>
+        <span>
+          ID:
+          <a target="_blank" [href]="DB.MESHB.id(node.node.data.eid)">{{ node.node.data.eid }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'Gene'">
         <span>
           ID:
-          <a
-            target="_blank"
-            [href]="DB.NCBI.gene(node.node.data.eid)"
-          >{{ node.node.data.eid }}</a>
+          <a target="_blank" [href]="DB.NCBI.gene(node.node.data.eid)">{{ node.node.data.eid }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
         <br />
         <span>
           Taxonomy ID:
-          <a
-            target="_blank"
-            [href]="DB.NCBI.taxonomy(node.taxonomyId)"
-          >{{ node.taxonomyId }}</a>
+          <a target="_blank" [href]="DB.NCBI.taxonomy(node.taxonomyId)">{{ node.taxonomyId }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
         <br />
         <span>Taxonomy: {{ node.taxonomyName }}</span>
       </div>
       <div *ngSwitchCase="'MolecularFunction'">
-        <span>ID:
-          <a
-            target="_blank"
-            [href]="DB.GO.id(node.node.data.eid)"
-          >GO:{{node.node.data.eid}}</a>
+        <span
+          >ID:
+          <a target="_blank" [href]="DB.GO.id(node.node.data.eid)">GO:{{ node.node.data.eid }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'Protein'">
         <div *ngIf="node.node.data.eid">
-          <span>ID:
-            <a
-              target="_blank"
-              [href]="DB.UNIPROT.search(node.node.data.eid)"
-            >{{node.node.data.eid}}</a>
+          <span
+            >ID:
+            <a target="_blank" [href]="DB.UNIPROT.search(node.node.data.eid)">{{
+              node.node.data.eid
+            }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
         </div>
       </div>
       <div *ngSwitchCase="'Taxonomy'">
-        <span>ID:
-          <a
-            target="_blank"
-            [href]="DB.NCBI.taxonomy(node.node.data.eid)"
-          >{{node.node.data.eid}}</a>
+        <span
+          >ID:
+          <a target="_blank" [href]="DB.NCBI.taxonomy(node.node.data.eid)">{{
+            node.node.data.eid
+          }}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>

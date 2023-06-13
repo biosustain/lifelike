@@ -459,8 +459,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id : GO.search(ncbiNode.name)
-          }
+            link: wrapper.uniprot
+              ? wrapper.go.link + wrapper.uniprot.result.id
+              : GO.search(ncbiNode.name),
+          },
         };
       }
     }
@@ -515,7 +517,7 @@ export interface DomainInfoMap {
 export interface EnrichmentValue {
   text: string;
   annotatedText?: string;
-  link: string|AppURL;
+  link: string | AppURL;
 }
 
 export interface EnrichedGeneDomain {

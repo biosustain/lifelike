@@ -28,20 +28,20 @@ export const LINKS = mapValues(
     },
     chebi: {
       label: 'ChEBI',
-      search: CHEBI2.advancedSearch
+      search: CHEBI2.advancedSearch,
     },
     pubchem: {
       label: 'PubChem',
-      search: PUBCHEM.search
+      search: PUBCHEM.search,
     },
     wikipedia: {
       label: 'Wikipedia',
-      search: GOOGLE.searchWikipedia
+      search: GOOGLE.searchWikipedia,
     },
     google: {
       label: 'Google',
-      search: GOOGLE.search
+      search: GOOGLE.search,
     },
   } as unknown as Record<string, LinkEntity>,
-  le => Object.freeze(le)
+  (le) => Object.freeze(le)
 );

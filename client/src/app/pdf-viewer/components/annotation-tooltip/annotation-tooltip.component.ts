@@ -41,11 +41,11 @@ export class AnnotationTooltipComponent implements OnChanges {
   annoId: string;
   exclusionReason: string;
   exclusionComment: string;
-  idHyperlinks: { label: string, url: string }[];
-  searchLinks: { label: string, url: string }[];
+  idHyperlinks: { label: string; url: string }[];
+  searchLinks: { label: string; url: string }[];
   internalSearchLinks: {
-    label: string,
-    navigate: Parameters<WorkspaceManager['navigate']>
+    label: string;
+    navigate: Parameters<WorkspaceManager['navigate']>;
   }[];
 
   removeCustom() {
@@ -89,23 +89,22 @@ export class AnnotationTooltipComponent implements OnChanges {
   ngOnChanges({ annotation }: SimpleChanges): void {
     if (annotation) {
       // Make meta values parsing
-      const {
-        id, type, idType, idHyperlinks, links, allText, isCustom, isExcluded,
-      } = annotation.currentValue.meta;
-      _assign(this, {id, type, idType, isCustom, isExcluded});
+      const { id, type, idType, idHyperlinks, links, allText, isCustom, isExcluded } =
+        annotation.currentValue.meta;
+      _assign(this, { id, type, idType, isCustom, isExcluded });
       this.annoId = this.parseAnnotationId(id);
 
       if (ENTITY_TYPE_MAP.hasOwnProperty(type)) {
         const source = ENTITY_TYPE_MAP[type] as EntityType;
-        this.idLink = source.links.find(link => link.name === idType)?.url(this.annoId);
+        this.idLink = source.links.find((link) => link.name === idType)?.url(this.annoId);
       } else {
         this.idLink = undefined;
       }
 
       this.idHyperlinks = idHyperlinks?.map(_unary(JSON.parse));
-      this.searchLinks = _entries(LINKS).map(([domain, {label, search}]) => ({
+      this.searchLinks = _entries(LINKS).map(([domain, { label, search }]) => ({
         url: links[domain] || search(allText),
-        label
+        label,
       }));
       this.internalSearchLinks = this.internalSearch.composeSearchInternalLinks(allText);
     }

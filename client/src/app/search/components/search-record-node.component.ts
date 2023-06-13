@@ -60,14 +60,18 @@ export class SearchRecordNodeComponent {
           hyperlinks: [
             {
               domain,
-          url
-        }],
-        references: [{
+              url,
+            },
+          ],
+          references: [
+            {
               type: 'DATABASE',
               id: getLink(this.node),
-        }]
-      }
-    } as Partial<UniversalGraphNode>));
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   getNodeDomain(url: URL): string {

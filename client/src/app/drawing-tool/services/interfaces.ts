@@ -109,13 +109,13 @@ export interface GraphEntity {
 }
 
 export interface Hyperlink {
-  url: string|AppURL;
+  url: string | AppURL;
   domain: string;
 }
 
 export interface Source {
   type?: ReferenceType;
-  url: string|AppURL;
+  url: string | AppURL;
   domain?: string;
 }
 

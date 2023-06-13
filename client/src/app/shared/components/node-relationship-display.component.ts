@@ -4,7 +4,8 @@ import { DeepPartial } from 'vis-data/declarations/data-interface';
 
 import {
   Source,
-  UniversalGraphNode, UniversalGraphNodeTemplate,
+  UniversalGraphNode,
+  UniversalGraphNodeTemplate,
   UniversalGraphRelationship,
 } from 'app/drawing-tool/services/interfaces';
 import { AssociationSnippet } from 'app/interfaces';
@@ -49,13 +50,17 @@ export class NodeRelationshipComponent {
             {
               domain: parseURLToDomainName(databaseUrl),
               url: databaseUrl,
-            }],
-          references: [{
-            type: 'DATABASE',
-            id: databaseUrl,
-          }]
+            },
+          ],
+          references: [
+            {
+              type: 'DATABASE',
+              id: databaseUrl,
+            },
+          ],
         },
-    } as Partial<UniversalGraphNodeTemplate>));
+      } as Partial<UniversalGraphNodeTemplate>)
+    );
 
     // Prevents the edge dragStart event from overriding the node dragStart
     event.stopPropagation();
@@ -78,9 +83,11 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.leftNodeUrl),
-            url: this.leftNodeUrl,
-          }],
-          references: [{
+                url: this.leftNodeUrl,
+              },
+            ],
+            references: [
+              {
                 type: 'DATABASE',
                 id: this.leftNodeUrl,
               },
@@ -97,9 +104,11 @@ export class NodeRelationshipComponent {
             hyperlinks: [
               {
                 domain: parseURLToDomainName(this.rightNodeUrl),
-            url: this.rightNodeUrl,
-          }],
-          references: [{
+                url: this.rightNodeUrl,
+              },
+            ],
+            references: [
+              {
                 type: 'DATABASE',
                 id: this.rightNodeUrl,
               },
@@ -115,12 +124,13 @@ export class NodeRelationshipComponent {
               return {
                 type: 'DATABASE',
                 domain: snippet.publication.data.title || 'Unknown',
-              url: NCBI.pubtator(snippet.publication.data.pmid)
+                url: NCBI.pubtator(snippet.publication.data.pmid),
               } as Source;
             }),
           },
           label: this.edge,
-      }
-    } as Partial<UniversalGraphRelationship>));
+        },
+      } as Partial<UniversalGraphRelationship>)
+    );
   }
 }

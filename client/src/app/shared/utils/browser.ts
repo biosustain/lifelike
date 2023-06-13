@@ -15,7 +15,6 @@ export function removeViewModeIfPresent(url: string): string {
   return url.replace(/\/edit[\?#$]?/, '');
 }
 
-
 /**
  * Open a link given by the URL. Handles mailto: and poorly formatted URLs.
  * @param url the URL
@@ -103,7 +102,7 @@ export function openInternalLink(
       }
       case FileTypeShorthand.Graph: {
         shouldReplaceTab = (component) => {
-          const {fragment, searchParamsObject } = new HttpURL(pathSearchHash);
+          const { fragment, searchParamsObject } = new HttpURL(pathSearchHash);
           if (isNotEmpty(searchParamsObject)) {
             component.route.queryParams.next(searchParamsObject);
           }
@@ -206,9 +205,10 @@ export function openPotentialExternalLink(
   extras: WorkspaceNavigationExtras = {}
 ): boolean {
   const urlObject = new HttpURL(url);
-  const openInternally = workspaceManager.isWithinWorkspace()
-      && (window.location.hostname === urlObject.hostname
-      && (window.location.port || '80') === (urlObject.port || '80'));
+  const openInternally =
+    workspaceManager.isWithinWorkspace() &&
+    window.location.hostname === urlObject.hostname &&
+    (window.location.port || '80') === (urlObject.port || '80');
 
   if (openInternally) {
     return openInternalLink(workspaceManager, urlObject, extras);
@@ -231,5 +231,5 @@ const DOMAIN_MAP = new Map([
 const domainMapper = findURLMapping(DOMAIN_MAP);
 
 // Match the url address with the domain
-export const parseURLToDomainName = (url: string|HttpURL, defaultReturn?: string): string =>
+export const parseURLToDomainName = (url: string | HttpURL, defaultReturn?: string): string =>
   domainMapper(HttpURL.from(url)) ?? defaultReturn ?? 'Link';

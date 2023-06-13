@@ -214,7 +214,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     // Filter in links that point to desired files
     // Return hashId of those files (last element of the url address)
     return chain(links)
-      .map(source => ASSOCIATED_MAPS_REGEX.exec(source.url.toString()))
+      .map((source) => ASSOCIATED_MAPS_REGEX.exec(source.url.toString()))
       .omitBy(isNil)
       .map(([_, hashId]) => hashId)
       .value();

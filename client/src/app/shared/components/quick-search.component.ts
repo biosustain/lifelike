@@ -22,7 +22,9 @@ export class QuickSearchComponent implements OnChanges {
     if (this.links != null && this.links.length) {
       // links should be sorted in the order that they appear in SEARCH_LINKS
       const sortOrder = Object.keys(LINKS);
-      this.shownLinks = this.links.sort((linkA, linkB) => sortOrder.indexOf(linkA.domain) - sortOrder.indexOf(linkB.domain));
+      this.shownLinks = this.links.sort(
+        (linkA, linkB) => sortOrder.indexOf(linkA.domain) - sortOrder.indexOf(linkB.domain)
+      );
       this.generated = false;
       if (this.normalizeDomains) {
         const normalizedMapping = new Map<string, string>();
@@ -37,9 +39,9 @@ export class QuickSearchComponent implements OnChanges {
         }
       }
     } else if (this.query != null) {
-      this.shownLinks = Object.values(LINKS).map(linkEntity => ({
+      this.shownLinks = Object.values(LINKS).map((linkEntity) => ({
         domain: linkEntity.label,
-        url: linkEntity.search(this.query)
+        url: linkEntity.search(this.query),
       }));
       this.generated = true;
     } else {

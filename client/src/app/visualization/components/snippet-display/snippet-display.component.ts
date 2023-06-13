@@ -169,8 +169,8 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
     } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | NewNodePairSnippetsPageRequest);
   }
 
-    getSnippetPubtatorLink(pmid: string): HttpURL {
-      return NCBI.pubtator(pmid);
+  getSnippetPubtatorLink(pmid: string): HttpURL {
+    return NCBI.pubtator(pmid);
   }
 
   snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
