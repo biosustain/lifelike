@@ -1,8 +1,7 @@
 <div class="d-flex flex-column h-100">
-  <ng-container *ngIf="(previewComponent$ | addStatus | async) as result">
+  <ng-container *ngIf="previewComponent$ | addStatus | async as result">
     <ng-container *ngIf="result.error">
-      <app-module-error [error]="result.error" class="d-block p-4">
-      </app-module-error>
+      <app-module-error [error]="result.error" class="d-block p-4"> </app-module-error>
     </ng-container>
 
     <ng-container *ngIf="result.loading">
@@ -15,13 +14,14 @@
 
     <ng-container *ngIf="result.value !== undefined">
       <ng-container *ngIf="result.value; else noPreview">
-        <app-object-preview-outlet [componentRef]="result.value" class="h-100"></app-object-preview-outlet>
+        <app-object-preview-outlet
+          [componentRef]="result.value"
+          class="h-100"
+        ></app-object-preview-outlet>
       </ng-container>
       <ng-template #noPreview>
         <div class="d-flex flex-fill align-items-center justify-content-center">
-          <div class="p-4 text-muted">
-            No preview available.
-          </div>
+          <div class="p-4 text-muted">No preview available.</div>
         </div>
       </ng-template>
     </ng-container>

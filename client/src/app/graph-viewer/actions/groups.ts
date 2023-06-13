@@ -11,17 +11,20 @@ import { GraphAction, GraphActionReceiver } from './actions';
  * Represents a new group addition to the graph.
  */
 export class GroupCreation implements GraphAction {
-  constructor(public description: string,
-              public group: UniversalGraphGroup,
-              public readonly select = false) {
-  }
+  constructor(
+    public description: string,
+    public group: UniversalGraphGroup,
+    public readonly select = false
+  ) {}
   apply(component: GraphActionReceiver) {
     component.addGroup(this.group);
     if (this.select) {
-      component.selection.add([{
-        type: GraphEntityType.Group,
-        entity: this.group,
-      }]);
+      component.selection.add([
+        {
+          type: GraphEntityType.Group,
+          entity: this.group,
+        },
+      ]);
     }
   }
   rollback(component: GraphActionReceiver) {
@@ -35,17 +38,13 @@ export class GroupCreation implements GraphAction {
 export class GroupDeletion implements GraphAction {
   private removedEdges: UniversalGraphEdge[];
 
-  constructor(
-    public description: string,
-    public group: UniversalGraphGroup,
-  ) {
-  }
+  constructor(public description: string, public group: UniversalGraphGroup) {}
 
   apply(component: GraphActionReceiver) {
     if (this.removedEdges != null) {
       throw new Error('cannot double apply GroupDeletion()');
     }
-    const {removedEdges} = component.removeGroup(this.group);
+    const { removedEdges } = component.removeGroup(this.group);
     this.removedEdges = removedEdges;
   }
 
@@ -65,10 +64,11 @@ export class GroupDeletion implements GraphAction {
  * Represents the addition of a new member(s) to the group.
  */
 export class GroupExtension implements GraphAction {
-  constructor(public description: string,
-              public group: UniversalGraphGroup,
-              public newMembers: UniversalGraphNode[]) {
-  }
+  constructor(
+    public description: string,
+    public group: UniversalGraphGroup,
+    public newMembers: UniversalGraphNode[]
+  ) {}
 
   apply(component: GraphActionReceiver) {
     component.addToGroup(this.newMembers, this.group);

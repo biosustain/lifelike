@@ -5,9 +5,14 @@ import { compact, omitBy, isEmpty } from 'lodash-es';
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
-import { DomainWrapper, EnrichmentTableService, EnrichmentWrapper, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
+import {
+  DomainWrapper,
+  EnrichmentTableService,
+  EnrichmentWrapper,
+  NCBINode,
+  NCBIWrapper,
+} from '../services/enrichment-table.service';
 import { environment } from '../../../environments/environment';
-
 
 export class BaseEnrichmentDocument {
   taxID = '';
@@ -20,21 +25,15 @@ export class BaseEnrichmentDocument {
     'String',
     'GO',
     'BioCyc',
-    environment.keggEnabled && 'KEGG'
+    environment.keggEnabled && 'KEGG',
   ]);
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
   fileId = '';
 
-  parseParameters({
-                    importGenes,
-                    taxID,
-                    organism,
-                    domains,
-                    ...rest
-                  }: EnrichmentParsedData) {
+  parseParameters({ importGenes, taxID, organism, domains, ...rest }: EnrichmentParsedData) {
     // parse the file content to get gene list and organism tax id and name
-    const rawImportGenes = importGenes.map(gene => gene.trim()).filter((gene) => gene !== '');
+    const rawImportGenes = importGenes.map((gene) => gene.trim()).filter((gene) => gene !== '');
     if (taxID === '562' || taxID === '83333') {
       taxID = '511145';
     } else if (taxID === '4932') {
@@ -55,7 +54,7 @@ export class BaseEnrichmentDocument {
       organism,
       domains,
       duplicateGenes,
-      ...rest
+      ...rest,
     };
   }
 
@@ -84,50 +83,64 @@ export class BaseEnrichmentDocument {
   }
 
   load(blob: Blob): Observable<EnrichmentParsedData> {
-    return of(blob)
-      .pipe(
-        mapBlobToBuffer(),
-        map((data: ArrayBuffer | undefined): EnrichmentData => {
-          if (data == null) {
-            return null;
-          }
-          const s = new TextDecoder('utf-8').decode(data);
-          try {
-            return JSON.parse(s) as EnrichmentData;
-          } catch (e) {
-            // Old enrichment table format was just a string for the data
-            const split = s.split('/');
-            return {
-              data: {genes: split[0], taxId: split[1], organism: split[2], sources: split[3].split(',')},
-            };
-          }
-        }),
-        map(this.decode.bind(this)),
-        map(this.setParameters.bind(this))
-      );
+    return of(blob).pipe(
+      mapBlobToBuffer(),
+      map((data: ArrayBuffer | undefined): EnrichmentData => {
+        if (data == null) {
+          return null;
+        }
+        const s = new TextDecoder('utf-8').decode(data);
+        try {
+          return JSON.parse(s) as EnrichmentData;
+        } catch (e) {
+          // Old enrichment table format was just a string for the data
+          const split = s.split('/');
+          return {
+            data: {
+              genes: split[0],
+              taxId: split[1],
+              organism: split[2],
+              sources: split[3].split(','),
+            },
+          };
+        }
+      }),
+      map(this.decode.bind(this)),
+      map(this.setParameters.bind(this))
+    );
   }
 
-  encode({importGenes, taxID, organism, domains, result}): EnrichmentData {
+  encode({ importGenes, taxID, organism, domains, result }): EnrichmentData {
     return {
       data: {
         genes: importGenes.join(','),
         taxId: taxID,
         organism,
-        sources: domains
+        sources: domains,
       },
-      result
+      result,
     };
   }
 
-  decode({data, result, ...rest}: EnrichmentData): EnrichmentParsedData {
+  decode({ data, result, ...rest }: EnrichmentData): EnrichmentParsedData {
     // parse the file content to get gene list and organism tax id and name
     const importGenes = data.genes.split(',');
     const taxID = data.taxId;
     const organism = data.organism;
-    const domains = data.sources.filter(domain => domain.length && (domain !== 'KEGG' || environment.keggEnabled));
-    const values = new Map<string, string>(result.genes.map(gene => [gene.imported, gene.value || '']));
+    const domains = data.sources.filter(
+      (domain) => domain.length && (domain !== 'KEGG' || environment.keggEnabled)
+    );
+    const values = new Map<string, string>(
+      result.genes.map((gene) => [gene.imported, gene.value || ''])
+    );
     return {
-      importGenes, taxID, organism, domains, values, result, ...rest
+      importGenes,
+      taxID,
+      organism,
+      domains,
+      values,
+      result,
+      ...rest,
     };
   }
 
@@ -149,11 +162,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
 
   loadResult(blob: Blob, fileId: string): Observable<this> {
     this.fileId = fileId || '';
-    return super.load(blob)
-      .pipe(
-        mergeMap(() => this.annotate()),
-        map(() => this)
-      );
+    return super.load(blob).pipe(
+      mergeMap(() => this.annotate()),
+      map(() => this)
+    );
   }
 
   refreshData(): Observable<this> {
@@ -164,12 +176,12 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         map((result: EnrichmentResult) => {
           this.result = result;
           return this;
-        }),
+        })
       );
     } else {
-      return this.worksheetViewerService.refreshEnrichmentAnnotations([this.fileId]).pipe(
-        mergeMap(_ => this.annotate())
-      );
+      return this.worksheetViewerService
+        .refreshEnrichmentAnnotations([this.fileId])
+        .pipe(mergeMap((_) => this.annotate()));
     }
   }
 
@@ -180,9 +192,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         const taxID = this.taxID;
         const organism = this.organism;
         const domains = this.domains;
-        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, result});
+        const data: EnrichmentData = this.encode({ importGenes, taxID, organism, domains, result });
         return of(new Blob([JSON.stringify(data)]));
-      }));
+      })
+    );
   }
 
   private annotate(): Observable<this> {
@@ -197,116 +210,137 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
             organism: {
               organism_name: this.organism,
               synonym: this.organism,
-              tax_id: this.taxID
+              tax_id: this.taxID,
             },
           } as TextAnnotationGenerationRequest;
           return this.worksheetViewerService.annotateEnrichment([this.fileId], params).pipe(
-            mergeMap(() => this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
-              map((annotated: EnrichmentParsedData) => {
-                this.result = annotated.result;
-                return this;
-              })
-            ))
+            mergeMap(() =>
+              this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
+                map((annotated: EnrichmentParsedData) => {
+                  this.result = annotated.result;
+                  return this;
+                })
+              )
+            )
           );
         }
       })
     );
   }
 
-  private generateEnrichmentResults(domains: string[], importGenes: string[],
-                                    taxID: string): Observable<EnrichmentResult> {
-    return this.worksheetViewerService
-      .matchNCBINodes(importGenes, taxID)
-      .pipe(
-        mergeMap((ncbiNodesData: NCBIWrapper[]) => {
-          const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.geneNeo4jId);
-          return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(neo4jIds, taxID, domains)
-            .pipe(
-              map((domainResults: EnrichmentWrapper): EnrichmentResult => {
-                // a gene can point to 2 different synonyms
-                // and a synonym can point to 2 different genes
-                const neo4jIdSynonymMap: Map<number, Map<number, string>> = new Map();
-                const neo4jIdNodeMap: Map<number, Map<number, NCBINode>> = new Map();
-                const neo4jIdLinkMap: Map<number, Map<number, string>> = new Map();
-                const geneSynonymNeo4jIdMap: Map<number, Map<number, number>> = new Map();
-                const geneMap: Set<string> = new Set();
-                const genesList: EnrichedGene[] = [];
-                const synonymsSet: Set<string> = new Set();
-                // list of tuples
-                const synonymNeo4jIds: [number, number][] = [];
+  private generateEnrichmentResults(
+    domains: string[],
+    importGenes: string[],
+    taxID: string
+  ): Observable<EnrichmentResult> {
+    return this.worksheetViewerService.matchNCBINodes(importGenes, taxID).pipe(
+      mergeMap((ncbiNodesData: NCBIWrapper[]) => {
+        const neo4jIds = ncbiNodesData.map((wrapper) => wrapper.geneNeo4jId);
+        return this.worksheetViewerService.getNCBIEnrichmentDomains(neo4jIds, taxID, domains).pipe(
+          map((domainResults: EnrichmentWrapper): EnrichmentResult => {
+            // a gene can point to 2 different synonyms
+            // and a synonym can point to 2 different genes
+            const neo4jIdSynonymMap: Map<number, Map<number, string>> = new Map();
+            const neo4jIdNodeMap: Map<number, Map<number, NCBINode>> = new Map();
+            const neo4jIdLinkMap: Map<number, Map<number, string>> = new Map();
+            const geneSynonymNeo4jIdMap: Map<number, Map<number, number>> = new Map();
+            const geneMap: Set<string> = new Set();
+            const genesList: EnrichedGene[] = [];
+            const synonymsSet: Set<string> = new Set();
+            // list of tuples
+            const synonymNeo4jIds: [number, number][] = [];
 
-                ncbiNodesData.forEach(wrapper => {
-                  geneSynonymNeo4jIdMap.has(wrapper.synonymNeo4jId) ? geneSynonymNeo4jIdMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.geneNeo4jId) : geneSynonymNeo4jIdMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.geneNeo4jId));
+            ncbiNodesData.forEach((wrapper) => {
+              geneSynonymNeo4jIdMap.has(wrapper.synonymNeo4jId)
+                ? geneSynonymNeo4jIdMap
+                    .get(wrapper.synonymNeo4jId)
+                    .set(wrapper.geneNeo4jId, wrapper.geneNeo4jId)
+                : geneSynonymNeo4jIdMap.set(
+                    wrapper.synonymNeo4jId,
+                    new Map().set(wrapper.geneNeo4jId, wrapper.geneNeo4jId)
+                  );
 
-                  neo4jIdSynonymMap.has(wrapper.synonymNeo4jId) ? neo4jIdSynonymMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.synonym) : neo4jIdSynonymMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.synonym));
+              neo4jIdSynonymMap.has(wrapper.synonymNeo4jId)
+                ? neo4jIdSynonymMap
+                    .get(wrapper.synonymNeo4jId)
+                    .set(wrapper.geneNeo4jId, wrapper.synonym)
+                : neo4jIdSynonymMap.set(
+                    wrapper.synonymNeo4jId,
+                    new Map().set(wrapper.geneNeo4jId, wrapper.synonym)
+                  );
 
-                  neo4jIdNodeMap.has(wrapper.synonymNeo4jId) ? neo4jIdNodeMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.gene) : neo4jIdNodeMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.gene));
+              neo4jIdNodeMap.has(wrapper.synonymNeo4jId)
+                ? neo4jIdNodeMap.get(wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.gene)
+                : neo4jIdNodeMap.set(
+                    wrapper.synonymNeo4jId,
+                    new Map().set(wrapper.geneNeo4jId, wrapper.gene)
+                  );
 
-                  neo4jIdLinkMap.has(wrapper.synonymNeo4jId) ? neo4jIdLinkMap.get(
-                    wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.link) : neo4jIdLinkMap.set(
-                      wrapper.synonymNeo4jId, new Map().set(wrapper.geneNeo4jId, wrapper.link));
+              neo4jIdLinkMap.has(wrapper.synonymNeo4jId)
+                ? neo4jIdLinkMap.get(wrapper.synonymNeo4jId).set(wrapper.geneNeo4jId, wrapper.link)
+                : neo4jIdLinkMap.set(
+                    wrapper.synonymNeo4jId,
+                    new Map().set(wrapper.geneNeo4jId, wrapper.link)
+                  );
 
-                  synonymsSet.add(wrapper.synonym);
-                  synonymNeo4jIds.push([wrapper.synonymNeo4jId, wrapper.geneNeo4jId]);
+              synonymsSet.add(wrapper.synonym);
+              synonymNeo4jIds.push([wrapper.synonymNeo4jId, wrapper.geneNeo4jId]);
+            });
+
+            for (const [synId, geneId] of synonymNeo4jIds) {
+              const synonym = neo4jIdSynonymMap.get(synId).get(geneId);
+              const node = neo4jIdNodeMap.get(synId).get(geneId);
+              const link = neo4jIdLinkMap.get(synId).get(geneId);
+              const domainWrapper =
+                domainResults[geneSynonymNeo4jIdMap.get(synId).get(geneId)] || null;
+
+              if (domainWrapper !== null) {
+                geneMap.add(synonym);
+                genesList.push({
+                  imported: synonym,
+                  annotatedImported: synonym,
+                  matched: node.name,
+                  annotatedMatched: node.name,
+                  fullName: node.full_name || '',
+                  annotatedFullName: node.full_name || '',
+                  link,
+                  domains: this.generateGeneDomainResults(domains, domainWrapper, node),
+                  value: this.values.get(synonym) || '',
                 });
+              }
+            }
 
-                for (const [synId, geneId] of synonymNeo4jIds) {
-                  const synonym = neo4jIdSynonymMap.get(synId).get(geneId);
-                  const node = neo4jIdNodeMap.get(synId).get(geneId);
-                  const link = neo4jIdLinkMap.get(synId).get(geneId);
-                  const domainWrapper = domainResults[geneSynonymNeo4jIdMap.get(synId).get(geneId)] || null;
+            for (const gene of importGenes) {
+              // Don't add the unmatched gene if we've already seen it.
+              if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
+                geneMap.add(gene);
+                genesList.push({
+                  imported: gene,
+                  value: this.values.get(gene) || '',
+                });
+              }
+            }
 
-                  if (domainWrapper !== null) {
-                    geneMap.add(synonym);
-                    genesList.push({
-                      imported: synonym,
-                      annotatedImported: synonym,
-                      matched: node.name,
-                      annotatedMatched: node.name,
-                      fullName: node.full_name || '',
-                      annotatedFullName: node.full_name || '',
-                      link,
-                      domains: this.generateGeneDomainResults(domains, domainWrapper, node),
-                      value: this.values.get(synonym) || '',
-                    });
-                  }
-                }
-
-                for (const gene of importGenes) {
-                  // Don't add the unmatched gene if we've already seen it.
-                  if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
-                    geneMap.add(gene);
-                    genesList.push({
-                        imported: gene,
-                        value: this.values.get(gene) || '',
-                    });
-                  }
-                }
-
-                return {
-                  domainInfo: omitBy({
-                    Regulon: {
-                      labels: ['Regulator Family', 'Activated By', 'Repressed By'],
-                    },
-                    UniProt: {labels: ['Function']},
-                    String: {labels: ['Annotation']},
-                    GO: {labels: ['Annotation']},
-                    BioCyc: {labels: ['Pathways']},
-                    KEGG: environment.keggEnabled && {labels: ['Pathways']}
-                  }, isEmpty),
-                  genes: genesList,
-                };
-              }),
-            );
-        }),
-      );
+            return {
+              domainInfo: omitBy(
+                {
+                  Regulon: {
+                    labels: ['Regulator Family', 'Activated By', 'Repressed By'],
+                  },
+                  UniProt: { labels: ['Function'] },
+                  String: { labels: ['Annotation'] },
+                  GO: { labels: ['Annotation'] },
+                  BioCyc: { labels: ['Pathways'] },
+                  KEGG: environment.keggEnabled && { labels: ['Pathways'] },
+                },
+                isEmpty
+              ),
+              genes: genesList,
+            };
+          })
+        );
+      })
+    );
   }
 
   /**
@@ -318,29 +352,38 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
    * @param ncbiNode matched ncbi data
    * @returns table entries
    */
-  private generateGeneDomainResults(domains: string[], wrapper: DomainWrapper,
-                                    ncbiNode: NCBINode): { [domain: string]: EnrichedGeneDomain } {
+  private generateGeneDomainResults(
+    domains: string[],
+    wrapper: DomainWrapper,
+    ncbiNode: NCBINode
+  ): { [domain: string]: EnrichedGeneDomain } {
     const results: { [domain: string]: EnrichedGeneDomain } = {};
 
     if (domains.includes('Regulon')) {
       if (wrapper.regulon !== null) {
         const regulatorText = wrapper.regulon.result.regulator_family ?? '';
-        const activatedText = wrapper.regulon.result.activated_by ? wrapper.regulon.result.activated_by.join('; ') : '';
-        const repressedText = wrapper.regulon.result.repressed_by ? wrapper.regulon.result.repressed_by.join('; ') : '';
+        const activatedText = wrapper.regulon.result.activated_by
+          ? wrapper.regulon.result.activated_by.join('; ')
+          : '';
+        const repressedText = wrapper.regulon.result.repressed_by
+          ? wrapper.regulon.result.repressed_by.join('; ')
+          : '';
 
         results.Regulon = {
           'Regulator Family': {
             text: regulatorText,
             link: wrapper.regulon.link,
-            annotatedText: regulatorText
-          }, 'Activated By': {
+            annotatedText: regulatorText,
+          },
+          'Activated By': {
             text: activatedText,
             link: wrapper.regulon.link,
-            annotatedText: activatedText
-          }, 'Repressed By': {
+            annotatedText: activatedText,
+          },
+          'Repressed By': {
             text: repressedText,
             link: wrapper.regulon.link,
-            annotatedText: repressedText
+            annotatedText: repressedText,
           },
         };
       }
@@ -352,7 +395,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Function: {
             text: wrapper.uniprot.result.function,
             link: wrapper.uniprot.link,
-            annotatedText: wrapper.uniprot.result.function
+            annotatedText: wrapper.uniprot.result.function,
           },
         };
       }
@@ -362,11 +405,15 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       if (wrapper.string !== null) {
         results.String = {
           Annotation: {
-            text: wrapper.string.result.annotation !== 'annotation not available' ?
-              wrapper.string.result.annotation : '',
-            annotatedText: wrapper.string.result.annotation !== 'annotation not available' ?
-              wrapper.string.result.annotation : '',
-            link: wrapper.string.link
+            text:
+              wrapper.string.result.annotation !== 'annotation not available'
+                ? wrapper.string.result.annotation
+                : '',
+            annotatedText:
+              wrapper.string.result.annotation !== 'annotation not available'
+                ? wrapper.string.result.annotation
+                : '',
+            link: wrapper.string.link,
           },
         };
       }
@@ -379,8 +426,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
           Annotation: {
             text,
             annotatedText: text,
-            link: wrapper.uniprot ? wrapper.go.link + wrapper.uniprot.result.id :
-              'http://amigo.geneontology.org/amigo/search/annotation?q=' + encodeURIComponent(ncbiNode.name)
+            link: wrapper.uniprot
+              ? wrapper.go.link + wrapper.uniprot.result.id
+              : 'http://amigo.geneontology.org/amigo/search/annotation?q=' +
+                encodeURIComponent(ncbiNode.name),
           },
         };
       }
@@ -416,10 +465,12 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   private shortenTerms(terms: string[]): string {
-    return terms
-      .map(name => name)
-      .slice(0, 5)
-      .join('; ') + (terms.length > 5 ? '...' : '');
+    return (
+      terms
+        .map((name) => name)
+        .slice(0, 5)
+        .join('; ') + (terms.length > 5 ? '...' : '')
+    );
   }
 }
 

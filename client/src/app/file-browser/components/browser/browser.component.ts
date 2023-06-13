@@ -4,6 +4,4 @@ import { Component } from '@angular/core';
   selector: 'app-browser',
   templateUrl: './browser.component.html',
 })
-export class BrowserComponent {
-
-}
+export class BrowserComponent {}

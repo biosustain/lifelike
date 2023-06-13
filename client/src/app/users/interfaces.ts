@@ -1,5 +1,5 @@
 interface KeycloakUserProfileMetadata {
-  attributes: {[key: string]: any}[];
+  attributes: { [key: string]: any }[];
 }
 
 export interface KeycloakUserData {
@@ -10,5 +10,5 @@ export interface KeycloakUserData {
   email: string;
   emailVerified: boolean;
   userProfileMetadata: KeycloakUserProfileMetadata;
-  attributes: {[key: string]: any[]};
+  attributes: { [key: string]: any[] };
 }

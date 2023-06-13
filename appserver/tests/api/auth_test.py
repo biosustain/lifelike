@@ -17,12 +17,14 @@ def user_factory(uid):
     }
 
 
-@pytest.mark.parametrize('password, login_password', [
-    ('correct password', 'correct password'),
-    ('correct password', 'incorrect password'),
-])
+@pytest.mark.parametrize(
+    'password, login_password',
+    [
+        ('correct password', 'correct password'),
+        ('correct password', 'incorrect password'),
+    ],
+)
 def test_can_authenticate_user(client, session, password, login_password):
-
     user_data = user_factory(1)
     user = AppUser().from_dict(user_data)
     user.set_password(password)
@@ -44,7 +46,6 @@ def test_can_authenticate_user(client, session, password, login_password):
 
 
 def test_can_authenticate_with_auth_token(client, session):
-
     user_data = user_factory(2)
     user = AppUser().from_dict(user_data)
     user.set_password('password')

@@ -11,7 +11,17 @@ import uuid
 from alembic import context, op
 from datetime import timezone
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, Integer, MetaData, String, Table, Text, func, select
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    func,
+    select,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import TIMESTAMP
@@ -81,14 +91,14 @@ t_projects_collaborator_role = Table(
     MetaData(),
     Column('appuser_id', Integer),
     Column('app_role_id', Integer),
-    Column('projects_id', Integer)
+    Column('projects_id', Integer),
 )
 
 t_app_role = Table(
     'app_role',
     MetaData(),
     Column('id', Integer, primary_key=True),
-    Column('name', String)
+    Column('name', String),
 )
 
 t_appuser = Table(
@@ -112,7 +122,7 @@ t_appuser_role = Table(
     'app_user_role',
     MetaData(),
     Column('appuser_id', Integer),
-    Column('app_role_id', Integer)
+    Column('app_role_id', Integer),
 )
 
 
@@ -132,11 +142,13 @@ def downgrade():
 
 def _get_superuser_id(conxn: Connection):
     # Get superuser id
-    return conxn.execute(select([
-        t_appuser.c.id,
-    ]).where(
-        t_appuser.c.email == LIFELIKE_SUPERUSER
-    )).scalar()
+    return conxn.execute(
+        select(
+            [
+                t_appuser.c.id,
+            ]
+        ).where(t_appuser.c.email == LIFELIKE_SUPERUSER)
+    ).scalar()
 
 
 def _create_***ARANGO_USERNAME***_file_for_master_project(conxn: Connection, superuser_id: int) -> int:
@@ -165,30 +177,32 @@ def _create_master_project(conxn: Connection, master_folder_id: int) -> int:
 
 def _add_all_admins_to_master_project(conxn: Connection, master_project_id: int):
     admin_role_id = conxn.execute(
-        select([
-            t_app_role.c.id,
-        ]).where(
-            t_app_role.c.name == 'admin'
-        )
+        select(
+            [
+                t_app_role.c.id,
+            ]
+        ).where(t_app_role.c.name == 'admin')
     ).scalar()
 
-    admin_ids = conxn.execute(select([
-        t_appuser_role.c.appuser_id,
-    ]).where(
-        t_appuser_role.c.app_role_id == admin_role_id
-    )).fetchall()
+    admin_ids = conxn.execute(
+        select(
+            [
+                t_appuser_role.c.appuser_id,
+            ]
+        ).where(t_appuser_role.c.app_role_id == admin_role_id)
+    ).fetchall()
 
     # Add each admin as a 'project-admin' for the master project
 
     project_admin_role_id = conxn.execute(
-        select([
-            t_app_role.c.id,
-        ]).where(
-            t_app_role.c.name == 'project-admin'
-        )
+        select(
+            [
+                t_app_role.c.id,
+            ]
+        ).where(t_app_role.c.name == 'project-admin')
     ).scalar()
 
-    for admin, in admin_ids:
+    for (admin,) in admin_ids:
         conxn.execute(
             t_projects_collaborator_role.insert().values(
                 appuser_id=admin,
@@ -197,16 +211,17 @@ def _add_all_admins_to_master_project(conxn: Connection, master_project_id: int)
             )
         )
 
+
 def _add_superuser_as_project_owner(conxn, superuser_id: int, master_project: int):
     project_read_and_write = conxn.execute(
-        select([
-            t_app_role.c.id,
-        ]).where(
-            t_app_role.c.name.in_(['project-write', 'project-read'])
-        )
+        select(
+            [
+                t_app_role.c.id,
+            ]
+        ).where(t_app_role.c.name.in_(['project-write', 'project-read']))
     ).fetchall()
 
-    for role, in project_read_and_write:
+    for (role,) in project_read_and_write:
         conxn.execute(
             t_projects_collaborator_role.insert().values(
                 appuser_id=superuser_id,

@@ -55,7 +55,9 @@ def update_annotations(session, tableclause, files):
     updated_files = []
     for f in files:
         if f.annotations:
-            annotations_list = f.annotations['documents'][0]['passages'][0]['annotations']
+            annotations_list = f.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ]
 
             updated_annotations = []
             for annotation in annotations_list:
@@ -68,7 +70,9 @@ def update_annotations(session, tableclause, files):
 
                 updated_annotations.append(annotation)
 
-            f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+            f.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ] = updated_annotations
             updated_files.append({'id': f.id, 'annotations': f.annotations})
     session.bulk_update_mappings(Files, updated_files)
     session.commit()
@@ -80,15 +84,12 @@ def data_upgrades():
     session = Session(conn)
 
     tableclause = table(
-        'files',
-        column('id', sa.Integer),
-        column('annotations', postgresql.JSONB))
+        'files', column('id', sa.Integer), column('annotations', postgresql.JSONB)
+    )
 
     results = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            tableclause.c.id,
-            tableclause.c.annotations
-        ]))
+        sa.select([tableclause.c.id, tableclause.c.annotations])
+    )
 
     for chunk in window_chunk(results):
         update_annotations(session, tableclause, chunk)

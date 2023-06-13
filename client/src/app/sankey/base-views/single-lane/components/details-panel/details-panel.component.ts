@@ -14,7 +14,7 @@ import { getTraces, getNodeLinks } from '../../../multi-lane/utils';
   selector: 'app-sankey-single-lane-details-panel',
   templateUrl: './details-panel.component.html',
   styleUrls: ['./details-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class SankeySingleLaneDetailsPanelComponent extends SankeyAbstractDetailsPanelComponent {
   constructor(
@@ -28,15 +28,13 @@ export class SankeySingleLaneDetailsPanelComponent extends SankeyAbstractDetails
     map((selection: SelectionEntity) => {
       let tr: Trace[] = [];
       if (selection.type === SelectionType.node) {
-        tr = uniq(flatMap(getNodeLinks(selection.entity), ({traces}) => traces));
+        tr = uniq(flatMap(getNodeLinks(selection.entity), ({ traces }) => traces));
       }
       if (selection.type === SelectionType.link) {
         tr = uniq(selection.entity.traces);
       }
-      return [
-        selection, ...tr.map(entity => ({type: SelectionType.trace, entity}))
-      ];
+      return [selection, ...tr.map((entity) => ({ type: SelectionType.trace, entity }))];
     }),
-    tap(selection => defer(() => this.cdr.detectChanges()))
+    tap((selection) => defer(() => this.cdr.detectChanges()))
   );
 }

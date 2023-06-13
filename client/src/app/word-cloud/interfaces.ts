@@ -7,4 +7,5 @@ export interface D3CloudLayoutProperties {
   rotate: number;
 }
 
-export type WordCloudAnnotationFilterEntityWithLayout = WordCloudAnnotationFilterEntity & D3CloudLayoutProperties;
+export type WordCloudAnnotationFilterEntityWithLayout = WordCloudAnnotationFilterEntity &
+  D3CloudLayoutProperties;

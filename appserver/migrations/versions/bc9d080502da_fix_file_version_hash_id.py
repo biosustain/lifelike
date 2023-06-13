@@ -9,6 +9,7 @@ import itertools
 
 import sqlalchemy as sa
 from alembic import op
+
 # revision identifiers, used by Alembic.
 from sqlalchemy.orm import Session
 
@@ -61,19 +62,22 @@ def upgrade():
 
     for table in affected_tables:
         for row_id in iter_query(
-                session.query(table.c.id).filter(table.c.hash_id.is_(None)),
-                batch_size=CONTENT_QUERY_BATCH_SIZE):
-            session.execute(table.update()
-                            .where(table.c.id == row_id)
-                            .values(hash_id=generate_hash_id()))
+            session.query(table.c.id).filter(table.c.hash_id.is_(None)),
+            batch_size=CONTENT_QUERY_BATCH_SIZE,
+        ):
+            session.execute(
+                table.update()
+                .where(table.c.id == row_id)
+                .values(hash_id=generate_hash_id())
+            )
 
-        op.alter_column(table.name, 'hash_id',
-                        existing_type=sa.VARCHAR(length=36),
-                        nullable=False)
+        op.alter_column(
+            table.name, 'hash_id', existing_type=sa.VARCHAR(length=36), nullable=False
+        )
 
 
 def downgrade():
     for table in affected_tables:
-        op.alter_column(table.name, 'hash_id',
-                        existing_type=sa.VARCHAR(length=36),
-                        nullable=True)
+        op.alter_column(
+            table.name, 'hash_id', existing_type=sa.VARCHAR(length=36), nullable=True
+        )

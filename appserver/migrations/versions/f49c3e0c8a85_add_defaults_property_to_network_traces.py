@@ -27,40 +27,40 @@ depends_on = None
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
+
 # region Utils
 def validate_sankeys(validator):
     conn = op.get_bind()
 
     t_files = table(
-        'files',
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        'files', column('content_id', sa.Integer), column('mime_type', sa.String)
+    )
 
     t_files_content = table(
         'files_content',
         column('id', sa.Integer),
         column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary)
+        column('checksum_sha256', sa.Binary),
     )
 
-    query = sa.select([
-        t_files_content.c.raw_file
-    ]).where(
+    query = sa.select([t_files_content.c.raw_file]).where(
         and_(
             t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
-            t_files.c.content_id == t_files_content.c.id
+            t_files.c.content_id == t_files_content.c.id,
         )
     )
 
     files = conn.execution_options(stream_results=True).execute(query)
 
     for chunk in window_chunk(files, 25):
-        for content, in chunk:
+        for (content,) in chunk:
             print("check file")
             data = json.loads(content)
             validator(data)
 
+
 # endregion
+
 
 # region Upgrade
 def data_upgrades():
@@ -73,7 +73,10 @@ def data_upgrades():
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
+
+
 # endregion
+
 
 # region Downgrade
 def data_downgrades():
@@ -90,4 +93,6 @@ def downgrade():
     """
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_downgrades()
+
+
 # endregion

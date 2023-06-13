@@ -28,8 +28,9 @@ t_projects = sa.Table(
     sa.Column('project_name', sa.String(250), unique=True, nullable=False),
     sa.Column('description', sa.Text),
     sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
-    sa.Column('users', sa.ARRAY(sa.Integer), nullable=False)
+    sa.Column('users', sa.ARRAY(sa.Integer), nullable=False),
 )
+
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -48,14 +49,23 @@ def downgrade():
 def data_upgrades():
     """Convert projects name to use correct standards"""
     conn = op.get_bind()
-    projects = conn.execute(sa.select([
-        t_projects.c.id,
-        t_projects.c.project_name,
-    ])).fetchall()
+    projects = conn.execute(
+        sa.select(
+            [
+                t_projects.c.id,
+                t_projects.c.project_name,
+            ]
+        )
+    ).fetchall()
 
     pat = re.compile(r'[^A-Za-z0-9-]')
     for pid, name in projects:
-        conn.execute(t_projects.update().where(t_projects.c.id == pid).values(project_name=re.sub(pat, '-', name)))
+        conn.execute(
+            t_projects.update()
+            .where(t_projects.c.id == pid)
+            .values(project_name=re.sub(pat, '-', name))
+        )
+
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""

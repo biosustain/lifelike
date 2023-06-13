@@ -5,19 +5,26 @@
 
   <app-modal-body>
     <app-form-row for="url" label="URL" [control]="form.get('url')" [errors]="errors">
-      <input type="text" formControlName="url" id="url" [appFormInput]="form.get('url')"
-             appAutoFocus [setFocus]="!form.get('url').value">
+      <input
+        type="text"
+        formControlName="url"
+        id="url"
+        [appFormInput]="form.get('url')"
+        appAutoFocus
+        [setFocus]="!form.get('url').value"
+      />
     </app-form-row>
     <app-form-row for="domain" label="Label" [control]="form.get('domain')">
-      <input type="text"
-             [placeholder]="domainDefault"
-             formControlName="domain"
-             id="domain"
-             [appFormInput]="form.get('domain')"
-             appAutoFocus
-             [setFocus]="form.get('url').value"
-             [autoSelect]="form.get('url').value"
-      >
+      <input
+        type="text"
+        [placeholder]="domainDefault"
+        formControlName="domain"
+        id="domain"
+        [appFormInput]="form.get('domain')"
+        appAutoFocus
+        [setFocus]="form.get('url').value"
+        [autoSelect]="form.get('url').value"
+      />
     </app-form-row>
   </app-modal-body>
 

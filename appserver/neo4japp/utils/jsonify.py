@@ -8,8 +8,8 @@ from neo4japp.util import camel_to_snake_dict, CamelDictMixin
 
 
 def jsonify_with_class(
-        request_class: Optional[Type[CamelDictMixin]] = None,
-        has_file: bool = False,
+    request_class: Optional[Type[CamelDictMixin]] = None,
+    has_file: bool = False,
 ):
     """Returns a conversion decorator.
 
@@ -64,7 +64,7 @@ def jsonify_with_class(
                 result = success_object.result
                 if isinstance(result, CamelDictMixin):
                     result = result.to_dict()
-                elif (isinstance(result, list)):
+                elif isinstance(result, list):
                     for index, _ in enumerate(result):
                         if isinstance(result[index], CamelDictMixin):
                             result[index] = result[index].to_dict()

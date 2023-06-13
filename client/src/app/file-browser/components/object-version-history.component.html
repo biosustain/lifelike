@@ -1,4 +1,4 @@
-<ng-container *ngIf="(logWithStatus$ | async) as log">
+<ng-container *ngIf="logWithStatus$ | async as log">
   <div *ngIf="!log.value?.results.length" class="p-4 text-center">
     There is no history to show for this file.
   </div>
@@ -7,51 +7,52 @@
       <div class="split-view-left">
         <table class="table table-selectable">
           <colgroup>
-            <col style="width: 1%">
-            <col style="width: 1%">
+            <col style="width: 1%" />
+            <col style="width: 1%" />
           </colgroup>
           <thead>
-          <tr>
-            <th>Entry</th>
-          </tr>
+            <tr>
+              <th>Entry</th>
+            </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let version of log.value.results.view$ | async"
-              [class.active]="log.value.results.isSelected(version)">
-            <td (click)="log.value.results.toggle(version)">
-              <ng-container *ngIf="showCheckboxes; else noCheckboxes">
-                <div class="custom-control custom-checkbox">
-                  <input type="checkbox"
-                         class="custom-control-input"
-                         id="version-{{ version.hashId }}"
-                         (change)="log.value.results.toggle(version)"
-                         [checked]="log.value.results.isSelected(version)"
-                         appHasPlaceholder
-                  >
-                  <label
-                    class="custom-control-label d-block"
-                    for="version-{{ version.hashId }}"
-                    appHasPlaceholder
-                  >
-                    {{ version.creationDate | date: 'short' }}
-                  </label>
+            <tr
+              *ngFor="let version of log.value.results.view$ | async"
+              [class.active]="log.value.results.isSelected(version)"
+            >
+              <td (click)="log.value.results.toggle(version)">
+                <ng-container *ngIf="showCheckboxes; else noCheckboxes">
+                  <div class="custom-control custom-checkbox">
+                    <input
+                      type="checkbox"
+                      class="custom-control-input"
+                      id="version-{{ version.hashId }}"
+                      (change)="log.value.results.toggle(version)"
+                      [checked]="log.value.results.isSelected(version)"
+                      appHasPlaceholder
+                    />
+                    <label
+                      class="custom-control-label d-block"
+                      for="version-{{ version.hashId }}"
+                      appHasPlaceholder
+                    >
+                      {{ version.creationDate | date : 'short' }}
+                    </label>
+                  </div>
+                </ng-container>
+                <ng-template #noCheckboxes>
+                  <app-with-placeholder>
+                    {{ version.creationDate | date : 'short' }}
+                  </app-with-placeholder>
+                </ng-template>
+                <div class="mt-2">By <app-user [user]="version.user"></app-user></div>
+                <div class="mt-2" *ngIf="version.message">
+                  <em appHasPlaceholder>
+                    {{ version.message }}
+                  </em>
                 </div>
-              </ng-container>
-              <ng-template #noCheckboxes>
-                <app-with-placeholder>
-                  {{ version.creationDate | date: 'short' }}
-                </app-with-placeholder>
-              </ng-template>
-              <div class="mt-2">
-                By <app-user [user]="version.user"></app-user>
-              </div>
-              <div class="mt-2" *ngIf="version.message">
-                <em appHasPlaceholder>
-                  {{ version.message }}
-                </em>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
           </tbody>
         </table>
 
@@ -60,13 +61,18 @@
             [page]="page$ | async"
             [pageSize]="limit$ | async"
             [collectionSize]="log.value.collectionSize"
-            (pageChange)="page$.next($event)"></ngb-pagination>
+            (pageChange)="page$.next($event)"
+          ></ngb-pagination>
         </div>
       </div>
       <div class="split-view-right flex-fill d-flex flex-column">
-        <ng-container *ngIf="(log.value.results.lastSelection$ | async) as lastSelection">
+        <ng-container *ngIf="log.value.results.lastSelection$ | async as lastSelection">
           <ng-container *ngIf="lastSelection.object; else previewLoading">
-            <app-object-preview [object]="lastSelection.object" [contentValue]="lastSelection.contentValue" class="flex-fill"></app-object-preview>
+            <app-object-preview
+              [object]="lastSelection.object"
+              [contentValue]="lastSelection.contentValue"
+              class="flex-fill"
+            ></app-object-preview>
           </ng-container>
           <ng-template #previewLoading>
             <div class="d-flex flex-fill align-items-center justify-content-center">

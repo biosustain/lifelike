@@ -17,18 +17,22 @@ export interface SankeySingleLaneOptionsExtend {
 
 export type SankeySingleLaneOptions = SankeyBaseOptions & SankeySingleLaneOptionsExtend;
 
+export type SelectionSingleLaneEntity =
+  | SelectionEntity
+  | {
+      [SelectionType.link]: Base['link'];
+    };
 
-export type SelectionSingleLaneEntity = SelectionEntity | {
-  [SelectionType.link]: Base['link'];
-};
-
-export type SankeySingleLaneSelection = {
-  node: Base['node']
-} | {
-  link: Base['link']
-} | {
-  trace: Base['trace']
-};
+export type SankeySingleLaneSelection =
+  | {
+      node: Base['node'];
+    }
+  | {
+      link: Base['link'];
+    }
+  | {
+      trace: Base['trace'];
+    };
 
 export type BaseOptions = SankeySingleLaneOptions;
 export type BaseState = SankeySingleLaneState;

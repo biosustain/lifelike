@@ -9,7 +9,7 @@ from neo4japp.constants import (
     TYPE_GENE,
     TYPE_LITERATURE_CHEMICAL,
     TYPE_LITERATURE_DISEASE,
-    TYPE_LITERATURE_GENE
+    TYPE_LITERATURE_GENE,
 )
 from neo4japp.data_transfer_objects.visualization import (
     Direction,
@@ -55,7 +55,7 @@ class VisualizerService(KgService):
         if entity_id is None:
             current_app.logger.warning(
                 f'Node with EID {entity_id} does not have a URI.',
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
             )
             return None
 
@@ -99,14 +99,16 @@ class VisualizerService(KgService):
             )
             current_app.logger.warning(
                 message,
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
             )
             warn(ServerWarning(message=message), cause=e)
         finally:
             return url
 
     def expand_graph(self, node_id: str, filter_labels: List[str]):
-        result = self.graph.read_transaction(self.get_expand_query, node_id, filter_labels)
+        result = self.graph.read_transaction(
+            self.get_expand_query, node_id, filter_labels
+        )
 
         node_data = []
         edge_data = []
@@ -120,18 +122,22 @@ class VisualizerService(KgService):
                 label = get_first_known_label_from_list(data['labels'])
             except ValueError:
                 label = 'Unknown'
-            nodes.append({
-                'id': data['id'],
-                'label': label,
-                'domainLabels': [],
-                'data': {
-                    'name': data['name'],
-                    'id': data['entity_id'],
-                },
-                'subLabels': data['labels'],
-                'displayName': data['name'],
-                'entityUrl': self._get_uri_of_node_data(data['id'], label, data['entity_id'])
-            })
+            nodes.append(
+                {
+                    'id': data['id'],
+                    'label': label,
+                    'domainLabels': [],
+                    'data': {
+                        'name': data['name'],
+                        'id': data['entity_id'],
+                    },
+                    'subLabels': data['labels'],
+                    'displayName': data['name'],
+                    'entityUrl': self._get_uri_of_node_data(
+                        data['id'], label, data['entity_id']
+                    ),
+                }
+            )
 
         edges = []
         for data in edge_data:
@@ -145,19 +151,21 @@ class VisualizerService(KgService):
             except ValueError:
                 to_label = 'Unknown'
 
-            edges.append({
-                'id': data['id'],
-                'label': data['label'],
-                'data': {
-                    'description': data['relationship'].get('description'),
-                    'association_id': data['relationship'].get('association_id'),
-                    'type': data['relationship'].get('type'),
-                },
-                'to': data['relationship'].end_node.id,
-                'from': data['relationship'].start_node.id,
-                'toLabel': to_label,
-                'fromLabel': from_label,
-            })
+            edges.append(
+                {
+                    'id': data['id'],
+                    'label': data['label'],
+                    'data': {
+                        'description': data['relationship'].get('description'),
+                        'association_id': data['relationship'].get('association_id'),
+                        'type': data['relationship'].get('type'),
+                    },
+                    'to': data['relationship'].end_node.id,
+                    'from': data['relationship'].start_node.id,
+                    'toLabel': to_label,
+                    'fromLabel': from_label,
+                }
+            )
 
         return {'nodes': nodes, 'edges': edges}
 
@@ -167,7 +175,7 @@ class VisualizerService(KgService):
         to_ids: List[int],
         description: str,
         page: int,
-        limit: int
+        limit: int,
     ):
         return self.graph.read_transaction(
             self.get_snippets_from_edges_query,
@@ -175,22 +183,18 @@ class VisualizerService(KgService):
             to_ids,
             description,
             (page - 1) * limit,
-            limit
+            limit,
         )
 
     def get_snippets_from_node_pair(
-        self,
-        node_1_id: int,
-        node_2_id: int,
-        page: int,
-        limit: int
+        self, node_1_id: int, node_2_id: int, page: int, limit: int
     ):
         return self.graph.read_transaction(
             self.get_snippets_from_node_pair_query,
             node_1_id,
             node_2_id,
             (page - 1) * limit,
-            limit
+            limit,
         )
 
     def get_snippet_count_from_node_pair(
@@ -199,9 +203,7 @@ class VisualizerService(KgService):
         node_2_id: int,
     ):
         return self.graph.read_transaction(
-            self.get_snippet_count_from_node_pair_query,
-            node_1_id,
-            node_2_id
+            self.get_snippet_count_from_node_pair_query, node_1_id, node_2_id
         )['snippet_count']
 
     def get_reference_table_data(self, node_edge_pairs: List[ReferenceTablePair]):
@@ -217,29 +219,29 @@ class VisualizerService(KgService):
         # of the cluster edge). We remove the duplicates so we don't get weird query results.
         from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
         to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
-        description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+        description = node_edge_pairs[
+            0
+        ].edge.label  # Every edge should have the same label
         direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
         counts = self.graph.read_transaction(
-            self.get_snippet_count_from_edges_query,
-            from_ids,
-            to_ids,
-            description
+            self.get_snippet_count_from_edges_query, from_ids, to_ids, description
         )
 
         reference_table_rows: List[ReferenceTableRow] = []
         for row in counts:
             pair = ids_to_pairs[(row['from_id'], row['to_id'])]
-            reference_table_rows.append(ReferenceTableRow(
-                node_id=pair.node.id,
-                node_display_name=pair.node.display_name,
-                node_label=pair.node.label,
-                snippet_count=row['count'],
-            ))
+            reference_table_rows.append(
+                ReferenceTableRow(
+                    node_id=pair.node.id,
+                    node_display_name=pair.node.display_name,
+                    node_label=pair.node.label,
+                    snippet_count=row['count'],
+                )
+            )
 
         return GetReferenceTableDataResult(
-            reference_table_rows=reference_table_rows,
-            direction=direction
+            reference_table_rows=reference_table_rows, direction=direction
         )
 
     def get_snippets_for_edge(
@@ -254,10 +256,7 @@ class VisualizerService(KgService):
 
         data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
         count_results = self.graph.read_transaction(
-            self.get_snippet_count_from_edges_query,
-            from_ids,
-            to_ids,
-            description
+            self.get_snippet_count_from_edges_query, from_ids, to_ids, description
         )
         total_results = sum(row['count'] for row in count_results)
 
@@ -292,7 +291,7 @@ class VisualizerService(KgService):
             from_node_id=edge.from_,
             to_node_id=edge.to,
             association=edge.label,
-            snippets=snippets
+            snippets=snippets,
         )
 
         return GetEdgeSnippetsResult(
@@ -323,10 +322,7 @@ class VisualizerService(KgService):
 
         data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
         count_results = self.graph.read_transaction(
-            self.get_snippet_count_from_edges_query,
-            from_ids,
-            to_ids,
-            description
+            self.get_snippet_count_from_edges_query, from_ids, to_ids, description
         )
         total_results = sum(row['count'] for row in count_results)
 
@@ -335,27 +331,31 @@ class VisualizerService(KgService):
                 from_node_id=id_pairs[(row['from_id'], row['to_id'])]['from'],
                 to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
                 association=row['description'],
-                snippets=[Snippet(
-                    reference=GraphNode(
-                        reference['snippet']['id'],
-                        'Snippet',
-                        [],
-                        snake_to_camel_dict(reference['snippet']['data'], {}),
-                        [],
-                        None,
-                        None,
-                    ),
-                    publication=GraphNode(
-                        reference['publication']['id'],
-                        'Publication',
-                        [],
-                        snake_to_camel_dict(reference['publication']['data'], {}),
-                        [],
-                        None,
-                        None,
-                    ),
-                ) for reference in row['references']]
-            ) for row in data
+                snippets=[
+                    Snippet(
+                        reference=GraphNode(
+                            reference['snippet']['id'],
+                            'Snippet',
+                            [],
+                            snake_to_camel_dict(reference['snippet']['data'], {}),
+                            [],
+                            None,
+                            None,
+                        ),
+                        publication=GraphNode(
+                            reference['publication']['id'],
+                            'Publication',
+                            [],
+                            snake_to_camel_dict(reference['publication']['data'], {}),
+                            [],
+                            None,
+                            None,
+                        ),
+                    )
+                    for reference in row['references']
+                ],
+            )
+            for row in data
         ]
 
         return GetClusterSnippetsResult(
@@ -370,14 +370,10 @@ class VisualizerService(KgService):
         associated_nodes: List[int],
     ):
         results = self.graph.read_transaction(
-            self.get_associated_type_snippet_count_query,
-            source_node,
-            associated_nodes
+            self.get_associated_type_snippet_count_query, source_node, associated_nodes
         )
 
-        return GetAssociatedTypesResult(
-            associated_data=results
-        )
+        return GetAssociatedTypesResult(associated_data=results)
 
     def get_snippets_for_node_pair(
         self,
@@ -394,27 +390,31 @@ class VisualizerService(KgService):
                 from_node_id=row['from_id'],
                 to_node_id=row['to_id'],
                 association=row['description'],
-                snippets=[Snippet(
-                    reference=GraphNode(
-                        reference['snippet']['id'],
-                        'Snippet',
-                        [],
-                        snake_to_camel_dict(reference['snippet']['data'], {}),
-                        [],
-                        None,
-                        None,
-                    ),
-                    publication=GraphNode(
-                        reference['publication']['id'],
-                        'Publication',
-                        [],
-                        snake_to_camel_dict(reference['publication']['data'], {}),
-                        [],
-                        None,
-                        None,
-                    ),
-                ) for reference in row['references']]
-            ) for row in data
+                snippets=[
+                    Snippet(
+                        reference=GraphNode(
+                            reference['snippet']['id'],
+                            'Snippet',
+                            [],
+                            snake_to_camel_dict(reference['snippet']['data'], {}),
+                            [],
+                            None,
+                            None,
+                        ),
+                        publication=GraphNode(
+                            reference['publication']['id'],
+                            'Publication',
+                            [],
+                            snake_to_camel_dict(reference['publication']['data'], {}),
+                            [],
+                            None,
+                            None,
+                        ),
+                    )
+                    for reference in row['references']
+                ],
+            )
+            for row in data
         ]
 
         return GetNodePairSnippetsResult(
@@ -423,7 +423,9 @@ class VisualizerService(KgService):
             query_data={'node_1_id': node_1_id, 'node_2_id': node_2_id},
         )
 
-    def get_expand_query(self, tx: Neo4jTx, node_id: str, labels: List[str]) -> List[Neo4jRecord]:
+    def get_expand_query(
+        self, tx: Neo4jTx, node_id: str, labels: List[str]
+    ) -> List[Neo4jRecord]:
         return list(
             tx.run(
                 """
@@ -453,15 +455,13 @@ class VisualizerService(KgService):
                         to_labels: labels(m)
                     })) AS relationships
                 """,
-                node_id=node_id, labels=labels
+                node_id=node_id,
+                labels=labels,
             )
         )
 
     def get_associated_type_snippet_count_query(
-        self,
-        tx,
-        source_node: int,
-        associated_nodes: List[int]
+        self, tx, source_node: int, associated_nodes: List[int]
     ):
         return list(
             tx.run(
@@ -491,7 +491,8 @@ class VisualizerService(KgService):
                     }) AS snippet_count
                 ORDER BY snippet_count DESC, node_id
                 """,
-                source_node=source_node, associated_nodes=associated_nodes
+                source_node=source_node,
+                associated_nodes=associated_nodes,
             ).data()
         )
 
@@ -502,7 +503,7 @@ class VisualizerService(KgService):
         to_ids: List[int],
         description: str,
         skip: int,
-        limit: int
+        limit: int,
     ) -> List[Neo4jRecord]:
         return list(
             tx.run(
@@ -571,17 +572,16 @@ class VisualizerService(KgService):
                 SKIP $skip LIMIT $limit
                 RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
-                from_ids=from_ids, to_ids=to_ids, description=description, skip=skip, limit=limit
+                from_ids=from_ids,
+                to_ids=to_ids,
+                description=description,
+                skip=skip,
+                limit=limit,
             )
         )
 
     def get_snippets_from_node_pair_query(
-        self,
-        tx: Neo4jTx,
-        node_1_id: int,
-        node_2_id: int,
-        skip: int,
-        limit: int
+        self, tx: Neo4jTx, node_1_id: int, node_2_id: int, skip: int, limit: int
     ) -> List[Neo4jRecord]:
         return list(
             tx.run(
@@ -654,15 +654,15 @@ class VisualizerService(KgService):
                 SKIP $skip LIMIT $limit
                 RETURN collect(DISTINCT reference) AS references, from_id, to_id, description
                 """,
-                node_1_id=node_1_id, node_2_id=node_2_id, skip=skip, limit=limit
+                node_1_id=node_1_id,
+                node_2_id=node_2_id,
+                skip=skip,
+                limit=limit,
             )
         )
 
     def get_snippet_count_from_node_pair_query(
-        self,
-        tx: Neo4jTx,
-        node_1_id: int,
-        node_2_id: int
+        self, tx: Neo4jTx, node_1_id: int, node_2_id: int
     ) -> Neo4jRecord:
         return tx.run(
             """
@@ -683,15 +683,12 @@ class VisualizerService(KgService):
                     snippet_id: s.eid
                 }) AS snippet_count
             """,
-            node_1_id=node_1_id, node_2_id=node_2_id
+            node_1_id=node_1_id,
+            node_2_id=node_2_id,
         ).single()
 
     def get_snippet_count_from_edges_query(
-        self,
-        tx: Neo4jTx,
-        from_ids: List[int],
-        to_ids: List[int],
-        description: str
+        self, tx: Neo4jTx, from_ids: List[int], to_ids: List[int], description: str
     ) -> List[Neo4jRecord]:
         return list(
             tx.run(
@@ -721,6 +718,8 @@ class VisualizerService(KgService):
                 ORDER BY snippet_count DESC, [from_id, to_id], coalesce(max_pub_year, -1) DESC
                 RETURN from_id, to_id, from_labels, to_labels, snippet_count AS count
                 """,
-                from_ids=from_ids, to_ids=to_ids, description=description
+                from_ids=from_ids,
+                to_ids=to_ids,
+                description=description,
             )
         )

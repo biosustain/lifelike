@@ -27,7 +27,7 @@ def upgrade():
         sa.Column('creation_date', sa.DateTime(), nullable=True),
         sa.Column('users', sa.ARRAY(sa.Integer()), nullable=False),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_projects')),
-        sa.UniqueConstraint('project_name', name=op.f('uq_projects_project_name'))
+        sa.UniqueConstraint('project_name', name=op.f('uq_projects_project_name')),
     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):

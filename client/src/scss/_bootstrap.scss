@@ -26,12 +26,13 @@
 @import './utilities';
 
 body {
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
   font-size: $font-size-base;
   overflow: hidden;
 }
 
-:focus, button:focus {
+:focus,
+button:focus {
   outline: none;
   box-shadow: $table-row-focus-box-shadow;
 }

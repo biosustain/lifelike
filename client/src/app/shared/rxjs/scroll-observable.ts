@@ -8,7 +8,7 @@ const globalScrollObservables = new ExtendedWeakMap<GlobalEventHandlers, Observa
 const SCROLL_PARAMS = ['offsetTop', 'scrollTop', 'offsetLeft', 'scrollLeft'];
 
 function scrollParamsCompare<Ev extends Event>(a: Ev, b: Ev): boolean {
-  return SCROLL_PARAMS.every(param => a.target[param] === b.target[param]);
+  return SCROLL_PARAMS.every((param) => a.target[param] === b.target[param]);
 }
 
 /**Returns observable of native elements scroll events
@@ -23,34 +23,36 @@ function scrollParamsCompare<Ev extends Event>(a: Ev, b: Ev): boolean {
 export function createScrollObservable(...elements: GlobalEventHandlers[]) {
   return merge(
     // for each element create scroll observable
-    ...elements.map(element =>
-
+    ...elements.map((element) =>
       // unless we already have it and it is not garbage collected
-      globalScrollObservables.getSetLazily(element, () =>
+      globalScrollObservables
+        .getSetLazily(
+          element,
+          () =>
+            // actual creation code
+            new Observable<Event>((subscriber) => {
+              // event callback into stream containing events
+              const scroll = (e) => subscriber.next(e);
 
-        // actual creation code
-        new Observable<Event>(subscriber => {
-          // event callback into stream containing events
-          const scroll = e => subscriber.next(e);
+              // listen on scroll event
+              element.addEventListener('scroll', scroll);
+              // as well as on wheel move (trigger even if set on child of scrolled element)
+              element.addEventListener('wheel', scroll);
 
-          // listen on scroll event
-          element.addEventListener('scroll', scroll);
-          // as well as on wheel move (trigger even if set on child of scrolled element)
-          element.addEventListener('wheel', scroll);
-
-          return function unsubscribe() {
-            element.removeEventListener('scroll', scroll);
-            element.removeEventListener('wheel', scroll);
-          };
-        })
-      ).pipe(
-        // Only actual change compared by revelant scroll params
-        distinctUntilChanged(scrollParamsCompare),
-      )
+              return function unsubscribe() {
+                element.removeEventListener('scroll', scroll);
+                element.removeEventListener('wheel', scroll);
+              };
+            })
+        )
+        .pipe(
+          // Only actual change compared by revelant scroll params
+          distinctUntilChanged(scrollParamsCompare)
+        )
     )
   ).pipe(
     // Do not return value more often than once per frame
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+    throttleTime(0, animationFrameScheduler, { leading: true, trailing: true }),
     share()
   );
 }

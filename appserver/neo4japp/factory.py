@@ -5,13 +5,7 @@ from http import HTTPStatus
 from elasticapm.contrib.flask import ElasticAPM
 from neo4j.exceptions import ServiceUnavailable
 from functools import partial
-from flask import (
-    current_app,
-    Flask,
-    jsonify,
-    has_request_context,
-    request
-)
+from flask import current_app, Flask, jsonify, has_request_context, request
 from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
@@ -28,7 +22,7 @@ from neo4japp.database import (
     close_arango_client,
     db,
     ma,
-    migrate
+    migrate,
 )
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException, ServerWarning
@@ -47,7 +41,7 @@ module_logs = [
     'urllib3',
     'alembic',
     'webargs',
-    'werkzeug'
+    'werkzeug',
 ]
 
 for mod in module_logs:
@@ -85,6 +79,7 @@ def load_mixed_form_json(request, name, field):
 
             def getter():
                 return data
+
         except (KeyError, ValueError) as e:
             exception = e
 
@@ -100,7 +95,7 @@ def load_mixed_form_json(request, name, field):
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    """ Adds meta data about the request when available """
+    """Adds meta data about the request when available"""
 
     def add_fields(self, log_record, record, message_dict):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
@@ -122,7 +117,7 @@ def create_app(name='neo4japp', config_package='config.Development'):
     app.teardown_appcontext_funcs = [
         close_neo4j_db,
         close_redis_conn,
-        close_arango_client
+        close_arango_client,
     ]
 
     if not app.config.get('FORMAT_AS_JSON'):
@@ -192,7 +187,7 @@ def handle_error(ex):
             event_type=LogEventType.HANDLED.value,
             transaction_id=transaction_id,
             username=current_username,
-        ).to_dict()
+        ).to_dict(),
     )
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
@@ -205,8 +200,8 @@ def handle_warning(warn):
             warning_name=f'{type(warn)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-            username=current_username
-        ).to_dict()
+            username=current_username,
+        ).to_dict(),
     )
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
 
@@ -223,8 +218,8 @@ def handle_generic_error(code: int, ex: Exception):
             expected=True,
             event_type=LogEventType.UNHANDLED.value,
             transaction_id=transaction_id,
-            username=current_username
-        ).to_dict()
+            username=current_username,
+        ).to_dict(),
     )
 
     try:
@@ -245,7 +240,7 @@ def handle_generic_warning(code: int, ex: Warning):
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
             username=current_username,
-        ).to_dict()
+        ).to_dict(),
     )
 
     try:

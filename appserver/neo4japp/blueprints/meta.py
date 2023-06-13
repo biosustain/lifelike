@@ -14,7 +14,7 @@ bp = Blueprint('meta', __name__, url_prefix='/meta')
 @jsonify_with_class()
 @login_exempt
 def build_version():
-    """ Meta API
+    """Meta API
     Contains a collection of metadata about the application server
     such as the current version of the application or the
     health of the application

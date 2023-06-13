@@ -12,6 +12,7 @@ from sqlalchemy import table, column
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 
@@ -48,22 +49,19 @@ def data_upgrades():
 
     session.expire_on_commit = False
 
-    t_files = table(
-        'files',
-        column('id', sa.Integer),
-        column('description', sa.String))
+    t_files = table('files', column('id', sa.Integer), column('description', sa.String))
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files.c.id,
-        t_files.c.description
-    ]))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files.c.id, t_files.c.description])
+    )
 
     for chunk in window_chunk(files, 1):
         files_to_update = []
         for id, description in chunk:
             if description and len(description) > MAX_FILE_DESCRIPTION_LENGTH:
-                files_to_update.append({'id': id,
-                                        'description': description[:MAX_FILE_DESCRIPTION_LENGTH]})
+                files_to_update.append(
+                    {'id': id, 'description': description[:MAX_FILE_DESCRIPTION_LENGTH]}
+                )
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.commit()

@@ -15,10 +15,7 @@ export class PaletteComponent {
   nodeTemplates = annotationTypes;
   expanded = false;
 
-  constructor(
-    private readonly snackBar: MatSnackBar,
-  ) {
-  }
+  constructor(private readonly snackBar: MatSnackBar) {}
 
   /**
    * Get the node templates that we plan to show, based on whether

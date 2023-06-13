@@ -22,7 +22,6 @@ import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
 import { MissingRolesDialogComponent } from './missing-roles-dialog.component';
 
-
 @Component({
   selector: 'app-users-view',
   templateUrl: 'user-browser.component.html',
@@ -32,8 +31,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   users: AppUser[];
   shownUsers: AppUser[] = mockArrayOf(appUserLoadingMock);
   filterQuery = '';
-  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(
-    () => this.accountService.getUsers()
+  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() =>
+    this.accountService.getUsers()
   );
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<AppUser>(true, []);
@@ -45,15 +44,16 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly errorHandler: ErrorHandler,
     private store: Store<State>
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: data}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: data }) => {
       this.users = data.results;
       this.updateFilter();
     });
-    this.store.pipe(select(AuthSelectors.selectAuthUser)).subscribe(user => this.currentUser = user);
+    this.store
+      .pipe(select(AuthSelectors.selectAuthUser))
+      .subscribe((user) => (this.currentUser = user));
     this.refresh();
   }
 
@@ -99,7 +99,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   }
 
   private updateFilter() {
-    this.shownUsers = this.filterQuery.length ? this.users.filter(user => user.username.includes(this.filterQuery)) : this.users;
+    this.shownUsers = this.filterQuery.length
+      ? this.users.filter((user) => user.username.includes(this.filterQuery))
+      : this.users;
   }
 
   getRolelessUsers(): AppUser[] {
@@ -110,30 +112,36 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
 
   displayCreateDialog() {
     const modalRef = this.modalService.open(UserCreateDialogComponent);
-    modalRef.result.then(newUser => {
-      const progressDialogRef = this.progressDialog.display({
-        title: `Creating User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
-          status: 'Creating user...',
-        }))],
-      });
-
-      this.accountService.createUser(newUser)
-        .pipe(this.errorHandler.create({label: 'Create user'}))
-        .subscribe((user: AppUser) => {
-          progressDialogRef.close();
-          this.accountService.getUserList();
-          this.refresh();
-          this.snackBar.open(
-            `User ${user.username} created!`,
-            'close',
-            {duration: 5000},
-          );
-        }, () => {
-          progressDialogRef.close();
+    modalRef.result.then(
+      (newUser) => {
+        const progressDialogRef = this.progressDialog.display({
+          title: `Creating User`,
+          progressObservables: [
+            new BehaviorSubject<Progress>(
+              new Progress({
+                status: 'Creating user...',
+              })
+            ),
+          ],
         });
-    }, () => {
-    });
+
+        this.accountService
+          .createUser(newUser)
+          .pipe(this.errorHandler.create({ label: 'Create user' }))
+          .subscribe(
+            (user: AppUser) => {
+              progressDialogRef.close();
+              this.accountService.getUserList();
+              this.refresh();
+              this.snackBar.open(`User ${user.username} created!`, 'close', { duration: 5000 });
+            },
+            () => {
+              progressDialogRef.close();
+            }
+          );
+      },
+      () => {}
+    );
   }
 
   displayUpdateDialog() {
@@ -142,35 +150,43 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         const modalRef = this.modalService.open(UserUpdateDialogComponent);
         modalRef.componentInstance.isSelf = this.currentUser.hashId === selectedUser.hashId;
         modalRef.componentInstance.setUser(selectedUser);
-        modalRef.result.then((userUpdateData: UserUpdateData) => {
-          const progressDialogRef = this.progressDialog.display({
-            title: `Updating User`,
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
-              status: 'Updating user...',
-            }))],
-          });
-          this.accountService.updateUser(userUpdateData, selectedUser.hashId)
-          .pipe(this.errorHandler.create({label: 'Update user'}))
-          .subscribe(() => {
-            progressDialogRef.close();
-            if (this.currentUser.hashId === selectedUser.hashId) {
-              this.store.dispatch(AuthActions.updateUserSuccess({userUpdateData}));
-              this.currentUser = {
-                ...this.currentUser,
-                ...userUpdateData
-              };
-            }
-            this.refresh();
-            this.snackBar.open(
-              `User ${selectedUser.username} updated!`,
-              'close',
-              {duration: 5000},
-            );
-          }, () => {
-            progressDialogRef.close();
-          });
-        }, () => {
-        });
+        modalRef.result.then(
+          (userUpdateData: UserUpdateData) => {
+            const progressDialogRef = this.progressDialog.display({
+              title: `Updating User`,
+              progressObservables: [
+                new BehaviorSubject<Progress>(
+                  new Progress({
+                    status: 'Updating user...',
+                  })
+                ),
+              ],
+            });
+            this.accountService
+              .updateUser(userUpdateData, selectedUser.hashId)
+              .pipe(this.errorHandler.create({ label: 'Update user' }))
+              .subscribe(
+                () => {
+                  progressDialogRef.close();
+                  if (this.currentUser.hashId === selectedUser.hashId) {
+                    this.store.dispatch(AuthActions.updateUserSuccess({ userUpdateData }));
+                    this.currentUser = {
+                      ...this.currentUser,
+                      ...userUpdateData,
+                    };
+                  }
+                  this.refresh();
+                  this.snackBar.open(`User ${selectedUser.username} updated!`, 'close', {
+                    duration: 5000,
+                  });
+                },
+                () => {
+                  progressDialogRef.close();
+                }
+              );
+          },
+          () => {}
+        );
       }
     }
   }
@@ -180,23 +196,27 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     if (confirm('Unlock user ' + user.username + '?')) {
       const progressDialogRef = this.progressDialog.display({
         title: `Unlocking User`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
-          status: 'Unlocking user...',
-        }))],
+        progressObservables: [
+          new BehaviorSubject<Progress>(
+            new Progress({
+              status: 'Unlocking user...',
+            })
+          ),
+        ],
       });
-      this.accountService.unlockUser(user.hashId)
-        .pipe(this.errorHandler.create({label: 'Unlock user'}))
-        .subscribe(() => {
-          progressDialogRef.close();
-          this.snackBar.open(
-            `User unlocked!!`,
-            'close',
-            {duration: 5000},
-          );
-          user.locked = false;
-        }, () => {
-          progressDialogRef.close();
-        });
+      this.accountService
+        .unlockUser(user.hashId)
+        .pipe(this.errorHandler.create({ label: 'Unlock user' }))
+        .subscribe(
+          () => {
+            progressDialogRef.close();
+            this.snackBar.open(`User unlocked!!`, 'close', { duration: 5000 });
+            user.locked = false;
+          },
+          () => {
+            progressDialogRef.close();
+          }
+        );
     }
   }
 
@@ -204,7 +224,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     const users = this.getRolelessUsers();
     const modalRef = this.modalService.open(MissingRolesDialogComponent);
     modalRef.componentInstance.users = users;
-    modalRef.result.then(isModified => {
+    modalRef.result.then((isModified) => {
       if (isModified) {
         this.refresh();
       }

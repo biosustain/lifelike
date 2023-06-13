@@ -14,7 +14,6 @@ import { toValidLink } from 'app/shared/utils/browser';
   templateUrl: './link-edit-dialog.component.html',
 })
 export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | Hyperlink> {
-
   @Input() title = 'Edit Link';
 
   private _link: Source | Hyperlink;
@@ -25,15 +24,14 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
 
   readonly form: FormGroup = new FormGroup({
     domain: new FormControl(''),
-    url: new FormControl('', [
-      Validators.required,
-      potentiallyInternalUrl,
-    ]),
+    url: new FormControl('', [Validators.required, potentiallyInternalUrl]),
   });
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog);
   }
 
@@ -51,5 +49,4 @@ export class LinkEditDialogComponent extends CommonFormDialogComponent<Source | 
     this.link.url = toValidLink(this.form.controls.url.value);
     return this.link;
   }
-
 }

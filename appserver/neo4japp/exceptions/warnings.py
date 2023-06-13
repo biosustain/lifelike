@@ -47,16 +47,22 @@ class ServerWarning(Warning):
     :param code: the warning code
     :param fields:
     """
-    title: DefaultValueFromCauseType[str] = \
-        DefaultValueFromCause("Server returned warning")
-    message: DefaultValueFromCauseType[Optional[str]] = \
-        DefaultValueFromCause[Optional[str]]("Code executed with following warnings")
-    additional_msgs: DefaultValueFromCauseType[Tuple[str, ...]] = \
-        DefaultValueFromCause[Tuple[str, ...]](tuple())
-    fields: DefaultValueFromCauseType[Optional[dict]] = \
-        DefaultValueFromCause[Optional[dict]](None)
-    code: DefaultValueFromCauseType[HTTPStatus] = \
-        DefaultValueFromCause[HTTPStatus](cast(HTTPStatus, 199))
+
+    title: DefaultValueFromCauseType[str] = DefaultValueFromCause(
+        "Server returned warning"
+    )
+    message: DefaultValueFromCauseType[Optional[str]] = DefaultValueFromCause[
+        Optional[str]
+    ]("Code executed with following warnings")
+    additional_msgs: DefaultValueFromCauseType[Tuple[str, ...]] = DefaultValueFromCause[
+        Tuple[str, ...]
+    ](tuple())
+    fields: DefaultValueFromCauseType[Optional[dict]] = DefaultValueFromCause[
+        Optional[dict]
+    ](None)
+    code: DefaultValueFromCauseType[HTTPStatus] = DefaultValueFromCause[HTTPStatus](
+        cast(HTTPStatus, 199)
+    )
     stacktrace: Optional[str] = None
     version: Optional[str] = None
 
@@ -80,7 +86,4 @@ class ContentValidationWarning(ServerWarning):
     pass
 
 
-__all__ = [
-    "ServerWarning",
-    "ContentValidationWarning"
-]
+__all__ = ["ServerWarning", "ContentValidationWarning"]

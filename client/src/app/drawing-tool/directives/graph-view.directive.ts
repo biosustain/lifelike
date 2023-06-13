@@ -22,7 +22,7 @@ export class GraphViewDirective extends CanvasGraphView {
     protected readonly canvasElem: ElementRef,
     protected readonly mapImageProviderService: MapImageProviderService,
     private readonly dataTransferDataService: DataTransferDataService,
-    private readonly graphActionsService: GraphActionsService,
+    private readonly graphActionsService: GraphActionsService
   ) {
     const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
     super(canvasElem.nativeElement as HTMLCanvasElement, {
@@ -53,13 +53,16 @@ export class GraphViewDirective extends CanvasGraphView {
 
     // As this event fire continuously, and we only need to check that once, do not re-check after the first one
     if (event.dataTransfer.dropEffect !== 'link') {
-      if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
-        this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+      if (
+        event.dataTransfer.items[0]?.type.startsWith('image/') ||
+        this.dataTransferDataService
+          .extract(event.dataTransfer)
+          .filter((item) => item.token === GRAPH_ENTITY_TOKEN).length
+      ) {
         event.dataTransfer.dropEffect = 'link';
         event.preventDefault();
       }
     }
-
   }
 
   @HostListener('drop', ['$event'])
@@ -76,7 +79,7 @@ export class GraphViewDirective extends CanvasGraphView {
       }
       const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
 
-      actionPromise.then(actions => {
+      actionPromise.then((actions) => {
         if (actions.length) {
           this.execute(new CompoundAction('Drag to map', actions));
           this.focus();
@@ -84,5 +87,4 @@ export class GraphViewDirective extends CanvasGraphView {
       });
     }
   }
-
 }

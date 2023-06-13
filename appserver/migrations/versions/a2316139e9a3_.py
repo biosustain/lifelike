@@ -18,6 +18,7 @@ from io import BytesIO
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import FileContent
 from neo4japp.constants import FILE_MIME_TYPE_MAP
@@ -56,32 +57,32 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        column('mime_type', sa.String),
+    )
 
     t_files_version = table(
         'file_version',
         column('id', sa.Integer),
         column('content_id', sa.Integer),
-        column('file_id', sa.Integer))
+        column('file_id', sa.Integer),
+    )
 
     t_files_content = table(
-        'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary))
+        'files_content', column('id', sa.Integer), column('raw_file', sa.LargeBinary)
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
-        t_files_content.c.id.in_(
-            sa.select([t_files_version.c.content_id]).where(
-                and_(
-                    t_files.c.mime_type == FILE_MIME_TYPE_MAP,
-                    t_files.c.id == t_files_version.c.file_id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
+            t_files_content.c.id.in_(
+                sa.select([t_files_version.c.content_id]).where(
+                    and_(
+                        t_files.c.mime_type == FILE_MIME_TYPE_MAP,
+                        t_files.c.id == t_files_version.c.file_id,
+                    )
                 )
             )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
@@ -99,8 +100,9 @@ def data_upgrades():
                     zip_file.writestr('graph.json', content)
                 new_bytes = zip_bytes2.getvalue()
                 new_hash = hashlib.sha256(new_bytes).digest()
-                files_to_update.append({'id': id, 'raw_file': new_bytes,
-                                        'checksum_sha256': new_hash})
+                files_to_update.append(
+                    {'id': id, 'raw_file': new_bytes, 'checksum_sha256': new_hash}
+                )
         try:
             session.bulk_update_mappings(FileContent, files_to_update)
             session.commit()

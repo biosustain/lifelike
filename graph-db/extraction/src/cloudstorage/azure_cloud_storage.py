@@ -9,7 +9,7 @@ from azure.storage.fileshare import (
     generate_file_sas,
     AccountSasPermissions,
     ContentSettings,
-    ShareFileClient
+    ShareFileClient,
 )
 
 from .cloud_storage import CloudStorage
@@ -27,6 +27,7 @@ class AzureCloudStorage(CloudStorage):
         cloudstorage.upload(filepath, filename)
         cloudstorage.close()
     """
+
     def __init__(self, provider: ShareFileClient):
         super().__init__(provider)
 
@@ -42,7 +43,7 @@ class AzureCloudStorage(CloudStorage):
             share_name='knowledge-graph',
             file_path=['migration', zipfilename],
             # set to 3 hours, hopefully enough time for large files
-            expiry=datetime.utcnow() + timedelta(hours=3)
+            expiry=datetime.utcnow() + timedelta(hours=3),
         )
 
     @staticmethod
@@ -55,7 +56,7 @@ class AzureCloudStorage(CloudStorage):
             credential=token,
             share_name='knowledge-graph',
             file_path=f'migration/{zipfilename}',
-            logging_enable=True
+            logging_enable=True,
         )
 
     def close(self):
@@ -70,13 +71,17 @@ class AzureCloudStorage(CloudStorage):
             while chunk := sourcefile.read(8192):
                 hash_fn.update(chunk)
             checksum = hash_fn.digest()
-            self.logger.info(f'Uploading file "{zipfilename}"; content checksum as string: "{hash_fn.hexdigest()}"')
+            self.logger.info(
+                f'Uploading file "{zipfilename}"; content checksum as string: "{hash_fn.hexdigest()}"'
+            )
 
         with ZipFile(zipfilepath, 'w', ZIP_DEFLATED) as zipped:
             zipped.write(filepath, arcname=filename)
 
         with open(zipfilepath, 'rb') as zipfile:
-            self.provider.upload_file(zipfile, content_settings=ContentSettings(content_md5=checksum))
+            self.provider.upload_file(
+                zipfile, content_settings=ContentSettings(content_md5=checksum)
+            )
 
         # self._delete_local_file(filepath)
         self._delete_local_file(zipfilepath)

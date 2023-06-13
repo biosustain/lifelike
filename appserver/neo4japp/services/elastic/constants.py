@@ -9,8 +9,7 @@ directory = os.path.realpath(os.path.dirname(__file__))
 # update any relevant ORM event triggers!
 ATTACHMENT_PIPELINE_ID = 'attachment'
 ATTACHMENT_PIPELINE_DEFINITION_PATH = os.path.join(
-    directory,
-    './pipelines/attachments_pipeline.json'
+    directory, './pipelines/attachments_pipeline.json'
 )
 
 ELASTIC_PIPELINE_SEED_PAIRS = [

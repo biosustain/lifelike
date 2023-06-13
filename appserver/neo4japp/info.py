@@ -16,6 +16,7 @@ class ServerInfo(ServerMessage):
     :param code: the Info code
     :param fields:
     """
+
     title: str = "Server returned information message"
     message: Optional[str] = "Code executed with following informations"
     fields: Optional[dict] = None

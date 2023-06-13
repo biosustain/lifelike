@@ -17,7 +17,7 @@ from migrations.utils import (
     update_annotations,
     update_custom_annotations,
     update_annotations_add_primary_name,
-    update_custom_annotations_add_primary_name
+    update_custom_annotations_add_primary_name,
 )
 
 
@@ -56,21 +56,24 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB))
+        column('custom_annotations', postgresql.JSONB),
+    )
 
-    anno_results = conn.execution_options(stream_results=True).execute(sa.select([
-            tableclause.c.id,
-            tableclause.c.annotations
-        ]).where(tableclause.c.annotations != '[]'))
-    cust_anno_results = conn.execution_options(stream_results=True).execute(sa.select([
-            tableclause.c.id,
-            tableclause.c.custom_annotations
-        ]).where(tableclause.c.custom_annotations != '[]'))
+    anno_results = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.annotations]).where(
+            tableclause.c.annotations != '[]'
+        )
+    )
+    cust_anno_results = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.custom_annotations]).where(
+            tableclause.c.custom_annotations != '[]'
+        )
+    )
     try:
-        update_annotations(
-            anno_results, session, update_annotations_add_primary_name)
+        update_annotations(anno_results, session, update_annotations_add_primary_name)
         update_custom_annotations(
-            cust_anno_results, session, update_custom_annotations_add_primary_name)
+            cust_anno_results, session, update_custom_annotations_add_primary_name
+        )
     except Exception:
         raise Exception('Migration failed.')
 

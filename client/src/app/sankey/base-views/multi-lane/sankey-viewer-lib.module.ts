@@ -34,14 +34,14 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
     MultiLaneBaseControllerService,
     {
       provide: BaseControllerService,
-      useExisting: MultiLaneBaseControllerService
+      useExisting: MultiLaneBaseControllerService,
     },
     SankeySelectionService,
     ClipboardService,
     // Core components substitution
-    {provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent},
-    {provide: SANKEY_GRAPH, useValue: SankeyMultiLaneComponent},
-    {provide: SANKEY_DETAILS, useValue: SankeyMutiLaneDetailsPanelComponent}
+    { provide: SANKEY_ADVANCED, useValue: MultiLaneBaseAdvancedPanelComponent },
+    { provide: SANKEY_GRAPH, useValue: SankeyMultiLaneComponent },
+    { provide: SANKEY_DETAILS, useValue: SankeyMutiLaneDetailsPanelComponent },
   ],
   imports: [
     CommonModule,
@@ -59,13 +59,12 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
     SharedModule,
     FileBrowserModule,
     RouterModule.forChild([]),
-    SankeyMultiLaneDetailsPanelModule
+    SankeyMultiLaneDetailsPanelModule,
   ],
   declarations: [
     MultiLaneBaseAdvancedPanelComponent,
     SankeyMultiLaneComponent,
-    SankeyLegendComponent
-  ]
+    SankeyLegendComponent,
+  ],
 })
-export class MultiLaneBaseModule {
-}
+export class MultiLaneBaseModule {}

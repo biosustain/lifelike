@@ -3,9 +3,7 @@ import redis
 
 from neo4japp.utils.globals import config
 
-DEFAULT_CACHE_SETTINGS = {
-    'ex': 3600 * 24
-}
+DEFAULT_CACHE_SETTINGS = {'ex': 3600 * 24}
 
 _redis_server: redis.Redis
 
@@ -19,7 +17,9 @@ def get_redis_server():
         REDIS_SSL = config.get('REDIS_SSL', 'false').lower()
 
         connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-        connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
+        connection_url = (
+            f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
+        )
 
         _redis_server = redis.Redis(
             connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
@@ -38,13 +38,13 @@ def get_redis_server():
 #
 # TODO: switch to the three functions below
 def redis_cached(
-        uid: str,
-        # TODO: why is this a function? Better if it's a data type...
-        # Needs refactor to be generic for other uses
-        result_provider,
-        cache_setting=None,
-        load=None,
-        dump=None
+    uid: str,
+    # TODO: why is this a function? Better if it's a data type...
+    # Needs refactor to be generic for other uses
+    result_provider,
+    cache_setting=None,
+    load=None,
+    dump=None,
 ):
     if cache_setting is None:
         cache_setting = DEFAULT_CACHE_SETTINGS
@@ -75,7 +75,7 @@ def setcache(
     data,
     load=None,
     dump=None,
-        cache_setting=None,
+    cache_setting=None,
 ):
     if cache_setting is None:
         cache_setting = DEFAULT_CACHE_SETTINGS

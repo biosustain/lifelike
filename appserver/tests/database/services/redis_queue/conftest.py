@@ -2,6 +2,7 @@ import pytest
 from rq import Queue
 
 from neo4japp.factory import create_app
+
 # rq.Queue.enqueue does not seem to play nice with anonymous functions, so we import test jobs
 # from a separate module
 from neo4japp.jobs import easy_job, hard_job
@@ -74,28 +75,17 @@ def queue_A(rq_service: RedisQueueService):
 
 @pytest.fixture(scope='function')
 def easy_job_A(rq_service: RedisQueueService, queue_A: Queue):
-    yield rq_service.enqueue(
-        easy_job,
-        queue=queue_A.name,
-        job_id='easy_job_A'
-    )
+    yield rq_service.enqueue(easy_job, queue=queue_A.name, job_id='easy_job_A')
 
 
 @pytest.fixture(scope='function')
 def hard_job_A(rq_service: RedisQueueService, queue_A: Queue):
-    yield rq_service.enqueue(
-        hard_job,
-        queue=queue_A.name,
-        job_id='hard_job_A'
-    )
+    yield rq_service.enqueue(hard_job, queue=queue_A.name, job_id='hard_job_A')
 
 
 @pytest.fixture(scope='function')
 def worker_A(rq_service: RedisQueueService, queue_A: Queue):
-    worker = rq_service.create_worker(
-        queues=[queue_A.name],
-        name='worker_A'
-    )
+    worker = rq_service.create_worker(queues=[queue_A.name], name='worker_A')
 
     yield worker
 

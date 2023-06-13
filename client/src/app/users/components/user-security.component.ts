@@ -1,13 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-} from '@angular/core';
-import {
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { Store } from '@ngrx/store';
 
@@ -28,30 +20,32 @@ export class UserSecurityComponent {
   @Input() user: AppUser;
 
   readonly errors = {
-    notMatch: 'Your two passwords don\'t match.',
+    notMatch: "Your two passwords don't match.",
   };
 
-  readonly form = new FormGroup({
-    oldPassword: new FormControl('', [Validators.required]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.minLength(MIN_PASSWORD_LENGTH),
-      Validators.maxLength(MAX_PASSWORD_LENGTH)
-    ]),
-    passwordConfirm: new FormControl('', [Validators.required]),
-  }, {validators: this.passConfirmValidator});
+  readonly form = new FormGroup(
+    {
+      oldPassword: new FormControl('', [Validators.required]),
+      password: new FormControl('', [
+        Validators.required,
+        Validators.minLength(MIN_PASSWORD_LENGTH),
+        Validators.maxLength(MAX_PASSWORD_LENGTH),
+      ]),
+      passwordConfirm: new FormControl('', [Validators.required]),
+    },
+    { validators: this.passConfirmValidator }
+  );
 
   constructor(
     private readonly store: Store<State>,
-    private readonly messageDialog: MessageDialog,
-  ) {
-  }
+    private readonly messageDialog: MessageDialog
+  ) {}
 
   passConfirmValidator(form: FormGroup) {
     const password = form.get('password').value as string;
     const confirmPass = form.get('passwordConfirm').value as string;
     if (password !== confirmPass) {
-      form.get('passwordConfirm').setErrors({notMatch: true});
+      form.get('passwordConfirm').setErrors({ notMatch: true });
     }
     return null;
   }
@@ -61,13 +55,15 @@ export class UserSecurityComponent {
       // TODO: Add progress dialog
       const password = this.form.get('oldPassword').value;
       const newPassword = this.form.get('password').value;
-      this.store.dispatch(UserActions.changePassword({
-        userUpdates: {
-          hashId: this.user.hashId,
-          newPassword,
-          password,
-        },
-      }));
+      this.store.dispatch(
+        UserActions.changePassword({
+          userUpdates: {
+            hashId: this.user.hashId,
+            newPassword,
+            password,
+          },
+        })
+      );
       this.form.reset();
     } else {
       this.form.markAsDirty();

@@ -107,14 +107,12 @@ export interface Document {
   authors?: string[];
 }
 
-
 // id: Used to refer to this relation in other relations. This id
 // needs to be unique at whatever level relations appear. (See
 // discussion of annotation ids.)
 //
 // <!ELEMENT id (#PCDATA)>
 type Id = string;
-
 
 type Text = string;
 

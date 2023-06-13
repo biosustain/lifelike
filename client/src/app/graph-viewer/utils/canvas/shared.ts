@@ -21,14 +21,13 @@ export const SELECTION_SHADOW_COLOR = 'rgba(0, 0, 0, 0.075)';
 export const DEFAULT_SELECTION_MARGIN = 10;
 export const EDGE_SELECTION_WIDTH = 20;
 
-
 export enum LineTypes {
   Dashed = 'dashed',
   LongDashed = 'long-dashed',
   Dotted = 'dotted',
   Blank = 'none',
   Solid = 'solid',
-  TwoDash = 'two-dashed'
+  TwoDash = 'two-dashed',
 }
 
 // ---------------------------------
@@ -49,8 +48,8 @@ export function drawTextNotSmallerThanMin(textbox: TextElement, k: number, x: nu
   if (visibleText) {
     textbox.drawCenteredAt(x, y);
   } else {
-    const newFont = ((DEFAULT_LABEL_FONT_SIZE * VISIBLE_TEXT_THRESHOLD) / k)
-      + 'px' + oldFont.split('px').pop();
+    const newFont =
+      (DEFAULT_LABEL_FONT_SIZE * VISIBLE_TEXT_THRESHOLD) / k + 'px' + oldFont.split('px').pop();
     textbox.drawWithDifferentFont(x, y, newFont);
   }
 }
@@ -71,12 +70,12 @@ export function drawStroke(ctx: CanvasRenderingContext2D, stroke: Line, zoomRese
 }
 
 export function getRectWithMargin(bbox: BoundingBox, margin: number = 0): Rect {
-  const {minX, minY, maxX, maxY} = bbox;
+  const { minX, minY, maxX, maxY } = bbox;
   return {
     x: minX - margin,
     y: minY - margin,
     width: maxX - minX + margin * 2,
-    height: maxY - minY + margin * 2
+    height: maxY - minY + margin * 2,
   };
 }
 
@@ -121,12 +120,14 @@ export class CanvasFont {
  * PS Feel free to change the naming, I am not sure about it, just did not want to do bbox1 and bbox2
  */
 export function isBBoxEnclosing(parent: BoundingBox, child: BoundingBox): boolean {
-  return child.minX >= parent.minX
-    && child.minY >= parent.minY
-    && child.maxX <= parent.maxX
-    && child.maxY <= parent.maxY;
+  return (
+    child.minX >= parent.minX &&
+    child.minY >= parent.minY &&
+    child.maxX <= parent.maxX &&
+    child.maxY <= parent.maxY
+  );
 }
 
-export function isPointIntersecting(bbox: BoundingBox, {x, y}: Point): boolean {
-  return (bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y);
+export function isPointIntersecting(bbox: BoundingBox, { x, y }: Point): boolean {
+  return bbox.minX <= x && bbox.maxX >= x && bbox.minY <= y && bbox.maxY >= y;
 }

@@ -19,10 +19,7 @@ export class MessageDialogComponent {
   @Input() type: MessageType;
   @Input() error: ErrorLog;
 
-  constructor(
-    private readonly modal: NgbActiveModal,
-  ) {
-  }
+  constructor(private readonly modal: NgbActiveModal) {}
 
   dismiss() {
     this.modal.dismiss();

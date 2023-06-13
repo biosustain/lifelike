@@ -21,6 +21,7 @@ depends_on = None
 
 logger = logging.getLogger('alembic.runtime.migration.' + __name__)
 
+
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -56,8 +57,9 @@ def data_upgrades():
 
     session = Session(op.get_bind())
 
-    query = sa.select([t_file.c.filename, t_file.c.id, t_file.c.parent_id])\
-              .where(t_file.c.filename.ilike('%.enrichment'))
+    query = sa.select([t_file.c.filename, t_file.c.id, t_file.c.parent_id]).where(
+        t_file.c.filename.ilike('%.enrichment')
+    )
 
     files_to_change = session.execute(query)
 
@@ -66,20 +68,22 @@ def data_upgrades():
         filename_dupe_count = 0
 
         while True:
-            found = session.execute(sa.select(
-                [t_file.c.filename]
-            ).where(
-                and_(
-                    t_file.c.filename == renamed_fi,
-                    t_file.c.parent_id == pid,
+            found = session.execute(
+                sa.select([t_file.c.filename]).where(
+                    and_(
+                        t_file.c.filename == renamed_fi,
+                        t_file.c.parent_id == pid,
+                    )
                 )
-            )).fetchone()
+            ).fetchone()
             logger.debug(f'Searching for file: {renamed_fi}. {found}')
             if found is None:
                 logger.debug(f'Renaming file: <{file_name}> to <{renamed_fi}>')
-                session.execute(t_file.update().values(
-                    filename=renamed_fi
-                ).where(t_file.c.id == fid))
+                session.execute(
+                    t_file.update()
+                    .values(filename=renamed_fi)
+                    .where(t_file.c.id == fid)
+                )
                 session.commit()
                 break
             else:
@@ -88,6 +92,7 @@ def data_upgrades():
                 renamed_fi = f'{renamed_fi} ({filename_dupe_count})'
 
     session.commit()
+
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""

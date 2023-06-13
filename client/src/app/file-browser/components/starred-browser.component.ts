@@ -20,23 +20,29 @@ import { ProjectsService } from '../services/projects.service';
   templateUrl: './starred-browser.component.html',
 })
 export class StarredBrowserComponent implements OnInit, OnDestroy {
-  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
-    () => this.filesystemService.getStarred()
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(() =>
+    this.filesystemService.getStarred()
   );
 
   searchText: string;
-  filter$: BehaviorSubject<(item: FilesystemObject) => boolean> = new BehaviorSubject((item: FilesystemObject) => !isNil(item.starred));
-  listModel$: Observable<FilesystemObjectList> = this.loadTask.results$.pipe(
-    map(({result}) => result),
-    switchMap(listModel => this.filter$.pipe(
-      map(filter => {
-        listModel.results.setFilter(filter);
-        return listModel;
-      })
-    )),
-    shareReplay({bufferSize: 1, refCount: true})
+  filter$: BehaviorSubject<(item: FilesystemObject) => boolean> = new BehaviorSubject(
+    (item: FilesystemObject) => !isNil(item.starred)
   );
-  fileList: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
+  listModel$: Observable<FilesystemObjectList> = this.loadTask.results$.pipe(
+    map(({ result }) => result),
+    switchMap((listModel) =>
+      this.filter$.pipe(
+        map((filter) => {
+          listModel.results.setFilter(filter);
+          return listModel;
+        })
+      )
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  fileList: FilesystemObjectList = new FilesystemObjectList(
+    mockArrayOf(filesystemObjectLoadingMock)
+  );
   projectList: ProjectList = new ProjectList();
 
   private loadTaskSubscription: Subscription;
@@ -48,15 +54,15 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.listModel$.pipe(
-      switchMap(({results: {view$}}) => view$)
-    ).subscribe(list => {
-      const [files, projectRoots] = partition(list, i => i.parent);
-      this.fileList.collectionSize = files.length;
-      this.fileList.results.replace(files);
-      this.projectList.collectionSize = projectRoots.length;
-      this.projectList.results.replace(projectRoots.map(r => r.project));
-    });
+    this.loadTaskSubscription = this.listModel$
+      .pipe(switchMap(({ results: { view$ } }) => view$))
+      .subscribe((list) => {
+        const [files, projectRoots] = partition(list, (i) => i.parent);
+        this.fileList.collectionSize = files.length;
+        this.fileList.results.replace(files);
+        this.projectList.collectionSize = projectRoots.length;
+        this.projectList.results.replace(projectRoots.map((r) => r.project));
+      });
 
     this.refresh();
   }
@@ -72,7 +78,9 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   applyFilter(filter: string) {
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.filter$.next(
-      (item: FilesystemObject) => !isNil(item.starred) && FilesystemObject.normalizeFilename(item.effectiveName).includes(normalizedFilter)
+      (item: FilesystemObject) =>
+        !isNil(item.starred) &&
+        FilesystemObject.normalizeFilename(item.effectiveName).includes(normalizedFilter)
     );
   }
 

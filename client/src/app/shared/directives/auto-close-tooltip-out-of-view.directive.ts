@@ -4,7 +4,9 @@ import {
   ElementRef,
   HostListener,
   Input,
-  OnDestroy, OnInit, SimpleChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
 } from '@angular/core';
 
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
@@ -23,12 +25,12 @@ export class AutoCloseTooltipOutOfViewDirective implements OnInit, OnDestroy {
   @Input('appAutoCloseTooltipOutOfView') tooltipRef: NgbTooltip;
   private bindingSubscription: Subscription;
 
-  constructor(private readonly element: ElementRef<HTMLElement>) {
-  }
+  constructor(private readonly element: ElementRef<HTMLElement>) {}
 
   ngOnInit() {
-    this.bindingSubscription = this.tooltipRef.shown.pipe(
-      switchMap(() => {
+    this.bindingSubscription = this.tooltipRef.shown
+      .pipe(
+        switchMap(() => {
           const container = enclosingScrollableView(this.element.nativeElement);
           return fromEvent(container, 'scroll').pipe(
             takeUntil(this.tooltipRef.hidden),
@@ -36,12 +38,11 @@ export class AutoCloseTooltipOutOfViewDirective implements OnInit, OnDestroy {
               if (!isWithinScrollableView(this.element.nativeElement, container)) {
                 this.tooltipRef?.close();
               }
-            }),
+            })
           );
-        },
-      ),
-    ).subscribe(() => {
-    });
+        })
+      )
+      .subscribe(() => {});
   }
 
   ngOnDestroy() {

@@ -5,8 +5,8 @@ import { AfterViewInit, Component, ViewChild } from '@angular/core';
   templateUrl: './cookie-policy.component.html',
 })
 export class CookiePolicyComponent implements AfterViewInit {
-  @ViewChild('cookiePolicyContainer', {static: true}) cookiePolicyContainer;
-  constructor() { }
+  @ViewChild('cookiePolicyContainer', { static: true }) cookiePolicyContainer;
+  constructor() {}
 
   ngAfterViewInit(): void {
     // Angular automatically strips script elements from component templates, so we have to add the cookiebot script manually.

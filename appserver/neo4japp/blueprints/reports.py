@@ -7,7 +7,7 @@ from neo4japp.constants import (
     COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT,
     COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
     LIFELIKE_EMAIL_ACCOUNT,
-    MESSAGE_SENDER_IDENTITY
+    MESSAGE_SENDER_IDENTITY,
 )
 from neo4japp.database import db
 from neo4japp.models.reports import CopyrightInfringementRequest

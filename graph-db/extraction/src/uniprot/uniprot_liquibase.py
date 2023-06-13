@@ -8,14 +8,14 @@ from common.query_builder import (
     get_create_index_query,
     get_create_relationships_query,
     get_create_synonym_relationships_query,
-    get_create_update_nodes_query
+    get_create_update_nodes_query,
 )
 from uniprot.uniprot_parser import (
     UNIPROT_FILE,
     UNIPROT_2_GENE,
     UNIPROT_2_GO,
     UNIPROT_SYNONYM,
-    UNIPROT_SYNONYM_DERIVED
+    UNIPROT_SYNONYM_DERIVED,
 )
 
 # reference to this directory
@@ -44,8 +44,17 @@ class UniprotChangeLog(ChangeLog):
             id = f'{self.id_prefix} {id}'
         comment = ''
         cols = [PROP_ID, PROP_NAME, PROP_TAX_ID, PROP_PATHWAY, PROP_FUNCTION]
-        query = get_create_update_nodes_query(NODE_UNIPROT, PROP_ID, cols, [NODE_PROTEIN], datasource=DB_UNIPROT, original_entity_types=[NODE_PROTEIN])
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_UNIPROT,
+            PROP_ID,
+            cols,
+            [NODE_PROTEIN],
+            datasource=DB_UNIPROT,
+            original_entity_types=[NODE_PROTEIN],
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_protein_genes(self):
@@ -53,18 +62,29 @@ class UniprotChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_UNIPROT, PROP_ID, PROP_ID, NODE_GENE, PROP_ID, PROP_GENE_ID, REL_GENE)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_2_GENE}')
+        query = get_create_relationships_query(
+            NODE_UNIPROT, PROP_ID, PROP_ID, NODE_GENE, PROP_ID, PROP_GENE_ID, REL_GENE
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_2_GENE}'
+        )
         self.change_sets.append(changeset)
 
     def load_protein_synonyms(self):
-        for filename, text in [(UNIPROT_SYNONYM, ''), (UNIPROT_SYNONYM_DERIVED, 'derived')]:
+        for filename, text in [
+            (UNIPROT_SYNONYM, ''),
+            (UNIPROT_SYNONYM_DERIVED, 'derived'),
+        ]:
             id = f'load UniProt protein/gene synonyms {text} on date {self.date_tag}'
             if self.id_prefix:
                 id = f'{self.id_prefix} {id}'
             comment = ''
-            query = get_create_synonym_relationships_query(NODE_UNIPROT, PROP_ID, PROP_ID, PROP_NAME, [PROP_TYPE])
-            changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{filename}')
+            query = get_create_synonym_relationships_query(
+                NODE_UNIPROT, PROP_ID, PROP_ID, PROP_NAME, [PROP_TYPE]
+            )
+            changeset = CustomChangeSet(
+                id, self.author, comment, query, f'{self.file_prefix}{filename}'
+            )
             self.change_sets.append(changeset)
 
     def load_protein_synonym_rel(self):
@@ -86,8 +106,12 @@ class UniprotChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = 'Create relationship between protein and GO'
-        query = get_create_relationships_query(NODE_UNIPROT, PROP_ID, PROP_ID, NODE_GO, PROP_ID, PROP_GO_ID, REL_GO_LINK)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_2_GO}')
+        query = get_create_relationships_query(
+            NODE_UNIPROT, PROP_ID, PROP_ID, NODE_GO, PROP_ID, PROP_GO_ID, REL_GO_LINK
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{UNIPROT_2_GO}'
+        )
         self.change_sets.append(changeset)
 
     def load_protein_to_taxonomy_rel(self):
@@ -99,16 +123,32 @@ class UniprotChangeLog(ChangeLog):
         CALL apoc.periodic.iterate(
         'MATCH (n:%s), (t:%s {id: n.tax_id}) RETURN n,t',
         'MERGE (n)-[:%s]->(t)', {batchSize:5000})
-        """ % (NODE_UNIPROT, NODE_TAXONOMY, REL_TAXONOMY)
+        """ % (
+            NODE_UNIPROT,
+            NODE_TAXONOMY,
+            REL_TAXONOMY,
+        )
         changeset = ChangeSet(id, self.author, comment, query)
         self.change_sets.append(changeset)
 
     def create_indexes(self):
         queries = []
-        queries.append(get_create_constraint_query(NODE_UNIPROT, PROP_ID, 'constraint_uniprot_id') + ';')
-        queries.append(get_create_index_query(NODE_UNIPROT, PROP_NAME, 'index_uniprot_name') + ';')
-        queries.append(get_create_index_query(NODE_PROTEIN, PROP_NAME, 'index_protein_name') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name') + ';')
+        queries.append(
+            get_create_constraint_query(NODE_UNIPROT, PROP_ID, 'constraint_uniprot_id')
+            + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_UNIPROT, PROP_NAME, 'index_uniprot_name') + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_PROTEIN, PROP_NAME, 'index_protein_name') + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name'
+            )
+            + ';'
+        )
         return queries
 
     def add_index_change_set(self):

@@ -249,10 +249,7 @@ ANNOTATION_STYLES_DICT = {
         'color': '#0202bd',
         'label': 'anatomy',
     },
-    'entity': {
-        'color': '#7f7f7f',
-        'label': 'ENTITY'
-    },
+    'entity': {'color': '#7f7f7f', 'label': 'ENTITY'},
     'lab strain': {
         'color': '#8eff69',
         'label': 'lab strain',
@@ -265,105 +262,44 @@ ANNOTATION_STYLES_DICT = {
         'label': 'link',
         'color': '#000000',
         'bgcolor': '#dcf1f1',
-        'defaultimagecolor': '#669999'
+        'defaultimagecolor': '#669999',
     },
-    'map': {
-        'label': 'map',
-        'color': '#0277bd',
-        'defaultimagecolor': '#0277bd'
-    },
+    'map': {'label': 'map', 'color': '#0277bd', 'defaultimagecolor': '#0277bd'},
     'note': {
         'label': 'note',
         'color': '#000000',
         'bgcolor': '#fff6d5',
-        'defaultimagecolor': '#edc949'
+        'defaultimagecolor': '#edc949',
     },
-    'reaction': {
-        'label': 'reaction',
-        'color': '#ebb434'
-    },
-    'enzreaction': {
-        'label': 'enzreaction',
-        'color': '#b32b7f'
-    },
-    'geneproduct': {
-        'label': 'geneproduct',
-        'color': '#eb333d'
-    },
-    'operon': {
-        'label': 'operon',
-        'color': '#439641'
-    },
-    'promoter': {
-        'label': 'promoter',
-        'color': '#5bc9ca'
-    },
-    'regulation': {
-        'label': 'regulation',
-        'color': '#bf5858'
-    },
-    'rna': {
-        'label': 'rna',
-        'color': '#5c98d1'
-    },
-    'transcriptionfactor': {
-        'label': 'transcriptionfactor',
-        'color': '#ea3cf7'
-    },
-    'transcriptionunit': {
-        'label': 'transcriptionunit',
-        'color': '#cccdfb'
-    },
+    'reaction': {'label': 'reaction', 'color': '#ebb434'},
+    'enzreaction': {'label': 'enzreaction', 'color': '#b32b7f'},
+    'geneproduct': {'label': 'geneproduct', 'color': '#eb333d'},
+    'operon': {'label': 'operon', 'color': '#439641'},
+    'promoter': {'label': 'promoter', 'color': '#5bc9ca'},
+    'regulation': {'label': 'regulation', 'color': '#bf5858'},
+    'rna': {'label': 'rna', 'color': '#5c98d1'},
+    'transcriptionfactor': {'label': 'transcriptionfactor', 'color': '#ea3cf7'},
+    'transcriptionunit': {'label': 'transcriptionunit', 'color': '#cccdfb'},
     # Non - Entity Types
-    'correlation': {
-        'label': 'correlation',
-        'color': '#d7d9f8'
-    },
-    'cause': {
-        'label': 'cause',
-        'color': '#d7d9f8'
-    },
-    'effect': {
-        'label': 'effect',
-        'color': '#d7d9f8'
-    },
-    'observation': {
-        'label': 'observation',
-        'color': '#d7d9f8'
-    },
-    'association': {
-        'label': 'association',
-        'color': '#d7d9f8'
-    },
+    'correlation': {'label': 'correlation', 'color': '#d7d9f8'},
+    'cause': {'label': 'cause', 'color': '#d7d9f8'},
+    'effect': {'label': 'effect', 'color': '#d7d9f8'},
+    'observation': {'label': 'observation', 'color': '#d7d9f8'},
+    'association': {'label': 'association', 'color': '#d7d9f8'},
     'phentotype': {
         'color': '#edc949',
         'label': 'phentotype',
     },
     # KG Types that are NOT annotation types
-    'biologicalprocess': {
-        'color': '#eb4034',
-        'label': 'biologicalprocess'
-    },
-    'cellularcomponent': {
-        'color': '#34ebd3',
-        'label': 'biologicalprocess'
-    },
-    'class': {
-        'color': '#f1587a',
-        'label': 'class'
-    },
-    'molecularfunction': {
-        'color': '#eb34dc',
-        'label': 'biologicalprocess'
-    },
+    'biologicalprocess': {'color': '#eb4034', 'label': 'biologicalprocess'},
+    'cellularcomponent': {'color': '#34ebd3', 'label': 'biologicalprocess'},
+    'class': {'color': '#f1587a', 'label': 'class'},
+    'molecularfunction': {'color': '#eb34dc', 'label': 'biologicalprocess'},
     'taxonomy': {
         'color': '#0277bd',
         'label': 'taxonomy',
     },
-    'terminator': {
-        'color': '#e5a731',
-        'label': 'terminator'
-    },
+    'terminator': {'color': '#e5a731', 'label': 'terminator'},
     # Literature types
     'literaturegene': {
         'color': '#673ab7',
@@ -381,8 +317,8 @@ ANNOTATION_STYLES_DICT = {
         'ms-word': '#0d47a1',
         'ms-excel': '#2e7d32',
         'ms-powerpoint': '#e64a19',
-        'cytoscape': '#ea9123'
-    }
+        'cytoscape': '#ea9123',
+    },
 }
 
 # Style constants
@@ -427,7 +363,7 @@ BORDER_STYLES_DICT = {
     'dotted': 'dotted',
     # Currently not implemented in Graphviz
     'double-dashed': 'dashed',
-    'long-dashed': 'dashed'
+    'long-dashed': 'dashed',
 }
 
 ARROW_STYLE_DICT = {
@@ -442,7 +378,7 @@ ARROW_STYLE_DICT = {
     'cross-axis-arrow': 'normalnonetee',
     'double-cross-axis': 'teetee',
     'square-arrow': 'normalnonebox',
-    'circle-arrow': 'normalnonedot'
+    'circle-arrow': 'normalnonedot',
 }
 
 RELATION_NODES = ['association', 'correlation', 'cause', 'effect', 'observation']
@@ -451,7 +387,9 @@ DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
 # This can be customized to disable login lockouts by setting the value to <= 0
-MAX_ALLOWED_LOGIN_FAILURES = LocalProxy(lambda: config.get('MAX_ALLOWED_LOGIN_FAILURES'))
+MAX_ALLOWED_LOGIN_FAILURES = LocalProxy(
+    lambda: config.get('MAX_ALLOWED_LOGIN_FAILURES')
+)
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
@@ -463,10 +401,11 @@ MESSAGE_SENDER_IDENTITY = '***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAM
 MAILING_API_KEY = LocalProxy(lambda: config.get('SEND_GRID_EMAIL_API_KEY'))
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
 RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', 'r').read()
-COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = 'Lifelike: Copyright Infringement Report Confirmation'
+COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = (
+    'Lifelike: Copyright Infringement Report Confirmation'
+)
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
-    r'/home/n4j/assets/copyright_report_confirmation.html',
-    'r'
+    r'/home/n4j/assets/copyright_report_confirmation.html', 'r'
 ).read()
 
 # Start shared Elastic constants
@@ -504,7 +443,7 @@ UPDATE_DATE_MODIFIED_COLUMNS = [
     'excluded_annotations',
     'organism_name',
     'organism_synonym',
-    'organism_taxonomy_id'
+    'organism_taxonomy_id',
 ]
 
 UPDATE_ELASTIC_DOC_COLUMNS = [
@@ -522,7 +461,7 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'excluded_annotations',
     'organism_name',
     'organism_synonym',
-    'organism_taxonomy_id'
+    'organism_taxonomy_id',
 ]
 
 SEED_FILE_KEY_FILES = 'neo4japp.models.Files'

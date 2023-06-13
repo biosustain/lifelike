@@ -1,9 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -24,10 +20,10 @@ export class UserCreateDialogComponent extends CommonFormDialogComponent<UserCre
     password: new FormControl('', [
       Validators.required,
       Validators.minLength(MIN_PASSWORD_LENGTH),
-      Validators.maxLength(MAX_PASSWORD_LENGTH)
+      Validators.maxLength(MAX_PASSWORD_LENGTH),
     ]),
     email: new FormControl('', [Validators.required, Validators.email]),
-    roles: new FormControl('user', Validators.required)
+    roles: new FormControl('user', Validators.required),
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
