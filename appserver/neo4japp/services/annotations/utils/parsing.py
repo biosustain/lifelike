@@ -3,13 +3,8 @@ import requests
 from string import punctuation
 from typing import Any, Dict, List, Tuple
 
-from ..constants import (
-    MAX_ABBREVIATION_WORD_LENGTH,
-    PARSER_RESOURCE_PULL_ENDPOINT,
-    PARSER_PDF_ENDPOINT,
-    PARSER_TEXT_ENDPOINT,
-    REQUEST_TIMEOUT
-)
+from neo4japp.utils.globals import config
+from ..constants import (MAX_ABBREVIATION_WORD_LENGTH)
 from ..data_transfer_objects import PDFWord
 
 from neo4japp.constants import FILE_MIME_TYPE_PDF
@@ -59,7 +54,10 @@ def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:
 
 
 def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[PDFWord]]:
-    url = PARSER_PDF_ENDPOINT if content_type == FILE_MIME_TYPE_PDF else PARSER_TEXT_ENDPOINT
+    if content_type == FILE_MIME_TYPE_PDF:
+        url = config.get('PARSER_PDF_ENDPOINT')
+    else:
+        url = config.get('PARSER_TEXT_ENDPOINT')
 
     if 'exclude_references' in kwargs:
         try:
@@ -71,13 +69,13 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
                 'Cannot parse the PDF file, the file id is missing or data is corrupted.'
             ) from e
         data = {
-            'fileUrl': f'{PARSER_RESOURCE_PULL_ENDPOINT}/{file_id}',
+            'fileUrl': f'{config.get("PARSER_RESOURCE_PULL_ENDPOINT")}/{file_id}',
             'excludeReferences': exclude_references
         }
     else:
         data = {'text': kwargs['text']}
 
-    request_args: Dict[str, Any] = {'url': url, 'data': data, 'timeout': REQUEST_TIMEOUT}
+    request_args: Dict[str, Any] = dict(url=url, data=data, timeout=config.get('REQUEST_TIMEOUT'))
     try:
         req = requests.post(**request_args)
         resp = req.json()

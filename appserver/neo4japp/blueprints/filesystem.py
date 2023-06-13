@@ -38,8 +38,7 @@ from neo4japp.constants import (
     MAPS_RE,
     SUPPORTED_MAP_MERGING_FORMATS,
     UPDATE_DATE_MODIFIED_COLUMNS,
-    SortDirection,
-    LIFELIKE_DOMAIN,
+    SortDirection
 )
 from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import (
@@ -104,6 +103,7 @@ from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
 from neo4japp.exceptions import wrap_exceptions
 from neo4japp.exceptions import ServerWarning
+from neo4japp.utils.globals import config
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -1460,7 +1460,7 @@ class FileExportView(FilesystemBaseView):
                             files
                         )
                         if destination_page is not None:
-                            link_to_page_map[(LIFELIKE_DOMAIN or '') + url] = destination_page
+                            link_to_page_map[(config.get('DOMAIN') or '') + url] = destination_page
             return files
 
 

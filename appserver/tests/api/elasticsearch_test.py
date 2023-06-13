@@ -4,11 +4,12 @@ from http import HTTPStatus
 import pytest
 from unittest.mock import patch
 
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
+from neo4japp.constants import FRAGMENT_SIZE
 from neo4japp.models.files import Files
 from neo4japp.services.elastic import ElasticService
 from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.utils.globals import config
 
 
 def generate_headers(jwt_token):
@@ -52,7 +53,7 @@ def pdf_document(
     fix_project,
 ):
     elastic_service.elastic_client.create(
-        index=FILE_INDEX_ID,
+        index=config.get('ELASTIC_FILE_INDEX_ID'),
         pipeline=ATTACHMENT_PIPELINE_ID,
         id='pdf_fixture_dup',
         body={
@@ -105,7 +106,7 @@ def test_user_can_search_content(
 
         assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query='BOLA3',
             offset=(1 - 1) * 10,
             limit=10,
@@ -165,7 +166,7 @@ def test_user_can_search_content_with_single_types(
 
         assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query='BOLA3 (type:pdf)',
             offset=(1 - 1) * 10,
             limit=10,
@@ -225,7 +226,7 @@ def test_user_can_search_content_with_multiple_types(
 
         assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query='BOLA3 (type:pdf OR type:map)',
             offset=(1 - 1) * 10,
             limit=10,
@@ -292,7 +293,7 @@ def test_user_can_search_content_with_folder(
 
         assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query='BOLA3',
             offset=(1 - 1) * 10,
             limit=10,
@@ -363,7 +364,7 @@ def test_user_can_search_content_type_and_folder(
 
         assert resp.status_code == HTTPStatus.OK
         mock_search.assert_called_once_with(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query='BOLA3 (type:enrichment-table OR type:map OR type:pdf)',
             offset=(1 - 1) * 10,
             limit=10,

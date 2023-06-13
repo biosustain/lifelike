@@ -1,10 +1,9 @@
 import hashlib
-import os
 
 from arango import ArangoClient
 from arango.http import DefaultHTTPClient
 from elasticsearch import Elasticsearch
-from flask import g, current_app
+from flask import g
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -14,6 +13,7 @@ from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 from neo4japp.utils.flask import scope_flask_app_ctx
+from neo4japp.utils.globals import config
 
 
 def trunc_long_constraint_name(name: str) -> str:
@@ -52,8 +52,16 @@ db = SQLAlchemy(
     }
 )
 
+_jwt_client: PyJWKClient
+
+
 # Note that this client should only be used when JWKS_URL has been configured!
-jwt_client = PyJWKClient(os.environ.get('JWKS_URL', ''))
+def get_jwt_client():
+    global _jwt_client
+    if _jwt_client is None:
+        _jwt_client = PyJWKClient(config.get('JWKS_URL', ''))
+    return _jwt_client
+
 
 _neo4j_driver: Driver = None
 
@@ -61,11 +69,11 @@ _neo4j_driver: Driver = None
 def get_neo4j_driver():
     global _neo4j_driver
     if _neo4j_driver is None:
-        host = os.getenv('NEO4J_HOST', '0.0.0.0')
-        scheme = os.getenv('NEO4J_SCHEME', 'bolt')
-        port = os.getenv('NEO4J_PORT', '7687')
+        host = config.get('NEO4J_HOST')
+        scheme = config.get('NEO4J_SCHEME')
+        port = config.get('NEO4J_PORT')
         url = f'{scheme}://{host}:{port}'
-        username, password = os.getenv('NEO4J_AUTH', 'neo4j/password').split('/')
+        username, password = config.get('NEO4J_AUTH').split('/')
         _neo4j_driver = GraphDatabase.driver(url, auth=basic_auth(username, password))
     return _neo4j_driver
 
@@ -88,14 +96,7 @@ def close_neo4j_db(e=None):
 
 def get_redis_connection() -> Redis:
     if not hasattr(g, 'redis_conn'):
-        HOST = os.environ.get('REDIS_HOST')
-        PORT = os.environ.get('REDIS_PORT')
-        PASSWORD = os.environ.get('REDIS_PASSWORD')
-        DB = os.getenv('REDIS_DB', '1')
-        SSL = os.environ.get('REDIS_SSL', 'false').lower()
-        connection_prefix = 'rediss' if SSL == 'true' else 'redis'
-
-        g.redis_conn = Redis.from_url(f'{connection_prefix}://:{PASSWORD}@{HOST}:{PORT}/{DB}')
+        g.redis_conn = Redis.from_url(config.get('RQ_REDIS_URL'))
     return g.redis_conn
 
 
@@ -110,7 +111,7 @@ def close_redis_conn(error):
 def _connect_to_elastic():
     return Elasticsearch(
         timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+        hosts=[config.get('ELASTICSEARCH_HOSTS')]
     )
 
 
@@ -119,7 +120,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
     class CustomHTTPClient(DefaultHTTPClient):
         REQUEST_TIMEOUT = 1000
 
-    hosts = hosts or current_app.config.get('ARANGO_HOST')
+    hosts = hosts or config.get('ARANGO_HOST')
     return ArangoClient(hosts=hosts, http_client=CustomHTTPClient())
 
 

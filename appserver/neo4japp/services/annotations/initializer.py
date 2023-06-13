@@ -1,6 +1,5 @@
-from os import environ
-
 from neo4japp.database import get_neo4j_driver
+from neo4japp.utils.globals import config
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
@@ -85,7 +84,7 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+    return LMDBService(config.get('LMDB_HOME_FOLDER'), **configs)
 
 
 def get_recognition_service(exclusions, inclusions):

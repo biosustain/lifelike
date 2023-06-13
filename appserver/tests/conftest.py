@@ -70,7 +70,7 @@ def setup_request_callbacks(app: Flask):
 @pytest.fixture(scope='function')
 def app(request) -> Flask:
     """Session-wide test Flask application."""
-    app: Flask = create_app('Functional Test Flask App', config='config.Testing')
+    app: Flask = create_app('Functional Test Flask App', config_package='config.Testing')
 
     setup_request_callbacks(app)
 

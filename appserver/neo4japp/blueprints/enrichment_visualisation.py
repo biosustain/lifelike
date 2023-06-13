@@ -1,5 +1,4 @@
 import json
-import os
 from http import HTTPStatus
 
 import requests
@@ -7,14 +6,14 @@ import requests
 from flask import Blueprint, Response, current_app, request
 
 from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
+from neo4japp.utils.globals import config
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-host = os.getenv('SE_HOST', 'statistical-enrichment')
-port = os.getenv('SE_PORT', '5010')
-
 
 def forward_request():
+    host = config.get('SE_HOST')
+    port = config.get('SE_PORT')
     host_port = f'{host}:{port}'
     url = f'{request.scheme}://{request.path.replace(bp.url_prefix, host_port)}'
     try:
