@@ -8,9 +8,7 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower()
 
 DISABLE_CACHE = os.environ.get('DISABLE_CACHE', 'false').lower() == 'true'
-DEFAULT_CACHE_SETTINGS = {
-    'ex': 3600 * 24
-}
+DEFAULT_CACHE_SETTINGS = {'ex': 3600 * 24}
 
 connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
 connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'

@@ -39,7 +39,7 @@ class EnrichmentVisualisationService:
                     RETURN DISTINCT g.meta_id as geneId
                     """,
                     taxId=organism_id,
-                    gene_names=gene_names
+                    gene_names=gene_names,
                 ).data()
             )
         )
@@ -101,10 +101,10 @@ class EnrichmentVisualisationService:
     def get_gene_ids(self, organism, gene_names):
         cache_id = f"get_gene_ids_{organism}_{','.join(gene_names)}"
         return redis_cached(
-                cache_id,
-                partial(self.query_gene_id, organism.id, gene_names),
-                load=json.loads,
-                dump=json.dumps,
+            cache_id,
+            partial(self.query_gene_id, organism.id, gene_names),
+            load=json.loads,
+            dump=json.dumps,
         )
 
     def get_go_terms(self, organism, gene_names):
