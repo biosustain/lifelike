@@ -37,16 +37,12 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   constructor(
     protected readonly internalSearch: InternalSearchService,
     protected readonly explainService: ExplainService
-  ) {
-  }
+  ) {}
 
   change$ = new ReplaySubject<SimpleChanges>(1);
   possibleExplanation$: Observable<string> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
-    filter(_flow(
-      _values,
-      _some(Boolean),
-    )),
+    filter(_flow(_values, _some(Boolean))),
     switchMap(() =>
       this.explainService.relationship(
         new Set<string>(
@@ -55,22 +51,23 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
             // therefore it is safe to address them this way
             this.graphView,
             this.selected
-          ),
-        ),
-      ),
-    ),
+          )
+        )
+      )
+    )
   );
-  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> = this.change$.pipe(
-    map(_get('selected')),
-    filter(Boolean),
-    map(
-      _flow(
-        _thru(({currentValue}) => currentValue),
-        _groupBy(({type}: GraphEntity) => type),
-        _mapValues(_map(({entity}) => entity)),
-      ),
-    ),
-  );
+  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
+    this.change$.pipe(
+      map(_get('selected')),
+      filter(Boolean),
+      map(
+        _flow(
+          _thru(({ currentValue }) => currentValue),
+          _groupBy(({ type }: GraphEntity) => type),
+          _mapValues(_map(({ entity }) => entity))
+        )
+      )
+    );
 
   @Input() graphView: CanvasGraphView;
   @Input() selected: GraphEntity[];
@@ -90,11 +87,11 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
     }
   }
 
-  isNode({type}: GraphEntity) {
+  isNode({ type }: GraphEntity) {
     return type === GraphEntityType.Node;
   }
 
-  name({type, entity}: GraphEntity): string {
+  name({ type, entity }: GraphEntity): string {
     if (type === GraphEntityType.Node) {
       const node = entity as UniversalGraphNode;
       return node.display_name;
@@ -109,7 +106,7 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
     }
   }
 
-  selectedType({type, entity}: GraphEntity): string {
+  selectedType({ type, entity }: GraphEntity): string {
     if (type === GraphEntityType.Node) {
       return (entity as UniversalGraphNode).label;
     } else if (type === GraphEntityType.Edge) {

@@ -11,7 +11,7 @@ class ContextRelationshipRequestSchema(CamelCaseSchema):
             # validate=marshmallow.validate.Length(max=MAX_CONTEXT_PARAM_LENGTH)
         ),
         validate=marshmallow.validate.Length(min=1, max=MAX_CONTEXT_PARAMS),
-        required=True
+        required=True,
     )
     _in = fields.String(
         validate=marshmallow.validate.Length(max=MAX_CONTEXT_PARAM_LENGTH)

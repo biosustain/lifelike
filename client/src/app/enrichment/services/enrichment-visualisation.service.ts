@@ -15,8 +15,8 @@ import { BaseEnrichmentDocument, EnrichmentParsedData } from '../models/enrichme
 import { EnrichmentService } from './enrichment.service';
 
 export interface EnrichWithGOTermsResult {
-  'goTerm': string;
-  'goId': string;
+  goTerm: string;
+  goId: string;
   'p-value': any;
   goLabel: string[];
   geneNames: string[];
@@ -37,9 +37,8 @@ export class EnrichmentVisualisationService {
     protected readonly errorHandler: ErrorHandler,
     protected readonly snackBar: MatSnackBar,
     protected readonly enrichmentService: EnrichmentService,
-    protected readonly explainService: ExplainService,
-  ) {
-  }
+    protected readonly explainService: ExplainService
+  ) {}
 
   private currentFileId: string;
   object: FilesystemObject;
@@ -111,7 +110,7 @@ export class EnrichmentVisualisationService {
   }
 
   enrichWithContext(term): Observable<string> {
-    const {organism} = this.enrichmentDocument;
+    const { organism } = this.enrichmentDocument;
     return this.explainService.relationship([organism, term]);
   }
 }

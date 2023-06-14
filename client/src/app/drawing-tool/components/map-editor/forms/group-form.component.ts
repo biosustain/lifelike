@@ -32,7 +32,7 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly internalSearch: InternalSearchService,
-    protected readonly explainService: ExplainService,
+    protected readonly explainService: ExplainService
   ) {
     super(workspaceManager);
   }
@@ -63,11 +63,8 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   change$ = new ReplaySubject<SimpleChanges>(1);
   possibleExplanation$: Observable<string> = this.change$.pipe(
     map(_pick(['group', 'graphView'])),
-    filter(_flow(
-      _values,
-      _some(Boolean)
-    )),
-    switchMap(({selected, graphView}) =>
+    filter(_flow(_values, _some(Boolean))),
+    switchMap(({ selected, graphView }) =>
       this.explainService.relationship(
         new Set<string>(
           getTermsFromGroup().call(
@@ -85,8 +82,8 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   updatedGroup: UniversalGraphGroup;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphGroup>,
-    updatedData: RecursivePartial<UniversalGraphGroup>,
+    originalData: RecursivePartial<UniversalGraphGroup>;
+    updatedData: RecursivePartial<UniversalGraphGroup>;
   }>();
 
   @Input() graphView: CanvasGraphView;

@@ -1,6 +1,5 @@
 <div class="d-flex flex-column h-100">
-  <ul ngbNav #nav="ngbNav" [(activeId)]="infoPanel.activeTab"
-      class="nav-tabs nav-sidebar-tabs">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="infoPanel.activeTab" class="nav-tabs nav-sidebar-tabs">
     <li ngbNavItem="graph">
       <a ngbNavLink>Selection</a>
       <ng-template ngbNavContent>
@@ -34,9 +33,12 @@
       <a ngbNavLink>Explanation</a>
       <ng-template ngbNavContent>
         <div class="module-body">
-          <div *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
-               class="flex-fill overflow-auto" style="white-space: pre-wrap;">
-            {{possibleExplanation}}
+          <div
+            *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
+            class="flex-fill overflow-auto"
+            style="white-space: pre-wrap"
+          >
+            {{ possibleExplanation }}
           </div>
           <ng-template #loading>
             <i class="fa fa-spinner fa-spin"></i>

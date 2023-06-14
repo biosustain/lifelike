@@ -4,8 +4,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnChanges, OnDestroy,
-  Output, SimpleChanges,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 
@@ -51,10 +53,7 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
   change$ = new ReplaySubject<SimpleChanges>(1);
   possibleExplanation$: Observable<string> = this.change$.pipe(
     map(_pick(['edge', 'graphView'])),
-    filter(_flow(
-      _values,
-      _some(Boolean)
-    )),
+    filter(_flow(_values, _some(Boolean))),
     switchMap(() =>
       this.explainService.relationship(
         new Set<string>([
@@ -63,7 +62,7 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
             // therefore it is safe to address them this way
             this.graphView,
             this.edge
-          )
+          ),
         ])
       )
     )

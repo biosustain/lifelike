@@ -492,8 +492,7 @@ class FilesystemBaseView(MethodView):
                         raise ValidationError(
                             f'A file or folder ({file.filename}) cannot be '
                             f'set as the parent of itself.',
-                            "parentHashId"
-                        ,
+                            "parentHashId",
                         )
 
                     # TODO: Check max hierarchy depth
@@ -506,8 +505,7 @@ class FilesystemBaseView(MethodView):
                                 f"If the parent of '{file.filename}' was set to "
                                 f"'{parent_file.filename}', it would result in circular"
                                 f"inheritance.",
-                                "parent_hash_id"
-                            ,
+                                "parent_hash_id",
                             )
                         current_parent = current_parent.parent
 
@@ -563,8 +561,7 @@ class FilesystemBaseView(MethodView):
                     if size > self.file_max_size:
                         raise ValidationError(
                             'Your file could not be processed because it is too large.',
-                            "content_value"
-                        ,
+                            "content_value",
                         )
 
                     # Get the provider
@@ -834,8 +831,7 @@ class FileListView(FilesystemBaseView):
                 f"The specified parent ({params['parent_hash_id']}) is "
                 f"not a folder. It is a file, and you cannot make files "
                 f"become a child of another file.",
-                "parent_hash_id"
-            ,
+                "parent_hash_id",
             )
 
         # TODO: Check max hierarchy depth
@@ -870,8 +866,7 @@ class FileListView(FilesystemBaseView):
                 raise ValidationError(
                     f"The specified clone source ({source_hash_id}) "
                     f"is a folder and that is not supported.",
-                    "mime_type"
-                ,
+                    "mime_type",
                 )
 
             file.mime_type = existing_file.mime_type
