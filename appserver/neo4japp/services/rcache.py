@@ -41,7 +41,10 @@ class RedisCache(Generic[Key, Value], Cache):
     _dumps: Callable[[Value], str]
     _loads: Callable[[str], Value]
     _cache_setting = DEFAULT_CACHE_SETTINGS
-    _redis: redis.Redis
+
+    @property
+    def _redis(self) -> redis.Redis:
+        return get_redis_server()
 
     def __init__(
         self,
@@ -57,7 +60,6 @@ class RedisCache(Generic[Key, Value], Cache):
         self._dumps = dumps
         self._loads = loads
         self._cache_setting = {**DEFAULT_CACHE_SETTINGS, **cache_setting}
-        self._redis = get_redis_server()
 
     def compose_key(self, key: Key) -> str:
         print(key)
