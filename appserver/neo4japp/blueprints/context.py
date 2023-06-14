@@ -15,13 +15,13 @@ def relationship(params):
     response = ChatGPT.Completion.create(
         model="text-davinci-003",
         prompt=(
-                'What is the relationship between ' +
-                ', '.join(entities) +
-                (f' in {_in}' if _in else '') +
-                '?\nPlease provide URL sources for your answer.'
+            'What is the relationship between '
+            + ', '.join(entities)
+            + (f' in {_in}' if _in else '')
+            + '?\nPlease provide URL sources for your answer.'
         ),
         temperature=0,
-        max_tokens=500
+        max_tokens=500,
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}

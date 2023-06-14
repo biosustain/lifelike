@@ -1,24 +1,25 @@
 <ng-container *ngIf="one as selected">
-  <app-node-form *ngIf="isSelectionNode()"
+  <app-node-form
+    *ngIf="isSelectionNode()"
     [infoPanel]="infoPanel"
     [node]="selected.entity"
     (save)="save($event)"
     (delete)="deleteNode(selected.entity)"
     (sourceOpen)="openSource($event)"
   >
-      <ng-content></ng-content>
+    <ng-content></ng-content>
   </app-node-form>
 
   <app-edge-form
     *ngIf="isSelectionEdge()"
     [infoPanel]="infoPanel"
     [edge]="selected.entity"
-                   [graphView]="graphView"
+    [graphView]="graphView"
     (save)="save($event)"
     (delete)="deleteEdge(selected.entity)"
     (sourceOpen)="openSource($event)"
   >
-      <ng-content></ng-content>
+    <ng-content></ng-content>
   </app-edge-form>
 
   <app-group-form
@@ -29,13 +30,15 @@
     (delete)="deleteGroup(selected.entity)"
     (sourceOpen)="openSource($event)"
   >
-      <ng-content></ng-content>
+    <ng-content></ng-content>
   </app-group-form>
 </ng-container>
 
-<app-multiselect-form *ngIf="isMultiSelect()"
-                      [graphView]="graphView"
-                      [infoPanel]="infoPanel"
-                      [selected]="selected">
+<app-multiselect-form
+  *ngIf="isMultiSelect()"
+  [graphView]="graphView"
+  [infoPanel]="infoPanel"
+  [selected]="selected"
+>
   <ng-content></ng-content>
 </app-multiselect-form>

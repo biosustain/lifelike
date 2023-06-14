@@ -13,14 +13,16 @@ import {
   some as _some,
   pick as _pick,
   values as _values,
-  get as _get, thru as _thru,
+  get as _get,
+  thru as _thru,
 } from 'lodash/fp';
 import { filter, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 
 import {
   GraphEntity,
   GraphEntityType,
-  UniversalGraphEdge, UniversalGraphEntity,
+  UniversalGraphEdge,
+  UniversalGraphEntity,
   UniversalGraphGroup,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
@@ -31,23 +33,17 @@ import { GraphView } from 'app/graph-viewer/renderers/graph-view';
 import { InfoPanel } from '../../../models/info-panel';
 import { getTermsFromGraphEntityArray } from '../../../utils/terms';
 
-
 @Component({
   selector: 'app-multiselect-form',
   styleUrls: ['./entity-form.component.scss'],
-  templateUrl: './multiselect-form.component.html'
+  templateUrl: './multiselect-form.component.html',
 })
 export class MultiselectFormComponent implements OnChanges, OnDestroy {
-  constructor(
-    protected readonly explainService: ExplainService
-  ) {}
+  constructor(protected readonly explainService: ExplainService) {}
   change$ = new ReplaySubject<SimpleChanges>(1);
   possibleExplanation$: Observable<string> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
-    filter(_flow(
-      _values,
-      _some(Boolean)
-    )),
+    filter(_flow(_values, _some(Boolean))),
     switchMap(() =>
       this.explainService.relationship(
         new Set<string>(
@@ -61,17 +57,18 @@ export class MultiselectFormComponent implements OnChanges, OnDestroy {
       )
     )
   );
-  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> = this.change$.pipe(
-    map(_get('selected')),
-    filter(Boolean),
-    map(
-      _flow(
-        _thru(({currentValue}) => currentValue),
-        _groupBy(({type}: GraphEntity) => type),
-        _mapValues(_map(({entity}) => entity)),
-      ),
-    )
-  );
+  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
+    this.change$.pipe(
+      map(_get('selected')),
+      filter(Boolean),
+      map(
+        _flow(
+          _thru(({ currentValue }) => currentValue),
+          _groupBy(({ type }: GraphEntity) => type),
+          _mapValues(_map(({ entity }) => entity))
+        )
+      )
+    );
   @Input() infoPanel: InfoPanel;
   @Input() graphView: CanvasGraphView;
   @Input() selected: GraphEntity[];

@@ -19,26 +19,18 @@ import {
   UniversalGraphNode,
 } from '../services/interfaces';
 
-export const getTermsFromNode = (node: UniversalGraphNode): string|null =>
-  node?.display_name;
+export const getTermsFromNode = (node: UniversalGraphNode): string | null => node?.display_name;
 
-export function getTermsFromEdge(
-  this: GraphView<any>,
-  edge: UniversalGraphEdge,
-): string {
+export function getTermsFromEdge(this: GraphView<any>, edge: UniversalGraphEdge): string {
   return _compact([
-    getTermsFromNode(
-      this.getNodelikeByHash(edge.from),
-    ),
+    getTermsFromNode(this.getNodelikeByHash(edge.from)),
     edge.label,
-    getTermsFromNode(
-      this.getNodelikeByHash(edge.to),
-    )
+    getTermsFromNode(this.getNodelikeByHash(edge.to)),
   ]).join(' ');
 }
 
 export const getTermsFromGroup = (
-  filter: { [k in GraphEntityType]?: (e: UniversalGraphEntity) => boolean } = {},
+  filter: { [k in GraphEntityType]?: (e: UniversalGraphEntity) => boolean } = {}
 ) => {
   const getTermsFromFilteredNodes = _flow(
     _filter(filter[GraphEntityType.Node] ?? Boolean),
@@ -48,13 +40,10 @@ export const getTermsFromGroup = (
   return (group: UniversalGraphGroup): string[] => getTermsFromFilteredNodes(group.members);
 };
 
-export const getTermsFromGraphEntity = (
-  filter: { [k in GraphEntityType]?: (e: UniversalGraphEntity) => boolean },
-) =>
-  function(
-    this: GraphView<any>,
-    {entity, type}: GraphEntity,
-  ): string | string[] | null {
+export const getTermsFromGraphEntity = (filter: {
+  [k in GraphEntityType]?: (e: UniversalGraphEntity) => boolean;
+}) =>
+  function (this: GraphView<any>, { entity, type }: GraphEntity): string | string[] | null {
     if (!(filter[type] ?? Boolean)(entity)) {
       return [];
     } else if (type === GraphEntityType.Edge) {
@@ -69,10 +58,10 @@ export const getTermsFromGraphEntity = (
   };
 
 const extractEdgeNodeHashes = _flow(
-  _filter(({type}: GraphEntity) => type === GraphEntityType.Edge),
-  _map(({entity}) => entity as UniversalGraphEdge),
-  _flatMap(({from, to}) => [from, to]),
-  _uniq,
+  _filter(({ type }: GraphEntity) => type === GraphEntityType.Edge),
+  _map(({ entity }) => entity as UniversalGraphEdge),
+  _flatMap(({ from, to }) => [from, to]),
+  _uniq
 );
 
 export function getTermsFromGraphEntityArray(entities: GraphEntity[]): string[] {
@@ -82,11 +71,9 @@ export function getTermsFromGraphEntityArray(entities: GraphEntity[]): string[] 
       getTermsFromGraphEntity({
         // Nodes that are included as part of the edge terms should not be included again
         [GraphEntityType.Node]: (node: UniversalGraphNode) => !edgeNodeHashes.includes(node.hash),
-      }).bind(this),
+      }).bind(this)
     ),
     _flatMap(_identity),
     _compact
   )(entities);
 }
-
-

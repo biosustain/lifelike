@@ -49,8 +49,8 @@ class RedisCache(Generic[Key, Value], Cache):
     def __init__(
         self,
         *prefixes: str,
-            dumps: Callable[[Value], str] = json.dumps,
-            loads: Callable[[str], Value] = json.loads,
+        dumps: Callable[[Value], str] = json.dumps,
+        loads: Callable[[str], Value] = json.loads,
         maxsize=float('inf'),
         getsizeof=None,
         **cache_setting,

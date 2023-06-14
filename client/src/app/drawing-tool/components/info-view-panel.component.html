@@ -1,11 +1,9 @@
-<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss">
+<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss" />
 <div class="d-flex flex-column h-100">
   <div class="module-body">
     <ng-container *ngIf="one as selected; else multiSelect">
-      <ng-container *ngIf="{name: name(selected)} as precomputed">
-        <h4 *ngIf="precomputed.name">
-          "{{ precomputed.name }}"
-        </h4>
+      <ng-container *ngIf="{ name: name(selected) } as precomputed">
+        <h4 *ngIf="precomputed.name">"{{ precomputed.name }}"</h4>
         <div class="text-muted">
           <div class="mb-2">Type: {{ selectedType(selected) | titlecase }}</div>
         </div>
@@ -19,14 +17,24 @@
           </div>
         </div>
 
-    <ng-container *ngIf="(selected.entity.data?.sources && selected.entity.data?.sources.length)
-                        || (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
+        <ng-container
+          *ngIf="
+            (selected.entity.data?.sources && selected.entity.data?.sources.length) ||
+            (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
+          "
+        >
           <fieldset class="fieldset-properties mt-4">
             <legend>Links</legend>
-        <app-links-panel [ngModel]="selected.entity.data.sources"
-                         [showHeader]="false" [editable]="false"></app-links-panel>
-        <app-links-panel [ngModel]="selected.entity.data.hyperlinks"
-                         [showHeader]="false" [editable]="false"></app-links-panel>
+            <app-links-panel
+              [ngModel]="selected.entity.data.sources"
+              [showHeader]="false"
+              [editable]="false"
+            ></app-links-panel>
+            <app-links-panel
+              [ngModel]="selected.entity.data.hyperlinks"
+              [showHeader]="false"
+              [editable]="false"
+            ></app-links-panel>
           </fieldset>
         </ng-container>
 
@@ -46,8 +54,10 @@
                 </div>
               </li>
               <li class="text-truncate">
-                <div class="btn btn-link p-0"
-                     (click)="searchMapNodeInContent(selected.entity, 'map')">
+                <div
+                  class="btn btn-link p-0"
+                  (click)="searchMapNodeInContent(selected.entity, 'map')"
+                >
                   Map Content
                 </div>
               </li>
@@ -56,16 +66,16 @@
 
           <fieldset class="fieldset-properties mt-4">
             <legend>Search External <i class="fas fa-external-link-alt ml-1"></i></legend>
-            <app-quick-search [query]="precomputed.name"
-                              [links]="selected.entity.data?.search"></app-quick-search>
+            <app-quick-search
+              [query]="precomputed.name"
+              [links]="selected.entity.data?.search"
+            ></app-quick-search>
           </fieldset>
         </div>
       </ng-container>
     </ng-container>
     <ng-template #multiSelect>
-      <h4>
-        Selection
-      </h4>
+      <h4>Selection</h4>
 
       <div class="mt-4 card" style="white-space: pre-line">
         <div class="card-body p-3 bg-light" *ngIf="groupedSelection$ | async as groupedSelection">
@@ -93,15 +103,16 @@
       </div>
     </ng-template>
 
-    <ng-container *ngIf="!one || (one.type !== 'node')">
-      <h4 class="mt-4">
-        Explanation
-      </h4>
+    <ng-container *ngIf="!one || one.type !== 'node'">
+      <h4 class="mt-4">Explanation</h4>
 
-      <div class="mt-4 card" style="white-space: pre-line"
-           *ngIf="possibleExplanation$ | async as possibleExplanation; else loading">
-        <div class="card-body p-3 bg-light" style="white-space: pre-wrap;">
-          {{possibleExplanation}}
+      <div
+        class="mt-4 card"
+        style="white-space: pre-line"
+        *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
+      >
+        <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+          {{ possibleExplanation }}
         </div>
       </div>
       <ng-template #loading>

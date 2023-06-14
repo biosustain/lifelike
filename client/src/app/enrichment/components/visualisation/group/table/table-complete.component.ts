@@ -5,13 +5,16 @@ import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 import { DataService } from 'app/shared/services/table.service';
-import { SortableTableHeaderDirective, SortEvent, SortDirection } from 'app/shared/directives/table-sortable-header.directive';
+import {
+  SortableTableHeaderDirective,
+  SortEvent,
+  SortDirection,
+} from 'app/shared/directives/table-sortable-header.directive';
 import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ExtendedMap } from 'app/shared/utils/types';
-
 
 @Component({
   selector: 'app-table-complete',
@@ -31,7 +34,7 @@ export class TableCompleteComponent implements OnChanges {
 
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
-    public service: DataService,
+    public service: DataService
   ) {
     this.data$ = service.data$;
     this.total$ = service.total$;
@@ -40,11 +43,8 @@ export class TableCompleteComponent implements OnChanges {
   termContextExplanations = new ExtendedMap<string, Observable<string>>();
 
   getTermContextExplanation(term: string) {
-    return this.termContextExplanations.getSetLazily(
-      term,
-      key => this.enrichmentService.enrichWithContext(key).pipe(
-        shareReplay(1)
-      )
+    return this.termContextExplanations.getSetLazily(term, (key) =>
+      this.enrichmentService.enrichWithContext(key).pipe(shareReplay(1))
     );
   }
 
