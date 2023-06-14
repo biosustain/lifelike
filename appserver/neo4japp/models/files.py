@@ -154,9 +154,7 @@ class FileContent(RDBMSBase):
         return int.from_bytes(h, byteorder='big', signed=True)
 
     @classmethod
-    def get_or_create(
-        cls, file: FileContentBuffer, checksum_sha256: bytes = None
-    ):
+    def get_or_create(cls, file: FileContentBuffer, checksum_sha256: bytes = None):
         """Get the existing FileContent row for the given file or create a new row
         if needed.
 
@@ -203,9 +201,11 @@ class FileContent(RDBMSBase):
         )
 
         try:
-            return db.session.query(FileContent) \
-                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+            return (
+                db.session.query(FileContent)
+                .filter(FileContent.checksum_sha256 == checksum_sha256)
                 .one()
+            )
         except NoResultFound:
             if content is None:
                 content = file.read()

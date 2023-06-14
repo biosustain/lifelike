@@ -281,9 +281,9 @@ class ManualAnnotationService:
                 db.session.add(version)
 
                 file.custom_annotations = [
-                ann
-                for ann in file.custom_annotations
-                if ann['uuid'] not in removed_annotation_uuids
+                    ann
+                    for ann in file.custom_annotations
+                    if ann['uuid'] not in removed_annotation_uuids
                 ]
 
         except Exception as e:

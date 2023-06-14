@@ -124,15 +124,15 @@ class FilesystemBaseView(MethodView):
                 # ========================================
                 # Check
                 # ========================================
-        files_to_check = \
-                    target_files[
-            :
-        ]  # Makes a copy of target_files so we don't mutate it
+                files_to_check = target_files[
+                    :
+                ]  # Makes a copy of target_files so we don't mutate it
                 if parent_file is not None:
                     # Prevent recursive parent hash IDs
                     if parent_file.hash_id in [file.hash_id for file in target_files]:
                         raise ValidationError(
-                    f'An object cannot be set as the parent of itself.', 'parentHashId'
+                            f'An object cannot be set as the parent of itself.',
+                            'parentHashId',
                         )
 
                     # Check the specified parent to see if it can even be a parent
@@ -140,24 +140,21 @@ class FilesystemBaseView(MethodView):
                         raise ValidationError(
                             f'The specified parent ({parent_file.hash_id}) is '
                             f'not a folder. It is a file, and you cannot make files '
-                    f'become a child of another file.',
-                    'parentHashId',
+                            f'become a child of another file.',
+                            'parentHashId',
                         )
                     files_to_check.append(parent_file)
 
                 Filesystem.check_file_permissions(
-                    files_to_check,
-                    user,
-                    ['writable'],
-                    permit_recycled=False
+                    files_to_check, user, ['writable'], permit_recycled=False
                 )
 
                 if 'content_value' in params and len(target_files) > 1:
                     # We don't allow multiple files to be changed due to a potential deadlock
                     # in FileContent.get_or_create(), and also because it's a weird use case
                     raise NotImplementedError(
-                "Cannot update the content of multiple files with this method"
-            )
+                        "Cannot update the content of multiple files with this method"
+                    )
 
                 # ========================================
                 # Apply
@@ -169,7 +166,7 @@ class FilesystemBaseView(MethodView):
 
                 for file in target_files:
                     assert file.calculated_project is not None
-            is_***ARANGO_USERNAME***_dir = file.calculated_project.***ARANGO_USERNAME***_id == file.id
+                    is_***ARANGO_USERNAME***_dir = file.calculated_project.***ARANGO_USERNAME***_id == file.id
 
                     if 'description' in params:
                         if file.description != params['description']:
@@ -182,9 +179,9 @@ class FilesystemBaseView(MethodView):
                             if file.id == parent_file.id:
                                 raise ValidationError(
                                     f'A file or folder ({file.filename}) cannot be '
-                                    f'set as the parent of itself.', "parentHashId"
-                                ,
-                        )
+                                    f'set as the parent of itself.',
+                                    "parentHashId",
+                                )
 
                             # TODO: Check max hierarchy depth
 
@@ -195,9 +192,9 @@ class FilesystemBaseView(MethodView):
                                     raise ValidationError(
                                         f"If the parent of '{file.filename}' was set to "
                                         f"'{parent_file.filename}', it would result in circular"
-                                f"inheritance.",
-                                "parent_hash_id",
-                            )
+                                        f"inheritance.",
+                                        "parent_hash_id",
+                                    )
                                 current_parent = current_parent.parent
 
                             file.parent_id = parent_file.id
@@ -209,11 +206,12 @@ class FilesystemBaseView(MethodView):
                             # Directories can't be public because it doesn't work right in all
                             # places yet (namely not all API endpoints that query for public files
                             # will pick up files within a public directory)
+                            pass
                     if (
                         file.mime_type != DirectoryTypeProvider.MIME_TYPE
                         and file.public != params['public']
                     ):
-                                file.public = params['public']
+                        file.public = params['public']
 
                         if 'pinned' in params:
                             file.pinned = params['pinned']
@@ -228,23 +226,20 @@ class FilesystemBaseView(MethodView):
                                 file.organism_taxonomy_id = None
                             else:
                                 try:
-                            file.organism_name = \
-                                        params['fallback_organism'][
-                                'organism_name'
-                            ]
-                            file.organism_synonym = \
-                                        params['fallback_organism'][
-                                'synonym'
-                            ]
-                            file.organism_taxonomy_id = \
-                                        params['fallback_organism'][
-                                'tax_id'
-                            ]
+                                    file.organism_name = params['fallback_organism'][
+                                        'organism_name'
+                                    ]
+                                    file.organism_synonym = params['fallback_organism'][
+                                        'synonym'
+                                    ]
+                                    file.organism_taxonomy_id = params[
+                                        'fallback_organism'
+                                    ]['tax_id']
                                 except KeyError as e:
                                     raise InvalidArgument(
-                                message=(
+                                        message=(
                                             'You must provide the following properties for a '
-                                           + 'fallback organism: '
+                                            + 'fallback organism: '
                                             '"organism_name", "synonym", "tax_id".'
                                         )
                                     ) from e
@@ -253,7 +248,9 @@ class FilesystemBaseView(MethodView):
                             file.annotation_configs = params['annotation_configs']
 
                         if 'content_value' in params:
-                            buffer = FileContentBuffer(stream=params['content_value'].stream)
+                            buffer = FileContentBuffer(
+                                stream=params['content_value'].stream
+                            )
 
                             # Get file size
                             size = buffer.size
@@ -261,19 +258,21 @@ class FilesystemBaseView(MethodView):
                             if size > Filesystem.file_max_size:
                                 raise ValidationError(
                                     'Your file could not be processed because it is too large.',
-                            "content_value",
-                        )
+                                    "content_value",
+                                )
 
                             # Get the provider
                             provider = file_type_service.get(file.mime_type)
                             buffer = provider.prepare_content(buffer, params, file)
                             try:
-                                provider.validate_content(buffer, log_status_messages=True)
+                                provider.validate_content(
+                                    buffer, log_status_messages=True
+                                )
                             except ValueError as e:
                                 raise ValidationError(
                                     f"The provided file may be corrupt for files of type "
                                     f"'{file.mime_type}' (which '{file.hash_id}' is of).",
-                            "contentValue",
+                                    "contentValue",
                                 ) from e
                             except HandledException:
                                 pass
@@ -1326,7 +1325,9 @@ class FileStarUpdateView(FilesystemBaseView):
 
         db.session.commit()
 
-        return jsonify(FileResponseSchema(context={
+        return jsonify(
+            FileResponseSchema(
+                context={
                     'user_privilege_filter': user.id,
                 },
                 exclude=(

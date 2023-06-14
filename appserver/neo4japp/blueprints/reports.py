@@ -62,7 +62,7 @@ class CopyrightInfringementReportView(MethodView):
                 ),
             )
             message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
-            SEND_GRID_API_CLIENT.send(message)
+            get_send_grid_service().send(message)
             # If for some reason we cannot send a confirmation email, the row we just
             # created will be rolled back.
 

@@ -270,24 +270,22 @@ def login():
     try:
         user = AppUser.query.filter_by(email=data.get('email')).one()
     except NoResultFound as e:
-            exception = e
+        exception = e
     else:
         if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
             raise ServerException(
                 message='The account has been suspended after too many failed login attempts.\
                 Please contact an administrator for help.',
-                    code=HTTPStatus.LOCKED,
+                code=HTTPStatus.LOCKED,
             )
         elif user.check_password(data.get('password')):
             current_app.logger.info(
                 UserEventLog(
                     username=user.username,
-                        event_type=LogEventType.AUTHENTICATION.value,
-                    ).to_dict()
-                )
-            token_service = TokenService(
-                    config['JWT_SECRET'], config['JWT_ALGORITHM']
+                    event_type=LogEventType.AUTHENTICATION.value,
+                ).to_dict()
             )
+            token_service = TokenService(config['JWT_SECRET'], config['JWT_ALGORITHM'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
@@ -297,23 +295,23 @@ def login():
             db.session.commit()
 
             return jsonify(
-                    LifelikeJWTTokenResponse().dump(
-                        {
-                'access_token': access_jwt,
-                'refresh_token': refresh_jwt,
-                'user': {
-                    'hash_id': user.hash_id,
-                    'email': user.email,
-                    'username': user.username,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'id': user.id,
-                    'reset_password': user.forced_password_reset,
-                    'roles': [u.name for u in user.roles],
-                },
-                        }
-                    )
+                LifelikeJWTTokenResponse().dump(
+                    {
+                        'access_token': access_jwt,
+                        'refresh_token': refresh_jwt,
+                        'user': {
+                            'hash_id': user.hash_id,
+                            'email': user.email,
+                            'username': user.username,
+                            'first_name': user.first_name,
+                            'last_name': user.last_name,
+                            'id': user.id,
+                            'reset_password': user.forced_password_reset,
+                            'roles': [u.name for u in user.roles],
+                        },
+                    }
                 )
+            )
         else:
             user.failed_login_count += 1
 

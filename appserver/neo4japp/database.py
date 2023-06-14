@@ -3,7 +3,7 @@ import hashlib
 from arango import ArangoClient
 from arango.http import DefaultHTTPClient
 from elasticsearch import Elasticsearch
-from flask import g
+from flask import g, current_app
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -52,7 +52,6 @@ db = SQLAlchemy(
 )
 
 _jwt_client: Union[PyJWKClient, None] = None
-
 
 
 @event.listens_for(db.session, 'after_rollback')

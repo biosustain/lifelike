@@ -678,13 +678,13 @@ def add_file(
             except ValueError:
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
-                        "filename",
-                    )
+                    "filename",
+                )
         elif trial == 3:  # Give up
             raise ValidationError(
                 'Filename conflicts with an existing file in the same folder.',
                 "filename",
-                )
+            )
         try:
             with db.session.begin_nested():
                 db.session.add(file)
@@ -889,13 +889,13 @@ def merge_maps(user_id, filename, description, parent_id, maps):
     with db.session.begin():
         raw_map_data = [
             [json.loads(raw_data[0]), raw_data[1]]
-        for raw_data in db.session.query(FileContent.raw_file, Files.filename)
-        .join(Files, and_(Files.content_id == FileContent.id, Files.id.in_(maps)))
-        .all()
+            for raw_data in db.session.query(FileContent.raw_file, Files.filename)
+            .join(Files, and_(Files.content_id == FileContent.id, Files.id.in_(maps)))
+            .all()
         ]
         map_data = [
-        {'name': filename, 'nodes': file_data['nodes'], 'edges': file_data['edges']}
-        for file_data, filename in raw_map_data
+            {'name': filename, 'nodes': file_data['nodes'], 'edges': file_data['edges']}
+            for file_data, filename in raw_map_data
         ]
 
         add_file(
@@ -903,7 +903,7 @@ def merge_maps(user_id, filename, description, parent_id, maps):
             description,
             user_id,
             parent_id,
-        json.dumps(merge_maps(map_data)).encode('utf-8'),
+            json.dumps(merge_maps(map_data)).encode('utf-8'),
         )
 
 
@@ -929,14 +929,15 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
     """
     with db.session.begin():
         sankey_file = (
-        db.session.query(
-            FileContent.raw_file,
-        )
-        .join(
-            Files, and_(Files.content_id == FileContent.id, Files.id == sankey_file_id)
+            db.session.query(
+                FileContent.raw_file,
             )
-        .one()
-    )
+            .join(
+                Files,
+                and_(Files.content_id == FileContent.id, Files.id == sankey_file_id),
+            )
+            .one()
+        )
 
         sankey_data = json.loads(sankey_file[0].decode('utf-8'))
 
@@ -974,8 +975,8 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
                     'highlight': {
                         'background': '#FFFFFF',
                         'border': color,
+                    },
                 },
-            },
             }
             for trace, nodes_in_trace in node_ids_in_traces.items():
                 if node['id'] in nodes_in_trace:
@@ -994,8 +995,8 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
                     'from': link['source'],
                     'to': link['target'],
                     'label': link.get('label', link.get('description', 'Unknown')),
-                'color': {'color': '#0c8caa'},
-                'arrows': 'to',
+                    'color': {'color': '#0c8caa'},
+                    'arrows': 'to',
                 }
                 links_in_traces[trace].append(plotly_link)
 
@@ -1008,7 +1009,7 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
                 '',
                 user_id,
                 parent_id,
-            json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8'),
+                json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8'),
             )
 
 

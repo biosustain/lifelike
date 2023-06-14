@@ -148,22 +148,19 @@ class AccountView(MethodView):
     @use_args(UserCreateSchema)
     @wrap_exceptions(ServerException, title='Cannot Create New User')
     def post(self, params: dict):
-        admin_or_private_access = g.current_user.has_role('admin') or
-                                  g.current_user.has_role('private-data-access')
+        admin_or_private_access = g.current_user.has_role(
+            'admin'
+        ) or g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
-                raise NotAuthorized()
-            if db.session.query(
-                AppUser.query_by_email(params['email']).exists()
-            ).scalar():
-                raise ServerException(
-                    message=f'E-mail {params["email"]} already taken.'
-                )
-            elif db.session.query(
-                AppUser.query_by_username(params["username"]).exists()
-            ).scalar():
-                raise ServerException(
-                    message=f'Username {params["username"]} already taken.'
-                )
+            raise NotAuthorized()
+        if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
+            raise ServerException(message=f'E-mail {params["email"]} already taken.')
+        elif db.session.query(
+            AppUser.query_by_username(params["username"]).exists()
+        ).scalar():
+            raise ServerException(
+                message=f'Username {params["username"]} already taken.'
+            )
 
         app_user = AppUser(
             username=params['username'],
@@ -171,7 +168,7 @@ class AccountView(MethodView):
             first_name=params['first_name'],
             last_name=params['last_name'],
             subject=params['email'],
-                forced_password_reset=params['created_by_admin'],
+            forced_password_reset=params['created_by_admin'],
         )
         app_user.set_password(params['password'])
         if not params.get('roles'):
@@ -194,8 +191,8 @@ class AccountView(MethodView):
                 fields={
                     'user_id': app_user.id if app_user.id is not None else 'N/A',
                     'username': app_user.username,
-                        'user_email': app_user.email,
-                    },
+                    'user_email': app_user.email,
+                },
             ) from e
         return jsonify(dict(result=app_user.to_dict()))
 
@@ -210,25 +207,21 @@ class AccountView(MethodView):
         if not modifying_own_data and not (admin_access or private_access):
             raise NotAuthorized()
         else:
-            target = (
-                    db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
-                )
+            target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
             username = params.get('username') or target.username
             if target.username != username:
-                    if db.session.query(
-                        AppUser.query_by_username(username).exists()
-                                    ).scalar():
-                        raise ServerException(
-                            message=f'Username {username} already taken.'
-                        )
+                if db.session.query(
+                    AppUser.query_by_username(username).exists()
+                ).scalar():
+                    raise ServerException(message=f'Username {username} already taken.')
             if params.get('roles'):
                 if not admin_access:
-                        raise NotAuthorized()
+                    raise NotAuthorized()
                 if modifying_own_data:
-                        raise NotAuthorized(message='You cannot update your own roles!')
-                    params['roles'] = [
-                        self.get_or_create_role(role) for role in params['roles']
-                    ]
+                    raise NotAuthorized(message='You cannot update your own roles!')
+                params['roles'] = [
+                    self.get_or_create_role(role) for role in params['roles']
+                ]
 
             for attribute, new_value in params.items():
                 setattr(target, attribute, new_value)
@@ -294,11 +287,11 @@ def update_password(params: dict, hash_id):
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             if target.check_password(params['new_password']):
-                    raise ServerException(message='New password cannot be the old one.')
+                raise ServerException(message='New password cannot be the old one.')
             target.set_password(params['new_password'])
             target.forced_password_reset = False
         else:
-                raise ServerException(message='Old password is invalid.')
+            raise ServerException(message='Old password is invalid.')
 
         db.session.add(target)
         db.session.commit()
@@ -314,7 +307,7 @@ def reset_password(email: str):
     except NoResultFound as e:
         current_app.logger.error(
             f'Invalid email: {email} provided in password reset request.',
-                extra=EventLog(event_type=LogEventType.RESET_PASSWORD.value).to_dict(),
+            extra=EventLog(event_type=LogEventType.RESET_PASSWORD.value).to_dict(),
         )
         raise AuthenticationError(
             message=f'A problem occurred validating email {email} for password reset.'
@@ -323,39 +316,36 @@ def reset_password(email: str):
     current_app.logger.info(
         f'User: {target.username} password reset.',
         extra=UserEventLog(
-                username=target.username, event_type=LogEventType.RESET_PASSWORD.value
-            ).to_dict(),
+            username=target.username, event_type=LogEventType.RESET_PASSWORD.value
+        ).to_dict(),
     )
     random.seed(secrets.randbits(MAX_TEMP_PASS_LENGTH))
 
-        new_length = (
-            secrets.randbits(MAX_TEMP_PASS_LENGTH)
-            % (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH)
-            + MIN_TEMP_PASS_LENGTH
+    new_length = (
+        secrets.randbits(MAX_TEMP_PASS_LENGTH)
+        % (MAX_TEMP_PASS_LENGTH - MIN_TEMP_PASS_LENGTH)
+        + MIN_TEMP_PASS_LENGTH
+    )
+    new_password = ''.join(
+        random.sample(
+            [secrets.choice(RESET_PASSWORD_SYMBOLS)]
+            + [secrets.choice(string.ascii_uppercase)]
+            + [secrets.choice(string.digits)]
+            + [secrets.choice(RESET_PASSWORD_ALPHABET) for i in range(new_length - 3)],
+            new_length,
         )
-        new_password = ''.join(
-            random.sample(
-                [secrets.choice(RESET_PASSWORD_SYMBOLS)]
-                + [secrets.choice(string.ascii_uppercase)]
-                + [secrets.choice(string.digits)]
-                + [
-                    secrets.choice(RESET_PASSWORD_ALPHABET)
-                    for i in range(new_length - 3)
-                ],
-                new_length,
-            )
-        )
+    )
 
     message = Mail(
         from_email=MESSAGE_SENDER_IDENTITY,
         to_emails=email,
         subject=RESET_PASSWORD_EMAIL_TITLE,
-            html_content=RESET_PASS_MAIL_CONTENT.format(
-                name=target.first_name, lastname=target.last_name, password=new_password
-            ),
-        )
+        html_content=RESET_PASS_MAIL_CONTENT.format(
+            name=target.first_name, lastname=target.last_name, password=new_password
+        ),
+    )
     try:
-            get_send_grid_service().send(message)
+        get_send_grid_service().send(message)
     except Exception as e:
         raise
 
