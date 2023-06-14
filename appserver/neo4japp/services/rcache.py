@@ -44,54 +44,40 @@ class RedisCache(Generic[Key, Value], Cache):
     _redis: redis.Redis
 
     def __init__(
-            self,
-            *prefixes: str,
-            dumps: Callable[[Value], str] = json.dumps,
-            loads: Callable[[str], Value] = json.loads,
-            maxsize=float('inf'),
-            getsizeof=None,
-            **cache_setting
+        self,
+        *prefixes: str,
+        dumps: Callable[[Value], str] = json.dumps,
+        loads: Callable[[str], Value] = json.loads,
+        maxsize=float('inf'),
+        getsizeof=None,
+        **cache_setting,
     ):
         super().__init__(maxsize, getsizeof)
         self._prefixes = prefixes
         self._dumps = dumps
         self._loads = loads
-        self._cache_setting = {
-            **DEFAULT_CACHE_SETTINGS,
-            **cache_setting
-        }
+        self._cache_setting = {**DEFAULT_CACHE_SETTINGS, **cache_setting}
         self._redis = get_redis_server()
 
     def compose_key(self, key: Key) -> str:
         print(key)
         return self._prefix_separator.join(
-            part for part in
-            (
-                *self._prefixes,
-                str(key)
-            )
-            if part
+            part for part in (*self._prefixes, str(key)) if part
         )
 
     def __getitem__(self, key: Key):
-        item = self._redis.get(
-            self.compose_key(key)
-        )
+        item = self._redis.get(self.compose_key(key))
         if item is None:
             return self.__missing__(key)
         return self._loads(item)
 
     def __setitem__(self, key, value):
         self._redis.set(
-            self.compose_key(key),
-            self._dumps(value),
-            **self._cache_setting
+            self.compose_key(key), self._dumps(value), **self._cache_setting
         )
 
     def __delitem__(self, key):
-        self._redis.delete(
-            self.compose_key(key)
-        )
+        self._redis.delete(self.compose_key(key))
 
     def __contains__(self, key):
         return self._redis.exists(key)

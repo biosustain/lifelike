@@ -91,10 +91,10 @@ def enrich_context():
     organism = data.get('organism', '')
     term = data.get('term', '')
     response = ChatGPT.Completion.create(
-      model="text-davinci-003",
-      prompt=f'What is the ralationship between ${organism} and ${term}?',
-      temperature=0,
-      max_tokens=500
+        model="text-davinci-003",
+        prompt=f'What is the ralationship between ${organism} and ${term}?',
+        temperature=0,
+        max_tokens=500,
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}
