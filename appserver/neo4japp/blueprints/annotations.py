@@ -293,7 +293,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 meta['type'],
                 sub_whitespace(text),
                 sub_whitespace(annotation.get('primaryName', '').strip()),
-                counts[key]['count']
+                counts[key]['count'],
             ]
 
     def post(self, hash_id: str):
@@ -353,7 +353,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
                 meta['type'],
                 sub_whitespace(text),
                 sub_whitespace(annotation.get('primaryName', '').strip()),
-                values[key]['value']
+                values[key]['value'],
             ]
 
     @use_args(
