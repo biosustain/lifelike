@@ -33,10 +33,12 @@ class SparseTraceNetworkSourcesTargets(ContentValidationGroupedMessageFactory):
 
     entity_type = _SparseTraceNetworkSourcesTargets
 
-    def entity_messages(self, entity: _SparseTraceNetworkSourcesTargets) -> Tuple[str, ...]:
+    def entity_messages(
+        self, entity: _SparseTraceNetworkSourcesTargets
+    ) -> Tuple[str, ...]:
         return (
             str(entity.missing_nodes),
-            self.path('graph', 'trace_networks', entity.trace_network_idx)
+            self.path('graph', 'trace_networks', entity.trace_network_idx),
         )
 
     def to_message(self):
@@ -49,12 +51,9 @@ class SparseTraceNetworkSourcesTargets(ContentValidationGroupedMessageFactory):
                 lambda length: (
                     f'{length} trace networks contains nodes'
                     f' which were defined as {self.source_target} but were not mapped into graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                f'Offending node ids:',
-                *self.entities_messages()
-            )
+            additional_msgs=(f'Offending node ids:', *self.entities_messages()),
         )
 
 
@@ -69,7 +68,7 @@ class NodeSetWithNonExistingNodes(ContentValidationGroupedMessageFactory):
     def entity_messages(self, entity: _NodeSetNonExistingNodes) -> Tuple[str, ...]:
         return (
             str(list(entity.missing_nodes)),
-            self.path('graph', 'node_sets', entity.node_set_name)
+            self.path('graph', 'node_sets', entity.node_set_name),
         )
 
     def to_message(self):
@@ -80,12 +79,9 @@ class NodeSetWithNonExistingNodes(ContentValidationGroupedMessageFactory):
                 ),
                 lambda length: (
                     f'{length} node sets contains nodes that are not in the graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                f'Offending node ids:',
-                *self.entities_messages()
-            )
+            additional_msgs=(f'Offending node ids:', *self.entities_messages()),
         )
 
 
@@ -104,7 +100,9 @@ class NonExistingNodeSet(ContentValidationGroupedMessageFactory):
     def entity_messages(self, entity: _MissingTraceNetworkSource) -> Tuple[str, ...]:
         return (
             f'Requested node set: {entity.sources}',
-            self.path('graph', 'trace_networks', entity.trace_network_idx, self.source_target)
+            self.path(
+                'graph', 'trace_networks', entity.trace_network_idx, self.source_target
+            ),
         )
 
     def to_message(self):
@@ -117,12 +115,12 @@ class NonExistingNodeSet(ContentValidationGroupedMessageFactory):
                 lambda length: (
                     f'{length} trace networks {self.source_target} property'
                     f' points to non-existing node set'
-                )
+                ),
             ),
             additional_msgs=(
                 f'Declared node sets: {self.node_sets}',
-                *self.entities_messages()
-            )
+                *self.entities_messages(),
+            ),
         )
 
 
@@ -140,7 +138,9 @@ class NonExistingDefaultSizing(ContentValidationGroupedMessageFactory):
     def entity_messages(self, entity: _MissingTraceNetworkSource) -> Tuple[str, ...]:
         return (
             f'Requested sizing: {entity.default_sizing}',
-            self.path('graph', 'trace_networks', entity.trace_network_idx, 'default_sizing')
+            self.path(
+                'graph', 'trace_networks', entity.trace_network_idx, 'default_sizing'
+            ),
         )
 
     def to_message(self):
@@ -153,12 +153,12 @@ class NonExistingDefaultSizing(ContentValidationGroupedMessageFactory):
                 lambda length: (
                     f'{length} trace networks has default sizing property'
                     f' is not in sizing list'
-                )
+                ),
             ),
             additional_msgs=(
                 f'Declared sizings: {self.sizings}',
-                *self.entities_messages()
-            )
+                *self.entities_messages(),
+            ),
         )
 
 
@@ -174,12 +174,15 @@ class NonExistingTraceNodes(ContentValidationGroupedMessageFactory):
 
     def entity_messages(self, entity: _NonExistingTraceNodes) -> Tuple[str, ...]:
         return (
-            f'Trace ({entity.trace_label}) offending nodes:'
-            f'{entity.missing_nodes}',
+            f'Trace ({entity.trace_label}) offending nodes:' f'{entity.missing_nodes}',
             self.path(
-                'graph', 'trace_networks', entity.trace_network_idx,
-                'traces', entity.trace_idx, 'node_paths'
-            )
+                'graph',
+                'trace_networks',
+                entity.trace_network_idx,
+                'traces',
+                entity.trace_idx,
+                'node_paths',
+            ),
         )
 
     def to_message(self):
@@ -190,11 +193,9 @@ class NonExistingTraceNodes(ContentValidationGroupedMessageFactory):
                 ),
                 lambda length: (
                     f'{length} traces contains nodes that are not in the graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                *self.entities_messages(),
-            )
+            additional_msgs=(*self.entities_messages(),),
         )
 
 
@@ -216,8 +217,8 @@ class NonExistingTraceLinks(ContentValidationGroupedMessageFactory):
                 entity.trace_network_idx,
                 'traces',
                 entity.trace_idx,
-                'edges'
-            )
+                'edges',
+            ),
         )
 
     def to_message(self):
@@ -226,11 +227,9 @@ class NonExistingTraceLinks(ContentValidationGroupedMessageFactory):
                 lambda entity: (
                     f'Trace ({entity.trace_idx}) contains links that are not in the graph'
                 ),
-                lambda length: f'{length} traces contains links that are not in the graph'
+                lambda length: f'{length} traces contains links that are not in the graph',
             ),
-            additional_msgs=(
-                *self.entities_messages(),
-            )
+            additional_msgs=(*self.entities_messages(),),
         )
 
 
@@ -254,8 +253,8 @@ class NonExistingTraceSourceTarget(ContentValidationGroupedMessageFactory):
                 entity.trace_network_idx,
                 'traces',
                 entity.trace_idx,
-                self.source_target
-            )
+                self.source_target,
+            ),
         )
 
     def to_message(self):
@@ -264,11 +263,9 @@ class NonExistingTraceSourceTarget(ContentValidationGroupedMessageFactory):
                 lambda entity: f'Trace {self.source_target} is not in the graph',
                 lambda length: (
                     f'{length} traces has {self.source_target}s which are not in the graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                *self.entities_messages(),
-            )
+            additional_msgs=(*self.entities_messages(),),
         )
 
 
@@ -290,8 +287,8 @@ class NonExistingTraceDetailEdge(ContentValidationGroupedMessageFactory):
                 entity.trace_network_idx,
                 'traces',
                 entity.trace_idx,
-                'detail_edges'
-            )
+                'detail_edges',
+            ),
         )
 
     def to_message(self):
@@ -300,12 +297,9 @@ class NonExistingTraceDetailEdge(ContentValidationGroupedMessageFactory):
                 lambda entity: f'Trace detail edge contains links that are not in the graph',
                 lambda length: (
                     f'{length} traces constains detail edge links that are not in the graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                "Offending links:",
-                *self.entities_messages()
-            )
+            additional_msgs=("Offending links:", *self.entities_messages()),
         )
 
 
@@ -321,14 +315,18 @@ class NonExistingLinkSourceTarget(ContentValidationGroupedMessageFactory):
     entity_type = _NonExistingTraceDetailEdge
 
     def entity_messages(self, entity: _NonExistingTraceDetailEdge) -> Tuple[str, ...]:
-        graph_context = ['Missing', entity.link_idx, entity.other_node_label or "Missing"]
+        graph_context = [
+            'Missing',
+            entity.link_idx,
+            entity.other_node_label or "Missing",
+        ]
         if self.source_target == 'target':
             graph_context = list(reversed(graph_context))
         return (
             f'Link with idx {entity.link_idx} has {self.source_target} {entity.source_target}'
             f' which is not in the graph',
             f'({graph_context[0]})-[{graph_context[1]}]→({graph_context[2]})',
-            self.path('graph', 'links', entity.link_idx, self.source_target)
+            self.path('graph', 'links', entity.link_idx, self.source_target),
         )
 
     def to_message(self):
@@ -337,11 +335,9 @@ class NonExistingLinkSourceTarget(ContentValidationGroupedMessageFactory):
                 lambda entity: f'Link {self.source_target} is not in the graph',
                 lambda length: (
                     f'{length} links has {self.source_target}s which are not in the graph'
-                )
+                ),
             ),
-            additional_msgs=(
-                *self.entities_messages(),
-            )
+            additional_msgs=(*self.entities_messages(),),
         )
 
 
@@ -361,7 +357,9 @@ class NonExistingSizingProperties(ContentValidationGroupedMessageFactory):
         return (
             f'{self.link_node.capitalize()}({entity.label}) has missing properties:'
             f'{entity.missing_properties}',
-            self.path('graph', f'{self.link_node}s', entity.id, entity.missing_properties)
+            self.path(
+                'graph', f'{self.link_node}s', entity.id, entity.missing_properties
+            ),
         )
 
     def to_message(self):
@@ -372,12 +370,12 @@ class NonExistingSizingProperties(ContentValidationGroupedMessageFactory):
                 ),
                 lambda length: (
                     f'{length} {self.link_node}s are missing sizing properties'
-                )
+                ),
             ),
             additional_msgs=(
                 f'{self.link_node.capitalize()} sizing properties: {self.sizing_properties}',
-                *self.entities_messages()
-            )
+                *self.entities_messages(),
+            ),
         )
 
 
@@ -397,7 +395,9 @@ class HasReservedProperties(ContentValidationGroupedMessageFactory):
             f'{self.link_node.capitalize()}({entity.label}) contains properties'
             f' reserved for internal use:',
             f'{entity.reserved_properties}',
-            self.path('graph', f'{self.link_node}s', entity.id, entity.reserved_properties)
+            self.path(
+                'graph', f'{self.link_node}s', entity.id, entity.reserved_properties
+            ),
         )
 
     def to_message(self):
@@ -407,12 +407,12 @@ class HasReservedProperties(ContentValidationGroupedMessageFactory):
                     f'{self.link_node.capitalize()}({entity.label}) additional properties'
                     f' cannot start with underscore'
                 ),
-                lambda length: f'{length} {self.link_node}s are missing sizing properties'
+                lambda length: f'{length} {self.link_node}s are missing sizing properties',
             ),
             additional_msgs=(
                 f'Properties starting with \'_\' are reserved for internal use',
-                *self.entities_messages()
-            )
+                *self.entities_messages(),
+            ),
         )
 
 
@@ -467,8 +467,7 @@ def validate_graph_content(data):
         if not set(node_set).issubset(node_ids):
             node_set_with_non_existing_nodes.append(
                 node_set_with_non_existing_nodes.entity_type(
-                    node_set_name,
-                    set(node_set) - node_ids
+                    node_set_name, set(node_set) - node_ids
                 )
             )
     if node_set_with_non_existing_nodes:
@@ -499,9 +498,7 @@ def validate_graph_content(data):
         if sources not in node_sets:
             non_existing_source_node_set.append(
                 non_existing_source_node_set.entity_type(
-                    trace_network_idx,
-                    _get_trace_network_label(trace_network),
-                    sources
+                    trace_network_idx, _get_trace_network_label(trace_network), sources
                 )
             )
         else:
@@ -511,16 +508,14 @@ def validate_graph_content(data):
                     sparse_trace_network_sources.entity_type(
                         trace_network_idx,
                         _get_trace_network_label(trace_network),
-                        list(set(sources_ids) - trace_network_nodes)
+                        list(set(sources_ids) - trace_network_nodes),
                     )
                 )
 
         if targets not in node_sets:
             non_existing_target_node_set.append(
                 non_existing_target_node_set.entity_type(
-                    trace_network_idx,
-                    _get_trace_network_label(trace_network),
-                    targets
+                    trace_network_idx, _get_trace_network_label(trace_network), targets
                 )
             )
         else:
@@ -530,7 +525,7 @@ def validate_graph_content(data):
                     sparse_trace_network_targets.entity_type(
                         trace_network_idx,
                         _get_trace_network_label(trace_network),
-                        list(set(targets_ids) - trace_network_nodes)
+                        list(set(targets_ids) - trace_network_nodes),
                     )
                 )
         default_sizing = trace_network.get('default_sizing')
@@ -539,75 +534,76 @@ def validate_graph_content(data):
                 non_existing_default_sizing.entity_type(
                     trace_network_idx,
                     _get_trace_network_label(trace_network),
-                    default_sizing
+                    default_sizing,
                 )
             )
         for trace_idx, trace in enumerate(trace_network['traces']):
             node_path_sets = map(set, trace['node_paths'])
-            missing_nodes = set(
-                chain.from_iterable(
-                    [node_path_set for node_path_set in node_path_sets if
-                     not node_path_set.issubset(node_ids)]
+            missing_nodes = (
+                set(
+                    chain.from_iterable(
+                        [
+                            node_path_set
+                            for node_path_set in node_path_sets
+                            if not node_path_set.issubset(node_ids)
+                        ]
+                    )
                 )
-            ) - node_ids
+                - node_ids
+            )
             if missing_nodes:
                 non_existing_trace_nodes.append(
                     non_existing_trace_nodes.entity_type(
                         trace_network_idx,
                         trace_idx,
                         _get_label(trace),
-                        list(missing_nodes)
+                        list(missing_nodes),
                     )
                 )
-            missing_links = [link_idx for link_idx in trace['edges'] if
-                             not valid_link_idx(link_idx)]
+            missing_links = [
+                link_idx for link_idx in trace['edges'] if not valid_link_idx(link_idx)
+            ]
             if missing_links:
                 non_existing_trace_links.append(
                     non_existing_trace_links.entity_type(
-                        trace_network_idx,
-                        trace_idx,
-                        missing_links
+                        trace_network_idx, trace_idx, missing_links
                     )
                 )
             if trace['source'] not in node_ids:
                 non_existing_trace_source.append(
                     non_existing_trace_source.entity_type(
-                        trace_network_idx,
-                        trace_idx,
-                        trace['source']
+                        trace_network_idx, trace_idx, trace['source']
                     )
                 )
             if trace['target'] not in node_ids:
                 non_existing_trace_target.append(
                     non_existing_trace_target.entity_type(
-                        trace_network_idx,
-                        trace_idx,
-                        trace['target']
+                        trace_network_idx, trace_idx, trace['target']
                     )
                 )
             detail_edges = chain.from_iterable(
                 [detail_edge[:2] for detail_edge in trace.get('detail_edges', [])]
             )
-            missing_links = [link_idx for link_idx in detail_edges if not valid_link_idx(link_idx)]
+            missing_links = [
+                link_idx for link_idx in detail_edges if not valid_link_idx(link_idx)
+            ]
             if missing_links:
                 non_existing_trace_detail_edge.append(
                     non_existing_trace_detail_edge.entity_type(
-                        trace_network_idx,
-                        trace_idx,
-                        missing_links
+                        trace_network_idx, trace_idx, missing_links
                     )
                 )
     for check_result in (
-            non_existing_source_node_set,
-            non_existing_target_node_set,
-            sparse_trace_network_sources,
-            sparse_trace_network_targets,
-            non_existing_default_sizing,
-            non_existing_trace_nodes,
-            non_existing_trace_links,
-            non_existing_trace_source,
-            non_existing_trace_target,
-            non_existing_trace_detail_edge,
+        non_existing_source_node_set,
+        non_existing_target_node_set,
+        sparse_trace_network_sources,
+        sparse_trace_network_targets,
+        non_existing_default_sizing,
+        non_existing_trace_nodes,
+        non_existing_trace_links,
+        non_existing_trace_source,
+        non_existing_trace_target,
+        non_existing_trace_detail_edge,
     ):
         if check_result:
             yield check_result.to_message()
@@ -624,83 +620,74 @@ def validate_graph_content(data):
     non_existing_link_source = NonExistingLinkSourceTarget('source')
     non_existing_link_target = NonExistingLinkSourceTarget('target')
     non_existing_sizing_properties = NonExistingSizingProperties(
-        'link',
-        list(sizing_link_properties)
+        'link', list(sizing_link_properties)
     )
     has_reserved_properties = HasReservedProperties('link')
     for idx, link in enumerate(links):
         if link['source'] not in node_ids:
             non_existing_link_source.append(
                 non_existing_link_source.entity_type(
-                    idx,
-                    link['source'],
-                    node_id_map.get(link['target'])
+                    idx, link['source'], node_id_map.get(link['target'])
                 )
             )
         if link['target'] not in node_ids:
             non_existing_link_target.append(
                 non_existing_link_target.entity_type(
-                    idx,
-                    link['target'],
-                    node_id_map.get(link['source'])
+                    idx, link['target'], node_id_map.get(link['source'])
                 )
             )
-        missing_properties = [prop for prop in sizing_link_properties if prop not in link]
+        missing_properties = [
+            prop for prop in sizing_link_properties if prop not in link
+        ]
         if missing_properties:
             non_existing_sizing_properties.append(
                 non_existing_sizing_properties.entity_type(
-                    idx,
-                    _get_label(link),
-                    missing_properties
+                    idx, _get_label(link), missing_properties
                 )
             )
-        reserved_properties = [prop for prop in sizing_link_properties if prop.startswith('_')]
+        reserved_properties = [
+            prop for prop in sizing_link_properties if prop.startswith('_')
+        ]
         if reserved_properties:
             has_reserved_properties.append(
                 has_reserved_properties.entity_type(
-                    idx,
-                    _get_label(link),
-                    reserved_properties
+                    idx, _get_label(link), reserved_properties
                 )
             )
     for check_result in (
-            non_existing_link_source,
-            non_existing_link_target,
-            non_existing_sizing_properties,
-            has_reserved_properties
+        non_existing_link_source,
+        non_existing_link_target,
+        non_existing_sizing_properties,
+        has_reserved_properties,
     ):
         if check_result:
             yield check_result.to_message()
         del check_result
 
     non_existing_sizing_properties = NonExistingSizingProperties(
-        'node',
-        list(sizing_node_properties)
+        'node', list(sizing_node_properties)
     )
     has_reserved_properties = HasReservedProperties('node')
     for node in nodes:
-        missing_properties = [prop for prop in sizing_node_properties if prop not in node]
+        missing_properties = [
+            prop for prop in sizing_node_properties if prop not in node
+        ]
         if missing_properties:
             non_existing_sizing_properties.append(
                 non_existing_sizing_properties.entity_type(
-                    node.get("id"),
-                    _get_label(node),
-                    missing_properties
+                    node.get("id"), _get_label(node), missing_properties
                 )
             )
-        reserved_properties = [prop for prop in sizing_node_properties if prop.startswith('_')]
+        reserved_properties = [
+            prop for prop in sizing_node_properties if prop.startswith('_')
+        ]
         if reserved_properties:
             has_reserved_properties.append(
                 has_reserved_properties.entity_type(
-                    node.get("id"),
-                    _get_label(node),
-                    reserved_properties
+                    node.get("id"), _get_label(node), reserved_properties
                 )
             )
-    for check_result in (
-            non_existing_sizing_properties,
-            has_reserved_properties
-    ):
+    for check_result in (non_existing_sizing_properties, has_reserved_properties):
         if check_result:
             yield check_result.to_message()
         del check_result

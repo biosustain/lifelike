@@ -14,9 +14,10 @@ export class ProjectMenuComponent {
   @Input() project: ProjectImpl;
   @Input() nameEntity = false;
 
-  constructor(protected readonly projectActions: ProjectActions,
-              protected readonly snackBar: MatSnackBar) {
-  }
+  constructor(
+    protected readonly projectActions: ProjectActions,
+    protected readonly snackBar: MatSnackBar
+  ) {}
 
   openEditDialog(project: ProjectImpl) {
     this.projectActions.openEditDialog(project);
@@ -27,13 +28,9 @@ export class ProjectMenuComponent {
   }
 
   openDeleteDialog(project: ProjectImpl) {
-    return this.projectActions.openDeleteDialog(project)
-      .then(() =>
-        this.snackBar.open(
-          `Deleted ${project.name}.`,
-          'Close', {duration: 5000}
-        )
-      );
+    return this.projectActions
+      .openDeleteDialog(project)
+      .then(() => this.snackBar.open(`Deleted ${project.name}.`, 'Close', { duration: 5000 }));
   }
 
   openShareDialog(project: ProjectImpl) {

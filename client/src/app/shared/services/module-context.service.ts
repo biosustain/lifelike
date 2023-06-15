@@ -12,9 +12,8 @@ export class ModuleContext {
     readonly route: ActivatedRoute,
     readonly router: Router,
     protected readonly workspaceManager: WorkspaceManager,
-    protected readonly viewService: ViewService,
-  ) {
-  }
+    protected readonly viewService: ViewService
+  ) {}
 
   componentInstance;
 
@@ -23,16 +22,19 @@ export class ModuleContext {
   }
 
   get appLink() {
-    return this.viewService.getAppLink(
-      this.componentInstance,
-      getURLFromSnapshot(this.route.snapshot, '').toString()
-    ).toPromise().then(({href}) => href);
+    return this.viewService
+      .getAppLink(this.componentInstance, getURLFromSnapshot(this.route.snapshot, '').toString())
+      .toPromise()
+      .then(({ href }) => href);
   }
 
   get shareableLink() {
-    return this.viewService.getShareableLink(
-      this.componentInstance,
-      getURLFromSnapshot(this.route.snapshot, '').toString()
-    ).toPromise().then(({href}) => href);
+    return this.viewService
+      .getShareableLink(
+        this.componentInstance,
+        getURLFromSnapshot(this.route.snapshot, '').toString()
+      )
+      .toPromise()
+      .then(({ href }) => href);
   }
 }

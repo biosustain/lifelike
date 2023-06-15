@@ -25,7 +25,10 @@ import { FilesystemService } from './filesystem.service';
 import { getObjectLabel } from '../utils/objects';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
-import { ObjectExportDialogComponent, ObjectExportDialogValue, } from '../components/dialog/object-export-dialog.component';
+import {
+  ObjectExportDialogComponent,
+  ObjectExportDialogValue,
+} from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService, CreateResultMapping } from './object-creation.service';
@@ -35,26 +38,30 @@ import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.c
 
 @Injectable()
 export class FilesystemObjectActions {
-
-  constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly router: Router,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly modalService: NgbModal,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly messageDialog: MessageDialog,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly objectCreationService: ObjectCreationService,
-              protected readonly objectTypeService: ObjectTypeService,
-              protected readonly clipboard: ClipboardService) {
-  }
+  constructor(
+    protected readonly annotationsService: AnnotationsService,
+    protected readonly router: Router,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly messageDialog: MessageDialog,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly objectCreationService: ObjectCreationService,
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly clipboard: ClipboardService
+  ) {}
 
   protected createProgressDialog(message: string, title = 'Working...') {
-    const progressObservables = [new BehaviorSubject<Progress>(new Progress({
-      status: message,
-    }))];
+    const progressObservables = [
+      new BehaviorSubject<Progress>(
+        new Progress({
+          status: message,
+        })
+      ),
+    ];
     return this.progressDialog.display({
       title,
       progressObservables,
@@ -72,26 +79,29 @@ export class FilesystemObjectActions {
     dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
       const progressDialogRef = this.createProgressDialog('Generating export...');
       try {
-        return value.exporter.export(value.exportLinked).pipe(
-          take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
-          finalize(() => progressDialogRef.close()),
-          map((file: File) => {
-            openDownloadForBlob(file, file.name);
-            return true;
-          }),
-          this.errorHandler.create({label: 'Export object'}),
-        ).toPromise();
+        return value.exporter
+          .export(value.exportLinked)
+          .pipe(
+            take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
+            finalize(() => progressDialogRef.close()),
+            map((file: File) => {
+              openDownloadForBlob(file, file.name);
+              return true;
+            }),
+            this.errorHandler.create({ label: 'Export object' })
+          )
+          .toPromise();
       } catch (e) {
         progressDialogRef.close();
         throw e;
       }
     };
-    dialogRef.componentInstance.dismiss =  (error) => {
+    dialogRef.componentInstance.dismiss = (error) => {
       if (error) {
         this.messageDialog.display({
-            title: 'No Export Formats',
-            message: `No export formats are supported for ${getObjectLabel(target)}.`,
-            type: MessageType.Warning,
+          title: 'No Export Formats',
+          message: `No export formats are supported for ${getObjectLabel(target)}.`,
+          type: MessageType.Warning,
         } as MessageArguments);
       }
       return of(false);
@@ -137,31 +147,36 @@ export class FilesystemObjectActions {
    * @param targets the objects to move
    */
   openMoveDialog(targets: FilesystemObject[]): Promise<{
-    destination: FilesystemObject,
+    destination: FilesystemObject;
   }> {
     const dialogRef = this.modalService.open(ObjectSelectionDialogComponent);
     dialogRef.componentInstance.hashId = first(targets).parent.hashId;
     dialogRef.componentInstance.title = `Move ${getObjectLabel(targets)}`;
     dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
     dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => o.isDirectory;
-    dialogRef.componentInstance.accept = ((destinations: FilesystemObject[]) => {
+    dialogRef.componentInstance.accept = (destinations: FilesystemObject[]) => {
       const destination = destinations[0];
 
       const progressDialogRef = this.createProgressDialog(`Moving  ${getObjectLabel(targets)}...`);
 
-      return this.filesystemService.save(targets.map(target => target.hashId), {
-        parentHashId: destination.hashId,
-      }, Object.assign({}, ...targets.map(target => ({[target.hashId]: target}))))
+      return this.filesystemService
+        .save(
+          targets.map((target) => target.hashId),
+          {
+            parentHashId: destination.hashId,
+          },
+          Object.assign({}, ...targets.map((target) => ({ [target.hashId]: target })))
+        )
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Move object'}),
+          this.errorHandler.create({ label: 'Move object' })
         )
         .toPromise()
         .then(() => ({
           destination,
         }));
-    });
+    };
     return dialogRef.result;
   }
 
@@ -170,24 +185,28 @@ export class FilesystemObjectActions {
    * @param target the file to edit
    */
   openEditDialog(target: FilesystemObject): Promise<ObjectEditDialogValue> {
-    return this.objectTypeService.get(target).pipe(
-      mergeMap(typeProvider => from(typeProvider.openEditDialog(target))),
-      take(1),
-    ).toPromise();
+    return this.objectTypeService
+      .get(target)
+      .pipe(
+        mergeMap((typeProvider) => from(typeProvider.openEditDialog(target))),
+        take(1)
+      )
+      .toPromise();
   }
 
   openDeleteDialog(targets: FilesystemObject[]): Promise<ObjectEditDialogValue> {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = targets;
-    dialogRef.componentInstance.accept = (() => {
+    dialogRef.componentInstance.accept = () => {
       const progressDialogRef = this.createProgressDialog(`Deleting ${getObjectLabel(targets)}...`);
-      return this.filesystemService.delete(targets.map(target => target.hashId))
+      return this.filesystemService
+        .delete(targets.map((target) => target.hashId))
         .pipe(
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.create({label: 'Delete object'}),
+          this.errorHandler.create({ label: 'Delete object' })
         )
         .toPromise();
-    });
+    };
     return dialogRef.result;
   }
 
@@ -217,9 +236,7 @@ export class FilesystemObjectActions {
   }
 
   openShareDialog(object: FilesystemObject, forEditing = false): Promise<boolean> {
-    return Promise.resolve(
-      this.clipboard.copy(object.getURL(forEditing).toAbsolute().toString())
-    );
+    return Promise.resolve(this.clipboard.copy(object.getURL(forEditing).toAbsolute().toString()));
   }
 
   openNewWindow(object: FilesystemObject, forEditing = false) {
@@ -231,33 +248,37 @@ export class FilesystemObjectActions {
     const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
-    const annotationRequests = targets.map(
-      object => {
-        const annotationConfigs = object.annotationConfigs;
-        const organism = object.fallbackOrganism;
-        return this.annotationsService.generateAnnotations(
-          [object.hashId], {annotationConfigs, organism}
-        ).body$;
-      });
+    const annotationRequests = targets.map((object) => {
+      const annotationConfigs = object.annotationConfigs;
+      const organism = object.fallbackOrganism;
+      return this.annotationsService.generateAnnotations([object.hashId], {
+        annotationConfigs,
+        organism,
+      }).body$;
+    });
 
     const results: ResultMapping<AnnotationGenerationResultData>[] = [];
-    return forkJoin(annotationRequests).pipe(
-      mergeMap(res => merge(res)),
-      tap(result => results.push(result)),
-      finalize(() => {
-        const check = [];
-        progressDialogRef.close();
-        results.forEach(result => Object.entries(result.mapping).forEach(r => {
-          check.push(r[1].success);
-        }));
-        if (check.some(c => c === false)) {
+    return forkJoin(annotationRequests)
+      .pipe(
+        mergeMap((res) => merge(res)),
+        tap((result) => results.push(result)),
+        finalize(() => {
+          const check = [];
+          progressDialogRef.close();
+          results.forEach((result) =>
+            Object.entries(result.mapping).forEach((r) => {
+              check.push(r[1].success);
+            })
+          );
+          if (check.some((c) => c === false)) {
             const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
             modalRef.componentInstance.objects = targets;
             modalRef.componentInstance.results = results;
-        }
-      }),
-      this.errorHandler.create({label: 'Re-annotate object'}),
-    ).toPromise();
+          }
+        }),
+        this.errorHandler.create({ label: 'Re-annotate object' })
+      )
+      .toPromise();
   }
 
   updateStarred(hashId: string, starred: boolean) {
@@ -266,13 +287,14 @@ export class FilesystemObjectActions {
 
   updatePinned(object: FilesystemObject) {
     if (object.privileges.writable) {
-      return this.filesystemService.save(
-        [object.hashId],
-        { pinned: !object.pinned, parentHashId: object.parent.hashId },
-        {[object.hashId]: object}
-      ).pipe(
-        this.errorHandler.create({label: 'Edit object'}),
-      ).toPromise();
+      return this.filesystemService
+        .save(
+          [object.hashId],
+          { pinned: !object.pinned, parentHashId: object.parent.hashId },
+          { [object.hashId]: object }
+        )
+        .pipe(this.errorHandler.create({ label: 'Edit object' }))
+        .toPromise();
     }
   }
 }

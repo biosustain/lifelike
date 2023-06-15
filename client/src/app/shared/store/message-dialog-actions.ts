@@ -4,9 +4,9 @@ import { MessageArguments } from '../services/message-dialog.service';
 
 export const displayMessageDialog = createAction(
   '[Importer] Display Message Dialog',
-  props<{payload: MessageArguments}>(),
+  props<{ payload: MessageArguments }>()
 );
 
-const all = union({displayMessageDialog});
+const all = union({ displayMessageDialog });
 
 export type MessageDialogActions = typeof all;

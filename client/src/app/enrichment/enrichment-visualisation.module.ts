@@ -8,20 +8,9 @@ import { EnrichmentVisualisationService } from './services/enrichment-visualisat
 import { GroupModule } from './components/visualisation/group/group.module';
 
 @NgModule({
-  declarations: [
-    EnrichmentVisualisationViewerComponent
-  ],
-  imports: [
-    SharedModule,
-    FileBrowserModule,
-    GroupModule
-  ],
-  exports: [
-    EnrichmentVisualisationViewerComponent
-  ],
-  providers: [
-    EnrichmentVisualisationService
-  ],
+  declarations: [EnrichmentVisualisationViewerComponent],
+  imports: [SharedModule, FileBrowserModule, GroupModule],
+  exports: [EnrichmentVisualisationViewerComponent],
+  providers: [EnrichmentVisualisationService],
 })
-export class EnrichmentVisualisationsModule {
-}
+export class EnrichmentVisualisationsModule {}

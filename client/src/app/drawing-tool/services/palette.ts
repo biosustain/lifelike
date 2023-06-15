@@ -17,4 +17,6 @@ export const PALETTE_COLORS = Object.freeze([
 // 4d - 30% opacity
 export const BG_OPACITY = '4d';
 
-export const BG_PALETTE_COLORS = Object.freeze(PALETTE_COLORS.map(colorString => colorString + BG_OPACITY));
+export const BG_PALETTE_COLORS = Object.freeze(
+  PALETTE_COLORS.map((colorString) => colorString + BG_OPACITY)
+);

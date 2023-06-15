@@ -5,7 +5,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { isEqual, uniqueId } from 'lodash-es';
-import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscription, iif } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  defer,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  iif,
+} from 'rxjs';
 import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -51,11 +60,7 @@ type ReadonlyEntityTypeVisibilityMap = ReadonlyMap<string, boolean>;
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-view.component.html',
   styleUrls: ['./pdf-view.component.scss'],
-  providers: [
-    ModuleContext,
-    PDFAnnotationService,
-    PDFSearchService
-  ],
+  providers: [ModuleContext, PDFAnnotationService, PDFSearchService],
 })
 export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent {
   encodeURIComponent = encodeURIComponent;
@@ -71,50 +76,48 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
     protected readonly moduleContext: ModuleContext,
-    readonly search: PDFSearchService,
+    readonly search: PDFSearchService
   ) {
     moduleContext.register(this);
 
     this.pdfAnnService.annotationHighlightChange$.subscribe(() =>
-      this.searchControlComponent?.focus(),
+      this.searchControlComponent?.focus()
     );
 
     this.loadTask = new BackgroundTask(([hashId, loc]) =>
       combineLatest(
-          this.filesystemService.open(hashId),
-        this.filesystemService.getContent(hashId).pipe(
-          mapBlobToBuffer(),
-        ),
-        this.pdfAnnService.getAnnotations(hashId),
-      ),
+        this.filesystemService.open(hashId),
+        this.filesystemService.getContent(hashId).pipe(mapBlobToBuffer()),
+        this.pdfAnnService.getAnnotations(hashId)
+      )
     );
 
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+    this.paramsSubscription = this.route.queryParams.subscribe((params) => {
       this.returnUrl = params.return;
     });
 
     // Listener for file open
-    this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [object, content, ann],
-                                                          value: [file, loc],
-                                                        }) => {
-      this.pdfData = {data: new Uint8Array(content)};
-      this.pdfAnnService.annotations$.next(ann);
-      this.object = object;
-      this.emitModuleProperties();
+    this.openPdfSub = this.loadTask.results$.subscribe(
+      ({ result: [object, content, ann], value: [file, loc] }) => {
+        this.pdfData = { data: new Uint8Array(content) };
+        this.pdfAnnService.annotations$.next(ann);
+        this.object = object;
+        this.emitModuleProperties();
 
-      this.currentFileId = object.hashId;
-      this.ready = true;
-    });
+        this.currentFileId = object.hashId;
+        this.ready = true;
+      }
+    );
 
     this.loadFromUrl();
   }
 
-  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', { static: false, read: NgbDropdown }) dropdownComponent: NgbDropdown;
   @ViewChild('searchControl', {
     static: false,
     read: SearchControlComponent,
-  }) searchControlComponent: SearchControlComponent;
+  })
+  searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<null> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -130,14 +133,13 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
   object?: FilesystemObject;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
-  pdfData: { url?: string, data?: Uint8Array };
+  pdfData: { url?: string; data?: Uint8Array };
   currentFileId: string;
   pdfFileLoaded = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
   showExcludedAnnotations = false;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
-
+  @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib: PdfViewerLibComponent;
 
   dragTitleData$ = defer(() => {
     const sources: Source[] = this.object.getGraphEntitySources();
@@ -149,46 +151,55 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
         label: 'link',
         sub_labels: [],
         data: {
-          references: [{
-            type: 'PROJECT_OBJECT',
-            id: this.object.hashId + '',
-          }],
+          references: [
+            {
+              type: 'PROJECT_OBJECT',
+              id: this.object.hashId + '',
+            },
+          ],
           sources,
         },
       } as Partial<UniversalGraphNode>),
-      ...GenericDataProvider.getURIs([{
-        uri: this.object.getURL(false).toAbsolute(),
-        title: this.object.filename,
-      }]),
+      ...GenericDataProvider.getURIs([
+        {
+          uri: this.object.getURL(false).toAbsolute(),
+          title: this.object.filename,
+        },
+      ]),
     });
   });
 
   sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   private entityTypeVisibilityMapChange$: Subject<EntityTypeVisibilityMap> = new BehaviorSubject(
-    new Map(ENTITY_TYPES.map(({id}) => [id, true]))
+    new Map(ENTITY_TYPES.map(({ id }) => [id, true]))
   );
-  entityTypeVisibilityMap$: Observable<ReadonlyEntityTypeVisibilityMap> = this.entityTypeVisibilityMapChange$.pipe(
-    distinctUntilChanged(isEqual)
-  );
+  entityTypeVisibilityMap$: Observable<ReadonlyEntityTypeVisibilityMap> =
+    this.entityTypeVisibilityMapChange$.pipe(distinctUntilChanged(isEqual));
   sortedEntityTypeEntriesVisibilityMap$ = combineLatest([
     this.pdfAnnService.sortedEntityTypeEntries$,
-    this.entityTypeVisibilityMap$
+    this.entityTypeVisibilityMap$,
   ]).pipe(
-    map(([sortedEntityTypeEntries, entityTypeVisibilityMap]) =>
-      new Map(sortedEntityTypeEntries.map(entry => [entry, entityTypeVisibilityMap.get(entry.type.id)]))
+    map(
+      ([sortedEntityTypeEntries, entityTypeVisibilityMap]) =>
+        new Map(
+          sortedEntityTypeEntries.map((entry) => [
+            entry,
+            entityTypeVisibilityMap.get(entry.type.id),
+          ])
+        )
     )
   );
   entityTypeVisibilityMapContainsUnchecked$ = this.entityTypeVisibilityMap$.pipe(
-    map(etvm => findEntriesKey(etvm, v => !v)),
+    map((etvm) => findEntriesKey(etvm, (v) => !v)),
     distinctUntilChanged()
   );
   highlightController$ = this.pdfAnnService.annotationHighlightChange$.pipe(
-    switchMap(annotationHighlight =>
+    switchMap((annotationHighlight) =>
       iif(
         () => Boolean(annotationHighlight?.index$),
         annotationHighlight?.index$.pipe(
-          map(highlightedAnnotationIndex => ({
+          map((highlightedAnnotationIndex) => ({
             type: 'annotation',
             value: annotationHighlight.firstAnnotation?.meta.allText || annotationHighlight.id,
             changeValue: (value) => this.pdfAnnService.highlightAllAnnotations(value),
@@ -199,11 +210,8 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
             next: () => this.pdfAnnService.nextAnnotationHighlight(),
           }))
         ),
-        combineLatest([
-          this.search.query$,
-          this.search.resultSummary$,
-        ]).pipe(
-          map(([query, {searching, matchesCount}]) => ({
+        combineLatest([this.search.query$, this.search.resultSummary$]).pipe(
+          map(([query, { searching, matchesCount }]) => ({
             type: 'search',
             value: query,
             changeValue: (value) => this.search.query$.next(value),
@@ -215,16 +223,16 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
           }))
         )
       )
-    ),
+    )
   );
 
   ngOnInit() {
-    this.pdfAnnService.foundHighlightAnnotations$.subscribe(foundHighlightAnnotations => {
+    this.pdfAnnService.foundHighlightAnnotations$.subscribe((foundHighlightAnnotations) => {
       const foundHighlightAnnotationsTypes = new Set(
-        foundHighlightAnnotations?.annotations?.map(ann => ann.meta.type)
+        foundHighlightAnnotations?.annotations?.map((ann) => ann.meta.type)
       );
-      this.updateEntityTypeVisibilityMap(
-        etvm => mapIterable(etvm, ([id, state]) => [id, foundHighlightAnnotationsTypes.has(id) || state])
+      this.updateEntityTypeVisibilityMap((etvm) =>
+        mapIterable(etvm, ([id, state]) => [id, foundHighlightAnnotationsTypes.has(id) || state])
       );
     });
   }
@@ -239,9 +247,10 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
-      this.openPdf(linkedFileId,
+      this.openPdf(
+        linkedFileId,
         this.parseLocationFromUrl(fragment),
-        this.parseHighlightFromUrl(fragment),
+        this.parseHighlightFromUrl(fragment)
       );
     }
   }
@@ -251,7 +260,6 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
       this.loadFromUrl();
     }
   }
-
 
   closeFilterPopup() {
     this.dropdownComponent.close();
@@ -266,14 +274,17 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     const loc = event.location;
     const meta = event.meta;
 
-    const source = `/projects/${encodeURIComponent(this.object.project.name)}`
-      + `/files/${encodeURIComponent(this.currentFileId)}`
-      + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
+    const source =
+      `/projects/${encodeURIComponent(this.object.project.name)}` +
+      `/files/${encodeURIComponent(this.currentFileId)}` +
+      `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
-    const sources = [{
-      domain: this.object.filename,
-      url: source,
-    }];
+    const sources = [
+      {
+        domain: this.object.filename,
+        url: source,
+      },
+    ];
 
     if (this.object.doi) {
       sources.push({
@@ -293,14 +304,14 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     const hyperlink = meta.idHyperlinks || [];
 
     for (const link of hyperlink) {
-      const {label, url} = JSON.parse(link);
+      const { label, url } = JSON.parse(link);
       hyperlinks.push({
         domain: label,
         url,
       });
     }
 
-    const search = Object.keys(meta.links || []).map(k => {
+    const search = Object.keys(meta.links || []).map((k) => {
       return {
         domain: k,
         url: meta.links[k],
@@ -311,34 +322,42 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
 
     const dataTransfer: DataTransfer = event.event.dataTransfer;
     dataTransfer.setData('text/plain', meta.allText);
-    GenericDataProvider.setURIs(dataTransfer, [{
-      title: text,
-      uri: new AppURL(source).toAbsolute(),
-    }]);
-    dataTransfer.setData('application/lifelike-node', JSON.stringify({
-      display_name: text,
-      label: meta.type.toLowerCase(),
-      sub_labels: [],
-      data: {
-        sources,
-        search,
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.object.hashId,
-        }, {
-          type: 'DATABASE',
-          // assumes first link will be main database source link
-          // tslint ignore cause other option is destructuring and that
-          // also gets name shadowing error
-          url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
-        }],
-        hyperlinks,
-        detail: meta.type === 'link' ? meta.allText : '',
+    GenericDataProvider.setURIs(dataTransfer, [
+      {
+        title: text,
+        uri: new AppURL(source).toAbsolute(),
       },
-      style: {
-        showDetail: meta.type === 'link',
-      },
-    } as Partial<UniversalGraphNode>));
+    ]);
+    dataTransfer.setData(
+      'application/lifelike-node',
+      JSON.stringify({
+        display_name: text,
+        label: meta.type.toLowerCase(),
+        sub_labels: [],
+        data: {
+          sources,
+          search,
+          references: [
+            {
+              type: 'PROJECT_OBJECT',
+              id: this.object.hashId,
+            },
+            {
+              type: 'DATABASE',
+              // assumes first link will be main database source link
+              // tslint ignore cause other option is destructuring and that
+              // also gets name shadowing error
+              url: hyperlink.length > 0 ? JSON.parse(hyperlink[0]).url : '',
+            },
+          ],
+          hyperlinks,
+          detail: meta.type === 'link' ? meta.allText : '',
+        },
+        style: {
+          showDetail: meta.type === 'link',
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   zoomIn() {
@@ -405,24 +424,25 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     this.pendingScroll = null;
   }
 
-
   setAllEntityTypesVisibility(state: boolean) {
-    return this.updateEntityTypeVisibilityMap(
-      etvm => mapIterable(etvm, ([id]) => [id, state])
-    );
+    return this.updateEntityTypeVisibilityMap((etvm) => mapIterable(etvm, ([id]) => [id, state]));
   }
 
-  updateEntityTypeVisibilityMap(callback: (currentMap: ReadonlyEntityTypeVisibilityMap) => EntityTypeVisibilityMap) {
-    return this.entityTypeVisibilityMap$.pipe(
-      first(),
-      tap(etvm => {
-        this.entityTypeVisibilityMapChange$.next(callback(etvm));
-      })
-    ).toPromise();
+  updateEntityTypeVisibilityMap(
+    callback: (currentMap: ReadonlyEntityTypeVisibilityMap) => EntityTypeVisibilityMap
+  ) {
+    return this.entityTypeVisibilityMap$
+      .pipe(
+        first(),
+        tap((etvm) => {
+          this.entityTypeVisibilityMapChange$.next(callback(etvm));
+        })
+      )
+      .toPromise();
   }
 
   changeEntityTypeVisibility(entityTypeId: string, visible: boolean) {
-    return this.updateEntityTypeVisibilityMap(etvm => {
+    return this.updateEntityTypeVisibilityMap((etvm) => {
       const newEntityTypeVisibilityMap = new Map(etvm);
       newEntityTypeVisibilityMap.set(entityTypeId, visible);
       return newEntityTypeVisibilityMap;
@@ -478,9 +498,10 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
   }
 
   openFileAnnotationHistoryDialog() {
-    this.fileObjectActions.openFileAnnotationHistoryDialog(this.object).then(() => {
-    }, () => {
-    });
+    this.fileObjectActions.openFileAnnotationHistoryDialog(this.object).then(
+      () => {},
+      () => {}
+    );
   }
 
   openNewWindow() {

@@ -35,32 +35,31 @@ def validate_sankeys(validate_graph):
     session = Session(conn)
 
     t_files = table(
-        'files',
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        'files', column('content_id', sa.Integer), column('mime_type', sa.String)
+    )
 
     t_files_content = table(
         'files_content',
         column('id', sa.Integer),
         column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary)
+        column('checksum_sha256', sa.Binary),
     )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
-        and_(
-            t_files.c.mime_type == 'vnd.lifelike.document/graph',
-            t_files.c.content_id == t_files_content.c.id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
+            and_(
+                t_files.c.mime_type == 'vnd.lifelike.document/graph',
+                t_files.c.content_id == t_files_content.c.id,
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         for id, content in chunk:
             data = json.loads(content)
 
             validate_graph(data)
+
 
 # endregion
 
@@ -76,6 +75,8 @@ def data_upgrades():
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
+
+
 # endregion
 
 
@@ -90,4 +91,6 @@ def data_downgrade():
 def downgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_downgrade()
+
+
 # endregion

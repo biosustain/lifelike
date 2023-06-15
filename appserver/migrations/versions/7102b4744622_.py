@@ -12,6 +12,7 @@ from sqlalchemy import table, column
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import AppUser
 
@@ -29,10 +30,7 @@ def upgrade():
         data_upgrades()
 
     op.alter_column(
-        'appuser',
-        'subject',
-        existing_type=sa.String(length=256),
-        nullable=False
+        'appuser', 'subject', existing_type=sa.String(length=256), nullable=False
     )
 
 
@@ -45,15 +43,11 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    t_appuser = table(
-        'appuser',
-        column('id', sa.Integer),
-        column('email', sa.String))
+    t_appuser = table('appuser', column('id', sa.Integer), column('email', sa.String))
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_appuser.c.id,
-        t_appuser.c.email
-    ]))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_appuser.c.id, t_appuser.c.email])
+    )
 
     for chunk in window_chunk(files, 20):
         files_to_update = []

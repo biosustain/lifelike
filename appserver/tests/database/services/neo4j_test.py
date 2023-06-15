@@ -5,8 +5,7 @@ import pytest
     reason='Does not work unless we upgrade the Neo4j docker image to 4.0+ because of apoc function'
 )
 def test_expand_node_gets_no_results_for_node_with_no_relationships(
-    visualizer_service,
-    gas_gangrene
+    visualizer_service, gas_gangrene
 ):
     expand_query_result = visualizer_service.expand_graph(
         node_id=gas_gangrene.identity,
@@ -67,9 +66,15 @@ def test_get_snippets_for_edge(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet2.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet1.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     else:
         assert False
 
@@ -154,9 +159,15 @@ def test_get_snippets_for_cluster(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet2.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet1.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     else:
         assert False
 

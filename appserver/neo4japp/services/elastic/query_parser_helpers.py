@@ -14,7 +14,9 @@ class BoolOperand:
     def to_dict(self):
         wildcard_regex = r'^\S*(\?|\*)\S*$'
         file_type_regex = r'^\btype:\S*$'
-        term_is_phrase = self.term[0] == '"' and self.term[-1] == '"' and len(self.term) >= 3
+        term_is_phrase = (
+            self.term[0] == '"' and self.term[-1] == '"' and len(self.term) >= 3
+        )
         normalized_term = self.term[1:-1] if term_is_phrase else self.term
 
         # Check if the operand is a wildcard, and use the corresponding query...
@@ -27,7 +29,7 @@ class BoolOperand:
                                 field: {
                                     'value': normalized_term,
                                     'boost': self.text_field_boosts[field],
-                                    'case_insensitive': True
+                                    'case_insensitive': True,
                                 }
                             }
                         }
@@ -39,14 +41,15 @@ class BoolOperand:
         elif re.match(file_type_regex, normalized_term) and not term_is_phrase:
             file_type_to_match = normalized_term.split(':')[1]
             file_type_service = get_file_type_service()
-            shorthand_to_mime_type_map = file_type_service.get_shorthand_to_mime_type_map()
+            shorthand_to_mime_type_map = (
+                file_type_service.get_shorthand_to_mime_type_map()
+            )
             # TODO: Probably want to log if the given type is unknown, and report to the user that
             # they may have entered an unsupported type.
             return {
                 'term': {
                     'mime_type': shorthand_to_mime_type_map.get(
-                        file_type_to_match,
-                        file_type_to_match
+                        file_type_to_match, file_type_to_match
                     )
                 }
             }
@@ -59,30 +62,28 @@ class BoolOperand:
                     'fields': [
                         f'{field}^{self.text_field_boosts[field]}'
                         for field in self.text_fields
-                    ]
+                    ],
                 }
             }
 
             # If the term is not a phrase, and it contains punctuation, then add exact term matches
             # for each search field
-            term_has_punctuation = any([c in string.punctuation for c in normalized_term])
+            term_has_punctuation = any(
+                [c in string.punctuation for c in normalized_term]
+            )
             if ' ' not in normalized_term and term_has_punctuation:
                 term_queries = [
                     {
                         'term': {
                             field: {
                                 'value': normalized_term,
-                                'boost': self.text_field_boosts[field]
+                                'boost': self.text_field_boosts[field],
                             }
                         }
-                    } for field in self.text_fields
-
-                ]
-                return {
-                    'bool': {
-                        'should': [multi_match_query] + term_queries
                     }
-                }
+                    for field in self.text_fields
+                ]
+                return {'bool': {'should': [multi_match_query] + term_queries}}
             else:
                 return multi_match_query
 
@@ -99,11 +100,7 @@ class BoolBinOp:
         self.args = t[0][0::2]
 
     def to_dict(self):
-        return {
-            'bool': {
-                self.occurrence_type: [arg.to_dict() for arg in self.args]
-            }
-        }
+        return {'bool': {self.occurrence_type: [arg.to_dict() for arg in self.args]}}
 
     def __str__(self):
         return json.dumps(self.to_dict(), indent=4)
@@ -126,8 +123,4 @@ class BoolMustNot(BoolBinOp):
         self.arg = t[0][1]
 
     def to_dict(self):
-        return {
-            'bool': {
-                'must_not': [self.arg.to_dict()]
-            }
-        }
+        return {'bool': {'must_not': [self.arg.to_dict()]}}

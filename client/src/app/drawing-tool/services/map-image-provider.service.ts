@@ -7,14 +7,12 @@ import { SizeUnits } from 'app/shared/constants';
 
 @Injectable()
 export class MapImageProviderService implements ResourceProvider<string, CanvasImageSource> {
-
   private readonly preloadedUrls = new Map<string, string>();
   private readonly downsizingFactor = 0.5;
   private readonly downsizeIfLargerThanImageSize = SizeUnits.KiB * 500;
   private readonly imageQuality: 0.8;
 
-  constructor() {
-  }
+  constructor() {}
 
   setMemoryImage(id: string, url: string) {
     this.preloadedUrls.set(id, url);
@@ -29,11 +27,11 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
    */
   doInitialProcessing(id: string, file: File): Observable<Dimensions> {
     let url = URL.createObjectURL(file);
-    return new Observable( subscriber => {
+    return new Observable((subscriber) => {
       const img = new Image();
       img.src = url;
       img.onload = () => {
-        let {height, width} = img;
+        let { height, width } = img;
         if (file.size > this.downsizeIfLargerThanImageSize) {
           height *= this.downsizingFactor;
           width *= this.downsizingFactor;
@@ -45,13 +43,13 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
           url = ctx.canvas.toDataURL(file.type, this.imageQuality);
         }
         this.setMemoryImage(id, url);
-        subscriber.next({height, width});
+        subscriber.next({ height, width });
         subscriber.complete();
       };
       return function unsubscribe() {
         img.remove();
       };
-     });
+    });
   }
 
   get(id: string): Observable<CanvasImageSource> {
@@ -73,7 +71,7 @@ export class MapImageProviderService implements ResourceProvider<string, CanvasI
   getBlob(id: string): Observable<Blob> {
     const preloadedUrl = this.preloadedUrls.get(id);
     if (preloadedUrl != null) {
-      return from(fetch(preloadedUrl).then(r => r.blob()));
+      return from(fetch(preloadedUrl).then((r) => r.blob()));
     } else {
       // TODO: Return an error to be handled
       return of(null);

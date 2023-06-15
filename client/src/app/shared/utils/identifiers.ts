@@ -4,14 +4,13 @@
  */
 export function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-
     /* tslint:disable */
-    let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    let r = (Math.random() * 16) | 0,
+      v = c == 'x' ? r : (r & 0x3) | 0x8;
     /* tslint:enable */
     return v.toString(16);
   });
 }
-
 
 // TODO: Switch all the identifiers
 /**

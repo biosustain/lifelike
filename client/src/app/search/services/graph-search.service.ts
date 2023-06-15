@@ -9,19 +9,25 @@ import { FTSResult } from 'app/interfaces';
 export class GraphSearchService {
   readonly searchApi = '/api/search';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   visualizerSearch(
-      query: string,
-      organism: string = '',
-      page: number = 1,
-      limit: number = 10,
-      domains: string[],
-      entities: string[],
+    query: string,
+    organism: string = '',
+    page: number = 1,
+    limit: number = 10,
+    domains: string[],
+    entities: string[]
   ) {
-    return this.http.post<{ result: FTSResult<any> }>(
-      `${this.searchApi}/viz-search`,
-      {query, organism, page, domains, entities, limit},
-    ).pipe(map(resp => resp.result));
+    return this.http
+      .post<{ result: FTSResult<any> }>(`${this.searchApi}/viz-search`, {
+        query,
+        organism,
+        page,
+        domains,
+        entities,
+        limit,
+      })
+      .pipe(map((resp) => resp.result));
   }
 }

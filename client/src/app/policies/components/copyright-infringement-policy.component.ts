@@ -5,5 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './copyright-infringement-policy.component.html',
 })
 export class CopyrightInfringementPolicyComponent {
-  constructor() { }
+  constructor() {}
 }

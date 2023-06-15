@@ -4,7 +4,7 @@ import { ErrorResponse, InformationResponse, WarningResponse } from '../../schem
 
 type ResponseAlert = InformationResponse | WarningResponse | ErrorResponse;
 type ResponseAlertType =
-  'success'
+  | 'success'
   | 'info'
   | 'warning'
   | 'danger'
@@ -16,7 +16,7 @@ type ResponseAlertType =
 @Component({
   selector: 'app-response-alert',
   templateUrl: './response-alert.component.html',
-  styleUrls: ['./response-alert.component.scss']
+  styleUrls: ['./response-alert.component.scss'],
 })
 export class ResponseAlertComponent implements OnChanges {
   @Input() responseAlert: ResponseAlert;
@@ -30,11 +30,11 @@ export class ResponseAlertComponent implements OnChanges {
     ['Info', 'info'],
   ]);
 
-  ngOnChanges({responseAlert, type}: SimpleChanges) {
+  ngOnChanges({ responseAlert, type }: SimpleChanges) {
     if (type && this.responseTypeToAlertTypeMap.has(type.currentValue)) {
-      this._type = this.responseTypeToAlertTypeMap.has(type.currentValue) ?
-        this.responseTypeToAlertTypeMap.get(type.currentValue) :
-        type.currentValue;
+      this._type = this.responseTypeToAlertTypeMap.has(type.currentValue)
+        ? this.responseTypeToAlertTypeMap.get(type.currentValue)
+        : type.currentValue;
     }
     if (!this.type && responseAlert) {
       this._type = this.responseTypeToAlertTypeMap.get(responseAlert.currentValue.type);

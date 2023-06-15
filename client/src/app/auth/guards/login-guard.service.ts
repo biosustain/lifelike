@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-    CanActivate,
-    ActivatedRouteSnapshot,
-    Router,
-    RouterStateSnapshot,
-} from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 
 import { Store, select } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -24,16 +19,13 @@ export class LoginGuard implements CanActivate {
   constructor(
     private store: Store<State>,
     private router: Router,
-    private oauthService: LifelikeOAuthService,
+    private oauthService: LifelikeOAuthService
   ) {}
 
-  canActivate(
-    {}: ActivatedRouteSnapshot,
-    {}: RouterStateSnapshot,
-  ): Observable<boolean> {
+  canActivate({}: ActivatedRouteSnapshot, {}: RouterStateSnapshot): Observable<boolean> {
     return this.store.pipe(
       select(AuthSelectors.selectAuthLoginState),
-      map(loggedIn => {
+      map((loggedIn) => {
         if (loggedIn) {
           this.router.navigate(['/']);
           return false;

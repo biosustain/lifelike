@@ -14,7 +14,7 @@ def test_add_custom_annotation_inclusion_annotate_all(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
     file_in_project,
-    project_owner
+    project_owner,
 ):
     annotation_service = get_manual_annotation_service
 
@@ -26,7 +26,7 @@ def test_add_custom_annotation_inclusion_annotate_all(
             'idType': '',
             'idHyperlinks': [],
             'isCaseInsensitive': True,
-            'includeGlobally': False
+            'includeGlobally': False,
         }
     }
 
@@ -34,7 +34,7 @@ def test_add_custom_annotation_inclusion_annotate_all(
         file=file_in_project,
         user=project_owner,
         custom_annotation=custom,
-        annotate_all=True
+        annotate_all=True,
     )
     assert len(inclusions) == 2
 
@@ -43,7 +43,7 @@ def test_add_custom_annotation_inclusion_multi_word(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
     file_in_project,
-    project_owner
+    project_owner,
 ):
     annotation_service = get_manual_annotation_service
 
@@ -55,7 +55,7 @@ def test_add_custom_annotation_inclusion_multi_word(
             'idType': '',
             'idHyperlinks': [],
             'isCaseInsensitive': True,
-            'includeGlobally': False
+            'includeGlobally': False,
         }
     }
 
@@ -63,7 +63,7 @@ def test_add_custom_annotation_inclusion_multi_word(
         file=file_in_project,
         user=project_owner,
         custom_annotation=custom,
-        annotate_all=True
+        annotate_all=True,
     )
 
     assert len(inclusions) == 2
@@ -73,7 +73,7 @@ def test_add_custom_annotation_inclusion(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
     file_in_project,
-    project_owner
+    project_owner,
 ):
     annotation_service = get_manual_annotation_service
 
@@ -85,7 +85,7 @@ def test_add_custom_annotation_inclusion(
             'idType': '',
             'idHyperlinks': [],
             'isCaseInsensitive': True,
-            'includeGlobally': False
+            'includeGlobally': False,
         }
     }
 
@@ -93,7 +93,7 @@ def test_add_custom_annotation_inclusion(
         file=file_in_project,
         user=project_owner,
         custom_annotation=custom,
-        annotate_all=False
+        annotate_all=False,
     )
     assert len(inclusions) == 1
 
@@ -102,7 +102,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
     file_in_project,
-    project_owner
+    project_owner,
 ):
     annotation_service = get_manual_annotation_service
 
@@ -114,7 +114,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
             'idType': '',
             'idHyperlinks': [],
             'isCaseInsensitive': True,
-            'includeGlobally': False
+            'includeGlobally': False,
         }
     }
 
@@ -123,7 +123,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
             file=file_in_project,
             user=project_owner,
             custom_annotation=custom,
-            annotate_all=True
+            annotate_all=True,
         )
 
 
@@ -131,7 +131,7 @@ def test_add_custom_annotation_inclusion_multi_word_food_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
     file_in_project,
-    project_owner
+    project_owner,
 ):
     annotation_service = get_manual_annotation_service
 
@@ -143,7 +143,7 @@ def test_add_custom_annotation_inclusion_multi_word_food_limit(
             'idType': '',
             'idHyperlinks': [],
             'isCaseInsensitive': True,
-            'includeGlobally': False
+            'includeGlobally': False,
         }
     }
 
@@ -152,5 +152,5 @@ def test_add_custom_annotation_inclusion_multi_word_food_limit(
             file=file_in_project,
             user=project_owner,
             custom_annotation=custom,
-            annotate_all=True
+            annotate_all=True,
         )

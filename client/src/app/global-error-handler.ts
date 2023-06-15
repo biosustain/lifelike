@@ -9,8 +9,7 @@ import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-h
  * errors that only occur client side.
  */
 export class GlobalErrorHandler implements ErrorHandler {
-  constructor(protected readonly injector: Injector) {
-  }
+  constructor(protected readonly injector: Injector) {}
 
   // Used to prevent error dialogs for specific HTTP codes
   KNOWN_HTTP_ERROR_CODES = [0, 401];
@@ -20,8 +19,10 @@ export class GlobalErrorHandler implements ErrorHandler {
 
     const errorHandlerService = this.injector.get(ErrorHandlerService);
     try {
-      if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
-        errorHandlerService.logError(error, {label: 'Uncaught exception', expected: false});
+      if (
+        !(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))
+      ) {
+        errorHandlerService.logError(error, { label: 'Uncaught exception', expected: false });
       }
     } catch (e) {
       console.error('Failed to log Lifelike error', e);

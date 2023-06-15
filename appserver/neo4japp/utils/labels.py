@@ -4,19 +4,21 @@ from flask import current_app
 from neo4j.graph import Node as N4jDriverNode
 
 from neo4japp.constants import LogEventType, DISPLAY_NAME_MAP, DOMAIN_LABELS
+from neo4japp.exceptions import ServerWarning
 from neo4japp.utils import EventLog
 from neo4japp.utils.globals import warn
-from neo4japp.warnings import ServerWarning
 
 
 def get_first_known_label_from_node(node: N4jDriverNode):
     try:
         return get_first_known_label_from_list(node.labels)
     except ValueError as e:
-        message = f'Node with ID {node.id} had an unexpected list of labels: {node.labels}'
+        message = (
+            f'Node with ID {node.id} had an unexpected list of labels: {node.labels}'
+        )
         current_app.logger.warning(
             message,
-            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+            extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
         )
         warn(ServerWarning(message=message), cause=e)
         return 'Unknown'

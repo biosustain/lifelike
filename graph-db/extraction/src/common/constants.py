@@ -211,9 +211,21 @@ EDGE_NAME = 'name'
 EDGE_START_POS = 'start_pos'
 EDGE_END_POS = 'end_pos'
 
-INDEXED_FIELDS = [PROP_ACCESSION, PROP_ALT_ID, PROP_BIOCYC_ID, PROP_CHEBI_ID, PROP_TAX_ID,
-                  PROP_NAME, PROP_EC_NUMBER, PROP_ID, PROP_LOCUS_TAG,
-                  PROP_NAME, PROP_SCIENTIFIC_NAME, PROP_SYMBOL, PROP_SYNONYMS]
+INDEXED_FIELDS = [
+    PROP_ACCESSION,
+    PROP_ALT_ID,
+    PROP_BIOCYC_ID,
+    PROP_CHEBI_ID,
+    PROP_TAX_ID,
+    PROP_NAME,
+    PROP_EC_NUMBER,
+    PROP_ID,
+    PROP_LOCUS_TAG,
+    PROP_NAME,
+    PROP_SCIENTIFIC_NAME,
+    PROP_SYMBOL,
+    PROP_SYNONYMS,
+]
 
 
 NODE_ID_INDEX_MAP = {
@@ -229,7 +241,7 @@ NODE_ID_INDEX_MAP = {
     NODE_SYNONYM: 'Synonym-ID',
     NODE_TAXONOMY: 'Taxonomy-ID',
     NODE_PUBLICATION: 'Publication-ID',
-    'NCBI-GENE': 'Gene-ID'
+    'NCBI-GENE': 'Gene-ID',
 }
 
 # data sources
@@ -245,4 +257,3 @@ def get_db_label(db_name: str):
     if not db_name.startswith('db_'):
         return 'db_' + db_name
     return db_name
-

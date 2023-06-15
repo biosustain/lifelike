@@ -4,9 +4,21 @@
   <app-modal-body>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
       <div class="input-group" (click)="enableTextField()">
-        <input formControlName="text" type="text" class="form-control" id="text" [readOnly]="!isTextEnabled">
+        <input
+          formControlName="text"
+          type="text"
+          class="form-control"
+          id="text"
+          [readOnly]="!isTextEnabled"
+        />
         <div class="input-group-append">
-          <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            ngbTooltip="Make a correction"
+            #tooltipRef="ngbTooltip"
+            [appAutoCloseTooltipOutOfView]="tooltipRef"
+          >
             <i class="fas fa-edit" type="button"></i>
           </button>
         </div>
@@ -15,78 +27,93 @@
     <div class="row justify-content-end mb-3" *ngIf="isTextEnabled">
       <div class="text-muted col-sm-9">
         <i class="fas fa-exclamation-circle"></i>
-        Editing this field might affect the ability to find the term in the document and annotate it.
+        Editing this field might affect the ability to find the term in the document and annotate
+        it.
       </div>
     </div>
 
     <app-form-row for="search-links" label="Search">
       <ng-container *ngFor="let searchLink of searchLinks$ | async; let l = last" id="search-links">
-        <a href="{{searchLink.link}}" target="_blank">{{searchLink.domain}}</a><span *ngIf="!l">, </span>
+        <a href="{{ searchLink.link }}" target="_blank">{{ searchLink.domain }}</a
+        ><span *ngIf="!l">, </span>
       </ng-container>
     </app-form-row>
 
     <fieldset class="fieldset-properties mt-4">
       <legend>Annotation</legend>
       <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
-        <select
-          formControlName="entityType"
-          class="custom-select w-100"
-          id="entity-type"
-        >
+        <select formControlName="entityType" class="custom-select w-100" id="entity-type">
           <option selected disabled hidden value="">Choose type</option>
           <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
-            {{choice.name | titlecase}}
+            {{ choice.name | titlecase }}
           </option>
         </select>
       </app-form-row>
 
       <div class="form-group row row-cols-2">
         <label for="id" class="col-form-label col-sm-3">
-          <i class="fas fa-exclamation-circle" ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"></i>
-          Identifier:</label>
-          <div class="col-sm d-flex flex-wrap" [style.gap]="'.5rem 15px'">
-              <select formControlName="source" class="custom-select w-auto flex-grow-1" id="source">
-                  <option selected value="">No Source</option>
-                  <option *ngFor="let choice of databaseTypeChoices$ | async" [value]="choice">
-                      {{choice}}
-                  </option>
-              </select>
-              <div
-                      class="d-inline-flex flex-column flex-grow-1"
-                      [style.max-width.%]="100"
-              >
-                  <input type="text"
-                         class="form-control"
-                         [style.min-width.%]="100"
-                         [style.max-width]="'inherit'"
-                         appAutoGrow paddingBorderAdjustment="calc( 1.3rem + 2px )"
-                         [recalculate]="form.get('id').valueChanges"
-                         formControlName="id"
-                  >
-                  <app-form-input-feedback [control]="form.get('id')" [errors]="errors"></app-form-input-feedback>
-              </div>
+          <i
+            class="fas fa-exclamation-circle"
+            ngbTooltip="Enter identifier number without source. E.g MESH:XXXXXX should just be XXXXXX"
+            #tooltipRef="ngbTooltip"
+            [appAutoCloseTooltipOutOfView]="tooltipRef"
+          ></i>
+          Identifier:</label
+        >
+        <div class="col-sm d-flex flex-wrap" [style.gap]="'.5rem 15px'">
+          <select formControlName="source" class="custom-select w-auto flex-grow-1" id="source">
+            <option selected value="">No Source</option>
+            <option *ngFor="let choice of databaseTypeChoices$ | async" [value]="choice">
+              {{ choice }}
+            </option>
+          </select>
+          <div class="d-inline-flex flex-column flex-grow-1" [style.max-width.%]="100">
+            <input
+              type="text"
+              class="form-control"
+              [style.min-width.%]="100"
+              [style.max-width]="'inherit'"
+              appAutoGrow
+              paddingBorderAdjustment="calc( 1.3rem + 2px )"
+              [recalculate]="form.get('id').valueChanges"
+              formControlName="id"
+            />
+            <app-form-input-feedback
+              [control]="form.get('id')"
+              [errors]="errors"
+            ></app-form-input-feedback>
           </div>
+        </div>
       </div>
     </fieldset>
 
     <fieldset class="fieldset-properties mt-4">
       <legend>Additional Links</legend>
-      <app-links-panel title="Links" singularTitle="Link"
-                       [(ngModel)]="sourceLinks"
-                       [ngModelOptions]="{standalone: true}"
-                       [draggable]="false"
-                       [limit]="3"></app-links-panel>
+      <app-links-panel
+        title="Links"
+        singularTitle="Link"
+        [(ngModel)]="sourceLinks"
+        [ngModelOptions]="{ standalone: true }"
+        [draggable]="false"
+        [limit]="3"
+      ></app-links-panel>
     </fieldset>
 
     <div class="custom-control custom-checkbox mt-4">
-      <input type="checkbox" class="custom-control-input" id="include-globally"
-             formControlName="includeGlobally">
-      <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
+      <input
+        type="checkbox"
+        class="custom-control-input"
+        id="include-globally"
+        formControlName="includeGlobally"
+      />
+      <label class="custom-control-label" for="include-globally"
+        >Add this annotation to a global list</label
+      >
     </div>
 
     <div *ngIf="form.get('includeGlobally').value" class="text-muted mt-3">
       <i class="fas fa-info-circle"></i>
-        Re-annotate other documents to incorporate this inclusion.
+      Re-annotate other documents to incorporate this inclusion.
     </div>
   </app-modal-body>
 

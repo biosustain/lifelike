@@ -1,15 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <div>
-    <app-modal-header (cancel)="cancel()">
-      Change Column Order
-    </app-modal-header>
+    <app-modal-header (cancel)="cancel()"> Change Column Order </app-modal-header>
 
     <app-modal-body>
-    <app-form-row for="domainsList" label="Domains to Show">
-      <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
-        <div class="example-box" *ngFor="let domain of domains" cdkDrag>{{ domain }}</div>
-      </div>
-    </app-form-row>
+      <app-form-row for="domainsList" label="Domains to Show">
+        <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+          <div class="example-box" *ngFor="let domain of domains" cdkDrag>{{ domain }}</div>
+        </div>
+      </app-form-row>
     </app-modal-body>
 
     <app-modal-footer>

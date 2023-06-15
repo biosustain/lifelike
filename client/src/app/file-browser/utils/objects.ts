@@ -8,12 +8,27 @@ export function getObjectCommands(object: DirectoryObject) {
   switch (object.type) {
     case 'dir':
       // TODO: Convert to hash ID
-      return ['/projects', encodeURIComponent(object.project.projectName), 'folders', object.hashId];
+      return [
+        '/projects',
+        encodeURIComponent(object.project.projectName),
+        'folders',
+        object.hashId,
+      ];
     case 'file':
       if (object.filename.slice(object.filename.length - 11) === '.enrichment') {
-        return ['/projects', encodeURIComponent(object.project.projectName), 'enrichment-table', object.hashId];
+        return [
+          '/projects',
+          encodeURIComponent(object.project.projectName),
+          'enrichment-table',
+          object.hashId,
+        ];
       } else {
-        return ['/projects', encodeURIComponent(object.project.projectName), 'files', object.hashId];
+        return [
+          '/projects',
+          encodeURIComponent(object.project.projectName),
+          'files',
+          object.hashId,
+        ];
       }
     case 'map':
       return ['/projects', encodeURIComponent(object.project.projectName), 'maps', object.hashId];
@@ -40,8 +55,7 @@ export function getObjectMatchExistingTab(object: DirectoryObject) {
   }
 }
 
-export function getObjectLabel(objects: FilesystemObject[] | FilesystemObject,
-                               titleCase = false) {
+export function getObjectLabel(objects: FilesystemObject[] | FilesystemObject, titleCase = false) {
   const targets = Array.isArray(objects) ? objects : [objects];
   if (targets.length === 0) {
     return 'Nothing';

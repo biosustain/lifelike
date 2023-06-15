@@ -1,7 +1,7 @@
 @import 'src/scss/variables';
 
 .button-divider {
-  border-top: 1px solid rgba($white, .2);
+  border-top: 1px solid rgba($white, 0.2);
 }
 
 .vertical-nav {
@@ -12,17 +12,17 @@ footer {
   align-items: center;
   background: $gray-300;
   border-top: 1px solid $gray-500;
-  box-shadow: 0 -2px 10px rgba($gray-700, .15);
+  box-shadow: 0 -2px 10px rgba($gray-700, 0.15);
   display: flex;
   font-size: $font-size-sm;
   gap: 1.5em;
   justify-content: flex-end;
   line-height: 1;
-  padding: .2em 1.5em;
+  padding: 0.2em 1.5em;
 
   .logo {
     height: 1.3em;
-    opacity: .7;
+    opacity: 0.7;
     vertical-align: text-bottom;
     width: 1.3em;
   }

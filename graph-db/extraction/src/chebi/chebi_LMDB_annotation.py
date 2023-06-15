@@ -2,6 +2,7 @@ from common.database import *
 from common.constants import *
 from common.utils import write_compressed_tsv_file_from_dataframe, get_data_dir
 
+
 def write_chemical_list_for_LMDB(database: Database, output_dir: str):
     query = f"""
     match (n:{NODE_CHEMICAL}:{NODE_CHEBI})-[:HAS_SYNONYM]-(s)

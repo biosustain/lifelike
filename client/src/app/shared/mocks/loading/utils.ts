@@ -9,7 +9,9 @@ export const DATE = 'XX/XX/XX XX:XX XX';
 export const FA_ICON = 'fas fa-circle-notch fa-spin text-muted';
 
 export const mockArrayOf = <T>(itemFactory: () => T, minLength = 2, maxLength = 3) =>
-  Array(_random(minLength, maxLength)).fill(undefined).map(() => itemFactory());
+  Array(_random(minLength, maxLength))
+    .fill(undefined)
+    .map(() => itemFactory());
 
 export const loadingText = (wordsMin = 2, wordsMax = 3) => mockArrayOf(() => LOADING).join(' ');
 

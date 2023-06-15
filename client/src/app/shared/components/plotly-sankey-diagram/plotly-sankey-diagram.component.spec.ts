@@ -12,12 +12,7 @@ describe('PlotlySankeyDiagramComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        PlotlySankeyDiagramComponent,
-        MockComponents(
-          LegendComponent
-        ),
-      ]
+      declarations: [PlotlySankeyDiagramComponent, MockComponents(LegendComponent)],
     });
   });
 

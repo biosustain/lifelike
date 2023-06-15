@@ -9,13 +9,14 @@ export interface PipeStatus<T> {
   error?: any;
 }
 
-export const addStatus = <T>(loadingMock?: T) =>
+export const addStatus =
+  <T>(loadingMock?: T) =>
   (observable: Observable<T>): Observable<PipeStatus<T>> =>
-  observable.pipe(
-    map(results => ({loading: false, value: results})),
-    catchError(error => of({loading: false, error})),
-    startWith({loading: true, value: loadingMock}),
-  );
+    observable.pipe(
+      map((results) => ({ loading: false, value: results })),
+      catchError((error) => of({ loading: false, error })),
+      startWith({ loading: true, value: loadingMock })
+    );
 
 @Pipe({
   name: 'addStatus',

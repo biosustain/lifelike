@@ -35,8 +35,12 @@ t_file_annotation_versions = table(
     column('hash_id', sa.String(length=36)),
     column('id', sa.Integer()),
     column('file_id', sa.Integer()),
-    column('cause', sa.Enum('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                            name='annotationcause')),
+    column(
+        'cause',
+        sa.Enum(
+            'USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION', name='annotationcause'
+        ),
+    ),
     column('custom_annotations', JSONB(astext_type=Text())),
     column('excluded_annotations', JSONB(astext_type=Text())),
     column('user_id', sa.Integer()),
@@ -65,13 +69,7 @@ def fix_annotation_id(annotation):
         if meta['isCaseInsensitive']:
             allText = allText.lower()
         id = f"{allText}_{meta['type']}"
-        return {
-            **annotation,
-            "meta": {
-                **meta,
-                "id": id
-            }
-        }
+        return {**annotation, "meta": {**meta, "id": id}}
 
 
 def process_result_value(value):
@@ -84,9 +82,10 @@ def update_annotation_list(annotations):
         return list(
             map(
                 lambda zipped: zipped[1] or zipped[0],
-                zip(annotations, updated_annotations)
+                zip(annotations, updated_annotations),
             )
         )
+
 
 def update_annotations(custom_annotations):
     updated_custom_annotations = update_annotation_list(custom_annotations)
@@ -94,16 +93,12 @@ def update_annotations(custom_annotations):
         return {'custom_annotations': updated_custom_annotations}
 
 
-
 def iterate_files_with_customised_annotations(updateCallback):
     conn = op.get_bind()
     session = Session(conn)
 
     files = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files.c.id,
-            t_files.c.custom_annotations
-        ]).where(
+        sa.select([t_files.c.id, t_files.c.custom_annotations]).where(
             func.jsonb_array_length(t_files.c.custom_annotations) > 0
         )
     )
@@ -113,11 +108,7 @@ def iterate_files_with_customised_annotations(updateCallback):
             update = updateCallback(custom_annotations)
             if update:
                 session.execute(
-                    t_files.update().where(
-                        t_files.c.id == file_id
-                    ).values(
-                        **update
-                    )
+                    t_files.update().where(t_files.c.id == file_id).values(**update)
                 )
                 session.flush()
     session.commit()

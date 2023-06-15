@@ -16,8 +16,17 @@ class DataFileParser(BaseParser):
     """
     Base parser for Biocyc .dat files.
     """
-    def __init__(self, biocyc_dbname, tar_file, datafile_name, entity_name, attr_names:dict, rel_names:dict,
-                 db_link_sources: dict=None):
+
+    def __init__(
+        self,
+        biocyc_dbname,
+        tar_file,
+        datafile_name,
+        entity_name,
+        attr_names: dict,
+        rel_names: dict,
+        db_link_sources: dict = None,
+    ):
         """
         :param biocyc_dbname: biocyc database name, eg. DB_ECOCYC, DB_HUMANCYC
         :param tar_file: tar file downloaded from biocyc website
@@ -43,22 +52,22 @@ class DataFileParser(BaseParser):
         self.logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_node_outfile(cls, entity)->str:
+    def get_node_outfile(cls, entity) -> str:
         return f"{entity}.tsv"
 
     @classmethod
-    def get_node_synonyms_outfile(cls, entity)->str:
+    def get_node_synonyms_outfile(cls, entity) -> str:
         return f"{entity}-synonyms.tsv"
 
     @classmethod
-    def get_node_rels_outfile(cls, entity)->str:
+    def get_node_rels_outfile(cls, entity) -> str:
         return f"{entity}-rels.tsv"
 
     @classmethod
     def get_dblink_rel_outfile(cls, entity):
         return f"{entity}-dblinks.tsv"
 
-    def get_db_version(self, tar:TarFile):
+    def get_db_version(self, tar: TarFile):
         """
         find the latest version of data in the tar file.  Sometimes a tar file has multiple version data.
         :param tar:
@@ -82,7 +91,10 @@ class DataFileParser(BaseParser):
                 self.version = self.get_db_version(tar)
                 self.logger.info(f'Database file version: "{self.version}"')
             for tarinfo in tar:
-                if tarinfo.name.endswith(os.path.sep + self.datafile) and self.version in tarinfo.name:
+                if (
+                    tarinfo.name.endswith(os.path.sep + self.datafile)
+                    and self.version in tarinfo.name
+                ):
                     self.logger.info('Parse ' + tarinfo.name)
                     utf8reader = codecs.getreader('ISO-8859-1')
                     f = utf8reader(tar.extractfile(tarinfo.name))
@@ -101,7 +113,9 @@ class DataFileParser(BaseParser):
             if node:
                 attr, val = biocyc_utils.get_attr_val_from_line(line)
                 if attr in self.attr_name_map:
-                    prop_name, data_type = biocyc_utils.get_property_name_type(attr, self.attr_name_map)
+                    prop_name, data_type = biocyc_utils.get_property_name_type(
+                        attr, self.attr_name_map
+                    )
                     node.add_attribute(prop_name, val, data_type)
                     if attr == UNIQUE_ID:
                         node.add_attribute(PROP_ID, val, data_type)
@@ -114,7 +128,7 @@ class DataFileParser(BaseParser):
                         if len(tokens) > 1:
                             db_name = tokens[0].lstrip('(')
                             reference_id = tokens[1].strip(')').strip('"')
-                            self.add_dblink(node, db_name, reference_id )
+                            self.add_dblink(node, db_name, reference_id)
                     else:
                         rel_type = self.rel_name_map.get(attr)
                         node.add_edge_type(rel_type, val)
@@ -123,20 +137,20 @@ class DataFileParser(BaseParser):
             self.logger.error('line:', line)
         return node
 
-    def add_dblink(self, node:NodeData, db_name, reference_id):
+    def add_dblink(self, node: NodeData, db_name, reference_id):
         link_node = NodeData(NODE_DBLINK, PROP_REF_ID)
         if reference_id.startswith(db_name):
-            reference_id = reference_id[len(db_name)+1:]  # remove db prefix
+            reference_id = reference_id[len(db_name) + 1 :]  # remove db prefix
         link_node.update_attribute(PROP_REF_ID, reference_id)
         link_node.update_attribute(PROP_DB_NAME, db_name)
         node.add_edge(node, link_node, REL_DBLINKS)
 
-    def add_url(self, node:NodeData):
+    def add_url(self, node: NodeData):
         if self.org_id:
-            url =  f"https://biocyc.org/{self.org_id}/NEW-IMAGE?object={node.get_attribute(PROP_BIOCYC_ID)}"
+            url = f"https://biocyc.org/{self.org_id}/NEW-IMAGE?object={node.get_attribute(PROP_BIOCYC_ID)}"
             node.add_attribute(PROP_URL, url)
 
-    def write_node_file(self, nodes: [], node_attrs:[], outfile:str):
+    def write_node_file(self, nodes: [], node_attrs: [], outfile: str):
         if not nodes:
             return None
         df = pd.DataFrame([node.to_dict() for node in nodes])
@@ -145,18 +159,26 @@ class DataFileParser(BaseParser):
         df[PROP_ID] = df[PROP_BIOCYC_ID]
         df.fillna('', inplace=True)
         self.logger.info(f"writing {outfile}")
-        df.to_csv(os.path.join(self.output_dir, outfile), index=False, sep='\t', quotechar='"')
+        df.to_csv(
+            os.path.join(self.output_dir, outfile), index=False, sep='\t', quotechar='"'
+        )
         return outfile
 
     def write_relationships_files(self, nodes):
         if not nodes:
             return []
-        df = pd.DataFrame([{
-            REL_RELATIONSHIP: edge.label,
-            PROP_FROM_ID: edge.source.get_id_attribute(),
-            PROP_TO_ID: edge.dest.get_id_attribute(),
-            PROP_DB_NAME: edge.dest.get_attribute(PROP_DB_NAME)
-            } for node in nodes for edge in node.edges])
+        df = pd.DataFrame(
+            [
+                {
+                    REL_RELATIONSHIP: edge.label,
+                    PROP_FROM_ID: edge.source.get_id_attribute(),
+                    PROP_TO_ID: edge.dest.get_id_attribute(),
+                    PROP_DB_NAME: edge.dest.get_attribute(PROP_DB_NAME),
+                }
+                for node in nodes
+                for edge in node.edges
+            ]
+        )
         if df.empty:
             return []
         outfiles = []
@@ -167,24 +189,32 @@ class DataFileParser(BaseParser):
             df_link = df_link[[PROP_FROM_ID, PROP_TO_ID, PROP_DB_NAME]]
             dblinkfile = self.get_dblink_rel_outfile(self.entity_name)
             self.logger.info(f"writing {dblinkfile}")
-            df_link.to_csv(os.path.join(self.output_dir, dblinkfile), sep='\t', index=False)
+            df_link.to_csv(
+                os.path.join(self.output_dir, dblinkfile), sep='\t', index=False
+            )
             outfiles.append(dblinkfile)
         df_rel = df[df[REL_RELATIONSHIP] != REL_DBLINKS]
         if len(df_rel) > 0:
             df_rel = df_rel[[REL_RELATIONSHIP, PROP_FROM_ID, PROP_TO_ID]]
             rel_outfile = self.get_node_rels_outfile(self.entity_name)
             self.logger.info(f"writing {rel_outfile}")
-            df_rel.to_csv(os.path.join(self.output_dir, rel_outfile), sep='\t', index=False)
+            df_rel.to_csv(
+                os.path.join(self.output_dir, rel_outfile), sep='\t', index=False
+            )
             outfiles.append(rel_outfile)
         return outfiles
 
-    def parse_and_write_data_files(self, nodes:[]):
+    def parse_and_write_data_files(self, nodes: []):
         if not nodes:
             return []
         self.logger.info(f"Parse {self.biocyc_dbname} {self.entity_name}: {len(nodes)}")
         # add data_source property
-        node_file = self.write_node_file(nodes, self.attrs, self.get_node_outfile(self.entity_name))
-        synonym_file = self.write_synonyms_file(nodes, self.get_node_synonyms_outfile(self.entity_name))
+        node_file = self.write_node_file(
+            nodes, self.attrs, self.get_node_outfile(self.entity_name)
+        )
+        synonym_file = self.write_synonyms_file(
+            nodes, self.get_node_synonyms_outfile(self.entity_name)
+        )
         rel_files = self.write_relationships_files(nodes)
         all_files = [node_file]
         if synonym_file:
@@ -192,5 +222,3 @@ class DataFileParser(BaseParser):
         if rel_files:
             all_files += rel_files
         return all_files
-
-

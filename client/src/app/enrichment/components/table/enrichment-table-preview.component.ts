@@ -9,8 +9,5 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
 export class EnrichmentTablePreviewComponent {
   @Input() document: EnrichmentDocument;
 
-  GENE_TABLE_HEADERS = [
-      'Name',
-      'Value'
-  ];
+  GENE_TABLE_HEADERS = ['Name', 'Value'];
 }

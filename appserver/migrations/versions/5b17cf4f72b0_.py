@@ -41,32 +41,31 @@ def data_upgrades():
     files_table = table(
         'files',
         column('id', sa.Integer),
-        column('custom_annotations', postgresql.JSONB)
+        column('custom_annotations', postgresql.JSONB),
     )
 
-    files = session.execute(sa.select([
-        files_table.c.id,
-        files_table.c.custom_annotations
-    ])).fetchall()
+    files = session.execute(
+        sa.select([files_table.c.id, files_table.c.custom_annotations])
+    ).fetchall()
 
     global_list_table = table(
         'global_list',
         column('id', sa.Integer),
         column('type', sa.String),
-        column('annotation', postgresql.JSONB)
+        column('annotation', postgresql.JSONB),
     )
 
-    global_list = session.execute(sa.select([
-        global_list_table.c.id,
-        global_list_table.c.type,
-        global_list_table.c.annotation
-    ])).fetchall()
+    global_list = session.execute(
+        sa.select(
+            [
+                global_list_table.c.id,
+                global_list_table.c.type,
+                global_list_table.c.annotation,
+            ]
+        )
+    ).fetchall()
 
-    colors = {
-        "#ff7f7f": "#d62728",
-        "#8b5d2e": "#5d4037",
-        "#90eebf": "#e377c2"
-    }
+    colors = {"#ff7f7f": "#d62728", "#8b5d2e": "#5d4037", "#90eebf": "#e377c2"}
 
     try:
         for f in files:
@@ -78,10 +77,9 @@ def data_upgrades():
                 updated_inclusions.append(inclusion)
 
             session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(
-                        custom_annotations=updated_inclusions
-                    )
+                files_table.update()
+                .where(files_table.c.id == f.id)
+                .values(custom_annotations=updated_inclusions)
             )
 
         for global_annotation in global_list:
@@ -93,9 +91,10 @@ def data_upgrades():
                 global_annotation['annotation']['meta']['color'] = colors[stored_color]
 
             session.execute(
-                    global_list_table.update().where(
-                        global_list_table.c.id == global_annotation.id).values(annotation=global_annotation['annotation'])
-                )
+                global_list_table.update()
+                .where(global_list_table.c.id == global_annotation.id)
+                .values(annotation=global_annotation['annotation'])
+            )
 
         session.commit()
 

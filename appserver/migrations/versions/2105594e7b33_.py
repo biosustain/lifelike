@@ -41,27 +41,35 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('custom_annotations', postgresql.JSONB),
-        column('excluded_annotations', postgresql.JSONB)
+        column('excluded_annotations', postgresql.JSONB),
     )
 
-    files = session.execute(sa.select([
-        files_table.c.id,
-        files_table.c.custom_annotations,
-        files_table.c.excluded_annotations
-    ])).fetchall()
+    files = session.execute(
+        sa.select(
+            [
+                files_table.c.id,
+                files_table.c.custom_annotations,
+                files_table.c.excluded_annotations,
+            ]
+        )
+    ).fetchall()
 
     global_list_table = table(
         'global_list',
         column('id', sa.Integer),
         column('type', sa.String),
-        column('annotation', postgresql.JSONB)
+        column('annotation', postgresql.JSONB),
     )
 
-    global_list = session.execute(sa.select([
-        global_list_table.c.id,
-        global_list_table.c.type,
-        global_list_table.c.annotation
-    ])).fetchall()
+    global_list = session.execute(
+        sa.select(
+            [
+                global_list_table.c.id,
+                global_list_table.c.type,
+                global_list_table.c.annotation,
+            ]
+        )
+    ).fetchall()
 
     try:
         case_sensitive_types = ['Gene', 'Protein']
@@ -80,40 +88,44 @@ def data_upgrades():
                 is_case_insensitive = True
                 if exclusion['type'] in case_sensitive_types:
                     is_case_insensitive = False
-                updated_exclusions.append({
-                    **exclusion,
-                    'isCaseInsensitive': is_case_insensitive
-                })
+                updated_exclusions.append(
+                    {**exclusion, 'isCaseInsensitive': is_case_insensitive}
+                )
 
             session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(
-                        custom_annotations=updated_inclusions,
-                        excluded_annotations=updated_exclusions
-                    )
+                files_table.update()
+                .where(files_table.c.id == f.id)
+                .values(
+                    custom_annotations=updated_inclusions,
+                    excluded_annotations=updated_exclusions,
+                )
             )
 
         for global_annotation in global_list:
             if global_annotation.type == 'inclusion':
                 is_case_insensitive = True
-                if global_annotation['annotation']['meta']['type'] in case_sensitive_types:
+                if (
+                    global_annotation['annotation']['meta']['type']
+                    in case_sensitive_types
+                ):
                     is_case_insensitive = False
                 updated_annotation = {**global_annotation['annotation']}
                 updated_annotation['meta']['isCaseInsensitive'] = is_case_insensitive
-                
+
             else:
                 is_case_insensitive = True
                 if global_annotation['annotation']['type'] in case_sensitive_types:
                     is_case_insensitive = False
                 updated_annotation = {
                     **global_annotation['annotation'],
-                    'isCaseInsensitive': is_case_insensitive
+                    'isCaseInsensitive': is_case_insensitive,
                 }
 
             session.execute(
-                    global_list_table.update().where(
-                        global_list_table.c.id == global_annotation.id).values(annotation=updated_annotation)
-                )
+                global_list_table.update()
+                .where(global_list_table.c.id == global_annotation.id)
+                .values(annotation=updated_annotation)
+            )
 
         session.commit()
 

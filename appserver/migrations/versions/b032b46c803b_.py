@@ -24,7 +24,7 @@ def upgrade():
         sa.Column('username', sa.String(length=64), nullable=True),
         sa.Column('email', sa.String(length=120), nullable=True),
         sa.Column('password_hash', sa.String(length=256), nullable=True),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_appuser_email'), 'appuser', ['email'], unique=True)
     op.create_index(op.f('ix_appuser_username'), 'appuser', ['username'], unique=True)
@@ -36,8 +36,11 @@ def upgrade():
         sa.Column('date_modified', sa.DateTime(), nullable=True),
         sa.Column('graph', sa.JSON(), nullable=True),
         sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['appuser.id'], ),
-        sa.PrimaryKeyConstraint('id')
+        sa.ForeignKeyConstraint(
+            ['user_id'],
+            ['appuser.id'],
+        ),
+        sa.PrimaryKeyConstraint('id'),
     )
     # ### end Alembic commands ###
 

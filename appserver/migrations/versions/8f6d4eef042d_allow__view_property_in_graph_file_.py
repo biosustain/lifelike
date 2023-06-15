@@ -42,26 +42,24 @@ def drop_view_property():
     session = Session(conn)
 
     t_files = table(
-            'files',
-            column('content_id', sa.Integer),
-            column('mime_type', sa.String))
-
-    t_files_content = table(
-            'files_content',
-            column('id', sa.Integer),
-            column('raw_file', sa.LargeBinary),
-            column('checksum_sha256', sa.Binary)
+        'files', column('content_id', sa.Integer), column('mime_type', sa.String)
     )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
+    t_files_content = table(
+        'files_content',
+        column('id', sa.Integer),
+        column('raw_file', sa.LargeBinary),
+        column('checksum_sha256', sa.Binary),
+    )
+
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
             and_(
-                    t_files.c.mime_type == 'vnd.lifelike.document/graph',
-                    t_files.c.content_id == t_files_content.c.id
+                t_files.c.mime_type == 'vnd.lifelike.document/graph',
+                t_files.c.content_id == t_files_content.c.id,
             )
-    ))
+        )
+    )
 
     for chunk in window_chunk(files, 25):
         for id, content in chunk:
@@ -72,12 +70,9 @@ def drop_view_property():
                 raw_file = json.dumps(graph).encode('utf-8')
                 checksum_sha256 = hashlib.sha256(raw_file).digest()
                 session.execute(
-                        t_files_content.update().where(
-                                t_files_content.c.id == id
-                        ).values(
-                                raw_file=raw_file,
-                                checksum_sha256=checksum_sha256
-                        )
+                    t_files_content.update()
+                    .where(t_files_content.c.id == id)
+                    .values(raw_file=raw_file, checksum_sha256=checksum_sha256)
                 )
                 session.flush()
     session.commit()

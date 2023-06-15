@@ -1,11 +1,7 @@
 import { escapeRegExp, isNil } from 'lodash-es';
 import { ReplaySubject } from 'rxjs';
 
-import {
-  NodeTextRange,
-  nonStaticPositionPredicate,
-  walkParentElements,
-} from '../dom';
+import { NodeTextRange, nonStaticPositionPredicate, walkParentElements } from '../dom';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
 import { AsyncFindController } from './find-controller';
 
@@ -13,7 +9,6 @@ import { AsyncFindController } from './find-controller';
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
-
   private pendingJump = false;
 
   target: Element;
@@ -21,7 +16,10 @@ export class AsyncElementFind implements AsyncFindController {
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
   query = '';
-  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this), this.findGenerator);
+  protected readonly textFinder = new AsyncElementTextFinder(
+    this.matchFind.bind(this),
+    this.findGenerator
+  );
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
@@ -30,7 +28,10 @@ export class AsyncElementFind implements AsyncFindController {
 
   constructor(
     target: Element = null,
-    private findGenerator: (root: Node, query: string) => IterableIterator<NodeTextRange | undefined> = null,
+    private findGenerator: (
+      root: Node,
+      query: string
+    ) => IterableIterator<NodeTextRange | undefined> = null
   ) {
     this.target = target;
   }
@@ -175,14 +176,12 @@ export class AsyncElementFind implements AsyncFindController {
   getResultCount(): number {
     return this.results.length;
   }
-
 }
 
 /**
  * Asynchronously finds text in a document.
  */
 class AsyncElementTextFinder {
-
   // TODO: Handle DOM changes mid-find
 
   private findQueue: IterableIterator<NodeTextRange> | undefined;
@@ -236,10 +235,11 @@ class AsyncElementTextFinder {
     }
   }
 
-  private* defaultGenerator(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [
-      root,
-    ];
+  private *defaultGenerator(
+    root: Node,
+    query: string
+  ): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [root];
 
     while (queue.length !== 0) {
       const node = queue.shift();

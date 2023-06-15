@@ -20,21 +20,9 @@ describe('AdvancedSearchDialogComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-        RouterTestingModule
-      ],
-      declarations: [
-        AdvancedSearchDialogComponent,
-        MockComponent(HierarchySearchTreeComponent)
-      ],
-      providers: [
-        ContentSearchService,
-        FilesystemService,
-        NgbActiveModal,
-      ]
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule, RouterTestingModule],
+      declarations: [AdvancedSearchDialogComponent, MockComponent(HierarchySearchTreeComponent)],
+      providers: [ContentSearchService, FilesystemService, NgbActiveModal],
     });
   });
 

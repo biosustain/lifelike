@@ -12,9 +12,10 @@ import { DefaultObjectTypeProvider } from '../providers/default.type-provider';
  */
 @Injectable()
 export class ObjectTypeService {
-  constructor(protected readonly injector: Injector,
-              private readonly defaultProvider: DefaultObjectTypeProvider) {
-  }
+  constructor(
+    protected readonly injector: Injector,
+    private readonly defaultProvider: DefaultObjectTypeProvider
+  ) {}
 
   /**
    * Get the provider for the given file.

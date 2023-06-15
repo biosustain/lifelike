@@ -38,22 +38,22 @@
 
     & > * {
       &:after {
-        content: " - ";
+        content: ' - ';
       }
 
       &:last-child:after {
-        content: "";
+        content: '';
       }
     }
 
     .authors {
       & > * {
         &:after {
-          content: ", ";
+          content: ', ';
         }
 
         &:last-child:after {
-          content: "";
+          content: '';
         }
       }
     }

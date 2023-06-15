@@ -1,6 +1,10 @@
 import { ZoomTransform } from 'd3-zoom';
 
-import { UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  UniversalGraphGroup,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 
 import { BoundingBox, DEFAULT_SELECTION_MARGIN, Point } from '../utils/canvas/shared';
 
@@ -15,9 +19,11 @@ export interface NodeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeNode(d: UniversalGraphNode,
-            ctx: CanvasRenderingContext2D,
-            options: PlacementOptions): PlacedNode;
+  placeNode(
+    d: UniversalGraphNode,
+    ctx: CanvasRenderingContext2D,
+    options: PlacementOptions
+  ): PlacedNode;
 }
 
 /**
@@ -35,13 +41,15 @@ export interface EdgeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeEdge(d: UniversalGraphEdge,
-            from: UniversalGraphNode,
-            to: UniversalGraphNode,
-            placedFrom: PlacedObject,
-            placedTo: PlacedObject,
-            ctx: CanvasRenderingContext2D,
-            options: PlacementOptions): PlacedEdge;
+  placeEdge(
+    d: UniversalGraphEdge,
+    from: UniversalGraphNode,
+    to: UniversalGraphNode,
+    placedFrom: PlacedObject,
+    placedTo: PlacedObject,
+    ctx: CanvasRenderingContext2D,
+    options: PlacementOptions
+  ): PlacedEdge;
 }
 
 export interface GroupRenderStyle {
@@ -52,9 +60,11 @@ export interface GroupRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  placeGroup(d: UniversalGraphGroup,
-             ctx: CanvasRenderingContext2D,
-             options: PlacementOptions): PlacedGroup;
+  placeGroup(
+    d: UniversalGraphGroup,
+    ctx: CanvasRenderingContext2D,
+    options: PlacementOptions
+  ): PlacedGroup;
 }
 
 /**
@@ -105,7 +115,7 @@ export abstract class PlacedObject {
    * @param x the X coordinate to check
    * @param y the Y coordinate to check
    */
-  abstract isPointIntersecting({x, y}: Point): boolean;
+  abstract isPointIntersecting({ x, y }: Point): boolean;
 
   /**
    * Check to see if the given bbox encloses the object.
@@ -128,14 +138,12 @@ export abstract class PlacedObject {
   /**
    * Called after the object has been bound to a renderer.
    */
-  objectDidBind(): void {
-  }
+  objectDidBind(): void {}
 
   /**
    * Called before the object is unbound.
    */
-  objectWillUnbind(): void {
-  }
+  objectWillUnbind(): void {}
 
   /**
    * Get the first intersection point of a line coming from outside this object
@@ -172,7 +180,6 @@ export abstract class PlacedNode extends PlacedObject {
   // drawn upon selection
   resizable: boolean;
   uniformlyResizable: boolean;
-
 }
 
 /**
@@ -195,6 +202,4 @@ export abstract class PlacedEdge extends PlacedObject {
 /**
  * Placed group.
  */
-export abstract class PlacedGroup extends PlacedObject {
-
-}
+export abstract class PlacedGroup extends PlacedObject {}

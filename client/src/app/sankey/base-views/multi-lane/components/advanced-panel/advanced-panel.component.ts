@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 
 import { tap } from 'rxjs/operators';
@@ -8,7 +8,6 @@ import { SankeyAbstractAdvancedPanelComponent } from 'app/sankey/abstract/advanc
 import { MultiLaneBaseControllerService } from '../../services/multi-lane-base-controller.service';
 import { BaseOptions, BaseState } from '../../interfaces';
 
-
 @Component({
   selector: 'app-sankey-base-advanced-panel',
   templateUrl: './advanced-panel.component.html',
@@ -16,8 +15,8 @@ import { BaseOptions, BaseState } from '../../interfaces';
 })
 export class MultiLaneBaseAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<BaseOptions, BaseState>
-  implements OnInit, OnDestroy {
-
+  implements OnInit, OnDestroy
+{
   constructor(
     protected baseView: MultiLaneBaseControllerService,
     protected formBuilder: FormBuilder
@@ -33,10 +32,13 @@ export class MultiLaneBaseAdvancedPanelComponent
       }),
       max: this.formBuilder.group({
         enabled: [false, []],
-        ratio: [{
-          value: 0,
-          disabled: true
-        }, []],
+        ratio: [
+          {
+            value: 0,
+            disabled: true,
+          },
+          [],
+        ],
       }),
     }),
     linkPaletteId: [undefined, []],

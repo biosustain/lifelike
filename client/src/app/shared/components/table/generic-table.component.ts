@@ -21,13 +21,13 @@ import { HighlightTextService } from '../../services/highlight-text.service';
   templateUrl: './generic-table.component.html',
   styleUrls: ['./generic-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ HighlightTextService ]
+  providers: [HighlightTextService],
 })
 export class GenericTableComponent implements OnChanges {
   HEADER: TableHeader[][];
 
-  @ViewChild('head', {read: ElementRef}) public head: ElementRef;
-  @ViewChild('body', {read: ElementRef}) public body: ElementRef;
+  @ViewChild('head', { read: ElementRef }) public head: ElementRef;
+  @ViewChild('body', { read: ElementRef }) public body: ElementRef;
 
   // Number of columns can be inferred from the headers
   numColumns: number[];
@@ -37,16 +37,20 @@ export class GenericTableComponent implements OnChanges {
   @Input()
   set header(header: TableHeader[][]) {
     this.HEADER = header;
-    const num = Math.max.apply(null, header.map(x => x.reduce((a, b) => a + parseInt(b.span, 10), 0)));
+    const num = Math.max.apply(
+      null,
+      header.map((x) => x.reduce((a, b) => a + parseInt(b.span, 10), 0))
+    );
     this.numColumns = new Array(num);
   }
   @Input() entries: TableCell[][];
 
-  constructor(protected readonly highlightTextService: HighlightTextService,
-              protected readonly elementRef: ElementRef) {
-  }
+  constructor(
+    protected readonly highlightTextService: HighlightTextService,
+    protected readonly elementRef: ElementRef
+  ) {}
 
-  ngOnChanges({object}: SimpleChanges) {
+  ngOnChanges({ object }: SimpleChanges) {
     if (object) {
       this.highlightTextService.object = object.currentValue;
     }

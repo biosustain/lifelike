@@ -6,7 +6,7 @@ from common.query_builder import (
     get_create_index_query,
     get_create_relationships_query,
     get_create_synonym_relationships_query,
-    get_create_update_nodes_query
+    get_create_update_nodes_query,
 )
 from common.constants import *
 from common.liquibase_utils import *
@@ -19,11 +19,12 @@ from mesh.mesh_parser import (
     MESH_TREENUMBER_FILE,
     MESH_TREENUMBER_PARENT_REL_FILE,
     MESH_TREENUMBER_TOPICALDESC_REL_FILE,
-    MESH_TOPICALDESC_FILE
+    MESH_TOPICALDESC_FILE,
 )
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
+
 
 class MeshChangeLog(ChangeLog):
     def __init__(self, author: str, change_id_prefix: str):
@@ -80,9 +81,18 @@ class MeshChangeLog(ChangeLog):
 
     def create_indexes(self):
         queries = []
-        queries.append(get_create_constraint_query(NODE_MESH, PROP_ID, 'constraint_mesh_id') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_ecnumber_id') + ';')
-        queries.append(get_create_index_query(NODE_MESH, PROP_NAME, 'index_mesh_name') + ';')
+        queries.append(
+            get_create_constraint_query(NODE_MESH, PROP_ID, 'constraint_mesh_id') + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_SYNONYM, PROP_NAME, 'constraint_ecnumber_id'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_MESH, PROP_NAME, 'index_mesh_name') + ';'
+        )
         return queries
 
     def add_index_change_set(self):
@@ -98,8 +108,12 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_OBSOLETE], [NODE_TREENUMBER], datasource='MeSH')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_TREENUMBER_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_MESH, PROP_ID, [PROP_OBSOLETE], [NODE_TREENUMBER], datasource='MeSH'
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{MESH_TREENUMBER_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_treenumber_parent_rels(self):
@@ -107,8 +121,16 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, PROP_PARENT_ID, REL_PARENT)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_TREENUMBER_PARENT_REL_FILE}')
+        query = get_create_relationships_query(
+            NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, PROP_PARENT_ID, REL_PARENT
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_TREENUMBER_PARENT_REL_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_topicaldescriptor_nodes(self):
@@ -116,8 +138,20 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_TOPICALDESC], datasource='MeSH')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_TOPICALDESC_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_MESH,
+            PROP_ID,
+            [PROP_NAME, PROP_OBSOLETE],
+            [NODE_TOPICALDESC],
+            datasource='MeSH',
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_TOPICALDESC_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_treenumber_topicaldesc_rels(self):
@@ -125,8 +159,22 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'treenumber', REL_TREENUMBER)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_TREENUMBER_TOPICALDESC_REL_FILE}')
+        query = get_create_relationships_query(
+            NODE_MESH,
+            PROP_ID,
+            PROP_ID,
+            NODE_MESH,
+            PROP_ID,
+            'treenumber',
+            REL_TREENUMBER,
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_TREENUMBER_TOPICALDESC_REL_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_mesh_chemical_nodes(self):
@@ -134,8 +182,16 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_CHEMICAL], datasource='MeSH')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_CHEMICAL_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_MESH,
+            PROP_ID,
+            [PROP_NAME, PROP_OBSOLETE],
+            [NODE_CHEMICAL],
+            datasource='MeSH',
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{MESH_CHEMICAL_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_mesh_chemical_topicaldesc_rels(self):
@@ -143,8 +199,23 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_CHEMICAL_TOPICALDESC_REL_FILE}')
+        query = get_create_relationships_query(
+            NODE_MESH,
+            PROP_ID,
+            PROP_ID,
+            NODE_MESH,
+            PROP_ID,
+            'descriptor_id',
+            REL_MAPPED_TO_DESCRIPTOR,
+            [PROP_TYPE],
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_CHEMICAL_TOPICALDESC_REL_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_mesh_disease_nodes(self):
@@ -152,8 +223,16 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_MESH, PROP_ID, [PROP_NAME, PROP_OBSOLETE], [NODE_DISEASE], datasource='MeSH')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_DISEASE_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_MESH,
+            PROP_ID,
+            [PROP_NAME, PROP_OBSOLETE],
+            [NODE_DISEASE],
+            datasource='MeSH',
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{MESH_DISEASE_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_mesh_disease_topicaldesc_rels(self):
@@ -161,8 +240,23 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_MESH, PROP_ID, PROP_ID, NODE_MESH, PROP_ID, 'descriptor_id', REL_MAPPED_TO_DESCRIPTOR, [PROP_TYPE])
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_DISEASE_TOPICALDESC_REL_FILE}')
+        query = get_create_relationships_query(
+            NODE_MESH,
+            PROP_ID,
+            PROP_ID,
+            NODE_MESH,
+            PROP_ID,
+            'descriptor_id',
+            REL_MAPPED_TO_DESCRIPTOR,
+            [PROP_TYPE],
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_DISEASE_TOPICALDESC_REL_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_mesh_synonym_rels(self):
@@ -170,8 +264,16 @@ class MeshChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_synonym_relationships_query(NODE_MESH, PROP_ID, PROP_ID, PROP_NAME)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{MESH_SYNONYM_REL_FILE}')
+        query = get_create_synonym_relationships_query(
+            NODE_MESH, PROP_ID, PROP_ID, PROP_NAME
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{MESH_SYNONYM_REL_FILE}',
+        )
         self.change_sets.append(changeset)
 
 

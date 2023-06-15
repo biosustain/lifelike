@@ -17,13 +17,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let entry of typeEntries" class="hoverable-row" (click)="getSnippetsForNewEntity(entry)">
-            <td class="text-wrap" [ngStyle]="{'color': color}">{{entry.name}}</td>
+          <tr
+            *ngFor="let entry of typeEntries"
+            class="hoverable-row"
+            (click)="getSnippetsForNewEntity(entry)"
+          >
+            <td class="text-wrap" [ngStyle]="{ color: color }">{{ entry.name }}</td>
             <td class="text-primary text-center">{{ entry.count }}</td>
             <td>
-              <div class="bg-primary" [ngStyle]="{
-                      'height': '15px',
-                      'width': entry.percentage + '%'}"
+              <div
+                class="bg-primary"
+                [ngStyle]="{
+                  height: '15px',
+                  width: entry.percentage + '%'
+                }"
               ></div>
             </td>
           </tr>

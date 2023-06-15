@@ -11,41 +11,32 @@ import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
 import { SnippetDisplayComponent } from '../snippet-display/snippet-display.component';
 
 describe('SidenavEdgeViewComponent', () => {
-    let component: SidenavEdgeViewComponent;
-    let fixture: ComponentFixture<SidenavEdgeViewComponent>;
+  let component: SidenavEdgeViewComponent;
+  let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
-    configureTestSuite(() => {
-        TestBed.configureTestingModule({
-            imports: [
-                SharedModule,
-                RootStoreModule,
-                BrowserAnimationsModule
-            ],
-            declarations: [
-                SidenavEdgeViewComponent,
-                MockComponents(
-                    SnippetDisplayComponent,
-                ),
-            ],
-        });
+  configureTestSuite(() => {
+    TestBed.configureTestingModule({
+      imports: [SharedModule, RootStoreModule, BrowserAnimationsModule],
+      declarations: [SidenavEdgeViewComponent, MockComponents(SnippetDisplayComponent)],
     });
+  });
 
-    beforeEach(() => {
-        fixture = TestBed.createComponent(SidenavEdgeViewComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(SidenavEdgeViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-    it('should emit to parent when requestPage is called', () => {
-        const requestNewPageEmitterSpy = spyOn(component.requestNewPageEmitter, 'emit');
+  it('should emit to parent when requestPage is called', () => {
+    const requestNewPageEmitterSpy = spyOn(component.requestNewPageEmitter, 'emit');
 
-        // Don't care what the data from the child was, we just care that we carry the request to the parent
-        component.requestPage(null);
+    // Don't care what the data from the child was, we just care that we carry the request to the parent
+    component.requestPage(null);
 
-        expect(requestNewPageEmitterSpy).toHaveBeenCalled();
-    });
+    expect(requestNewPageEmitterSpy).toHaveBeenCalled();
+  });
 });

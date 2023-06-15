@@ -5,9 +5,7 @@ import { PdfViewerComponent } from './pdf-viewer.component';
 import { PdfViewerModule } from './pdf-viewer.module';
 
 @Component({
-  template: `
-    <app-pdf-viewer-lib></app-pdf-viewer-lib>
-  `
+  template: ` <app-pdf-viewer-lib></app-pdf-viewer-lib> `,
 })
 class TestComponent {}
 
@@ -20,14 +18,14 @@ describe('PDFViewerComponent', () => {
   function setPdf(numPages: number) {
     (pdfViewer as any).internalPdf = {
       numPages,
-      destroy: () => {}
+      destroy: () => {},
     };
   }
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [TestComponent],
-      imports: [PdfViewerModule]
+      imports: [PdfViewerModule],
     })
       .compileComponents()
       .then(() => {
@@ -49,10 +47,7 @@ describe('PDFViewerComponent', () => {
       setPdf(10);
 
       [1, 3, 7, 10].forEach((page: number) => {
-        expect((pdfViewer as any).getValidPageNumber(page)).toBe(
-          page,
-          `page: ${page}`
-        );
+        expect((pdfViewer as any).getValidPageNumber(page)).toBe(page, `page: ${page}`);
       });
     });
 
@@ -103,7 +98,7 @@ describe('PDFViewerComponent', () => {
 
       expect((pdfViewer as any).getDocumentParams()).toEqual({
         verbosity: 0,
-        url: src
+        url: src,
       });
     });
 
@@ -115,7 +110,7 @@ describe('PDFViewerComponent', () => {
         verbosity: 0,
         url: src,
         cMapUrl,
-        cMapPacked: true
+        cMapPacked: true,
       });
     });
 
@@ -127,7 +122,7 @@ describe('PDFViewerComponent', () => {
         url: src,
         verbosity: 0,
         cMapUrl,
-        cMapPacked: true
+        cMapPacked: true,
       });
     });
 
@@ -140,7 +135,7 @@ describe('PDFViewerComponent', () => {
         url,
         cMapUrl,
         cMapPacked: true,
-        verbosity: 0
+        verbosity: 0,
       });
     });
   });

@@ -7,8 +7,7 @@ WILDCARD_MIN_LEN = 3
 
 
 def parse_query_terms(user_query: str) -> Tuple[List[str], List[str], List[str]]:
-    """Takes a user query and returns a list of individual query terms
-    """
+    """Takes a user query and returns a list of individual query terms"""
     query_string = user_query.lower()
     phrases = []
     terms = []
@@ -22,7 +21,7 @@ def parse_query_terms(user_query: str) -> Tuple[List[str], List[str], List[str]]
             start_idx = len(query_string)  # end loop
         else:
             query_terms.append(query_string[start_idx:start_quote_idx])
-            phrase = query_string[start_quote_idx + 1:end_quote_idx]
+            phrase = query_string[start_quote_idx + 1 : end_quote_idx]
             phrases.append(phrase)
             start_idx = end_quote_idx + 1
     for term in query_terms:
@@ -54,8 +53,9 @@ def _find_start_end_quote(query_string: str, start=0) -> Tuple[int, int]:
         else:
             start_idx = double_quote_idx
             quote = '"'
-        if (start_idx == 0 or query_string[start_idx - 1] in string.whitespace) and \
-                start_idx < len(query_string) - 1:
+        if (
+            start_idx == 0 or query_string[start_idx - 1] in string.whitespace
+        ) and start_idx < len(query_string) - 1:
             end_idx = query_string.find(quote, start_idx + 1)
             if query_string[end_idx - 1] == '\\':
                 end_idx = query_string.find(quote, end_idx + 1)

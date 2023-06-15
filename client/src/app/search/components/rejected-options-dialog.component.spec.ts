@@ -16,16 +16,9 @@ describe('RejectedOptionsDialogComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [ RejectedOptionsDialogComponent ],
-      providers: [
-        ContentSearchService,
-        NgbActiveModal,
-      ]
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [RejectedOptionsDialogComponent],
+      providers: [ContentSearchService, NgbActiveModal],
     });
   });
 

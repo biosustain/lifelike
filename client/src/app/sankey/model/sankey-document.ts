@@ -20,19 +20,18 @@ import {
   SankeyLinkInterface,
   SankeyNodeInterface,
   DisplayProperty,
-  SankeyState
+  SankeyState,
 } from '../interfaces';
 import { indexByProperty } from '../utils';
 import { SankeyView } from '../interfaces/view';
 import { ErrorMessages } from '../constants/error';
 
-const listMapToDict =
-  <GraphType extends object>(list: SankeyDocumentPartMixin<GraphType>[]) =>
-    list.map(entity => entity.toDict());
+const listMapToDict = <GraphType extends object>(list: SankeyDocumentPartMixin<GraphType>[]) =>
+  list.map((entity) => entity.toDict());
 
-const objectMapToDict =
-  <GraphType extends object>(obj: { [key: string]: SankeyDocumentPartMixin<GraphType> }) =>
-    mapValues(obj, entity => entity.toDict());
+const objectMapToDict = <GraphType extends object>(obj: {
+  [key: string]: SankeyDocumentPartMixin<GraphType>;
+}) => mapValues(obj, (entity) => entity.toDict());
 
 interface SankeyDocumentPartMixin<GraphType extends object> {
   toDict(): GraphType;
@@ -45,7 +44,7 @@ export class View implements SankeyDocumentPartMixin<SankeyView> {
   links: SankeyView['links'];
   private sankeyDocument;
 
-  constructor({state, size, nodes, links}, sankeyDocument) {
+  constructor({ state, size, nodes, links }, sankeyDocument) {
     this.sankeyDocument = sankeyDocument;
     this.state = state;
     this.size = size;
@@ -58,7 +57,7 @@ export class View implements SankeyDocumentPartMixin<SankeyView> {
       state: this.state,
       size: this.size,
       nodes: this.nodes,
-      links: this.links
+      links: this.links,
     };
   }
 }
@@ -76,7 +75,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
   detailEdges?: Array<[number, number, Graph.DetailEdge]>;
   color: string | Color;
 
-  constructor({node_paths, detail_edges, ...rest}: Graph.Trace, id) {
+  constructor({ node_paths, detail_edges, ...rest }: Graph.Trace, id) {
     assign(this, rest);
     this.id = id;
     this.nodePaths = node_paths;
@@ -90,16 +89,16 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
       source: this.source,
       target: this.target,
       group: this.group,
-      detail_edges: this.detailEdges
+      detail_edges: this.detailEdges,
     };
   }
 
   containsNode(nodeId) {
-    return flatMap(this.nodePaths).some(id => id === nodeId);
+    return flatMap(this.nodePaths).some((id) => id === nodeId);
   }
 
   containsLink(linkId) {
-    return this.edges.some(id => id === linkId);
+    return this.edges.some((id) => id === linkId);
   }
 }
 
@@ -124,21 +123,28 @@ export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork>
 
   constructor(
     {
-      traces, sources, targets, default_sizing, defaults, name, description, _views
+      traces,
+      sources,
+      targets,
+      default_sizing,
+      defaults,
+      name,
+      description,
+      _views,
     }: SankeyTraceNetwork,
-    {nodeSets, sizing}: SankeyGraph,
+    { nodeSets, sizing }: SankeyGraph,
     sankeyDocument
   ) {
     this.sankeyDocument = sankeyDocument;
     this.defaults = defaults;
     this.traces = traces.map((trace, index) => new Trace(trace, index));
-    const tracesWithoutGroups = this.traces.filter(({group}) => !isNumber(group));
+    const tracesWithoutGroups = this.traces.filter(({ group }) => !isNumber(group));
     if (isNotEmpty(tracesWithoutGroups)) {
-      let maxVal = max(traces.map(({group}) => group ?? -1));
+      let maxVal = max(traces.map(({ group }) => group ?? -1));
       if (!isFinite(maxVal)) {
         maxVal = Math.random();
       }
-      tracesWithoutGroups.forEach(trace => trace.group = ++maxVal);
+      tracesWithoutGroups.forEach((trace) => (trace.group = ++maxVal));
     }
     this._defaultSizing = default_sizing;
     this.defaultSizing = sizing[default_sizing];
@@ -148,7 +154,7 @@ export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork>
     this.targets = nodeSets[targets];
     this.name = name;
     this.description = description;
-    const views = mapValues(_views, view => new View(view, sankeyDocument));
+    const views = mapValues(_views, (view) => new View(view, sankeyDocument));
     this.views$ = new BehaviorSubject(views);
     this.views$.subscribe(sankeyDocument.isDirty$);
   }
@@ -158,7 +164,7 @@ export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork>
   }
 
   addView(name: string, view: SankeyView) {
-    this.views$.next({...this.views$.value, [name]: new View(view, this.sankeyDocument)});
+    this.views$.next({ ...this.views$.value, [name]: new View(view, this.sankeyDocument) });
   }
 
   deleteView(name: string) {
@@ -197,7 +203,7 @@ class NodeSets implements SankeyDocumentPartMixin<Graph.NodeSets> {
   constructor(nodeSets: Graph.NodeSets, sankeyDocument) {
     this.notMappedNodeSets = nodeSets;
     entries(nodeSets).forEach(([key, value]) => {
-      this[key] = value.map(id => sankeyDocument.getNodeById(id));
+      this[key] = value.map((id) => sankeyDocument.getNodeById(id));
     });
   }
 
@@ -215,7 +221,7 @@ class SankeyGraph implements SankeyDocumentPartMixin<Graph.Graph> {
   sizing?: Graph.PredefinedSizing;
   log?: string | Array<string>;
 
-  constructor({trace_networks, sizing = {}, node_sets, ...rest}, sankeyDocument) {
+  constructor({ trace_networks, sizing = {}, node_sets, ...rest }, sankeyDocument) {
     assign(this, rest);
     this.sankeyDocument = sankeyDocument;
     this.sizing = sizing;
@@ -224,7 +230,9 @@ class SankeyGraph implements SankeyDocumentPartMixin<Graph.Graph> {
     if (!trace_networks.length) {
       throw Error(ErrorMessages.missingNetworkTraces);
     }
-    this.traceNetworks = trace_networks.map(traceNetwork => new TraceNetwork(traceNetwork, this, sankeyDocument));
+    this.traceNetworks = trace_networks.map(
+      (traceNetwork) => new TraceNetwork(traceNetwork, this, sankeyDocument)
+    );
   }
 
   toDict() {
@@ -234,13 +242,14 @@ class SankeyGraph implements SankeyDocumentPartMixin<Graph.Graph> {
       sizing: this.sizing,
       log: this.log,
       name: this.name,
-      description: this.description
+      description: this.description,
     };
   }
 }
 
-export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLink | SankeyTraceLink)>
-  implements SankeyDocumentPartMixin<Graph.Node>, SankeyNodePosition, SankeyNodeInterface {
+export class SankeyNode<Link extends SankeyLink | SankeyTraceLink = SankeyLink | SankeyTraceLink>
+  implements SankeyDocumentPartMixin<Graph.Node>, SankeyNodePosition, SankeyNodeInterface
+{
   id: number;
   depth: number;
   index: number;
@@ -271,7 +280,7 @@ export class SankeyNode<Link extends (SankeyLink | SankeyTraceLink) = (SankeyLin
 
   toDict() {
     return {
-      id: this.id
+      id: this.id,
     };
   }
 
@@ -310,7 +319,7 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
   readonly adjacentDivider = 1;
   displayProperties?: DisplayProperty[];
 
-  constructor({source, target, ...rest}, id, sankeyDocument) {
+  constructor({ source, target, ...rest }, id, sankeyDocument) {
     assign(this, rest);
     this.id = id;
     this.source = sankeyDocument.getNodeById(source);
@@ -322,7 +331,7 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
       source: this.source.id,
       target: this.target.id,
       description: this.description,
-      label: this.label
+      label: this.label,
     };
   }
 
@@ -336,7 +345,7 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
       width: this.width,
       order: this.order,
       adjacentDivider: this.adjacentDivider,
-      id: this.id
+      id: this.id,
     };
   }
 
@@ -345,7 +354,7 @@ export class SankeyLink implements SankeyDocumentPartMixin<Graph.Link>, SankeyLi
   }
 
   belongsToTrace(id) {
-    return this.traces.some(trace => trace.id === id);
+    return this.traces.some((trace) => trace.id === id);
   }
 }
 
@@ -403,7 +412,7 @@ export class SankeyTraceLink implements SankeyLinkInterface {
       width: this.width,
       order: this.order,
       adjacentDivider: this.adjacentDivider,
-      id: this.id
+      id: this.id,
     };
   }
 
@@ -432,9 +441,12 @@ export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
       this.warningController.warn(ErrorMessages.missingNode(id));
     }
     return node;
-  }
+  };
 
-  constructor({nodes, links, graph, ...rest}: Graph.File, warningController: WarningControllerService) {
+  constructor(
+    { nodes, links, graph, ...rest }: Graph.File,
+    warningController: WarningControllerService
+  ) {
     this.warningController = warningController;
 
     if (!nodes.length) {
@@ -446,7 +458,7 @@ export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
 
     assign(this, rest);
     this.isDirty$ = new BehaviorSubject(false);
-    this.nodes = nodes.map(node => new SankeyNode(node, node.id));
+    this.nodes = nodes.map((node) => new SankeyNode(node, node.id));
     this.nodeById = indexByProperty(this.nodes, 'id');
     this.links = links.map((link, index) => new SankeyLink(link, index, this));
     this.graph = new SankeyGraph(graph, this);
@@ -458,13 +470,12 @@ export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
       links: listMapToDict(this.links),
       graph: this.graph.toDict(),
       directed: this.directed,
-      multigraph: this.multigraph
+      multigraph: this.multigraph,
     };
   }
 }
 
 export class SankeyFile {
-
   constructor(
     filesystemService: FilesystemService,
     private warningController: WarningControllerService,
@@ -478,30 +489,27 @@ export class SankeyFile {
   private readonly hashId;
   private readonly filesystemService: FilesystemService;
 
-  metaLoadTask = new BackgroundTask<string, FilesystemObject>(
-    hash => this.filesystemService.open(hash)
+  metaLoadTask = new BackgroundTask<string, FilesystemObject>((hash) =>
+    this.filesystemService.open(hash)
   );
 
-  contentLoadTask = new BackgroundTask<string, Graph.File>(
-    hash => this.filesystemService.getContent(hash).pipe(
-      mapBlobToBuffer(),
-      mapBufferToJson()
-    )
+  contentLoadTask = new BackgroundTask<string, Graph.File>((hash) =>
+    this.filesystemService.getContent(hash).pipe(mapBlobToBuffer(), mapBufferToJson())
   );
 
   metadata$ = this.metaLoadTask.results$.pipe(
-    map(({result}) => result),
-    shareReplay<FilesystemObject>({bufferSize: 1, refCount: true})
+    map(({ result }) => result),
+    shareReplay<FilesystemObject>({ bufferSize: 1, refCount: true })
   );
 
   content$ = this.contentLoadTask.results$.pipe(
-    map(({result}) => result),
-    shareReplay<Graph.File>({bufferSize: 1, refCount: true})
+    map(({ result }) => result),
+    shareReplay<Graph.File>({ bufferSize: 1, refCount: true })
   );
 
   document$ = this.content$.pipe(
-    map(raw => new SankeyDocument(raw, this.warningController)),
-    shareReplay({bufferSize: 1, refCount: true})
+    map((raw) => new SankeyDocument(raw, this.warningController)),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   /**
@@ -513,45 +521,35 @@ export class SankeyFile {
    * yet current implementation cannot guarantee that just yet.
    */
   contentWithOnlyViewsUpdated$ = this.content$.pipe(
-    switchMap(({graph: {trace_networks, ...fcGraph}, ...fc}) =>
+    switchMap(({ graph: { trace_networks, ...fcGraph }, ...fc }) =>
       this.document$.pipe(
-        map(({graph: {traceNetworks}}) => ({
+        map(({ graph: { traceNetworks } }) => ({
           graph: {
             ...fcGraph,
             trace_networks: zip(traceNetworks, trace_networks).map(([tn, fctn]) => ({
               ...fctn,
-              _views: tn.toDict()._views
-            }))
+              _views: tn.toDict()._views,
+            })),
           },
-          ...fc
+          ...fc,
         }))
       )
     )
   );
 
   reload() {
-    const {hashId} = this;
+    const { hashId } = this;
     this.metaLoadTask.update(hashId);
     this.contentLoadTask.update(hashId);
   }
 
   save(): Observable<FilesystemObject> {
-    const {hashId} = this;
+    const { hashId } = this;
     return this.contentWithOnlyViewsUpdated$.pipe(
       first(),
-      map(content =>
-        new Blob(
-          [JSON.stringify(content)],
-          {type: MimeTypes.Graph}
-        )
-      ),
-      switchMap(contentValue =>
-        this.filesystemService.save(
-          [hashId],
-          {contentValue}
-        )
-      ),
-      map(updatedFiles => updatedFiles[hashId])
+      map((content) => new Blob([JSON.stringify(content)], { type: MimeTypes.Graph })),
+      switchMap((contentValue) => this.filesystemService.save([hashId], { contentValue })),
+      map((updatedFiles) => updatedFiles[hashId])
     );
   }
 }

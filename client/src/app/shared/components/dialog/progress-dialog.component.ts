@@ -5,7 +5,8 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
-  Output, SimpleChanges,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -17,7 +18,9 @@ import {
   combineLatest,
   defer,
   Subject,
-  of, forkJoin, ReplaySubject,
+  of,
+  forkJoin,
+  ReplaySubject,
 } from 'rxjs';
 import {
   throttleTime,
@@ -27,18 +30,14 @@ import {
   first,
   takeUntil,
   tap,
-  mergeMap, switchMap,
+  mergeMap,
+  switchMap,
 } from 'rxjs/operators';
 import { flatMap, reduce, size } from 'lodash-es';
 
-import {
-  Progress,
-  ProgressArguments,
-  ProgressMode
-} from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressArguments, ProgressMode } from 'app/interfaces/common-dialog.interface';
 
 import { isNotEmpty } from '../../utils';
-
 
 /**
  * A dialog to indicate the progress of a process.
@@ -63,24 +62,28 @@ export class ProgressDialogComponent {
   }
 
   close() {
-    return combineLatest(this.progressObservables).pipe(
-      map(progresses =>
-        reduce(
-          progresses,
-          (acc, {info, warnings, errors}) => acc + size(info) + size(warnings) + size(errors),
-          0,
-        ) > 0,
-      ),
-    ).pipe(
-      first(),
-      tap(persist => {
-        if (persist) {
-          this.persist = true;
-        } else {
-          this.cancel();
-        }
-      })
-    ).toPromise();
+    return combineLatest(this.progressObservables)
+      .pipe(
+        map(
+          (progresses) =>
+            reduce(
+              progresses,
+              (acc, { info, warnings, errors }) => acc + size(info) + size(warnings) + size(errors),
+              0
+            ) > 0
+        )
+      )
+      .pipe(
+        first(),
+        tap((persist) => {
+          if (persist) {
+            this.persist = true;
+          } else {
+            this.cancel();
+          }
+        })
+      )
+      .toPromise();
   }
 }
 
@@ -93,8 +96,8 @@ export function getProgressStatus(event, loadingStatus: string, finishStatus: st
     });
   }
   return new Progress({
-      mode: ProgressMode.Determinate,
-      status: finishStatus,
-      value: event.loaded / event.total,
-    });
+    mode: ProgressMode.Determinate,
+    status: finishStatus,
+    value: event.loaded / event.total,
+  });
 }

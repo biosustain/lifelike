@@ -11,14 +11,17 @@ class TestGeneParser(unittest.TestCase):
     Test gene parser using given organism data
     Issues: need timestamp for the updates. Otherwise, cannot identify which ones were newly loaded/updated.
     """
-    def __init__(self, database, tax_id:int):
+
+    def __init__(self, database, tax_id: int):
         self.parser = GeneParser('/Users/rcai/data')
         self.database = database
         self.tax_id = tax_id
         self.logger = logging.getLogger(__name__)
 
     def get_geneinfo_file(self):
-        return os.path.join(self.parser.output_dir, 'geneinfo_' + str(self.tax_id) + '.tsv')
+        return os.path.join(
+            self.parser.output_dir, 'geneinfo_' + str(self.tax_id) + '.tsv'
+        )
 
     def write_geneinfo(self):
         df_geneinfo = self.parser.extract_organism_geneinfo(self.tax_id)
@@ -41,14 +44,18 @@ class TestGeneParser(unittest.TestCase):
         df = df.replace('-', '')
         df_syn = df[[PROP_ID, PROP_SYNONYMS]]
         df_names = df[[PROP_ID, PROP_NAME]]
-        df_locus = df[df[PROP_LOCUS_TAG].str.len()>0][[PROP_ID, PROP_LOCUS_TAG]]
+        df_locus = df[df[PROP_LOCUS_TAG].str.len() > 0][[PROP_ID, PROP_LOCUS_TAG]]
         df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-        df_syn = df_syn.reset_index().rename(columns={0: 'name'}).loc[:, [PROP_ID, 'name']]
+        df_syn = (
+            df_syn.reset_index().rename(columns={0: 'name'}).loc[:, [PROP_ID, 'name']]
+        )
         df_locus = df_locus.rename(columns={PROP_LOCUS_TAG: 'name'})
         df_syns = pd.concat([df_names, df_locus, df_syn])
         df_syns.drop_duplicates(inplace=True)
         # remove synonyms with only one letter, or do not have non-digit chars
-        df_syns = df_syns[df_syns['name'].str.len() > 1 & df_syns['name'].str.contains('[a-zA-Z]')]
+        df_syns = df_syns[
+            df_syns['name'].str.len() > 1 & df_syns['name'].str.contains('[a-zA-Z]')
+        ]
         df_syns = df_syns[df_syns['name'].str.len() > 1]
         self.logger.info(len(df_names), len(df_locus), len(df_syns))
         return df_syns
@@ -65,7 +72,10 @@ class TestGeneParser(unittest.TestCase):
         result = self.database.get_data(query, {'taxId': str(self.tax_id)})
         db_count = result.loc[0][0]
         file_count = len(self.get_synonyms_from_geneinfo())
-        self.assertTrue(db_count == file_count, f'synonym counts does not match: {db_count}, {file_count}')
+        self.assertTrue(
+            db_count == file_count,
+            f'synonym counts does not match: {db_count}, {file_count}',
+        )
 
     def compare_synonyms(self):
         query = f"""
@@ -75,12 +85,20 @@ class TestGeneParser(unittest.TestCase):
                 """
         df_db = self.database.get_data(query, {'taxId': str(self.tax_id)})
         df_db = df_db.drop_duplicates()
-        df_db.to_csv(os.path.join(self.parser.output_dir, 'gene_syn_9606_db.tsv'), sep='\t', index=False)
+        df_db.to_csv(
+            os.path.join(self.parser.output_dir, 'gene_syn_9606_db.tsv'),
+            sep='\t',
+            index=False,
+        )
         df_file = self.get_synonyms_from_geneinfo()
         df_file = df_file.astype('str')
         df_file = df_file.sort_values(by=[PROP_ID, PROP_NAME])
         df_file = df_file.drop_duplicates()
-        df_file.to_csv(os.path.join(self.parser.output_dir, 'gene_syn_9606_file.tsv'), sep='\t', index=False)
+        df_file.to_csv(
+            os.path.join(self.parser.output_dir, 'gene_syn_9606_file.tsv'),
+            sep='\t',
+            index=False,
+        )
         self.logger.info(f"kg synonyms: {len(df_db)}")
         self.logger.info(f"file synonyms: {len(df_file)}")
         df = pd.concat([df_db, df_file]).drop_duplicates(keep=False)

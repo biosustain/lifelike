@@ -21,10 +21,7 @@ import { SankeyMutiLaneDetailsPanelComponent } from './details-panel.component';
 import { SankeyMultiLaneLinkDetailsComponent } from './link-details.component';
 
 @NgModule({
-  declarations: [
-    SankeyMutiLaneDetailsPanelComponent,
-    SankeyMultiLaneLinkDetailsComponent
-  ],
+  declarations: [SankeyMutiLaneDetailsPanelComponent, SankeyMultiLaneLinkDetailsComponent],
   imports: [
     CommonModule,
     SankeyDetailsPanelModule,
@@ -41,11 +38,8 @@ import { SankeyMultiLaneLinkDetailsComponent } from './link-details.component';
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
-    RouterModule.forChild([])
+    RouterModule.forChild([]),
   ],
-  exports: [
-    SankeyMutiLaneDetailsPanelComponent
-  ],
+  exports: [SankeyMutiLaneDetailsPanelComponent],
 })
-export class SankeyMultiLaneDetailsPanelModule {
-}
+export class SankeyMultiLaneDetailsPanelModule {}

@@ -30,7 +30,7 @@ export const isNumber = (v: any) => !isNaN(v) && typeof v !== 'boolean';
 
 export const isPositiveNumber = (v: any) => isNumber(v) || v > 0;
 
-export const clamp = (min, max) => value => Math.min(Math.max(min, Number(value)), max);
+export const clamp = (min, max) => (value) => Math.min(Math.max(min, Number(value)), max);
 
 export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
 // endregion
@@ -46,7 +46,7 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
     if (isIterable(v)) {
       // propertyName === true -- if was not called by JSON parser
       if (propertyName === true) {
-        return v.map(n => parseForRendering(n)).join(', ');
+        return v.map((n) => parseForRendering(n)).join(', ');
       }
       const vAsArray = clone(v);
       if (vAsArray.length > 3) {
@@ -64,12 +64,13 @@ export const parseForRendering = (v, propertyName: string | boolean = true) => {
   }
   return v;
 };
-export const normalizeGenerator = values => {
+export const normalizeGenerator = (values) => {
   const min = Math.min(...values);
   const max = values.reduce((o, n) => o + n, 0);
   return {
-    min, max,
-    normalize: (max - min) ? d => Math.max(0, d / max) : d => d / max
+    min,
+    max,
+    normalize: max - min ? (d) => Math.max(0, d / max) : (d) => d / max,
   };
 };
 export const RELAYOUT_DURATION = 250;

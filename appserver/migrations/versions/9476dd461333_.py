@@ -37,38 +37,16 @@ def downgrade():
 
 
 DEFAULT_DOMAIN_INFO = {
-    "Regulon": {
-        "labels": [
-            "Regulator Family",
-            "Activated By",
-            "Repressed By"
-        ]
-    },
-    "UniProt": {
-        "labels": [
-            "Function"
-        ]
-    },
-    "String": {
-        "labels": [
-            "Annotation"
-        ]
-    },
-    "GO": {
-        "labels": [
-            "Annotation"
-        ]
-    },
-    "BioCyc": {
-        "labels": [
-            "Pathways"
-        ]
-    }
+    "Regulon": {"labels": ["Regulator Family", "Activated By", "Repressed By"]},
+    "UniProt": {"labels": ["Function"]},
+    "String": {"labels": ["Annotation"]},
+    "GO": {"labels": ["Annotation"]},
+    "BioCyc": {"labels": ["Pathways"]},
 }
 
 ORGANISM_MAP = {
     '511145': 'Escherichia coli str. K-12 substr. MG1655',
-    '9606': 'Homo sapiens'
+    '9606': 'Homo sapiens',
 }
 
 
@@ -87,12 +65,12 @@ def _fix_str_annos(annos):
             'genes': genes,
             'taxId': tax_id,
             'sources': sources,
-            'organism': organism
+            'organism': organism,
         },
         'result': {
             'genes': [{'imported': gene} for gene in genes],
-            'domainInfo': DEFAULT_DOMAIN_INFO
-        }
+            'domainInfo': DEFAULT_DOMAIN_INFO,
+        },
     }
 
 
@@ -129,7 +107,7 @@ def _fix_annos_based_on_error(enrichment_annos: dict, error: str):
             'genes': ','.join([gene['imported'] for gene in genes]),
             'taxId': '511145',
             'sources': ['UniProt', 'String', 'GO', 'BioCyc', 'KEGG'],
-            'organism': 'Escherichia coli str. K-12 substr. MG1655'
+            'organism': 'Escherichia coli str. K-12 substr. MG1655',
         }
         enrichment_annos['result'] = {'genes': genes, 'domainInfo': domain_info}
     elif error == 'data must be object' or error == 'data.data must be object':
@@ -168,7 +146,7 @@ def _fix_annos_based_on_error(enrichment_annos: dict, error: str):
             'genes': genes,
             'taxId': tax_id,
             'sources': sources,
-            'organism': organism
+            'organism': organism,
         }
     return enrichment_annos
 
@@ -183,25 +161,23 @@ def data_upgrades():
         sa.column('id', sa.Integer),
         sa.column('content_id', sa.Integer),
         sa.column('mime_type', sa.String),
-        sa.column('enrichment_annotations', postgresql.JSONB)
+        sa.column('enrichment_annotations', postgresql.JSONB),
     )
 
     t_files_content = sa.table(
         'files_content',
         sa.column('id', sa.Integer),
         sa.column('raw_file', sa.LargeBinary),
-        sa.column('checksum_sha256', sa.Binary)
+        sa.column('checksum_sha256', sa.Binary),
     )
 
     # This will retrieve all enrichment tables that *have* annotations. The annotations and the
     # content *might* be invalid. If the annotations are invalid, we will fix them and then
     # replace the content with them.
     files = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files.c.id,
-            t_files.c.content_id,
-            t_files.c.enrichment_annotations
-        ]).where(
+        sa.select(
+            [t_files.c.id, t_files.c.content_id, t_files.c.enrichment_annotations]
+        ).where(
             sa.and_(
                 t_files.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
                 t_files.c.enrichment_annotations.isnot(None),
@@ -212,17 +188,19 @@ def data_upgrades():
     # This will retrieve the *content* of all enrichment tables *without* annotations. If the
     # content is invalid, we will fix it, and update the row with the valid content.
     files_content = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files_content.c.id,
-            t_files_content.c.raw_file,
-        ]).select_from(
+        sa.select(
+            [
+                t_files_content.c.id,
+                t_files_content.c.raw_file,
+            ]
+        ).select_from(
             t_files_content.join(
                 t_files,
                 sa.and_(
                     t_files.c.content_id == t_files_content.c.id,
                     t_files.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
                     t_files.c.enrichment_annotations.is_(None),
-                )
+                ),
             )
         )
     )
@@ -244,9 +222,13 @@ def data_upgrades():
             validate_enrichment_table(enrichment_annos)
 
             # Add the FileContent update mapping to the list
-            new_content = json.dumps(enrichment_annos, separators=(',', ':')).encode('utf-8')
+            new_content = json.dumps(enrichment_annos, separators=(',', ':')).encode(
+                'utf-8'
+            )
             new_hash = hashlib.sha256(new_content).digest()
-            file_content_to_update.append({'id': id, 'raw_file': new_content, 'checksum_sha256': new_hash})  # noqa
+            file_content_to_update.append(
+                {'id': id, 'raw_file': new_content, 'checksum_sha256': new_hash}
+            )  # noqa
 
         session.bulk_update_mappings(FileContent, file_content_to_update)
         session.commit()
@@ -270,13 +252,17 @@ def data_upgrades():
 
                 # Do the same for FileContent, i.e., if the enrichment annotations were
                 # invalid, the raw content is too since they're more or less the same
-                new_content = json.dumps(enrichment_annos, separators=(',', ':')).encode('utf-8')
+                new_content = json.dumps(
+                    enrichment_annos, separators=(',', ':')
+                ).encode('utf-8')
                 new_hash = hashlib.sha256(new_content).digest()
 
                 existing_content = conn.execute(
-                    sa.select([
-                        t_files_content.c.id,
-                    ]).where(
+                    sa.select(
+                        [
+                            t_files_content.c.id,
+                        ]
+                    ).where(
                         t_files_content.c.checksum_sha256 == new_hash,
                     )
                 ).scalar()
@@ -287,9 +273,21 @@ def data_upgrades():
                     # And it's not a duplicate of a newly fixed file...
                     if new_hash not in unique_content_map:
                         unique_content_map[new_hash] = content_id
-                        file_content_to_update.append({'id': content_id, 'raw_file': new_content, 'checksum_sha256': new_hash})  # noqa
+                        file_content_to_update.append(
+                            {
+                                'id': content_id,
+                                'raw_file': new_content,
+                                'checksum_sha256': new_hash,
+                            }
+                        )  # noqa
                     file_content_id = unique_content_map[new_hash]
-                files_to_update.append({'id': id, 'enrichment_annotations': enrichment_annos, 'content_id': file_content_id})  # noqa
+                files_to_update.append(
+                    {
+                        'id': id,
+                        'enrichment_annotations': enrichment_annos,
+                        'content_id': file_content_id,
+                    }
+                )  # noqa
 
         session.bulk_update_mappings(Files, files_to_update)
         session.bulk_update_mappings(FileContent, file_content_to_update)

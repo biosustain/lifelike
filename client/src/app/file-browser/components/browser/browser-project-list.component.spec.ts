@@ -21,10 +21,9 @@ describe('ProjectSpaceComponent', () => {
         FileTypesModule,
         FileBrowserModule,
         RootStoreModule,
-        RouterTestingModule
-      ]
-    })
-    .compileComponents();
+        RouterTestingModule,
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {

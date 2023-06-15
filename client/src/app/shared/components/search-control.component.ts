@@ -4,14 +4,15 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 @Component({
   selector: 'app-search-control',
   templateUrl: './search-control.component.html',
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: SearchControlComponent,
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: SearchControlComponent,
+      multi: true,
+    },
+  ],
 })
 export class SearchControlComponent implements ControlValueAccessor {
-
   value = '';
   private changeCallback: any;
   private touchCallback: any;
@@ -26,7 +27,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Output() enterPress = new EventEmitter();
   @Output() valueClear = new EventEmitter();
 
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
+  @ViewChild('searchInput', { static: false }) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {

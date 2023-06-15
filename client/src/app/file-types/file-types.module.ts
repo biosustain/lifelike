@@ -10,12 +10,9 @@ import { DefaultObjectTypeProvider } from './providers/default.type-provider';
 import { PdfTypeProvider } from './providers/pdf.type-provider';
 import { GraphTypeProvider } from './providers/graph.type-provider.service';
 
-
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule
-  ],
+  imports: [CommonModule],
   providers: [
     {
       provide: TYPE_PROVIDER,
@@ -47,14 +44,13 @@ import { GraphTypeProvider } from './providers/graph.type-provider.service';
       provide: TYPE_PROVIDER,
       useClass: PdfTypeProvider,
       multi: true,
-    }
-  ]
+    },
+  ],
 })
 export class FileTypesModule {
   constructor(@Optional() @SkipSelf() parentModule?: FileTypesModule) {
     if (parentModule) {
-      throw new Error(
-        'FileTypeModule is already loaded. Import it in the AppModule only');
+      throw new Error('FileTypeModule is already loaded. Import it in the AppModule only');
     }
   }
 }

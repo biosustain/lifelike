@@ -6,7 +6,7 @@
 export enum NodePosition {
   left,
   right,
-  multi
+  multi,
 }
 
 export const nodeLightness = 60;
